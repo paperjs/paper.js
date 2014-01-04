@@ -248,15 +248,15 @@ var PaperScript = Base.exports.PaperScript = (function() {
 			// undefined arguments, so that their name exists, rather than
 			// injecting a code line that defines them as variables.
 			// They are exported again at the end of the function.
-			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
-			res;
+			handlers = ['onFrame', 'onResize'].concat(toolHandlers);
 		code = compile(code);
 		// compile a list of paramter names for all variables that need to
 		// appear as globals inside the script. At the same time, also collect
 		// their values, so we can pass them on as arguments in the function
 		// call. 
 		var params = ['_$_', '$_', 'view', 'tool'],
-			args = [_$_, $_ , view, tool];
+			args = [_$_, $_ , view, tool],
+			func;
 		// Look through all enumerable properties on the scope and expose these
 		// too as pseudo-globals.
 		for (var key in scope) {
@@ -276,44 +276,32 @@ var PaperScript = Base.exports.PaperScript = (function() {
 		// We need an additional line that returns the handlers in one object.
 		code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
-		if (window.InstallTrigger) { // Firefox
-			// Add a semi-colon at the start so Firefox doesn't swallow empty
-			// lines and shift error messages.
-			code = ';' + code;
-			// On Firefox, all error numbers inside evaled code are relative to
-			// the line where the eval happened. Totally silly, but that's how
-			// it is. So we're calculating the base of lineNumbers, to remove it
-			// again from reported errors. Luckily, Firefox is the only browser
-			// where we can define the lineNumber for exceptions.
-			var handle = PaperScript.handleException;
-			if (!handle) {
-				handle = PaperScript.handleException = function(e) {
-					throw e.lineNumber >= lineNumber
-							? new Error(e.message, e.fileName,
-								e.lineNumber - lineNumber)
-							: e;
-				};
-				// We're using a crazy hack to detect wether the library is
-				// minified or not: By generating a second error on the 2nd line
-				// and using the difference in line numbers to calculate the
-				// offset to the eval, it works in both casees.
-				var lineNumber = new Error().lineNumber;
-				lineNumber += (new Error().lineNumber - lineNumber) * 3;
-			}
-			try {
-				res = Function(params, code).apply(scope, args);
-				// NOTE: in order for the calculation of the above lineNumber
-				// offset to work, we cannot add any statements before the above
-				// line of code, nor can we put it into a separate function.
-			} catch (e) {
-				handle(e);
-			}
+		if (window.InstallTrigger || window.chrome) { // Firefox and Chrome
+			// On Firefox, all error numbers inside dynamically compiled code
+			// are relative to the line where the eval / compilation happened.
+			// To fix this issue, we're temporarily inserting a new script
+			// tag. We also use this on Chrome to fix an issue with compiled
+			// functions:
+			// https://code.google.com/p/chromium/issues/detail?id=331655
+			var script = document.createElement('script'),
+				head = document.head;
+			// Do not add a new-line before the code on Chrome since the error
+			// messages are shifted by one line there...
+			if (!window.chrome)
+				code = '\n' + code;
+			script.appendChild(document.createTextNode(
+				'paper._execute = function(' + params + ') {' + code + '\n}'
+			));
+			head.appendChild(script);
+			func = paper._execute;
+			head.removeChild(script);
 		} else {
-			res = Function(params, code).apply(scope, args);
+			func = Function(params, code);
 		}
 /*#*/ } else { // !__options.environment == 'browser'
-			res = Function(params, code).apply(scope, args);
+		func = Function(params, code);
 /*#*/ } // !__options.environment == 'browser'
+		var res = func.apply(scope, args);
 		// Now install the 'global' tool and view handlers, and we're done!
 		Base.each(toolHandlers, function(key) {
 			var value = res[key];
