@@ -648,6 +648,24 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
+		 * Returns a copy of the components array with all values clamped to
+		 * valid numbers, based on the type of property they represent.
+		 */
+		_clamp: function() {
+			var components = this._components.slice(),
+				properties = this._properties;
+			if (this._type !== 'gradient') {
+				for (var i = 0, l = properties.length; i < l; i++) {
+					var value = components[i];
+					components[i] = properties[i] === 'hue'
+							? ((value % 360) + 360) % 360
+							: value < 0 ? 0 : value > 1 ? 1 : value;
+				}
+			}
+			return components;
+		},
+
+		/**
 		 * @return {Number[]} the converted components as an array
 		 */
 		_convert: function(type) {
@@ -655,11 +673,11 @@ var Color = Base.extend(new function() {
 			return this._type === type
 					? this._components.slice()
 					: (converter = converters[this._type + '-' + type])
-						? converter.apply(this, this._components)
+						? converter.apply(this, this._clamp())
 						// Convert to and from rgb if no direct converter exists
 						: converters['rgb-' + type].apply(this,
 							converters[this._type + '-rgb'].apply(this,
-									this._components));
+								this._clamp()));
 		},
 
 		/**
