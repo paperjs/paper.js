@@ -14,17 +14,12 @@
  * @name PaperScript
  * @namespace
  */
-var PaperScript = Base.exports.PaperScript = (function(root) {
+var PaperScript = Base.exports.PaperScript = (function() {
 	// Locally turn of exports and define for inlined acorn / esprima.
 	// Just declaring the local vars is enough, as they will be undefined.
 	var exports, define,
 		// The scope into which the library is loaded.
 		scope = this;
-/*#*/ if (__options.version == 'dev') {
-	// As the above inclusion loads code into the root scope during dev,
-	// set scope to root, so we can find the library.
-	scope = root;
-/*#*/ } // __options.version == 'dev'
 /*#*/ if (__options.parser == 'acorn') {
 /*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (__options.parser == 'esprima') {
@@ -281,7 +276,7 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		// We need an additional line that returns the handlers in one object.
 		code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
-		if (root.InstallTrigger) { // Firefox
+		if (window.InstallTrigger) { // Firefox
 			// Add a semi-colon at the start so Firefox doesn't swallow empty
 			// lines and shift error messages.
 			code = ';' + code;
@@ -306,7 +301,7 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 				lineNumber += (new Error().lineNumber - lineNumber) * 3;
 			}
 			try {
-				res = new Function(params, code).apply(scope, args);
+				res = Function(params, code).apply(scope, args);
 				// NOTE: in order for the calculation of the above lineNumber
 				// offset to work, we cannot add any statements before the above
 				// line of code, nor can we put it into a separate function.
@@ -314,10 +309,10 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 				handle(e);
 			}
 		} else {
-			res = new Function(params, code).apply(scope, args);
+			res = Function(params, code).apply(scope, args);
 		}
 /*#*/ } else { // !__options.environment == 'browser'
-			res = new Function(params, code).apply(scope, args);
+			res = Function(params, code).apply(scope, args);
 /*#*/ } // !__options.environment == 'browser'
 		// Now install the 'global' tool and view handlers, and we're done!
 		Base.each(toolHandlers, function(key) {
@@ -428,4 +423,6 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	};
 
 /*#*/ } // !__options.environment == 'browser'
-})(this);
+// Pass on `this` as the binding object, so we can reference Acorn both in 
+// development and in the built library.
+}).call(this);
