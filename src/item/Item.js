@@ -2728,7 +2728,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// @param {String[]} flags Array of any of the following: 'objects',
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
-	transform: function(matrix /*, applyMatrix */) {
+	transform: function(matrix, _applyMatrix) {
 		// Bail out immediatelly if there is nothing to do
 		if (matrix.isIdentity())
 			return this;
@@ -2740,7 +2740,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix.preConcatenate(matrix);
 		// Call applyMatrix if we need to directly apply the accumulated
 		// transformations to the item's content.
-		if (this._transformContent || arguments[1])
+		if (this._transformContent || _applyMatrix)
 			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
