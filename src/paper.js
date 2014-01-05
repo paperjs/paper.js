@@ -2,8 +2,8 @@
  * Paper.js v*#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -13,16 +13,16 @@
  *
  ***
  *
- * straps.js - Class inheritance library with support for bean-style accessors
+ * Straps.js - Class inheritance library with support for bean-style accessors
  *
  * Copyright (c) 2006 - 2013 Juerg Lehni
- * http://lehni.org/
+ * http://scratchdisk.com/
  *
  * Distributed under the MIT license.
  *
  ***
  *
- * acorn.js
+ * Acorn.js
  * http://marijnhaverbeke.nl/acorn/
  *
  * Acorn is a tiny, fast JavaScript parser written in JavaScript,

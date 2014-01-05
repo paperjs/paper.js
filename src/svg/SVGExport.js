@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -55,24 +55,25 @@ new function() {
 			attrs[center ? 'cy' : 'y'] = point.y;
 			trans = null;
 		}
-		if (matrix.isIdentity())
-			return attrs;
-		// See if we can decompose the matrix and can formulate it as a simple
-		// translate/scale/rotate command sequence.
-		var decomposed = matrix.decompose();
-		if (decomposed && !decomposed.shearing) {
-			var parts = [],
-				angle = decomposed.rotation,
-				scale = decomposed.scaling;
-			if (trans && !trans.isZero())
-				parts.push('translate(' + formatter.point(trans) + ')');
-			if (angle)
-				parts.push('rotate(' + formatter.number(angle) + ')');
-			if (!Numerical.isZero(scale.x - 1) || !Numerical.isZero(scale.y - 1))
-				parts.push('scale(' + formatter.point(scale) +')');
-			attrs.transform = parts.join(' ');
-		} else {
-			attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
+		if (!matrix.isIdentity()) {
+			// See if we can decompose the matrix and can formulate it as a
+			// simple translate/scale/rotate command sequence.
+			var decomposed = matrix.decompose();
+			if (decomposed && !decomposed.shearing) {
+				var parts = [],
+					angle = decomposed.rotation,
+					scale = decomposed.scaling;
+				if (trans && !trans.isZero())
+					parts.push('translate(' + formatter.point(trans) + ')');
+				if (angle)
+					parts.push('rotate(' + formatter.number(angle) + ')');
+				if (!Numerical.isZero(scale.x - 1)
+						|| !Numerical.isZero(scale.y - 1))
+					parts.push('scale(' + formatter.point(scale) +')');
+				attrs.transform = parts.join(' ');
+			} else {
+				attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
+			}
 		}
 		return attrs;
 	}

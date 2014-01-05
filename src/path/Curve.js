@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -555,7 +555,7 @@ statics: {
 	},
 
 	getParameterOf: function(v, x, y) {
-		// Handle beginnings and end seperately, as they are not detected
+		// Handle beginnings and end separately, as they are not detected
 		// sometimes.
 		var tolerance = /*#=*/ Numerical.TOLERANCE;
 		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
@@ -674,7 +674,7 @@ statics: {
 			c = v1 - v0,
 			count = Numerical.solveQuadratic(a, b, c, roots),
 			// Add some tolerance for good roots, as t = 0 / 1 are added
-			// seperately anyhow, and we don't want joins to be added with
+			// separately anyhow, and we don't want joins to be added with
 			// radiuses in getStrokeBounds()
 			tMin = /*#=*/ Numerical.TOLERANCE,
 			tMax = 1 - tMin;
@@ -1090,12 +1090,13 @@ new function() { // Scope for methods that require numerical integration
 				b = 1;
 			var isZero = Numerical.isZero;
 			// See if the curve is linear by checking p1 == c1 and p2 == c2
-			if (isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+			if (a === 0 && b === 1
+					&& isZero(v[0] - v[2]) && isZero(v[1] - v[3])
 					&& isZero(v[6] - v[4]) && isZero(v[7] - v[5])) {
 				// Straight line
 				var dx = v[6] - v[0], // p2x - p1x
 					dy = v[7] - v[1]; // p2y - p1y
-				return (b - a) * Math.sqrt(dx * dx + dy * dy);
+				return Math.sqrt(dx * dx + dy * dy);
 			}
 			var ds = getLengthIntegrand(v);
 			return Numerical.integrate(ds, a, b, getIterations(a, b));

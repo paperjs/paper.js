@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -14,17 +14,12 @@
  * @name PaperScript
  * @namespace
  */
-var PaperScript = Base.exports.PaperScript = (function(root) {
+var PaperScript = Base.exports.PaperScript = (function() {
 	// Locally turn of exports and define for inlined acorn / esprima.
 	// Just declaring the local vars is enough, as they will be undefined.
 	var exports, define,
 		// The scope into which the library is loaded.
 		scope = this;
-/*#*/ if (__options.version == 'dev') {
-	// As the above inclusion loads code into the root scope during dev,
-	// set scope to root, so we can find the library.
-	scope = root;
-/*#*/ } // __options.version == 'dev'
 /*#*/ if (__options.parser == 'acorn') {
 /*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
 /*#*/ } else if (__options.parser == 'esprima') {
@@ -34,7 +29,7 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	// Operators to overload
 
 	var binaryOperators = {
-		// The hidden math functions are to be injected specifically, see below.
+		// The hidden math methods are to be injected specifically, see below.
 		'+': '__add',
 		'-': '__subtract',
 		'*': '__multiply',
@@ -50,11 +45,11 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		'+': null
 	};
 
-	// Inject underscored math functions as aliases to Point, Size and Color.
+	// Inject underscored math methods as aliases to Point, Size and Color.
 	var fields = Base.each(
 		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
-			// Create an alias for ach math function to be injected into the
+			// Create an alias for each math method to be injected into the
 			// classes using Straps.js' #inject() 
 			this['__' + name] = '#' + name;
 		}, 
@@ -109,13 +104,12 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	 */
 	function compile(code) {
 		// Use Acorn or Esprima to translate the code into an AST structure
-		// which is then walked and parsed for operators to overload.
-		// Instead of modifying the AST and converting back to code, we directly
-		// change the source code based on the parser's range information, so we
-		// can preserve line-numbers in syntax errors and remove the need for
-		// Escodegen.
+		// which is then walked and parsed for operators to overload. Instead of
+		// modifying the AST and translating it back to code, we directly change 
+		// the source code based on the parser's range information, to preserve
+		// line-numbers in syntax errors and remove the need for Escodegen.
 
-		// Tracks code insertions so we can add their differences to the
+		// Track code insertions so their differences can be added to the
 		// original offsets.
 		var insertions = [];
 
@@ -143,8 +137,8 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		// information up-to-date.
 		function replaceCode(node, str) {
 			var start = getOffset(node.range[0]),
-				end = getOffset(node.range[1]);
-			var insert = 0;
+				end = getOffset(node.range[1]),
+				insert = 0;
 			// Sort insertions by their offset, so getOffest() can do its thing
 			for (var i = insertions.length - 1; i >= 0; i--) {
 				if (start > insertions[i][0]) {
@@ -245,7 +239,7 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		var view = scope.getView(),
 			// Only create a tool object if something resembling a tool handler
 			// definition is contained in the code.
-			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)/.test(code)
+			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/.test(code)
 					? new Tool()
 					: null,
 			toolHandlers = tool ? tool._events : [],
@@ -255,71 +249,69 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 			// injecting a code line that defines them as variables.
 			// They are exported again at the end of the function.
 			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
-			res;
+			// compile a list of paramter names for all variables that need to
+			// appear as globals inside the script. At the same time, also
+			// collect their values, so we can pass them on as arguments in the
+			// function call. 
+			params = [],
+			args = [],
+			func;
 		code = compile(code);
-		// compile a list of paramter names for all variables that need to
-		// appear as globals inside the script. At the same time, also collect
-		// their values, so we can pass them on as arguments in the function
-		// call. 
-		var params = ['_$_', '$_', 'view', 'tool'],
-			args = [_$_, $_ , view, tool];
-		// Look through all enumerable properties on the scope and expose these
-		// too as pseudo-globals.
-		for (var key in scope) {
-			if (!/^_/.test(key)) {
-				params.push(key);
-				args.push(scope[key]);
+		function expose(scope, hidden) {
+			// Look through all enumerable properties on the scope and expose
+			// these too as pseudo-globals, but only if they seem to be in use.
+			for (var key in scope) {
+				if ((hidden || !/^_/.test(key)) && new RegExp(
+						'\\b' + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
+					params.push(key);
+					args.push(scope[key]);
+				}
 			}
 		}
+		expose({ _$_: _$_, $_: $_, view: view, tool: tool }, true);
+		expose(scope);
 		// Finally define the handler variable names as parameters and compose
 		// the string describing the properties for the returned object at the
 		// end of the code execution, so we can retrieve their values from the
 		// function call.
 		handlers = Base.each(handlers, function(key) {
-			params.push(key);
-			this.push(key + ': ' + key);
+			// Check for each handler explicitely and only return them if they
+			// seem to exist.
+			if (new RegExp('\\s+' + key + '\\b').test(code)) {
+				params.push(key);
+				this.push(key + ': ' + key);
+			}
 		}, []).join(', ');
 		// We need an additional line that returns the handlers in one object.
-		code += '\nreturn { ' + handlers + ' };';
+		if (handlers)
+			code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
-		if (root.InstallTrigger) { // Firefox
-			// Add a semi-colon at the start so Firefox doesn't swallow empty
-			// lines and shift error messages.
-			code = ';' + code;
-			// On Firefox, all error numbers inside evaled code are relative to
-			// the line where the eval happened. Totally silly, but that's how
-			// it is. So we're calculating the base of lineNumbers, to remove it
-			// again from reported errors. Luckily, Firefox is the only browser
-			// where we can define the lineNumber for exceptions.
-			var handle = PaperScript.handleException;
-			if (!handle) {
-				handle = PaperScript.handleException = function(e) {
-					throw e.lineNumber >= lineNumber
-							? new Error(e.message, e.fileName,
-								e.lineNumber - lineNumber)
-							: e;
-				};
-				// We're using a crazy hack to detect wether the library is
-				// minified or not: By generating a second error on the 2nd line
-				// and using the difference in line numbers to calculate the
-				// offset to the eval, it works in both casees.
-				var lineNumber = new Error().lineNumber;
-				lineNumber += (new Error().lineNumber - lineNumber) * 3;
-			}
-			try {
-				res = new Function(params, code).apply(scope, args);
-				// NOTE: in order for the calculation of the above lineNumber
-				// offset to work, we cannot add any statements before the above
-				// line of code, nor can we put it into a separate function.
-			} catch (e) {
-				handle(e);
-			}
+		if (window.InstallTrigger || window.chrome) { // Firefox and Chrome
+			// On Firefox, all error numbers inside dynamically compiled code
+			// are relative to the line where the eval / compilation happened.
+			// To fix this issue, we're temporarily inserting a new script
+			// tag. We also use this on Chrome to fix an issue with compiled
+			// functions:
+			// https://code.google.com/p/chromium/issues/detail?id=331655
+			var script = document.createElement('script'),
+				head = document.head;
+			// Do not add a new-line before the code on Chrome since the error
+			// messages are shifted by one line there...
+			if (!window.chrome)
+				code = '\n' + code;
+			script.appendChild(document.createTextNode(
+				'paper._execute = function(' + params + ') {' + code + '\n}'
+			));
+			head.appendChild(script);
+			func = paper._execute;
+			head.removeChild(script);
 		} else {
-			res = new Function(params, code).apply(scope, args);
+			func = Function(params, code);
 		}
 /*#*/ } else { // !__options.environment == 'browser'
-			res = new Function(params, code).apply(scope, args);
+		func = Function(params, code);
 /*#*/ } // !__options.environment == 'browser'
+		var res = func.apply(scope, args) || {};
 		// Now install the 'global' tool and view handlers, and we're done!
 		Base.each(toolHandlers, function(key) {
 			var value = res[key];
@@ -404,15 +396,21 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 		path = require('path');
 
 	require.extensions['.pjs'] = function(module, uri) {
-		var source = compile(fs.readFileSync(uri, 'utf8')),
-			scope = new PaperScope();
-		scope.__filename = uri;
-		scope.__dirname = path.dirname(uri);
-		// Expose core methods and values
-		scope.require = require;
-		scope.console = console;
-		execute(source, scope);
-		module.exports = scope;
+		// Requiring a PaperScript on Node.js returns an initialize method which
+		// needs to receive a Canvas object when called and returns the
+		// PaperScope.
+		module.exports = function(canvas) {
+			var source = compile(fs.readFileSync(uri, 'utf8')),
+				scope = new PaperScope();
+			scope.setup(canvas);
+			scope.__filename = uri;
+			scope.__dirname = path.dirname(uri);
+			// Expose core methods and values
+			scope.require = require;
+			scope.console = console;
+			execute(source, scope);
+			return scope;
+		};
 	};
 
 /*#*/ } // __options.environment == 'node'
@@ -423,4 +421,6 @@ var PaperScript = Base.exports.PaperScript = (function(root) {
 	};
 
 /*#*/ } // !__options.environment == 'browser'
-})(this);
+// Pass on `this` as the binding object, so we can reference Acorn both in 
+// development and in the built library.
+}).call(this);

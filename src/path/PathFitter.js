@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -15,6 +15,11 @@
 // from "Graphics Gems", Academic Press, 1990
 // Modifications and optimisations of original algorithm by Juerg Lehni.
 
+/**
+ * @name PathFitter
+ * @class
+ * @private
+ */
 var PathFitter = Base.extend({
 	initialize: function(path, error) {
 		this.points = [];

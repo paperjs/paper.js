@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -1804,12 +1804,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * data string.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
+	 * <b>options.asString:</b> {@code Boolean} – wether the JSON is returned as
+	 * a {@code Object} or a {@code String}.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in JSON data.
 	 *
 	 * @name Item#exportJSON
 	 * @function
-	 * @param {Object} [options={ precision: 5 }] the serialization options 
+	 * @param {Object} [options={ asString: true, precision: 5 }] the
+	 * serialization options
 	 * @return {String} the exported JSON data
 	 */
 
@@ -1836,8 +1839,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Exports the item with its content and child items as an SVG DOM.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a String
-	 * is to be returned.
+	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a
+	 * {@code String} is to be returned.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in SVG data.
 	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path
@@ -2718,6 +2721,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix /*, applyMatrix */) {
+		// Bail out immediatelly if there is nothing to do
+		if (matrix.isIdentity())
+			return this;
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,

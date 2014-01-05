@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -15,8 +15,7 @@
  * @class
  * @private
  */
-// Extend Base with utility functions used across the library. Also set
-// this.Base on the injection scope, since straps.js ommits that.
+// Extend Base with utility functions used across the library.
 Base.inject(/** @lends Base# */{
 	/**
 	 * Renders base objects to strings in object literal notation.
@@ -40,7 +39,7 @@ Base.inject(/** @lends Base# */{
 	/**
 	 * Serializes this object to a JSON string.
 	 *
-	 * @param {Object} [options={ precision: 5 }]
+	 * @param {Object} [options={ asString: true, precision: 5 }]
 	 */
 	exportJSON: function(options) {
 		return Base.exportJSON(this, options);
@@ -180,9 +179,6 @@ Base.inject(/** @lends Base# */{
 			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
-			// If options were provided, pass them on to the constructed object
-			if (options)
-				obj.__options = options;
 			obj = obj.initialize.apply(obj, index > 0 || length < list.length
 				? Array.prototype.slice.call(list, index, index + length)
 				: list) || obj;
@@ -192,8 +188,6 @@ Base.inject(/** @lends Base# */{
 				// last read() call
 				list.__read = obj.__read;
 				obj.__read = undefined;
-				if (options)
-					obj.__options = undefined;
 			}
 			return obj;
 		},
@@ -211,7 +205,7 @@ Base.inject(/** @lends Base# */{
 
 		/**
 		 * Reads all readable arguments from the list, handling nested arrays
-		 * seperately.
+		 * separately.
 		 * @param {Array} list the list to read from, either an arguments object
 		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
@@ -433,7 +427,10 @@ Base.inject(/** @lends Base# */{
 		},
 
 		exportJSON: function(obj, options) {
-			return JSON.stringify(Base.serialize(obj, options));
+			var json = Base.serialize(obj, options);
+			return options && options.asString === false
+					? json
+					: JSON.stringify(json);
 		},
 
 		importJSON: function(json, target) {
