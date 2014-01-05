@@ -140,10 +140,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * "Resets" the matrix by setting its values to the ones of the identity
 	 * matrix that results in no transformation.
 	 */
-	reset: function() {
+	reset: function(_dontNotify) {
 		this._a = this._d = 1;
 		this._c = this._b = this._tx = this._ty = 0;
-		this._changed();
+		if (!_dontNotify)
+			this._changed();
 		return this;
 	},
 

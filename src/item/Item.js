@@ -2807,7 +2807,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				strokeColor.transform(matrix);
 			// Reset the internal matrix to the identity transformation if it
 			// was possible to apply it.
-			matrix.reset();
+			matrix.reset(true);
 		}
 		if (!_dontNotify)
 			this._changed(/*#=*/ Change.GEOMETRY);
