@@ -72,32 +72,6 @@ PathItem.inject(new function() {
 	}
 
 	function computeBoolean(path1, path2, operator, reverse, subtract, res) {
-		function calculateWinding (curve, t, monoCurves, subtract) {
-			var wind,
-				v = curve.getValues(),
-				midPoint = Curve.evaluate(v, t, 0),
-				length = Curve.getLength(v),
-				vDiff = Math.abs(v[1] - v[7]),
-				tolerance = /*#=*/ Numerical.TOLERANCE,
-				linear = Curve.isLinear(v) || Curve.isFlatEnough(v, tolerance);
-				horizontal = (linear && vDiff < tolerance) ||
-						(length < 1 && vDiff < 0.01),
-				parent = segment._path;
-			if (parent._parent instanceof CompoundPath)
-				parent = parent._parent;
-			// Find the winding contribution of this curve to
-			// the resulting path
-			wind = PathItem._getWindingNumber(midPoint, monoCurves, horizontal);
-			// While subtracting, we need to omit this curve if this 
-			// curve is contributing to the second operand exclusively.
-			if (subtract && (parent._id === path2._id &&
-						!path1._getWinding(midPoint) ||
-					(parent._id === path1._id &&
-						path2._getWinding(midPoint)))) {
-				wind = 0;
-			}
-			return wind;
-		}
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -111,22 +85,18 @@ PathItem.inject(new function() {
 			path1.reverse();
 		if (!(reverse ^ path2.isClockwise()))
 			path2.reverse();
-		var intersections, i, j, l, segment, wind, 
-			startSeg, crv, v, length,
-			// Minimum length of the path and minimum number of curves to
-			// confirm, to determine the winding contribution with a
-			// good enough confidence.
-			minCurveLenY = 15,
-			minCurveNum = 2,
+		var intersections, i, j, l, lj, segment, wind,
+			point, startSeg, crv, length, parent,
 			curveChain = [],
 			windings = [],
-			windCommon, windConfident, lenCurves, numCurves, slowPath, 
+			lengths = [],
+			windMedian, lenCurves,
 			paths = [],
 			segments = [],
 			// Aggregate of all curves in both operands, monotonic in y
 			monoCurves = [],
 			result = new CompoundPath(),
-			abs = Math.abs;
+			random = Math.random;
 		// Split curves at intersections on both paths.
 		intersections = path1.getIntersections(path2);
 		PathItem._splitPath(intersections);
@@ -164,79 +134,49 @@ PathItem.inject(new function() {
 			// contribution for this curve-chain. Once we have enough
 			// confidence in the winding contribution, we can propagate it
 			// until the intersection or end of a curve chain.
-			curveChain.length = 0;
-			windings.length = 0;
-			lenCurves = numCurves = 0;
-			windConfident = windCommon = null;
-			slowPath = false;
+			curveChain.length = lengths.length = 0;
+			lenCurves = 0;
 			startSeg = segment;
-									// var check = startSeg.point.equals([262.80000000000007, 259.97641876494305])
-									// check && console.log("check")
 			do {
 				curveChain.push(segment);
-				if (windConfident === null || slowPath) {
-					crv = segment.getCurve();
-					// Determine the winding contribution of this curve
-					wind = calculateWinding(crv, 0.5, monoCurves, subtract);
-					// Record the length covered by this winding number,
-					// we need this if we were to revert to a slow path later
-					length = crv.getLength();
-					windings[wind] = windings[wind]
-							? windings[wind] + length : length;
-					// Check if we can declare a probable winding direction for
-					// this curve chain or not
-					if (!slowPath) {
-						if (windCommon === null) {
-							windCommon = wind;
-						} else if (windCommon !== wind) {
-							slowPath = true;
-						}
-						++numCurves;
-						lenCurves += length;
-						if (lenCurves > minCurveLenY && numCurves > minCurveNum)
-							windConfident = windCommon;
-					}
-				}
+				lenCurves += segment.getCurve().getLength();
+				lengths.push(lenCurves);
 				// Continue with next curve
 				segment = segment.getNext();
 			} while(segment && !segment._intersection && segment !== startSeg);
-			// If didn't manage to find a consistent winding value,
-			// we revert to a slower path.
-			if (!windConfident) {
-				if (curveChain.length && curveChain.length < 3) {
-					// If don't have enough curves beween intersections, we
-					// cannot use any method of ranking to determine a reliable
-					// winding number. Split the midpoint into three points
-					// along the curve and select the median winding.
-					// TODO: Find the lasrgest of the curves
-					crv = curveChain[0].getCurve();
-					windings.length = 0;
-					windings.push(1/3, 1/2, 2/3);
-					for (j = windings.length - 1; j >= 0; j--)
-						windings[j] = calculateWinding(crv, windings[j],
-								monoCurves, subtract);
-					windings.sort();
-					windConfident = windings[1];
-				} else {
-					// select the winding number from the accumulated values,
-					// that covers most of the curve chain by arc length
-					length = 0;
-					for (j = windings.length - 1; j >= 0; j--) {
-						wind = windings[j];
-						if (wind != null && wind > length) {
-							length = wind;
-							windConfident = j;
-						}
+
+			// Select the median winding of three random points along this
+			// curve chain, as a representative winding number
+			windings.length = 0;
+			for (wind = 0; wind < 3; wind++) {
+				length = lenCurves * random();
+				for (j = 0, lj = lengths.length ; j <= lj; j++)
+					if (lengths[j] > length) {
+						length = j > 0 ? length - lengths[j-1] : length;
+						break;
 					}
+				crv = curveChain[j].getCurve();
+				point = crv.getPointAt(length);
+				windMedian = PathItem._getWindingNumber(point, monoCurves);
+				// While subtracting, we need to omit this curve if this 
+				// curve is contributing to the second operand and is outside
+				// the first operand.
+				parent = crv._path;
+				if (parent._parent instanceof CompoundPath)
+					parent = parent._parent;
+				if (subtract && (parent._id === path2._id &&
+							!path1._getWinding(point) ||
+						(parent._id === path1._id &&
+							path2._getWinding(point)))) {
+					windMedian = 0;
 				}
+				windings[wind] = windMedian;
 			}
-				// DEBUG: ------------------------------------------------
-				// console.log(windConfident, curveChain.length, startSeg.point.x, startSeg.point.y)
-				// DEBUG: ------------------------------------------------
-				
+			windings.sort();
+			windMedian = windings[1];
 			// Assign the winding to the entire curve chain
 			for (j = curveChain.length - 1; j >= 0; j--)
-				curveChain[j]._winding = windConfident;
+				curveChain[j]._winding = windMedian;
 		}
 		// Trace closed contours and insert them into the result;
 		paths = PathItem._tracePaths(segments, operator);
