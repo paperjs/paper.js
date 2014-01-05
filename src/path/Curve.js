@@ -260,24 +260,16 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return points;
 	},
 
-	// DOCS: document Curve#getLength(from, to)
 	/**
 	 * The approximated length of the curve in points.
 	 *
 	 * @type Number
 	 * @bean
 	 */
-	 // Hide parameters from Straps.js so it injects bean too
-	getLength: function(/* from, to */) {
-		var from = arguments[0],
-			to = arguments[1],
-			fullLength = arguments.length === 0 || from === 0 && to === 1;
-		if (fullLength && this._length != null)
-			return this._length;
-		var length = Curve.getLength(this.getValues(), from, to);
-		if (fullLength)
-			this._length = length;
-		return length;
+	getLength: function() {
+		if (this._length == null)
+			this._length = Curve.getLength(this.getValues(), 0, 1);
+		return this._length;
 	},
 
 	getArea: function() {
@@ -286,6 +278,11 @@ var Curve = Base.extend(/** @lends Curve# */{
 
 	getPart: function(from, to) {
 		return new Curve(Curve.getPart(this.getValues(), from, to));
+	},
+
+	// DOCS: document Curve#getPartLength(from, to)
+	getPartLength: function(from, to) {
+		return Curve.getLength(this.getValues(), from, to);
 	},
 
 	/**
