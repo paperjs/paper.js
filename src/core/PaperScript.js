@@ -293,7 +293,8 @@ var PaperScript = Base.exports.PaperScript = (function() {
 		if (handlers)
 			code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
-		if (window.InstallTrigger || window.chrome) { // Firefox and Chrome
+		var firefox = window.InstallTrigger;
+		if (firefox || window.chrome) {
 			// On Firefox, all error numbers inside dynamically compiled code
 			// are relative to the line where the eval / compilation happened.
 			// To fix this issue, we're temporarily inserting a new script
@@ -302,15 +303,16 @@ var PaperScript = Base.exports.PaperScript = (function() {
 			// https://code.google.com/p/chromium/issues/detail?id=331655
 			var script = document.createElement('script'),
 				head = document.head;
-			// Do not add a new-line before the code on Chrome since the error
-			// messages are shifted by one line there...
-			if (!window.chrome)
+			// Add a new-line before the code on Firefox since the error
+			// messages appeawr to be aligned to line number 0...
+			if (firefox)
 				code = '\n' + code;
 			script.appendChild(document.createTextNode(
 				'paper._execute = function(' + params + ') {' + code + '\n}'
 			));
 			head.appendChild(script);
 			func = paper._execute;
+			delete paper._execute;
 			head.removeChild(script);
 		} else {
 			func = Function(params, code);
