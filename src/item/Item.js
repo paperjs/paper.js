@@ -214,10 +214,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			project = this._project;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
-			delete this._bounds;
-			delete this._position;
-			delete this._decomposed;
-			delete this._globalMatrix;
+			this._bounds = this._position = this._decomposed =
+					this._globalMatrix = undefined;
 		}
 		if (cacheParent && (flags
 				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
@@ -814,7 +812,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setPivot: function(/* point */) {
 		this._pivot = Point.read(arguments);
 		// No need for _changed() since the only thing this affects is _position
-		delete this._position;
+		this._position = undefined;
 	},
 
 	_pivot: null,
@@ -999,16 +997,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				for (var i = 0, list = item._boundsCache.list, l = list.length;
 						i < l; i++) {
 					var child = list[i];
-					delete child._bounds;
+					child._bounds = child._position = undefined;
 					// Delete position as well, since it's depending on bounds.
-					delete child._position;
 					// We need to recursively call _clearBoundsCache, because if
 					// the cache for this child's children is not valid anymore,
 					// that propagates up the DOM tree.
 					if (child !== item && child._boundsCache)
 						child._clearBoundsCache();
 				}
-				delete item._boundsCache;
+				item._boundsCache = undefined;
 			}
 		}
 	}
