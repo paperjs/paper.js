@@ -61,13 +61,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @type Segment
 	 * @bean
 	 */
-	getSegment: function(/* preferFirst */) {
+	getSegment: function(_preferFirst) {
 		if (!this._segment) {
 			var curve = this.getCurve(),
 				parameter = this.getParameter();
 			if (parameter === 1) {
 				this._segment = curve._segment2;
-			} else if (parameter === 0 || arguments[0]) {
+			} else if (parameter === 0 || _preferFirst) {
 				this._segment = curve._segment1;
 			} else if (parameter == null) {
 				return null;
@@ -82,14 +82,21 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 		return this._segment;
 	},
 
+	setSegment: function(segment) {
+		// NOTE: We only include this setter so the above getter can declare
+		// the _preferFirst parameter without having to hide it.
+		// See Strap.js beans conventions.
+		this._segment = segment;
+	},
+
 	/**
 	 * The curve by which the location is defined.
 	 *
 	 * @type Curve
 	 * @bean
 	 */
-	getCurve: function(/* uncached */) {
-		if (!this._curve || arguments[0]) {
+	getCurve: function(_uncached) {
+		if (!this._curve || _uncached) {
 			// If we're asked to get the curve uncached, access current curve
 			// objects through segment1 / segment2. Since path splitting or
 			// dividing might have happened in the meantime, try segment1's
@@ -100,6 +107,11 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 				this._curve = this._segment2.getPrevious().getCurve();
 		}
 		return this._curve;
+	},
+
+	setCurve: function(curve) {
+		// See #setSegment()
+		this._curve = curve;
 	},
 
 	/**
@@ -179,12 +191,17 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @type Number
 	 * @bean
 	 */
-	getParameter: function(/* uncached */) {
-		if ((this._parameter == null || arguments[0]) && this._point) {
-			var curve = this.getCurve(arguments[0] && this._point);
+	getParameter: function(_uncached) {
+		if ((this._parameter == null || _uncached) && this._point) {
+			var curve = this.getCurve(_uncached && this._point);
 			this._parameter = curve && curve.getParameterOf(this._point);
 		}
 		return this._parameter;
+	},
+
+	setParameter: function(parameter) {
+		// See #setSegment()
+		this._parameter = parameter;
 	},
 
 	/**
@@ -194,12 +211,17 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	 * @type Point
 	 * @bean
 	 */
-	getPoint: function(/* uncached */) {
-		if ((!this._point || arguments[0]) && this._parameter != null) {
+	getPoint: function(_uncached) {
+		if ((!this._point || _uncached) && this._parameter != null) {
 			var curve = this.getCurve();
 			this._point = curve && curve.getPointAt(this._parameter, true);
 		}
 		return this._point;
+	},
+
+	setPoint: function(point) {
+		// See #setSegment()
+		this._point = point;
 	},
 
 	/**

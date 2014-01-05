@@ -245,9 +245,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @type String
 	 * @bean
 	 */
-	getPathData: function(/* precision */) {
+	getPathData: function(precision) {
 		var segments = this._segments,
-			precision = arguments[0],
 			f = Formatter.instance,
 			parts = [];
 
@@ -690,7 +689,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * // Select the path, so we can see its segments:
 	 * path.selected = true;
 	 */
-	removeSegments: function(from, to/*, includeCurves */) {
+	removeSegments: function(from, to, _includeCurves) {
 		from = from || 0;
 		to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
@@ -724,7 +723,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Return the removed curves as well, if we're asked to include
 			// them, but exclude the first curve, since that's shared with the
 			// previous segment and does not connect the returned segments.
-			if (arguments[2])
+			if (_includeCurves)
 				removed._curves = curves.slice(1);
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(index, index);

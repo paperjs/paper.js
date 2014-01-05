@@ -228,11 +228,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return area;
 	},
 
-	getPathData: function(/* precision */) {
+	getPathData: function(precision) {
 		var children = this._children,
 			paths = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(children[i].getPathData(arguments[0]));
+			paths.push(children[i].getPathData(precision));
 		return paths.join(' ');
 	},
 

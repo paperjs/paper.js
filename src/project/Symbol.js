@@ -115,7 +115,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 		return this._definition;
 	},
 
-	setDefinition: function(item /*, dontCenter */) {
+	setDefinition: function(item, _dontCenter) {
 		// Make sure we're not steatling another symbol's definition
 		if (item._parentSymbol)
 			item = item.clone();
@@ -127,7 +127,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 		item.remove();
 		item.setSelected(false);
 		// Move position to 0, 0, so it's centered when placed.
-		if (!arguments[1])
+		if (!_dontCenter)
 			item.setPosition(new Point());
 		item._parentSymbol = this;
 		this._changed(/*#=*/ Change.GEOMETRY);

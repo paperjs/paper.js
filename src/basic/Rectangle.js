@@ -237,8 +237,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Point
 	 * @bean
 	 */
-	getPoint: function(/* dontLink */) {
-		var ctor = arguments[0] ? Point : LinkedPoint;
+	getPoint: function(_dontLink) {
+		var ctor = _dontLink ? Point : LinkedPoint;
 		return new ctor(this.x, this.y, this, 'setPoint');
 	},
 
@@ -255,8 +255,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Size
 	 * @bean
 	 */
-	getSize: function(/* dontLink */) {
-		var ctor = arguments[0] ? Size : LinkedSize;
+	getSize: function(_dontLink) {
+		var ctor = _dontLink ? Size : LinkedSize;
 		return new ctor(this.width, this.height, this, 'setSize');
 	},
 
@@ -401,8 +401,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @type Point
 	 * @bean
 	 */
-	getCenter: function(/* dontLink */) {
-		var ctor = arguments[0] ? Point : LinkedPoint;
+	getCenter: function(_dontLink) {
+		var ctor = _dontLink ? Point : LinkedPoint;
 		return new ctor(this.getCenterX(), this.getCenterY(), this, 'setCenter');
 	},
 
@@ -812,8 +812,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				setY = 'set' + y,
 				get = 'get' + part,
 				set = 'set' + part;
-			this[get] = function(/* dontLink */) {
-				var ctor = arguments[0] ? Point : LinkedPoint;
+			this[get] = function(_dontLink) {
+				var ctor = _dontLink ? Point : LinkedPoint;
 				return new ctor(this[getX](), this[getY](), this, set);
 			};
 			this[set] = function(/* point */) {

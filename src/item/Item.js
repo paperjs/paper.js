@@ -762,11 +762,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move the circle 100 points to the right
 	 * circle.position.x += 100;
 	 */
-	getPosition: function(/* dontLink */) {
+	getPosition: function(_dontLink) {
 		// Cache position value.
-		// Pass true for dontLink in getCenter(), so receive back a normal point
+		// Pass true for _dontLink in getCenter(), so receive back a normal point
 		var position = this._position,
-			ctor = arguments[0] ? Point : LinkedPoint;
+			ctor = _dontLink ? Point : LinkedPoint;
 		// Do not cache LinkedPoints directly, since we would not be able to
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
@@ -784,7 +784,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	setPosition: function(/* point */) {
 		// Calculate the distance to the current position, by which to
-		// translate the item. Pass true for dontLink, as we do not need a
+		// translate the item. Pass true for _dontLink, as we do not need a
 		// LinkedPoint to simply calculate this distance.
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
@@ -802,10 +802,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @example {@paperscript}
 	 */
-	getPivot: function(/* dontLink */) {
+	getPivot: function(_dontLink) {
 		var pivot = this._pivot;
 		if (pivot) {
-			var ctor = arguments[0] ? Point : LinkedPoint;
+			var ctor = _dontLink ? Point : LinkedPoint;
 			pivot = new ctor(pivot.x, pivot.y, this, 'setAnchor');
 		}
 		return pivot;
@@ -2790,7 +2790,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// color styles (only gradients so far) and pivot point:
 			var pivot = this._pivot,
 				style = this._style,
-				// pass true for dontMerge so we don't recursively transform
+				// pass true for _dontMerge so we don't recursively transform
 				// styles on groups' children.
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);

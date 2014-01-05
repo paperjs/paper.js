@@ -310,26 +310,24 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * // Select the third segment point:
 	 * path.segments[2].selected = true;
 	 */
-	isSelected: function(/* point */) {
-		var point = arguments[0], // Hidden, only used in SegmentPoint
-			state = this._selectionState;
-		return !point ? !!(state & /*#=*/ SelectionState.SEGMENT)
-			: point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
-			: point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
-			: point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
+	isSelected: function(_point) {
+		var state = this._selectionState;
+		return !_point ? !!(state & /*#=*/ SelectionState.SEGMENT)
+			: _point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
+			: _point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
+			: _point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
 			: false;
 	},
 
-	setSelected: function(selected /*, point */) {
-		var point = arguments[1]; // Hidden, only used in SegmentPoint
-			path = this._path,
+	setSelected: function(selected, _point) {
+		var path = this._path,
 			selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			oldState = state,
-			flag = !point ? /*#=*/ SelectionState.SEGMENT
-					: point === this._point ? /*#=*/ SelectionState.POINT
-					: point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
-					: point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
+			flag = !_point ? /*#=*/ SelectionState.SEGMENT
+					: _point === this._point ? /*#=*/ SelectionState.POINT
+					: _point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
+					: _point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
 					: 0;
 		if (selected) {
 			state |= flag;

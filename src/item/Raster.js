@@ -244,13 +244,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @type Context
 	 * @bean
 	 */
-	getContext: function(/* modify */) {
+	getContext: function(modify) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
 		// Support a hidden parameter that indicates if the context will be used
 		// to modify the Raster object. We can notify such changes ahead since
 		// they are only used afterwards for redrawing.
-		if (arguments[0]) {
+		if (modify) {
 			// Also set _image to null since the Raster stops representing it.
 			// NOTE: This should theoretically be in our own _changed() handler
 			// for ChangeFlag.PIXELS, but since it's only happening in one place

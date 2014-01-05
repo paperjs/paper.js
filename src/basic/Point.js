@@ -491,7 +491,6 @@ var Point = Base.extend(/** @lends Point# */{
 				this.y * scale
 			);
 		}
-		return this;
 	},
 
 	/**
@@ -533,27 +532,15 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @type Number
 	 */
 	getAngle: function(/* point */) {
-		// Hide parameters from Bootstrap so it injects bean too
 		return this.getAngleInRadians.apply(this, arguments) * 180 / Math.PI;
 	},
 
 	setAngle: function(angle) {
-		// We store a reference to _angle internally so we still preserve it
-		// when the vector's length is set to zero, and then anything else.
-		// Note that we cannot rely on it if x and y are something else than 0,
-		// since updating x / y does not automatically change _angle!
-		angle = this._angle = angle * Math.PI / 180;
-		if (!this.isZero()) {
-			var length = this.getLength();
-			// Use #set() instead of direct assignment of x/y, so LinkedPoint
-			// does not report changes twice.
-			this.set(
-				Math.cos(angle) * length,
-				Math.sin(angle) * length
-			);
-		}
-		return this;
+		this.setAngleInRadians.call(this, angle * Math.PI / 180);
 	},
+
+	getAngleInDegrees: '#getAngle',
+	setAngleInDegrees: '#setAngle',
 
 	/**
 	 * Returns the smaller angle between two vectors in radians. The angle is
@@ -572,8 +559,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @type Number
 	 */
 	getAngleInRadians: function(/* point */) {
-		// Hide parameters from Bootstrap so it injects bean too
-		if (arguments[0] === undefined) {
+		if (!arguments.length) {
 			return this.isZero()
 					// Return the preseved angle in case the vector has no
 					// length, and update the internal _angle in case the
@@ -592,8 +578,21 @@ var Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
-	getAngleInDegrees: function(/* point */) {
-		return this.getAngle(arguments[0]);
+	setAngleInRadians: function(angle) {
+		// We store a reference to _angle internally so we still preserve it
+		// when the vector's length is set to zero, and then anything else.
+		// Note that we cannot rely on it if x and y are something else than 0,
+		// since updating x / y does not automatically change _angle!
+		this._angle = angle;
+		if (!this.isZero()) {
+			var length = this.getLength();
+			// Use #set() instead of direct assignment of x/y, so LinkedPoint
+			// does not report changes twice.
+			this.set(
+				Math.cos(angle) * length,
+				Math.sin(angle) * length
+			);
+		}
 	},
 
 	/**
