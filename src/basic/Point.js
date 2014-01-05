@@ -642,7 +642,7 @@ var Point = Base.extend(/** @lends Point# */{
 		// NOTE: Although we're reading from the argument list, we need the
 		// above argument to prevent a bean from being created.
 		point = Point.read(arguments);
-		return Math.atan2(this.cross(_point), this.dot(_point)) * 180 / Math.PI;
+		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
 
 	/**
