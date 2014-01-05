@@ -168,8 +168,7 @@ var PaperScript = Base.exports.PaperScript = (function() {
 				}
 			}
 			switch (node && node.type) {
-			case 'UnaryExpression':
-				// -a
+			case 'UnaryExpression': // -a
 				if (node.operator in unaryOperators
 						&& node.argument.type !== 'Literal') {
 					var arg = getCode(node.argument);
@@ -177,8 +176,7 @@ var PaperScript = Base.exports.PaperScript = (function() {
 							+ arg + ')');
 				}
 				break;
-			case 'BinaryExpression':
-				// a + b, a - b, a / b, a * b, a == b, a % b, ...
+			case 'BinaryExpression': // a + b, a - b, a / b, a * b, a == b, ...				
 				if (node.operator in binaryOperators
 						&& node.left.type !== 'Literal') {
 					var left = getCode(node.left),
@@ -187,9 +185,9 @@ var PaperScript = Base.exports.PaperScript = (function() {
 							+ '", ' + right + ')');
 				}
 				break;
-			case 'UpdateExpression':
-				// a++, a--
-				if (!node.prefix && !(parent && (
+			case 'UpdateExpression': // a++, a--
+			case 'AssignmentExpression': /// a += b, a -= b
+				if (!(parent && (
 						// Filter out for statements to allow loop increments
 						// to perform well
 						parent.type === 'ForStatement'
@@ -203,20 +201,21 @@ var PaperScript = Base.exports.PaperScript = (function() {
 						// We can't replace that with array[_$_(i, "+", 1)].
 						|| parent.type === 'MemberExpression'
 							&& parent.computed))) {
-					var arg = getCode(node.argument);
-					replaceCode(node, arg + ' = _$_(' + arg + ', "'
-							+ node.operator[0] + '", 1)');
-				}
-				break;
-			case 'AssignmentExpression':
-				/// a += b, a -= b
-				if (/^.=$/.test(node.operator)
-						&& node.left.type !== 'Literal'
-						&& !(parent && parent.type === 'ForStatement')) {
-					var left = getCode(node.left),
-						right = getCode(node.right);
-					replaceCode(node, left + ' = _$_(' + left + ', "'
-							+ node.operator[0] + '", ' + right + ')');
+					if (node.type === 'UpdateExpression') {
+						if (!node.prefix) {
+							var arg = getCode(node.argument);
+							replaceCode(node, arg + ' = _$_(' + arg + ', "'
+									+ node.operator[0] + '", 1)');
+						}
+					} else {
+						if (/^.=$/.test(node.operator)
+								&& node.left.type !== 'Literal') {
+							var left = getCode(node.left),
+								right = getCode(node.right);
+							replaceCode(node, left + ' = _$_(' + left + ', "'
+									+ node.operator[0] + '", ' + right + ')');
+						}
+					}
 				}
 				break;
 			}
