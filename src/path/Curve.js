@@ -267,7 +267,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @type Number
 	 * @bean
 	 */
-	 // Hide parameters from Bootstrap so it injects bean too
+	 // Hide parameters from Straps.js so it injects bean too
 	getLength: function(/* from, to */) {
 		var from = arguments[0],
 			to = arguments[1],

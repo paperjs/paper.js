@@ -132,8 +132,9 @@ var Color = Base.extend(new function() {
 		},
 
 		'hsb-rgb': function(h, s, b) {
-			var h = (h / 60) % 6, // Scale to 0..6
-				i = Math.floor(h), // 0..5
+			// Scale h to 0..6 with modulo for negative values too
+			h = (((h / 60) % 6) + 6) % 6;
+			var i = Math.floor(h), // 0..5
 				f = h - i,
 				i = hsbIndices[i],
 				v = [
@@ -164,7 +165,8 @@ var Color = Base.extend(new function() {
 		},
 
 		'hsl-rgb': function(h, s, l) {
-			h /= 360;
+			// Scale h to 0..1 with modulo for negative values too
+			h = (((h / 360) % 1) + 1) % 1;
 			if (s === 0)
 				return [l, l, l];
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
@@ -648,24 +650,6 @@ var Color = Base.extend(new function() {
 		},
 
 		/**
-		 * Returns a copy of the components array with all values clamped to
-		 * valid numbers, based on the type of property they represent.
-		 */
-		_clamp: function() {
-			var components = this._components.slice(),
-				properties = this._properties;
-			if (this._type !== 'gradient') {
-				for (var i = 0, l = properties.length; i < l; i++) {
-					var value = components[i];
-					components[i] = properties[i] === 'hue'
-							? ((value % 360) + 360) % 360
-							: value < 0 ? 0 : value > 1 ? 1 : value;
-				}
-			}
-			return components;
-		},
-
-		/**
 		 * @return {Number[]} the converted components as an array
 		 */
 		_convert: function(type) {
@@ -673,11 +657,11 @@ var Color = Base.extend(new function() {
 			return this._type === type
 					? this._components.slice()
 					: (converter = converters[this._type + '-' + type])
-						? converter.apply(this, this._clamp())
+						? converter.apply(this, this._components)
 						// Convert to and from rgb if no direct converter exists
 						: converters['rgb-' + type].apply(this,
 							converters[this._type + '-rgb'].apply(this,
-								this._clamp()));
+								this._components));
 		},
 
 		/**
@@ -834,7 +818,7 @@ var Color = Base.extend(new function() {
 				convert(components[2])
 			];
 			if (alpha < 1)
-				components.push(val < 0 ? 0 : val);
+				components.push(alpha < 0 ? 0 : alpha);
 			return hex
 					? '#' + ((1 << 24) + (components[0] << 16)
 						+ (components[1] << 8)

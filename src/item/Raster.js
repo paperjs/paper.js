@@ -616,7 +616,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			var that = this;
 			return new HitResult('pixel', that, {
 				offset: point.add(that._size.divide(2)).round(),
-				// Inject as Bootstrap accessor, so #toString renders well too
+				// Inject as Straps.js accessor, so #toString renders well too
 				color: {
 					get: function() {
 						return that.getPixel(this.offset);
