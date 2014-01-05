@@ -160,7 +160,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		// fields on PaperScope.prototype, e.g. all classes
 		for (var key in this)
 			// Exclude all 'hidden' fields
-			if (!/^_/.test(key))
+			if (!/^_/.test(key) && this[key])
 				scope[key] = this[key];
 	},
 
