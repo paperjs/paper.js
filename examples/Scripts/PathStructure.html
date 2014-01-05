@@ -6,9 +6,7 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-	var path = new Path({
-		fullySelected: true
-	});
+	var path = new Path();
 
 	var segmentTexts = new Layer();
 	for (var i = 0; i < 3; i++) {
@@ -59,6 +57,7 @@
 				handleOut: null
 			}
 		];
+		path.fullySelected = true;
 
 		for (var i = 0; i < path.segments.length; i++) {
 			var point = path.segments[i].point;
