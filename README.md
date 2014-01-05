@@ -36,7 +36,7 @@ Once Homebrew has installed this for you, you can then install the Paper.js modu
 
 Note that currently there is an issue on OSX with Cairo. If the above causes errors, the following will most likely fix it:
 
-	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm insetall paper
+	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper
 
 Also, whenever you would like to update the modules, you will need to execute:
 
