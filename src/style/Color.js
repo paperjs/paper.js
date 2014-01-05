@@ -817,7 +817,7 @@ var Color = Base.extend(new function() {
 				convert(components[2])
 			];
 			if (alpha < 1)
-				components.push(val < 0 ? 0 : val);
+				components.push(alpha < 0 ? 0 : alpha);
 			return hex
 					? '#' + ((1 << 24) + (components[0] << 16)
 						+ (components[1] << 8)
