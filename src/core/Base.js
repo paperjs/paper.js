@@ -160,20 +160,19 @@ Base.inject(/** @lends Base# */{
 			// return without object conversion.
 			if (this === Base) {
 				var value = this.peek(list, start);
-				list._index++;
-				list.__read = 1;
+				list.__index++;
 				return value;
 			}
 			var proto = this.prototype,
 				readIndex = proto._readIndex,
-				index = start || readIndex && list._index || 0;
+				index = start || readIndex && list.__index || 0;
 			if (!length)
 				length = list.length - index;
 			var obj = list[index];
 			if (obj instanceof this
 				|| options && options.readNull && obj == null && length <= 1) {
 				if (readIndex)
-					list._index = index + 1;
+					list.__index = index + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
 			obj = Base.create(this.prototype);
@@ -183,10 +182,7 @@ Base.inject(/** @lends Base# */{
 				? Array.prototype.slice.call(list, index, index + length)
 				: list) || obj;
 			if (readIndex) {
-				list._index = index + obj.__read;
-				// Have arguments.__read point to the amount of args read in the
-				// last read() call
-				list.__read = obj.__read;
+				list.__index = index + obj.__read;
 				obj.__read = undefined;
 			}
 			return obj;
@@ -200,7 +196,7 @@ Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 */
 		peek: function(list, start) {
-			return list[list._index = start || list._index || 0];
+			return list[list.__index = start || list.__index || 0];
 		},
 
 		/**

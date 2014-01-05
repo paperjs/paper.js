@@ -141,7 +141,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				this.width = size.width;
 				this.height = size.height;
 			}
-			read = arguments._index;
+			read = arguments.__index;
 		}
 		if (this.__read)
 			this.__read = read;
