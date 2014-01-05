@@ -449,10 +449,12 @@ var Point = Base.extend(/** @lends Point# */{
 	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(/* point, squared */) {
-		var point = Point.read(arguments),
-			squared = Base.read(arguments),
-			x = point.x - this.x,
+	getDistance: function(point, squared) {
+		// NOTE: Although we're reading from the argument list, we need the
+		// above arguments to prevent a bean from being created.
+		point = Point.read(arguments);
+		squared = Base.read(arguments);
+		var x = point.x - this.x,
 			y = point.y - this.y,
 			d = x * x + y * y;
 		return squared ? d : Math.sqrt(d);
@@ -636,9 +638,11 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @return {Number} the angle between the two vectors
 	 */
-	getDirectedAngle: function(/* point */) {
-		var point = Point.read(arguments);
-		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
+	getDirectedAngle: function(point) {
+		// NOTE: Although we're reading from the argument list, we need the
+		// above argument to prevent a bean from being created.
+		point = Point.read(arguments);
+		return Math.atan2(this.cross(_point), this.dot(_point)) * 180 / Math.PI;
 	},
 
 	/**

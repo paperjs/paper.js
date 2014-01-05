@@ -207,7 +207,7 @@ var PaperScript = Base.exports.PaperScript = (function() {
 							replaceCode(node, arg + ' = _$_(' + arg + ', "'
 									+ node.operator[0] + '", 1)');
 						}
-					} else {
+					} else { // AssignmentExpression
 						if (/^.=$/.test(node.operator)
 								&& node.left.type !== 'Literal') {
 							var left = getCode(node.left),
