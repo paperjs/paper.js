@@ -197,7 +197,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		// Do not modify scale, center, since that would arguments of which
 		// we're reading from!
 		var scale = Point.read(arguments),
-			center = Point.read(arguments, 0, 0, { readNull: true });
+			center = Point.read(arguments, 0, { readNull: true });
 		if (center)
 			this.translate(center);
 		this._a *= scale.x;
@@ -278,7 +278,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		// Do not modify point, center, since that would arguments of which
 		// we're reading from!
 		var shear = Point.read(arguments),
-			center = Point.read(arguments, 0, 0, { readNull: true });
+			center = Point.read(arguments, 0, { readNull: true });
 		if (center)
 			this.translate(center);
 		var a = this._a,
@@ -314,7 +314,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 */
 	skew: function(/* skew, center */) {
 		var skew = Point.read(arguments),
-			center = Point.read(arguments, 0, 0, { readNull: true }),
+			center = Point.read(arguments, 0, { readNull: true }),
 			toRadians = Math.PI / 180,
 			shear = new Point(Math.tan(skew.x * toRadians),
 				Math.tan(skew.y * toRadians));

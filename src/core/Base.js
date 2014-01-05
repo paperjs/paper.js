@@ -155,7 +155,7 @@ Base.inject(/** @lends Base# */{
 		 * passed objects should be cloned if they are already provided in the 
 		 * required type
 		 */
-		read: function(list, start, length, options) {
+		read: function(list, start, options, length) {
 			// See if it's called directly on Base, and if so, read value and
 			// return without object conversion.
 			if (this === Base) {
@@ -215,12 +215,12 @@ Base.inject(/** @lends Base# */{
 		 * required type
 		 */
 		readAll: function(list, start, options) {
-			var res = [], entry;
+			var res = [],
+				entry;
 			for (var i = start || 0, l = list.length; i < l; i++) {
 				res.push(Array.isArray(entry = list[i])
-						// lenghh = 0 for length = max
-						? this.read(entry, 0, 0, options)
-						: this.read(list, i, 1, options));
+						? this.read(entry, 0, options)
+						: this.read(list, i, options, 1));
 			}
 			return res;
 		},
@@ -236,7 +236,7 @@ Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
 		 */
-		readNamed: function(list, name, start, length, options) {
+		readNamed: function(list, name, start, options, length) {
 			var value = this.getNamed(list, name),
 				hasObject = value !== undefined;
 			if (hasObject) {
@@ -253,7 +253,7 @@ Base.inject(/** @lends Base# */{
 				// shine through.
 				filtered[name] = undefined;
 			}
-			return this.read(hasObject ? [value] : list, start, length, options);
+			return this.read(hasObject ? [value] : list, start, options, length);
 		},
 
 		/**

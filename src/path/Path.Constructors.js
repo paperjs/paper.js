@@ -205,7 +205,7 @@ Path.inject({ statics: new function() {
 		 */
 		Rectangle: function(/* rectangle */) {
 			var rect = Rectangle.readNamed(arguments, 'rectangle'),
-				radius = Size.readNamed(arguments, 'radius', 0, 0,
+				radius = Size.readNamed(arguments, 'radius', 0,
 						{ readNull: true }),
 				bl = rect.getBottomLeft(true),
 				tl = rect.getTopLeft(true),

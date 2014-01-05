@@ -1091,7 +1091,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var current = this.getScaling();
 		if (current != null) {
 			// Clone existing points since we're caching internally.
-			var scaling = Point.read(arguments, 0, 0, { clone: true }),
+			var scaling = Point.read(arguments, 0, { clone: true }),
 				// See #setRotation() for preservation of _decomposed.
 				decomposed = this._decomposed;
 			this.scale(scaling.x / current.x, scaling.y / current.y);
@@ -2600,14 +2600,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	rotate: function(angle /*, center */) {
 		return this.transform(new Matrix().rotate(angle,
-				Point.read(arguments, 1, 0, { readNull: true })
+				Point.read(arguments, 1, { readNull: true })
 					|| this.getPosition(true)));
 	}
 }, Base.each(['scale', 'shear', 'skew'], function(name) {
 	this[name] = function() {
 		// See Matrix#scale for explanation of this:
 		var point = Point.read(arguments),
-			center = Point.read(arguments, 0, 0, { readNull: true });
+			center = Point.read(arguments, 0, { readNull: true });
 		return this.transform(new Matrix()[name](point,
 				center || this.getPosition(true)));
 	};

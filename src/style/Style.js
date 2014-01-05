@@ -184,8 +184,8 @@ var Style = Base.extend(new function() {
 					this._values[key] = value;
 				} else if (isColor && !(value && value.constructor === Color)) {
 					// Convert to a Color and stored result of conversion.
-					this._values[key] = value = Color.read(
-							[value], 0, 0, { readNull: true, clone: true });
+					this._values[key] = value = Color.read([value], 0,
+							{ readNull: true, clone: true });
 					if (value)
 						value._owner = this._item;
 				}
