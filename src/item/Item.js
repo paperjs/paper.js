@@ -821,10 +821,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	// TODO: Keep these around for a bit since it was introduced on the mailing
 	// list, then remove in a while.
-	getRegistration: '#getAnchor',
-	setRegistration: '#setAnchor'
-}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds',
-		'getRoughBounds', 'getInternalBounds', 'getInternalRoughBounds'],
+	getRegistration: '#getPivot',
+	setRegistration: '#setPivot'
+}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
+		'internalBounds', 'internalRoughBounds'],
 	function(key) {
 		// Produce getters for bounds properties. These handle caching, matrices
 		// and redirect the call to the private _getBounds, which can be
@@ -836,24 +836,32 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// as internalGetter.
 		// NOTE: These need to be versions of other methods, as otherwise the
 		// cache gets messed up.
-		var match = key.match(/^getInternal(.*)$/),
+		var getter = 'get' + Base.capitalize(key),
+			match = key.match(/^internal(.*)$/),
 			internalGetter = match ? 'get' + match[1] : null;
-		this[key] = function(/* matrix */) {
-			var getter = this._boundsGetter,
-				// Allow subclasses to override _boundsGetter if they use
-				// the same calculations for multiple type of bounds.
-				// The default is key:
-				bounds = this._getCachedBounds(!internalGetter
-						&& (typeof getter === 'string'
-							? getter : getter && getter[key])
-						|| key, arguments[0], null, internalGetter);
+		this[getter] = function(_matrix) {
+			var boundsGetter = this._boundsGetter,
+				// Allow subclasses to override _boundsGetter if they use the
+				// same calculations for multiple type of bounds.
+				// The default is getter:
+				name = !internalGetter && (typeof boundsGetter === 'string'
+						? boundsGetter : boundsGetter && boundsGetter[getter])
+						|| getter,
+				bounds = this._getCachedBounds(name, _matrix, null,
+						internalGetter);
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:
-			return key === 'getBounds'
+			return key === 'bounds'
 					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
 							bounds.height, this, 'setBounds') 
 					: bounds;
+		};
+		// As the function defines a _matrix parameter and has no setter,
+		// Straps.js doesn't produce a bean for it. Explicitely define an
+		// accesor now too:
+		this[key] = {
+			get: this[getter]
 		};
 	},
 /** @lends Item# */{
