@@ -14,7 +14,7 @@
  * @name PaperScript
  * @namespace
  */
-var PaperScript = Base.exports.PaperScript = (function() {
+Base.exports.PaperScript = (function() {
 	// Locally turn of exports and define for inlined acorn / esprima.
 	// Just declaring the local vars is enough, as they will be undefined.
 	var exports, define,

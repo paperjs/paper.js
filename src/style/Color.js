@@ -1137,7 +1137,6 @@ var Color = Base.extend(new function() {
 		this[name] = function(color) {
 			color = Color.read(arguments);
 			var type = this._type,
-				properties = this._properties,
 				components1 = this._components,
 				components2 = color._convert(type);
 			for (var i = 0, l = components1.length; i < l; i++)

@@ -449,14 +449,17 @@ var Point = Base.extend(/** @lends Point# */{
 	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(point, squared) {
+	getDistance: function(_point, squared) {
 		// NOTE: Although we're reading from the argument list, we need the
-		// above arguments to prevent a bean from being created.
-		point = Point.read(arguments);
-		squared = Base.read(arguments);
-		var x = point.x - this.x,
+		// above arguments to prevent beans from being created (Strap.js issue).
+		// And for browser optimization we shouldn't re-asign an object to it,
+		// but we need to prevent the minifier from removing it again, so:
+		var point = Point.read(arguments),
+			x = point.x - this.x,
 			y = point.y - this.y,
 			d = x * x + y * y;
+		// Reassigning boolean values to arguments is apparently OK.
+		squared = Base.read(arguments);
 		return squared ? d : Math.sqrt(d);
 	},
 
@@ -638,9 +641,12 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @return {Number} the angle between the two vectors
 	 */
-	getDirectedAngle: function(point) {
+	getDirectedAngle: function(_point) {
 		// NOTE: Although we're reading from the argument list, we need the
-		// above argument to prevent a bean from being created.
+		// above arguments to prevent beans from being created (Strap.js issue).
+		// And for browser optimization we shouldn't re-asign an object to it,
+		// but we need to prevent the minifier from removing it again, so:
+		var point = _point;
 		point = Point.read(arguments);
 		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
