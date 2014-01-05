@@ -31,24 +31,24 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 
-PathItem.inject(new function() {
-	/**
-	 * To deal with a HTML5 canvas requirement where CompoundPaths' child
-	 * contours has to be of different winding direction for correctly filling
-	 * holes. But if some individual countours are disjoint, i.e. islands, we
-	 * have to reorient them so that:
-	 * - the holes have opposit winding direction (already handled by paper.js)
-	 * - islands have to have the same winding direction as the first child
-	 *
-	 * NOTE: Does NOT handle self-intersecting CompoundPaths.
-	 */
-	function reorientPath(path) {
+PathItem.inject(new function() { // FIXME: Is new necessary?
+    /**
+     * To deal with a HTML5 canvas requirement where CompoundPaths' child
+     * contours has to be of different winding direction for correctly filling
+     * holes. But if some individual countours are disjoint, i.e. islands, we
+     * have to reorient them so that:
+     * - the holes have opposit winding direction (already handled by paper.js)
+     * - islands have to have the same winding direction as the first child
+     *
+     * NOTE: Does NOT handle self-intersecting CompoundPaths.
+     */
+    function reorientPath(path) {
 		if (path instanceof CompoundPath) {
 			var children = path.removeChildren(),
-				length = children.length,
-				bounds = new Array(length),
-				counters = new Array(length),
-				clockwise;
+			length = children.length,
+			bounds = new Array(length),
+			counters = new Array(length),
+			clockwise;
 			children.sort(function(a, b) {
 				return b.getBounds().getArea() - a.getBounds().getArea();
 			});
@@ -69,9 +69,9 @@ PathItem.inject(new function() {
 			}
 		}
 		return path;
-	}
+    }
 
-	function computeBoolean(path1, path2, operator, reverse, subtract, res) {
+    function computeBoolean(path1, path2, operator, reverse, subtract, res) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -86,17 +86,17 @@ PathItem.inject(new function() {
 		if (!(reverse ^ path2.isClockwise()))
 			path2.reverse();
 		var intersections, i, j, l, lj, segment, wind,
-			point, startSeg, crv, length, parent,
-			curveChain = [],
-			windings = [],
-			lengths = [],
-			windMedian, lenCurves,
-			paths = [],
-			segments = [],
-			// Aggregate of all curves in both operands, monotonic in y
-			monoCurves = [],
-			result = new CompoundPath(),
-			random = Math.random;
+		point, startSeg, crv, length, parent,
+		curveChain = [],
+		windings = [],
+		lengths = [],
+		windMedian, lenCurves,
+		paths = [],
+		segments = [],
+		// Aggregate of all curves in both operands, monotonic in y
+		monoCurves = [],
+		result = new CompoundPath(),
+		random = Math.random;
 		// Split curves at intersections on both paths.
 		intersections = path1.getIntersections(path2);
 		PathItem._splitPath(intersections);
@@ -108,20 +108,20 @@ PathItem.inject(new function() {
 			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
 		}
 
-			//DEBUG:---------NOTE: delete ret arg. from unite etc. below------------------
-			if(res){
-				var cPath = new CompoundPath();
-				cPath.addChildren(paths, true);
-				return cPath;
-			}
-			//DEBUG:----------------------------------------------
-
+		//DEBUG:---------NOTE: delete ret arg. from unite etc. below---------
+		if(res){
+			var cPath = new CompoundPath();
+			cPath.addChildren(paths, true);
+			return cPath;
+		}
+		//DEBUG:----------------------------------------------
+        
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.
 		// First, sort all segments with an intersection to the begining.
 		segments.sort(function(a, b) {
 			var ixa = a._intersection,
-				ixb = b._intersection;
+			ixb = b._intersection;
 			if ((!ixa && !ixb) || (ixa && ixb))
 				return 0;
 			return ixa ? -1 : 1;
@@ -146,7 +146,10 @@ PathItem.inject(new function() {
 			} while(segment && !segment._intersection && segment !== startSeg);
 
 			// Select the median winding of three random points along this
-			// curve chain, as a representative winding number
+			// curve chain, as a representative winding number. The
+			// random selection gives a better chance of returning a
+			// correct winding than equally dividing the curve chain, with
+			// the same (amortised) time.
 			windings.length = 0;
 			for (wind = 0; wind < 3; wind++) {
 				length = lenCurves * random();
@@ -166,7 +169,7 @@ PathItem.inject(new function() {
 					parent = parent._parent;
 				if (subtract && (parent._id === path2._id &&
 							!path1._getWinding(point) ||
-						(parent._id === path1._id &&
+							(parent._id === path1._id &&
 							path2._getWinding(point)))) {
 					windMedian = 0;
 				}
@@ -187,13 +190,13 @@ PathItem.inject(new function() {
 		path2.remove();
 		// And then, we are done.
 		return result.reduce();
-	}
+    }
 
-	// Boolean operators return true if a curve with the given winding 
-	// contribution contributes to the final result or not. They are called
-	// for each curve in the graph after curves in the operands are
-	// split at intersections.
-	return /** @lends Path# */{
+    // Boolean operators return true if a curve with the given winding 
+    // contribution contributes to the final result or not. They are called
+    // for each curve in the graph after curves in the operands are
+    // split at intersections.
+    return /** @lends Path# */{
 		/**
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
@@ -205,7 +208,7 @@ PathItem.inject(new function() {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-					function(w) { return w === 1 || w === 0; }, false, false, ret);
+						function(w) { return w === 1 || w === 0; }, false, false, ret);
 		},
 
 		/**
@@ -219,7 +222,7 @@ PathItem.inject(new function() {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-					function(w) { return w === 2; }, false, false, ret);
+						function(w) { return w === 2; }, false, false, ret);
 		},
 
 		/**
@@ -233,7 +236,7 @@ PathItem.inject(new function() {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-					function(w) { return w === 1; }, true, true);
+						function(w) { return w === 1; }, true, true);
 		},
 
 		/**
@@ -247,7 +250,7 @@ PathItem.inject(new function() {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-					function(w) { return w === 1 || w === 0; }, true, false);
+						function(w) { return w === 1 || w === 0; }, true, false);
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
@@ -264,5 +267,5 @@ PathItem.inject(new function() {
 				return this;
 			return new Group([this.subtract(path), this.intersect(path)]);
 		}
-	};
+    };
 });
