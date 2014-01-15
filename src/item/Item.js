@@ -1992,7 +1992,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Inserts this item below the specified item.
 	 *
-	 * @param {Item} item the item above which it should be inserted
+	 * @param {Item} item the item below which it should be inserted
 	 * @return {Item} the inserted item, or {@code null} if inserting was not
 	 * possible.
 	 */
