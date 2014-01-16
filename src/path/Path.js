@@ -1719,7 +1719,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_getMonotoneCurves: function() {
 		var monoCurves = this._monotoneCurves,
 			lastCurve,
-			// TODO: replace instances with constants ( /*#=*/ ?)
 			INCREASING = 1,
 			DECREASING = -1,
 			HORIZONTAL = 0;
@@ -1817,49 +1816,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 		return monoCurves;
 	},
-
-	// _getWinding: function(point) {
-	// 	var closed = this._closed;
-	// 	// If the path is not closed, we should not bail out in case it has a
-	// 	// fill color!
-	// 	if (!closed && !this.hasFill()
-	// 			|| !this.getInternalRoughBounds()._containsPoint(point))
-	// 		return 0;
-	// 	// Use the crossing number algorithm, by counting the crossings of the
-	// 	// beam in right y-direction with the shape, and see if it's an odd
-	// 	// number, meaning the starting point is inside the shape.
-	// 	// http://en.wikipedia.org/wiki/Point_in_polygon
-	// 	var curves = this.getCurves(),
-	// 		segments = this._segments,
-	// 		winding = 0,
-	// 		// Reuse arrays for root-finding, give garbage collector a break
-	// 		roots1 = [],
-	// 		roots2 = [],
-	// 		last = (closed
-	// 				? curves[curves.length - 1]
-	// 				// Create a straight closing line for open paths, just like
-	// 				// how filling open paths works.
-	// 				: new Curve(segments[segments.length - 1]._point,
-	// 					segments[0]._point)).getValues(),
-	// 		previous = last;
-	// 	for (var i = 0, l = curves.length; i < l; i++) {
-	// 		var curve = curves[i].getValues(),
-	// 			x = curve[0],
-	// 			y = curve[1];
-	// 		// Filter out curves with 0-length (all 4 points in the same place):
-	// 		if (!(x === curve[2] && y === curve[3] && x === curve[4]
-	// 				&& y === curve[5] && x === curve[6] && y === curve[7])) {
-	// 			winding += Curve._getWinding(curve, previous, point.x, point.y,
-	// 					roots1, roots2);
-	// 			previous = curve;
-	// 		}
-	// 	}
-	// 	if (!closed) {
-	// 		winding += Curve._getWinding(last, previous, point.x, point.y,
-	// 				roots1, roots2);
-	// 	}
-	// 	return winding;
-	// },
 
 	_hitTest: function(point, options) {
 		var that = this,

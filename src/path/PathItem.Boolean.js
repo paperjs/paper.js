@@ -86,7 +86,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		if (!(reverse ^ path2.isClockwise()))
 			path2.reverse();
 		var intersections, i, j, l, lj, segment, wind,
-		point, startSeg, crv, length, parent,
+		point, startSeg, crv, length, parent, v, horizontal,
 		curveChain = [],
 		windings = [],
 		lengths = [],
@@ -96,7 +96,10 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		// Aggregate of all curves in both operands, monotonic in y
 		monoCurves = [],
 		result = new CompoundPath(),
-		random = Math.random;
+		random = Math.random,
+		abs = Math.abs,
+		tolerance = Numerical.TOLERANCE,
+		getWindingNumber = PathItem._getWindingNumber;
 		// Split curves at intersections on both paths.
 		intersections = path1.getIntersections(path2);
 		PathItem._splitPath(intersections);
@@ -160,7 +163,10 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 					}
 				crv = curveChain[j].getCurve();
 				point = crv.getPointAt(length);
-				windMedian = PathItem._getWindingNumber(point, monoCurves);
+				v = crv.getValues();
+				horizontal = (Curve.isLinear(v) && abs(v[1] - v[7]) < tolerance);
+				// PathItem._getWindingNumber
+				windMedian = getWindingNumber(point, monoCurves, horizontal);
 				// While subtracting, we need to omit this curve if this 
 				// curve is contributing to the second operand and is outside
 				// the first operand.

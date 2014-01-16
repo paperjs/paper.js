@@ -528,11 +528,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @return {Array}          Array of contours traced.
 	 */
 	_tracePaths: function(segments, operator) {
-		var seg, nextSeg, startSeg, startSegIx, i, len, ixOther, j, prev,
+		var seg, nextSeg, startSeg, startSegIx, i, len, ixOther, prev,
 			ixOtherSeg, c1, c2, c3,
 			wind, w1, w3, s1, s3, path, nextHandleIn,
-			paths = [],
-			lenTolerance = 1;
+			paths = [];
 		for (i = 0, len = segments.length; i < len; i++) {
 			startSeg = seg = segments[i];
 			if (seg._visited || !operator(seg._winding))
