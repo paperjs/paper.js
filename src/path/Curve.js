@@ -1033,17 +1033,6 @@ new function() { // Scope for methods that require numerical integration
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
-	function addLocation(locations, curve1, t1, point1, curve2, t2, point2) {
-		// Avoid duplicates when hitting segments (closed paths too)
-		var first = locations[0],
-			last = locations[locations.length - 1],
-			epsilon = /*#=*/ Numerical.EPSILON;
-		if ((!first || !point1.isClose(first._point, epsilon))
-				&& (!last || !point1.isClose(last._point, epsilon)))
-			locations.push(
-					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
-	}
-
 	function addCurveIntersections(v1, v2, curve1, curve2, locations,
 			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
 /*#*/ if (__options.fatline) {
@@ -1053,6 +1042,7 @@ new function() { // Scope for methods that require numerical integration
 		// Let P be the first curve and Q be the second
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			tolerance = /*#=*/ Numerical.TOLERANCE,
+			hullEpsilon = 1e-9,
 			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for Q is the baseline l and two
 			// offsets which completely encloses the curve P.
@@ -1069,7 +1059,7 @@ new function() { // Scope for methods that require numerical integration
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
 			tMinNew, tMaxNew, tDiff;
-		if (q0x === q3x && uMax - uMin <= Numerical.EPSILON && recursion > 3) {
+		if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 3) {
 			// The fatline of Q has converged to a point, the clipping is not
 			// reliable. Return the value we have even though we will miss the
 			// precision.
@@ -1121,13 +1111,13 @@ new function() { // Scope for methods that require numerical integration
 			var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
 				t2 = uMin + (uMax - uMin) / 2;
 			if (reverse) {
-				addLocation(locations,
+				locations.push(new CurveLocation(
 						curve2, t2, Curve.evaluate(v2, t2, 0),
-						curve1, t1, Curve.evaluate(v1, t1, 0));
+						curve1, t1, Curve.evaluate(v1, t1, 0)));
 			} else {
-				addLocation(locations,
+				locations.push(new CurveLocation(
 						curve1, t1, Curve.evaluate(v1, t1, 0),
-						curve2, t2, Curve.evaluate(v2, t2, 0));
+						curve2, t2, Curve.evaluate(v2, t2, 0)));
 			}
 		} else { // Iterate
 			addCurveIntersections(v2, v1, curve2, curve1, locations,
@@ -1325,9 +1315,9 @@ new function() { // Scope for methods that require numerical integration
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
-				addLocation(locations,
+				locations.push(new CurveLocation(
 						curve1, t1, Curve.evaluate(v1, t1, 0),
-						curve2, t2, Curve.evaluate(v2, t2, 0));
+						curve2, t2, Curve.evaluate(v2, t2, 0)));
 			}
 		}
 	}
@@ -1341,7 +1331,7 @@ new function() { // Scope for methods that require numerical integration
 			// since they will be used for sorting
 			var t1 = Curve.getParameterOf(v1, point.x, point.y),
 				t2 = Curve.getParameterOf(v2, point.x, point.y);
-			addLocation(locations, curve1, t1, point, curve2, t2, point);
+			locations.push(new CurveLocation(curve1, t1, point, curve2, t2, point));
 		}
 	}
 
