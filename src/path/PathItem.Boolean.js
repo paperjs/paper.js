@@ -101,16 +101,16 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		tolerance = Numerical.TOLERANCE,
 		getWindingNumber = PathItem._getWindingNumber;
 		// Split curves at intersections on both paths.
-		intersections = path1.getIntersections(path2);
+		intersections = path1.getIntersections(path2, true);
 		PathItem._splitPath(intersections);
 		// Collect all sub paths and segments
 		paths.push.apply(paths, path1._children || [path1]);
 		paths.push.apply(paths, path2._children || [path2]);
+
 		for (i = 0, l = paths.length; i < l; i++){
 			segments.push.apply(segments, paths[i].getSegments());
 			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
 		}
-
 		//DEBUG:---------NOTE: delete ret arg. from unite etc. below---------
 		if(res){
 			var cPath = new CompoundPath();
@@ -148,6 +148,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 				segment = segment.getNext();
 			} while(segment && !segment._intersection && segment !== startSeg);
 
+
 			// Select the median winding of three random points along this
 			// curve chain, as a representative winding number. The
 			// random selection gives a better chance of returning a
@@ -157,7 +158,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			for (wind = 0; wind < 3; wind++) {
 				length = lenCurves * random();
 				for (j = 0, lj = lengths.length ; j <= lj; j++)
-					if (lengths[j] > length) {
+					if (lengths[j] >= length) {
 						length = j > 0 ? length - lengths[j-1] : length;
 						break;
 					}
@@ -174,9 +175,9 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 				if (parent._parent instanceof CompoundPath)
 					parent = parent._parent;
 				if (subtract && (parent._id === path2._id &&
-							!path1._getWinding(point) ||
+							!path1._getWinding(point, horizontal) ||
 							(parent._id === path1._id &&
-							path2._getWinding(point)))) {
+							path2._getWinding(point, horizontal)))) {
 					windMedian = 0;
 				}
 				windings[wind] = windMedian;
@@ -238,11 +239,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
-		subtract: function(path) {
+		subtract: function(path, ret) {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 1; }, true, true);
+						function(w) { return w === 1; }, true, true, ret);
 		},
 
 		/**
