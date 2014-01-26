@@ -160,7 +160,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			ix = new paper.Line(from._point.subtract(v1), v1.multiply(2), true)
 					.intersect(new paper.Line(to._point.subtract(v2),
 						v2.multiply(2), true), false);
-			if (ix){
+			if (ix) {
 				parts = paper.Curve.subdivide(values1);
 				locs.length = 0;
 				Curve.getIntersections(parts[0], parts[1], curve1, curve1, locs);
@@ -343,28 +343,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param  {Array} intersections Array of CurveLocation objects
 	 */
 	_splitPath: function(intersections) {
-		function compare(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index 
-					// (a integer) to compare both at the same time
-					? (loc1.getIndex() + loc1.getParameter())
-							- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path id to group all locations on the same path.
-					: path1._id - path2._id;
-		}
-
 		var loc, i, j, node1, node2, t, segment,
 			path1, isLinear, crv, crvNew,
 			newSegments = [],
 			tolerance = /*#=*/ Numerical.EPSILON;
-		// Make a binary heap of all intersections
-		for (i = intersections.length - 1; i >= 0; i--) {
-			loc = intersections[i];
-			intersections.push(loc.getIntersection());
-		}
-		intersections.sort(compare);
 		for (i = intersections.length - 1; i >= 0; i--) {
 			node1 = intersections[i];
 			path1 = node1.getPath();
@@ -408,6 +390,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					loc._curve === node1._curve) && isLinear)
 				for (j = newSegments.length-1; j >= 0; j--) {
 					segment = newSegments[j];
+					// FIXME: Don't reset the appropriate handle if the intersections were on t==0 && t==1
 					segment._handleOut.set(0, 0);
 					segment._handleIn.set(0, 0);
 				}
