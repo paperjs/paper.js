@@ -433,18 +433,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			windRight = 0,
 			roots = [],
 			abs = Math.abs;
-
-			// DEBUG:--------------------------------------------------
-			// var check = point.equals([258.2966200492805, 258.54834923463017]);
-			// var check = window.__checkPoint && point.equals(window.__checkPoint);
-			// if (check) {
-			// 	window.__windLine && window.__windLine.remove();
-			// 	window.__windLine = new paper.Path.Line(point.add([-1000, 0]), point.add([1000, 0]));
-			// 	window.__windLine.style = style3;
-			// 	paper.view.draw();
-			// }
-			// DEBUG:-------------------------------------------------
-
 		// Absolutely horizontal curves may return wrong results, since
 		// the curves are monotonic in y direction and this is an
 		// indeterminate state.
@@ -458,12 +446,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					for (j = roots.length - 1; j >= 0; j--) {
 						t = roots[j];
 						y0 = Curve.evaluate(v, t, 0).y;
-
-							// DEBUG: ------------------------------------------------
-							// if (check)
-							// 	markPoint(new Point(x, y0), null, null, 0.5);
-							// DEBUG: ------------------------------------------------
-							// 
 						if (y0 > y+tolerance && y0 < yBot) {
 							yBot = y0;
 						} else if (y0 < y-tolerance && y0 > yTop) {
@@ -472,21 +454,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					}
 				}
 			}
-			// yTop = yTop === -Infinity ? y : yTop;
-			// yBot = yBot === Infinity ? y : yBot;
-				// DEBUG: ------------------------------------------------
-				// var p1 = new Point(x, yTop);
-				// drawSlopes(point, new Point(x, yTop).subtract(point));
-				// drawSlopes(point, new Point(x, yBot).subtract(point));
-				// DEBUG: ------------------------------------------------
+			yTop = yTop === -Infinity ? y : yTop;
+			yBot = yBot === Infinity ? y : yBot;
 			// Shift the point lying on the horizontal curves by
 			// half of closest top and bottom intercepts.
 			yTop = (yTop + y) / 2;
 			yBot = (yBot + y) / 2;
-				// DEBUG: ------------------------------------------------
-				// markPoint(new Point(x, yTop), null, null, 0.5);
-				// markPoint(new Point(x, yBot), null, null, 0.5);
-				// DEBUG: ------------------------------------------------
 			windLeft = yTop > -Infinity
 					? PathItem._getWindingNumber(new Point(x, yTop), curves)
 					: 0;
@@ -520,21 +493,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 							stationary = true;
 					}
 				}
-
-					// DEBUG:-----------------------
-					// wind = v[8];
-					// if (check && (x0 >= xAfter || x0 <= xBefore)){
-						// if(slope2 && v2) {
-						// 	drawSlopes(new paper.Point(x0, y), getTangent(v, t));
-						// 	drawSlopes(new paper.Point(v2[6], v2[7]), getTangent(v2, 1));
-						// }
-						// hilightCrv(v);
-					 // 	markPoint(new paper.Point(x0, y), wind, null, 0.01);
-					 	// markPoint(Curve.evaluate(v, 0.5, 0), stationary, null, 0.01);
-						// console.log(t, x0, wind, stationary);
-					// }
-					// DEBUG: ----------------
-
 				wind = v[8];
 				if (x0 <= xBefore && !stationary)
 					windLeft += wind;
@@ -542,8 +500,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					windRight += wind;
 			}
 		}
-		// check && console.log(windLeft, windRight);
-		// check && console.log(intercepts);
 		return Math.max(abs(windLeft), abs(windRight));
 	},
 
@@ -571,9 +527,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				continue;
 			// Initialise a new path chain with the seed segment.
 			path = new paper.Path();
-				//DEBUG: ------------------------------------------------------
-				// path.style = styleHi;
-
 			wind = seg._winding;
 			ixOther = seg._intersection;
 			startSegIx = ixOther ? ixOther._segment : null;
@@ -587,9 +540,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						seg._handleOut));
 				nextHandleIn = null;
 				seg._visited = true;
-					//DEBUG:---------------------------------------------------
-					// paper.view.draw();
-
 				seg = (seg._nextPathSegment ? seg._nextPathSegment :
 						seg).getNext();
 				// This segments's _intersection property holds a reference to

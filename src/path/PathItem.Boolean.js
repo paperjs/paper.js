@@ -71,7 +71,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		return path;
     }
 
-    function computeBoolean(path1, path2, operator, reverse, subtract, res) {
+    function computeBoolean(path1, path2, operator, reverse, subtract) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -111,14 +111,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			segments.push.apply(segments, paths[i].getSegments());
 			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
 		}
-		//DEBUG:---------NOTE: delete ret arg. from unite etc. below---------
-		if(res){
-			var cPath = new CompoundPath();
-			cPath.addChildren(paths, true);
-			return cPath;
-		}
-		//DEBUG:----------------------------------------------
-        
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.
 		// First, sort all segments with an intersection to the begining.
@@ -211,11 +203,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
-		unite: function(path, ret) {
+		unite: function(path) {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 1 || w === 0; }, false, false, ret);
+						function(w) { return w === 1 || w === 0; }, false, false);
 		},
 
 		/**
@@ -225,11 +217,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
-		intersect: function(path, ret) {
+		intersect: function(path) {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 2; }, false, false, ret);
+						function(w) { return w === 2; }, false, false);
 		},
 
 		/**
@@ -239,11 +231,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
-		subtract: function(path, ret) {
+		subtract: function(path) {
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 1; }, true, true, ret);
+						function(w) { return w === 1; }, true, true);
 		},
 
 		/**
