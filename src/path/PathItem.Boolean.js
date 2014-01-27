@@ -71,7 +71,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		return path;
     }
 
-    function computeBoolean(path1, path2, operator, reverse, subtract) {
+    function computeBoolean(path1, path2, operator, subtract) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -83,7 +83,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		// We need both paths at opposit orientation for subtraction
 		if (!path1.isClockwise())
 			path1.reverse();
-		if (!(reverse ^ path2.isClockwise()))
+		if (!(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		var intersections, i, j, l, lj, segment, wind,
 		point, startSeg, crv, length, parent, v, horizontal,
@@ -207,7 +207,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 1 || w === 0; }, false, false);
+						function(w) { return w === 1 || w === 0; }, false);
 		},
 
 		/**
@@ -221,7 +221,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 2; }, false, false);
+						function(w) { return w === 2; }, false);
 		},
 
 		/**
@@ -235,9 +235,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			if (!path)
 				return this;
 			return computeBoolean(this, path,
-						function(w) { return w === 1; }, true, true);
+						function(w) { return w === 1; }, true);
 		},
 
+		// Compound boolean operators combine the basic boolean operations such
+		// as union, intersection, subtract etc.
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
@@ -248,12 +250,9 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		exclude: function(path) {
 			if (!path)
 				return this;
-			return computeBoolean(this, path,
-						function(w) { return w === 1 || w === 0; }, true, false);
+			return new Group([this.subtract(path), path.subtract(this)]);
 		},
-
-		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc.
+		
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
