@@ -454,8 +454,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					}
 				}
 			}
-			yTop = yTop === -Infinity ? y : yTop;
-			yBot = yBot === Infinity ? y : yBot;
 			// Shift the point lying on the horizontal curves by
 			// half of closest top and bottom intercepts.
 			yTop = (yTop + y) / 2;
