@@ -466,6 +466,139 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @return {Array}          Array of contours traced.
 	 */
 	_tracePaths: function(segments, operator) {
+		// Utility function. Correctly returns entry and exit tangents of an
+		// intersection, even when the curve[s] are linear.
+		function getEntryExitTangents(seg) {
+			var c2 = seg.getCurve(),
+				c1 = c2.getPrevious(),
+				v1 = c1.getValues(),
+				v2 = c2.getValues(),
+				pnt = seg.getPoint(),
+				ret = [seg.getHandleIn().normalize(),
+						seg.getHandleOut().normalize()];
+			if (ret[0].getLength() === 0)
+				ret[0] = new Point(pnt.x - v1[2], pnt.y - v1[3]);
+			if (ret[1].getLength() === 0)
+				ret[1] = new Point(pnt.x - v2[4], pnt.y - v2[5]);
+			return ret;
+		}
+		// Choose a default operator which will return all contours
+		if (!operator)
+			operator = function(){ return true; };
+		var seg, startSeg, startSegIx, i, j, len, path, ixOther, firstHandleIn,
+			c1, c3, c4, t1, tan, crv, ixOtherSeg, nextSeg, nextHandleIn,
+			nextHandleOut, direction, entryExitTangents,
+			// Tangents of all curves at an intersection, except the entry curve
+			crvTan = [{}, {}],
+			// Compare curve tangents to sort them counter clockwise.
+			crvTanCompare = function(a, b){ return a.w - b.w; },
+			paths = [];
+		for (i = 0, len = segments.length; i < len; i++) {
+			startSeg = seg = segments[i];
+			if (seg._visited || !operator(seg._winding))
+				continue;
+			// Initialise a new path chain with the seed segment.
+			path = new paper.Path();
+			ixOther = seg._intersection;
+			startSegIx = ixOther ? ixOther._segment : null;
+			firstHandleIn = null;
+			direction = 1;
+				// DEBUG:--------------------------------------------------------
+				// markPoint(seg, null, null, 2);
+				// hilightCrv(seg.getCurve());
+				// DEBUG:--------------------------------------------------------
+			do {
+				nextHandleIn = direction > 0 ? seg._handleIn : seg._handleOut;
+				nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
+				ixOther = seg._intersection;
+				// If the intersection segment is valid, try switching to
+				// it, with an appropriate direction to continue traversal.
+				// else, stay on the same contour.
+				if (ixOther && (ixOtherSeg = ixOther._segment) &&
+						ixOtherSeg !== startSeg && firstHandleIn) {
+						// DEBUG:--------------------------------------------------------
+						// markIx(seg);
+						// DEBUG:--------------------------------------------------------
+					entryExitTangents = getEntryExitTangents(seg);
+					c1 = seg.getCurve();
+					if (direction < 1) {
+						entryExitTangents.reverse();
+					} else {
+						c1 = c1.getPrevious();
+					}
+					t1 = entryExitTangents[0];
+					entryExitTangents = getEntryExitTangents(ixOtherSeg);
+					c4 = crvTan[1].c = ixOtherSeg.getCurve();
+					c3 = crvTan[0].c = c4.getPrevious();
+					crvTan[0].t = entryExitTangents[0];
+					crvTan[1].t = entryExitTangents[1];
+					// cross product of the entry and exit tangent vectors at
+					// the intersection, will let us select the correct countour
+					// to traverse next.
+					for (j = 0; j < 2; j++) {
+						tan = crvTan[j].t;
+						crvTan[j].w = t1.x * tan.y - tan.x * t1.y;
+					}
+					crvTan.sort(crvTanCompare);
+					j = 0;
+					do {
+						crv = crvTan[j++].c;
+						if (crv === c3) {
+							nextSeg = c3.getSegment1();
+							// Traverse backward
+							direction = -1;
+						} else {
+							nextSeg = crv.getSegment2();
+							// Traverse forward
+							direction = 1;
+						}
+					} while (j < 2 && !operator(nextSeg._winding) ||
+							(crv !== c3 && crv !== c4));
+					// Switch to the intersection segment.
+					seg._visited = ixOtherSeg._visited;
+					seg = ixOtherSeg;
+					nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
+				}
+				// Add the current segment to the path, and mark
+				// the added segment as visited
+				if (!firstHandleIn) {
+					firstHandleIn = nextHandleIn;
+					nextHandleIn = null;
+				}
+				path.add(new paper.Segment(seg._point, nextHandleIn,
+						nextHandleOut));
+				seg._visited = true;
+					// DEBUG:--------------------------------------------------------
+					// hilightCrv(direction ? seg.getCurve() : seg.getCurve().getPrevious(), true);
+					// DEBUG:--------------------------------------------------------
+				// Move to the next segment according to the traversal direction
+				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
+			} while(seg && seg !== startSeg && seg !== startSegIx &&
+					!seg._visited && (seg._intersection || operator(seg._winding)));
+			// Finish with closing the paths if necessary,
+			// correctly linking up curves etc.
+			if (seg && (seg == startSeg || seg == startSegIx)){
+				path.firstSegment.setHandleIn((seg == startSegIx)?
+						startSegIx._handleIn : seg._handleIn);
+				path.setClosed(true);
+			} else {
+				path.lastSegment._handleOut.set(0, 0);
+			}
+			// Add the path to the result
+			// Try to avoid stray segments and incomplete paths.
+			if ((path.closed && path.segments.length) || path.segments.length > 2 ||
+					(path.closed && path.segments.length === 2 &&
+					(!path.getCurves()[0].isLinear() ||
+					!path.getCurves()[1].isLinear()))) {
+				paths.push(path);
+			} else {
+				path.remove();
+			}
+		}
+		return paths;
+	},
+
+	_tracePathsOld: function(segments, operator) {
 		var seg, nextSeg, startSeg, startSegIx, i, len, ixOther, prev,
 			ixOtherSeg, c1, c2, c3,
 			wind, w1, w3, s1, s3, path, nextHandleIn,
