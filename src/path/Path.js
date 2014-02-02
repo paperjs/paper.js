@@ -1787,7 +1787,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// || !this.getInternalRoughBounds()._containsPoint(point))
 					// return 0;
 				curves.push(new Curve(segments[segments.length - 1]._point,
-						segments[0]._point).getValues());
+						segments[0]._point));
 			}
 			for (i = 0, li = curves.length; i < li; i++) {
 				crv = curves[i];
