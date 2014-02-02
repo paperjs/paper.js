@@ -470,8 +470,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// intersection, even when the curve[s] are linear.
 		function getEntryExitTangents(seg) {
 			var c2 = seg.getCurve(),
-				c1 = c2.getPrevious(),
-				v1 = c1.getValues(),
+				c1 = c2.getPrevious();
+			// Avoid zero length curves
+			c1 = c1.getLength() === 0 ? c1.getPrevious() : c1;
+			c2 = c2.getLength() === 0 ? c2.getNext() : c2;
+			var v1 = c1.getValues(),
 				v2 = c2.getValues(),
 				pnt = seg.getPoint(),
 				ret = [seg.getHandleIn().normalize(),
@@ -504,8 +507,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			firstHandleIn = null;
 			direction = 1;
 				// DEBUG:--------------------------------------------------------
-				// markPoint(seg, null, null, 2);
-				// hilightCrv(seg.getCurve());
+				// hilightCrvN("all");
+				// hilightCrvN("next", seg.getCurve());
 				// DEBUG:--------------------------------------------------------
 			do {
 				nextHandleIn = direction > 0 ? seg._handleIn : seg._handleOut;
@@ -516,9 +519,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// else, stay on the same contour.
 				if (ixOther && (ixOtherSeg = ixOther._segment) &&
 						ixOtherSeg !== startSeg && firstHandleIn) {
-						// DEBUG:--------------------------------------------------------
-						// markIx(seg);
-						// DEBUG:--------------------------------------------------------
 					entryExitTangents = getEntryExitTangents(seg);
 					c1 = seg.getCurve();
 					if (direction < 1) {
@@ -530,6 +530,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					entryExitTangents = getEntryExitTangents(ixOtherSeg);
 					c4 = crvTan[1].c = ixOtherSeg.getCurve();
 					c3 = crvTan[0].c = c4.getPrevious();
+					// Avoid zero length curves
+					c3 = crvTan[0].c = c3.getLength() === 0 ? c3.getPrevious() : c3;
+					c4 = crvTan[1].c = c4.getLength() === 0 ? c4.getNext() : c4;
 					crvTan[0].t = entryExitTangents[0];
 					crvTan[1].t = entryExitTangents[1];
 					// cross product of the entry and exit tangent vectors at
@@ -539,26 +542,53 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						tan = crvTan[j].t;
 						crvTan[j].w = t1.x * tan.y - tan.x * t1.y;
 					}
-					crvTan.sort(crvTanCompare);
-					j = 0;
-					do {
-						crv = crvTan[j++].c;
-						if (crv === c3) {
-							nextSeg = c3.getSegment1();
-							// Traverse backward
-							direction = -1;
-						} else {
-							nextSeg = crv.getSegment2();
-							// Traverse forward
+					// Do not attempt to switch contours if we not absolutely
+					// sure, that there is a possible candidate there.
+					if (crvTan[0].w * crvTan[1].w < 0) {
+						crvTan.sort(crvTanCompare);
+						j = 0;
+						do {
+							crv = crvTan[j++].c;
+							if (crv === c3) {
+								nextSeg = c3.getSegment1();
+									// DEBUG:--------------------------------------------------------
+									// hilightCrvN("nextSeg", nextSeg, "#f00");
+									// hilightCrvN("nextCrv", c3, "#f00");
+									// DEBUG:--------------------------------------------------------
+								// Traverse backward
+								direction = -1;
+							} else {
+								nextSeg = c4.getSegment1();
+									// DEBUG:--------------------------------------------------------
+									// hilightCrvN("nextSeg", nextSeg, "#f00");
+									// hilightCrvN("nextCrv", c4, "#f00");
+									// DEBUG:--------------------------------------------------------
+								// Traverse forward
+								direction = 1;
+							}
+						} while (j < 2 && !operator(nextSeg._winding) ||
+								(crv !== c3 && crv !== c4));
+					} else {
+						nextSeg = null;
+					}
+					if (!nextSeg || !operator(nextSeg._winding)) {
+						direction = 1;
+					} else {
+						// Switch to the intersection segment.
+						seg._visited = ixOtherSeg._visited;
+						seg = ixOtherSeg;
+						if (nextSeg._visited) 
 							direction = 1;
-						}
-					} while (j < 2 && !operator(nextSeg._winding) ||
-							(crv !== c3 && crv !== c4));
-					// Switch to the intersection segment.
-					seg._visited = ixOtherSeg._visited;
-					seg = ixOtherSeg;
+					}
+						// DEBUG:--------------------------------------------------------
+						// hilightCrvN("nextCrv");
+						// hilightCrvN("nextSeg", nextSeg, "#0f0");
+						// DEBUG:--------------------------------------------------------
 					nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
 				}
+					// DEBUG:--------------------------------------------------------
+					// hilightCrvN("next", seg.getCurve());
+					// DEBUG:--------------------------------------------------------
 				// Add the current segment to the path, and mark
 				// the added segment as visited
 				if (!firstHandleIn) {
@@ -568,11 +598,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				path.add(new paper.Segment(seg._point, nextHandleIn,
 						nextHandleOut));
 				seg._visited = true;
-					// DEBUG:--------------------------------------------------------
-					// hilightCrv(direction ? seg.getCurve() : seg.getCurve().getPrevious(), true);
-					// DEBUG:--------------------------------------------------------
 				// Move to the next segment according to the traversal direction
 				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
+
+					// DEBUG:--------------------------------------------------------
+					// seg && hilightCrvN("next", direction ? seg.getCurve() : seg.getCurve().getPrevious(), "#a0a");
+					// DEBUG:--------------------------------------------------------
+					
 			} while(seg && seg !== startSeg && seg !== startSegIx &&
 					!seg._visited && (seg._intersection || operator(seg._winding)));
 			// Finish with closing the paths if necessary,
@@ -595,6 +627,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				path.remove();
 			}
 		}
+			// DEBUG:--------------------------------------------------------
+			// hilightCrvN("all");
+			// DEBUG:--------------------------------------------------------
 		return paths;
 	},
 
