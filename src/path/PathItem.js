@@ -571,7 +571,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					} else {
 						nextSeg = null;
 					}
-					if (!nextSeg || !operator(nextSeg._winding)) {
+					if (!nextSeg || nextSeg && (nextSeg._visited ||
+							!operator(nextSeg._winding))) {
 						direction = 1;
 					} else {
 						// Switch to the intersection segment.
