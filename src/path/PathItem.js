@@ -542,36 +542,27 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						tan = crvTan[j].t;
 						crvTan[j].w = t1.x * tan.y - tan.x * t1.y;
 					}
-					// Do not attempt to switch contours if we not absolutely
-					// sure, that there is a possible candidate there.
+					// Do not attempt to switch contours if we aren't absolutely
+					// sure that there is a possible candidate.
 					if (crvTan[0].w * crvTan[1].w < 0) {
 						crvTan.sort(crvTanCompare);
 						j = 0;
 						do {
 							crv = crvTan[j++].c;
-							if (crv === c3) {
-								nextSeg = c3.getSegment1();
+							nextSeg = crv.getSegment1();
+							direction = crv === c3 ? -1 : 1;
 									// DEBUG:--------------------------------------------------------
 									// hilightCrvN("nextSeg", nextSeg, "#f00");
-									// hilightCrvN("nextCrv", c3, "#f00");
+									// hilightCrvN("nextCrv", crv, "#f00");
 									// DEBUG:--------------------------------------------------------
-								// Traverse backward
-								direction = -1;
-							} else {
-								nextSeg = c4.getSegment1();
-									// DEBUG:--------------------------------------------------------
-									// hilightCrvN("nextSeg", nextSeg, "#f00");
-									// hilightCrvN("nextCrv", c4, "#f00");
-									// DEBUG:--------------------------------------------------------
-								// Traverse forward
-								direction = 1;
-							}
-						} while (j < 2 && !operator(nextSeg._winding) ||
-								(crv !== c3 && crv !== c4));
+						} while (j < 2 && !operator(nextSeg._winding));
 					} else {
 						nextSeg = null;
 					}
-					if (!nextSeg || nextSeg && (nextSeg._visited ||
+					// If we didn't manage to find a suitable direction for next
+					// contour to traverse, stay on the same contour.
+					if (!nextSeg || nextSeg && ((nextSeg._visited &&
+								seg.getPath() !== nextSeg.getPath()) ||
 							!operator(nextSeg._winding))) {
 						direction = 1;
 					} else {
@@ -591,7 +582,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					// hilightCrvN("next", seg.getCurve());
 					// DEBUG:--------------------------------------------------------
 				// Add the current segment to the path, and mark
-				// the added segment as visited
+				// the added segment as visited.
 				if (!firstHandleIn) {
 					firstHandleIn = nextHandleIn;
 					nextHandleIn = null;
