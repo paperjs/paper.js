@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -197,6 +197,8 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
     // split at intersections.
     return /** @lends Path# */{
 		/**
+		 * {@grouptitle Boolean Path Operations}
+		 *
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
 		 * 

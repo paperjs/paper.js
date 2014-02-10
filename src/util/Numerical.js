@@ -2,14 +2,19 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  */
 
+/**
+ * @name Numerical
+ * @namespace
+ * @private
+ */
 var Numerical = new function() {
 
 	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
@@ -75,7 +80,7 @@ var Numerical = new function() {
 		};
 	}
 
-	return {
+	return /** @lends Numerical */{
 		TOLERANCE: TOLERANCE,
 		// Precision when comparing against 0
 		EPSILON: EPSILON,
@@ -114,13 +119,13 @@ var Numerical = new function() {
 		findRoot: function(f, df, x, a, b, n, tolerance) {
 			for (var i = 0; i < n; i++) {
 				var fx = f(x),
-					dx = fx / df(x);
+					// Calculate a new candidate with the Newton-Raphson method.
+					dx = fx / df(x),
+					nx = x - dx;
 				// See if we can trust the Newton-Raphson result. If not we use
 				// bisection to find another candiate for Newton's method.
 				if (abs(dx) < tolerance)
-					return x;
-				// Generate a candidate for Newton's method.
-				var nx = x - dx;
+					return nx;
 				// Update the root-bounding interval and test for containment of
 				// the candidate. If candidate is outside the root-bounding
 				// interval, use bisection instead.
@@ -135,6 +140,9 @@ var Numerical = new function() {
 					x = nx >= b ? 0.5 * (a + b) : nx;
 				}
 			}
+			// Return the best result even though we haven't gotten close 
+			// enough to the root... (In paper.js this never seems to happen).
+			return x;
 		},
 
 		/**

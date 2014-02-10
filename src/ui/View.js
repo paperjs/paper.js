@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -290,9 +290,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 		return new LinkedSize(size.width, size.height, this, 'setViewSize');
 	},
 
-	setViewSize: function(size) {
-		size = Size.read(arguments);
-		var delta = size.subtract(this._viewSize);
+	setViewSize: function(/* size */) {
+		var size = Size.read(arguments),
+			delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
 		this._viewSize.set(size.width, size.height);
@@ -334,8 +334,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @type Size
 	 * @bean
 	 */
-	getSize: function(/* dontLink */) {
-		return this.getBounds().getSize(arguments[0]);
+	getSize: function() {
+		return this.getBounds().getSize();
 	},
 
 	/**
@@ -344,8 +344,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @type Point
 	 * @bean
 	 */
-	getCenter: function(/* dontLink */) {
-		return this.getBounds().getCenter(arguments[0]);
+	getCenter: function() {
+		return this.getBounds().getCenter();
 	},
 
 	setCenter: function(center) {
@@ -447,7 +447,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	viewToProject: function(/* point */) {
 		return this._matrix._inverseTransform(Point.read(arguments));
-	},
+	}
 
 	/**
 	 * {@grouptitle Event Handlers}
@@ -664,7 +664,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		// Always first call the view's mouse handlers, as required by
 		// CanvasView, and then handle the active tool, if any.
 		view._handleEvent('mousedown', point, event);
-		if (tool = view._scope._tool)
+		if (tool = view._scope.tool)
 			tool._handleEvent('mousedown', point, event);
 		// In the end we always call update(), which only updates the view if
 		// anything has changed in the above calls.
@@ -673,7 +673,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 
 	function handleMouseMove(view, point, event) {
 		view._handleEvent('mousemove', point, event);
-		var tool = view._scope._tool;
+		var tool = view._scope.tool;
 		if (tool) {
 			// If there's no onMouseDrag, fire onMouseMove while dragging.
 			tool._handleEvent(dragging && tool.responds('mousedrag')
@@ -706,8 +706,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		}
 		if (view) {
 			var point = viewToProject(view, event);
-			if (dragging || new Rectangle(new Point(),
-					view.getViewSize()).contains(point))
+			if (dragging || view.getBounds().contains(point))
 				tool = handleMouseMove(view, point, event);
 		}
 	}

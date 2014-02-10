@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -290,11 +290,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * information about what exactly was hit or {@code null} if nothing was
 	 * hit
 	 */
-	hitTest: function(point, options) {
+	hitTest: function(/* point, options */) {
 		// We don't need to do this here, but it speeds up things since we won't
 		// repeatetly convert in Item#hitTest() then.
-		point = Point.read(arguments);
-		options = HitResult.getOptions(Base.read(arguments));
+		var point = Point.read(arguments),
+			options = HitResult.getOptions(Base.read(arguments));
 		// Loop backwards, so layers that get drawn last are tested first
 		for (var i = this.layers.length - 1; i >= 0; i--) {
 			var res = this.layers[i].hitTest(point, options);
@@ -335,12 +335,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * a JSON data string.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
+	 * <b>options.asString:</b> {@code Boolean} – wether the JSON is returned as
+	 * a {@code Object} or a {@code String}.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in JSON data.
 	 *
 	 * @name Project#exportJSON
 	 * @function
-	 * @param {Object} [options={ precision: 5 }] the serialization options 
+	 * @param {Object} [options={ asString: true, precision: 5 }] the
+	 * serialization options
 	 * @return {String} the exported JSON data
 	 */
 
@@ -364,8 +367,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * all contained in one top level SVG group node.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a String
-	 * is to be returned.
+	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a
+	 * {@code String} is to be returned.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in SVG data.
 	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path

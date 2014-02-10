@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -135,11 +135,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Delete cached native Path
-			delete (this._compound ? this._parent : this)._currentPath;
-			delete this._length;
+			// Clear cached native Path
+			(this._compound ? this._parent : this)._currentPath = undefined;
 			// Clockwise state becomes undefined as soon as geometry changes.
-			delete this._clockwise;
+			this._length = this._clockwise = undefined;
 			// Curves are no longer valid
 			if (this._curves) {
 				for (var i = 0, l = this._curves.length; i < l; i++)
@@ -151,8 +150,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
-			delete this._bounds;
+			this._bounds = undefined;
 		}
+	},
+
+	getStyle: function() {
+		// If this path is part of a CompoundPath, use the paren't style instead
+		var parent = this._parent;
+		return (parent instanceof CompoundPath ? parent : this)._style;
 	},
 
 	/**
@@ -170,7 +175,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._segments.length = 0;
 		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
-		delete this._curves;
+		this._curves = undefined;
 		this._add(Segment.readAll(segments));
 		if (fullySelected)
 			this.setFullySelected(true);
@@ -243,9 +248,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @type String
 	 * @bean
 	 */
-	getPathData: function(/* precision */) {
+	getPathData: function(precision) {
 		var segments = this._segments,
-			precision = arguments[0],
 			f = Formatter.instance,
 			parts = [];
 
@@ -688,7 +692,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * // Select the path, so we can see its segments:
 	 * path.selected = true;
 	 */
-	removeSegments: function(from, to/*, includeCurves */) {
+	removeSegments: function(from, to, _includeCurves) {
 		from = from || 0;
 		to = Base.pick(to, this._segments.length);
 		var segments = this._segments,
@@ -704,8 +708,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (segment._selectionState)
 				this._updateSelection(segment, segment._selectionState, 0);
 			// Clear the indices and path references of the removed segments
-			delete segment._index;
-			delete segment._path;
+			segment._index = segment._path = null;
 		}
 		// Adjust the indices of the segments above.
 		for (var i = from, l = segments.length; i < l; i++)
@@ -723,7 +726,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Return the removed curves as well, if we're asked to include
 			// them, but exclude the first curve, since that's shared with the
 			// previous segment and does not connect the returned segments.
-			if (arguments[2])
+			if (_includeCurves)
 				removed._curves = curves.slice(1);
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(index, index);
@@ -1147,7 +1150,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			segment._index = i;
 		}
 		// Clear curves since it all has changed.
-		delete this._curves;
+		this._curves = null;
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
 			this._clockwise = !this._clockwise;
@@ -1312,9 +1315,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param {Point} point the point on the path.
 	 * @return {CurveLocation} the curve location of the specified point.
 	 */
-	getLocationOf: function(point) {
-		point = Point.read(arguments);
-		var curves = this.getCurves();
+	getLocationOf: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments),
+			curves = this.getCurves();
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var loc = curves[i].getLocationOf(point);
 			if (loc)
@@ -1572,9 +1575,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @return {CurveLocation} the location on the path that's the closest to
 	 * the specified point
 	 */
-	getNearestLocation: function(point) {
-		point = Point.read(arguments);
-		var curves = this.getCurves(),
+	getNearestLocation: function(point) { // TODO: Fix argument assignment!
+		var point = Point.read(arguments),
+			curves = this.getCurves(),
 			minDist = Infinity,
 			minLoc = null;
 		for (var i = 0, l = curves.length; i < l; i++) {
@@ -1619,17 +1622,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * 	circle.position = nearestPoint;
 	 * }
 	 */
-	getNearestPoint: function(point) {
+	getNearestPoint: function(point) { // TODO: Fix argument assignment!
 		// We need to use point to avoid minification issues and prevent method
 		// from turning into a bean (by removal of the point argument).
-		point = Point.read(arguments);
+		var point = Point.read(arguments);
 		return this.getNearestLocation(point).getPoint();
-	},
-
-	getStyle: function() {
-		// If this path is part of a CompoundPath, use the paren't style instead
-		var parent = this._parent;
-		return (parent && parent instanceof CompoundPath ? parent : this)._style;
 	},
 
 	// DOCS: toShape

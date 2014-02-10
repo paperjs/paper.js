@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -132,8 +132,9 @@ var Color = Base.extend(new function() {
 		},
 
 		'hsb-rgb': function(h, s, b) {
-			var h = (h / 60) % 6, // Scale to 0..6
-				i = Math.floor(h), // 0..5
+			// Scale h to 0..6 with modulo for negative values too
+			h = (((h / 60) % 6) + 6) % 6;
+			var i = Math.floor(h), // 0..5
 				f = h - i,
 				i = hsbIndices[i],
 				v = [
@@ -164,7 +165,8 @@ var Color = Base.extend(new function() {
 		},
 
 		'hsl-rgb': function(h, s, l) {
-			h /= 360;
+			// Scale h to 0..1 with modulo for negative values too
+			h = (((h / 360) % 1) + 1) % 1;
 			if (s === 0)
 				return [l, l, l];
 			var t3s = [ h + 1 / 3, h, h - 1 / 3 ],
@@ -236,9 +238,8 @@ var Color = Base.extend(new function() {
 				parser = componentParsers[type][index] = name === 'gradient'
 					? function(value) {
 						var current = this._components[0];
-						value = Gradient.read(
-								Array.isArray(value) ? value : arguments,
-								0, 0, { readNull: true });
+						value = Gradient.read(Array.isArray(value) ? value
+								: arguments, 0, { readNull: true });
 						if (current !== value) {
 							if (current)
 								current._removeOwner(this);
@@ -247,23 +248,20 @@ var Color = Base.extend(new function() {
 						}
 						return value;
 					}
-					: name === 'hue'
-						? function(value) {
-							// Keep negative values within modulo 360 too:
-							return isNaN(value) ? 0
-									: ((value % 360) + 360) % 360;
+					: type === 'gradient'
+						? function(/* value */) {
+							return Point.read(arguments, 0, {
+									readNull: name === 'highlight',
+									clone: true
+							});
 						}
-						: type === 'gradient'
-							? function(/* value */) {
-								return Point.read(arguments, 0, 0, {
-										readNull: name === 'highlight',
-										clone: true
-								});
-							}
-							: function(value) {
-								return isNaN(value) ? 0
-										: Math.min(Math.max(value, 0), 1);
-							};
+						: function(value) {
+							// NOTE: We don't clamp values here, they're only
+							// clamped once the actual CSS values are produced.
+							// Gotta love the fact that isNaN(null) is false,
+							// while isNaN(undefined) is true.
+							return value == null || isNaN(value) ? 0 : value;
+						};
 
 			this['get' + part] = function() {
 				return this._type === type
@@ -401,7 +399,7 @@ var Color = Base.extend(new function() {
 		 * // the path and to position the gradient color:
 		 * var topLeft = view.center - [80, 80];
 		 * var bottomRight = view.center + [80, 80];
- 		 * 
+		 * 
 		 * var path = new Path.Rectangle({
 		 *	topLeft: topLeft,
 		 *	bottomRight: bottomRight,
@@ -489,7 +487,6 @@ var Color = Base.extend(new function() {
 			var slice = Array.prototype.slice,
 				args = arguments,
 				read = 0,
-				parse = true,
 				type,
 				components,
 				alpha,
@@ -520,8 +517,6 @@ var Color = Base.extend(new function() {
 				}
 			}
 			if (!components) {
-				// Only parse values if we're not told to not do so
-				parse = !(this.__options && this.__options.dontParse);
 				// Determine if there is a values array
 				values = argType === 'number'
 						? args
@@ -586,7 +581,7 @@ var Color = Base.extend(new function() {
 									: 'rgb';
 						// Convert to array and parse in one loop, for efficiency
 						var properties = types[type];
-							parsers = parse && componentParsers[type];
+							parsers = componentParsers[type];
 						this._components = components = [];
 						for (var i = 0, l = properties.length; i < l; i++) {
 							var value = arg[properties[i]];
@@ -600,8 +595,7 @@ var Color = Base.extend(new function() {
 									radial: arg.radial
 								};
 							}
-							if (parse)
-								value = parsers[i].call(this, value);
+							value = parsers[i].call(this, value);
 							if (value != null)
 								components[i] = value;
 						}
@@ -623,9 +617,7 @@ var Color = Base.extend(new function() {
 				this._components = components = [];
 				var parsers = componentParsers[this._type];
 				for (var i = 0, l = parsers.length; i < l; i++) {
-					var value = values && values[i];
-					if (parse)
-						value = parsers[i].call(this, value);
+					var value = parsers[i].call(this, values && values[i]);
 					if (value != null)
 						components[i] = value;
 				}
@@ -668,7 +660,7 @@ var Color = Base.extend(new function() {
 						// Convert to and from rgb if no direct converter exists
 						: converters['rgb-' + type].apply(this,
 							converters[this._type + '-rgb'].apply(this,
-									this._components));
+								this._components));
 		},
 
 		/**
@@ -764,17 +756,19 @@ var Color = Base.extend(new function() {
 		 * @return {Boolean} {@true if the colors are the same}
 		 */
 		equals: function(color) {
-			if (Base.isPlainValue(color))
-				color = Color.read(arguments);
-			return color === this || color && this._class === color._class
-					&& this._type === color._type
-					&& this._alpha === color._alpha
-					&& Base.equals(this._components, color._components)
+			var col = Base.isPlainValue(color)
+					? Color.read(arguments)
+					: color;
+			return col === this || col && this._class === col._class
+					&& this._type === col._type
+					&& this._alpha === col._alpha
+					&& Base.equals(this._components, col._components)
 					|| false;
 		},
 
 		/**
 		 * @name Color#clone
+		 * @function
 		 *
 		 * Returns a copy of the color object.
 		 *
@@ -814,13 +808,16 @@ var Color = Base.extend(new function() {
 			// TODO: Support HSL / HSLA CSS3 colors directly, without conversion
 			var components = this._convert('rgb'),
 				alpha = hex || this._alpha == null ? 1 : this._alpha;
+			function convert(val) {
+				return Math.round((val < 0 ? 0 : val > 1 ? 1 : val) * 255);
+			}
 			components = [
-				Math.round(components[0] * 255),
-				Math.round(components[1] * 255),
-				Math.round(components[2] * 255)
+				convert(components[0]),
+				convert(components[1]),
+				convert(components[2])
 			];
 			if (alpha < 1)
-				components.push(alpha);
+				components.push(alpha < 0 ? 0 : alpha);
 			return hex
 					? '#' + ((1 << 24) + (components[0] << 16)
 						+ (components[1] << 8)
@@ -1118,48 +1115,32 @@ var Color = Base.extend(new function() {
 		}
 	});
 }, new function() {
-	function clamp(value, hue) {
-		return value < 0
-				? 0
-				: hue && value > 360
-					? 360
-					: !hue && value > 1
-						? 1
-						: value;
-	}
-
 	var operators = {
-		add: function(a, b, hue) {
-			return clamp(a + b, hue);
+		add: function(a, b) {
+			return a + b;
 		},
 
-		subtract: function(a, b, hue) {
-			return clamp(a - b, hue);
+		subtract: function(a, b) {
+			return a - b;
 		},
 
-		multiply: function(a, b, hue) {
-			return clamp(a * b, hue);
+		multiply: function(a, b) {
+			return a * b;
 		},
 
-		divide: function(a, b, hue) {
-			return clamp(a / b, hue);
+		divide: function(a, b) {
+			return a / b;
 		}
 	};
 
 	return Base.each(operators, function(operator, name) {
-		// Tell the argument reader not to parse values for multiply and divide,
-		// so the are not clamped yet.
-		var options = { dontParse: /^(multiply|divide)$/.test(name) };
-
 		this[name] = function(color) {
-			color = Color.read(arguments, 0, 0, options);
+			color = Color.read(arguments);
 			var type = this._type,
-				properties = this._properties,
 				components1 = this._components,
 				components2 = color._convert(type);
 			for (var i = 0, l = components1.length; i < l; i++)
-				components2[i] = operator(components1[i], components2[i],
-						properties[i] === 'hue');
+				components2[i] = operator(components1[i], components2[i]);
 			return new Color(type, components2,
 					this._alpha != null
 							? operator(this._alpha, color.getAlpha())

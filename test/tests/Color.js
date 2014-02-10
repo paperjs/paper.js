@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -51,6 +51,14 @@ test('Set color to array', function() {
 });
 
 test('Creating Colors', function() {
+	compareColors(new Color(), new Color(0, 0, 0),
+			'Color with no arguments should be black');
+
+	compareColors(new Color('black'), new Color(0, 0, 0),
+			'Color from name (black)');
+
+	compareColors(new Color('red'), new Color(1, 0, 0),
+			'Color from name (red)');
 
 	compareColors(new Color('#ff0000'), new Color(1, 0, 0),
 			'Color from hex code');
@@ -203,7 +211,7 @@ test('Saturation from black rgb', function() {
 test('Color#add', function() {
 	var color = new Color(0, 1, 1);
 	compareColors(color.add([1, 0, 0]), [1, 1, 1]);
-	compareColors(color.add([1, 0.5, 0]), [1, 1, 1]);
+	compareColors(color.add([1, 0.5, 0]), [1, 1.5, 1]);
 	var color = new Color(0, 0.5, 0);
 	compareColors(color.add(0.5), [0.5, 1, 0.5]);
 });
@@ -229,7 +237,7 @@ test('Color#divide', function() {
 	var color = new Color(1, 1, 1);
 	compareColors(color.divide([1, 2, 4]), [1, 0.5, 0.25]);
 	var color = new Color(1, 0.5, 0.25);
-	compareColors(color.divide(0.25), [1, 1, 1]);
+	compareColors(color.divide(0.25), [4, 2, 1]);
 	var color = new Color(1, 1, 1);
 	compareColors(color.divide(4), [0.25, 0.25, 0.25]);
 });

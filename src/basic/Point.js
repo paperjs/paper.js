@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -270,8 +270,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = point1 + point2;
 	 * console.log(result); // {x: 15, y: 30}
 	 */
-	add: function(point) {
-		point = Point.read(arguments);
+	add: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x + point.x, this.y + point.y);
 	},
 
@@ -308,8 +308,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint - secondPoint;
 	 * console.log(result); // {x: 5, y: 15}
 	 */
-	subtract: function(point) {
-		point = Point.read(arguments);
+	subtract: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x - point.x, this.y - point.y);
 	},
 
@@ -346,8 +346,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint * secondPoint;
 	 * console.log(result); // {x: 20, y: 20}
 	 */
-	multiply: function(point) {
-		point = Point.read(arguments);
+	multiply: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x * point.x, this.y * point.y);
 	},
 
@@ -384,8 +384,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var result = firstPoint / secondPoint;
 	 * console.log(result); // {x: 4, y: 2}
 	 */
-	divide: function(point) {
-		point = Point.read(arguments);
+	divide: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x / point.x, this.y / point.y);
 	},
 
@@ -419,8 +419,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * var point = new Point(12, 6);
 	 * console.log(point % new Point(5, 2)); // {x: 2, y: 0}
 	 */
-	modulo: function(point) {
-		point = Point.read(arguments);
+	modulo: function(/* point */) {
+		var point = Point.read(arguments);
 		return new Point(this.x % point.x, this.y % point.y);
 	},
 
@@ -449,11 +449,17 @@ var Point = Base.extend(/** @lends Point# */{
 	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(point, squared) {
-		point = Point.read(arguments);
-		var x = point.x - this.x,
+	getDistance: function(_point, squared) {
+		// NOTE: Although we're reading from the argument list, we need the
+		// above arguments to prevent beans from being created (Strap.js issue).
+		// And for browser optimization we shouldn't re-asign an object to it,
+		// but we need to prevent the minifier from removing it again, so:
+		var point = Point.read(arguments),
+			x = point.x - this.x,
 			y = point.y - this.y,
 			d = x * x + y * y;
+		// Reassigning boolean values to arguments is apparently OK.
+		squared = Base.read(arguments);
 		return squared ? d : Math.sqrt(d);
 	},
 
@@ -467,11 +473,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @bean
 	 */
 	getLength: function() {
-		// Supports a hidden parameter 'squared', which controls whether the
-		// squared length should be returned. Hide it so it produces a bean
-		// property called #length.
-		var length = this.x * this.x + this.y * this.y;
-		return arguments.length && arguments[0] ? length : Math.sqrt(length);
+		return Math.sqrt(this.x * this.x + this.y * this.y);
 	},
 
 	setLength: function(length) {
@@ -494,7 +496,6 @@ var Point = Base.extend(/** @lends Point# */{
 				this.y * scale
 			);
 		}
-		return this;
 	},
 
 	/**
@@ -536,27 +537,15 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @type Number
 	 */
 	getAngle: function(/* point */) {
-		// Hide parameters from Bootstrap so it injects bean too
-		return this.getAngleInRadians(arguments[0]) * 180 / Math.PI;
+		return this.getAngleInRadians.apply(this, arguments) * 180 / Math.PI;
 	},
 
 	setAngle: function(angle) {
-		// We store a reference to _angle internally so we still preserve it
-		// when the vector's length is set to zero, and then anything else.
-		// Note that we cannot rely on it if x and y are something else than 0,
-		// since updating x / y does not automatically change _angle!
-		angle = this._angle = angle * Math.PI / 180;
-		if (!this.isZero()) {
-			var length = this.getLength();
-			// Use #set() instead of direct assignment of x/y, so LinkedPoint
-			// does not report changes twice.
-			this.set(
-				Math.cos(angle) * length,
-				Math.sin(angle) * length
-			);
-		}
-		return this;
+		this.setAngleInRadians.call(this, angle * Math.PI / 180);
 	},
+
+	getAngleInDegrees: '#getAngle',
+	setAngleInDegrees: '#setAngle',
 
 	/**
 	 * Returns the smaller angle between two vectors in radians. The angle is
@@ -575,8 +564,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @type Number
 	 */
 	getAngleInRadians: function(/* point */) {
-		// Hide parameters from Bootstrap so it injects bean too
-		if (arguments[0] === undefined) {
+		if (!arguments.length) {
 			return this.isZero()
 					// Return the preseved angle in case the vector has no
 					// length, and update the internal _angle in case the
@@ -595,8 +583,21 @@ var Point = Base.extend(/** @lends Point# */{
 		}
 	},
 
-	getAngleInDegrees: function(/* point */) {
-		return this.getAngle(arguments[0]);
+	setAngleInRadians: function(angle) {
+		// We store a reference to _angle internally so we still preserve it
+		// when the vector's length is set to zero, and then anything else.
+		// Note that we cannot rely on it if x and y are something else than 0,
+		// since updating x / y does not automatically change _angle!
+		this._angle = angle;
+		if (!this.isZero()) {
+			var length = this.getLength();
+			// Use #set() instead of direct assignment of x/y, so LinkedPoint
+			// does not report changes twice.
+			this.set(
+				Math.cos(angle) * length,
+				Math.sin(angle) * length
+			);
+		}
 	},
 
 	/**
@@ -640,7 +641,12 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @return {Number} the angle between the two vectors
 	 */
-	getDirectedAngle: function(point) {
+	getDirectedAngle: function(_point) {
+		// NOTE: Although we're reading from the argument list, we need the
+		// above arguments to prevent beans from being created (Strap.js issue).
+		// And for browser optimization we shouldn't re-asign an object to it,
+		// but we need to prevent the minifier from removing it again, so:
+		var point = _point;
 		point = Point.read(arguments);
 		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
 	},
@@ -741,8 +747,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Number} the dot product of the two points
 	 */
-	dot: function(point) {
-		point = Point.read(arguments);
+	dot: function(/* point */) {
+		var point = Point.read(arguments);
 		return this.x * point.x + this.y * point.y;
 	},
 
@@ -752,8 +758,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Number} the cross product of the two points
 	 */
-	cross: function(point) {
-		point = Point.read(arguments);
+	cross: function(/* point */) {
+		var point = Point.read(arguments);
 		return this.x * point.y - this.y * point.x;
 	},
 
@@ -764,8 +770,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @returns {Point} the projection of the point on another point
 	 */
-	project: function(point) {
-		point = Point.read(arguments);
+	project: function(/* point */) {
+		var point = Point.read(arguments);
 		if (point.isZero()) {
 			return new Point(0, 0);
 		} else {
