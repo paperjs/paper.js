@@ -134,7 +134,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return locations;
 	},
 
-	getSelfIntersections: function(){
+	getSelfIntersections: function() {
 		var locations = [],
 			locs = [],
 			curves = this.getCurves(),
@@ -142,8 +142,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			matrix = this._matrix.orNullIfIdentity(),
 			values = [],
 			curve1, values1, parts, i, j, k, ix, from, to, param, v1, v2,
-			EPSILON =  /*#=*/ Numerical.EPSILON,
-			EPSILON1s = 1-EPSILON;
+			EPSILON = /*#=*/ Numerical.EPSILON,
+			EPSILON1s = 1 - EPSILON;
 		for (i = 0; i <= length; i++)
 			values[i] = curves[i].getValues(matrix);
 		for (i = 0; i <= length; i++) {
@@ -176,7 +176,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					locations.push(ix);
 			}
 			// Check for intersections with other curves
-			for (j = i + 1; j <= length; j++){
+			for (j = i + 1; j <= length; j++) {
 				// Avoid end point intersections on consecutive curves
 				if (j === i + 1 || (j === length && i === 0)) {
 					locs.length = 0;
@@ -363,7 +363,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				newSegments.length = 0;
 			}
 			// Split the curve at t, while ignoring linearity of curves
-			if ((crvNew = crv.divide(t, true, true)) === null){
+			if ((crvNew = crv.divide(t, true, true)) === null) {
 				if (t >= 1-tolerance) {
 					segment = crv._segment2;
 				} else if (t <= tolerance) {
@@ -387,20 +387,20 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			newSegments.push(segment);
 			loc = intersections[i - 1];
 			if (!(loc && loc.getPath() === path1 &&
-					loc._curve === node1._curve) && isLinear)
+					loc._curve === node1._curve) && isLinear) {
 				for (j = newSegments.length-1; j >= 0; j--) {
 					segment = newSegments[j];
 					// FIXME: Don't reset the appropriate handle if the intersections were on t==0 && t==1
 					segment._handleOut.set(0, 0);
 					segment._handleIn.set(0, 0);
 				}
+			}
 		}
 	},
 
 	/**
 	 * Private static method that returns the winding contribution of the 
 	 * given point with respect to a given set of monotone curves
-	 * 
 	 */
 	_getWindingNumber: function(point, curves, horizontal) {
 		function getTangent(v, t) {
@@ -481,11 +481,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// curve merely touches the ray towards ±x direction, but
 				// proceeds to the same side of the ray. This essentially is
 				// not a crossing.
-				if (t === 0){
+				if (t === 0) {
 					// The previous curve's reference is stored at index:9,
 					// see Path#_getMonotoneCurves for details.
 					var v2 = v[9];
-					if (abs(v2[6] - v[0]) < tolerance && abs(v2[7] - v[1]) < tolerance){
+					if (abs(v2[6] - v[0]) < tolerance
+							&& abs(v2[7] - v[1]) < tolerance) {
 						var slope2 = getTangent(v2, 1).y;
 						if(slope * slope2 > 0)
 							stationary = true;
@@ -565,17 +566,18 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					seg = nextSeg || seg;
 					seg._winding = wind;
 				}
-			} while(seg && seg !== startSeg && seg !== startSegIx &&
+			} while (seg && seg !== startSeg && seg !== startSegIx &&
 					!seg._visited && operator(seg._winding));
 			// Finish with closing the paths if necessary, correctly
 			// linking up curves etc.
-			if (seg && (seg == startSeg || seg == startSegIx)){
+			if (seg && (seg === startSeg || seg === startSegIx)) {
 				if (path.segments.length === 1) {
 					// This is still a valid path, in case of self-Intersections
 					path.add(new paper.Segment(seg._point, seg._handleIn, null));
 				} else {
-					path.firstSegment.setHandleIn((seg == startSegIx)?
-							startSegIx._handleIn : startSeg._handleIn);
+					path.firstSegment.setHandleIn(seg === startSegIx 
+							? startSegIx._handleIn
+							: startSeg._handleIn);
 				}
 			}
 			path.setClosed(true);

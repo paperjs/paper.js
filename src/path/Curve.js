@@ -1323,7 +1323,7 @@ new function() { // Scope for methods that require numerical integration
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
-		if (point){
+		if (point) {
 			// We need to return the parameters for the intersection,
 			// since they will be used for sorting
 			var t1 = Curve.getParameterOf(v1, point.x, point.y),
