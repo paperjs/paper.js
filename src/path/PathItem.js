@@ -470,19 +470,24 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// intersection, even when the curve[s] are linear.
 		function getEntryExitTangents(seg) {
 			var c2 = seg.getCurve(),
-				c1 = c2.getPrevious();
+				c1 = c2.getPrevious(), t = 1e-3;
 			// Avoid zero length curves
 			c1 = c1.getLength() === 0 ? c1.getPrevious() : c1;
 			c2 = c2.getLength() === 0 ? c2.getNext() : c2;
 			var v1 = c1.getValues(),
 				v2 = c2.getValues(),
 				pnt = seg.getPoint(),
-				ret = [seg.getHandleIn().normalize(),
-						seg.getHandleOut().normalize()];
-			if (ret[0].getLength() === 0)
-				ret[0] = new Point(pnt.x - v1[2], pnt.y - v1[3]);
-			if (ret[1].getLength() === 0)
-				ret[1] = new Point(pnt.x - v2[4], pnt.y - v2[5]);
+				ret = [seg.getHandleIn(), seg.getHandleOut()];
+			if (ret[0].getLength() === 0) {
+				ret[0] = new Point(pnt.x - v1[2], pnt.y - v1[3]).normalize();
+			} else {
+				ret[0] = Curve.evaluate(v1, 1-t, 1).normalize(-1);
+			}
+			if (ret[1].getLength() === 0) {
+				ret[1] = new Point(pnt.x - v2[4], pnt.y - v2[5]).normalize();
+			} else {
+				ret[1] = Curve.evaluate(v2, t, 1).normalize();
+			}
 			return ret;
 		}
 		// Choose a default operator which will return all contours
@@ -535,6 +540,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					c4 = crvTan[1].c = c4.getLength() === 0 ? c4.getNext() : c4;
 					crvTan[0].t = entryExitTangents[0];
 					crvTan[1].t = entryExitTangents[1];
+							// DEBUG:--------------------------------------------------------
+							// annotateTan(seg.point, t1.normalize(20), "t1", true);
+							// annotateTan(seg.point, crvTan[0].t.normalize(20), "t2");
+							// annotateTan(seg.point, crvTan[1].t.normalize(20), "t3");
+							// DEBUG:--------------------------------------------------------
 					// cross product of the entry and exit tangent vectors at
 					// the intersection, will let us select the correct countour
 					// to traverse next.
@@ -544,7 +554,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					}
 					// Do not attempt to switch contours if we aren't absolutely
 					// sure that there is a possible candidate.
-					if (crvTan[0].w * crvTan[1].w < 0) {
+					if (crvTan[0].w * crvTan[1].w !== 0) {
 						crvTan.sort(crvTanCompare);
 						j = 0;
 						do {
