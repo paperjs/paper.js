@@ -382,6 +382,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @return {SVGSVGElement} the project converted to an SVG node
 	 */
 
+	// DOCS: Document importSVG('file.svg', callback);
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the active layer of this project.

@@ -1859,6 +1859,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {SVGSVGElement} the item converted to an SVG node
 	 */
 
+	// DOCS: Document importSVG('file.svg', callback);
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the this item's children list.
