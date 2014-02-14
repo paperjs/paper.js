@@ -359,15 +359,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			sign = t === 0 ? 2 : (t === 1 ? -2 : 0);
 			if (sign !== 0) {
 				i = sign > 0 ? 0 : 6;
-				if (Curve.isLinear(v)) {
-					// Return slope from this point that follows the direction
-					// of the line
+				// Return slope from this point that follows the direction
+				// of the line
+				if (Curve.isLinear(v))
 					sign *= 3;
-					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
-				} else {
-					// Return the first or last handle
-					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
-				}
+				tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
 			} else {
 				tan = Curve.evaluate(v, t, 1);
 			}
@@ -522,7 +518,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
 				// else, stay on the same contour.
-				if (ixOther && (ixOtherSeg = ixOther._segment) &&
+				if (!operator(seg._winding) && ixOther &&
+						(ixOtherSeg = ixOther._segment) &&
 						ixOtherSeg !== startSeg && firstHandleIn) {
 					entryExitTangents = getEntryExitTangents(seg);
 					c1 = seg.getCurve();
