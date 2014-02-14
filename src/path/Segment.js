@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -181,8 +181,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return this._point;
 	},
 
-	setPoint: function(point) {
-		point = Point.read(arguments);
+	setPoint: function(/* point */) {
+		var point = Point.read(arguments);
 		// Do not replace the internal object but update it instead, so
 		// references to it are kept alive.
 		this._point.set(point.x, point.y);
@@ -199,8 +199,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return this._handleIn;
 	},
 
-	setHandleIn: function(point) {
-		point = Point.read(arguments);
+	setHandleIn: function(/* point */) {
+		var point = Point.read(arguments);
 		// See #setPoint:
 		this._handleIn.set(point.x, point.y);
 		// Update corner accordingly
@@ -218,10 +218,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return this._handleOut;
 	},
 
-	setHandleOut: function(point) {
+	setHandleOut: function(/* point */) {
 		// We need to use point to avoid minification issues and prevent method
 		// from turning into a bean (by removal of the point argument).
-		point = Point.read(arguments);
+		var point = Point.read(arguments);
 		// See #setPoint:
 		this._handleOut.set(point.x, point.y);
 		// Update corner accordingly
@@ -310,26 +310,24 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * // Select the third segment point:
 	 * path.segments[2].selected = true;
 	 */
-	isSelected: function(/* point */) {
-		var point = arguments[0], // Hidden, only used in SegmentPoint
-			state = this._selectionState;
-		return !point ? !!(state & /*#=*/ SelectionState.SEGMENT)
-			: point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
-			: point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
-			: point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
+	isSelected: function(_point) {
+		var state = this._selectionState;
+		return !_point ? !!(state & /*#=*/ SelectionState.SEGMENT)
+			: _point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
+			: _point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
+			: _point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
 			: false;
 	},
 
-	setSelected: function(selected /*, point */) {
-		var point = arguments[1]; // Hidden, only used in SegmentPoint
-			path = this._path,
+	setSelected: function(selected, _point) {
+		var path = this._path,
 			selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			oldState = state,
-			flag = !point ? /*#=*/ SelectionState.SEGMENT
-					: point === this._point ? /*#=*/ SelectionState.POINT
-					: point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
-					: point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
+			flag = !_point ? /*#=*/ SelectionState.SEGMENT
+					: _point === this._point ? /*#=*/ SelectionState.POINT
+					: _point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
+					: _point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
 					: 0;
 		if (selected) {
 			state |= flag;

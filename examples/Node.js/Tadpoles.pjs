@@ -1,5 +1,3 @@
-paper.setup(new Canvas(1024, 768));
-
 // Adapted from Flocking Processing example by Daniel Schiffman:
 // http://processing.org/learning/topics/flocking.html
 

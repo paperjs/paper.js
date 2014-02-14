@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -31,7 +31,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
 	 * supported.
 	 *
-	 * @param {PathItem} path the other item to find the intersections to.
+	 * @name PathItem#getIntersections(path, sorted)
+	 * @function
+	 *
+	 * @param {PathItem} path the other item to find the intersections with
+	 * @param {Boolean} [sorted=true] controls wether to sort the results by
+	 * offset
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
 	 * @example {@paperscript}

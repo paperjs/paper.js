@@ -5,7 +5,7 @@
   "homepage": "http://paperjs.org",
   "repository": "git://github.com/paperjs/paper.js",
   "contributors": [
-    "Jürg Lehni <juerg@lehni.org> (http://lehni.org)",
+    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
   ],
   "main": "./dist/paper-node.js",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "uglify-js": "~2.3.6",
-    "prepro": "~0.8.0",
+    "prepro": "~0.8.1",
     "grunt": "~0.4.1",
     "grunt-contrib-uglify": "~0.2.2"
   },

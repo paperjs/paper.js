@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -147,7 +147,7 @@ var Style = Base.extend(new function() {
 				if (old != value) {
 					if (isColor) {
 						if (old)
-							delete old._owner;
+							old._owner = undefined;
 						if (value && value.constructor === Color) {
 							// Clone color if it already has an owner.
 							// NOTE: If value is not a Color, it is only
@@ -168,13 +168,13 @@ var Style = Base.extend(new function() {
 			}
 		};
 
-		fields[get] = function(/* dontMerge */) {
+		fields[get] = function(_dontMerge) {
 			var value,
 				children = this._item && this._item._children;
 			// If this item has children, walk through all of them and see if
 			// they all have the same style.
-			// If true is passed for dontMerge, don't merge children styles
-			if (!children || children.length === 0 || arguments[0]
+			// If true is passed for _dontMerge, don't merge children styles
+			if (!children || children.length === 0 || _dontMerge
 					|| this._item instanceof CompoundPath) {
 				var value = this._values[key];
 				if (value === undefined) {
@@ -184,8 +184,8 @@ var Style = Base.extend(new function() {
 					this._values[key] = value;
 				} else if (isColor && !(value && value.constructor === Color)) {
 					// Convert to a Color and stored result of conversion.
-					this._values[key] = value = Color.read(
-							[value], 0, 0, { readNull: true, clone: true });
+					this._values[key] = value = Color.read([value], 0,
+							{ readNull: true, clone: true });
 					if (value)
 						value._owner = this._item;
 				}

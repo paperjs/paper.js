@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -15,8 +15,7 @@
  * @class
  * @private
  */
-// Extend Base with utility functions used across the library. Also set
-// this.Base on the injection scope, since straps.js ommits that.
+// Extend Base with utility functions used across the library.
 Base.inject(/** @lends Base# */{
 	/**
 	 * Renders base objects to strings in object literal notation.
@@ -40,7 +39,7 @@ Base.inject(/** @lends Base# */{
 	/**
 	 * Serializes this object to a JSON string.
 	 *
-	 * @param {Object} [options={ precision: 5 }]
+	 * @param {Object} [options={ asString: true, precision: 5 }]
 	 */
 	exportJSON: function(options) {
 		return Base.exportJSON(this, options);
@@ -156,44 +155,35 @@ Base.inject(/** @lends Base# */{
 		 * passed objects should be cloned if they are already provided in the 
 		 * required type
 		 */
-		read: function(list, start, length, options) {
+		read: function(list, start, options, length) {
 			// See if it's called directly on Base, and if so, read value and
 			// return without object conversion.
 			if (this === Base) {
 				var value = this.peek(list, start);
-				list._index++;
-				list.__read = 1;
+				list.__index++;
 				return value;
 			}
 			var proto = this.prototype,
 				readIndex = proto._readIndex,
-				index = start || readIndex && list._index || 0;
+				index = start || readIndex && list.__index || 0;
 			if (!length)
 				length = list.length - index;
 			var obj = list[index];
 			if (obj instanceof this
 				|| options && options.readNull && obj == null && length <= 1) {
 				if (readIndex)
-					list._index = index + 1;
+					list.__index = index + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
 			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
-			// If options were provided, pass them on to the constructed object
-			if (options)
-				obj.__options = options;
 			obj = obj.initialize.apply(obj, index > 0 || length < list.length
 				? Array.prototype.slice.call(list, index, index + length)
 				: list) || obj;
 			if (readIndex) {
-				list._index = index + obj.__read;
-				// Have arguments.__read point to the amount of args read in the
-				// last read() call
-				list.__read = obj.__read;
-				delete obj.__read;
-				if (options)
-					delete obj.__options;
+				list.__index = index + obj.__read;
+				obj.__read = undefined;
 			}
 			return obj;
 		},
@@ -206,12 +196,12 @@ Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 */
 		peek: function(list, start) {
-			return list[list._index = start || list._index || 0];
+			return list[list.__index = start || list.__index || 0];
 		},
 
 		/**
 		 * Reads all readable arguments from the list, handling nested arrays
-		 * seperately.
+		 * separately.
 		 * @param {Array} list the list to read from, either an arguments object
 		 * or a normal array.
 		 * @param {Number} start the index at which to start reading in the list
@@ -221,12 +211,12 @@ Base.inject(/** @lends Base# */{
 		 * required type
 		 */
 		readAll: function(list, start, options) {
-			var res = [], entry;
+			var res = [],
+				entry;
 			for (var i = start || 0, l = list.length; i < l; i++) {
 				res.push(Array.isArray(entry = list[i])
-						// lenghh = 0 for length = max
-						? this.read(entry, 0, 0, options)
-						: this.read(list, i, 1, options));
+						? this.read(entry, 0, options)
+						: this.read(list, i, options, 1));
 			}
 			return res;
 		},
@@ -242,7 +232,7 @@ Base.inject(/** @lends Base# */{
 		 * @param {Number} start the index at which to start reading in the list
 		 * @param {String} name the property name to read from.
 		 */
-		readNamed: function(list, name, start, length, options) {
+		readNamed: function(list, name, start, options, length) {
 			var value = this.getNamed(list, name),
 				hasObject = value !== undefined;
 			if (hasObject) {
@@ -259,7 +249,7 @@ Base.inject(/** @lends Base# */{
 				// shine through.
 				filtered[name] = undefined;
 			}
-			return this.read(hasObject ? [value] : list, start, length, options);
+			return this.read(hasObject ? [value] : list, start, options, length);
 		},
 
 		/**
@@ -433,7 +423,10 @@ Base.inject(/** @lends Base# */{
 		},
 
 		exportJSON: function(obj, options) {
-			return JSON.stringify(Base.serialize(obj, options));
+			var json = Base.serialize(obj, options);
+			return options && options.asString === false
+					? json
+					: JSON.stringify(json);
 		},
 
 		importJSON: function(json, target) {
@@ -491,9 +484,9 @@ Base.inject(/** @lends Base# */{
 				if (items)
 					args.push.apply(args, items);
 				var removed = list.splice.apply(list, args);
-				// Delete the indices of the removed items
+				// Erase the indices of the removed items
 				for (var i = 0, l = removed.length; i < l; i++)
-					delete removed[i]._index;
+					removed[i]._index = undefined;
 				// Adjust the indices of the items above.
 				for (var i = index + amount, l = list.length; i < l; i++)
 					list[i]._index = i;

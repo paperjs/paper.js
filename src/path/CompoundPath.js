@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -103,9 +103,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
-		// Delete cached native Path
+		// Clear cached native Path
 		if (flags & (/*#=*/ ChangeFlag.HIERARCHY | /*#=*/ ChangeFlag.GEOMETRY))
-			delete this._currentPath;
+			this._currentPath = undefined;
 	},
 
 	insertChildren: function insertChildren(index, items, _preserve) {
@@ -228,11 +228,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return area;
 	},
 
-	getPathData: function(/* precision */) {
+	getPathData: function(precision) {
 		var children = this._children,
 			paths = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(children[i].getPathData(arguments[0]));
+			paths.push(children[i].getPathData(precision));
 		return paths.join(' ');
 	},
 

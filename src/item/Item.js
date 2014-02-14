@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -214,10 +214,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			project = this._project;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
 			// Clear cached bounds and position whenever geometry changes
-			delete this._bounds;
-			delete this._position;
-			delete this._decomposed;
-			delete this._globalMatrix;
+			this._bounds = this._position = this._decomposed =
+					this._globalMatrix = undefined;
 		}
 		if (cacheParent && (flags
 				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
@@ -762,11 +760,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move the circle 100 points to the right
 	 * circle.position.x += 100;
 	 */
-	getPosition: function(/* dontLink */) {
+	getPosition: function(_dontLink) {
 		// Cache position value.
-		// Pass true for dontLink in getCenter(), so receive back a normal point
+		// Pass true for _dontLink in getCenter(), so receive back a normal point
 		var position = this._position,
-			ctor = arguments[0] ? Point : LinkedPoint;
+			ctor = _dontLink ? Point : LinkedPoint;
 		// Do not cache LinkedPoints directly, since we would not be able to
 		// use them to calculate the difference in #setPosition, as when it is
 		// modified, it would hold new values already and only then cause the
@@ -784,7 +782,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	setPosition: function(/* point */) {
 		// Calculate the distance to the current position, by which to
-		// translate the item. Pass true for dontLink, as we do not need a
+		// translate the item. Pass true for _dontLink, as we do not need a
 		// LinkedPoint to simply calculate this distance.
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
@@ -802,10 +800,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @example {@paperscript}
 	 */
-	getPivot: function(/* dontLink */) {
+	getPivot: function(_dontLink) {
 		var pivot = this._pivot;
 		if (pivot) {
-			var ctor = arguments[0] ? Point : LinkedPoint;
+			var ctor = _dontLink ? Point : LinkedPoint;
 			pivot = new ctor(pivot.x, pivot.y, this, 'setAnchor');
 		}
 		return pivot;
@@ -814,17 +812,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setPivot: function(/* point */) {
 		this._pivot = Point.read(arguments);
 		// No need for _changed() since the only thing this affects is _position
-		delete this._position;
+		this._position = undefined;
 	},
 
 	_pivot: null,
 
 	// TODO: Keep these around for a bit since it was introduced on the mailing
 	// list, then remove in a while.
-	getRegistration: '#getAnchor',
-	setRegistration: '#setAnchor'
-}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds',
-		'getRoughBounds', 'getInternalBounds', 'getInternalRoughBounds'],
+	getRegistration: '#getPivot',
+	setRegistration: '#setPivot'
+}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
+		'internalBounds', 'internalRoughBounds'],
 	function(key) {
 		// Produce getters for bounds properties. These handle caching, matrices
 		// and redirect the call to the private _getBounds, which can be
@@ -836,24 +834,32 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// as internalGetter.
 		// NOTE: These need to be versions of other methods, as otherwise the
 		// cache gets messed up.
-		var match = key.match(/^getInternal(.*)$/),
+		var getter = 'get' + Base.capitalize(key),
+			match = key.match(/^internal(.*)$/),
 			internalGetter = match ? 'get' + match[1] : null;
-		this[key] = function(/* matrix */) {
-			var getter = this._boundsGetter,
-				// Allow subclasses to override _boundsGetter if they use
-				// the same calculations for multiple type of bounds.
-				// The default is key:
-				bounds = this._getCachedBounds(!internalGetter
-						&& (typeof getter === 'string'
-							? getter : getter && getter[key])
-						|| key, arguments[0], null, internalGetter);
+		this[getter] = function(_matrix) {
+			var boundsGetter = this._boundsGetter,
+				// Allow subclasses to override _boundsGetter if they use the
+				// same calculations for multiple type of bounds.
+				// The default is getter:
+				name = !internalGetter && (typeof boundsGetter === 'string'
+						? boundsGetter : boundsGetter && boundsGetter[getter])
+						|| getter,
+				bounds = this._getCachedBounds(name, _matrix, null,
+						internalGetter);
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
 			// changed:
-			return key === 'getBounds'
+			return key === 'bounds'
 					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
 							bounds.height, this, 'setBounds') 
 					: bounds;
+		};
+		// As the function defines a _matrix parameter and has no setter,
+		// Straps.js doesn't produce a bean for it. Explicitely define an
+		// accesor now too:
+		this[key] = {
+			get: this[getter]
 		};
 	},
 /** @lends Item# */{
@@ -891,9 +897,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				: new Rectangle();
 	},
 
-	setBounds: function(rect) {
-		rect = Rectangle.read(arguments);
-		var bounds = this.getBounds(),
+	setBounds: function(/* rect */) {
+		var rect = Rectangle.read(arguments),
+			bounds = this.getBounds(),
 			matrix = new Matrix(),
 			center = rect.getCenter();
 		// Read this from bottom to top:
@@ -991,16 +997,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				for (var i = 0, list = item._boundsCache.list, l = list.length;
 						i < l; i++) {
 					var child = list[i];
-					delete child._bounds;
+					child._bounds = child._position = undefined;
 					// Delete position as well, since it's depending on bounds.
-					delete child._position;
 					// We need to recursively call _clearBoundsCache, because if
 					// the cache for this child's children is not valid anymore,
 					// that propagates up the DOM tree.
 					if (child !== item && child._boundsCache)
 						child._clearBoundsCache();
 				}
-				delete item._boundsCache;
+				item._boundsCache = undefined;
 			}
 		}
 	}
@@ -1083,7 +1088,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var current = this.getScaling();
 		if (current != null) {
 			// Clone existing points since we're caching internally.
-			var scaling = Point.read(arguments, 0, 0, { clone: true }),
+			var scaling = Point.read(arguments, 0, { clone: true }),
 				// See #setRotation() for preservation of _decomposed.
 				decomposed = this._decomposed;
 			this.scale(scaling.x / current.x, scaling.y / current.y);
@@ -1804,12 +1809,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * data string.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
+	 * <b>options.asString:</b> {@code Boolean} – wether the JSON is returned as
+	 * a {@code Object} or a {@code String}.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in JSON data.
 	 *
 	 * @name Item#exportJSON
 	 * @function
-	 * @param {Object} [options={ precision: 5 }] the serialization options 
+	 * @param {Object} [options={ asString: true, precision: 5 }] the
+	 * serialization options
 	 * @return {String} the exported JSON data
 	 */
 
@@ -1836,8 +1844,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Exports the item with its content and child items as an SVG DOM.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a String
-	 * is to be returned.
+	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a
+	 * {@code String} is to be returned.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in SVG data.
 	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path
@@ -1851,6 +1859,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {SVGSVGElement} the item converted to an SVG node
 	 */
 
+	// DOCS: Document importSVG('file.svg', callback);
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the this item's children list.
@@ -2589,14 +2598,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	rotate: function(angle /*, center */) {
 		return this.transform(new Matrix().rotate(angle,
-				Point.read(arguments, 1, 0, { readNull: true })
+				Point.read(arguments, 1, { readNull: true })
 					|| this.getPosition(true)));
 	}
 }, Base.each(['scale', 'shear', 'skew'], function(name) {
 	this[name] = function() {
 		// See Matrix#scale for explanation of this:
 		var point = Point.read(arguments),
-			center = Point.read(arguments, 0, 0, { readNull: true });
+			center = Point.read(arguments, 0, { readNull: true });
 		return this.transform(new Matrix()[name](point,
 				center || this.getPosition(true)));
 	};
@@ -2717,7 +2726,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// @param {String[]} flags Array of any of the following: 'objects',
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
-	transform: function(matrix /*, applyMatrix */) {
+	transform: function(matrix, _applyMatrix) {
+		// Bail out immediatelly if there is nothing to do
+		if (matrix.isIdentity())
+			return this;
 		// Calling _changed will clear _bounds and _position, but depending
 		// on matrix we can calculate and set them again.
 		var bounds = this._bounds,
@@ -2726,7 +2738,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		this._matrix.preConcatenate(matrix);
 		// Call applyMatrix if we need to directly apply the accumulated
 		// transformations to the item's content.
-		if (this._transformContent || arguments[1])
+		if (this._transformContent || _applyMatrix)
 			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
@@ -2784,7 +2796,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// color styles (only gradients so far) and pivot point:
 			var pivot = this._pivot,
 				style = this._style,
-				// pass true for dontMerge so we don't recursively transform
+				// pass true for _dontMerge so we don't recursively transform
 				// styles on groups' children.
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
@@ -2796,7 +2808,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				strokeColor.transform(matrix);
 			// Reset the internal matrix to the identity transformation if it
 			// was possible to apply it.
-			matrix.reset();
+			matrix.reset(true);
 		}
 		if (!_dontNotify)
 			this._changed(/*#=*/ Change.GEOMETRY);

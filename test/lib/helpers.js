@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -401,5 +401,5 @@ function compareProjects(project, project2) {
 function createSVG(xml) {
 	return new DOMParser().parseFromString(
 		'<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>',
-		'application/xml');
+		'text/xml');
 }

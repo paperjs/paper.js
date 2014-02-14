@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2013, Juerg Lehni & Jonathan Puckey
- * http://lehni.org/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -534,13 +534,14 @@ new function() {
 		}
 
 		if (isRoot) {
+			// See if it's a string but handle markup separately
 			if (typeof source === 'string' && !/^.*</.test(source)) {
 /*#*/ if (__options.environment == 'browser') {
 				// First see if we're meant to import an element with the given
 				// id.
 				node = document.getElementById(source);
 				// Check if the string does not represent SVG data, in which
-				// case it must be a url of a SVG to be loaded.
+				// case it must be the URL of a SVG to be loaded.
 				if (node) {
 					source = null;
 				} else {
