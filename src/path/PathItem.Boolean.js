@@ -204,8 +204,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @return {PathItem} the resulting path item
 		 */
 		unite: function(path) {
-			if (!path)
-				return this;
 			return computeBoolean(this, path,
 						function(w) { return w === 1 || w === 0; }, false);
 		},
@@ -218,8 +216,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @return {PathItem} the resulting path item
 		 */
 		intersect: function(path) {
-			if (!path)
-				return this;
 			return computeBoolean(this, path,
 						function(w) { return w === 2; }, false);
 		},
@@ -232,8 +228,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @return {PathItem} the resulting path item
 		 */
 		subtract: function(path) {
-			if (!path)
-				return this;
 			return computeBoolean(this, path,
 						function(w) { return w === 1; }, true);
 		},
@@ -248,8 +242,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @return {Group} the resulting group item
 		 */
 		exclude: function(path) {
-			if (!path)
-				return this;
 			return new Group([this.subtract(path), path.subtract(this)]);
 		},
 		
@@ -261,8 +253,6 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		 * @return {Group} the resulting group item
 		 */
 		divide: function(path) {
-			if (!path)
-				return this;
 			return new Group([this.subtract(path), this.intersect(path)]);
 		}
     };
