@@ -326,7 +326,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					segment = crv._segment1;
 				} else {
 					// Determine the closest segment by comparing curve lengths
-					segment = crv.getLength(0, t) < crv.getLength(t, 1)
+					segment = crv.getPartLength(0, t) < crv.getPartLength(t, 1)
 							? crv._segment1 : crv._segment2;
 				}
 				crvNew = crv;
