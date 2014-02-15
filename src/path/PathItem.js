@@ -512,10 +512,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			startSegIx = ixOther ? ixOther._segment : null;
 			firstHandleIn = null;
 			direction = 1;
-				// DEBUG:--------------------------------------------------------
-				// hilightCrvN("all");
-				// hilightCrvN("next", seg.getCurve());
-				// DEBUG:--------------------------------------------------------
 			do {
 				nextHandleIn = direction > 0 ? seg._handleIn : seg._handleOut;
 				nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
@@ -542,11 +538,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					c4 = crvTan[1].c = c4.getLength() === 0 ? c4.getNext() : c4;
 					crvTan[0].t = entryExitTangents[0];
 					crvTan[1].t = entryExitTangents[1];
-							// DEBUG:--------------------------------------------------------
-							// annotateTan(seg.point, t1.normalize(20), "t1", true);
-							// annotateTan(seg.point, crvTan[0].t.normalize(20), "t2");
-							// annotateTan(seg.point, crvTan[1].t.normalize(20), "t3");
-							// DEBUG:--------------------------------------------------------
 					// cross product of the entry and exit tangent vectors at
 					// the intersection, will let us select the correct countour
 					// to traverse next.
@@ -563,10 +554,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 							crv = crvTan[j++].c;
 							nextSeg = crv.getSegment1();
 							direction = crv === c3 ? -1 : 1;
-									// DEBUG:--------------------------------------------------------
-									// hilightCrvN("nextSeg", nextSeg, "#f00");
-									// hilightCrvN("nextCrv", crv, "#f00");
-									// DEBUG:--------------------------------------------------------
 						} while (j < 2 && !operator(nextSeg._winding));
 					} else {
 						nextSeg = null;
@@ -584,15 +571,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						if (nextSeg._visited) 
 							direction = 1;
 					}
-						// DEBUG:--------------------------------------------------------
-						// hilightCrvN("nextCrv");
-						// hilightCrvN("nextSeg", nextSeg, "#0f0");
-						// DEBUG:--------------------------------------------------------
 					nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
 				}
-					// DEBUG:--------------------------------------------------------
-					// hilightCrvN("next", seg.getCurve());
-					// DEBUG:--------------------------------------------------------
 				// Add the current segment to the path, and mark
 				// the added segment as visited.
 				if (!firstHandleIn) {
@@ -604,11 +584,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
 				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
-
-					// DEBUG:--------------------------------------------------------
-					// seg && hilightCrvN("next", direction ? seg.getCurve() : seg.getCurve().getPrevious(), "#a0a");
-					// DEBUG:--------------------------------------------------------
-					
 			} while(seg && seg !== startSeg && seg !== startSegIx &&
 					!seg._visited && (seg._intersection || operator(seg._winding)));
 			// Finish with closing the paths if necessary,
@@ -631,9 +606,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				path.remove();
 			}
 		}
-			// DEBUG:--------------------------------------------------------
-			// hilightCrvN("all");
-			// DEBUG:--------------------------------------------------------
 		return paths;
 	},
 

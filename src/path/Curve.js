@@ -443,8 +443,6 @@ var Curve = Base.extend(/** @lends Curve# */{
 	/**
 	 * Returns the winding contribution of this curve, to the parent path or
 	 * CompoundPath it is part of.
-	 * 
-	 * DEBUG: Note: This method is inlined in PathItem#computeBoolean
 	 */
 	_getWinding: function() {
 		var path = this.getPath();
