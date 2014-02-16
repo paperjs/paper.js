@@ -466,7 +466,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *                             included in the final contour or not.
 	 * @return {Array}          Array of contours traced.
 	 */
-	_tracePaths: function(segments, operator) {
+	_tracePaths: function(segments, operator, selfIx) {
 		// Utility function. Correctly returns entry and exit tangents of an
 		// intersection, even when the curve[s] are linear.
 		function getEntryExitTangents(seg) {
@@ -519,7 +519,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
 				// else, stay on the same contour.
-				if (!operator(seg._winding) && ixOther &&
+				if ((!operator(seg._winding) || selfIx) && ixOther &&
 						(ixOtherSeg = ixOther._segment) &&
 						ixOtherSeg !== startSeg && firstHandleIn) {
 					entryExitTangents = getEntryExitTangents(seg);
