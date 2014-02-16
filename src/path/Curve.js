@@ -456,10 +456,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 			// curves may report wrong winding contribution. See 
 			// PathItem#_getWinding for details on how we resolve this issue.
 			tolerance = /*#=*/ Numerical.TOLERANCE,
-			vDiff = Math.abs(v[1] - v[7]),
-			linear = Curve.isLinear(v) || Curve.isFlatEnough(v, tolerance),
-			horizontal = (linear && vDiff < tolerance) ||
-						(Curve.getLength(v) < 1 && vDiff < 0.01);
+			horizontal = (Curve.isLinear(v) && Math.abs(v[1] - v[7]) < tolerance);
 		// Call the parent's _getWinding method
 		return (path._parent instanceof CompoundPath ? path._parent
 					: path)._getWinding(point, horizontal);
