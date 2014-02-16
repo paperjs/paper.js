@@ -76,14 +76,16 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
 		// Also apply matrices to both paths in case they were transformed.
+		var singlePathOp = path1 === path2;
 		path1 = reorientPath(path1.clone(false).applyMatrix());
-		path2 = reorientPath(path2.clone(false).applyMatrix());
+		if (!singlePathOp)
+			path2 = reorientPath(path2.clone(false).applyMatrix());
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when @subtract = true
 		// We need both paths at opposit orientation for subtraction
 		if (!path1.isClockwise())
 			path1.reverse();
-		if (!(subtract ^ path2.isClockwise()))
+		if (!singlePathOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		var intersections, i, j, l, lj, segment, wind,
 		point, startSeg, crv, length, parent, v, horizontal,
@@ -101,11 +103,13 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		tolerance = Numerical.TOLERANCE,
 		getWindingNumber = PathItem._getWindingNumber;
 		// Split curves at intersections on both paths.
-		intersections = path1.getIntersections(path2, true);
+		intersections = singlePathOp ? path1.getSelfIntersections(true)
+				: path1.getIntersections(path2, true);
 		PathItem._splitPath(intersections);
 		// Collect all sub paths and segments
 		paths.push.apply(paths, path1._children || [path1]);
-		paths.push.apply(paths, path2._children || [path2]);
+		if (!singlePathOp)
+			paths.push.apply(paths, path2._children || [path2]);
 
 		for (i = 0, l = paths.length; i < l; i++){
 			segments.push.apply(segments, paths[i].getSegments());
@@ -186,7 +190,8 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			result.addChild(paths[i], true);
 		// Delete the proxies
 		path1.remove();
-		path2.remove();
+		if (!singlePathOp)
+			path2.remove();
 		// And then, we are done.
 		return result.reduce();
     }
