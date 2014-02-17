@@ -113,8 +113,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			// Check if extended handles of endpoints of this curve intersects
 			// each other. We cannot have a self intersection within this curve
 			// if they don't intersect due to convex-hull property.
-			ix = new paper.Line(from._point.subtract(v1), v1.multiply(2), true)
-					.intersect(new paper.Line(to._point.subtract(v2),
+			ix = new Line(from._point.subtract(v1), v1.multiply(2), true)
+					.intersect(new Line(to._point.subtract(v2),
 						v2.multiply(2), true), false);
 			if (ix) {
 				parts = paper.Curve.subdivide(values1);
@@ -507,7 +507,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			if (seg._visited || !operator(seg._winding))
 				continue;
 			// Initialise a new path chain with the seed segment.
-			path = new paper.Path();
+			path = new Path();
 			ixOther = seg._intersection;
 			startSegIx = ixOther ? ixOther._segment : null;
 			firstHandleIn = null;
@@ -579,8 +579,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					firstHandleIn = nextHandleIn;
 					nextHandleIn = null;
 				}
-				path.add(new paper.Segment(seg._point, nextHandleIn,
-						nextHandleOut));
+				path.add(new Segment(seg._point, nextHandleIn, nextHandleOut));
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
 				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
