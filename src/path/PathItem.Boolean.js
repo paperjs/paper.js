@@ -88,30 +88,30 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		if (!singlePathOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		var intersections, i, j, l, lj, segment, wind,
-		point, startSeg, crv, length, parent, v, horizontal,
-		curveChain = [],
-		windings = [],
-		lengths = [],
-		windMedian, lenCurves,
-		paths = [],
-		segments = [],
-		// Aggregate of all curves in both operands, monotonic in y
-		monoCurves = [],
-		result = new CompoundPath(),
-		random = Math.random,
-		abs = Math.abs,
-		tolerance = Numerical.TOLERANCE,
-		getWindingNumber = PathItem._getWindingNumber;
-		// Split curves at intersections on both paths.
-		intersections = singlePathOp ? path1.getSelfIntersections(true)
-				: path1.getIntersections(path2, true);
-		PathItem._splitPath(intersections);
+			point, startSeg, crv, length, parent, v, horizontal,
+			curveChain = [],
+			windings = [],
+			lengths = [],
+			windMedian, lenCurves,
+			paths = [],
+			segments = [],
+			// Aggregate of all curves in both operands, monotonic in y
+			monoCurves = [],
+			result = new CompoundPath(),
+			random = Math.random,
+			abs = Math.abs,
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			getWindingNumber = PathItem._getWindingNumber;
+			// Split curves at intersections on both paths.
+			intersections = singlePathOp ? path1.getSelfIntersections(true)
+					: path1.getIntersections(path2, true);
+			PathItem._splitPath(intersections);
 		// Collect all sub paths and segments
 		paths.push.apply(paths, path1._children || [path1]);
 		if (!singlePathOp)
 			paths.push.apply(paths, path2._children || [path2]);
 
-		for (i = 0, l = paths.length; i < l; i++){
+		for (i = 0, l = paths.length; i < l; i++) {
 			segments.push.apply(segments, paths[i].getSegments());
 			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
 		}
@@ -120,14 +120,14 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 		// First, sort all segments with an intersection to the begining.
 		segments.sort(function(a, b) {
 			var ixa = a._intersection,
-			ixb = b._intersection;
-			if ((!ixa && !ixb) || (ixa && ixb))
+				ixb = b._intersection;
+			if (!ixa && !ixb || ixa && ixb)
 				return 0;
 			return ixa ? -1 : 1;
 		});
 		for (i = 0, l = segments.length; i < l; i++) {
 			segment = segments[i];
-			if(segment._winding != null)
+			if (segment._winding != null)
 				continue;
 			// Here we try to determine the most probable winding number
 			// contribution for this curve-chain. Once we have enough
@@ -142,7 +142,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 				lengths.push(lenCurves);
 				// Continue with next curve
 				segment = segment.getNext();
-			} while(segment && !segment._intersection && segment !== startSeg);
+			} while (segment && !segment._intersection && segment !== startSeg);
 
 
 			// Select the median winding of three random points along this

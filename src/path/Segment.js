@@ -279,7 +279,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		var next = this.getNext(),
 			handle1 = this._handleOut,
 			handle2 = next._handleIn,
-			kappa = Numerical.KAPPA;
+			kappa = /*#=*/ Numerical.KAPPA;
 		if (handle1.isOrthogonal(handle2)) {
 			var from = this._point,
 				to = next._point,

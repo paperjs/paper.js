@@ -90,7 +90,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return PathItem._conditionIntersections(locations, expand);
 	},
 
-	getSelfIntersections: function(expand){
+	getSelfIntersections: function(expand) {
 		var locations = [],
 			locs = [],
 			curves = this.getCurves(),
@@ -98,8 +98,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			matrix = this._matrix.orNullIfIdentity(),
 			values = [],
 			curve1, values1, parts, i, j, k, ix, from, to, param, v1, v2,
-			EPSILON =  /*#=*/ Numerical.EPSILON,
-			EPSILON1s = 1-EPSILON;
+			EPSILON = /*#=*/ Numerical.EPSILON,
+			EPSILON1s = 1 - EPSILON;
 		for (i = 0; i <= length; i++)
 			values[i] = curves[i].getValues(matrix);
 		for (i = 0; i <= length; i++) {
@@ -132,7 +132,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					locations.push(ix);
 			}
 			// Check for intersections with other curves
-			for (j = i + 1; j <= length; j++){
+			for (j = i + 1; j <= length; j++) {
 				// Avoid end point intersections on consecutive curves
 				if (j === i + 1 || (j === length && i === 0)) {
 					locs.length = 0;
@@ -319,7 +319,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				newSegments.length = 0;
 			}
 			// Split the curve at t, while ignoring linearity of curves
-			if ((crvNew = crv.divide(t, true, true)) === null){
+			if ((crvNew = crv.divide(t, true, true)) === null) {
 				if (t >= 1-tolerance) {
 					segment = crv._segment2;
 				} else if (t <= tolerance) {
@@ -342,33 +342,34 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			// and if we are done with the entire curve.
 			newSegments.push(segment);
 			loc = intersections[i - 1];
-			if (!(loc && loc.getPath() === path1 &&
-					loc._curve === node1._curve) && isLinear)
+			if (!(loc && loc.getPath() === path1 && loc._curve === node1._curve)
+					&& isLinear) {
 				for (j = newSegments.length-1; j >= 0; j--) {
 					segment = newSegments[j];
-					// FIXME: Don't reset the appropriate handle if the intersections were on t==0 && t==1
+					// FIXME: Don't reset the appropriate handle if the
+					// intersections were on t == 0 && t == 1
 					segment._handleOut.set(0, 0);
 					segment._handleIn.set(0, 0);
 				}
+			}
 		}
 	},
 
 	/**
 	 * Private static method that returns the winding contribution of the 
-	 * given point with respect to a given set of monotone curves
-	 * 
+	 * given point with respect to a given set of monotone curves.
 	 */
 	_getWindingNumber: function(point, curves, horizontal) {
 		function getTangent(v, t) {
-			var tan, sign, i;
-			sign = t === 0 ? 2 : (t === 1 ? -2 : 0);
+			var sign = t === 0 ? 2 : t === 1 ? -2 : 0,
+				tan;
 			if (sign !== 0) {
-				i = sign > 0 ? 0 : 6;
 				// Return slope from this point that follows the direction
 				// of the line
 				if (Curve.isLinear(v))
 					sign *= 3;
-				tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
+				var i = sign > 0 ? 0 : 6;
+				tan = new Point(v[i + sign] - v[i], v[i + sign + 1] - v[i + 1]);
 			} else {
 				tan = Curve.evaluate(v, t, 1);
 			}
@@ -433,15 +434,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// curve merely touches the ray towards ±x direction, but
 				// proceeds to the same side of the ray. This essentially is
 				// not a crossing.
-				if (t === 0){
+				if (t === 0) {
 					// The previous curve's reference is stored at index:9,
 					// see Path#_getMonotoneCurves for details.
 					var v2 = v[9];
-					if (abs(v2[6] - v[0]) < tolerance && abs(v2[7] - v[1]) < tolerance){
-						var slope2 = getTangent(v2, 1).y;
-						if(slope * slope2 > 0)
-							stationary = true;
-					}
+					if (abs(v2[6] - v[0]) < tolerance
+							&& abs(v2[7] - v[1]) < tolerance
+							&& slope * getTangent(v2, 1).y > 0)
+						stationary = true;
 				}
 				wind = v[8];
 				if (x0 <= xBefore && !stationary)
@@ -492,15 +492,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			return ret;
 		}
 		// Choose a default operator which will return all contours
-		if (!operator)
-			operator = function(){ return true; };
+		operator = operator || function() {
+			return true;
+		};
 		var seg, startSeg, startSegIx, i, j, len, path, ixOther, firstHandleIn,
 			c1, c3, c4, t1, tan, crv, ixOtherSeg, nextSeg, nextHandleIn,
 			nextHandleOut, direction, entryExitTangents,
 			// Tangents of all curves at an intersection, except the entry curve
 			crvTan = [{}, {}],
-			// Compare curve tangents to sort them counter clockwise.
-			crvTanCompare = function(a, b){ return a.w - b.w; },
 			paths = [];
 		for (i = 0, len = segments.length; i < len; i++) {
 			startSeg = seg = segments[i];
@@ -518,10 +517,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				ixOther = seg._intersection;
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
-				// else, stay on the same contour.
-				if ((!operator(seg._winding) || selfIx) && ixOther &&
-						(ixOtherSeg = ixOther._segment) &&
-						ixOtherSeg !== startSeg && firstHandleIn) {
+				// Else, stay on the same contour.
+				if ((!operator(seg._winding) || selfIx) && ixOther
+						&& (ixOtherSeg = ixOther._segment)
+						&& ixOtherSeg !== startSeg && firstHandleIn) {
 					entryExitTangents = getEntryExitTangents(seg);
 					c1 = seg.getCurve();
 					if (direction < 1) {
@@ -548,7 +547,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					// Do not attempt to switch contours if we aren't absolutely
 					// sure that there is a possible candidate.
 					if (crvTan[0].w * crvTan[1].w !== 0) {
-						crvTan.sort(crvTanCompare);
+						crvTan.sort(function(a, b) {
+							// Compare tangents to sort curves counter clockwise
+							return a.w - b.w;
+						});
 						j = 0;
 						do {
 							crv = crvTan[j++].c;
@@ -573,8 +575,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					}
 					nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
 				}
-				// Add the current segment to the path, and mark
-				// the added segment as visited.
+				// Add the current segment to the path, and mark the added
+				// segment as visited.
 				if (!firstHandleIn) {
 					firstHandleIn = nextHandleIn;
 					nextHandleIn = null;
@@ -583,23 +585,26 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
 				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
-			} while(seg && seg !== startSeg && seg !== startSegIx &&
-					!seg._visited && (seg._intersection || operator(seg._winding)));
-			// Finish with closing the paths if necessary,
-			// correctly linking up curves etc.
-			if (seg && (seg == startSeg || seg == startSegIx)){
-				path.firstSegment.setHandleIn((seg == startSegIx)?
-						startSegIx._handleIn : seg._handleIn);
+			} while (seg && seg !== startSeg && seg !== startSegIx
+					&& !seg._visited
+					&& (seg._intersection || operator(seg._winding)));
+			// Finish with closing the paths if necessary, correctly linking up
+			// curves etc.
+			if (seg && (seg === startSeg || seg === startSegIx)) {
+				path.firstSegment.setHandleIn(seg === startSegIx
+						? startSegIx._handleIn
+						: seg._handleIn);
 				path.setClosed(true);
 			} else {
 				path.lastSegment._handleOut.set(0, 0);
 			}
-			// Add the path to the result
+			// Add the path to the result.
 			// Try to avoid stray segments and incomplete paths.
-			if ((path.closed && path.segments.length) || path.segments.length > 2 ||
-					(path.closed && path.segments.length === 2 &&
-					(!path.getCurves()[0].isLinear() ||
-					!path.getCurves()[1].isLinear()))) {
+			if (path.closed && path.segments.length
+					|| path.segments.length > 2
+					|| (path.closed && path.segments.length === 2
+						&& (!path.getCurves()[0].isLinear()
+							|| !path.getCurves()[1].isLinear()))) {
 				paths.push(path);
 			} else {
 				path.remove();
@@ -622,7 +627,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		}
 		// Remove duplicate intersections near curve endings
 		var loc, locNext,
-			tolerance = Numerical.EPSILON,
+			tolerance = /*#=*/ Numerical.EPSILON,
 			tolerance1 = 1 - tolerance,
 			abs = Math.abs;
 		// Merge intersections very close to the end of a curve to the
