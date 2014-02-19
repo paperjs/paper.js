@@ -1712,7 +1712,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Private method that returns and caches all the curves in this Path, which
 	 * are monotonically decreasing or increasing in the 'y' direction.
-	 * Used by PathItem#_getWinding method.
+	 * Used by PathItem#_getWinding().
 	 */
 	_getMonotoneCurves: function() {
 		var monoCurves = this._monotoneCurves,
@@ -1781,9 +1781,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// If the path is not closed, we should join the end points
 			// with a straight line, just like how filling open paths works.
 			if (!this._closed && segments.length > 1) {
-		   //  	if (!this.hasFill()
-					// || !this.getInternalRoughBounds()._containsPoint(point))
-					// return 0;
 				curves.push(new Curve(segments[segments.length - 1]._point,
 						segments[0]._point));
 			}

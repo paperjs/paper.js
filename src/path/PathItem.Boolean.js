@@ -31,7 +31,7 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 
-PathItem.inject(new function() { // FIXME: Is new necessary?
+PathItem.inject(new function() {
     /**
      * To deal with a HTML5 canvas requirement where CompoundPaths' child
      * contours has to be of different winding direction for correctly filling
@@ -87,7 +87,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			path1.reverse();
 		if (!singlePathOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
-		var intersections, i, j, l, lj, segment, wind,
+		var i, j, l, lj, segment, wind,
 			point, startSeg, crv, length, parent, v, horizontal,
 			curveChain = [],
 			windings = [],
@@ -98,14 +98,11 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			// Aggregate of all curves in both operands, monotonic in y
 			monoCurves = [],
 			result = new CompoundPath(),
-			random = Math.random,
-			abs = Math.abs,
 			tolerance = /*#=*/ Numerical.TOLERANCE,
-			getWinding = PathItem._getWinding;
-			// Split curves at intersections on both paths.
 			intersections = singlePathOp ? path1.getSelfIntersections(true)
 					: path1.getIntersections(path2, true);
-			PathItem._splitPath(intersections);
+		// Split curves at intersections on both paths.
+		PathItem._splitPath(intersections);
 		// Collect all sub paths and segments
 		paths.push.apply(paths, path1._children || [path1]);
 		if (!singlePathOp)
@@ -152,7 +149,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			// the same (amortised) time.
 			windings.length = 0;
 			for (wind = 0; wind < 3; wind++) {
-				length = lenCurves * random();
+				length = lenCurves * Math.random();
 				for (j = 0, lj = lengths.length ; j <= lj; j++)
 					if (lengths[j] >= length) {
 						length = j > 0 ? length - lengths[j-1] : length;
@@ -161,8 +158,8 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 				crv = curveChain[j].getCurve();
 				point = crv.getPointAt(length);
 				v = crv.getValues();
-				horizontal = (Curve.isLinear(v) && abs(v[1] - v[7]) < tolerance);
-				windMedian = getWinding(point, monoCurves, horizontal);
+				horizontal = Curve.isLinear(v) && Math.abs(v[1] - v[7]) < tolerance;
+				windMedian = PathItem._getWinding(point, monoCurves, horizontal);
 				// While subtracting, we need to omit this curve if this 
 				// curve is contributing to the second operand and is outside
 				// the first operand.
