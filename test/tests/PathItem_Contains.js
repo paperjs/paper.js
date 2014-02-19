@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item Contains');
+module('PathItem Contains');
 
 function testPoint(item, point, inside) {
 	equals(item.contains(point), inside, 'The point ' + point
@@ -200,5 +200,7 @@ test('Path#contains() (complex shape)', function() {
 
 	testPoint(path, new Point(360, 160), true);
 	testPoint(path, new Point(377, 96), false);
+	testPoint(path, new Point(410, 218), false);
+	testPoint(path, new Point(431, 104), false);
 });
 
