@@ -270,8 +270,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @return {Number}                Winding number.
 	 */
 	_getWinding: function(point, horizontal) {
-		var curves = this._getMonotoneCurves();
-		return PathItem._getWindingNumber(point, curves, horizontal);
+		return PathItem._getWinding(point, this._getMonotoneCurves(),
+				horizontal);
 	},
 
 	_contains: function(point) {
@@ -359,7 +359,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * Private static method that returns the winding contribution of the 
 	 * given point with respect to a given set of monotone curves.
 	 */
-	_getWindingNumber: function(point, curves, horizontal) {
+	_getWinding: function _getWinding(point, curves, horizontal) {
 		function getTangent(v, t) {
 			var sign = t === 0 ? 2 : t === 1 ? -2 : 0,
 				tan;
@@ -412,10 +412,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			yTop = (yTop + y) / 2;
 			yBot = (yBot + y) / 2;
 			windLeft = yTop > -Infinity
-					? PathItem._getWindingNumber(new Point(x, yTop), curves)
+					? _getWinding(new Point(x, yTop), curves)
 					: 0;
 			windRight = yBot < Infinity
-					? PathItem._getWindingNumber(new Point(x, yBot), curves)
+					? _getWinding(new Point(x, yBot), curves)
 					: 0;
 			return Math.max(windLeft, windRight);
 		}

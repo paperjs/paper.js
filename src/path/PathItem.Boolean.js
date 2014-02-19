@@ -101,7 +101,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 			random = Math.random,
 			abs = Math.abs,
 			tolerance = /*#=*/ Numerical.TOLERANCE,
-			getWindingNumber = PathItem._getWindingNumber;
+			getWinding = PathItem._getWinding;
 			// Split curves at intersections on both paths.
 			intersections = singlePathOp ? path1.getSelfIntersections(true)
 					: path1.getIntersections(path2, true);
@@ -162,8 +162,7 @@ PathItem.inject(new function() { // FIXME: Is new necessary?
 				point = crv.getPointAt(length);
 				v = crv.getValues();
 				horizontal = (Curve.isLinear(v) && abs(v[1] - v[7]) < tolerance);
-				// PathItem._getWindingNumber
-				windMedian = getWindingNumber(point, monoCurves, horizontal);
+				windMedian = getWinding(point, monoCurves, horizontal);
 				// While subtracting, we need to omit this curve if this 
 				// curve is contributing to the second operand and is outside
 				// the first operand.
