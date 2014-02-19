@@ -1716,98 +1716,94 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 */
 	_getMonotoneCurves: function() {
 		var monoCurves = this._monotoneCurves,
-			lastCurve,
-			INCREASING = 1,
-			DECREASING = -1,
-			HORIZONTAL = 0;
-		if (!monoCurves) {
-			// Insert curve values into a cached array
-			// Always avoid horizontal curves
-			function insertValues(v, dir) {
-				var y0 = v[1], y1 = v[7];
-				dir = dir || INCREASING;
-				if (y0 === y1) {
-					dir = HORIZONTAL;
-				} else if (y0 > y1) {
-					dir = DECREASING;
-				}
-				// Add a reference to subsequent curves
-				v.push(dir);
-				if (lastCurve) {
-					v[9] = lastCurve;
-					lastCurve[10] = v;
-				}
-				lastCurve = v;
-				monoCurves.push(v);
+			prevCurve;
+
+		// Insert curve values into a cached array
+		function insertCurve(v) {
+			var y0 = v[1],
+				y1 = v[7];
+			// Add the winding direction to the end of the curve values.
+			v[8] = y0 === y1
+					? 0 // Horizontal
+					: y0 > y1
+						? -1 // Decreasing
+						: 1; // Increasing
+			// Add a reference to neighboring curves
+			if (prevCurve) {
+				v[9] = prevCurve;
+				prevCurve[10] = v;
 			}
-			// Handle bezier curves. We need to chop them into smaller curves 
-			// with defined orientation, by solving the derivative curve for
-			// Y extrema.
-			function insertCurves(v, dir) {
-				var y0 = v[1], y1 = v[3],
-					y2 = v[5], y3 = v[7],
-					roots = [], tolerance = /*#=*/ Numerical.TOLERANCE,
-					i, li;
+			monoCurves.push(v);
+			prevCurve = v;
+		}
+
+		// Handle bezier curves. We need to chop them into smaller curves 
+		// with defined orientation, by solving the derivative curve for
+		// Y extrema.
+		function handleCurve(v) {
+			// Filter out curves of zero length.
+			// TODO: Do not filter this here.
+			if (Curve.getLength(v) === 0)
+				return;
+			var y0 = v[1],
+				y1 = v[3],
+				y2 = v[5],
+				y3 = v[7];
+			if (Curve.isLinear(v)) {
+				// Handling linear curves is easy.
+				insertCurve(v);
+			} else {
 				// Split the curve at y extrema, to get bezier curves with clear
 				// orientation: Calculate the derivative and find its roots.
 				var a = 3 * (y1 - y2) - y0 + y3,
 					b = 2 * (y0 + y2) - 4 * y1,
-					c = y1 - y0;
-				// Keep then range to 0 .. 1 (excluding) in the search
-				// for y extrema
+					c = y1 - y0,
+					tolerance = /*#=*/ Numerical.TOLERANCE,
+					roots = [];
+				// Keep then range to 0 .. 1 (excluding) in the search for y
+				// extrema.
 				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
 						1 - tolerance);
 				if (count === 0) {
-					insertValues(v, dir);
+					insertCurve(v);
 				} else {
 					roots.sort();
-					var parts, t = roots[0];
-					parts = Curve.subdivide(v, t);
+					var t = roots[0],
+						parts = Curve.subdivide(v, t);
+					insertCurve(parts[0]);
 					if (count > 1) {
-						// Now renormalize t1 to the range of the next part.
+						// If there are two extremas, renormalize t to the range
+						// of the second range and split again.
 						t = (roots[1] - t) / (1 - t);
-						var subparts = Curve.subdivide(parts[1], t);
-						parts.splice(1, 1, subparts[0], subparts[1]);
+						// Since we already processed parts[0], we can override
+						// the parts array with the new pair now.
+						parts = Curve.subdivide(parts[1], t);
+						insertCurve(parts[0]);
 					}
-					for (i = 0, li = parts.length; i < li; i++)
-						insertValues(parts[i]);
+					insertCurve(parts[1]);
 				}
 			}
-			// Insert curves that are monotonic in y direction into a cached array 
+		}
+
+		if (!monoCurves) {
+			// Insert curves that are monotonic in y direction into cached array
 			monoCurves = this._monotoneCurves = [];
 			var curves = this.getCurves(),
-				crv, vals, i, li,
 				segments = this._segments;
-			// If the path is not closed, we should join the end points
-			// with a straight line, just like how filling open paths works.
+			for (var i = 0, l = curves.length; i < l; i++)
+				handleCurve(curves[i].getValues());
+			// If the path is not closed, we need to join the end points with a
+			// straight line, just like how filling open paths works.
 			if (!this._closed && segments.length > 1) {
-				curves.push(new Curve(segments[segments.length - 1]._point,
-						segments[0]._point));
+				var p1 = segments[segments.length - 1]._point,
+					p2 = segments[0]._point,
+					p1x = p1._x, p1y = p1._y,
+					p2x = p2._x, p2y = p2._y;
+				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
 			}
-			for (i = 0, li = curves.length; i < li; i++) {
-				crv = curves[i];
-				// Filter out curves of zero length
-				vals = crv.getValues();
-				if (Curve.getLength(vals) === 0)
-					continue;
-				// Handle linear and cubic curves seperately
-				if (crv.isLinear()) {
-					insertValues(vals);
-				} else {
-					var y0 = vals[1], y1 = vals[7];
-					if (y0 > y1) {
-						insertCurves(vals, DECREASING);
-					} else if (y0 == y1 && y0 == vals[3] && y0 == vals[5]) {
-						insertValues(vals, HORIZONTAL);
-					} else {
-						insertCurves(vals, INCREASING);
-					}
-				}
-			}
-			// Link, first and last curves
-			lastCurve = monoCurves[monoCurves.length - 1];
-			monoCurves[0][9] = lastCurve;
-			lastCurve.push(monoCurves[0]);
+			// Link first and last curves
+			monoCurves[0][9] = prevCurve = monoCurves[monoCurves.length - 1];
+			prevCurve[10] = monoCurves[0];
 		}
 		return monoCurves;
 	},
