@@ -1071,7 +1071,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			index = arg.index;
 			parameter = arg.parameter;
 		}
-		if (parameter >= 1) {
+		var tolerance = /*#=*/ Numerical.TOLERANCE;
+		if (parameter >= 1 - tolerance) {
 			// t == 1 is the same as t == 0 and index ++
 			index++;
 			parameter--;
@@ -1079,7 +1080,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var curves = this.getCurves();
 		if (index >= 0 && index < curves.length) {
 			// Only divide curves if we're not on an existing segment already.
-			if (parameter > 0) {
+			if (parameter > tolerance) {
 				// Divide the curve with the index at given parameter.
 				// Increase because dividing adds more segments to the path.
 				curves[index++].divide(parameter, true);
@@ -1347,13 +1348,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var start = length,
 				curve = curves[i];
 			length += curve.getLength();
-			if (length >= offset) {
+			if (length > offset) {
 				// Found the segment within which the length lies
 				return curve.getLocationAt(offset - start);
 			}
 		}
-		// It may be that through impreciseness of getLength, that the end
-		// of the curves was missed:
+		// It may be that through imprecision of getLength, that the end of the
+		// last curve was missed:
 		if (offset <= this.getLength())
 			return new CurveLocation(curves[curves.length - 1], 1);
 		return null;
