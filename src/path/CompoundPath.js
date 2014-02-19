@@ -249,14 +249,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		return curves;
 	},
 
-	// _getWinding: function(point) {
-	// 	var children =  this._children,
-	// 		winding = 0;
-	// 	for (var i = 0, l = children.length; i < l; i++)
-	// 		winding += children[i]._getWinding(point);
-	// 	return winding;
-	// },
-
 	_getChildHitTestOptions: function(options) {
 		// If we're not specifically asked to returns paths through
 		// options.type == 'path' do not test children for fill, since a

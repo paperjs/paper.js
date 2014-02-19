@@ -440,28 +440,6 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
-	/**
-	 * Returns the winding contribution of this curve, to the parent path or
-	 * CompoundPath it is part of.
-	 */
-	_getWinding: function() {
-		var path = this.getPath();
-		if (!path)
-			// If this curve is not part of a path,
-			// the 'insideness' contribution of this curve is undefined.
-			return null;
-		var v = this.getValues(),
-			point = Curve.evaluate(v, 0.5, 0),
-			// Since we are using curves monotonic in Y direction, horizontal
-			// curves may report wrong winding contribution. See 
-			// PathItem#_getWinding for details on how we resolve this issue.
-			tolerance = /*#=*/ Numerical.TOLERANCE,
-			horizontal = (Curve.isLinear(v) && Math.abs(v[1] - v[7]) < tolerance);
-		// Call the parent's _getWinding method
-		return (path._parent instanceof CompoundPath ? path._parent
-					: path)._getWinding(point, horizontal);
-	},
-
 // Mess with indentation in order to get more line-space below...
 statics: {
 	getValues: function(segment1, segment2, matrix) {
