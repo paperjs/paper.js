@@ -319,7 +319,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				newSegments.length = 0;
 			}
 			// Split the curve at t, while ignoring linearity of curves
-			if ((crvNew = crv.divide(t, true, true)) === null) {
+			if (!(crvNew = crv.divide(t, true, true))) {
 				if (t >= 1-tolerance) {
 					segment = crv._segment2;
 				} else if (t <= tolerance) {
