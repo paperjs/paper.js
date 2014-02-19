@@ -110,7 +110,7 @@ PathItem.inject(new function() {
 
 		for (i = 0, l = paths.length; i < l; i++) {
 			segments.push.apply(segments, paths[i].getSegments());
-			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
+			monoCurves.push.apply(monoCurves, paths[i]._getMonoCurves());
 		}
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.

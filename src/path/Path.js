@@ -146,7 +146,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			// Clear cached curves used for winding direction and containment
 			// calculation.
-			this._monotoneCurves = undefined;
+			this._monoCurves = undefined;
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
@@ -1714,8 +1714,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * are monotonically decreasing or increasing in the 'y' direction.
 	 * Used by PathItem#_getWinding().
 	 */
-	_getMonotoneCurves: function() {
-		var monoCurves = this._monotoneCurves,
+	_getMonoCurves: function() {
+		var monoCurves = this._monoCurves,
 			prevCurve;
 
 		// Insert curve values into a cached array
@@ -1787,7 +1787,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		if (!monoCurves) {
 			// Insert curves that are monotonic in y direction into cached array
-			monoCurves = this._monotoneCurves = [];
+			monoCurves = this._monoCurves = [];
 			var curves = this.getCurves(),
 				segments = this._segments;
 			for (var i = 0, l = curves.length; i < l; i++)

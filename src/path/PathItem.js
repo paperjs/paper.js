@@ -269,8 +269,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @return {Number} the winding number
 	 */
 	_getWinding: function(point, horizontal) {
-		return PathItem._getWinding(point, this._getMonotoneCurves(),
-				horizontal);
+		return PathItem._getWinding(point, this._getMonoCurves(), horizontal);
 	},
 
 	_contains: function(point) {
@@ -413,7 +412,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 							// +-x direction, but proceeds to the same side of
 							// the ray. This essentially is not a crossing.
 							// NOTE: The previous curve is stored at v[9],
-							// see Path#_getMonotoneCurves() for details.
+							// see Path#_getMonoCurves() for details.
 							|| t < tolerance
 								&& slope * Curve.evaluate(v[9], t, 1).y < 0;
 				if (!stationary) {
