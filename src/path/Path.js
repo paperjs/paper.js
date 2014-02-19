@@ -1075,7 +1075,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 			parameter--;
 		}
 		var curves = this.getCurves();
-		paper.console.log(index, parameter);
 		if (index >= 0 && index < curves.length) {
 			// Only divide curves if we're not on an existing segment already.
 			if (parameter > tolerance) {
