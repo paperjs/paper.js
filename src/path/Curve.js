@@ -485,12 +485,14 @@ statics: {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
+			tolerance = /*#=*/ Numerical.TOLERANCE,
 			x, y;
 
 		// Handle special case at beginning / end of curve
-		if (type === 0 && (t === 0 || t === 1)) {
-			x = t === 0 ? p1x : p2x;
-			y = t === 0 ? p1y : p2y;
+		if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
+			var isZero = t < tolerance;
+			x = isZero ? p1x : p2x;
+			y = isZero ? p1y : p2y;
 		} else {
 			// Calculate the polynomial coefficients.
 			var cx = 3 * (c1x - p1x),
@@ -510,11 +512,16 @@ statics: {
 				// 3: curvature, 1st derivative & 2nd derivative
 				// Prevent tangents and normals of length 0:
 				// http://stackoverflow.com/questions/10506868/
-				var tolerance = /*#=*/ Numerical.TOLERANCE;
 				if (t < tolerance && c1x === p1x && c1y === p1y
 						|| t > 1 - tolerance && c2x === p2x && c2y === p2y) {
 					x = p2x - p1x;
 					y = p2y - p1y;
+				} else if (t < tolerance) {
+					x = cx;
+					y = cy;
+				} else if (t > 1 - tolerance) {
+					x = 3 * (p2x - c2x);
+					y = 3 * (p2y - c2y);
 				} else {
 					// Simply use the derivation of the bezier function for both
 					// the x and y coordinates:
@@ -532,7 +539,7 @@ statics: {
 			}
 		}
 		// The normal is simply the rotated tangent:
-		return type == 2 ? new Point(y, -x) : new Point(x, y);
+		return type === 2 ? new Point(y, -x) : new Point(x, y);
 	},
 
 	subdivide: function(v, t) {
