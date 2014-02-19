@@ -116,11 +116,9 @@ PathItem.inject(new function() {
 		// does not change between two intersections.
 		// First, sort all segments with an intersection to the begining.
 		segments.sort(function(a, b) {
-			var ixa = a._intersection,
-				ixb = b._intersection;
-			if (!ixa && !ixb || ixa && ixb)
-				return 0;
-			return ixa ? -1 : 1;
+			var _a = a._intersection,
+				_b = b._intersection;
+			return !_a && !_b || _a && _b ? 0 : _a ? -1 : 1;
 		});
 		for (i = 0, l = segments.length; i < l; i++) {
 			segment = segments[i];
