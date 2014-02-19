@@ -262,12 +262,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * Returns the winding contribution of the given point with respect to this
 	 * PathItem.
 	 *
-	 * @param  {Object} point          Point to determine the winding direction 
-	 *                                 about.
-	 * @param  {Boolean} horizontal    Boolean value indicating if we need to
-	 *                                 consider this point as part of a 
-	 *                                 horizontal curve.
-	 * @return {Number}                Winding number.
+	 * @param  {Point} point the location for which to determine the winding
+	 * direction
+	 * @param  {Boolean} horizontal wether we need to consider this point as
+	 * part of a horizontal curve
+	 * @return {Number} the winding number
 	 */
 	_getWinding: function(point, horizontal) {
 		return PathItem._getWinding(point, this._getMonotoneCurves(),
@@ -296,7 +295,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * Private method for splitting a PathItem at the given intersections.
 	 * The routine works for both self intersections and intersections 
 	 * between PathItems.
-	 * @param  {Array} intersections Array of CurveLocation objects
+	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
 	 */
 	_splitPath: function(intersections) {
 		var loc, i, j, node1, node2, t, segment,
@@ -455,16 +454,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
 	/**
 	 * Private method to trace closed contours from a set of segments according 
-	 * to a set of constraints —winding contribution and a custom operator.
+	 * to a set of constraints—winding contribution and a custom operator.
 	 * 
-	 * @param  {Array} segments Array of 'seed' segments for tracing closed
-	 *                          contours.
-	 * @param  {Function} operator A function. It must take one argument, which
-	 *                             is the winding number contribution of a 
-	 *                             curve, and should return a boolean value 
-	 *                             indicating whether the curve should be 
-	 *                             included in the final contour or not.
-	 * @return {Array}          Array of contours traced.
+	 * @param {Segment[]} segments Array of 'seed' segments for tracing closed
+	 * contours
+	 * @param {Function} the operator function that receives as argument the
+	 * winding number contribution of a curve and returns a boolean value 
+	 * indicating whether the curve should be  included in the final contour or
+	 * not
+	 * @return {Path[]} the contours traced
 	 */
 	_tracePaths: function(segments, operator, selfIx) {
 		// Utility function. Correctly returns entry and exit tangents of an
