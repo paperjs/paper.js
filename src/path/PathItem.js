@@ -359,24 +359,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * given point with respect to a given set of monotone curves.
 	 */
 	_getWinding: function _getWinding(point, curves, horizontal) {
-		function getTangent(v, t) {
-			var sign = t === 0 ? 2 : t === 1 ? -2 : 0,
-				tan;
-			if (sign !== 0) {
-				// Return slope from this point that follows the direction
-				// of the line
-				if (Curve.isLinear(v))
-					sign *= 3;
-				var i = sign > 0 ? 0 : 6;
-				tan = new Point(v[i + sign] - v[i], v[i + sign + 1] - v[i + 1]);
-			} else {
-				tan = Curve.evaluate(v, t, 1);
-			}
-			return tan;
-		}
-
-		var i, j, li, t, x0, y0, wind, v, slope, stationary,
-			tolerance = /*#=*/ Numerical.TOLERANCE,
+		var tolerance = /*#=*/ Numerical.TOLERANCE,
 			x = point.x,
 			y = point.y,
 			xAfter = x + tolerance,
@@ -390,17 +373,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		// indeterminate state.
 		if (horizontal) {
 			var yTop = -Infinity,
-				yBot = Infinity;
-			// Find the closest yIntercepts in the same vertical line
-			for (i = 0, li = curves.length-1; i <= li; i++) {
+				yBottom = Infinity;
+			// Find the closest top and bottom intercepts for the same vertical
+			// line.
+			for (var i = 0, l = curves.length; i < l; i++) {
 				v = curves[i];
 				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
-					for (j = roots.length - 1; j >= 0; j--) {
-						t = roots[j];
-						y0 = Curve.evaluate(v, t, 0).y;
-						if (y0 > y+tolerance && y0 < yBot) {
-							yBot = y0;
-						} else if (y0 < y-tolerance && y0 > yTop) {
+					for (var j = roots.length - 1; j >= 0; j--) {
+						var y0 = Curve.evaluate(v, roots[j], 0).y;
+						if (y0 > y + tolerance && y0 < yBottom) {
+							yBottom = y0;
+						} else if (y0 < y - tolerance && y0 > yTop) {
 							yTop = y0;
 						}
 					}
@@ -409,44 +392,37 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			// Shift the point lying on the horizontal curves by
 			// half of closest top and bottom intercepts.
 			yTop = (yTop + y) / 2;
-			yBot = (yBot + y) / 2;
-			windLeft = yTop > -Infinity
-					? _getWinding(new Point(x, yTop), curves)
-					: 0;
-			windRight = yBot < Infinity
-					? _getWinding(new Point(x, yBot), curves)
-					: 0;
+			yBottom = (yBottom + y) / 2;
+			if (yTop > -Infinity)
+				windLeft = _getWinding(new Point(x, yTop), curves);
+			if (yBottom < Infinity)
+				windRight = _getWinding(new Point(x, yBottom), curves);
 			return Math.max(windLeft, windRight);
 		}
 		// Find the winding number for right hand side of the curve,
 		// inclusive of the curve itself, while tracing along its ±x direction.
-		for (i = 0, li = curves.length-1; i <= li; i++) {
-			v = curves[i];
-			if (Curve.solveCubic(v, 1, y, roots, -tolerance, 1 + -tolerance) === 1) {
-				t = roots[0];
-				if ( t >= -tolerance && t <= tolerance)
-					t = 0;
-				x0 = Curve.evaluate(v, t, 0).x;
-				slope = getTangent(v, t).y;
-				stationary = !Curve.isLinear(v) && abs(slope) < tolerance;
-				// Take care of cases where the curve and the preceeding
-				// curve merely touches the ray towards ±x direction, but
-				// proceeds to the same side of the ray. This essentially is
-				// not a crossing.
-				if (t === 0) {
-					// The previous curve's reference is stored at index:9,
-					// see Path#_getMonotoneCurves for details.
-					var v2 = v[9];
-					if (abs(v2[6] - v[0]) < tolerance
-							&& abs(v2[7] - v[1]) < tolerance
-							&& slope * getTangent(v2, 1).y > 0)
-						stationary = true;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var v = curves[i];
+			if (Curve.solveCubic(v, 1, y, roots, 0, 1 - tolerance) === 1) {
+				var t = roots[0],
+					x0 = Curve.evaluate(v, t, 0).x,
+					slope = Curve.evaluate(v, t, 1).y,
+					stationary = abs(slope) < tolerance && !Curve.isLinear(v)
+							// Take care of cases where the curve and the
+							// preceeding curve merely touches the ray towards
+							// +-x direction, but proceeds to the same side of
+							// the ray. This essentially is not a crossing.
+							// NOTE: The previous curve is stored at v[9],
+							// see Path#_getMonotoneCurves() for details.
+							|| t < tolerance
+								&& slope * Curve.evaluate(v[9], t, 1).y < 0;
+				if (!stationary) {
+					var winding = v[8];
+					if (x0 <= xBefore)
+						windLeft += winding;
+					if (x0 >= xAfter)
+						windRight += winding;
 				}
-				wind = v[8];
-				if (x0 <= xBefore && !stationary)
-					windLeft += wind;
-				if (x0 >= xAfter && !stationary)
-					windRight += wind;
 			}
 		}
 		return Math.max(abs(windLeft), abs(windRight));
