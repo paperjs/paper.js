@@ -78,16 +78,16 @@ PathItem.inject(new function() {
 		// We call reduce() on both cloned paths to simplify compound paths and
 		// remove empty curves. We also apply matrices to both paths in case
 		// they were transformed.
-		var singlePathOp = path1 === path2;
+		var selfOp = path1 === path2;
 		path1 = reorientPath(path1.clone(false).reduce().applyMatrix());
-		if (!singlePathOp)
-			path2 = reorientPath(path2.clone(false).reduce().applyMatrix());
+		path2 = selfOp ? path1
+				: reorientPath(path2.clone(false).reduce().applyMatrix());
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when @subtract = true
 		// We need both paths at opposit orientation for subtraction
 		if (!path1.isClockwise())
 			path1.reverse();
-		if (!singlePathOp && !(subtract ^ path2.isClockwise()))
+		if (!selfOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		var i, j, l, lj, segment, wind,
 			point, startSeg, crv, length, parent, v, horizontal,
@@ -101,13 +101,12 @@ PathItem.inject(new function() {
 			monoCurves = [],
 			result = new CompoundPath(),
 			tolerance = /*#=*/ Numerical.TOLERANCE,
-			intersections = singlePathOp ? path1.getSelfIntersections(true)
-					: path1.getIntersections(path2, true);
+			intersections = path1.getIntersections(path2, true);
 		// Split curves at intersections on both paths.
 		PathItem._splitPath(intersections);
 		// Collect all sub paths and segments
 		paths.push.apply(paths, path1._children || [path1]);
-		if (!singlePathOp)
+		if (!selfOp)
 			paths.push.apply(paths, path2._children || [path2]);
 
 		for (i = 0, l = paths.length; i < l; i++) {
@@ -186,7 +185,7 @@ PathItem.inject(new function() {
 			result.addChild(paths[i], true);
 		// Delete the proxies
 		path1.remove();
-		if (!singlePathOp)
+		if (!selfOp)
 			path2.remove();
 		// And then, we are done.
 		return result.reduce();

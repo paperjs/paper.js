@@ -65,85 +65,68 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	getIntersections: function(path, _expand) {
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through their curves.
-		if (!this.getBounds().touches(path.getBounds()))
+		var selfOp = this === path;
+		if (!selfOp && !this.getBounds().touches(path.getBounds()))
 			return [];
 		var locations = [],
+			locs = [],
 			curves1 = this.getCurves(),
-			curves2 = path.getCurves(),
+			curves2 = selfOp ? curves1 : path.getCurves(),
 			matrix1 = this._matrix.orNullIfIdentity(),
-			matrix2 = path._matrix.orNullIfIdentity(),
+			matrix2 = selfOp ? matrix1 : path._matrix.orNullIfIdentity(),
 			length1 = curves1.length,
-			length2 = curves2.length,
-			values2 = [];
+			length2 = selfOp ? length1 : curves2.length,
+			values2 = [],
+			ZERO = /*#=*/ Numerical.EPSILON,
+			ONE = 1 - /*#=*/ Numerical.EPSILON;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {
 			var curve1 = curves1[i],
-				values1 = curve1.getValues(matrix1);
-			for (var j = 0; j < length2; j++)
-				Curve.getIntersections(values1, values2[j], curve1, curves2[j],
-						locations);
-		}
-		
-		return PathItem._filterIntersections(locations, _expand);
-	},
-
-	getSelfIntersections: function(_expand) {
-		var locations = [],
-			locs = [],
-			curves = this.getCurves(),
-			length = curves.length - 1,
-			matrix = this._matrix.orNullIfIdentity(),
-			values = [],
-			curve1, values1, parts, i, j, k, ix, from, to, param, v1, v2,
-			EPSILON = /*#=*/ Numerical.EPSILON,
-			EPSILON1s = 1 - EPSILON;
-		for (i = 0; i <= length; i++)
-			values[i] = curves[i].getValues(matrix);
-		for (i = 0; i <= length; i++) {
-			curve1 = curves[i];
-			values1 = values[i];
-			// First check for self-intersections within the same curve
-			from = curve1.getSegment1();
-			to = curve1.getSegment2();
-			v1 = from._handleOut;
-			v2 = to._handleIn;
-			// Check if extended handles of endpoints of this curve intersects
-			// each other. We cannot have a self intersection within this curve
-			// if they don't intersect due to convex-hull property.
-			ix = new Line(from._point.subtract(v1), v1.multiply(2), true)
-					.intersect(new Line(to._point.subtract(v2),
-						v2.multiply(2), true), false);
-			if (ix) {
-				parts = paper.Curve.subdivide(values1);
-				locs.length = 0;
-				Curve.getIntersections(parts[0], parts[1], curve1, curve1, locs);
-				for (j = locs.length - 1; j >= 0; j--) {
-					ix = locs[j];
-					if (ix._parameter <= EPSILON1s) {
-						ix._parameter = ix._parameter * 0.5;
-						ix._parameter2 = 0.5 + ix._parameter2 * 0.5;
-						break;
+				values1 = selfOp ? values2[i] : curve1.getValues(matrix1);
+			if (selfOp) {
+				// First check for self-intersections within the same curve
+				var seg1 = curve1.getSegment1(),
+					seg2 = curve1.getSegment2(),
+					h1 = seg1._handleOut,
+					h2 = seg2._handleIn;
+				// Check if extended handles of endpoints of this curve
+				// intersects each other. We cannot have a self intersection
+				// within this curve if they don't intersect due to convex-hull
+				// property.
+				if (new Line(seg1._point.subtract(h1), h1, true).intersect(
+						new Line(seg2._point.subtract(h2), h2, true), false)) {
+					locs.length = 0;
+					var parts = Curve.subdivide(values1);
+					Curve.getIntersections(parts[0], parts[1], curve1, curve1,
+							locs);
+					for (var j = locs.length - 1; j >= 0; j--) {
+						var loc = locs[j];
+						if (loc._parameter <= ONE) {
+							loc._parameter /= 2;
+							loc._parameter2 = (loc._parameter2 + 1) / 2;
+							locations.push(loc);
+							break;
+						}
 					}
 				}
-				if (j >= 0)
-					locations.push(ix);
 			}
 			// Check for intersections with other curves
-			for (j = i + 1; j <= length; j++) {
+			for (var j = selfOp ? i + 1 : 0; j < length2; j++) {
 				// Avoid end point intersections on consecutive curves
-				if (j === i + 1 || (j === length && i === 0)) {
+				if (selfOp && (j === i + 1 || (j === length2 - 1 && i === 0))) {
 					locs.length = 0;
-					Curve.getIntersections(values1, values[j], curve1,
-							curves[j], locs);
-					for (k = locs.length - 1; k >= 0; k--) {
-						param = locs[k].getParameter();
-						if (param < EPSILON1s && param > EPSILON)
-							locations.push(locs[k]);
+					Curve.getIntersections(values1, values2[j], curve1,
+							curves2[j], locs);
+					for (var k = locs.length - 1; k >= 0; k--) {
+						var loc = locs[k],
+							t = loc.getParameter();
+						if (t > ZERO && t < ONE)
+							locations.push(loc);
 					}
 				} else {
-					paper.Curve.getIntersections(values1, values[j], curve1,
-							curves[j], locations);
+					Curve.getIntersections(values1, values2[j], curve1,
+							curves2[j], locations);
 				}
 			}
 		}
@@ -437,7 +420,7 @@ statics: {
 			// Values for getTangentAt() that are almost 0 and 1.
 			// TODO: Correctly support getTangentAt(0) / (1)?
 			ZERO = 1e-3,
-			ONE = 1 - ZERO;
+			ONE = 1 - 1e-3;
 		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
 			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
