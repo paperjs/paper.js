@@ -192,7 +192,8 @@ PathItem.inject(new function() {
 	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
 	 */
 	function splitPath(intersections) {
-		var linearSegments;
+		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
+			linearSegments;
 
 		function resetLinear() {
 			// Reset linear segments if they were part of a linear curve 
@@ -226,7 +227,13 @@ PathItem.inject(new function() {
 				segment = newCurve._segment1;
 				curve = newCurve.getPrevious();
 			} else {
-				segment = t < 0.5 ? curve._segment1 : curve._segment2;
+				segment = t < TOLERANCE
+					? curve._segment1
+					: t > 1 - TOLERANCE
+						? curve._segment2
+						: curve.getPartLength(0, t) < curve.getPartLength(t, 1)
+							? curve._segment1
+							: curve._segment2;
 			}
 			// Link the new segment with the intersection on the other curve
 			segment._intersection = loc.getIntersection();
