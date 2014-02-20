@@ -284,7 +284,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return new Curve(Curve.getPart(this.getValues(), from, to));
 	},
 
-	// DOCS: document Curve#getPartLength(from, to)
+	// DOCS: Curve#getPartLength(from, to)
 	getPartLength: function(from, to) {
 		return Curve.getLength(this.getValues(), from, to);
 	},
@@ -300,6 +300,12 @@ var Curve = Base.extend(/** @lends Curve# */{
 				&& this._segment2._handleIn.isZero();
 	},
 
+	isHorizontal: function() {
+		return this.isLinear() && Numerical.isZero(
+				this._segment1._point._y - this._segment2._point._y);
+	},
+
+	// DOCS: Curve#getIntersections()
 	getIntersections: function(curve) {
 		return Curve.getIntersections(this.getValues(), curve.getValues(),
 				this, curve, []);
