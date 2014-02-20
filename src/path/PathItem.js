@@ -447,21 +447,19 @@ statics: {
 			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
 				continue;
-			// Initialise a new path chain with the seed segment.
 			var path = new Path({ insert: false }),
 				inter = seg._intersection,
 				startInterSeg = inter && inter._segment,
-				firstHandleIn = null,
+				added = false, // Wether a first segment as added already
 				dir = 1;
 			do {
-				var nextHandleIn = dir > 0 ? seg._handleIn : seg._handleOut,
-					nextHandleOut = dir > 0 ? seg._handleOut : seg._handleIn,
+				var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
+					handleOut = dir > 0 ? seg._handleOut : seg._handleIn,
 					interSeg;
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
 				// Else, stay on the same contour.
-				if (firstHandleIn
-						&& (!operator(seg._winding) || selfIx)
+				if (added && (!operator(seg._winding) || selfIx)
 						&& (inter = seg._intersection)
 						&& (interSeg = inter._segment)
 						&& interSeg !== startSeg) {
@@ -507,15 +505,12 @@ statics: {
 					} else {
 						dir = 1;
 					}
-					nextHandleOut = dir > 0 ? seg._handleOut : seg._handleIn;
+					handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
 				}
 				// Add the current segment to the path, and mark the added
 				// segment as visited.
-				if (!firstHandleIn) {
-					firstHandleIn = nextHandleIn;
-					nextHandleIn = null;
-				}
-				path.add(new Segment(seg._point, nextHandleIn, nextHandleOut));
+				path.add(new Segment(seg._point, added && handleIn, handleOut));
+				added = true;
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
 				seg = dir > 0 ? seg.getNext() : seg. getPrevious();
@@ -525,8 +520,8 @@ statics: {
 			// Finish with closing the paths if necessary, correctly linking up
 			// curves etc.
 			if (seg && (seg === startSeg || seg === startInterSeg)) {
-				path.firstSegment.setHandleIn(
-						(seg === startInterSeg ? startInterSeg : seg)._handleIn);
+				path.firstSegment.setHandleIn((seg === startInterSeg
+						? startInterSeg : seg)._handleIn);
 				path.setClosed(true);
 			} else {
 				path.lastSegment._handleOut.set(0, 0);
@@ -534,11 +529,8 @@ statics: {
 			// Add the path to the result.
 			// Try to avoid stray segments and incomplete paths.
 			var count = path._segments.length;
-			if (count > 2 || count === 2 && path._closed && !path.isPolygon()) {
+			if (count > 2 || count === 2 && path._closed && !path.isPolygon())
 				paths.push(path);
-			} else {
-				path.remove();
-			}
 		}
 		return paths;
 	},
