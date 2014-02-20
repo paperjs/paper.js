@@ -388,31 +388,30 @@ statics: {
 				windLeft = _getWinding(new Point(x, yTop), curves);
 			if (yBottom < Infinity)
 				windRight = _getWinding(new Point(x, yBottom), curves);
-			return Math.max(windLeft, windRight);
-		}
-		// Find the winding number for right hand side of the curve,
-		// inclusive of the curve itself, while tracing along its ±x direction.
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var v = curves[i];
-			if (Curve.solveCubic(v, 1, y, roots, 0, 1 - tolerance) === 1) {
-				var t = roots[0],
-					x0 = Curve.evaluate(v, t, 0).x,
-					slope = Curve.evaluate(v, t, 1).y,
-					stationary = abs(slope) < tolerance && !Curve.isLinear(v)
-							// Take care of cases where the curve and the
-							// preceeding curve merely touches the ray towards
-							// +-x direction, but proceeds to the same side of
-							// the ray. This essentially is not a crossing.
-							// NOTE: The previous curve is stored at v[9],
-							// see Path#_getMonoCurves() for details.
+		} else {
+			// Find the winding number for right side of the curve, inclusive of
+			// the curve itself, while tracing along its +-x direction.
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var v = curves[i];
+				if (Curve.solveCubic(v, 1, y, roots, 0, 1 - tolerance) === 1) {
+					var t = roots[0],
+						x0 = Curve.evaluate(v, t, 0).x,
+						slope = Curve.evaluate(v, t, 1).y;
+					// Take care of cases where the curve and the preceeding
+					// curve merely touches the ray towards +-x direction, but
+					// proceeds to the same side of the ray. This essentially is
+					// not a crossing.
+					// NOTE: The previous curve is stored at v[9], see
+					// Path#_getMonoCurves() for details.
+					if (abs(slope) < tolerance && !Curve.isLinear(v)
 							|| t < tolerance
-								&& slope * Curve.evaluate(v[9], t, 1).y < 0;
-				if (!stationary) {
-					var winding = v[8];
-					if (x0 <= xBefore)
-						windLeft += winding;
-					if (x0 >= xAfter)
-						windRight += winding;
+								&& slope * Curve.evaluate(v[9], t, 1).y < 0) {
+						// TODO: Handle stationary points here!
+					} else if (x0 <= xBefore) {
+						windLeft += v[8];
+					} else if (x0 >= xAfter) {
+						windRight += v[8];
+					}
 				}
 			}
 		}
