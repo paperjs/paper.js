@@ -533,10 +533,8 @@ statics: {
 			}
 			// Add the path to the result.
 			// Try to avoid stray segments and incomplete paths.
-			var closed = path._closed,
-				count = path._segments.length;
-			if (closed && count > 0 || count > 2
-					|| closed && count === 2 && !path.isPolygon()) {
+			var count = path._segments.length;
+			if (count > 2 || count === 2 && path._closed && !path.isPolygon()) {
 				paths.push(path);
 			} else {
 				path.remove();
