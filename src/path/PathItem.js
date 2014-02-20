@@ -463,16 +463,18 @@ statics: {
 						&& (ixOtherSeg = ixOther._segment)
 						&& ixOtherSeg !== startSeg && firstHandleIn) {
 					c1 = seg.getCurve();
+					// TODO: Support getTangentAt(0) / (1)
+					var offset = 1e-3;
 					if (direction < 1) {
-						t1 = c1.getTangentAt(0, true);
+						t1 = c1.getTangentAt(offset, true);
 					} else {
 						c1 = c1.getPrevious();
-						t1 = c1.getTangentAt(1, true).negate();
+						t1 = c1.getTangentAt(1 - offset, true).negate();
 					}
 					c4 = crvTan[1].c = ixOtherSeg.getCurve();
 					c3 = crvTan[0].c = c4.getPrevious();
-					crvTan[0].t = c3.getTangentAt(1, true).negate();
-					crvTan[1].t = c4.getTangentAt(0, true);
+					crvTan[0].t = c3.getTangentAt(1 - offset, true).negate();
+					crvTan[1].t = c4.getTangentAt(offset, true);
 					// cross product of the entry and exit tangent vectors at
 					// the intersection, will let us select the correct countour
 					// to traverse next.
