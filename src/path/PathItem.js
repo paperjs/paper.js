@@ -125,8 +125,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						&& (j === i + 1 || j === length2 - 1 && i === 0);
 				Curve.getIntersections(values1, values2[j], curve1,
 						curves2[j], locations,
-						// Avoid end point intersections on consecutive curves
-						// when self intersecting.
 						excludeEnds ? ZERO : 0, // tMin
 						excludeEnds ? ONE : 1); // tMax
 			}
