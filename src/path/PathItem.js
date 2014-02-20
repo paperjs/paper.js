@@ -35,8 +35,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @function
 	 *
 	 * @param {PathItem} path the other item to find the intersections with
-	 * @param {Boolean} [sorted=true] controls wether to sort the results by
-	 * offset
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
 	 * @example {@paperscript}
@@ -64,7 +62,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * 	}
 	 * }
 	 */
-	getIntersections: function(path, expand) {
+	getIntersections: function(path, _expand) {
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through their curves.
 		if (!this.getBounds().touches(path.getBounds()))
@@ -87,10 +85,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						locations);
 		}
 		
-		return PathItem._conditionIntersections(locations, expand);
+		return PathItem._filterIntersections(locations, _expand);
 	},
 
-	getSelfIntersections: function(expand) {
+	getSelfIntersections: function(_expand) {
 		var locations = [],
 			locs = [],
 			curves = this.getCurves(),
@@ -149,7 +147,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 			}
 		}
-		return PathItem._conditionIntersections(locations, expand);
+		return PathItem._filterIntersections(locations, _expand);
 	},
 
 	setPathData: function(data) {
@@ -529,7 +527,7 @@ statics: {
 		return paths;
 	},
 
-	_conditionIntersections: function(locations, expand) {
+	_filterIntersections: function(locations, _expand) {
 		function compare(loc1, loc2) {
 			var path1 = loc1.getPath(),
 				path2 = loc2.getPath();
@@ -541,45 +539,38 @@ statics: {
 					// Sort by path id to group all locations on the same path.
 					: path1._id - path2._id;
 		}
-		// Remove duplicate intersections near curve endings
-		var loc, locNext,
-			tolerance = /*#=*/ Numerical.EPSILON,
-			tolerance1 = 1 - tolerance,
+		var max = locations.length - 1,
+			ONE = 1 - /*#=*/ Numerical.EPSILON,
 			abs = Math.abs;
-		// Merge intersections very close to the end of a curve to the
-		// begining of the next curve
-		for (var i = locations.length-1; i >= 0; i--) {
-			loc = locations[i];
-			locNext = loc._curve.getNext();
-			if (loc._parameter >= tolerance1 && locNext) {
+		// Merge intersections very close to the end of a curve to the begining
+		// of the next curve.
+		for (var i = max; i >= 0; i--) {
+			var loc = locations[i],
+				nextCurve = loc._curve.getNext(),
+				nextCurve2 = loc._curve2.getNext();
+			if (nextCurve && loc._parameter >= ONE) {
 				loc._parameter = 0;
-				loc._curve = locNext;
+				loc._curve = nextCurve;
 			}
-			locNext = loc._curve2.getNext();
-			if (loc._parameter2 >= tolerance1 && locNext) {
+			if (nextCurve2 && loc._parameter2 >= ONE) {
 				loc._parameter2 = 0;
-				loc._curve2 = locNext;
+				loc._curve2 = nextCurve2;
 			}
 		}
-		if (locations.length > 1) {
+		if (max > 0) {
 			locations.sort(compare);
-			for (var length1 = locations.length - 1, i = length1; i >= 0; i--) {
-				loc = locations[i];
-				locNext = (i === 0)? locations[length1] : locations[i-1];
-				if (abs(loc._parameter - locNext._parameter) < tolerance &&
-						loc._curve === locNext._curve &&
-						abs(loc._parameter2 - locNext._parameter2) < tolerance &&
-						loc._curve2 === locNext._curve2) {
+			// Filter out duplicate locations
+			for (var i = max; i >= 0; i--) {
+				if (locations[i].equals(i === 0
+						? locations[max] : locations[i - 1])) {
 					locations.splice(i, 1);
-					--length1;
+					max--;
 				}
 			}
 		}
-		if (expand) {
-			for (var i = locations.length-1; i >= 0; i--) {
-				loc = locations[i];
-				locations.push(loc.getIntersection());
-			}
+		if (_expand) {
+			for (var i = max; i >= 0; i--)
+				locations.push(locations[i].getIntersection());
 			locations.sort(compare);
 		}
 		return locations;
