@@ -180,21 +180,21 @@ PathItem.inject(/** @lends PathItem# */{
 			path2.remove();
 		// And then, we are done.
 		return result.reduce();
-    },
+	},
 
-    /**
-     * Returns the winding contribution of the given point with respect to this
-     * PathItem.
-     *
-     * @param  {Point} point the location for which to determine the winding
-     * direction
-     * @param  {Boolean} horizontal wether we need to consider this point as
-     * part of a horizontal curve
-     * @return {Number} the winding number
-     */
-    _getWinding: function(point, horizontal) {
-    	return PathItem._getWinding(point, this._getMonoCurves(), horizontal);
-    },
+	/**
+	 * Returns the winding contribution of the given point with respect to this
+	 * PathItem.
+	 *
+	 * @param  {Point} point the location for which to determine the winding
+	 * direction
+	 * @param  {Boolean} horizontal wether we need to consider this point as
+	 * part of a horizontal curve
+	 * @return {Number} the winding number
+	 */
+	_getWinding: function(point, horizontal) {
+		return PathItem._getWinding(point, this._getMonoCurves(), horizontal);
+	},
 
 	/**
 	 * {@grouptitle Boolean Path Operations}
