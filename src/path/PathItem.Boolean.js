@@ -244,11 +244,11 @@ PathItem.inject(new function() {
 	 * with respect to a given set of monotone curves.
 	 */
 	function getWinding(point, curves, horizontal) {
-		var tolerance = /*#=*/ Numerical.TOLERANCE,
+		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
 			x = point.x,
 			y = point.y,
-			xAfter = x + tolerance,
-			xBefore = x - tolerance,
+			xAfter = x + TOLERANCE,
+			xBefore = x - TOLERANCE,
 			windLeft = 0,
 			windRight = 0,
 			roots = [],
@@ -266,9 +266,9 @@ PathItem.inject(new function() {
 				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
 					for (var j = roots.length - 1; j >= 0; j--) {
 						var y0 = Curve.evaluate(v, roots[j], 0).y;
-						if (y0 > y + tolerance && y0 < yBottom) {
+						if (y0 > y + TOLERANCE && y0 < yBottom) {
 							yBottom = y0;
-						} else if (y0 < y - tolerance && y0 > yTop) {
+						} else if (y0 < y - TOLERANCE && y0 > yTop) {
 							yTop = y0;
 						}
 					}
@@ -287,7 +287,7 @@ PathItem.inject(new function() {
 			// the curve itself, while tracing along its +-x direction.
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var v = curves[i];
-				if (Curve.solveCubic(v, 1, y, roots, 0, 1 - tolerance) === 1) {
+				if (Curve.solveCubic(v, 1, y, roots, 0, 1 - TOLERANCE) === 1) {
 					var t = roots[0],
 						x0 = Curve.evaluate(v, t, 0).x,
 						slope = Curve.evaluate(v, t, 1).y;
@@ -297,8 +297,8 @@ PathItem.inject(new function() {
 					// not a crossing.
 					// NOTE: The previous curve is stored at v[9], see
 					// Path#_getMonoCurves() for details.
-					if (abs(slope) < tolerance && !Curve.isLinear(v)
-							|| t < tolerance
+					if (abs(slope) < TOLERANCE && !Curve.isLinear(v)
+							|| t < TOLERANCE
 								&& slope * Curve.evaluate(v[9], t, 1).y < 0) {
 						// TODO: Handle stationary points here!
 					} else if (x0 <= xBefore) {
@@ -508,7 +508,7 @@ PathItem.inject(new function() {
 Path.inject(/** @lends Path# */{
 	/**
 	 * Private method that returns and caches all the curves in this Path, which
-	 * are monotonically decreasing or increasing in the 'y' direction.
+	 * are monotonically decreasing or increasing in the y-direction.
 	 * Used by getWinding().
 	 */
 	_getMonoCurves: function() {
@@ -534,9 +534,8 @@ Path.inject(/** @lends Path# */{
 			prevCurve = v;
 		}
 
-		// Handle bezier curves. We need to chop them into smaller curves 
-		// with defined orientation, by solving the derivative curve for
-		// Y extrema.
+		// Handle bezier curves. We need to chop them into smaller curves  with
+		// defined orientation, by solving the derivative curve for y extrema.
 		function handleCurve(v) {
 			// Filter out curves of zero length.
 			// TODO: Do not filter this here.
@@ -555,12 +554,12 @@ Path.inject(/** @lends Path# */{
 				var a = 3 * (y1 - y2) - y0 + y3,
 					b = 2 * (y0 + y2) - 4 * y1,
 					c = y1 - y0,
-					tolerance = /*#=*/ Numerical.TOLERANCE,
+					TOLERANCE = /*#=*/ Numerical.TOLERANCE,
 					roots = [];
 				// Keep then range to 0 .. 1 (excluding) in the search for y
 				// extrema.
-				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
-						1 - tolerance);
+				var count = Numerical.solveQuadratic(a, b, c, roots, TOLERANCE,
+						1 - TOLERANCE);
 				if (count === 0) {
 					insertCurve(v);
 				} else {
