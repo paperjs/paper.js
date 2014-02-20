@@ -432,36 +432,12 @@ statics: {
 	 * @return {Path[]} the contours traced
 	 */
 	_tracePaths: function(segments, operator, selfIx) {
-		// Utility function. Correctly returns entry and exit tangents of an
-		// intersection, even when the curve[s] are linear.
-		function getEntryExitTangents(seg) {
-			var c2 = seg.getCurve(),
-				c1 = c2.getPrevious(), t = 1e-3;
-			// Avoid zero length curves
-			c1 = c1.getLength() === 0 ? c1.getPrevious() : c1;
-			c2 = c2.getLength() === 0 ? c2.getNext() : c2;
-			var v1 = c1.getValues(),
-				v2 = c2.getValues(),
-				pnt = seg.getPoint(),
-				ret = [seg.getHandleIn(), seg.getHandleOut()];
-			if (ret[0].getLength() === 0) {
-				ret[0] = new Point(pnt.x - v1[2], pnt.y - v1[3]).normalize();
-			} else {
-				ret[0] = Curve.evaluate(v1, 1-t, 1).normalize(-1);
-			}
-			if (ret[1].getLength() === 0) {
-				ret[1] = new Point(pnt.x - v2[4], pnt.y - v2[5]).normalize();
-			} else {
-				ret[1] = Curve.evaluate(v2, t, 1).normalize();
-			}
-			return ret;
-		}
 		// Choose a default operator which will return all contours
 		operator = operator || function() {
 			return true;
 		};
 		var seg, startSeg, startSegIx, i, j, len, path, ixOther, firstHandleIn,
-			c1, c3, c4, t1, tan, crv, ixOtherSeg, nextSeg, nextHandleIn,
+			c1, c3, c4, t1, crv, ixOtherSeg, nextSeg, nextHandleIn,
 			nextHandleOut, direction, entryExitTangents,
 			// Tangents of all curves at an intersection, except the entry curve
 			crvTan = [{}, {}],
@@ -486,29 +462,22 @@ statics: {
 				if ((!operator(seg._winding) || selfIx) && ixOther
 						&& (ixOtherSeg = ixOther._segment)
 						&& ixOtherSeg !== startSeg && firstHandleIn) {
-					entryExitTangents = getEntryExitTangents(seg);
 					c1 = seg.getCurve();
 					if (direction < 1) {
-						entryExitTangents.reverse();
+						t1 = c1.getTangentAt(0, true);
 					} else {
 						c1 = c1.getPrevious();
+						t1 = c1.getTangentAt(1, true).negate();
 					}
-					t1 = entryExitTangents[0];
-					entryExitTangents = getEntryExitTangents(ixOtherSeg);
 					c4 = crvTan[1].c = ixOtherSeg.getCurve();
 					c3 = crvTan[0].c = c4.getPrevious();
-					// Avoid zero length curves
-					c3 = crvTan[0].c = c3.getLength() === 0 ? c3.getPrevious() : c3;
-					c4 = crvTan[1].c = c4.getLength() === 0 ? c4.getNext() : c4;
-					crvTan[0].t = entryExitTangents[0];
-					crvTan[1].t = entryExitTangents[1];
+					crvTan[0].t = c3.getTangentAt(1, true).negate();
+					crvTan[1].t = c4.getTangentAt(0, true);
 					// cross product of the entry and exit tangent vectors at
 					// the intersection, will let us select the correct countour
 					// to traverse next.
-					for (j = 0; j < 2; j++) {
-						tan = crvTan[j].t;
-						crvTan[j].w = t1.x * tan.y - tan.x * t1.y;
-					}
+					for (j = 0; j < 2; j++)
+						crvTan[j].w = t1.cross(crvTan[j].t);
 					// Do not attempt to switch contours if we aren't absolutely
 					// sure that there is a possible candidate.
 					if (crvTan[0].w * crvTan[1].w !== 0) {
@@ -527,9 +496,9 @@ statics: {
 					}
 					// If we didn't manage to find a suitable direction for next
 					// contour to traverse, stay on the same contour.
-					if (!nextSeg || nextSeg && ((nextSeg._visited &&
-								seg.getPath() !== nextSeg.getPath()) ||
-							!operator(nextSeg._winding))) {
+					if (!nextSeg || (nextSeg._visited
+								&& seg._path !== nextSeg._path
+								|| !operator(nextSeg._winding))) {
 						direction = 1;
 					} else {
 						// Switch to the intersection segment.

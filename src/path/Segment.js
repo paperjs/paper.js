@@ -444,6 +444,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * Removes the segment from the path that it belongs to.
+	 * @return {Boolean} {@true if the segment was removed}
 	 */
 	remove: function() {
 		return this._path ? !!this._path.removeSegment(this._index) : false;
