@@ -95,14 +95,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// property.
 				if (new Line(seg1._point.subtract(h1), h1, true).intersect(
 						new Line(seg2._point.subtract(h2), h2, true), false)) {
+					// Self intersectin is found by dividng the curve in two and
+					// and then applying the normal curve intersection code.
 					var parts = Curve.subdivide(values1),
 						before = locations.length;
 					Curve.getIntersections(parts[0], parts[1], curve1, curve1,
 							locations, 0, ONE); // tMax
 					// Check if a location was added by comparing length before.
+					// Self-intersection can only lead to 0 or 1 intersections.
 					if (locations.length > before) {
 						var loc = locations[before];
-						// Since the curve has split itself, we need to adjust
+						// Since the curve was split above, we need to adjust
 						// the parameters for both locations.
 						loc._parameter /= 2;
 						loc._parameter2 = 0.5 + loc._parameter2 / 2;
@@ -155,8 +158,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			locations.sort(compare);
 			// Filter out duplicate locations
 			for (var i = last; i >= 0; i--) {
-				if (locations[i].equals(i === 0
-						? locations[last] : locations[i - 1])) {
+				if (locations[i].equals(locations[i === 0 ? last : i - 1])) {
 					locations.splice(i, 1);
 					last--;
 				}
