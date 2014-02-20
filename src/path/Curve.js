@@ -1134,7 +1134,8 @@ new function() { // Scope for methods that require numerical integration
 			if ((Curve.isLinear(v1) || Curve.isFlatEnough(v1, tolerance))
 				&& (Curve.isLinear(v2) || Curve.isFlatEnough(v2, tolerance))) {
 				// See if the parametric equations of the lines interesct.
-				addLineIntersection(v1, v2, curve1, curve2, locations);
+				addLineIntersection(v1, v2, curve1, curve2, locations,
+						tMin, tMax, uMin, uMax);
 			} else {
 				// Subdivide both curves, and see if they intersect.
 				// If one of the curves is flat already, no further subdivion
@@ -1144,7 +1145,7 @@ new function() { // Scope for methods that require numerical integration
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
 						Curve.getIntersections(v1s[i], v2s[j], curve1, curve2,
-								locations);
+								locations, tMin, tMax, uMin, uMax);
 			}
 		}
 		return locations;
@@ -1273,7 +1274,8 @@ new function() { // Scope for methods that require numerical integration
 	 * line is on the X axis, and solve the implicit equations for the X axis
 	 * and the curve.
 	 */
-	function addCurveLineIntersections(v1, v2, curve1, curve2, locations) {
+	function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
+			tMin, tMax, uMin, uMax) {
 		var flip = Curve.isLinear(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
@@ -1313,14 +1315,16 @@ new function() { // Scope for methods that require numerical integration
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
-				locations.push(new CurveLocation(
-						curve1, t1, Curve.evaluate(v1, t1, 0),
-						curve2, t2, Curve.evaluate(v2, t2, 0)));
+				if (t1 >= tMin && t1 <= tMax && t2 >= uMin && t2 <= uMax)
+					locations.push(new CurveLocation(
+							curve1, t1, Curve.evaluate(v1, t1, 0),
+							curve2, t2, Curve.evaluate(v2, t2, 0)));
 			}
 		}
 	}
 
-	function addLineIntersection(v1, v2, curve1, curve2, locations) {
+	function addLineIntersection(v1, v2, curve1, curve2, locations,
+				tMin, tMax, uMin, uMax) {
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
@@ -1329,7 +1333,10 @@ new function() { // Scope for methods that require numerical integration
 			// since they will be used for sorting
 			var t1 = Curve.getParameterOf(v1, point.x, point.y),
 				t2 = Curve.getParameterOf(v2, point.x, point.y);
-			locations.push(new CurveLocation(curve1, t1, point, curve2, t2, point));
+			if (t1 >= tMin && t1 <= tMax && t2 >= uMin && t2 <= uMax)
+				locations.push(new CurveLocation(
+						curve1, t1, point,
+						curve2, t2, point));
 		}
 	}
 
@@ -1337,7 +1344,8 @@ new function() { // Scope for methods that require numerical integration
 		// We need to provide the original left curve reference to the
 		// #getIntersections() calls as it is required to create the resulting
 		// CurveLocation objects.
-		getIntersections: function(v1, v2, curve1, curve2, locations) {
+		getIntersections: function(v1, v2, curve1, curve2, locations,
+				tMin, tMax, uMin, uMax) {
 			var linear1 = Curve.isLinear(v1),
 				linear2 = Curve.isLinear(v2);
 			(linear1 && linear2
@@ -1347,8 +1355,10 @@ new function() { // Scope for methods that require numerical integration
 					: addCurveIntersections)(v1, v2, curve1, curve2, locations,
 						// Define the defaults for these parameters of
 						// addCurveIntersections():
-						// tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
-						0, 1, 0, 1, 0, false, 0);
+						// tMin, tMax, uMin, uMax
+						tMin || 0, tMax || 1, uMin || 0, uMax || 1,
+						// oldTDiff, reverse, recursion
+						0, false, 0);
 			return locations;
 		}
 	}};

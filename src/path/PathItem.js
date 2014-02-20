@@ -69,7 +69,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		if (!selfOp && !this.getBounds().touches(path.getBounds()))
 			return [];
 		var locations = [],
-			locs = [],
 			curves1 = this.getCurves(),
 			curves2 = selfOp ? curves1 : path.getCurves(),
 			matrix1 = this._matrix.orNullIfIdentity(),
@@ -96,37 +95,30 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// property.
 				if (new Line(seg1._point.subtract(h1), h1, true).intersect(
 						new Line(seg2._point.subtract(h2), h2, true), false)) {
-					locs.length = 0;
-					var parts = Curve.subdivide(values1);
+					var parts = Curve.subdivide(values1),
+						before = locations.length;
 					Curve.getIntersections(parts[0], parts[1], curve1, curve1,
-							locs);
-					for (var j = locs.length - 1; j >= 0; j--) {
-						var loc = locs[j];
-						if (loc._parameter <= ONE) {
-							loc._parameter /= 2;
-							loc._parameter2 = (loc._parameter2 + 1) / 2;
-							locations.push(loc);
-							break;
-						}
+							locations, 0, ONE); // tMax
+					// Check if a location was added by comparing length before.
+					if (locations.length > before) {
+						var loc = locations[before];
+						// Since the curve has split itself, we need to adjust
+						// the parameters for both locations.
+						loc._parameter /= 2;
+						loc._parameter2 = 0.5 + loc._parameter2 / 2;
 					}
 				}
 			}
 			// Check for intersections with other curves
 			for (var j = selfOp ? i + 1 : 0; j < length2; j++) {
-				// Avoid end point intersections on consecutive curves
-				if (selfOp && (j === i + 1 || (j === length2 - 1 && i === 0))) {
-					locs.length = 0;
-					Curve.getIntersections(values1, values2[j], curve1,
-							curves2[j], locs);
-					for (var k = locs.length - 1; k >= 0; k--) {
-						var loc = locs[k],
-							t = loc.getParameter();
-						if (t > ZERO && t < ONE)
-							locations.push(loc);
-					}
-				} else {
-					Curve.getIntersections(values1, values2[j], curve1,
-							curves2[j], locations);
+				// Avoid end point intersections on consecutive curves whe self
+				// intersecting.
+				var excludeEnds = selfOp && (j === i + 1
+						|| (j === length2 - 1 && i === 0));
+				Curve.getIntersections(values1, values2[j], curve1,
+						curves2[j], locations,
+						excludeEnds ? ZERO : 0, // tMin
+						excludeEnds ? ONE : 1); // tMax
 				}
 			}
 		}
