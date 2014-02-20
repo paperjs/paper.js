@@ -515,7 +515,8 @@ var Point = Base.extend(/** @lends Point# */{
 			scale = current !== 0 ? length / current : 0,
 			point = new Point(this.x * scale, this.y * scale);
 		// Preserve angle.
-		point._angle = this._angle;
+		if (scale >= 0)
+			point._angle = this._angle;
 		return point;
 	},
 
