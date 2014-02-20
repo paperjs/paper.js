@@ -146,6 +146,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			// Clear cached curves used for winding direction and containment
 			// calculation.
+			// NOTE: This is only needed with __options.booleanOperations
 			this._monoCurves = undefined;
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
@@ -1720,105 +1721,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 			return shape;
 		}
 		return null;
-	},
-
-	/**
-	 * Private method that returns and caches all the curves in this Path, which
-	 * are monotonically decreasing or increasing in the 'y' direction.
-	 * Used by PathItem#_getWinding().
-	 */
-	_getMonoCurves: function() {
-		var monoCurves = this._monoCurves,
-			prevCurve;
-
-		// Insert curve values into a cached array
-		function insertCurve(v) {
-			var y0 = v[1],
-				y1 = v[7];
-			// Add the winding direction to the end of the curve values.
-			v[8] = y0 === y1
-					? 0 // Horizontal
-					: y0 > y1
-						? -1 // Decreasing
-						: 1; // Increasing
-			// Add a reference to neighboring curves
-			if (prevCurve) {
-				v[9] = prevCurve;
-				prevCurve[10] = v;
-			}
-			monoCurves.push(v);
-			prevCurve = v;
-		}
-
-		// Handle bezier curves. We need to chop them into smaller curves 
-		// with defined orientation, by solving the derivative curve for
-		// Y extrema.
-		function handleCurve(v) {
-			// Filter out curves of zero length.
-			// TODO: Do not filter this here.
-			if (Curve.getLength(v) === 0)
-				return;
-			var y0 = v[1],
-				y1 = v[3],
-				y2 = v[5],
-				y3 = v[7];
-			if (Curve.isLinear(v)) {
-				// Handling linear curves is easy.
-				insertCurve(v);
-			} else {
-				// Split the curve at y extrema, to get bezier curves with clear
-				// orientation: Calculate the derivative and find its roots.
-				var a = 3 * (y1 - y2) - y0 + y3,
-					b = 2 * (y0 + y2) - 4 * y1,
-					c = y1 - y0,
-					tolerance = /*#=*/ Numerical.TOLERANCE,
-					roots = [];
-				// Keep then range to 0 .. 1 (excluding) in the search for y
-				// extrema.
-				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
-						1 - tolerance);
-				if (count === 0) {
-					insertCurve(v);
-				} else {
-					roots.sort();
-					var t = roots[0],
-						parts = Curve.subdivide(v, t);
-					insertCurve(parts[0]);
-					if (count > 1) {
-						// If there are two extremas, renormalize t to the range
-						// of the second range and split again.
-						t = (roots[1] - t) / (1 - t);
-						// Since we already processed parts[0], we can override
-						// the parts array with the new pair now.
-						parts = Curve.subdivide(parts[1], t);
-						insertCurve(parts[0]);
-					}
-					insertCurve(parts[1]);
-				}
-			}
-		}
-
-		if (!monoCurves) {
-			// Insert curves that are monotonic in y direction into cached array
-			monoCurves = this._monoCurves = [];
-			var curves = this.getCurves(),
-				segments = this._segments;
-			for (var i = 0, l = curves.length; i < l; i++)
-				handleCurve(curves[i].getValues());
-			// If the path is not closed, we need to join the end points with a
-			// straight line, just like how filling open paths works.
-			if (!this._closed && segments.length > 1) {
-				var p1 = segments[segments.length - 1]._point,
-					p2 = segments[0]._point,
-					p1x = p1._x, p1y = p1._y,
-					p2x = p2._x, p2y = p2._y;
-				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
-			}
-			// Link first and last curves
-			monoCurves[0][9] = prevCurve = monoCurves[monoCurves.length - 1];
-			prevCurve[10] = monoCurves[0];
-		}
-		return monoCurves;
 	},
 
 	_hitTest: function(point, options) {
