@@ -111,14 +111,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			}
 			// Check for intersections with other curves
 			for (var j = selfOp ? i + 1 : 0; j < length2; j++) {
-				// Avoid end point intersections on consecutive curves whe self
-				// intersecting.
-				var excludeEnds = selfOp && (j === i + 1
-						|| (j === length2 - 1 && i === 0));
 				Curve.getIntersections(values1, values2[j], curve1,
 						curves2[j], locations,
-						excludeEnds ? ZERO : 0, // tMin
-						excludeEnds ? ONE : 1); // tMax
+						// Avoid end point intersections on consecutive curves
+						// when self intersecting.
+						selfOp && (j === i + 1 || j === length2 - 1 && i === 0)
+							? ZERO : 0, // tMin
+						ONE); // tMax
 			}
 		}
 		// Now filter the locations and process _expand:
