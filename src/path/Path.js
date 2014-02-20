@@ -901,6 +901,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
+	 * Reduces the path by removing curves that have a lenght of 0.
+	 */
+	reduce: function() {
+		var curves = this.getCurves();
+		for (var i = curves.length - 1; i >= 0; i--) {
+			var curve = curves[i];
+			if (curve.isLinear() && curve.getLength() === 0)
+				curve.remove();
+		}
+		return this;
+	},
+
+	/**
 	 * Smooths a path by simplifying it. The {@link Path#segments} array is
 	 * analyzed and replaced by a more optimal set of segments, reducing memory
 	 * usage and speeding up drawing.

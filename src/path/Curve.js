@@ -267,8 +267,12 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @bean
 	 */
 	getLength: function() {
-		if (this._length == null)
-			this._length = Curve.getLength(this.getValues(), 0, 1);
+		if (this._length == null) {
+			// Use simple point distance for linear curves
+			this._length = this.isLinear()
+				? this._segment2._point.getDistance(this._segment1._point)
+				: Curve.getLength(this.getValues(), 0, 1);
+		}
 		return this._length;
 	},
 
@@ -302,16 +306,6 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	// TODO: adjustThroughPoint
-
-	/**
-	 * Returns a reversed version of the curve, without modifying the curve
-	 * itself.
-	 *
-	 * @return {Curve} a reversed version of the curve
-	 */
-	reverse: function() {
-		return new Curve(this._segment2.reverse(), this._segment1.reverse());
-	},
 
 	/**
 	 * Private method that handles all types of offset / isParameter pairs and
@@ -416,6 +410,33 @@ var Curve = Base.extend(/** @lends Curve# */{
 			? this._path.split(this._segment1._index,
 					this._getParameter(offset, isParameter))
 			: null;
+	},
+
+	/**
+	 * Returns a reversed version of the curve, without modifying the curve
+	 * itself.
+	 *
+	 * @return {Curve} a reversed version of the curve
+	 */
+	reverse: function() {
+		return new Curve(this._segment2.reverse(), this._segment1.reverse());
+	},
+
+	/**
+	 * Removes the curve from the path that it belongs to, by merging its two
+	 * path segments.
+	 * @return {Boolean} {@true if the curve was removed}
+	 */
+	remove: function() {
+		var removed = false;
+		if (this._path) {
+			var segment2 = this._segment2,
+				handleOut = segment2._handleOut;
+			removed = segment2.remove();
+			if (removed)
+				this._segment1._handleOut.set(handleOut.x, handleOut.y);
+		}
+		return removed;
 	},
 
 	/**

@@ -2064,7 +2064,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	reduce: function() {
 		if (this._children && this._children.length === 1) {
-			var child = this._children[0];
+			var child = this._children[0].reduce();
 			child.insertAbove(this);
 			child.setStyle(this._style);
 			this.remove();
