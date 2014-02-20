@@ -435,10 +435,7 @@ statics: {
 		operator = operator || function() {
 			return true;
 		};
-		// A list of both curves at an intersection, except the entry curves
-		// along with their winding values and tangents.
-		var curves = [{}, {}],
-			paths = [],
+		var paths = [],
 			// Values for getTangentAt() that are almost 0 and 1.
 			// TODO: Correctly support getTangentAt(0) / (1)?
 			ZERO = 1e-3,
@@ -467,29 +464,26 @@ statics: {
 					if (dir > 0)
 						c1 = c1.getPrevious();
 					var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
-						c4 = curves[1].c = interSeg.getCurve(),
-						c3 = curves[0].c = c4.getPrevious();
-					curves[0].t = c3.getTangentAt(ONE, true);
-					curves[1].t = c4.getTangentAt(ZERO, true);
-					// cross product of the entry and exit tangent vectors at
-					// the intersection, will let us select the correct countour
-					// to traverse next.
-					for (var j = 0; j < 2; j++)
-						curves[j].w = t1.cross(curves[j].t);
+						// Get both curves at the intersection (except the entry
+						// curves) along with their winding values and tangents.
+						c4 = interSeg.getCurve(),
+						c3 = c4.getPrevious(),
+						t3 = c3.getTangentAt(ONE, true),
+						t4 = c4.getTangentAt(ZERO, true),
+						// Cross product of the entry and exit tangent vectors
+						// at the intersection, will let us select the correct
+						// countour to traverse next.
+						w3 = t1.cross(t3),
+						w4 = t1.cross(t4);
 					// Do not attempt to switch contours if we aren't absolutely
 					// sure that there is a possible candidate.
-					if (curves[0].w * curves[1].w !== 0) {
-						curves.sort(function(a, b) {
-							// Compare tangents to sort curves counter clockwise
-							return a.w - b.w;
-						});
-						var j = 0,
-							nextSeg;
-						do {
-							var curve = curves[j++].c;
-							nextSeg = curve._segment1;
-							dir = curve === c3 ? -1 : 1;
-						} while (j < 2 && !operator(nextSeg._winding));
+					if (w3 * w4 !== 0) {
+						var curve = w3 < w4 ? c3 : c4,
+							nextCurve = operator(curve._segment1._winding)
+								? curve
+								: w3 < w4 ? c4 : c3,
+							nextSeg = nextCurve._segment1;
+						dir = nextCurve === c3 ? -1 : 1;
 						// If we didn't manage to find a suitable direction for
 						// next contour to traverse, stay on the same contour.
 						if (nextSeg._visited && seg._path !== nextSeg._path
