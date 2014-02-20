@@ -436,80 +436,79 @@ statics: {
 		operator = operator || function() {
 			return true;
 		};
-		var seg, startSeg, startSegIx, i, j, len, path, ixOther, firstHandleIn,
-			c1, c3, c4, t1, crv, ixOtherSeg, nextSeg, nextHandleIn,
-			nextHandleOut, direction, entryExitTangents,
-			// Tangents of all curves at an intersection, except the entry curve
-			crvTan = [{}, {}],
-			paths = [];
-		for (i = 0, len = segments.length; i < len; i++) {
+		var j,
+			// A list of both curves at an intersection, except the entry curves
+			// along with their winding values and tangents.
+			curves = [{}, {}],
+			paths = [],
+			// Values for getTangentAt() that are almost 0 and 1.
+			// TODO: Correctly support getTangentAt(0) / (1)?
+			ZERO = 1e-3,
+			ONE = 1 - ZERO;
+		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
 			startSeg = seg = segments[i];
 			if (seg._visited || !operator(seg._winding))
 				continue;
 			// Initialise a new path chain with the seed segment.
-			path = new Path();
-			ixOther = seg._intersection;
-			startSegIx = ixOther ? ixOther._segment : null;
-			firstHandleIn = null;
-			direction = 1;
+			var path = new Path({ insert: false }),
+				ixOther = seg._intersection,
+				startSegIx = ixOther && ixOther._segment,
+				firstHandleIn = null,
+				dir = 1;
 			do {
-				nextHandleIn = direction > 0 ? seg._handleIn : seg._handleOut;
-				nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
 				ixOther = seg._intersection;
+				var nextHandleIn = dir > 0 ? seg._handleIn : seg._handleOut,
+					nextHandleOut = dir > 0 ? seg._handleOut : seg._handleIn,
+					ixOtherSeg;
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
 				// Else, stay on the same contour.
-				if ((!operator(seg._winding) || selfIx) && ixOther
+				if (ixOther && (!operator(seg._winding) || selfIx)
 						&& (ixOtherSeg = ixOther._segment)
 						&& ixOtherSeg !== startSeg && firstHandleIn) {
-					c1 = seg.getCurve();
-					// TODO: Support getTangentAt(0) / (1)
-					var offset = 1e-3;
-					if (direction < 1) {
-						t1 = c1.getTangentAt(offset, true);
-					} else {
+					var c1 = seg.getCurve();
+					if (dir > 0)
 						c1 = c1.getPrevious();
-						t1 = c1.getTangentAt(1 - offset, true).negate();
-					}
-					c4 = crvTan[1].c = ixOtherSeg.getCurve();
-					c3 = crvTan[0].c = c4.getPrevious();
-					crvTan[0].t = c3.getTangentAt(1 - offset, true).negate();
-					crvTan[1].t = c4.getTangentAt(offset, true);
+					var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+						c4 = curves[1].c = ixOtherSeg.getCurve(),
+						c3 = curves[0].c = c4.getPrevious();
+					curves[0].t = c3.getTangentAt(ONE, true);
+					curves[1].t = c4.getTangentAt(ZERO, true);
 					// cross product of the entry and exit tangent vectors at
 					// the intersection, will let us select the correct countour
 					// to traverse next.
-					for (j = 0; j < 2; j++)
-						crvTan[j].w = t1.cross(crvTan[j].t);
+					for (var j = 0; j < 2; j++)
+						curves[j].w = t1.cross(curves[j].t);
 					// Do not attempt to switch contours if we aren't absolutely
 					// sure that there is a possible candidate.
-					if (crvTan[0].w * crvTan[1].w !== 0) {
-						crvTan.sort(function(a, b) {
+					if (curves[0].w * curves[1].w !== 0) {
+						curves.sort(function(a, b) {
 							// Compare tangents to sort curves counter clockwise
 							return a.w - b.w;
 						});
-						j = 0;
+						var nextSeg,
+							j = 0;
 						do {
-							crv = crvTan[j++].c;
-							nextSeg = crv.getSegment1();
-							direction = crv === c3 ? -1 : 1;
+							var curve = curves[j++].c;
+							nextSeg = curve._segment1;
+							dir = curve === c3 ? -1 : 1;
 						} while (j < 2 && !operator(nextSeg._winding));
+						// If we didn't manage to find a suitable direction for
+						// next contour to traverse, stay on the same contour.
+						if (nextSeg._visited && seg._path !== nextSeg._path
+									|| !operator(nextSeg._winding)) {
+							dir = 1;
+						} else {
+							// Switch to the intersection segment.
+							seg._visited = ixOtherSeg._visited;
+							seg = ixOtherSeg;
+							if (nextSeg._visited) 
+								dir = 1;
+						}
 					} else {
-						nextSeg = null;
+						dir = 1;
 					}
-					// If we didn't manage to find a suitable direction for next
-					// contour to traverse, stay on the same contour.
-					if (!nextSeg || (nextSeg._visited
-								&& seg._path !== nextSeg._path
-								|| !operator(nextSeg._winding))) {
-						direction = 1;
-					} else {
-						// Switch to the intersection segment.
-						seg._visited = ixOtherSeg._visited;
-						seg = ixOtherSeg;
-						if (nextSeg._visited) 
-							direction = 1;
-					}
-					nextHandleOut = direction > 0 ? seg._handleOut : seg._handleIn;
+					nextHandleOut = dir > 0 ? seg._handleOut : seg._handleIn;
 				}
 				// Add the current segment to the path, and mark the added
 				// segment as visited.
@@ -520,7 +519,7 @@ statics: {
 				path.add(new Segment(seg._point, nextHandleIn, nextHandleOut));
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
-				seg = direction > 0 ? seg.getNext() : seg. getPrevious();
+				seg = dir > 0 ? seg.getNext() : seg. getPrevious();
 			} while (seg && seg !== startSeg && seg !== startSegIx
 					&& !seg._visited
 					&& (seg._intersection || operator(seg._winding)));
@@ -536,11 +535,10 @@ statics: {
 			}
 			// Add the path to the result.
 			// Try to avoid stray segments and incomplete paths.
-			if (path.closed && path.segments.length
-					|| path.segments.length > 2
-					|| (path.closed && path.segments.length === 2
-						&& (!path.getCurves()[0].isLinear()
-							|| !path.getCurves()[1].isLinear()))) {
+			var closed = path._closed,
+				count = path._segments.length;
+			if (closed && count > 0 || count > 2
+					|| closed && count === 2 && !path.isPolygon()) {
 				paths.push(path);
 			} else {
 				path.remove();
