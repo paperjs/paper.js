@@ -289,7 +289,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 /*#*/ } // !__options.nativeContains
 	},
 
-	statics: {
+// Mess with indentation in order to get more line-space below...
+statics: {
 	/**
 	 * Private method for splitting a PathItem at the given intersections.
 	 * The routine works for both self intersections and intersections 
@@ -297,60 +298,51 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
 	 */
 	_splitPath: function(intersections) {
-		var loc, i, j, node1, node2, t, segment,
-			path1, isLinear, crv, crvNew,
-			newSegments = [],
-			tolerance = /*#=*/ Numerical.EPSILON;
-		for (i = intersections.length - 1; i >= 0; i--) {
-			node1 = intersections[i];
-			path1 = node1.getPath();
-			// Check if we are splitting same curve multiple times
-			if (node2 && node2.getPath() === path1 &&
-					node2._curve === node1._curve) {
-				// Use the result of last split and interpolate the parameter.
-				crv = crvNew;
-				t = node1._parameter / node2._parameter;
-			} else {
-				crv = node1._curve;
-				t = node1._parameter;
-				isLinear = crv.isLinear();
-				newSegments.length = 0;
-			}
-			// Split the curve at t, while ignoring linearity of curves
-			if (!(crvNew = crv.divide(t, true, true))) {
-				if (t >= 1-tolerance) {
-					segment = crv._segment2;
-				} else if (t <= tolerance) {
-					segment = crv._segment1;
-				} else {
-					// Determine the closest segment by comparing curve lengths
-					segment = crv.getPartLength(0, t) < crv.getPartLength(t, 1)
-							? crv._segment1 : crv._segment2;
-				}
-				crvNew = crv;
-			} else {
-				segment = crvNew.getSegment1();
-				crvNew = crvNew.getPrevious();
-			}
-			// Link the new segment with the intersection on the other curve
-			segment._intersection = node1.getIntersection();
-			node1._segment = segment;
-			node2 = node1;
+		var linearSegments;
+
+		function resetLinear() {
 			// Reset linear segments if they were part of a linear curve 
 			// and if we are done with the entire curve.
-			newSegments.push(segment);
-			loc = intersections[i - 1];
-			if (!(loc && loc.getPath() === path1 && loc._curve === node1._curve)
-					&& isLinear) {
-				for (j = newSegments.length-1; j >= 0; j--) {
-					segment = newSegments[j];
-					// FIXME: Don't reset the appropriate handle if the
-					// intersections were on t == 0 && t == 1
-					segment._handleOut.set(0, 0);
+			for (var i = 0, l = linearSegments.length - 1; i <= l; i++) {
+				var segment = linearSegments[i];
+				if (i > 0)
 					segment._handleIn.set(0, 0);
-				}
+				if (i < l)
+					segment._handleOut.set(0, 0);
 			}
 		}
+
+		for (var i = intersections.length - 1, curve, prevLoc; i >= 0; i--) {
+			var loc = intersections[i],
+				t = loc._parameter;
+			// Check if we are splitting same curve multiple times
+			if (prevLoc && prevLoc._curve === loc._curve) {
+				// Scale parameter after previous split.
+				t /= prevLoc._parameter;
+			} else {
+				if (linearSegments)
+					resetLinear();
+				curve = loc._curve;
+				linearSegments = curve.isLinear() && [];
+			}
+			var newCurve,
+				segment;
+			// Split the curve at t, while ignoring linearity of curves
+			if (newCurve = curve.divide(t, true, true)) {
+				segment = newCurve._segment1;
+				curve = newCurve.getPrevious();
+			} else {
+				segment = t < 0.5 ? curve._segment1 : curve._segment2;
+			}
+			// Link the new segment with the intersection on the other curve
+			segment._intersection = loc.getIntersection();
+			loc._segment = segment;
+			if (linearSegments)
+				linearSegments.push(segment);
+			prevLoc = loc;
+		}
+		if (linearSegments)
+			resetLinear();
 	},
 
 	/**
@@ -641,7 +633,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		}
 		return locations;
 	},
-	}
+}
 
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
