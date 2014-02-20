@@ -303,12 +303,12 @@ statics: {
 		function resetLinear() {
 			// Reset linear segments if they were part of a linear curve 
 			// and if we are done with the entire curve.
-			for (var i = 0, l = linearSegments.length - 1; i <= l; i++) {
+			for (var i = 0, l = linearSegments.length; i < l; i++) {
 				var segment = linearSegments[i];
-				if (i > 0)
-					segment._handleIn.set(0, 0);
-				if (i < l)
-					segment._handleOut.set(0, 0);
+				// FIXME: Don't reset the appropriate handle if the intersection
+				// was on t == 0 && t == 1.
+				segment._handleOut.set(0, 0);
+				segment._handleIn.set(0, 0);
 			}
 		}
 
