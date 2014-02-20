@@ -255,8 +255,6 @@ PathItem.inject(new function() {
 		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
 			x = point.x,
 			y = point.y,
-			xAfter = x + TOLERANCE,
-			xBefore = x - TOLERANCE,
 			windLeft = 0,
 			windRight = 0,
 			roots = [],
@@ -266,7 +264,9 @@ PathItem.inject(new function() {
 		// indeterminate state.
 		if (horizontal) {
 			var yTop = -Infinity,
-				yBottom = Infinity;
+				yBottom = Infinity,
+				yBefore = y - TOLERANCE,
+				yAfter = y + TOLERANCE;
 			// Find the closest top and bottom intercepts for the same vertical
 			// line.
 			for (var i = 0, l = curves.length; i < l; i++) {
@@ -274,10 +274,10 @@ PathItem.inject(new function() {
 				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
 					for (var j = roots.length - 1; j >= 0; j--) {
 						var y0 = Curve.evaluate(v, roots[j], 0).y;
-						if (y0 > y + TOLERANCE && y0 < yBottom) {
-							yBottom = y0;
-						} else if (y0 < y - TOLERANCE && y0 > yTop) {
+						if (y0 < yBefore && y0 > yTop) {
 							yTop = y0;
+						} else if (y0 > yAfter && y0 < yBottom) {
+							yBottom = y0;
 						}
 					}
 				}
@@ -291,6 +291,8 @@ PathItem.inject(new function() {
 			if (yBottom < Infinity)
 				windRight = getWinding(new Point(x, yBottom), curves);
 		} else {
+			var xBefore = x - TOLERANCE,
+				xAfter = x + TOLERANCE;
 			// Find the winding number for right side of the curve, inclusive of
 			// the curve itself, while tracing along its +-x direction.
 			for (var i = 0, l = curves.length; i < l; i++) {
