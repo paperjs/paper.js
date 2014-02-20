@@ -83,32 +83,34 @@ PathItem.inject(new function() {
 		path2 = selfOp ? path1
 				: reorientPath(path2.clone(false).reduce().applyMatrix());
 		// Do operator specific calculations before we begin
-		// Make both paths at clockwise orientation, except when @subtract = true
-		// We need both paths at opposit orientation for subtraction
+		// Make both paths at clockwise orientation, except when subtract = true
+		// We need both paths at opposite orientation for subtraction.
 		if (!path1.isClockwise())
 			path1.reverse();
 		if (!selfOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
+		// Split curves at intersections on both paths.
+		PathItem._splitPath(path1.getIntersections(path2, true));
+
 		var chain = [],
 			windings = [],
 			lengths = [],
-			paths = [],
 			segments = [],
 			// Aggregate of all curves in both operands, monotonic in y
-			monoCurves = [],
-			TOLERANCE = /*#=*/ Numerical.TOLERANCE,
-			intersections = path1.getIntersections(path2, true);
-		// Split curves at intersections on both paths.
-		PathItem._splitPath(intersections);
-		// Collect all sub paths and segments
-		paths.push.apply(paths, path1._children || [path1]);
-		if (!selfOp)
-			paths.push.apply(paths, path2._children || [path2]);
+			monoCurves = [];
 
-		for (var i = 0, l = paths.length; i < l; i++) {
-			segments.push.apply(segments, paths[i].getSegments());
-			monoCurves.push.apply(monoCurves, paths[i]._getMonoCurves());
+		function collect(paths) {
+			for (var i = 0, l = paths.length; i < l; i++) {
+				var path = paths[i];
+				segments.push.apply(segments, path._segments);
+				monoCurves.push.apply(monoCurves, path._getMonoCurves());
+			}
 		}
+
+		// Collect all segments and monotonic curves
+		collect(path1._children || [path1]);
+		if (!selfOp)
+			collect(path2._children || [path2]);
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.
 		// First, sort all segments with an intersection to the begining.
@@ -159,7 +161,7 @@ PathItem.inject(new function() {
 				// the first operand.
 				windings[j] = subtract
 						&& (path === path1 && path2._getWinding(point, hor)
-						|| path === path2 && !path1._getWinding(point, hor))
+							|| path === path2 && !path1._getWinding(point, hor))
 						? 0
 						: PathItem._getWinding(point, monoCurves, hor);
 			}
