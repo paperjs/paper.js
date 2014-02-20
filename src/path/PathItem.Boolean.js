@@ -31,66 +31,66 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 
-PathItem.inject(new function() {
-    /**
-     * To deal with a HTML5 canvas requirement where CompoundPaths' child
-     * contours has to be of different winding direction for correctly filling
-     * holes. But if some individual countours are disjoint, i.e. islands, we
-     * have to reorient them so that:
-     * - the holes have opposit winding direction (already handled by paper.js)
-     * - islands have to have the same winding direction as the first child
-     *
-     * NOTE: Does NOT handle self-intersecting CompoundPaths.
-     */
-    function reorientPath(path) {
-		if (path instanceof CompoundPath) {
-			var children = path.removeChildren(),
-				length = children.length,
-				bounds = new Array(length),
-				counters = new Array(length),
-				clockwise;
-			children.sort(function(a, b) {
-				return b.getBounds().getArea() - a.getBounds().getArea();
-			});
-			path.addChildren(children);
-			clockwise = children[0].isClockwise();
-			for (var i = 0; i < length; i++) {
-				bounds[i] = children[i].getBounds();
-				counters[i] = 0;
-			}
-			for (var i = 0; i < length; i++) {
-				for (var j = 1; j < length; j++) {
-					if (i !== j && bounds[i].intersects(bounds[j]))
-						counters[j]++;
+PathItem.inject(/** @lends PathItem# */{
+    // Boolean operators return true if a curve with the given winding 
+    // contribution contributes to the final result or not. They are called
+    // for each curve in the graph after curves in the operands are
+    // split at intersections.
+	_computeBoolean: function(other, operator, subtract) {
+		// To deal with a HTML5 canvas requirement where CompoundPaths' child
+		// contours has to be of different winding direction for correctly
+		// filling holes. But if some individual countours are disjoint, i.e.
+		// islands, we have to reorient them so that:
+		// - The holes have opposite winding direction, already handled by paper
+		// - Islands have to have the same winding direction as the first child
+		// NOTE: Does NOT handle self-intersecting CompoundPaths.
+		function reorientPath(path) {
+			if (path instanceof CompoundPath) {
+				var children = path.removeChildren(),
+					length = children.length,
+					bounds = new Array(length),
+					counters = new Array(length),
+					clockwise;
+				children.sort(function(a, b) {
+					return b.getBounds().getArea() - a.getBounds().getArea();
+				});
+				path.addChildren(children);
+				clockwise = children[0].isClockwise();
+				for (var i = 0; i < length; i++) {
+					bounds[i] = children[i].getBounds();
+					counters[i] = 0;
 				}
-				// Omit the first child
-				if (i > 0 && counters[i] % 2 === 0)
-					children[i].setClockwise(clockwise);
+				for (var i = 0; i < length; i++) {
+					for (var j = 1; j < length; j++) {
+						if (i !== j && bounds[i].intersects(bounds[j]))
+							counters[j]++;
+					}
+					// Omit the first child
+					if (i > 0 && counters[i] % 2 === 0)
+						children[i].setClockwise(clockwise);
+				}
 			}
+			return path;
 		}
-		return path;
-    }
 
-    function computeBoolean(path1, path2, operator, subtract) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
 		// We call reduce() on both cloned paths to simplify compound paths and
 		// remove empty curves. We also apply matrices to both paths in case
 		// they were transformed.
-		var selfOp = path1 === path2;
-		path1 = reorientPath(path1.clone(false).reduce().applyMatrix());
-		path2 = selfOp ? path1
-				: reorientPath(path2.clone(false).reduce().applyMatrix());
+		var path1 = reorientPath(this.clone(false).reduce().applyMatrix());
+			path2 = this !== other
+					&& reorientPath(other.clone(false).reduce().applyMatrix());
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when subtract = true
 		// We need both paths at opposite orientation for subtraction.
 		if (!path1.isClockwise())
 			path1.reverse();
-		if (!selfOp && !(subtract ^ path2.isClockwise()))
+		if (path2 && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		// Split curves at intersections on both paths.
-		PathItem._splitPath(path1.getIntersections(path2, true));
+		PathItem._splitPath(path1.getIntersections(path2 || path1, true));
 
 		var chain = [],
 			windings = [],
@@ -109,7 +109,7 @@ PathItem.inject(new function() {
 
 		// Collect all segments and monotonic curves
 		collect(path1._children || [path1]);
-		if (!selfOp)
+		if (path2)
 			collect(path2._children || [path2]);
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.
@@ -159,7 +159,7 @@ PathItem.inject(new function() {
 				// While subtracting, we need to omit this curve if this 
 				// curve is contributing to the second operand and is outside
 				// the first operand.
-				windings[j] = subtract
+				windings[j] = subtract && path2
 						&& (path === path1 && path2._getWinding(point, hor)
 							|| path === path2 && !path1._getWinding(point, hor))
 						? 0
@@ -176,80 +176,74 @@ PathItem.inject(new function() {
 		result.addChildren(PathItem._tracePaths(segments, operator), true);
 		// Delete the proxies
 		path1.remove();
-		if (!selfOp)
+		if (path2)
 			path2.remove();
 		// And then, we are done.
 		return result.reduce();
-    }
+    },
 
-    // Boolean operators return true if a curve with the given winding 
-    // contribution contributes to the final result or not. They are called
-    // for each curve in the graph after curves in the operands are
-    // split at intersections.
-    return /** @lends PathItem# */{
-		/**
-		 * {@grouptitle Boolean Path Operations}
-		 *
-		 * Merges the geometry of the specified path from this path's
-		 * geometry and returns the result as a new path item.
-		 * 
-		 * @param {PathItem} path the path to unite with
-		 * @return {PathItem} the resulting path item
-		 */
-		unite: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 1 || w === 0;
-			}, false);
-		},
+	/**
+	 * {@grouptitle Boolean Path Operations}
+	 *
+	 * Merges the geometry of the specified path from this path's
+	 * geometry and returns the result as a new path item.
+	 * 
+	 * @param {PathItem} path the path to unite with
+	 * @return {PathItem} the resulting path item
+	 */
+	unite: function(path) {
+		return this._computeBoolean(path, function(w) {
+			return w === 1 || w === 0;
+		}, false);
+	},
 
-		/**
-		 * Intersects the geometry of the specified path with this path's
-		 * geometry and returns the result as a new path item.
-		 * 
-		 * @param {PathItem} path the path to intersect with
-		 * @return {PathItem} the resulting path item
-		 */
-		intersect: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 2;
-			}, false);
-		},
+	/**
+	 * Intersects the geometry of the specified path with this path's
+	 * geometry and returns the result as a new path item.
+	 * 
+	 * @param {PathItem} path the path to intersect with
+	 * @return {PathItem} the resulting path item
+	 */
+	intersect: function(path) {
+		return this._computeBoolean(path, function(w) {
+			return w === 2;
+		}, false);
+	},
 
-		/**
-		 * Subtracts the geometry of the specified path from this path's
-		 * geometry and returns the result as a new path item.
-		 * 
-		 * @param {PathItem} path the path to subtract
-		 * @return {PathItem} the resulting path item
-		 */
-		subtract: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 1;
-			}, true);
-		},
+	/**
+	 * Subtracts the geometry of the specified path from this path's
+	 * geometry and returns the result as a new path item.
+	 * 
+	 * @param {PathItem} path the path to subtract
+	 * @return {PathItem} the resulting path item
+	 */
+	subtract: function(path) {
+		return this._computeBoolean(path, function(w) {
+			return w === 1;
+		}, true);
+	},
 
-		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc.
-		/**
-		 * Excludes the intersection of the geometry of the specified path with
-		 * this path's geometry and returns the result as a new group item.
-		 * 
-		 * @param {PathItem} path the path to exclude the intersection of
-		 * @return {Group} the resulting group item
-		 */
-		exclude: function(path) {
-			return new Group([this.subtract(path), path.subtract(this)]);
-		},
-		
-		/**
-		 * Splits the geometry of this path along the geometry of the specified
-		 * path returns the result as a new group item.
-		 * 
-		 * @param {PathItem} path the path to divide by
-		 * @return {Group} the resulting group item
-		 */
-		divide: function(path) {
-			return new Group([this.subtract(path), this.intersect(path)]);
-		}
-    };
+	// Compound boolean operators combine the basic boolean operations such
+	// as union, intersection, subtract etc.
+	/**
+	 * Excludes the intersection of the geometry of the specified path with
+	 * this path's geometry and returns the result as a new group item.
+	 * 
+	 * @param {PathItem} path the path to exclude the intersection of
+	 * @return {Group} the resulting group item
+	 */
+	exclude: function(path) {
+		return new Group([this.subtract(path), path.subtract(this)]);
+	},
+	
+	/**
+	 * Splits the geometry of this path along the geometry of the specified
+	 * path returns the result as a new group item.
+	 * 
+	 * @param {PathItem} path the path to divide by
+	 * @return {Group} the resulting group item
+	 */
+	divide: function(path) {
+		return new Group([this.subtract(path), this.intersect(path)]);
+	}
 });
