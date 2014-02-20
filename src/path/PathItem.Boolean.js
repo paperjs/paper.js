@@ -45,10 +45,10 @@ PathItem.inject(new function() {
     function reorientPath(path) {
 		if (path instanceof CompoundPath) {
 			var children = path.removeChildren(),
-			length = children.length,
-			bounds = new Array(length),
-			counters = new Array(length),
-			clockwise;
+				length = children.length,
+				bounds = new Array(length),
+				counters = new Array(length),
+				clockwise;
 			children.sort(function(a, b) {
 				return b.getBounds().getArea() - a.getBounds().getArea();
 			});
@@ -89,18 +89,14 @@ PathItem.inject(new function() {
 			path1.reverse();
 		if (!selfOp && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
-		var i, j, l, lj, segment, wind,
-			point, startSeg, crv, length, parent, v, horizontal,
-			curveChain = [],
+		var chain = [],
 			windings = [],
 			lengths = [],
-			windMedian, lenCurves,
 			paths = [],
 			segments = [],
 			// Aggregate of all curves in both operands, monotonic in y
 			monoCurves = [],
-			result = new CompoundPath(),
-			tolerance = /*#=*/ Numerical.TOLERANCE,
+			TOLERANCE = /*#=*/ Numerical.TOLERANCE,
 			intersections = path1.getIntersections(path2, true);
 		// Split curves at intersections on both paths.
 		PathItem._splitPath(intersections);
@@ -109,7 +105,7 @@ PathItem.inject(new function() {
 		if (!selfOp)
 			paths.push.apply(paths, path2._children || [path2]);
 
-		for (i = 0, l = paths.length; i < l; i++) {
+		for (var i = 0, l = paths.length; i < l; i++) {
 			segments.push.apply(segments, paths[i].getSegments());
 			monoCurves.push.apply(monoCurves, paths[i]._getMonoCurves());
 		}
@@ -121,68 +117,61 @@ PathItem.inject(new function() {
 				_b = b._intersection;
 			return !_a && !_b || _a && _b ? 0 : _a ? -1 : 1;
 		});
-		for (i = 0, l = segments.length; i < l; i++) {
-			segment = segments[i];
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var segment = segments[i];
 			if (segment._winding != null)
 				continue;
 			// Here we try to determine the most probable winding number
-			// contribution for this curve-chain. Once we have enough
-			// confidence in the winding contribution, we can propagate it
-			// until the intersection or end of a curve chain.
-			curveChain.length = lengths.length = 0;
-			lenCurves = 0;
-			startSeg = segment;
+			// contribution for this curve-chain. Once we have enough confidence
+			// in the winding contribution, we can propagate it until the
+			// intersection or end of a curve chain.
+			chain.length = windings.length = lengths.length = 0;
+			var totalLength = 0,
+				startSeg = segment;
 			do {
-				curveChain.push(segment);
-				lenCurves += segment.getCurve().getLength();
-				lengths.push(lenCurves);
-				// Continue with next curve
+				chain.push(segment);
+				lengths.push(totalLength += segment.getCurve().getLength());
 				segment = segment.getNext();
 			} while (segment && !segment._intersection && segment !== startSeg);
-
-
-			// Select the median winding of three random points along this
-			// curve chain, as a representative winding number. The
-			// random selection gives a better chance of returning a
-			// correct winding than equally dividing the curve chain, with
-			// the same (amortised) time.
-			windings.length = 0;
-			for (wind = 0; wind < 3; wind++) {
-				length = lenCurves * Math.random();
-				for (j = 0, lj = lengths.length ; j <= lj; j++)
-					if (lengths[j] >= length) {
-						length = j > 0 ? length - lengths[j-1] : length;
+			// Select the median winding of three random points along this curve
+			// chain, as a representative winding number. The random selection
+			// gives a better chance of returning a correct winding than equally
+			// dividing the curve chain, with the same (amortised) time.
+			for (var j = 0; j < 3; j++) {
+				var length = totalLength * Math.random(),
+					amount = lengths.length;
+					k = 0;
+				do {
+					if (lengths[k] >= length) {
+						if (k > 0) 
+							length -= lengths[k - 1];
 						break;
 					}
-				crv = curveChain[j].getCurve();
-				point = crv.getPointAt(length);
-				v = crv.getValues();
-				horizontal = Curve.isLinear(v) && Math.abs(v[1] - v[7]) < tolerance;
-				windMedian = PathItem._getWinding(point, monoCurves, horizontal);
+				} while (++k < amount);
+				var curve = chain[k].getCurve(),
+					point = curve.getPointAt(length),
+					hor = curve.isHorizontal(),
+					path = curve._path;
+				if (path._parent instanceof CompoundPath)
+					path = path._parent;
 				// While subtracting, we need to omit this curve if this 
 				// curve is contributing to the second operand and is outside
 				// the first operand.
-				parent = crv._path;
-				if (parent._parent instanceof CompoundPath)
-					parent = parent._parent;
-				if (subtract && (parent._id === path2._id &&
-							!path1._getWinding(point, horizontal) ||
-							(parent._id === path1._id &&
-							path2._getWinding(point, horizontal)))) {
-					windMedian = 0;
-				}
-				windings[wind] = windMedian;
+				windings[j] = subtract
+						&& (path === path1 && path2._getWinding(point, hor)
+						|| path === path2 && !path1._getWinding(point, hor))
+						? 0
+						: PathItem._getWinding(point, monoCurves, hor);
 			}
 			windings.sort();
-			windMedian = windings[1];
-			// Assign the winding to the entire curve chain
-			for (j = curveChain.length - 1; j >= 0; j--)
-				curveChain[j]._winding = windMedian;
+			// Assign the median winding to the entire curve chain.
+			var winding = windings[1];
+			for (var j = chain.length - 1; j >= 0; j--)
+				chain[j]._winding = winding;
 		}
-		// Trace closed contours and insert them into the result;
-		paths = PathItem._tracePaths(segments, operator);
-		for (i = 0, l = paths.length; i < l; i++)
-			result.addChild(paths[i], true);
+		// Trace closed contours and insert them into the result.
+		var result = new CompoundPath();
+		result.addChildren(PathItem._tracePaths(segments, operator), true);
 		// Delete the proxies
 		path1.remove();
 		if (!selfOp)
@@ -195,7 +184,7 @@ PathItem.inject(new function() {
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
     // split at intersections.
-    return /** @lends Path# */{
+    return /** @lends PathItem# */{
 		/**
 		 * {@grouptitle Boolean Path Operations}
 		 *
@@ -206,8 +195,9 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		unite: function(path) {
-			return computeBoolean(this, path,
-						function(w) { return w === 1 || w === 0; }, false);
+			return computeBoolean(this, path, function(w) {
+				return w === 1 || w === 0;
+			}, false);
 		},
 
 		/**
@@ -218,8 +208,9 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		intersect: function(path) {
-			return computeBoolean(this, path,
-						function(w) { return w === 2; }, false);
+			return computeBoolean(this, path, function(w) {
+				return w === 2;
+			}, false);
 		},
 
 		/**
@@ -230,8 +221,9 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		subtract: function(path) {
-			return computeBoolean(this, path,
-						function(w) { return w === 1; }, true);
+			return computeBoolean(this, path, function(w) {
+				return w === 1;
+			}, true);
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
