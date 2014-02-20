@@ -199,10 +199,11 @@ var Point = Base.extend(/** @lends Point# */{
 	 * console.log(point != new Point(1, 1)); // true
 	 */
 	equals: function(point) {
-		return point === this || point && (this.x === point.x
-				&& this.y === point.y
-				|| Array.isArray(point) && this.x === point[0]
-					&& this.y === point[1]) || false;
+		return this === point || point
+				&& (this.x === point.x && this.y === point.y
+					|| Array.isArray(point)
+						&& this.x === point[0] && this.y === point[1])
+				|| false;
 	},
 
 	/**
