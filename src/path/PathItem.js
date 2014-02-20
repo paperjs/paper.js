@@ -76,6 +76,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			length1 = curves1.length,
 			length2 = selfOp ? length1 : curves2.length,
 			values2 = [],
+			abs = Math.abs,
 			ZERO = /*#=*/ Numerical.EPSILON,
 			ONE = 1 - /*#=*/ Numerical.EPSILON;
 		for (var i = 0; i < length2; i++)
@@ -119,10 +120,54 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						curves2[j], locations,
 						excludeEnds ? ZERO : 0, // tMin
 						excludeEnds ? ONE : 1); // tMax
+			}
+		}
+		// Now filter the locations and process _expand:
+		function compare(loc1, loc2) {
+			var path1 = loc1.getPath(),
+				path2 = loc2.getPath();
+			return path1 === path2
+					// We can add parameter (0 <= t <= 1) to index 
+					// (a integer) to compare both at the same time
+					? (loc1.getIndex() + loc1.getParameter())
+							- (loc2.getIndex() + loc2.getParameter())
+					// Sort by path id to group all locations on the same path.
+					: path1._id - path2._id;
+		}
+
+		var max = locations.length - 1;
+		// Merge intersections very close to the end of a curve to the begining
+		// of the next curve.
+		for (var i = max; i >= 0; i--) {
+			var loc = locations[i],
+				next = loc._curve.getNext(),
+				next2 = loc._curve2.getNext();
+			if (next && loc._parameter >= ONE) {
+				loc._parameter = 0;
+				loc._curve = next;
+			}
+			if (next2 && loc._parameter2 >= ONE) {
+				loc._parameter2 = 0;
+				loc._curve2 = next2;
+			}
+		}
+		if (max > 0) {
+			locations.sort(compare);
+			// Filter out duplicate locations
+			for (var i = max; i >= 0; i--) {
+				if (locations[i].equals(i === 0
+						? locations[max] : locations[i - 1])) {
+					locations.splice(i, 1);
+					max--;
 				}
 			}
 		}
-		return PathItem._filterIntersections(locations, _expand);
+		if (_expand) {
+			for (var i = max; i >= 0; i--)
+				locations.push(locations[i].getIntersection());
+			locations.sort(compare);
+		}
+		return locations;
 	},
 
 	setPathData: function(data) {
@@ -500,56 +545,7 @@ statics: {
 				paths.push(path);
 		}
 		return paths;
-	},
-
-	_filterIntersections: function(locations, _expand) {
-		function compare(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index 
-					// (a integer) to compare both at the same time
-					? (loc1.getIndex() + loc1.getParameter())
-							- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path id to group all locations on the same path.
-					: path1._id - path2._id;
-		}
-		var max = locations.length - 1,
-			ONE = 1 - /*#=*/ Numerical.EPSILON,
-			abs = Math.abs;
-		// Merge intersections very close to the end of a curve to the begining
-		// of the next curve.
-		for (var i = max; i >= 0; i--) {
-			var loc = locations[i],
-				nextCurve = loc._curve.getNext(),
-				nextCurve2 = loc._curve2.getNext();
-			if (nextCurve && loc._parameter >= ONE) {
-				loc._parameter = 0;
-				loc._curve = nextCurve;
-			}
-			if (nextCurve2 && loc._parameter2 >= ONE) {
-				loc._parameter2 = 0;
-				loc._curve2 = nextCurve2;
-			}
-		}
-		if (max > 0) {
-			locations.sort(compare);
-			// Filter out duplicate locations
-			for (var i = max; i >= 0; i--) {
-				if (locations[i].equals(i === 0
-						? locations[max] : locations[i - 1])) {
-					locations.splice(i, 1);
-					max--;
-				}
-			}
-		}
-		if (_expand) {
-			for (var i = max; i >= 0; i--)
-				locations.push(locations[i].getIntersection());
-			locations.sort(compare);
-		}
-		return locations;
-	},
+	}
 }
 
 	/**
