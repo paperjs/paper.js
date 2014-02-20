@@ -21,8 +21,9 @@ var __options = {
 	stats: true,
 	svg: true,
 	fatline: true,
-	paperscript: true,
-	palette: true,
+	booleanOperations: true,
 	nativeContains: false,
+	paperScript: true,
+	palette: true,
 	debug: false
 };

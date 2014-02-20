@@ -90,7 +90,7 @@ PathItem.inject(/** @lends PathItem# */{
 		if (path2 && !(subtract ^ path2.isClockwise()))
 			path2.reverse();
 		// Split curves at intersections on both paths.
-		PathItem._splitPath(path1.getIntersections(path2 || path1, true));
+		PathItem._splitPath(path1.getIntersections(path2, true));
 
 		var chain = [],
 			windings = [],
@@ -182,6 +182,20 @@ PathItem.inject(/** @lends PathItem# */{
 		return result.reduce();
     },
 
+    /**
+     * Returns the winding contribution of the given point with respect to this
+     * PathItem.
+     *
+     * @param  {Point} point the location for which to determine the winding
+     * direction
+     * @param  {Boolean} horizontal wether we need to consider this point as
+     * part of a horizontal curve
+     * @return {Number} the winding number
+     */
+    _getWinding: function(point, horizontal) {
+    	return PathItem._getWinding(point, this._getMonoCurves(), horizontal);
+    },
+
 	/**
 	 * {@grouptitle Boolean Path Operations}
 	 *
@@ -245,5 +259,245 @@ PathItem.inject(/** @lends PathItem# */{
 	 */
 	divide: function(path) {
 		return new Group([this.subtract(path), this.intersect(path)]);
+	},
+
+// Mess with indentation in order to get more line-space below...
+statics: {
+	/**
+	 * Private method for splitting a PathItem at the given intersections.
+	 * The routine works for both self intersections and intersections 
+	 * between PathItems.
+	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
+	 */
+	_splitPath: function(intersections) {
+		var linearSegments;
+
+		function resetLinear() {
+			// Reset linear segments if they were part of a linear curve 
+			// and if we are done with the entire curve.
+			for (var i = 0, l = linearSegments.length; i < l; i++) {
+				var segment = linearSegments[i];
+				// FIXME: Don't reset the appropriate handle if the intersection
+				// was on t == 0 && t == 1.
+				segment._handleOut.set(0, 0);
+				segment._handleIn.set(0, 0);
+			}
+		}
+
+		for (var i = intersections.length - 1, curve, prevLoc; i >= 0; i--) {
+			var loc = intersections[i],
+				t = loc._parameter;
+			// Check if we are splitting same curve multiple times
+			if (prevLoc && prevLoc._curve === loc._curve) {
+				// Scale parameter after previous split.
+				t /= prevLoc._parameter;
+			} else {
+				if (linearSegments)
+					resetLinear();
+				curve = loc._curve;
+				linearSegments = curve.isLinear() && [];
+			}
+			var newCurve,
+				segment;
+			// Split the curve at t, while ignoring linearity of curves
+			if (newCurve = curve.divide(t, true, true)) {
+				segment = newCurve._segment1;
+				curve = newCurve.getPrevious();
+			} else {
+				segment = t < 0.5 ? curve._segment1 : curve._segment2;
+			}
+			// Link the new segment with the intersection on the other curve
+			segment._intersection = loc.getIntersection();
+			loc._segment = segment;
+			if (linearSegments)
+				linearSegments.push(segment);
+			prevLoc = loc;
+		}
+		if (linearSegments)
+			resetLinear();
+	},
+
+	/**
+	 * Private static method that returns the winding contribution of the 
+	 * given point with respect to a given set of monotone curves.
+	 */
+	_getWinding: function _getWinding(point, curves, horizontal) {
+		var tolerance = /*#=*/ Numerical.TOLERANCE,
+			x = point.x,
+			y = point.y,
+			xAfter = x + tolerance,
+			xBefore = x - tolerance,
+			windLeft = 0,
+			windRight = 0,
+			roots = [],
+			abs = Math.abs;
+		// Absolutely horizontal curves may return wrong results, since
+		// the curves are monotonic in y direction and this is an
+		// indeterminate state.
+		if (horizontal) {
+			var yTop = -Infinity,
+				yBottom = Infinity;
+			// Find the closest top and bottom intercepts for the same vertical
+			// line.
+			for (var i = 0, l = curves.length; i < l; i++) {
+				v = curves[i];
+				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
+					for (var j = roots.length - 1; j >= 0; j--) {
+						var y0 = Curve.evaluate(v, roots[j], 0).y;
+						if (y0 > y + tolerance && y0 < yBottom) {
+							yBottom = y0;
+						} else if (y0 < y - tolerance && y0 > yTop) {
+							yTop = y0;
+						}
+					}
+				}
+			}
+			// Shift the point lying on the horizontal curves by
+			// half of closest top and bottom intercepts.
+			yTop = (yTop + y) / 2;
+			yBottom = (yBottom + y) / 2;
+			if (yTop > -Infinity)
+				windLeft = _getWinding(new Point(x, yTop), curves);
+			if (yBottom < Infinity)
+				windRight = _getWinding(new Point(x, yBottom), curves);
+		} else {
+			// Find the winding number for right side of the curve, inclusive of
+			// the curve itself, while tracing along its +-x direction.
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var v = curves[i];
+				if (Curve.solveCubic(v, 1, y, roots, 0, 1 - tolerance) === 1) {
+					var t = roots[0],
+						x0 = Curve.evaluate(v, t, 0).x,
+						slope = Curve.evaluate(v, t, 1).y;
+					// Take care of cases where the curve and the preceeding
+					// curve merely touches the ray towards +-x direction, but
+					// proceeds to the same side of the ray. This essentially is
+					// not a crossing.
+					// NOTE: The previous curve is stored at v[9], see
+					// Path#_getMonoCurves() for details.
+					if (abs(slope) < tolerance && !Curve.isLinear(v)
+							|| t < tolerance
+								&& slope * Curve.evaluate(v[9], t, 1).y < 0) {
+						// TODO: Handle stationary points here!
+					} else if (x0 <= xBefore) {
+						windLeft += v[8];
+					} else if (x0 >= xAfter) {
+						windRight += v[8];
+					}
+				}
+			}
+		}
+		return Math.max(abs(windLeft), abs(windRight));
+	},
+
+	/**
+	 * Private method to trace closed contours from a set of segments according 
+	 * to a set of constraints—winding contribution and a custom operator.
+	 * 
+	 * @param {Segment[]} segments Array of 'seed' segments for tracing closed
+	 * contours
+	 * @param {Function} the operator function that receives as argument the
+	 * winding number contribution of a curve and returns a boolean value 
+	 * indicating whether the curve should be  included in the final contour or
+	 * not
+	 * @return {Path[]} the contours traced
+	 */
+	_tracePaths: function(segments, operator, selfIx) {
+		// Choose a default operator which will return all contours
+		operator = operator || function() {
+			return true;
+		};
+		var paths = [],
+			// Values for getTangentAt() that are almost 0 and 1.
+			// TODO: Correctly support getTangentAt(0) / (1)?
+			ZERO = 1e-3,
+			ONE = 1 - 1e-3;
+		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
+			seg = startSeg = segments[i];
+			if (seg._visited || !operator(seg._winding))
+				continue;
+			var path = new Path({ insert: false }),
+				inter = seg._intersection,
+				startInterSeg = inter && inter._segment,
+				added = false, // Wether a first segment as added already
+				dir = 1;
+			do {
+				var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
+					handleOut = dir > 0 ? seg._handleOut : seg._handleIn,
+					interSeg;
+				// If the intersection segment is valid, try switching to
+				// it, with an appropriate direction to continue traversal.
+				// Else, stay on the same contour.
+				if (added && (!operator(seg._winding) || selfIx)
+						&& (inter = seg._intersection)
+						&& (interSeg = inter._segment)
+						&& interSeg !== startSeg) {
+					var c1 = seg.getCurve();
+					if (dir > 0)
+						c1 = c1.getPrevious();
+					var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+						// Get both curves at the intersection (except the entry
+						// curves) along with their winding values and tangents.
+						c4 = interSeg.getCurve(),
+						c3 = c4.getPrevious(),
+						t3 = c3.getTangentAt(ONE, true),
+						t4 = c4.getTangentAt(ZERO, true),
+						// Cross product of the entry and exit tangent vectors
+						// at the intersection, will let us select the correct
+						// countour to traverse next.
+						w3 = t1.cross(t3),
+						w4 = t1.cross(t4);
+					// Do not attempt to switch contours if we aren't absolutely
+					// sure that there is a possible candidate.
+					if (w3 * w4 !== 0) {
+						var curve = w3 < w4 ? c3 : c4,
+							nextCurve = operator(curve._segment1._winding)
+								? curve
+								: w3 < w4 ? c4 : c3,
+							nextSeg = nextCurve._segment1;
+						dir = nextCurve === c3 ? -1 : 1;
+						// If we didn't manage to find a suitable direction for
+						// next contour to traverse, stay on the same contour.
+						if (nextSeg._visited && seg._path !== nextSeg._path
+									|| !operator(nextSeg._winding)) {
+							dir = 1;
+						} else {
+							// Switch to the intersection segment.
+							seg._visited = interSeg._visited;
+							seg = interSeg;
+							if (nextSeg._visited) 
+								dir = 1;
+						}
+					} else {
+						dir = 1;
+					}
+					handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
+				}
+				// Add the current segment to the path, and mark the added
+				// segment as visited.
+				path.add(new Segment(seg._point, added && handleIn, handleOut));
+				added = true;
+				seg._visited = true;
+				// Move to the next segment according to the traversal direction
+				seg = dir > 0 ? seg.getNext() : seg. getPrevious();
+			} while (seg && !seg._visited
+					&& seg !== startSeg && seg !== startInterSeg
+					&& (seg._intersection || operator(seg._winding)));
+			// Finish with closing the paths if necessary, correctly linking up
+			// curves etc.
+			if (seg && (seg === startSeg || seg === startInterSeg)) {
+				path.firstSegment.setHandleIn((seg === startInterSeg
+						? startInterSeg : seg)._handleIn);
+				path.setClosed(true);
+			} else {
+				path.lastSegment._handleOut.set(0, 0);
+			}
+			// Add the path to the result.
+			// Try to avoid stray segments and incomplete paths.
+			var count = path._segments.length;
+			if (count > 2 || count === 2 && path._closed && !path.isPolygon())
+				paths.push(path);
+		}
+		return paths;
 	}
-});
+}});
