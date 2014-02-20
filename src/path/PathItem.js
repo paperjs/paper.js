@@ -435,41 +435,41 @@ statics: {
 		operator = operator || function() {
 			return true;
 		};
-		var j,
-			// A list of both curves at an intersection, except the entry curves
-			// along with their winding values and tangents.
-			curves = [{}, {}],
+		// A list of both curves at an intersection, except the entry curves
+		// along with their winding values and tangents.
+		var curves = [{}, {}],
 			paths = [],
 			// Values for getTangentAt() that are almost 0 and 1.
 			// TODO: Correctly support getTangentAt(0) / (1)?
 			ZERO = 1e-3,
 			ONE = 1 - ZERO;
 		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
-			startSeg = seg = segments[i];
+			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
 				continue;
 			// Initialise a new path chain with the seed segment.
 			var path = new Path({ insert: false }),
-				ixOther = seg._intersection,
-				startSegIx = ixOther && ixOther._segment,
+				inter = seg._intersection,
+				startInterSeg = inter && inter._segment,
 				firstHandleIn = null,
 				dir = 1;
 			do {
-				ixOther = seg._intersection;
 				var nextHandleIn = dir > 0 ? seg._handleIn : seg._handleOut,
 					nextHandleOut = dir > 0 ? seg._handleOut : seg._handleIn,
-					ixOtherSeg;
+					interSeg;
 				// If the intersection segment is valid, try switching to
 				// it, with an appropriate direction to continue traversal.
 				// Else, stay on the same contour.
-				if (ixOther && (!operator(seg._winding) || selfIx)
-						&& (ixOtherSeg = ixOther._segment)
-						&& ixOtherSeg !== startSeg && firstHandleIn) {
+				if (firstHandleIn
+						&& (!operator(seg._winding) || selfIx)
+						&& (inter = seg._intersection)
+						&& (interSeg = inter._segment)
+						&& interSeg !== startSeg) {
 					var c1 = seg.getCurve();
 					if (dir > 0)
 						c1 = c1.getPrevious();
 					var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
-						c4 = curves[1].c = ixOtherSeg.getCurve(),
+						c4 = curves[1].c = interSeg.getCurve(),
 						c3 = curves[0].c = c4.getPrevious();
 					curves[0].t = c3.getTangentAt(ONE, true);
 					curves[1].t = c4.getTangentAt(ZERO, true);
@@ -485,8 +485,8 @@ statics: {
 							// Compare tangents to sort curves counter clockwise
 							return a.w - b.w;
 						});
-						var nextSeg,
-							j = 0;
+						var j = 0,
+							nextSeg;
 						do {
 							var curve = curves[j++].c;
 							nextSeg = curve._segment1;
@@ -499,8 +499,8 @@ statics: {
 							dir = 1;
 						} else {
 							// Switch to the intersection segment.
-							seg._visited = ixOtherSeg._visited;
-							seg = ixOtherSeg;
+							seg._visited = interSeg._visited;
+							seg = interSeg;
 							if (nextSeg._visited) 
 								dir = 1;
 						}
@@ -519,15 +519,14 @@ statics: {
 				seg._visited = true;
 				// Move to the next segment according to the traversal direction
 				seg = dir > 0 ? seg.getNext() : seg. getPrevious();
-			} while (seg && seg !== startSeg && seg !== startSegIx
-					&& !seg._visited
+			} while (seg && !seg._visited
+					&& seg !== startSeg && seg !== startInterSeg
 					&& (seg._intersection || operator(seg._winding)));
 			// Finish with closing the paths if necessary, correctly linking up
 			// curves etc.
-			if (seg && (seg === startSeg || seg === startSegIx)) {
-				path.firstSegment.setHandleIn(seg === startSegIx
-						? startSegIx._handleIn
-						: seg._handleIn);
+			if (seg && (seg === startSeg || seg === startInterSeg)) {
+				path.firstSegment.setHandleIn(
+						(seg === startInterSeg ? startInterSeg : seg)._handleIn);
 				path.setClosed(true);
 			} else {
 				path.lastSegment._handleOut.set(0, 0);
