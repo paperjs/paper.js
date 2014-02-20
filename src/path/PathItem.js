@@ -76,7 +76,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			length1 = curves1.length,
 			length2 = selfOp ? length1 : curves2.length,
 			values2 = [],
-			abs = Math.abs,
 			ZERO = /*#=*/ Numerical.EPSILON,
 			ONE = 1 - /*#=*/ Numerical.EPSILON;
 		for (var i = 0; i < length2; i++)
@@ -123,22 +122,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			}
 		}
 		// Now filter the locations and process _expand:
-		function compare(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index 
-					// (a integer) to compare both at the same time
-					? (loc1.getIndex() + loc1.getParameter())
-							- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path id to group all locations on the same path.
-					: path1._id - path2._id;
-		}
-
-		var max = locations.length - 1;
+		var last = locations.length - 1;
 		// Merge intersections very close to the end of a curve to the begining
 		// of the next curve.
-		for (var i = max; i >= 0; i--) {
+		for (var i = last; i >= 0; i--) {
 			var loc = locations[i],
 				next = loc._curve.getNext(),
 				next2 = loc._curve2.getNext();
@@ -151,19 +138,33 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				loc._curve2 = next2;
 			}
 		}
-		if (max > 0) {
+
+		// Compare helper to filter locations
+		function compare(loc1, loc2) {
+			var path1 = loc1.getPath(),
+				path2 = loc2.getPath();
+			return path1 === path2
+					// We can add parameter (0 <= t <= 1) to index 
+					// (a integer) to compare both at the same time
+					? (loc1.getIndex() + loc1.getParameter())
+							- (loc2.getIndex() + loc2.getParameter())
+					// Sort by path id to group all locations on the same path.
+					: path1._id - path2._id;
+		}
+
+		if (last > 0) {
 			locations.sort(compare);
 			// Filter out duplicate locations
-			for (var i = max; i >= 0; i--) {
+			for (var i = last; i >= 0; i--) {
 				if (locations[i].equals(i === 0
-						? locations[max] : locations[i - 1])) {
+						? locations[last] : locations[i - 1])) {
 					locations.splice(i, 1);
-					max--;
+					last--;
 				}
 			}
 		}
 		if (_expand) {
-			for (var i = max; i >= 0; i--)
+			for (var i = last; i >= 0; i--)
 				locations.push(locations[i].getIntersection());
 			locations.sort(compare);
 		}
