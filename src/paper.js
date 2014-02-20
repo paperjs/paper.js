@@ -81,11 +81,11 @@ var paper = new function(undefined) {
 /*#*/ include('path/Path.js');
 /*#*/ include('path/Path.Constructors.js');
 /*#*/ include('path/CompoundPath.js');
-/*#*/ include('path/PathFlattener.js');
-/*#*/ include('path/PathFitter.js');
 /*#*/ if (__options.booleanOperations) {
 /*#*/ include('path/PathItem.Boolean.js');
 /*#*/ } // __options.booleanOperations
+/*#*/ include('path/PathFlattener.js');
+/*#*/ include('path/PathFitter.js');
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');

@@ -240,8 +240,8 @@ PathItem.inject(new function() {
 	}
 
 	/**
-	 * Private static method that returns the winding contribution of the 
-	 * given point with respect to a given set of monotone curves.
+	 * Private method that returns the winding contribution of the  given point
+	 * with respect to a given set of monotone curves.
 	 */
 	function getWinding(point, curves, horizontal) {
 		var tolerance = /*#=*/ Numerical.TOLERANCE,
