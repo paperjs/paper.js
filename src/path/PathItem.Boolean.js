@@ -75,11 +75,13 @@ PathItem.inject(new function() {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		// Also apply matrices to both paths in case they were transformed.
+		// We call reduce() on both cloned paths to simplify compound paths and
+		// remove empty curves. We also apply matrices to both paths in case
+		// they were transformed.
 		var singlePathOp = path1 === path2;
-		path1 = reorientPath(path1.clone(false).applyMatrix());
+		path1 = reorientPath(path1.clone(false).reduce().applyMatrix());
 		if (!singlePathOp)
-			path2 = reorientPath(path2.clone(false).applyMatrix());
+			path2 = reorientPath(path2.clone(false).reduce().applyMatrix());
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when @subtract = true
 		// We need both paths at opposit orientation for subtraction
