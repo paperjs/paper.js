@@ -270,10 +270,10 @@ PathItem.inject(new function() {
 			// Find the closest top and bottom intercepts for the same vertical
 			// line.
 			for (var i = 0, l = curves.length; i < l; i++) {
-				v = curves[i];
-				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
+				var values = curves[i].values;
+				if (Curve.solveCubic(values, 0, x, roots, 0, 1) > 0) {
 					for (var j = roots.length - 1; j >= 0; j--) {
-						var y0 = Curve.evaluate(v, roots[j], 0).y;
+						var y0 = Curve.evaluate(values, roots[j], 0).y;
 						if (y0 < yBefore && y0 > yTop) {
 							yTop = y0;
 						} else if (y0 > yAfter && y0 < yBottom) {
@@ -296,25 +296,25 @@ PathItem.inject(new function() {
 			// Find the winding number for right side of the curve, inclusive of
 			// the curve itself, while tracing along its +-x direction.
 			for (var i = 0, l = curves.length; i < l; i++) {
-				var v = curves[i];
-				if (Curve.solveCubic(v, 1, y, roots, 0, 1 - TOLERANCE) === 1) {
+				var curve = curves[i],
+					values = curve.values;
+				if (Curve.solveCubic(values, 1, y, roots, 0, 1 - TOLERANCE)
+						=== 1) {
 					var t = roots[0],
-						x0 = Curve.evaluate(v, t, 0).x,
-						slope = Curve.evaluate(v, t, 1).y;
+						x0 = Curve.evaluate(values, t, 0).x,
+						slope = Curve.evaluate(values, t, 1).y;
 					// Take care of cases where the curve and the preceeding
 					// curve merely touches the ray towards +-x direction, but
 					// proceeds to the same side of the ray. This essentially is
 					// not a crossing.
-					// NOTE: The previous curve is stored at v[9], see
-					// Path#_getMonoCurves() for details.
-					if (abs(slope) < TOLERANCE && !Curve.isLinear(v)
-							|| t < TOLERANCE
-								&& slope * Curve.evaluate(v[9], t, 1).y < 0) {
+					if (abs(slope) < TOLERANCE && !Curve.isLinear(values)
+							|| t < TOLERANCE && slope * Curve.evaluate(
+								curve.previous.values, t, 1).y < 0) {
 						// TODO: Handle stationary points here!
 					} else if (x0 <= xBefore) {
-						windLeft += v[8];
+						windLeft += curve.winding;
 					} else if (x0 >= xAfter) {
-						windRight += v[8];
+						windRight += curve.winding;
 					}
 				}
 			}
@@ -528,20 +528,22 @@ Path.inject(/** @lends Path# */{
 		// Insert curve values into a cached array
 		function insertCurve(v) {
 			var y0 = v[1],
-				y1 = v[7];
-			// Add the winding direction to the end of the curve values.
-			v[8] = y0 === y1
-					? 0 // Horizontal
-					: y0 > y1
-						? -1 // Decreasing
-						: 1; // Increasing
-			// Add a reference to neighboring curves
-			if (prevCurve) {
-				v[9] = prevCurve;
-				prevCurve[10] = v;
-			}
-			monoCurves.push(v);
-			prevCurve = v;
+				y1 = v[7],
+				curve = {
+					values: v,
+					winding: y0 === y1
+						? 0 // Horizontal
+						: y0 > y1
+							? -1 // Decreasing
+							: 1, // Increasing
+					// Add a reference to neighboring curves.
+					previous: prevCurve,
+					next: null // Always set it for hidden class optimization.
+				};
+			if (prevCurve)
+				prevCurve.next = curve;
+			monoCurves.push(curve);
+			prevCurve = curve;
 		}
 
 		// Handle bezier curves. We need to chop them into smaller curves  with
@@ -608,8 +610,10 @@ Path.inject(/** @lends Path# */{
 				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
 			}
 			// Link first and last curves
-			monoCurves[0][9] = prevCurve = monoCurves[monoCurves.length - 1];
-			prevCurve[10] = monoCurves[0];
+			var first = monoCurves[0],
+				last = monoCurves[monoCurves.length - 1];
+			first.previous = last;
+			last.next = first;
 		}
 		return monoCurves;
 	}
