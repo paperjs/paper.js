@@ -296,7 +296,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		CanvasProvider.release(ctx);
 		return res;
 /*#*/ } else { // !__options.nativeContains && __options.booleanOperations
-		var winding = this._getWinding(point);
+		var winding = this._getWinding(point, false, true);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
 	},

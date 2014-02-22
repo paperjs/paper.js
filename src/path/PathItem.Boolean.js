@@ -251,7 +251,7 @@ PathItem.inject(new function() {
 	 * Private method that returns the winding contribution of the  given point
 	 * with respect to a given set of monotone curves.
 	 */
-	function getWinding(point, curves, horizontal) {
+	function getWinding(point, curves, horizontal, testContains) {
 		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
 			x = point.x,
 			y = point.y,
@@ -318,7 +318,10 @@ PathItem.inject(new function() {
 					if (abs(slope) < TOLERANCE && !Curve.isLinear(values)
 							|| t < TOLERANCE && slope * Curve.evaluate(
 								curve.previous.values, t, 1).y < 0) {
-						// TODO: Handle stationary points here!
+						if (testContains && x0 >= xBefore && x0 <= xAfter) {
+							++windLeft;
+							++windRight;
+						}
 					} else if (x0 <= xBefore) {
 						windLeft += curve.winding;
 					} else if (x0 >= xAfter) {
@@ -448,12 +451,16 @@ PathItem.inject(new function() {
 		 *
 		 * @param  {Point} point the location for which to determine the winding
 		 * direction
-		 * @param  {Boolean} horizontal wether we need to consider this point as
+		 * @param  {Boolean} horizontal whether we need to consider this point as
 		 * part of a horizontal curve
+		 * @param  {Boolean} testContains whether we need to consider this point 
+		 * as part of stationary points on the curve itself, used when checking 
+		 * the winding about a point.
 		 * @return {Number} the winding number
 		 */
-		_getWinding: function(point, horizontal) {
-			return getWinding(point, this._getMonoCurves(), horizontal);
+		_getWinding: function(point, horizontal, testContains) {
+			return getWinding(point, this._getMonoCurves(),
+					horizontal, testContains);
 		},
 
 		/**
