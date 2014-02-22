@@ -23,6 +23,6 @@ var __options = {
 	fatline: true,
 	paperscript: true,
 	palette: true,
-	nativeContains: false,
+	nativeContains: true,
 	debug: false
 };
