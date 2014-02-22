@@ -297,9 +297,17 @@ PathItem.inject(new function() {
 			// the curve itself, while tracing along its +-x direction.
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var curve = curves[i],
-					values = curve.values;
-				if (Curve.solveCubic(values, 1, y, roots, 0, 1 - TOLERANCE)
-						=== 1) {
+					values = curve.values,
+					winding = curve.winding;
+				// Since the curves are monotone in y direction, we can just
+				// compare the endpoints of the curve to determine if the
+				// ray from query point along +-x direction will intersect
+				// the monotone curve. Results in quite significant speedup.
+				var interceptTest = winding === 1
+						? (y >= values[1] && y <= values[7])
+						: (y >= values[7] && y <= values[1]);
+				if (winding !== 0 && interceptTest && Curve.solveCubic(
+						values, 1, y, roots, 0, 1 - TOLERANCE) === 1) {
 					var t = roots[0],
 						x0 = Curve.evaluate(values, t, 0).x,
 						slope = Curve.evaluate(values, t, 1).y;
