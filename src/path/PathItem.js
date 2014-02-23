@@ -97,8 +97,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// intersects each other. We cannot have a self intersection
 				// within this curve if they don't intersect due to convex-hull
 				// property.
-				if (new Line(seg1._point.subtract(h1), h1, true).intersect(
-						new Line(seg2._point.subtract(h2), h2, true), false)) {
+				if (new Line(seg1._point.subtract(h1), h1.multiply(2), true)
+						.intersect(new Line(seg2._point.subtract(h2),
+						h2.multiply(2), true), false)) {
 					// Self intersectin is found by dividng the curve in two and
 					// and then applying the normal curve intersection code.
 					var parts = Curve.subdivide(values1),
