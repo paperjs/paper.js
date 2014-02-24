@@ -259,8 +259,7 @@ PathItem.inject(new function() {
 			windRight = 0,
 			roots = [],
 			abs = Math.abs,
-			ONE = 1 - TOLERANCE,
-			rootMaxLimit = ONE;
+			MAX = 1 - TOLERANCE;
 		// Absolutely horizontal curves may return wrong results, since
 		// the curves are monotonic in y direction and this is an
 		// indeterminate state.
@@ -302,19 +301,18 @@ PathItem.inject(new function() {
 					values = curve.values,
 					winding = curve.winding,
 					next = curve.next;
-				// Since the curves are monotone in y direction, we can just
-				// compare the endpoints of the curve to determine if the
-				// ray from query point along +-x direction will intersect
-				// the monotone curve. Results in quite significant speedup.
-				var interceptTest = winding === 1
-						? (y >= values[1] && y <= values[7])
-						: (y >= values[7] && y <= values[1]);
-				// If the next curve is horizontal, we have to include the end
-				// points of this curve to make sure we won't miss an intercept
-				rootMaxLimit = (next.winding === 0 && next.values[1] === y) 
-						? 1 : ONE;
-				if (winding !== 0 && interceptTest && Curve.solveCubic(
-						values, 1, y, roots, 0, rootMaxLimit) === 1) {
+					// Since the curves are monotone in y direction, we can just
+					// compare the endpoints of the curve to determine if the
+					// ray from query point along +-x direction will intersect
+					// the monotone curve. Results in quite significant speedup.
+				if (winding && (winding === 1 
+						&& y >= values[1] && y <= values[7]
+						|| y >= values[7] && y <= values[1])
+					&& Curve.solveCubic(values, 1, y, roots, 0,
+						// If the next curve is horizontal, we have to include
+						// the end of this curve to make sure we won't miss an
+						// intercept.
+						!next.winding && next.values[1] === y ? 1 : MAX) === 1){
 					var t = roots[0],
 						x0 = Curve.evaluate(values, t, 0).x,
 						slope = Curve.evaluate(values, t, 1).y;
@@ -330,9 +328,9 @@ PathItem.inject(new function() {
 							++windRight;
 						}
 					} else if (x0 <= xBefore) {
-						windLeft += curve.winding;
+						windLeft += winding;
 					} else if (x0 >= xAfter) {
-						windRight += curve.winding;
+						windRight += winding;
 					}
 				}
 			}
