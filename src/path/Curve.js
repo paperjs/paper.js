@@ -1046,7 +1046,7 @@ new function() { // Scope for methods that require numerical integration
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
 			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-/*#*/ if (__options.fatline) {
+/*#*/ if (__options.fatlineClipping) {
 		// Avoid deeper recursion.
 		if (recursion > 20)
 			return;
@@ -1138,7 +1138,7 @@ new function() { // Scope for methods that require numerical integration
 			addCurveIntersections(v2, v1, curve2, curve1, locations, include,
 					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
 		}
-/*#*/ } else { // !__options.fatline
+/*#*/ } else { // !__options.fatlineClipping
 		// Subdivision method
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2),
@@ -1164,10 +1164,10 @@ new function() { // Scope for methods that require numerical integration
 								locations, include);
 			}
 		}
-/*#*/ } // !__options.fatline
+/*#*/ } // !__options.fatlineClipping
 	}
 
-/*#*/ if (__options.fatline) {
+/*#*/ if (__options.fatlineClipping) {
 	/**
 	 * Calculate the convex hull for the non-paramertic bezier curve D(ti, di(t))
 	 * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
@@ -1281,7 +1281,7 @@ new function() { // Scope for methods that require numerical integration
 		}
 		return tVal;
 	}
-/*#*/ } // __options.fatline
+/*#*/ } // __options.fatlineClipping
 
 	/**
 	 * Intersections between curve and line becomes rather simple here mostly
