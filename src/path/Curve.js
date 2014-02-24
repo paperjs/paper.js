@@ -1344,11 +1344,11 @@ new function() { // Scope for methods that require numerical integration
 		if (point) {
 			// We need to return the parameters for the intersection,
 			// since they will be used for sorting
-			var t1 = Curve.getParameterOf(v1, point.x, point.y),
-				t2 = Curve.getParameterOf(v2, point.x, point.y);
+			var x = point.x,
+				y = point.y;
 			addLocation(locations, include,
-					curve1, t1, point,
-					curve2, t2, point);
+					curve1, Curve.getParameterOf(v1, x, y), point,
+					curve2, Curve.getParameterOf(v2, x, y), point);
 		}
 	}
 
