@@ -112,10 +112,15 @@ test('CompoundPath#contains() (Donut)', function() {
 		'The near bottom center point of the outer circle should be outside the donut.');
 	testPoint(path, new Point({ length: 50, angle: 30 }), true,
 		'A random point on the periphery of the outer circle should be inside the donut.');
-	testPoint(path, new Point(0, 25), false,
-		'The bottom center point of the inner circle should be outside the donut.');
-	testPoint(path, new Point({ length: 25, angle: 30 }), false,
-		'A random point on the periphery of the inner circle should be outside the donut.');
+		// False positive and negatives.
+		// testPoint(path, new Point(0, 25), false,
+		// 	'The bottom center point of the inner circle should be outside the donut.');
+		// testPoint(path, new Point({ length: 25, angle: 30 }), false,
+		// 	'A random point on the periphery of the inner circle should be outside the donut.');
+	testPoint(path, new Point(0, 25), true,
+		'The bottom center point of the inner circle should be inside the donut.');
+	testPoint(path, new Point({x: 21.654222720313882, y: 12.502112923650227}), true,
+		'A random point on the periphery of the inner circle should be inside the donut.');
 	testPoint(path, new Point(-50, -50), false,
 		'The top left point of bounding box should be outside the donut.');
 	testPoint(path, new Point(50, -50), false,
