@@ -18,7 +18,7 @@ test('Decomposition: rotate()', function() {
 		equals(m.getRotation(), Base.pick(ea, a),
 			s + '.getRotation()',
 			Numerical.TOLERANCE);
-		equals(m.getScaling(), new Point(1, 1),
+		comparePoints(m.getScaling(), new Point(1, 1),
 			s + '.getScaling()');
 	}
 
