@@ -144,6 +144,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
 			}
+			// Clear cached curves used for winding direction and containment
+			// calculation.
+			this._monotoneCurves = undefined;
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
@@ -1706,47 +1709,110 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	_getWinding: function(point) {
-		var closed = this._closed;
-		// If the path is not closed, we should not bail out in case it has a
-		// fill color!
-		if (!closed && !this.hasFill()
-				|| !this.getInternalRoughBounds()._containsPoint(point))
-			return 0;
-		// Use the crossing number algorithm, by counting the crossings of the
-		// beam in right y-direction with the shape, and see if it's an odd
-		// number, meaning the starting point is inside the shape.
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		var curves = this.getCurves(),
-			segments = this._segments,
-			winding = 0,
-			// Reuse arrays for root-finding, give garbage collector a break
-			roots1 = [],
-			roots2 = [],
-			last = (closed
-					? curves[curves.length - 1]
-					// Create a straight closing line for open paths, just like
-					// how filling open paths works.
-					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues(),
-			previous = last;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i].getValues(),
-				x = curve[0],
-				y = curve[1];
-			// Filter out curves with 0-length (all 4 points in the same place):
-			if (!(x === curve[2] && y === curve[3] && x === curve[4]
-					&& y === curve[5] && x === curve[6] && y === curve[7])) {
-				winding += Curve._getWinding(curve, previous, point.x, point.y,
-						roots1, roots2);
-				previous = curve;
+	/**
+	 * Private method that returns and caches all the curves in this Path, which
+	 * are monotonically decreasing or increasing in the 'y' direction.
+	 * Used by PathItem#_getWinding method.
+	 */
+	_getMonotoneCurves: function() {
+		var monoCurves = this._monotoneCurves,
+			lastCurve,
+			INCREASING = 1,
+			DECREASING = -1,
+			HORIZONTAL = 0;
+		if (!monoCurves) {
+			// Insert curve values into a cached array
+			// Always avoid horizontal curves
+			function insertValues(v, dir) {
+				var y0 = v[1], y1 = v[7];
+				dir = dir || INCREASING;
+				if (y0 === y1) {
+					dir = HORIZONTAL;
+				} else if (y0 > y1) {
+					dir = DECREASING;
+				}
+				// Add a reference to subsequent curves
+				v.push(dir);
+				if (lastCurve) {
+					v[9] = lastCurve;
+					lastCurve[10] = v;
+				}
+				lastCurve = v;
+				monoCurves.push(v);
 			}
+			// Handle bezier curves. We need to chop them into smaller curves 
+			// with defined orientation, by solving the derivative curve for
+			// Y extrema.
+			function insertCurves(v, dir) {
+				var y0 = v[1], y1 = v[3],
+					y2 = v[5], y3 = v[7],
+					roots = [], tolerance = /*#=*/ Numerical.TOLERANCE,
+					i, li;
+				// Split the curve at y extrema, to get bezier curves with clear
+				// orientation: Calculate the derivative and find its roots.
+				var a = 3 * (y1 - y2) - y0 + y3,
+					b = 2 * (y0 + y2) - 4 * y1,
+					c = y1 - y0;
+				// Keep then range to 0 .. 1 (excluding) in the search
+				// for y extrema
+				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
+						1 - tolerance);
+				if (count === 0) {
+					insertValues(v, dir);
+				} else {
+					roots.sort();
+					var parts, t = roots[0];
+					parts = Curve.subdivide(v, t);
+					if (count > 1) {
+						// Now renormalize t1 to the range of the next part.
+						t = (roots[1] - t) / (1 - t);
+						var subparts = Curve.subdivide(parts[1], t);
+						parts.splice(1, 1, subparts[0], subparts[1]);
+					}
+					for (i = 0, li = parts.length; i < li; i++)
+						insertValues(parts[i]);
+				}
+			}
+			// Insert curves that are monotonic in y direction into a cached array 
+			monoCurves = this._monotoneCurves = [];
+			var curves = this.getCurves(),
+				crv, vals, i, li,
+				segments = this._segments;
+			// If the path is not closed, we should join the end points
+			// with a straight line, just like how filling open paths works.
+			if (!this._closed && segments.length > 1) {
+		   //  	if (!this.hasFill()
+					// || !this.getInternalRoughBounds()._containsPoint(point))
+					// return 0;
+				curves.push(new Curve(segments[segments.length - 1]._point,
+						segments[0]._point).getValues());
+			}
+			for (i = 0, li = curves.length; i < li; i++) {
+				crv = curves[i];
+				// Filter out curves of zero length
+				vals = crv.getValues();
+				if (Curve.getLength(vals) === 0)
+					continue;
+				// Handle linear and cubic curves seperately
+				if (crv.isLinear()) {
+					insertValues(vals);
+				} else {
+					var y0 = vals[1], y1 = vals[7];
+					if (y0 > y1) {
+						insertCurves(vals, DECREASING);
+					} else if (y0 == y1 && y0 == vals[3] && y0 == vals[5]) {
+						insertValues(vals, HORIZONTAL);
+					} else {
+						insertCurves(vals, INCREASING);
+					}
+				}
+			}
+			// Link, first and last curves
+			lastCurve = monoCurves[monoCurves.length - 1];
+			monoCurves[0][9] = lastCurve;
+			lastCurve.push(monoCurves[0]);
 		}
-		if (!closed) {
-			winding += Curve._getWinding(last, previous, point.x, point.y,
-					roots1, roots2);
-		}
-		return winding;
+		return monoCurves;
 	},
 
 	_hitTest: function(point, options) {

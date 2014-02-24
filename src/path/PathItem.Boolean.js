@@ -31,52 +31,18 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 
-PathItem.inject(new function() {
-
-	function splitPath(intersections, collectOthers) {
-		// Sort intersections by paths ids, curve index and parameter, so we
-		// can loop through all intersections, divide paths and never need to
-		// readjust indices.
-		intersections.sort(function(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index (a integer)
-					// to compare both at the same time
-					? (loc1.getIndex() + loc1.getParameter())
-						- (loc2.getIndex() + loc2.getParameter())
-					// Sort by path index to group all locations on the same
-					// path in the sequnence that they are encountered within
-					// compound paths.
-					: path1._index - path2._index;
-		});
-		var others = collectOthers && [];
-		for (var i = intersections.length - 1; i >= 0; i--) {
-			var loc = intersections[i],
-				other = loc.getIntersection(),
-				curve = loc.divide(),
-				// When the curve doesn't need to be divided since t = 0, 1,
-				// #divide() returns null and we can use the existing segment.
-				segment = curve && curve.getSegment1() || loc.getSegment();
-			if (others)
-				others.push(other);
-			segment._intersection = other;
-			loc._segment = segment;
-		}
-		return others;
-	}
-
-	/**
-	 * To deal with a HTML5 canvas requirement where CompoundPaths' child
-	 * contours has to be of different winding direction for correctly filling
-	 * holes. But if some individual countours are disjoint, i.e. islands, we
-	 * have to reorient them so that:
-	 * - the holes have opposit winding direction (already handled by paper.js)
-	 * - islands have to have the same winding direction as the first child
-	 *
-	 * NOTE: Does NOT handle self-intersecting CompoundPaths.
-	 */
-	function reorientPath(path) {
+PathItem.inject(new function() { // FIXME: Is new necessary?
+    /**
+     * To deal with a HTML5 canvas requirement where CompoundPaths' child
+     * contours has to be of different winding direction for correctly filling
+     * holes. But if some individual countours are disjoint, i.e. islands, we
+     * have to reorient them so that:
+     * - the holes have opposit winding direction (already handled by paper.js)
+     * - islands have to have the same winding direction as the first child
+     *
+     * NOTE: Does NOT handle self-intersecting CompoundPaths.
+     */
+    function reorientPath(path) {
 		if (path instanceof CompoundPath) {
 			var children = path.removeChildren(),
 				length = children.length,
@@ -94,7 +60,7 @@ PathItem.inject(new function() {
 			}
 			for (var i = 0; i < length; i++) {
 				for (var j = 1; j < length; j++) {
-					if (i !== j && bounds[i].contains(bounds[j]))
+					if (i !== j && bounds[i].intersects(bounds[j]))
 						counters[j]++;
 				}
 				// Omit the first child
@@ -103,126 +69,133 @@ PathItem.inject(new function() {
 			}
 		}
 		return path;
-	}
+    }
 
-	function computeBoolean(path1, path2, operator, subtract) {
+    function computeBoolean(path1, path2, operator, subtract) {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
 		// Also apply matrices to both paths in case they were transformed.
 		path1 = reorientPath(path1.clone(false).applyMatrix());
 		path2 = reorientPath(path2.clone(false).applyMatrix());
-		var path1Clockwise = path1.isClockwise(),
-			path2Clockwise = path2.isClockwise(),
-			// Calculate all the intersections
-			intersections = path1.getIntersections(path2);
-		// Split intersections on both paths, by asking the first call to
-		// collect the intersections on the other path for us and passing the
-		// result of that on to the second call.
-		splitPath(splitPath(intersections, true));
 		// Do operator specific calculations before we begin
-		//  Make both paths at clockwise orientation, except when @subtract = true
-		//  We need both paths at opposit orientation for subtraction
-		if (!path1Clockwise)
+		// Make both paths at clockwise orientation, except when @subtract = true
+		// We need both paths at opposit orientation for subtraction
+		if (!path1.isClockwise())
 			path1.reverse();
-		if (!(subtract ^ path2Clockwise))
+		if (!(subtract ^ path2.isClockwise()))
 			path2.reverse();
-		path1Clockwise = true;
-		path2Clockwise = !subtract;
-		var paths = []
-				.concat(path1._children || [path1])
-				.concat(path2._children || [path2]),
+		var intersections, i, j, l, lj, segment, wind,
+			point, startSeg, crv, length, parent, v, horizontal,
+			curveChain = [],
+			windings = [],
+			lengths = [],
+			windMedian, lenCurves,
+			paths = [],
 			segments = [],
-			result = new CompoundPath();
-		// Step 1: Discard invalid links according to the boolean operator
-		for (var i = 0, l = paths.length; i < l; i++) {
-			var path = paths[i],
-				parent = path._parent,
-				clockwise = path.isClockwise(),
-				segs = path._segments;
-			path = parent instanceof CompoundPath ? parent : path;
-			for (var j = segs.length - 1; j >= 0; j--) {
-				var segment = segs[j],
-					midPoint = segment.getCurve().getPoint(0.5),
-					insidePath1 = path !== path1 && path1.contains(midPoint)
-							&& (clockwise === path1Clockwise || subtract
-									|| !testOnCurve(path1, midPoint)),
-					insidePath2 = path !== path2 && path2.contains(midPoint)
-							&& (clockwise === path2Clockwise
-									|| !testOnCurve(path2, midPoint));
-				if (operator(path === path1, insidePath1, insidePath2)) {
-					// The segment is to be discarded. Don't add it to segments,
-					// and mark it as invalid since it might still be found
-					// through curves / intersections, see below.
-					segment._invalid = true;
-				} else {
-					segments.push(segment);
-				}
-			}
+			// Aggregate of all curves in both operands, monotonic in y
+			monoCurves = [],
+			result = new CompoundPath(),
+			random = Math.random,
+			abs = Math.abs,
+			tolerance = Numerical.TOLERANCE,
+			getWindingNumber = PathItem._getWindingNumber;
+			// Split curves at intersections on both paths.
+			intersections = path1.getIntersections(path2, true);
+			PathItem._splitPath(intersections);
+		// Collect all sub paths and segments
+		paths.push.apply(paths, path1._children || [path1]);
+		paths.push.apply(paths, path2._children || [path2]);
+
+		for (i = 0, l = paths.length; i < l; i++) {
+			segments.push.apply(segments, paths[i].getSegments());
+			monoCurves.push.apply(monoCurves, paths[i]._getMonotoneCurves());
 		}
-		// Step 2: Retrieve the resulting paths from the graph
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var segment = segments[i];
-			if (segment._visited)
+		// Propagate the winding contribution. Winding contribution of curves
+		// does not change between two intersections.
+		// First, sort all segments with an intersection to the begining.
+		segments.sort(function(a, b) {
+			var ixa = a._intersection,
+				ixb = b._intersection;
+			if (ixa && !ixb || ixa && ixb)
+				return 0;
+			return ixa ? -1 : 1;
+		});
+		for (i = 0, l = segments.length; i < l; i++) {
+			segment = segments[i];
+			if(segment._winding != null)
 				continue;
-			var path = new Path(),
-				loc = segment._intersection,
-				intersection = loc && loc.getSegment(true);
-			if (segment.getPrevious()._invalid)
-				segment.setHandleIn(intersection
-						? intersection._handleIn
-						: new Point(0, 0));
+			// Here we try to determine the most probable winding number
+			// contribution for this curve-chain. Once we have enough
+			// confidence in the winding contribution, we can propagate it
+			// until the intersection or end of a curve chain.
+			curveChain.length = lengths.length = 0;
+			lenCurves = 0;
+			startSeg = segment;
 			do {
-				segment._visited = true;
-				if (segment._invalid && segment._intersection) {
-					var inter = segment._intersection.getSegment(true);
-					path.add(new Segment(segment._point, segment._handleIn,
-							inter._handleOut));
-					inter._visited = true;
-					segment = inter;
-				} else {
-					path.add(segment.clone());
-				}
+				curveChain.push(segment);
+				lenCurves += segment.getCurve().getLength();
+				lengths.push(lenCurves);
+				// Continue with next curve
 				segment = segment.getNext();
-			} while (segment && !segment._visited && segment !== intersection);
-			// Avoid stray segments and incomplete paths
-			var amount = path._segments.length;
-			if (amount > 1 && (amount > 2 || !path.isPolygon())) {
-				path.setClosed(true);
-				result.addChild(path, true);
-			} else {
-				path.remove();
+			} while (segment && !segment._intersection && segment !== startSeg);
+
+
+			// Select the median winding of three random points along this
+			// curve chain, as a representative winding number. The
+			// random selection gives a better chance of returning a
+			// correct winding than equally dividing the curve chain, with
+			// the same (amortised) time.
+			windings.length = 0;
+			for (wind = 0; wind < 3; wind++) {
+				length = lenCurves * random();
+				for (j = 0, lj = lengths.length ; j <= lj; j++)
+					if (lengths[j] >= length) {
+						length = j > 0 ? length - lengths[j-1] : length;
+						break;
+					}
+				crv = curveChain[j].getCurve();
+				point = crv.getPointAt(length);
+				v = crv.getValues();
+				horizontal = Curve.isLinear(v) && abs(v[1] - v[7]) < tolerance;
+				// PathItem._getWindingNumber
+				windMedian = getWindingNumber(point, monoCurves, horizontal);
+				// While subtracting, we need to omit this curve if this 
+				// curve is contributing to the second operand and is outside
+				// the first operand.
+				parent = crv._path;
+				if (parent._parent instanceof CompoundPath)
+					parent = parent._parent;
+				if (subtract && (parent._id === path2._id &&
+							!path1._getWinding(point, horizontal) ||
+							(parent._id === path1._id &&
+							path2._getWinding(point, horizontal)))) {
+					windMedian = 0;
+				}
+				windings[wind] = windMedian;
 			}
+			windings.sort();
+			windMedian = windings[1];
+			// Assign the winding to the entire curve chain
+			for (j = curveChain.length - 1; j >= 0; j--)
+				curveChain[j]._winding = windMedian;
 		}
-		// Remove the proxies
+		// Trace closed contours and insert them into the result;
+		paths = PathItem._tracePaths(segments, operator);
+		for (i = 0, l = paths.length; i < l; i++)
+			result.addChild(paths[i], true);
+		// Delete the proxies
 		path1.remove();
 		path2.remove();
 		// And then, we are done.
 		return result.reduce();
-	}
+    }
 
-	function testOnCurve(path, point) {
-		var curves = path.getCurves(),
-			bounds = path.getBounds();
-		if (bounds.contains(point)) {
-			for (var i = 0, l = curves.length; i < l; i++) {
-				var curve = curves[i];
-				if (curve.getBounds().contains(point)
-						&& curve.getParameterOf(point))
-					return true;
-			}
-		}
-		return false;
-	}
-
-	// Boolean operators are binary operator functions of the form:
-	// function(isPath1, isInPath1, isInPath2)
-	//
-	// Operators return true if a segment in the operands is to be discarded.
-	// They are called for each segment in the graph after all the intersections
-	// between the operands are calculated and curves in the operands were split
-	// at intersections.
-	return /** @lends Path# */{
+    // Boolean operators return true if a curve with the given winding 
+    // contribution contributes to the final result or not. They are called
+    // for each curve in the graph after curves in the operands are
+    // split at intersections.
+    return /** @lends Path# */{
 		/**
 		 * {@grouptitle Boolean Path Operations}
 		 *
@@ -233,10 +206,10 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		unite: function(path) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return isInPath1 || isInPath2;
-					});
+						function(w) { return w === 1 || w === 0; }, false);
 		},
 
 		/**
@@ -247,10 +220,10 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		intersect: function(path) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return !(isInPath1 || isInPath2);
-					});
+						function(w) { return w === 2; }, false);
 		},
 
 		/**
@@ -261,15 +234,14 @@ PathItem.inject(new function() {
 		 * @return {PathItem} the resulting path item
 		 */
 		subtract: function(path) {
+			if (!path)
+				return this;
 			return computeBoolean(this, path,
-					function(isPath1, isInPath1, isInPath2) {
-						return isPath1 && isInPath2 || !isPath1 && !isInPath1;
-					}, true);
+						function(w) { return w === 1; }, true);
 		},
 
 		// Compound boolean operators combine the basic boolean operations such
-		// as union, intersection, subtract etc. 
-		// TODO: cache the split objects and find a way to properly clone them!
+		// as union, intersection, subtract etc.
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
@@ -278,9 +250,11 @@ PathItem.inject(new function() {
 		 * @return {Group} the resulting group item
 		 */
 		exclude: function(path) {
+			if (!path)
+				return this;
 			return new Group([this.subtract(path), path.subtract(this)]);
 		},
-
+		
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
@@ -289,7 +263,9 @@ PathItem.inject(new function() {
 		 * @return {Group} the resulting group item
 		 */
 		divide: function(path) {
+			if (!path)
+				return this;
 			return new Group([this.subtract(path), this.intersect(path)]);
 		}
-	};
+    };
 });

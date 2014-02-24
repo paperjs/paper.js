@@ -31,12 +31,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
 	 * supported.
 	 *
-	 * @name PathItem#getIntersections(path, sorted)
-	 * @function
-	 *
-	 * @param {PathItem} path the other item to find the intersections with
-	 * @param {Boolean} [sorted=true] controls wether to sort the results by
-	 * offset
+	 * @param {PathItem} path the other item to find the intersections to.
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
 	 * @example {@paperscript}
@@ -64,7 +59,18 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * 	}
 	 * }
 	 */
-	getIntersections: function(path, sorted) {
+	getIntersections: function(path, expand) {
+		function compare(loc1, loc2) {
+			var path1 = loc1.getPath(),
+				path2 = loc2.getPath();
+			return path1 === path2
+					// We can add parameter (0 <= t <= 1) to index 
+					// (a integer) to compare both at the same time
+					? (loc1.getIndex() + loc1.getParameter())
+							- (loc2.getIndex() + loc2.getParameter())
+					// Sort by path id to group all locations on the same path.
+					: path1._id - path2._id;
+		}
 		// First check the bounds of the two paths. If they don't intersect,
 		// we don't need to iterate through their curves.
 		if (!this.getBounds().touches(path.getBounds()))
@@ -76,7 +82,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			matrix2 = path._matrix.orNullIfIdentity(),
 			length1 = curves1.length,
 			length2 = curves2.length,
-			values2 = [];
+			values2 = [],
+			tolerance = Numerical.EPSILON,
+			tolerance1 = 1 - tolerance,
+			abs = Math.abs;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {
@@ -86,23 +95,103 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				Curve.getIntersections(values1, values2[j], curve1, curves2[j],
 						locations);
 		}
-		if (sorted || sorted === undefined) {
-			// Now sort the results into the right sequence.
-			// TODO: Share this code with PathItem.Boolean.js, potentially by
-			// using the new BinHeap class that's in preparation.
-			locations.sort(function(loc1, loc2) {
-				var path1 = loc1.getPath(),
-					path2 = loc2.getPath();
-				return path1 === path2
-						// We can add parameter (0 <= t <= 1) to index (integer)
-						// to compare both at the same time
-						? (loc1.getIndex() + loc1.getParameter())
-							- (loc2.getIndex() + loc2.getParameter())
-						// Sort by path index to group all locations on the same
-						// path in the sequnence that they are encountered
-						// within compound paths.
-						: path1._index - path2._index;
-			});
+		// Remove duplicate intersections near curve endings
+		var loc, locNext;
+		// Merge intersections very close to the end of a curve to the
+		// begining of the next curve
+		for (var i = locations.length-1; i >= 0; i--) {
+			loc = locations[i];
+			locNext = loc._curve.getNext();
+			if (loc._parameter >= tolerance1 && locNext) {
+				loc._parameter = 0;
+				loc._curve = locNext;
+			}
+			locNext = loc._curve2.getNext();
+			if (loc._parameter2 >= tolerance1 && locNext) {
+				loc._parameter2 = 0;
+				loc._curve2 = locNext;
+			}
+		}
+		locations.sort(compare);
+		for (var length1 = locations.length - 1, i = length1; i >= 0; i--) {
+			loc = locations[i];
+			locNext = (i === 0)? locations[length1] : locations[i-1];
+			if (abs(loc._parameter - locNext._parameter) < tolerance &&
+					loc._curve === locNext._curve &&
+					abs(loc._parameter2 - locNext._parameter2) < tolerance &&
+					loc._curve2 === locNext._curve2) {
+				locations.splice(i, 1);
+				--length1;
+			}
+		}
+		if (expand) {
+			for (var i = locations.length-1; i >= 0; i--) {
+				loc = locations[i];
+				locations.push(loc.getIntersection());
+			}
+			locations.sort(compare);
+		}
+		return locations;
+	},
+
+	getSelfIntersections: function() {
+		var locations = [],
+			locs = [],
+			curves = this.getCurves(),
+			length = curves.length - 1,
+			matrix = this._matrix.orNullIfIdentity(),
+			values = [],
+			curve1, values1, parts, i, j, k, ix, from, to, param, v1, v2,
+			EPSILON = /*#=*/ Numerical.EPSILON,
+			EPSILON1s = 1 - EPSILON;
+		for (i = 0; i <= length; i++)
+			values[i] = curves[i].getValues(matrix);
+		for (i = 0; i <= length; i++) {
+			curve1 = curves[i];
+			values1 = values[i];
+			// First check for self-intersections within the same curve
+			from = curve1.getSegment1();
+			to = curve1.getSegment2();
+			v1 = from._handleOut;
+			v2 = to._handleIn;
+			// Check if extended handles of endpoints of this curve intersects
+			// each other. We cannot have a self intersection within this curve
+			// if they don't intersect due to convex-hull property.
+			ix = new paper.Line(from._point.subtract(v1), v1.multiply(2), true)
+					.intersect(new paper.Line(to._point.subtract(v2),
+						v2.multiply(2), true), false);
+			if (ix) {
+				parts = paper.Curve.subdivide(values1);
+				locs.length = 0;
+				Curve.getIntersections(parts[0], parts[1], curve1, curve1, locs);
+				for (j = locs.length - 1; j >= 0; j--) {
+					ix = locs[0];
+					if (ix._parameter <= EPSILON1s) {
+						ix._parameter = ix._parameter * 0.5;
+						ix._parameter2 = 0.5 + ix._parameter2 * 0.5;
+						break;
+					}
+				}
+				if (j >= 0)
+					locations.push(ix);
+			}
+			// Check for intersections with other curves
+			for (j = i + 1; j <= length; j++) {
+				// Avoid end point intersections on consecutive curves
+				if (j === i + 1 || (j === length && i === 0)) {
+					locs.length = 0;
+					Curve.getIntersections(values1, values[j], curve1,
+							curves[j], locs);
+					for (k = locs.length - 1; k >= 0; k--) {
+						param = locs[k].getParameter();
+						if (param < EPSILON1s && param > EPSILON)
+							locations.push(locs[k]);
+					}
+				} else {
+					paper.Curve.getIntersections(values1, values[j], curve1,
+							curves[j], locations);
+				}
+			}
 		}
 		return locations;
 	},
@@ -213,6 +302,22 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return !(this.hasFill() && this.hasStroke());
 	},
 
+	/**
+	 * Returns the winding contribution of the given point with respect to this
+	 * PathItem.
+	 *
+	 * @param  {Object} point          Point to determine the winding direction 
+	 *                                 about.
+	 * @param  {Boolean} horizontal    Boolean value indicating if we need to
+	 *                                 consider this point as part of a 
+	 *                                 horizontal curve.
+	 * @return {Number}                Winding number.
+	 */
+	_getWinding: function(point, horizontal) {
+		var curves = this._getMonotoneCurves();
+		return PathItem._getWindingNumber(point, curves, horizontal);
+	},
+
 	_contains: function(point) {
 		// NOTE: point is reverse transformed by _matrix, so we don't need to 
 		// apply here.
@@ -228,6 +333,266 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var winding = this._getWinding(point);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains
+	},
+
+	statics: {
+	/**
+	 * Private method for splitting a PathItem at the given intersections.
+	 * The routine works for both self intersections and intersections 
+	 * between PathItems.
+	 * @param  {Array} intersections Array of CurveLocation objects
+	 */
+	_splitPath: function(intersections) {
+		var loc, i, j, node1, node2, t, segment,
+			path1, isLinear, crv, crvNew,
+			newSegments = [],
+			tolerance = /*#=*/ Numerical.EPSILON;
+		for (i = intersections.length - 1; i >= 0; i--) {
+			node1 = intersections[i];
+			path1 = node1.getPath();
+			// Check if we are splitting same curve multiple times
+			if (node2 && node2.getPath() === path1 &&
+					node2._curve === node1._curve) {
+				// Use the result of last split and interpolate the parameter.
+				crv = crvNew;
+				t = node1._parameter / node2._parameter;
+			} else {
+				crv = node1._curve;
+				t = node1._parameter;
+				isLinear = crv.isLinear();
+				newSegments.length = 0;
+			}
+			// Split the curve at t, while ignoring linearity of curves
+			if ((crvNew = crv.divide(t, true, true)) === null) {
+				if (t >= 1-tolerance) {
+					segment = crv._segment2;
+				} else if (t <= tolerance) {
+					segment = crv._segment1;
+				} else {
+					// Determine the closest segment by comparing curve lengths
+					segment = crv.getLength(0, t) < crv.getLength(t, 1)
+							? crv._segment1 : crv._segment2;
+				}
+				crvNew = crv;
+			} else {
+				segment = crvNew.getSegment1();
+				crvNew = crvNew.getPrevious();
+			}
+			// Link the new segment with the intersection on the other curve
+			segment._intersection = node1.getIntersection();
+			node1._segment = segment;
+			node2 = node1;
+			// Reset linear segments if they were part of a linear curve 
+			// and if we are done with the entire curve.
+			newSegments.push(segment);
+			loc = intersections[i - 1];
+			if (!(loc && loc.getPath() === path1 &&
+					loc._curve === node1._curve) && isLinear) {
+				for (j = newSegments.length-1; j >= 0; j--) {
+					segment = newSegments[j];
+					// FIXME: Don't reset the appropriate handle if the intersections were on t==0 && t==1
+					segment._handleOut.set(0, 0);
+					segment._handleIn.set(0, 0);
+				}
+			}
+		}
+	},
+
+	/**
+	 * Private static method that returns the winding contribution of the 
+	 * given point with respect to a given set of monotone curves
+	 */
+	_getWindingNumber: function(point, curves, horizontal) {
+		function getTangent(v, t) {
+			var tan, sign, i;
+			sign = t === 0 ? 2 : (t === 1 ? -2 : 0);
+			if (sign !== 0) {
+				i = sign > 0 ? 0 : 6;
+				if (Curve.isLinear(v)) {
+					// Return slope from this point that follows the direction
+					// of the line
+					sign *= 3;
+					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
+				} else {
+					// Return the first or last handle
+					tan = new Point(v[i+sign] - v[i], v[i+sign+1] - v[i+1]);
+				}
+			} else {
+				tan = Curve.evaluate(v, t, 1);
+			}
+			return tan;
+		}
+
+		var i, j, li, t, x0, y0, wind, v, slope, stationary,
+			tolerance = /*#=*/ Numerical.TOLERANCE,
+			x = point.x,
+			y = point.y,
+			xAfter = x + tolerance,
+			xBefore = x - tolerance,
+			windLeft = 0,
+			windRight = 0,
+			roots = [],
+			abs = Math.abs;
+		// Absolutely horizontal curves may return wrong results, since
+		// the curves are monotonic in y direction and this is an
+		// indeterminate state.
+		if (horizontal) {
+			var yTop = -Infinity,
+				yBot = Infinity;
+			// Find the closest yIntercepts in the same vertical line
+			for (i = 0, li = curves.length-1; i <= li; i++) {
+				v = curves[i];
+				if (Curve.solveCubic(v, 0, x, roots, 0, 1) > 0) {
+					for (j = roots.length - 1; j >= 0; j--) {
+						t = roots[j];
+						y0 = Curve.evaluate(v, t, 0).y;
+						if (y0 > y+tolerance && y0 < yBot) {
+							yBot = y0;
+						} else if (y0 < y-tolerance && y0 > yTop) {
+							yTop = y0;
+						}
+					}
+				}
+			}
+			// Shift the point lying on the horizontal curves by
+			// half of closest top and bottom intercepts.
+			yTop = (yTop + y) / 2;
+			yBot = (yBot + y) / 2;
+			windLeft = yTop > -Infinity
+					? PathItem._getWindingNumber(new Point(x, yTop), curves)
+					: 0;
+			windRight = yBot < Infinity
+					? PathItem._getWindingNumber(new Point(x, yBot), curves)
+					: 0;
+			return Math.max(windLeft, windRight);
+		}
+		// Find the winding number for right hand side of the curve,
+		// inclusive of the curve itself, while tracing along its ±x direction.
+		for (i = 0, li = curves.length-1; i <= li; i++) {
+			v = curves[i];
+			if (Curve.solveCubic(v, 1, y, roots, -tolerance, 1 + -tolerance) === 1) {
+				t = roots[0];
+				if ( t >= -tolerance && t <= tolerance)
+					t = 0;
+				x0 = Curve.evaluate(v, t, 0).x;
+				slope = getTangent(v, t).y;
+				stationary = !Curve.isLinear(v) && abs(slope) < tolerance;
+				// Take care of cases where the curve and the preceeding
+				// curve merely touches the ray towards ±x direction, but
+				// proceeds to the same side of the ray. This essentially is
+				// not a crossing.
+				if (t === 0) {
+					// The previous curve's reference is stored at index:9,
+					// see Path#_getMonotoneCurves for details.
+					var v2 = v[9];
+					if (abs(v2[6] - v[0]) < tolerance
+							&& abs(v2[7] - v[1]) < tolerance) {
+						var slope2 = getTangent(v2, 1).y;
+						if(slope * slope2 > 0)
+							stationary = true;
+					}
+				}
+				wind = v[8];
+				if (x0 <= xBefore && !stationary)
+					windLeft += wind;
+				if (x0 >= xAfter && !stationary)
+					windRight += wind;
+			}
+		}
+		return Math.max(abs(windLeft), abs(windRight));
+	},
+
+	/**
+	 * Private method to trace closed contours from a set of segments according 
+	 * to a set of constraints —winding contribution and a custom operator.
+	 * 
+	 * @param  {Array} segments Array of 'seed' segments for tracing closed
+	 *                          contours.
+	 * @param  {Function} operator A function. It must take one argument, which
+	 *                             is the winding number contribution of a 
+	 *                             curve, and should return a boolean value 
+	 *                             indicating whether the curve should be 
+	 *                             included in the final contour or not.
+	 * @return {Array}          Array of contours traced.
+	 */
+	_tracePaths: function(segments, operator) {
+		var seg, nextSeg, startSeg, startSegIx, i, len, ixOther, prev,
+			ixOtherSeg, c1, c2, c3,
+			wind, w1, w3, s1, s3, path, nextHandleIn,
+			paths = [];
+		for (i = 0, len = segments.length; i < len; i++) {
+			startSeg = seg = segments[i];
+			if (seg._visited || !operator(seg._winding))
+				continue;
+			// Initialise a new path chain with the seed segment.
+			path = new paper.Path();
+			wind = seg._winding;
+			ixOther = seg._intersection;
+			startSegIx = ixOther ? ixOther._segment : null;
+			// Set the correct handles for this segment
+			prev = seg.getPrevious();
+			if (ixOther && prev && prev._visited)
+				seg._handleIn = new paper.Point(0, 0);
+			do {
+				nextHandleIn = nextHandleIn || seg._handleIn;
+				path.add(new paper.Segment(seg._point, nextHandleIn,
+						seg._handleOut));
+				nextHandleIn = null;
+				seg._visited = true;
+				seg = (seg._nextPathSegment ? seg._nextPathSegment :
+						seg).getNext();
+				// This segments's _intersection property holds a reference to
+				// the intersection on the other curve.
+				ixOther = seg._intersection;
+				if (ixOther && (ixOtherSeg = ixOther._segment) &&
+						ixOtherSeg !== startSeg) {
+					c1 = seg.getCurve();
+					c2 = c1.getPrevious();
+					c3 = ixOtherSeg.getCurve();
+					// c2 is the entry point in the direction we are 
+					// traversing the graph; sort c1 and c3 curves based on c2.
+					w1 = c1._segment1._winding;
+					w3 = c3._segment1._winding;
+					nextSeg = null;
+					s1 = c1.getSegment1();
+					s3 = c3.getSegment1();
+					if (wind === w1 && !s1._visited) {
+						nextSeg = s1;
+					} else if (wind === w3 && !s3._visited) {
+						nextSeg = s3;
+					}
+					if (nextSeg)
+						nextHandleIn = seg._handleIn;
+					seg = nextSeg || seg;
+					seg._winding = wind;
+				}
+			} while (seg && seg !== startSeg && seg !== startSegIx &&
+					!seg._visited && operator(seg._winding));
+			// Finish with closing the paths if necessary, correctly
+			// linking up curves etc.
+			if (seg && (seg === startSeg || seg === startSegIx)) {
+				if (path.segments.length === 1) {
+					// This is still a valid path, in case of self-Intersections
+					path.add(new paper.Segment(seg._point, seg._handleIn, null));
+				} else {
+					path.firstSegment.setHandleIn(seg === startSegIx 
+							? startSegIx._handleIn
+							: startSeg._handleIn);
+				}
+			}
+			path.setClosed(true);
+			// Add the path to the result
+			// Try to avoid stray segments and incomplete paths.
+			if (path.segments.length > 2 || (path.segments.length === 2 &&
+					(!path.getCurves()[0].isLinear() ||
+					!path.getCurves()[1].isLinear()))) {
+				paths.push(path);
+			} else {
+				path.remove();
+			}
+		}
+		return paths;
+	}
 	}
 
 	/**
