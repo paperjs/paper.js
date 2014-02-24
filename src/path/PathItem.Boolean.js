@@ -258,7 +258,9 @@ PathItem.inject(new function() {
 			windLeft = 0,
 			windRight = 0,
 			roots = [],
-			abs = Math.abs;
+			abs = Math.abs,
+			ONE = 1 - TOLERANCE,
+			rootMaxLimit = ONE;
 		// Absolutely horizontal curves may return wrong results, since
 		// the curves are monotonic in y direction and this is an
 		// indeterminate state.
@@ -298,7 +300,8 @@ PathItem.inject(new function() {
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var curve = curves[i],
 					values = curve.values,
-					winding = curve.winding;
+					winding = curve.winding,
+					next = curve.next;
 				// Since the curves are monotone in y direction, we can just
 				// compare the endpoints of the curve to determine if the
 				// ray from query point along +-x direction will intersect
@@ -306,8 +309,12 @@ PathItem.inject(new function() {
 				var interceptTest = winding === 1
 						? (y >= values[1] && y <= values[7])
 						: (y >= values[7] && y <= values[1]);
+				// If the next curve is horizontal, we have to include the end
+				// points of this curve to make sure we won't miss an intercept
+				rootMaxLimit = (next.winding === 0 && next.values[1] === y) 
+						? 1 : ONE;
 				if (winding !== 0 && interceptTest && Curve.solveCubic(
-						values, 1, y, roots, 0, 1 - TOLERANCE) === 1) {
+						values, 1, y, roots, 0, rootMaxLimit) === 1) {
 					var t = roots[0],
 						x0 = Curve.evaluate(values, t, 0).x,
 						slope = Curve.evaluate(values, t, 1).y;
