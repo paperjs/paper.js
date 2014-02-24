@@ -102,32 +102,34 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						h2.multiply(2), true), false)) {
 					// Self intersectin is found by dividng the curve in two and
 					// and then applying the normal curve intersection code.
-					var parts = Curve.subdivide(values1),
-						before = locations.length;
-					Curve.getIntersections(parts[0], parts[1], curve1, curve1,
-							locations, 0, MAX); // tMax
-					// Check if a location was added by comparing length before.
-					// Self-intersection can only lead to 0 or 1 intersections.
-					if (locations.length > before) {
-						var loc = locations[before];
-						// Since the curve was split above, we need to adjust
-						// the parameters for both locations.
-						loc._parameter /= 2;
-						loc._parameter2 = 0.5 + loc._parameter2 / 2;
-					}
+					var parts = Curve.subdivide(values1);
+					Curve.getIntersections(
+						parts[0], parts[1], curve1, curve1, locations,
+						function(loc) {
+							if (loc._parameter <= MAX) {
+								// Since the curve was split above, we need to
+								// adjust the parameters for both locations.
+								loc._parameter /= 2;
+								loc._parameter2 = 0.5 + loc._parameter2 / 2;
+								return true;
+							}
+						}
+					);
 				}
 			}
 			// Check for intersections with other curves. For self intersection,
 			// we can start at i + 1 instead of 0
 			for (var j = path ? 0 : i + 1; j < length2; j++) {
-				// Avoid end point intersections on consecutive curves whe self
-				// intersecting.
-				var excludeEnds = !path
-						&& (j === i + 1 || j === length2 - 1 && i === 0);
-				Curve.getIntersections(values1, values2[j], curve1,
-						curves2[j], locations,
-						excludeEnds ? MIN : 0, // tMin
-						excludeEnds ? MAX : 1); // tMax
+				Curve.getIntersections(
+					values1, values2[j], curve1, curves2[j], locations,
+					// Avoid end point intersections on consecutive curves whe
+					// self intersecting.
+					!path && (j === i + 1 || j === length2 - 1 && i === 0)
+						&& function(loc) {
+							var t = loc._parameter;
+							return t >= MIN && t <= MAX;
+						}
+				);
 			}
 		}
 		// Now filter the locations and process _expand:
