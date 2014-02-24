@@ -80,8 +80,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			length1 = curves1.length,
 			length2 = path ? curves2.length : length1,
 			values2 = [],
-			ZERO = /*#=*/ Numerical.EPSILON,
-			ONE = 1 - /*#=*/ Numerical.EPSILON;
+			MIN = /*#=*/ Numerical.EPSILON,
+			MAX = 1 - /*#=*/ Numerical.EPSILON;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {
@@ -105,7 +105,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					var parts = Curve.subdivide(values1),
 						before = locations.length;
 					Curve.getIntersections(parts[0], parts[1], curve1, curve1,
-							locations, 0, ONE); // tMax
+							locations, 0, MAX); // tMax
 					// Check if a location was added by comparing length before.
 					// Self-intersection can only lead to 0 or 1 intersections.
 					if (locations.length > before) {
@@ -126,8 +126,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 						&& (j === i + 1 || j === length2 - 1 && i === 0);
 				Curve.getIntersections(values1, values2[j], curve1,
 						curves2[j], locations,
-						excludeEnds ? ZERO : 0, // tMin
-						excludeEnds ? ONE : 1); // tMax
+						excludeEnds ? MIN : 0, // tMin
+						excludeEnds ? MAX : 1); // tMax
 			}
 		}
 		// Now filter the locations and process _expand:
@@ -138,11 +138,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			var loc = locations[i],
 				next = loc._curve.getNext(),
 				next2 = loc._curve2.getNext();
-			if (next && loc._parameter >= ONE) {
+			if (next && loc._parameter >= MAX) {
 				loc._parameter = 0;
 				loc._curve = next;
 			}
-			if (next2 && loc._parameter2 >= ONE) {
+			if (next2 && loc._parameter2 >= MAX) {
 				loc._parameter2 = 0;
 				loc._curve2 = next2;
 			}
