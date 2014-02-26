@@ -78,7 +78,7 @@ var Callback = {
 			return false;
 		var args = [].slice.call(arguments, 1),
 			that = this;
-		for (var i in handlers) {
+		for (var i = 0; i < handlers.length; ++i) {
 			// When the handler function returns false, prevent the default
 			// behaviour and stop propagation of the event by calling stop()
 			if (handlers[i].apply(that, args) === false
