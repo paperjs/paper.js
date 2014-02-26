@@ -73,10 +73,10 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		Line: function(/* from, to */) {
-			return new Path(
+			return new Path([
 				Point.readNamed(arguments, 'from'),
 				Point.readNamed(arguments, 'to')
-			).set(Base.getNamed(arguments));
+			]).set(Base.getNamed(arguments));
 		},
 
 		/**
