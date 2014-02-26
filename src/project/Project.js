@@ -424,7 +424,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	draw: function(ctx, matrix, ratio) {
+	draw: function(ctx, matrix, pixelRatio) {
 		// Increase the _updateVersion before the draw-loop. After that, items
 		// that are visible will have their _updateVersion set to the new value.
 		this._updateVersion++;
@@ -434,7 +434,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// values
 		var param = new Base({
 			offset: new Point(0, 0),
-			ratio: ratio,
+			pixelRatio: pixelRatio,
 			// Tell the drawing routine that we want to track nested matrices
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do

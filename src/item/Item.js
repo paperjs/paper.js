@@ -3509,7 +3509,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// it, instead of the mainCtx.
 			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)), param.ratio);
+					bounds.getSize().ceil().add(new Size(1, 1)),
+					param.pixelRatio);
 		}
 		ctx.save();
 		// If drawing directly, handle opacity and native blending now,
@@ -3541,8 +3542,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// opacity.
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					// Calculate the pixel offset of the temporary canvas to the
-					// main canvas. We also need to factor in the pixel ratio.
-					itemOffset.subtract(prevOffset).multiply(param.ratio));
+					// main canvas. We also need to factor in the pixel-ratio.
+					itemOffset.subtract(prevOffset).multiply(param.pixelRatio));
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
 			// Restore previous offset.

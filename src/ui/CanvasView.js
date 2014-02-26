@@ -45,7 +45,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		this._context = canvas.getContext('2d');
 		// Have Item count installed mouse events.
 		this._eventCounters = {};
-		this._ratio = 1;
+		this._pixelRatio = 1;
 /*#*/ if (__options.environment == 'browser') {
 		if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
 			// Hi-DPI Canvas support based on:
@@ -53,7 +53,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			var deviceRatio = window.devicePixelRatio || 1,
 				backingStoreRatio = DomElement.getPrefixValue(this._context,
 						'backingStorePixelRatio') || 1;
-			this._ratio = deviceRatio / backingStoreRatio;
+			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}
 /*#*/ } // __options.environment == 'browser'
 		View.call(this, canvas);
@@ -62,18 +62,18 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	_setViewSize: function(size) {
 		var width = size.width,
 			height = size.height,
-			ratio = this._ratio,
+			pixelRatio = this._pixelRatio,
 			element = this._element,
 			style = element.style;
 		// Upscale the canvas if the two ratios don't match.
-		element.width = width * ratio;
-		element.height = height * ratio;
-		if (ratio !== 1) {
+		element.width = width * pixelRatio;
+		element.height = height * pixelRatio;
+		if (pixelRatio !== 1) {
 			style.width = width + 'px';
 			style.height = height + 'px';
 			// Now scale the context to counter the fact that we've manually
 			// scaled our canvas element.
-			this._context.scale(ratio, ratio);
+			this._context.scale(pixelRatio, pixelRatio);
 		}
 	},
 
@@ -91,7 +91,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-		this._project.draw(ctx, this._matrix, this._ratio);
+		this._project.draw(ctx, this._matrix, this._pixelRatio);
 		this._project._needsUpdate = false;
 		return true;
 	}

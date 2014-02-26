@@ -30,6 +30,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 		this._element = element;
 		var size;
 /*#*/ if (__options.environment == 'browser') {
+		// Sub-classes may set _pixelRatio first
+		if (!this._pixelRatio)
+			this._pixelRatio = window.devicePixelRatio || 1;
 		// Generate an id for this view / element if it does not have one
 		this._id = element.getAttribute('id');
 		if (this._id == null)
@@ -60,7 +63,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 			DomEvent.add(window, this._windowHandlers);
 		} else {
 			// Try visible size first, since that will help handling previously
-			// scaled canvases (e.g. when dealing with ratio)
+			// scaled canvases (e.g. when dealing with pixel-ratio)
 			size = DomElement.getSize(element);
 			// If the element is invisible, we cannot directly access
 			// element.width / height, because they would appear 0.
@@ -88,6 +91,9 @@ var View = Base.extend(Callback, /** @lends View# */{
 			document.body.appendChild(stats);
 		}
 /*#*/ } else if (__options.environment == 'node') {
+		// Sub-classes may set _pixelRatio first
+		if (!this._pixelRatio)
+			this._pixelRatio = 1;
 		// Generate an id for this view
 		this._id = 'view-' + View._id++;
 		size = new Size(element.width, element.height);
@@ -276,6 +282,32 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 */
 	getElement: function() {
 		return this._element;
+	},
+
+	/**
+	 * The ratio between physical pixels and device-independent pixels (DIPs)
+	 * of the underlying canvas / device.
+	 * It is {@code 1} for normal displays, and {@code 2} or more for
+	 * high-resolution displays.
+	 *
+	 * @type Number
+	 * @bean
+
+	 */
+	getPixelRatio: function() {
+		return this._pixelRatio;
+	},
+
+	/**
+	 * The resoltuion of the underlying canvas / device in pixel per inch (DPI).
+	 * It is {@code 72} for normal displays, and {@code 144} for high-resolution
+	 * displays with a pixel-ratio of {@code 2}.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getResolution: function() {
+		return this._pixelRatio * 72;
 	},
 
 	/**
