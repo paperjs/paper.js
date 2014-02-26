@@ -1525,12 +1525,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || 72) / 72,
-			// floor top-left corner and ceil bottom-right corner, to never
+			// Floor top-left corner and ceil bottom-right corner, to never
 			// blur or cut pixels.
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil()
 			size = new Size(bottomRight.subtract(topLeft)),
-			canvas = CanvasProvider.getCanvas(size),
+			canvas = CanvasProvider.getCanvas(size.multiply(scale)),
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(topLeft.negate());
 		ctx.save();
@@ -1542,7 +1542,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			canvas: canvas,
 			insert: false
 		});
-		raster.setPosition(topLeft.add(size.divide(2)));
+		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
+				// Take resolution into acocunt and scale back to original size.
+				.scale(1 / scale));
 		raster.insertAbove(this);
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
