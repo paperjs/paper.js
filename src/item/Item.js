@@ -2043,7 +2043,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Moves this item above the specified item.
 	 *
 	 * @param {Item} item The item above which it should be moved
-	 * @return {Boolean} {@true it was moved}
+	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
 	 */
 	moveAbove: '#insertAbove',
@@ -2052,7 +2052,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Moves the item below the specified item.
 	 *
 	 * @param {Item} item the item below which it should be moved
-	 * @return {Boolean} {@true it was moved}
+	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
 	 */
 	moveBelow: '#insertBelow',
@@ -2124,7 +2124,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	* Removes the item from the project. If the item has children, they are also
 	* removed.
 	*
-	* @return {Boolean} {@true the item was removed}
+	* @return {Boolean} {@true if the item was removed}
 	*/
 	remove: function() {
 		return this._remove(true);
@@ -2215,7 +2215,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 *
-	 * @return {Boolean} {@true the item is valid}
+	 * @return {Boolean} {@true if the item is valid}
 	 */
 	// TODO: isValid / checkValid
 

@@ -177,7 +177,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 	 * Checks whether the gradient is equal to the supplied gradient.
 	 *
 	 * @param {Gradient} gradient
-	 * @return {Boolean} {@true they are equal}
+	 * @return {Boolean} {@true if they are equal}
 	 */
 	equals: function(gradient) {
 		if (gradient === this)

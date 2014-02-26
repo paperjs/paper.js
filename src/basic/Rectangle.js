@@ -482,7 +482,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	},
 
 	/**
-	 * @return {Boolean} {@true the rectangle is empty}
+	 * @return {Boolean} {@true if the rectangle is empty}
 	 */
 	isEmpty: function() {
 		return this.width === 0 || this.height === 0;

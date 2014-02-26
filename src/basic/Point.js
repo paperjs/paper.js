@@ -726,7 +726,7 @@ var Point = Base.extend(/** @lends Point# */{
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 *
-	 * @returns {Boolean} {@true both x and y are 0}
+	 * @returns {Boolean} {@true if both x and y are 0}
 	 */
 	isZero: function() {
 		return Numerical.isZero(this.x) && Numerical.isZero(this.y);
@@ -792,7 +792,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#selected
 	 * @property
-	 * @return {Boolean} {@true the point is selected}
+	 * @return {Boolean} {@true if the point is selected}
 	 */
 
 	/**
