@@ -1522,7 +1522,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
 	 *
-	 * @param {Number} [resolution=72] the resolution of the raster in dpi
+	 * @param {Number} [resolution=view.resolution] the resolution of the raster
+	 * in pixels per inch (DPI). If not speceified, the value of
+	 * {@code view.resolution} is used.
 	 * @return {Raster} the newly created raster item
 	 *
 	 * @example {@paperscript}
@@ -1545,7 +1547,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
-			scale = (resolution || 72) / 72,
+			view = this._project.view,
+			scale = (resolution || view && view.getResolution() || 72) / 72,
 			// Floor top-left corner and ceil bottom-right corner, to never
 			// blur or cut pixels.
 			topLeft = bounds.getTopLeft().floor(),
