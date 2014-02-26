@@ -364,7 +364,7 @@ PathItem.inject(new function() {
 			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
 				continue;
-			var path = new Path({ insert: false }),
+			var path = new Path(Item.NO_INSERT),
 				inter = seg._intersection,
 				startInterSeg = inter && inter._segment,
 				added = false, // Wether a first segment as added already

@@ -106,11 +106,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 				? arguments
 				: null;
 		// Always call setSegments() to initialize a few related variables.
-		this.setSegments(segments || []);
-		if (!segments && typeof arg === 'string') {
-			this.setPathData(arg);
-			// Erase for _initialize() call below.
-			arg = null;
+		if (segments && segments.length > 0) {
+			// This sets _curves and _selectedSegmentState too!
+			this.setSegments(segments);
+		} else {
+			this._curves = undefined; // For hidden class optimization
+			this._selectedSegmentState = 0;
+			if (!segments && typeof arg === 'string') {
+				this.setPathData(arg);
+				// Erase for _initialize() call below.
+				arg = null;
+			}
 		}
 		// Only pass on arg as props if it wasn't consumed for segments already.
 		this._initialize(!segments && arg);
@@ -121,15 +127,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	clone: function(insert) {
-		var copy = this._clone(new Path({
-			segments: this._segments,
-			insert: false
-		}), insert);
-		// Speed up things a little by copy over values that don't need checking
+		var copy = new Path(Item.NO_INSERT);
+		copy.setSegments(this._segments);
 		copy._closed = this._closed;
 		if (this._clockwise !== undefined)
 			copy._clockwise = this._clockwise;
-		return copy;
+		return this._clone(copy, insert);
 	},
 
 	_changed: function _changed(flags) {
@@ -177,7 +180,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
 		this._curves = undefined;
-		this._add(Segment.readAll(segments));
+		if (segments && segments.length > 0)
+			this._add(Segment.readAll(segments));
+		// Preserve fullySelected state.
+		// TODO: Do we still need this?
 		if (fullySelected)
 			this.setFullySelected(true);
 	},
@@ -1785,7 +1791,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		// Code to check stroke join / cap areas
 
-		function addAreaPoint(point) {
+		function addToArea(point) {
 			area.add(point);
 		}
 
@@ -1803,10 +1809,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 					if (join !== 'round' && (segment._handleIn.isZero() 
 							|| segment._handleOut.isZero()))
 						Path._addSquareJoin(segment, join, radius, miterLimit,
-								addAreaPoint, true);
+								addToArea, true);
 				} else if (cap !== 'round') {
 					// It's a cap
-					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
+					Path._addSquareCap(segment, cap, radius, addToArea, true);
 				}
 				// See if the above produced an area to check for
 				if (!area.isEmpty()) {

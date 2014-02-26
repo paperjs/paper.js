@@ -39,7 +39,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (name)
 				proto._type = Base.hyphenate(name);
 			return res;
-		}
+		},
+
+		/**
+		 * An object constant that can be passed to Item#initialize() to avoid
+		 * insertion into the DOM.
+		 *
+		 * @private
+		 */
+		NO_INSERT: { insert: false }
 	},
 
 	_class: 'Item',
@@ -68,6 +76,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Do nothing, but declare it for named constructors.
 	},
 
+	/**
+	 * Private helper for #initialize() that tries setting properties from the
+	 * passed props object, and apply the point translation to the internal 
+	 * matrix.
+	 *
+	 * @param {Object} props the properties to be applied to the item
+	 * @param {Point} point the point by which to transform the internal matrix
+	 * @returns {Boolean} {@true if the properties were successfully be applied,
+	 * or if none were provided}
+	 */
 	_initialize: function(props, point) {
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
@@ -95,7 +113,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		this._style = new Style(this._project._currentStyle, this);
-		return props ? this._set(props, { insert: true }) : true;
+		// Filter out Item.NO_INSERT before _set(), for performance reasons
+		return props && props !== Item.NO_INSERT
+				? this._set(props, { insert: true }) // Filter out insert prop.
+				: true;
 	},
 
 	_events: new function() {
@@ -1443,7 +1464,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * }
 	 */
 	clone: function(insert) {
-		return this._clone(new this.constructor({ insert: false }), insert);
+		return this._clone(new this.constructor(Item.NO_INSERT), insert);
 	},
 
 	_clone: function(copy, insert) {
@@ -1538,12 +1559,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// See Project#draw() for an explanation of new Base()
 		this.draw(ctx, new Base({ transforms: [matrix] }));
 		ctx.restore();
-		var raster = new Raster({
-			canvas: canvas,
-			insert: false
-		});
+		var raster = new Raster(Item.NO_INSERT);
+		raster.setCanvas(canvas);
 		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
-				// Take resolution into acocunt and scale back to original size.
+				// Take resolution into account and scale back to original size.
 				.scale(1 / scale));
 		raster.insertAbove(this);
 		// NOTE: We don't need to release the canvas since it now belongs to the

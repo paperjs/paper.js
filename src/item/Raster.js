@@ -97,17 +97,19 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	clone: function(insert) {
-		var param = { insert: false },
-			image = this._image;
+		var copy = new Raster(Item.NO_INSERT),
+			image = this._image,
+			canvas = this._canvas;
 		if (image) {
-			param.image = image;
-		} else if (this._canvas) {
-			// If the Raster contains a Canvas object, we need to create
-			// a new one and draw this raster's canvas on it.
-			var canvas = param.canvas = CanvasProvider.getCanvas(this._size);
-			canvas.getContext('2d').drawImage(this._canvas, 0, 0);
+			copy.setImage(image);
+		} else if (canvas) {
+			// If the Raster contains a Canvas object, we need to create a new
+			// one and draw this raster's canvas on it.
+			var copyCanvas = CanvasProvider.getCanvas(this._size);
+			copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
+			copy.setCanvas(copyCanvas);
 		}
-		return this._clone(new Raster(param), insert);
+		return this._clone(copy, insert);
 	},
 
 	/**
@@ -394,10 +396,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 */
 	getSubRaster: function(rect) { // TODO: Fix argument assignment!
 		var rect = Rectangle.read(arguments),
-			raster = new Raster({
-			canvas: this.getSubCanvas(rect),
-			insert: false
-		});
+			raster = new Raster(Item.NO_INSERT);
+		raster.setCanvas(this.getSubCanvas(rect));
 		raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
 		raster._matrix.preConcatenate(this._matrix);
 		raster.insertAbove(this);

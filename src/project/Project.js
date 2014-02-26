@@ -183,7 +183,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 				// NOTE: If there is no layer and this project is not the active
 				// one, passing insert: false and calling addChild on the
 				// project will handle it correctly.
-				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+				|| this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
 		} else {
 			child = null;
 		}

@@ -39,12 +39,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	clone: function(insert) {
-		return this._clone(new Shape({
-			shape: this._shape,
-			size: this._size,
-			radius: this._radius,
-			insert: false
-		}), insert);
+		var copy = new Shape(Item.NO_INSERT);
+		copy.setShape(this._shape);
+		copy.setSize(this._size);
+		copy.setRadius(this._radius);
+		return this._clone(copy, insert);
 	},
 
 	/**
