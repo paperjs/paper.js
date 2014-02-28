@@ -2536,13 +2536,19 @@ statics: {
 				? matrix._transformPoint(point, point) : point);
 		}
 
+		function addRound(segment) {
+			bounds = bounds.unite(joinBounds.setCenter(matrix
+				? matrix._transformPoint(segment._point) : segment._point));
+		}
+
 		function addJoin(segment, join) {
-			// When both handles are set in a segment, the join setting is
-			// ignored and round is always used.
-			if (join === 'round' || !segment._handleIn.isZero()
-					&& !segment._handleOut.isZero()) {
-				bounds = bounds.unite(joinBounds.setCenter(matrix
-					? matrix._transformPoint(segment._point) : segment._point));
+			// When both handles are set in a segment and they are collinear,
+			// the join setting is ignored and round is always used.
+			var handleIn = segment._handleIn,
+				handleOut = segment._handleOut
+			if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
+					&& handleIn.isColinear(handleOut)) {
+				addRound(segment);
 			} else {
 				Path._addSquareJoin(segment, join, radius, miterLimit, add);
 			}
@@ -2550,7 +2556,7 @@ statics: {
 
 		function addCap(segment, cap) {
 			if (cap === 'round') {
-				addJoin(segment, cap);
+				addRound(segment);
 			} else {
 				Path._addSquareCap(segment, cap, radius, add); 
 			}
