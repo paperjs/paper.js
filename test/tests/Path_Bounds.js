@@ -88,7 +88,17 @@ test('path.strokeBounds on closed path with single segment and stroke color', fu
 	]);
 	path.strokeColor = 'black';
 	path.closed = true;
-	compareRectangles(path.strokeBounds, { x: 120.5, y: 312.88324 , width: 19.91643, height: 30.53977 });
+	compareRectangles(path.strokeBounds, { x: 120.44098, y: 312.88324 , width: 19.97544, height: 30.53977 });
+});
+
+test('path.strokeBounds with corners and miter limit', function() {
+	var path = new Path({
+		pathData: 'M47,385c120,-100 120,-100 400,-40c-280,140 -280,140 -400,40z',
+		strokeWidth: 5,
+		strokeJoin: "miter",
+		strokeColor: "black"
+	});
+	compareRectangles(path.strokeBounds, { x: 43.09488, y: 301.5525, width: 411.3977, height: 156.57543 });
 });
 
 test('path.bounds & path.strokeBounds with stroke styles', function() {
