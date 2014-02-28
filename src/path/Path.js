@@ -1808,7 +1808,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// the handles has to be zero too for this!)
 					if (join !== 'round' && (segment._handleIn.isZero() 
 							|| segment._handleOut.isZero()))
-						Path._addSquareJoin(segment, join, radius, miterLimit,
+						// _addBevelJoin() handles both 'bevel' and 'miter'!
+						Path._addBevelJoin(segment, join, radius, miterLimit,
 								addToArea, true);
 				} else if (cap !== 'round') {
 					// It's a cap
@@ -2550,7 +2551,7 @@ statics: {
 					&& handleIn.isColinear(handleOut)) {
 				addRound(segment);
 			} else {
-				Path._addSquareJoin(segment, join, radius, miterLimit, add);
+				Path._addBevelJoin(segment, join, radius, miterLimit, add);
 			}
 		}
 
@@ -2616,8 +2617,8 @@ statics: {
 				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	},
 
-	_addSquareJoin: function(segment, join, radius, miterLimit, addPoint, area) {
-		// Treat bevel and miter in one go, since they share a lot of code.
+	_addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
+		// Handles both 'bevel' and 'miter' joins, as they share a lot of code.
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPointAt(0, true),
@@ -2654,6 +2655,7 @@ statics: {
 	},
 
 	_addSquareCap: function(segment, cap, radius, addPoint, area) {
+		// Handles both 'square' and 'butt' caps, as they share a lot of code.
 		// Calculate the corner points of butt and square caps
 		var point = segment._point,
 			loc = segment.getLocation(),
