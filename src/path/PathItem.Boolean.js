@@ -395,9 +395,15 @@ PathItem.inject(new function() {
 						// countour to traverse next.
 						w3 = t1.cross(t3),
 						w4 = t1.cross(t4);
-					// Do not attempt to switch contours if we aren't absolutely
-					// sure that there is a possible candidate.
-					if (w3 * w4 !== 0) {
+					if (selfOp) {
+						// Switch to the intersection segment, if we are
+						// resolving self-Intersections.
+						seg._visited = interSeg._visited;
+						seg = interSeg;
+						dir = 1;
+					} else if (w3 * w4 !== 0) {
+						// Do not attempt to switch contours if we aren't absolutely
+						// sure that there is a possible candidate.
 						var curve = w3 < w4 ? c3 : c4,
 							nextCurve = operator(curve._segment1._winding)
 								? curve
@@ -443,7 +449,8 @@ PathItem.inject(new function() {
 			// Add the path to the result.
 			// Try to avoid stray segments and incomplete paths.
 			var count = path._segments.length;
-			if (count > 2 || count === 2 && path._closed && !path.isPolygon())
+			if ((path._closed && count) || count > 2
+					|| (count === 2 && path._closed && !path.isPolygon()))
 				paths.push(path);
 		}
 		return paths;
