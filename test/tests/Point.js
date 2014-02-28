@@ -145,3 +145,18 @@ test('isColinear()', function() {
 		return new Point(10, 10).isColinear(new Point(10, -10));
 	}, false);
 });
+
+test('isOrthogonal()', function() {
+	equals(function() {
+		return new Point(10, 5).isOrthogonal(new Point(5, -10));
+	}, true);
+	equals(function() {
+		return new Point(5, 10).isOrthogonal(new Point(-10, 5));
+	}, true);
+	equals(function() {
+		return new Point(10, 10).isOrthogonal(new Point(20, 20));
+	}, false);
+	equals(function() {
+		return new Point(10, 10).isOrthogonal(new Point(10, -20));
+	}, false);
+});
