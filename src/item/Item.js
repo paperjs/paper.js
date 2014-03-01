@@ -61,6 +61,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		guide: false,
 		selected: false,
 		clipMask: false,
+		transformContent: null,
 		data: {}
 	},
 
@@ -1463,7 +1464,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// meaning the default value has been overwritten (default is on
 		// prototype).
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide'];
+				'_clipMask', '_guide', '_transformContent'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
