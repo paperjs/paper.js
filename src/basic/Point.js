@@ -199,10 +199,11 @@ var Point = Base.extend(/** @lends Point# */{
 	 * console.log(point != new Point(1, 1)); // true
 	 */
 	equals: function(point) {
-		return point === this || point && (this.x === point.x
-				&& this.y === point.y
-				|| Array.isArray(point) && this.x === point[0]
-					&& this.y === point[1]) || false;
+		return this === point || point
+				&& (this.x === point.x && this.y === point.y
+					|| Array.isArray(point)
+						&& this.x === point[0] && this.y === point[1])
+				|| false;
 	},
 
 	/**
@@ -515,7 +516,8 @@ var Point = Base.extend(/** @lends Point# */{
 			scale = current !== 0 ? length / current : 0,
 			point = new Point(this.x * scale, this.y * scale);
 		// Preserve angle.
-		point._angle = this._angle;
+		if (scale >= 0)
+			point._angle = this._angle;
 		return point;
 	},
 
@@ -707,7 +709,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is colinear}
 	 */
 	isColinear: function(point) {
-		return this.cross(point) < /*#=*/ Numerical.TOLERANCE;
+		return Math.abs(this.cross(point)) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**
@@ -718,13 +720,13 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @returns {Boolean} {@true it is orthogonal}
 	 */
 	isOrthogonal: function(point) {
-		return this.dot(point) < /*#=*/ Numerical.TOLERANCE;
+		return Math.abs(this.dot(point)) < /*#=*/ Numerical.TOLERANCE;
 	},
 
 	/**
 	 * Checks if this point has both the x and y coordinate set to 0.
 	 *
-	 * @returns {Boolean} {@true both x and y are 0}
+	 * @returns {Boolean} {@true if both x and y are 0}
 	 */
 	isZero: function() {
 		return Numerical.isZero(this.x) && Numerical.isZero(this.y);
@@ -790,7 +792,7 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @name Point#selected
 	 * @property
-	 * @return {Boolean} {@true the point is selected}
+	 * @return {Boolean} {@true if the point is selected}
 	 */
 
 	/**

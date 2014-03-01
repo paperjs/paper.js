@@ -99,10 +99,9 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	},
 
 	clone: function(insert) {
-		return this._clone(new PlacedSymbol({
-			symbol: this.symbol,
-			insert: false
-		}), insert);
+		var copy = new PlacedSymbol(Item.NO_INSERT);
+		copy.setSymbol(this._symbol);
+		return this._clone(copy, insert);
 	},
 
 	isEmpty: function() {

@@ -12,7 +12,7 @@
 
 Path.inject({ statics: new function() {
 
-	var kappa = Numerical.KAPPA,
+	var kappa = /*#=*/ Numerical.KAPPA,
 		ellipseSegments = [
 			new Segment([-1, 0], [0, kappa ], [0, -kappa]),
 			new Segment([0, -1], [-kappa, 0], [kappa, 0 ]),
@@ -20,9 +20,19 @@ Path.inject({ statics: new function() {
 			new Segment([0, 1], [kappa, 0 ], [-kappa, 0])
 		];
 
+	function createPath(segments, closed, args) {
+		var props = Base.getNamed(args),
+			path = new Path(props && props.insert === false && Item.NO_INSERT);
+		path._add(segments);
+		// No need to use setter for _closed since _add() called _changed().
+		path._closed = true;
+		// Set named arguments at the end, since some depend on geometry to be
+		// defined (e.g. #clockwise)
+		return path.set(props);
+	}
+
 	function createEllipse(center, radius, args) {
-		var path = new Path(),
-			segments = new Array(4);
+		var segments = new Array(4);
 		for (var i = 0; i < 4; i++) {
 			var segment = ellipseSegments[i];
 			segments[i] = new Segment(
@@ -31,11 +41,7 @@ Path.inject({ statics: new function() {
 				segment._handleOut.multiply(radius)
 			);
 		}
-		path._add(segments);
-		path._closed = true;
-		// Set named arguments at the end, since some depend on geometry to be
-		// defined (e.g. #clockwise)
-		return path.set(Base.getNamed(args));
+		return createPath(segments, true, args);
 	}
 
 	 
@@ -73,10 +79,10 @@ Path.inject({ statics: new function() {
 		 * });
 		 */
 		Line: function(/* from, to */) {
-			return new Path(
-				Point.readNamed(arguments, 'from'),
-				Point.readNamed(arguments, 'to')
-			).set(Base.getNamed(arguments));
+			return createPath([
+				new Segment(Point.readNamed(arguments, 'from')),
+				new Segment(Point.readNamed(arguments, 'to'))
+			], false, arguments);
 		},
 
 		/**
@@ -210,22 +216,22 @@ Path.inject({ statics: new function() {
 				bl = rect.getBottomLeft(true),
 				tl = rect.getTopLeft(true),
 				tr = rect.getTopRight(true),
-				br = rect.getBottomRight(true);
-				path = new Path();
+				br = rect.getBottomRight(true),
+				segments;
 			if (!radius || radius.isZero()) {
-				path._add([
+				segments = [
 					new Segment(bl),
 					new Segment(tl),
 					new Segment(tr),
 					new Segment(br)
-				]);
+				];
 			} else {
 				radius = Size.min(radius, rect.getSize(true).divide(2));
 				var rx = radius.width,
 					ry = radius.height,
 					hx = rx * kappa,
 					hy = ry * kappa;
-				path._add([
+				segments = [
 					new Segment(bl.add(rx, 0), null, [-hx, 0]),
 					new Segment(bl.subtract(0, ry), [0, hy]),
 					new Segment(tl.add(0, ry), null, [0, -hy]),
@@ -234,11 +240,9 @@ Path.inject({ statics: new function() {
 					new Segment(tr.add(0, ry), [0, -hy], null),
 					new Segment(br.subtract(0, ry), null, [0, hy]),
 					new Segment(br.subtract(rx, 0), [hx, 0])
-				]);
+				];
 			}
-			// No need to use setter for _closed since _add() called _changed().
-			path._closed = true;
-			return path.set(Base.getNamed(arguments));
+			return createPath(segments, true, arguments);
 		},
 
 		/**
@@ -329,10 +333,13 @@ Path.inject({ statics: new function() {
 			var from = Point.readNamed(arguments, 'from'),
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
-				path = new Path();
+				props = Base.getNamed(arguments),
+				// See createPath() for an explanation of the following sequence
+				path = new Path(props && props.insert === false
+						&& Item.NO_INSERT);
 			path.moveTo(from);
 			path.arcTo(through, to);
-			return path.set(Base.getNamed(arguments));
+			return path.set(props);
 		},
 
 		/**
@@ -372,19 +379,15 @@ Path.inject({ statics: new function() {
 			var center = Point.readNamed(arguments, 'center'),
 				sides = Base.readNamed(arguments, 'sides'),
 				radius = Base.readNamed(arguments, 'radius'),
-				path = new Path(),
 				step = 360 / sides,
 				three = !(sides % 3),
 				vector = new Point(0, three ? -radius : radius),
 				offset = three ? -1 : 0.5,
 				segments = new Array(sides);
-			for (var i = 0; i < sides; i++) {
+			for (var i = 0; i < sides; i++)
 				segments[i] = new Segment(center.add(
 					vector.rotate((i + offset) * step)));
-			}
-			path._add(segments);
-			path._closed = true;
-			return path.set(Base.getNamed(arguments));
+			return createPath(segments, true, arguments);
 		},
 
 		/**
@@ -432,17 +435,13 @@ Path.inject({ statics: new function() {
 				points = Base.readNamed(arguments, 'points') * 2,
 				radius1 = Base.readNamed(arguments, 'radius1'),
 				radius2 = Base.readNamed(arguments, 'radius2'),
-				path = new Path(),
 				step = 360 / points,
 				vector = new Point(0, -1),
 				segments = new Array(points);
-			for (var i = 0; i < points; i++) {
-				segments[i] = new Segment(center.add(
-					vector.rotate(step * i).multiply(i % 2 ? radius2 : radius1)));
-			}
-			path._add(segments);
-			path._closed = true;
-			return path.set(Base.getNamed(arguments));
+			for (var i = 0; i < points; i++)
+				segments[i] = new Segment(center.add(vector.rotate(step * i)
+						.multiply(i % 2 ? radius2 : radius1)));
+			return createPath(segments, true, arguments);
 		}
 	};
 }});

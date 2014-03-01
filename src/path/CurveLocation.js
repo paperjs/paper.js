@@ -269,6 +269,25 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	/**
+	 * Checks whether tow CurveLocation objects are describing the same location
+	 * on a path, by applying the same tolerances as elsewhere when dealing with
+	 * curve time parameters.
+	 *
+	 * @param {CurveLocation} location
+	 * @return {Boolean} {@true if the locations are equal}
+	 */
+	equals: function(loc) {
+		var isZero = Numerical.isZero;
+		return this === loc
+				|| loc
+					&& this._curve === loc._curve
+					&& this._curve2 === loc._curve2
+					&& isZero(this._parameter - loc._parameter)
+					&& isZero(this._parameter2 - loc._parameter2)
+				|| false;
+	},
+
+	/**
 	 * @return {String} a string representation of the curve location
 	 */
 	toString: function() {

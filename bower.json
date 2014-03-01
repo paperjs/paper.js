@@ -6,7 +6,6 @@
     "build",
     "components",
     "dist/paper-node.js",
-    "fatline",
     "projects",
     "node_modules",
     "package.json",

@@ -106,11 +106,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 				? arguments
 				: null;
 		// Always call setSegments() to initialize a few related variables.
-		this.setSegments(segments || []);
-		if (!segments && typeof arg === 'string') {
-			this.setPathData(arg);
-			// Erase for _initialize() call below.
-			arg = null;
+		if (segments && segments.length > 0) {
+			// This sets _curves and _selectedSegmentState too!
+			this.setSegments(segments);
+		} else {
+			this._curves = undefined; // For hidden class optimization
+			this._selectedSegmentState = 0;
+			if (!segments && typeof arg === 'string') {
+				this.setPathData(arg);
+				// Erase for _initialize() call below.
+				arg = null;
+			}
 		}
 		// Only pass on arg as props if it wasn't consumed for segments already.
 		this._initialize(!segments && arg);
@@ -121,15 +127,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	clone: function(insert) {
-		var copy = this._clone(new Path({
-			segments: this._segments,
-			insert: false
-		}), insert);
-		// Speed up things a little by copy over values that don't need checking
+		var copy = new Path(Item.NO_INSERT);
+		copy.setSegments(this._segments);
 		copy._closed = this._closed;
 		if (this._clockwise !== undefined)
 			copy._clockwise = this._clockwise;
-		return copy;
+		return this._clone(copy, insert);
 	},
 
 	_changed: function _changed(flags) {
@@ -144,6 +147,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
 			}
+			// Clear cached curves used for winding direction and containment
+			// calculation.
+			// NOTE: This is only needed with __options.booleanOperations
+			this._monoCurves = undefined;
 		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
@@ -173,7 +180,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
 		this._curves = undefined;
-		this._add(Segment.readAll(segments));
+		if (segments && segments.length > 0)
+			this._add(Segment.readAll(segments));
+		// Preserve fullySelected state.
+		// TODO: Do we still need this?
 		if (fullySelected)
 			this.setFullySelected(true);
 	},
@@ -898,6 +908,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
+	 * Reduces the path by removing curves that have a lenght of 0.
+	 */
+	reduce: function() {
+		var curves = this.getCurves();
+		for (var i = curves.length - 1; i >= 0; i--) {
+			var curve = curves[i];
+			if (curve.isLinear() && curve.getLength() === 0)
+				curve.remove();
+		}
+		return this;
+	},
+
+	/**
 	 * Smooths a path by simplifying it. The {@link Path#segments} array is
 	 * analyzed and replaced by a more optimal set of segments, reducing memory
 	 * usage and speeding up drawing.
@@ -1068,7 +1091,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			index = arg.index;
 			parameter = arg.parameter;
 		}
-		if (parameter >= 1) {
+		var tolerance = /*#=*/ Numerical.TOLERANCE;
+		if (parameter >= 1 - tolerance) {
 			// t == 1 is the same as t == 0 and index ++
 			index++;
 			parameter--;
@@ -1076,7 +1100,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var curves = this.getCurves();
 		if (index >= 0 && index < curves.length) {
 			// Only divide curves if we're not on an existing segment already.
-			if (parameter > 0) {
+			if (parameter > tolerance) {
 				// Divide the curve with the index at given parameter.
 				// Increase because dividing adds more segments to the path.
 				curves[index++].divide(parameter, true);
@@ -1344,13 +1368,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var start = length,
 				curve = curves[i];
 			length += curve.getLength();
-			if (length >= offset) {
+			if (length > offset) {
 				// Found the segment within which the length lies
 				return curve.getLocationAt(offset - start);
 			}
 		}
-		// It may be that through impreciseness of getLength, that the end
-		// of the curves was missed:
+		// It may be that through imprecision of getLength, that the end of the
+		// last curve was missed:
 		if (offset <= this.getLength())
 			return new CurveLocation(curves[curves.length - 1], 1);
 		return null;
@@ -1705,49 +1729,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	_getWinding: function(point) {
-		var closed = this._closed;
-		// If the path is not closed, we should not bail out in case it has a
-		// fill color!
-		if (!closed && !this.hasFill()
-				|| !this.getInternalRoughBounds()._containsPoint(point))
-			return 0;
-		// Use the crossing number algorithm, by counting the crossings of the
-		// beam in right y-direction with the shape, and see if it's an odd
-		// number, meaning the starting point is inside the shape.
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		var curves = this.getCurves(),
-			segments = this._segments,
-			winding = 0,
-			// Reuse arrays for root-finding, give garbage collector a break
-			roots1 = [],
-			roots2 = [],
-			last = (closed
-					? curves[curves.length - 1]
-					// Create a straight closing line for open paths, just like
-					// how filling open paths works.
-					: new Curve(segments[segments.length - 1]._point,
-						segments[0]._point)).getValues(),
-			previous = last;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i].getValues(),
-				x = curve[0],
-				y = curve[1];
-			// Filter out curves with 0-length (all 4 points in the same place):
-			if (!(x === curve[2] && y === curve[3] && x === curve[4]
-					&& y === curve[5] && x === curve[6] && y === curve[7])) {
-				winding += Curve._getWinding(curve, previous, point.x, point.y,
-						roots1, roots2);
-				previous = curve;
-			}
-		}
-		if (!closed) {
-			winding += Curve._getWinding(last, previous, point.x, point.y,
-					roots1, roots2);
-		}
-		return winding;
-	},
-
 	_hitTest: function(point, options) {
 		var that = this,
 			style = this.getStyle(),
@@ -1810,7 +1791,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		// Code to check stroke join / cap areas
 
-		function addAreaPoint(point) {
+		function addToArea(point) {
 			area.add(point);
 		}
 
@@ -1827,11 +1808,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// the handles has to be zero too for this!)
 					if (join !== 'round' && (segment._handleIn.isZero() 
 							|| segment._handleOut.isZero()))
-						Path._addSquareJoin(segment, join, radius, miterLimit,
-								addAreaPoint, true);
+						// _addBevelJoin() handles both 'bevel' and 'miter'!
+						Path._addBevelJoin(segment, join, radius, miterLimit,
+								addToArea, true);
 				} else if (cap !== 'round') {
 					// It's a cap
-					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
+					Path._addSquareCap(segment, cap, radius, addToArea, true);
 				}
 				// See if the above produced an area to check for
 				if (!area.isEmpty()) {
@@ -2555,21 +2537,27 @@ statics: {
 				? matrix._transformPoint(point, point) : point);
 		}
 
+		function addRound(segment) {
+			bounds = bounds.unite(joinBounds.setCenter(matrix
+				? matrix._transformPoint(segment._point) : segment._point));
+		}
+
 		function addJoin(segment, join) {
-			// When both handles are set in a segment, the join setting is
-			// ignored and round is always used.
-			if (join === 'round' || !segment._handleIn.isZero()
-					&& !segment._handleOut.isZero()) {
-				bounds = bounds.unite(joinBounds.setCenter(matrix
-					? matrix._transformPoint(segment._point) : segment._point));
+			// When both handles are set in a segment and they are collinear,
+			// the join setting is ignored and round is always used.
+			var handleIn = segment._handleIn,
+				handleOut = segment._handleOut
+			if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
+					&& handleIn.isColinear(handleOut)) {
+				addRound(segment);
 			} else {
-				Path._addSquareJoin(segment, join, radius, miterLimit, add);
+				Path._addBevelJoin(segment, join, radius, miterLimit, add);
 			}
 		}
 
 		function addCap(segment, cap) {
 			if (cap === 'round') {
-				addJoin(segment, cap);
+				addRound(segment);
 			} else {
 				Path._addSquareCap(segment, cap, radius, add); 
 			}
@@ -2629,8 +2617,8 @@ statics: {
 				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	},
 
-	_addSquareJoin: function(segment, join, radius, miterLimit, addPoint, area) {
-		// Treat bevel and miter in one go, since they share a lot of code.
+	_addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
+		// Handles both 'bevel' and 'miter' joins, as they share a lot of code.
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPointAt(0, true),
@@ -2667,6 +2655,7 @@ statics: {
 	},
 
 	_addSquareCap: function(segment, cap, radius, addPoint, area) {
+		// Handles both 'square' and 'butt' caps, as they share a lot of code.
 		// Calculate the corner points of butt and square caps
 		var point = segment._point,
 			loc = segment.getLocation(),

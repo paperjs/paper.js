@@ -10,11 +10,11 @@
  * All rights reserved.
  */
 
-module('Item Contains');
+module('PathItem Contains');
 
-function testPoint(item, point, inside) {
-	equals(item.contains(point), inside, 'The point ' + point
-			+ ' should be ' + (inside ? 'inside' : 'outside') + '.');
+function testPoint(item, point, inside, message) {
+	equals(item.contains(point), inside, message || ('The point ' + point
+			+ ' should be ' + (inside ? 'inside' : 'outside') + '.'));
 }
 
 test('Path#contains() (Regular Polygon)', function() {
@@ -96,29 +96,40 @@ test('CompoundPath#contains() (Donut)', function() {
 		new Path.Circle([0, 0], 25)
 	]);
 
-	equals(path.contains(new Point(0, 0)), false,
+	testPoint(path, new Point(0, -50), true,
+		'The top center point of the outer circle should be inside the donut.');
+	testPoint(path, new Point(0, 0), false,
 		'The center point should be outside the donut.');
-	equals(path.contains(new Point(-35, 0)), true,
+	testPoint(path, new Point(-35, 0), true,
 		'A vertically centered point on the left side should be inside the donut.');
-	equals(path.contains(new Point(35, 0)), true,
+	testPoint(path, new Point(35, 0), true,
 		'A vertically centered point on the right side should be inside the donut.');
-	equals(path.contains(new Point(0, 49)), true,
+	testPoint(path, new Point(0, 49), true,
 		'The near bottom center point of the outer circle should be inside the donut.');
-	equals(path.contains(new Point(0, 50)), true,
+	testPoint(path, new Point(0, 50), true,
 		'The bottom center point of the outer circle should be inside the donut.');
-	equals(path.contains(new Point(0, 51)), false,
+	testPoint(path, new Point(0, 51), false,
 		'The near bottom center point of the outer circle should be outside the donut.');
-	equals(path.contains(new Point({ length: 50, angle: 30 })), true,
+	testPoint(path, new Point({ length: 50, angle: 30 }), true,
 		'A random point on the periphery of the outer circle should be inside the donut.');
-	equals(path.contains(new Point(0, 25)), false,
-		'The bottom center point of the inner circle should be outside the donut.');
-	equals(path.contains(new Point({ length: 25, angle: 30 })), false,
-		'A random point on the periphery of the inner circle should be outside the donut.');
-	equals(path.contains(new Point(-50, -50)), false,
+		// False positive and negatives.
+		// testPoint(path, new Point(0, 25), false,
+		// 	'The bottom center point of the inner circle should be outside the donut.');
+		// testPoint(path, new Point({ length: 25, angle: 30 }), false,
+		// 	'A random point on the periphery of the inner circle should be outside the donut.');
+	testPoint(path, new Point(0, 25), true,
+		'The bottom center point of the inner circle should be inside the donut.');
+	testPoint(path, new Point({x: 21.654222720313882, y: 12.502112923650227}), true,
+		'A random point on the periphery of the inner circle should be inside the donut.');
+	testPoint(path, new Point(-50, -50), false,
 		'The top left point of bounding box should be outside the donut.');
-	equals(path.contains(new Point(-50, 50)), false,
+	testPoint(path, new Point(50, -50), false,
+		'The top right point of the bounding box should be inside the donut.');
+	testPoint(path, new Point(-50, 50), false,
 		'The bottom left point of bounding box should be outside the donut.');
-	equals(path.contains(new Point(-45, 45)), false,
+	testPoint(path, new Point(50, 50), false,
+		'The bottom right point of the bounding box should be inside the donut.');
+	testPoint(path, new Point(-45, 45), false,
 		'The near bottom left point of bounding box should be outside the donut.');
 });
 
@@ -188,4 +199,19 @@ test('Path#contains() (touching stationary point with changing orientation)', fu
 	});
 
 	testPoint(path, new Point(200, 200), true);
-})
+});
+
+test('Path#contains() (complex shape)', function() {
+	var path = new Path({
+		pathData: 'M301 162L307 154L315 149L325 139.5L332.5 135.5L341 128.5L357.5 117.5L364.5 114.5L368.5 110.5L380 105.5L390.5 102L404 96L410.5 96L415 97.5L421 104L425.5 113.5L428.5 126L429.5 134L429.5 141L429.5 148L425.5 161.5L425.5 169L414 184.5L409.5 191L401 201L395 209L386 214.5L378.5 217L368 220L348 219.5L338 218L323.5 212.5L312 205.5L302.5 197.5L295.5 189L291.5 171.5L294 168L298 165.5L301 162z',
+		fillColor: 'blue',
+		strokeColor: 'green',
+		strokeWidth: 2
+	});
+
+	testPoint(path, new Point(360, 160), true);
+	testPoint(path, new Point(377, 96), false);
+	testPoint(path, new Point(410, 218), false);
+	testPoint(path, new Point(431, 104), false);
+});
+

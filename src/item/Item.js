@@ -39,7 +39,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (name)
 				proto._type = Base.hyphenate(name);
 			return res;
-		}
+		},
+
+		/**
+		 * An object constant that can be passed to Item#initialize() to avoid
+		 * insertion into the DOM.
+		 *
+		 * @private
+		 */
+		NO_INSERT: { insert: false }
 	},
 
 	_class: 'Item',
@@ -69,6 +77,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Do nothing, but declare it for named constructors.
 	},
 
+	/**
+	 * Private helper for #initialize() that tries setting properties from the
+	 * passed props object, and apply the point translation to the internal 
+	 * matrix.
+	 *
+	 * @param {Object} props the properties to be applied to the item
+	 * @param {Point} point the point by which to transform the internal matrix
+	 * @returns {Boolean} {@true if the properties were successfully be applied,
+	 * or if none were provided}
+	 */
 	_initialize: function(props, point) {
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
@@ -96,7 +114,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
-		return props ? this._set(props, { insert: true }) : true;
+		// Filter out Item.NO_INSERT before _set(), for performance reasons
+		return props && props !== Item.NO_INSERT
+				? this._set(props, { insert: true }) // Filter out insert prop.
+				: true;
 	},
 
 	_events: new function() {
@@ -1445,7 +1466,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * }
 	 */
 	clone: function(insert) {
-		return this._clone(new this.constructor({ insert: false }), insert);
+		return this._clone(new this.constructor(Item.NO_INSERT), insert);
 	},
 
 	_clone: function(copy, insert) {
@@ -1503,7 +1524,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Rasterizes the item into a newly created Raster object. The item itself
 	 * is not removed after rasterization.
 	 *
-	 * @param {Number} [resolution=72] the resolution of the raster in dpi
+	 * @param {Number} [resolution=view.resolution] the resolution of the raster
+	 * in pixels per inch (DPI). If not speceified, the value of
+	 * {@code view.resolution} is used.
 	 * @return {Raster} the newly created raster item
 	 *
 	 * @example {@paperscript}
@@ -1526,13 +1549,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
-			scale = (resolution || 72) / 72,
-			// floor top-left corner and ceil bottom-right corner, to never
+			view = this._project.view,
+			scale = (resolution || view && view.getResolution() || 72) / 72,
+			// Floor top-left corner and ceil bottom-right corner, to never
 			// blur or cut pixels.
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil()
 			size = new Size(bottomRight.subtract(topLeft)),
-			canvas = CanvasProvider.getCanvas(size),
+			canvas = CanvasProvider.getCanvas(size.multiply(scale)),
 			ctx = canvas.getContext('2d'),
 			matrix = new Matrix().scale(scale).translate(topLeft.negate());
 		ctx.save();
@@ -1540,11 +1564,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// See Project#draw() for an explanation of new Base()
 		this.draw(ctx, new Base({ transforms: [matrix] }));
 		ctx.restore();
-		var raster = new Raster({
-			canvas: canvas,
-			insert: false
-		});
-		raster.setPosition(topLeft.add(size.divide(2)));
+		var raster = new Raster(Item.NO_INSERT);
+		raster.setCanvas(canvas);
+		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
+				// Take resolution into account and scale back to original size.
+				.scale(1 / scale));
 		raster.insertAbove(this);
 		// NOTE: We don't need to release the canvas since it now belongs to the
 		// Raster!
@@ -1861,6 +1885,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {SVGSVGElement} the item converted to an SVG node
 	 */
 
+	// DOCS: Document importSVG('file.svg', callback);
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the this item's children list.
@@ -2049,7 +2074,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Moves this item above the specified item.
 	 *
 	 * @param {Item} item The item above which it should be moved
-	 * @return {Boolean} {@true it was moved}
+	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
 	 */
 	moveAbove: '#insertAbove',
@@ -2058,7 +2083,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Moves the item below the specified item.
 	 *
 	 * @param {Item} item the item below which it should be moved
-	 * @return {Boolean} {@true it was moved}
+	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
 	 */
 	moveBelow: '#insertBelow',
@@ -2072,7 +2097,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	reduce: function() {
 		if (this._children && this._children.length === 1) {
-			var child = this._children[0];
+			var child = this._children[0].reduce();
 			child.insertAbove(this);
 			child.setStyle(this._style);
 			this.remove();
@@ -2130,7 +2155,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	* Removes the item from the project. If the item has children, they are also
 	* removed.
 	*
-	* @return {Boolean} {@true the item was removed}
+	* @return {Boolean} {@true if the item was removed}
 	*/
 	remove: function() {
 		return this._remove(true);
@@ -2221,7 +2246,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Checks whether the item is valid, i.e. it hasn't been removed.
 	 *
-	 * @return {Boolean} {@true the item is valid}
+	 * @return {Boolean} {@true if the item is valid}
 	 */
 	// TODO: isValid / checkValid
 
@@ -3495,7 +3520,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// it, instead of the mainCtx.
 			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)), param.ratio);
+					bounds.getSize().ceil().add(new Size(1, 1)),
+					param.pixelRatio);
 		}
 		ctx.save();
 		// If drawing directly, handle opacity and native blending now,
@@ -3527,8 +3553,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// opacity.
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					// Calculate the pixel offset of the temporary canvas to the
-					// main canvas. We also need to factor in the pixel ratio.
-					itemOffset.subtract(prevOffset).multiply(param.ratio));
+					// main canvas. We also need to factor in the pixel-ratio.
+					itemOffset.subtract(prevOffset).multiply(param.pixelRatio));
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
 			// Restore previous offset.

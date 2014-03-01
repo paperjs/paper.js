@@ -183,7 +183,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 				// NOTE: If there is no layer and this project is not the active
 				// one, passing insert: false and calling addChild on the
 				// project will handle it correctly.
-				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+				|| this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
 		} else {
 			child = null;
 		}
@@ -382,6 +382,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @return {SVGSVGElement} the project converted to an SVG node
 	 */
 
+	// DOCS: Document importSVG('file.svg', callback);
 	/**
 	 * Converts the provided SVG content into Paper.js items and adds them to
 	 * the active layer of this project.
@@ -423,7 +424,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	draw: function(ctx, matrix, ratio) {
+	draw: function(ctx, matrix, pixelRatio) {
 		// Increase the _updateVersion before the draw-loop. After that, items
 		// that are visible will have their _updateVersion set to the new value.
 		this._updateVersion++;
@@ -433,7 +434,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// values
 		var param = new Base({
 			offset: new Point(0, 0),
-			ratio: ratio,
+			pixelRatio: pixelRatio,
 			// Tell the drawing routine that we want to track nested matrices
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do

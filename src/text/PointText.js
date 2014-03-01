@@ -59,7 +59,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 	},
 
 	clone: function(insert) {
-		return this._clone(new PointText({ insert: false }), insert);
+		return this._clone(new PointText(Item.NO_INSERT), insert);
 	},
 
 	/**

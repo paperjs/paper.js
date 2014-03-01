@@ -401,5 +401,5 @@ function compareProjects(project, project2) {
 function createSVG(xml) {
 	return new DOMParser().parseFromString(
 		'<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>',
-		'application/xml');
+		'text/xml');
 }

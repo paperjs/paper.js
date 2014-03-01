@@ -267,8 +267,12 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @bean
 	 */
 	getLength: function() {
-		if (this._length == null)
-			this._length = Curve.getLength(this.getValues(), 0, 1);
+		if (this._length == null) {
+			// Use simple point distance for linear curves
+			this._length = this.isLinear()
+				? this._segment2._point.getDistance(this._segment1._point)
+				: Curve.getLength(this.getValues(), 0, 1);
+		}
 		return this._length;
 	},
 
@@ -280,7 +284,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 		return new Curve(Curve.getPart(this.getValues(), from, to));
 	},
 
-	// DOCS: document Curve#getPartLength(from, to)
+	// DOCS: Curve#getPartLength(from, to)
 	getPartLength: function(from, to) {
 		return Curve.getLength(this.getValues(), from, to);
 	},
@@ -289,29 +293,25 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
 
-	 * @return {Boolean} {@true the curve is linear}
+	 * @return {Boolean} {@true if the curve is linear}
 	 */
 	isLinear: function() {
 		return this._segment1._handleOut.isZero()
 				&& this._segment2._handleIn.isZero();
 	},
 
+	isHorizontal: function() {
+		return this.isLinear() && Numerical.isZero(
+				this._segment1._point._y - this._segment2._point._y);
+	},
+
+	// DOCS: Curve#getIntersections()
 	getIntersections: function(curve) {
 		return Curve.getIntersections(this.getValues(), curve.getValues(),
 				this, curve, []);
 	},
 
 	// TODO: adjustThroughPoint
-
-	/**
-	 * Returns a reversed version of the curve, without modifying the curve
-	 * itself.
-	 *
-	 * @return {Curve} a reversed version of the curve
-	 */
-	reverse: function() {
-		return new Curve(this._segment2.reverse(), this._segment1.reverse());
-	},
 
 	/**
 	 * Private method that handles all types of offset / isParameter pairs and
@@ -344,13 +344,13 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * @return {Curve} the second part of the divided curve
 	 */
 	// TODO: Rename to divideAt()?
-	divide: function(offset, isParameter) {
+	divide: function(offset, isParameter, ignoreLinear) {
 		var parameter = this._getParameter(offset, isParameter),
 			tolerance = /*#=*/ Numerical.TOLERANCE,
 			res = null;
 		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
-				isLinear = this.isLinear(),
+				isLinear = ignoreLinear ? false : this.isLinear(),
 				left = parts[0],
 				right = parts[1];
 
@@ -419,6 +419,33 @@ var Curve = Base.extend(/** @lends Curve# */{
 	},
 
 	/**
+	 * Returns a reversed version of the curve, without modifying the curve
+	 * itself.
+	 *
+	 * @return {Curve} a reversed version of the curve
+	 */
+	reverse: function() {
+		return new Curve(this._segment2.reverse(), this._segment1.reverse());
+	},
+
+	/**
+	 * Removes the curve from the path that it belongs to, by merging its two
+	 * path segments.
+	 * @return {Boolean} {@true if the curve was removed}
+	 */
+	remove: function() {
+		var removed = false;
+		if (this._path) {
+			var segment2 = this._segment2,
+				handleOut = segment2._handleOut;
+			removed = segment2.remove();
+			if (removed)
+				this._segment1._handleOut.set(handleOut.x, handleOut.y);
+		}
+		return removed;
+	},
+
+	/**
 	 * Returns a copy of the curve.
 	 *
 	 * @return {Curve}
@@ -463,12 +490,14 @@ statics: {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
+			tolerance = /*#=*/ Numerical.TOLERANCE,
 			x, y;
 
 		// Handle special case at beginning / end of curve
-		if (type === 0 && (t === 0 || t === 1)) {
-			x = t === 0 ? p1x : p2x;
-			y = t === 0 ? p1y : p2y;
+		if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
+			var isZero = t < tolerance;
+			x = isZero ? p1x : p2x;
+			y = isZero ? p1y : p2y;
 		} else {
 			// Calculate the polynomial coefficients.
 			var cx = 3 * (c1x - p1x),
@@ -488,11 +517,16 @@ statics: {
 				// 3: curvature, 1st derivative & 2nd derivative
 				// Prevent tangents and normals of length 0:
 				// http://stackoverflow.com/questions/10506868/
-				var tolerance = /*#=*/ Numerical.TOLERANCE;
 				if (t < tolerance && c1x === p1x && c1y === p1y
 						|| t > 1 - tolerance && c2x === p2x && c2y === p2y) {
 					x = p2x - p1x;
 					y = p2y - p1y;
+				} else if (t < tolerance) {
+					x = cx;
+					y = cy;
+				} else if (t > 1 - tolerance) {
+					x = 3 * (p2x - c2x);
+					y = 3 * (p2y - c2y);
 				} else {
 					// Simply use the derivation of the bezier function for both
 					// the x and y coordinates:
@@ -510,7 +544,7 @@ statics: {
 			}
 		}
 		// The normal is simply the rotated tangent:
-		return type == 2 ? new Point(y, -x) : new Point(x, y);
+		return type === 2 ? new Point(y, -x) : new Point(x, y);
 	},
 
 	subdivide: function(v, t) {
@@ -690,141 +724,6 @@ statics: {
 					+ t * t * t * v3,
 					padding);
 		}
-	},
-
-	_getWinding: function(v, prev, x, y, roots1, roots2) {
-		// Implementation of the crossing number algorithm:
-		// http://en.wikipedia.org/wiki/Point_in_polygon
-		// Solve the y-axis cubic polynomial for y and count all solutions
-		// to the right of x as crossings.
-		var tolerance = /*#=*/ Numerical.TOLERANCE,
-			abs = Math.abs;
-
-		// Looks at the curve's start and end y coordinates to determine
-		// orientation. This only makes sense for curves with clear orientation,
-		// which is why we need to split them at y extrema, see below.
-		// Returns 0 if the curve is outside the boundaries and is not to be
-		// considered.
-		function getDirection(v) {
-			var y0 = v[1],
-				y1 = v[7],
-				dir = y0 > y1 ? -1 : 1;
-			// Bounds check: Reverse y0 and y1 if direction is -1.
-			// Include end points, so we can handle them depending on different
-			// edge cases.
-			return dir === 1 && (y < y0 || y > y1)
-					|| dir === -1 && (y < y1 || y > y0)
-					? 0
-					: dir;
-		}
-
-		if (Curve.isLinear(v)) {
-			// Special simplified case for handling lines.
-			var dir = getDirection(v);
-			if (!dir)
-				return 0;
-			var cross = (v[6] - v[0]) * (y - v[1]) - (v[7] - v[1]) * (x - v[0]);
-			return (cross < -tolerance ? -1 : 1) == dir ? 0 : dir;
-		}
-
-		// Handle bezier curves. We need to chop them into smaller curves with
-		// defined orientation, by solving the derrivative curve for Y extrema.
-		var y0 = v[1],
-			y1 = v[3],
-			y2 = v[5],
-			y3 = v[7];
-		// Split the curve at y extrema, to get bezier curves with clear
-		// orientation: Calculate the derivative and find its roots.
-		var a = 3 * (y1 - y2) - y0 + y3,
-			b = 2 * (y0 + y2) - 4 * y1,
-			c = y1 - y0;
-		// Keep then range to 0 .. 1 (excluding) in the search for y extrema
-		var count = Numerical.solveQuadratic(a, b, c, roots1, tolerance,
-				1 - tolerance),
-			part, // The part of the curve that's chopped off.
-			rest = v, // The part that's left to be chopped.
-			t1 = roots1[0], // The first root
-			winding = 0;
-		for (var i = 0; i <= count; i++) {
-			if (i === count) {
-				part = rest;
-			} else {
-				// Divide the curve at t1.
-				var curves = Curve.subdivide(rest, t1);
-				part = curves[0];
-				rest = curves[1];
-				t1 = roots1[i];
-				// TODO: Watch for divide by 0
-				// Now renormalize t1 to the range of the next iteration.
-				t1 = (roots1[i + 1] - t1) / (1 - t1);
-			}
-			// Make sure that the connecting y extrema are flat
-			if (i > 0)
-				part[3] = part[1]; // curve2.handle1.y = curve2.point1.y;
-			if (i < count)
-				part[5] = rest[1]; // curve1.handle2.y = curve2.point1.y;
-			var dir = getDirection(part);
-			if (!dir)
-			    continue;
-			// Adjust start and end range depending on if curve was flipped.
-			// In normal orientation we exclude the end point since it's also
-			// the start point of the next curve. If flipped, we have to exclude
-			// the end point instead.
-			var t2,
-				px;
-			// Since we've split at y extrema, there can only be 0, 1, or
-			// infinite solutions now.
-			if (Curve.solveCubic(part, 1, y, roots2, -tolerance, 1 + -tolerance)
-					=== 1) {
-				t2 = roots2[0];
-				px = Curve.evaluate(part, t2, 0).x;
-			} else {
-				var mid = (part[1] + part[7]) / 2;
-				// Pick t2 based on the direction of the curve. If y < mid,
-				// choose the beginning (which is the end of a curve with
-				// negative orientation, as we're not actually flipping curves).
-				t2 = y < mid && dir > 0 ? 0 : 1;
-				// Filter out the end point, as it'll be the start point of the
-				// next curve.
-				if (t2 === 1 && y == part[7])
-					continue;
-				px = t2 === 0 ? part[0] : part[6];
-			}
-			// See if we're touching a horizontal stationary point by looking at
-			// the tanget's y coordinate. There are two cases 0:
-			// A) The slope is 0, meaning we're touching a stationary
-			//    point inside the curve.
-			// B) t2 == 0 and the slope changes between the current and the
-			//    previous curve.
-			var slope = Curve.evaluate(part, t2, 1).y,
-				stationary = abs(slope) < tolerance || t2 < tolerance
-						&& Curve.evaluate(prev, 1, 1).y * slope < 0;
-			// Calculate compare tolerance based on curve orientation (dir), to
-			// add a bit of tolerance when considering points lying on the curve
-			// as inside. But if we're touching a horizontal stationary point,
-			// set compare tolerance to -tolerance, since we don't want to step
-			// side-ways in tolerance based on orientation. This is needed e.g.
-			// when touching the bottom tip of a circle.
-			// Pass 1 for Curve.evaluate() type to calculate tangent
-			if (x >= px + (stationary ? -tolerance : tolerance * dir)
-					// When touching a stationary point, only count it if we're
-					// actuall on it.
-					&& !(stationary && (abs(t2) < tolerance
-							&& abs(x - part[0]) > tolerance
-						|| abs(t2 - 1) < tolerance
-							&& abs(x - part[6]) > tolerance))) {
-				// If this is a horizontal stationary point, and we're at the
-				// end of the curve (or at the beginning of a curve with
-				// negative direction, as we're not actually flipping them),
-				// flip dir, as the curve is about to change orientation.
-				winding += stationary && abs(t2 - (dir > 0 ? 1 : 0)) < tolerance
-						? -dir : dir;
-			}
-			// Point the previous curve to the newly split part, so stationary
-			// points are correctly detected. 
-			prev = part;
-		}
-		return winding;
 	}
 }}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
 	// Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
@@ -1138,26 +1037,23 @@ new function() { // Scope for methods that require numerical integration
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
-	function addLocation(locations, curve1, t1, point1, curve2, t2, point2) {
-		// Avoid duplicates when hitting segments (closed paths too)
-		var first = locations[0],
-			last = locations[locations.length - 1],
-			epsilon = /*#=*/ Numerical.EPSILON;
-		if ((!first || !point1.isClose(first._point, epsilon))
-				&& (!last || !point1.isClose(last._point, epsilon)))
-			locations.push(
-					new CurveLocation(curve1, t1, point1, curve2, t2, point2));
+	function addLocation(locations, include, curve1, t1, point1, curve2, t2,
+			point2) {
+		var loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);
+		if (!include || include(loc))
+			locations.push(loc);
 	}
 
-	function addCurveIntersections(v1, v2, curve1, curve2, locations,
+	function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
 			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-/*#*/ if (__options.fatline) {
+/*#*/ if (__options.fatlineClipping) {
 		// Avoid deeper recursion.
 		if (recursion > 20)
 			return;
 		// Let P be the first curve and Q be the second
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			tolerance = /*#=*/ Numerical.TOLERANCE,
+			hullEpsilon = 1e-9,
 			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for Q is the baseline l and two
 			// offsets which completely encloses the curve P.
@@ -1174,7 +1070,7 @@ new function() { // Scope for methods that require numerical integration
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
 			tMinNew, tMaxNew, tDiff;
-		if (q0x === q3x && uMax - uMin <= Numerical.EPSILON && recursion > 3) {
+		if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 3) {
 			// The fatline of Q has converged to a point, the clipping is not
 			// reliable. Return the value we have even though we will miss the
 			// precision.
@@ -1209,16 +1105,20 @@ new function() { // Scope for methods that require numerical integration
 			if (tMaxNew - tMinNew > uMax - uMin) {
 				var parts = Curve.subdivide(v1, 0.5),
 					t = tMinNew + (tMaxNew - tMinNew) / 2;
-				addCurveIntersections(v2, parts[0], curve2, curve1, locations,
+				addCurveIntersections(
+					v2, parts[0], curve2, curve1, locations, include,
 					uMin, uMax, tMinNew, t, tDiff, !reverse, ++recursion);
-				addCurveIntersections(v2, parts[1], curve2, curve1, locations,
+				addCurveIntersections(
+					v2, parts[1], curve2, curve1, locations, include,
 					uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
 			} else {
 				var parts = Curve.subdivide(v2, 0.5),
 					t = uMin + (uMax - uMin) / 2;
-				addCurveIntersections(parts[0], v1, curve2, curve1, locations,
+				addCurveIntersections(
+					parts[0], v1, curve2, curve1, locations, include,
 					uMin, t, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
-				addCurveIntersections(parts[1], v1, curve2, curve1, locations,
+				addCurveIntersections(
+					parts[1], v1, curve2, curve1, locations, include,
 					t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
 			}
 		} else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
@@ -1226,19 +1126,19 @@ new function() { // Scope for methods that require numerical integration
 			var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
 				t2 = uMin + (uMax - uMin) / 2;
 			if (reverse) {
-				addLocation(locations,
+				addLocation(locations, include,
 						curve2, t2, Curve.evaluate(v2, t2, 0),
 						curve1, t1, Curve.evaluate(v1, t1, 0));
 			} else {
-				addLocation(locations,
+				addLocation(locations, include,
 						curve1, t1, Curve.evaluate(v1, t1, 0),
 						curve2, t2, Curve.evaluate(v2, t2, 0));
 			}
 		} else { // Iterate
-			addCurveIntersections(v2, v1, curve2, curve1, locations,
+			addCurveIntersections(v2, v1, curve2, curve1, locations, include,
 					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
 		}
-/*#*/ } else { // !__options.fatline
+/*#*/ } else { // !__options.fatlineClipping
 		// Subdivision method
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2),
@@ -1251,7 +1151,7 @@ new function() { // Scope for methods that require numerical integration
 			if ((Curve.isLinear(v1) || Curve.isFlatEnough(v1, tolerance))
 				&& (Curve.isLinear(v2) || Curve.isFlatEnough(v2, tolerance))) {
 				// See if the parametric equations of the lines interesct.
-				addLineIntersection(v1, v2, curve1, curve2, locations);
+				addLineIntersection(v1, v2, curve1, curve2, locations, include);
 			} else {
 				// Subdivide both curves, and see if they intersect.
 				// If one of the curves is flat already, no further subdivion
@@ -1260,15 +1160,14 @@ new function() { // Scope for methods that require numerical integration
 					v2s = Curve.subdivide(v2);
 				for (var i = 0; i < 2; i++)
 					for (var j = 0; j < 2; j++)
-						Curve.getIntersections(v1s[i], v2s[j], curve1, curve2,
-								locations);
+						addCurveIntersections(v1s[i], v2s[j], curve1, curve2,
+								locations, include);
 			}
 		}
-		return locations;
-/*#*/ } // !__options.fatline
+/*#*/ } // !__options.fatlineClipping
 	}
 
-/*#*/ if (__options.fatline) {
+/*#*/ if (__options.fatlineClipping) {
 	/**
 	 * Calculate the convex hull for the non-paramertic bezier curve D(ti, di(t))
 	 * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
@@ -1382,7 +1281,7 @@ new function() { // Scope for methods that require numerical integration
 		}
 		return tVal;
 	}
-/*#*/ } // __options.fatline
+/*#*/ } // __options.fatlineClipping
 
 	/**
 	 * Intersections between curve and line becomes rather simple here mostly
@@ -1390,7 +1289,8 @@ new function() { // Scope for methods that require numerical integration
 	 * line is on the X axis, and solve the implicit equations for the X axis
 	 * and the curve.
 	 */
-	function addCurveLineIntersections(v1, v2, curve1, curve2, locations) {
+	function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
+			include) {
 		var flip = Curve.isLinear(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
@@ -1430,39 +1330,45 @@ new function() { // Scope for methods that require numerical integration
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
-				addLocation(locations,
+				addLocation(locations, include,
 						curve1, t1, Curve.evaluate(v1, t1, 0),
 						curve2, t2, Curve.evaluate(v2, t2, 0));
 			}
 		}
 	}
 
-	function addLineIntersection(v1, v2, curve1, curve2, locations) {
+	function addLineIntersection(v1, v2, curve1, curve2, locations, include) {
 		var point = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
-		// Passing null for parameter leads to lazy determination of parameter
-		// values in CurveLocation#getParameter() only once they are requested.
-		if (point)
-			addLocation(locations, curve1, null, point, curve2);
+		if (point) {
+			// We need to return the parameters for the intersection,
+			// since they will be used for sorting
+			var x = point.x,
+				y = point.y;
+			addLocation(locations, include,
+					curve1, Curve.getParameterOf(v1, x, y), point,
+					curve2, Curve.getParameterOf(v2, x, y), point);
+		}
 	}
 
 	return { statics: /** @lends Curve */{
 		// We need to provide the original left curve reference to the
 		// #getIntersections() calls as it is required to create the resulting
 		// CurveLocation objects.
-		getIntersections: function(v1, v2, curve1, curve2, locations) {
+		getIntersections: function(v1, v2, curve1, curve2, locations, include) {
 			var linear1 = Curve.isLinear(v1),
 				linear2 = Curve.isLinear(v2);
 			(linear1 && linear2
 				? addLineIntersection
 				: linear1 || linear2
 					? addCurveLineIntersections
-					: addCurveIntersections)(v1, v2, curve1, curve2, locations,
+					: addCurveIntersections)(
+						v1, v2, curve1, curve2, locations, include,
 						// Define the defaults for these parameters of
 						// addCurveIntersections():
 						// tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
-						0, 1, 0, 1, 1, false, 0);
+						0, 1, 0, 1, 0, false, 0);
 			return locations;
 		}
 	}};

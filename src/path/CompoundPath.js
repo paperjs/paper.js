@@ -187,7 +187,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		var children = this._children,
 			curves = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			curves = curves.concat(children[i].getCurves());
+			curves.push.apply(curves, children[i].getCurves());
 		return curves;
 	},
 
@@ -234,14 +234,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		for (var i = 0, l = children.length; i < l; i++)
 			paths.push(children[i].getPathData(precision));
 		return paths.join(' ');
-	},
-
-	_getWinding: function(point) {
-		var children =  this._children,
-			winding = 0;
-		for (var i = 0, l = children.length; i < l; i++)
-			winding += children[i]._getWinding(point);
-		return winding;
 	},
 
 	_getChildHitTestOptions: function(options) {

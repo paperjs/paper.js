@@ -279,7 +279,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		var next = this.getNext(),
 			handle1 = this._handleOut,
 			handle2 = next._handleIn,
-			kappa = Numerical.KAPPA;
+			kappa = /*#=*/ Numerical.KAPPA;
 		if (handle1.isOrthogonal(handle2)) {
 			var from = this._point,
 				to = next._point,
@@ -444,6 +444,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 
 	/**
 	 * Removes the segment from the path that it belongs to.
+	 * @return {Boolean} {@true if the segment was removed}
 	 */
 	remove: function() {
 		return this._path ? !!this._path.removeSegment(this._index) : false;

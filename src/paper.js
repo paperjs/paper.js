@@ -81,9 +81,11 @@ var paper = new function(undefined) {
 /*#*/ include('path/Path.js');
 /*#*/ include('path/Path.Constructors.js');
 /*#*/ include('path/CompoundPath.js');
+/*#*/ if (__options.booleanOperations) {
+/*#*/ include('path/PathItem.Boolean.js');
+/*#*/ } // __options.booleanOperations
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
-/*#*/ include('path/PathItem.Boolean.js');
 
 /*#*/ include('text/TextItem.js');
 /*#*/ include('text/PointText.js');
@@ -120,9 +122,9 @@ var paper = new function(undefined) {
 /*#*/ include('tool/Tool.js');
 
 // Http is used both for PaperScript and SVGImport
-/*#*/ if (__options.paperscript || __options.svg) {
+/*#*/ if (__options.paperScript || __options.svg) {
 /*#*/ include('net/Http.js');
-/*#*/ } // __options.paperscript || __options.svg
+/*#*/ } // __options.paperScript || __options.svg
 /*#*/ } // __options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');
@@ -138,9 +140,9 @@ var paper = new function(undefined) {
 /*#*/ include('svg/SVGImport.js');
 /*#*/ } // __options.svg
 
-/*#*/ if (__options.paperscript) {
+/*#*/ if (__options.paperScript) {
 /*#*/ include('core/PaperScript.js');
-/*#*/ } // __options.paperscript
+/*#*/ } // __options.paperScript
 
 /*#*/ include('export.js');
 return paper;
