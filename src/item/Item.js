@@ -54,6 +54,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
 	_transformContent: true,
+	_canTransformContent: true,
 	_boundsSelected: false,
 	_selectChildren: false,
 	// Provide information about fields to be serialized, with their defaults
@@ -1173,8 +1174,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setTransformContent: function(transform) {
-		this._transformContent = !!transform;
-		if (transform)
+		if (this._transformContent = this._canTransformContent && !!transform)
 			this.applyMatrix();
 	},
 
@@ -1986,8 +1986,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				// Only pass on the transformContent setting if it's different
 				// and the child has not its onw setting already.
 				if (item._transformContent ^ transformContent
-					&& !item.hasOwnProperty('_transformContent'))
-					item.setTransformContent(transformContent)
+						&& !item.hasOwnProperty('_transformContent'))
+					item.setTransformContent(transformContent);
 				// Setting the name again makes sure all name lookup structures
 				// are kept in sync.
 				if (item._name)
@@ -2841,9 +2841,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Reset the internal matrix to the identity transformation if it
 			// was possible to apply it.
 			matrix.reset(true);
+			if (!_dontNotify)
+				this._changed(/*#=*/ Change.GEOMETRY);
 		}
-		if (!_dontNotify)
-			this._changed(/*#=*/ Change.GEOMETRY);
 		return this;
 	},
 

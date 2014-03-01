@@ -20,6 +20,7 @@
 var Raster = Item.extend(/** @lends Raster# */{
 	_class: 'Raster',
 	_transformContent: false,
+	_canTransformContent: false,
 	// Raster doesn't make the distinction between the different bounds,
 	// so use the same name for all of them
 	_boundsGetter: 'getBounds',
