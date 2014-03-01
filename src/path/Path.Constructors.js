@@ -25,7 +25,7 @@ Path.inject({ statics: new function() {
 			path = new Path(props && props.insert === false && Item.NO_INSERT);
 		path._add(segments);
 		// No need to use setter for _closed since _add() called _changed().
-		path._closed = true;
+		path._closed = closed;
 		// Set named arguments at the end, since some depend on geometry to be
 		// defined (e.g. #clockwise)
 		return path.set(props);
