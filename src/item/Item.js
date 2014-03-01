@@ -2774,8 +2774,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	_applyMatrix: function(matrix, applyMatrix) {
 		var children = this._children;
-
-		if (children && children.length > 0) {
+		if (children) {
 			for (var i = 0, l = children.length; i < l; i++)
 				children[i].transform(matrix, applyMatrix);
 			return true;
