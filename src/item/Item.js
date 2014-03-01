@@ -1152,7 +1152,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setTransformContent: function(transform) {
-		this._transformContent = transform;
+		this._transformContent = !!transform;
 		if (transform)
 			this.applyMatrix();
 	},
@@ -1172,6 +1172,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._project !== project) {
 			// Uninstall events before switching project, then install them
 			// again.
+			// NOTE: _installEvents handles all children too!
 			if (this._project)
 				this._installEvents(false);
 			this._project = project;
@@ -1945,16 +1946,23 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Use the loop also to filter out wrong _type.
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i];
-				if (_type && item._type !== _type)
+				if (_type && item._type !== _type) {
 					items.splice(i, 1);
-				else
+				} else {
 					item._remove(true);
+				}
 			}
 			Base.splice(children, items, index, 0);
+			var transformContent = this._transformContent;
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				item._parent = this;
 				item._setProject(this._project, true);
+				// Only pass on the transformContent setting if it's different
+				// and the child has not its onw setting already.
+				if (item._transformContent ^ transformContent
+					&& !item.hasOwnProperty('_transformContent'))
+					item.setTransformContent(transformContent)
 				// Setting the name again makes sure all name lookup structures
 				// are kept in sync.
 				if (item._name)
