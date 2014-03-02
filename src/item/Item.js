@@ -1991,16 +1991,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				}
 			}
 			Base.splice(children, items, index, 0);
-			var applyMatrix = this._applyMatrix;
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				item._parent = this;
 				item._setProject(this._project, true);
-				// Only pass on the applyMatrix setting if it's different
-				// and the child has not its onw setting already.
-				if (item._applyMatrix ^ applyMatrix
-						&& !item.hasOwnProperty('_applyMatrix'))
-					item.setApplyMatrix(applyMatrix);
 				// Setting the name again makes sure all name lookup structures
 				// are kept in sync.
 				if (item._name)
