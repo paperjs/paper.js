@@ -1134,9 +1134,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
-		if (this._transformContent)
-			this.applyMatrix(true);
-		this._changed(/*#=*/ Change.GEOMETRY);
+		if (this._transformContent) {
+			// Directly apply the internal matrix. This will also call
+			// _changed() for us.
+			this.transform(null, true);
+		} else {
+			this._changed(/*#=*/ Change.GEOMETRY);
+		}
 	},
 
 	/**
@@ -1174,8 +1178,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setTransformContent: function(transform) {
+		// Tell #transform() to apply the internal matrix if _transformContent
+		// can be set to true.
 		if (this._transformContent = this._canTransformContent && !!transform)
-			this.applyMatrix();
+			this.transform(null, true);
 	},
 
 	/**
@@ -2760,34 +2766,63 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix, _applyMatrix) {
-		// Bail out immediatelly if there is nothing to do
-		if (matrix.isIdentity())
+		// If no matrix is provided, or the matrix is the identity, we might
+		// still have some work to do in case _transformContent is true
+		if (matrix && matrix.isIdentity())
+			matrix = null;
+		var _matrix = this._matrix,
+			applyMatrix = (_applyMatrix || this._transformContent)
+				// Don't apply _matrix if the result of concatenating with
+				// matrix would be identity.
+				&& (!_matrix.isIdentity() || matrix);
+		// Bail out if there is nothing to do.
+		if (!matrix && !applyMatrix)
 			return this;
+		// Simply preconcatenate the internal matrix with the passed one:
+		if (matrix)
+			_matrix.preConcatenate(matrix);
+		// Call #_applyMatrix() now, if we need to directly apply the internal
+		// _matrix transformations to the item's content.
+		// Application is not possible on Raster, PointText, PlacedSymbol, since
+		// the matrix is where the actual transformation state is stored.
+		if (applyMatrix = applyMatrix && this._applyMatrix(_matrix)) {
+			// When the _matrix could be applied, we also need to transform
+			// color styles (only gradients so far) and pivot point:
+			var pivot = this._pivot,
+				style = this._style,
+				// pass true for _dontMerge so we don't recursively transform
+				// styles on groups' children.
+				fillColor = style.getFillColor(true),
+				strokeColor = style.getStrokeColor(true);
+			if (pivot)
+				pivot.transform(_matrix);
+			if (fillColor)
+				fillColor.transform(_matrix);
+			if (strokeColor)
+				strokeColor.transform(_matrix);
+			// Reset the internal matrix to the identity transformation if it
+			// was possible to apply it.
+			_matrix.reset(true);
+		}
 		// Calling _changed will clear _bounds and _position, but depending
-		// on matrix we can calculate and set them again.
+		// on matrix we can calculate and set them again, so preserve them.
 		var bounds = this._bounds,
 			position = this._position;
-		// Simply preconcatenate the internal matrix with the passed one:
-		this._matrix.preConcatenate(matrix);
-		// Call applyMatrix if we need to directly apply the accumulated
-		// transformations to the item's content.
-		if (this._transformContent || _applyMatrix)
-			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
-		var decomp = bounds && matrix.decompose();
+		var decomp = bounds && matrix && matrix.decompose();
 		if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
 			// Transform the old bound by looping through all the cached bounds
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
 				// If these are internal bounds, only transform them if this
-				// item transforming its content.
-				if (this._transformContent || !rect._internal)
+				// item applied its matrix.
+				if (applyMatrix || !rect._internal)
 					matrix._transformBounds(rect, rect);
 			}
 			// If we have cached bounds, update _position again as its 
@@ -2798,7 +2833,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (rect)
 				this._position = rect.getCenter(true);
 			this._bounds = bounds;
-		} else if (position) {
+		} else if (matrix && position) {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
 		}
@@ -2806,45 +2841,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	_applyMatrix: function(matrix, applyMatrix) {
+	_applyMatrix: function(matrix) {
 		var children = this._children;
 		if (children) {
 			for (var i = 0, l = children.length; i < l; i++)
-				children[i].transform(matrix, applyMatrix);
+				children[i].transform(matrix, true);
 			return true;
 		}
-	},
-
-	applyMatrix: function(_dontNotify) {
-		// Call #_applyMatrix() with the internal _matrix and pass true for
-		// applyMatrix. Application is not possible on Raster, PointText,
-		// PlacedSymbol, since the matrix is where the actual location /
-		// transformation state is stored.
-		// Pass on the transformation to the content, and apply it there too,
-		// by passing true for the 2nd hidden parameter.
-		var matrix = this._matrix;
-		if (this._applyMatrix(matrix, true)) {
-			// When the matrix could be applied, we also need to transform
-			// color styles (only gradients so far) and pivot point:
-			var pivot = this._pivot,
-				style = this._style,
-				// pass true for _dontMerge so we don't recursively transform
-				// styles on groups' children.
-				fillColor = style.getFillColor(true),
-				strokeColor = style.getStrokeColor(true);
-			if (pivot)
-				pivot.transform(matrix);
-			if (fillColor)
-				fillColor.transform(matrix);
-			if (strokeColor)
-				strokeColor.transform(matrix);
-			// Reset the internal matrix to the identity transformation if it
-			// was possible to apply it.
-			matrix.reset(true);
-			if (!_dontNotify)
-				this._changed(/*#=*/ Change.GEOMETRY);
-		}
-		return this;
 	},
 
 	/**
