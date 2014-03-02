@@ -446,11 +446,15 @@ PathItem.inject(new function() {
 			} else {
 				path.lastSegment._handleOut.set(0, 0);
 			}
-			// Add the path to the result.
-			// Try to avoid stray segments and incomplete paths.
-			var count = path._segments.length;
-			if ((path._closed && count) || count > 2
-					|| (count === 2 && path._closed && !path.isPolygon()))
+			// Add the path to the result, while avoiding stray segments and
+			// incomplete paths. The amount of segments for valid paths depend
+			// on their geometry:
+			// - Closed paths with only straight lines (polygons) need more than
+			//   two segments.
+			// - Closed paths with curves can consist of only one segment.
+			// - Open paths need at least two segments.
+			if (path._segments.length >
+					(path._closed ? path.isPolygon() ? 2 : 0 : 1))
 				paths.push(path);
 		}
 		return paths;
