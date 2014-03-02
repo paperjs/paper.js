@@ -11,11 +11,11 @@
 
 		var yesGroup = words.children.yes;
 		var noGroup = words.children.no;
-		// Imported SVG Groups have their transformContent flag turned off by
+		// Imported SVG Groups have their applyMatrix flag turned off by
 		// default. This is required for SVG importing to work correctly. Turn
 		// it on now, so we don't have to deal with nested coordinate spaces.
-		yesGroup.transformContent = true;
-		noGroup.transformContent = true;
+		yesGroup.applyMatrix = true;
+		noGroup.applyMatrix = true;
 
 		// Resize the words to fit snugly inside the view:
 		project.activeLayer.fitBounds(view.bounds);

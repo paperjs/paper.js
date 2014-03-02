@@ -81,7 +81,7 @@ new function() {
 		if (!isClip) {
 			// Have the group not pass on all transformations to its children,
 			// as this is how SVG works too.
-			item._transformContent = false;
+			item._applyMatrix = false;
 			item = applyAttributes(item, node, isRoot);
 			// Style on items needs to be handled differently than all other
 			// items: We first apply the style to the item, then use it as the

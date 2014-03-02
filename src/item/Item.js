@@ -53,8 +53,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_class: 'Item',
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
-	_transformContent: true,
-	_canTransformContent: true,
+	_applyMatrix: true,
+	_canApplyMatrix: true,
 	_boundsSelected: false,
 	_selectChildren: false,
 	// Provide information about fields to be serialized, with their defaults
@@ -70,7 +70,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		guide: false,
 		selected: false,
 		clipMask: false,
-		transformContent: null,
+		applyMatrix: null,
 		data: {}
 	},
 
@@ -1134,7 +1134,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
-		if (this._transformContent) {
+		if (this._applyMatrix) {
 			// Directly apply the internal matrix. This will also call
 			// _changed() for us.
 			this.transform(null, true);
@@ -1173,16 +1173,23 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @default true
 	 * @bean
 	 */
-	getTransformContent: function() {
-		return this._transformContent;
+	getApplyMatrix: function() {
+		return this._applyMatrix;
 	},
 
-	setTransformContent: function(transform) {
-		// Tell #transform() to apply the internal matrix if _transformContent
+	setApplyMatrix: function(transform) {
+		// Tell #transform() to apply the internal matrix if _applyMatrix
 		// can be set to true.
-		if (this._transformContent = this._canTransformContent && !!transform)
+		if (this._applyMatrix = this._canApplyMatrix && !!transform)
 			this.transform(null, true);
 	},
+
+	/**
+	 * @bean
+	 * @deprecated use {@link #getApplyMatrix()} instead.
+	 */
+	getTransformContent: '#getApplyMatrix',
+	setTransformContent: '#setApplyMatrix',
 
 	/**
 	 * {@grouptitle Project Hierarchy}
@@ -1492,7 +1499,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// meaning the default value has been overwritten (default is on
 		// prototype).
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide', '_transformContent'];
+				'_clipMask', '_guide', '_applyMatrix'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -1984,16 +1991,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				}
 			}
 			Base.splice(children, items, index, 0);
-			var transformContent = this._transformContent;
+			var applyMatrix = this._applyMatrix;
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				item._parent = this;
 				item._setProject(this._project, true);
-				// Only pass on the transformContent setting if it's different
+				// Only pass on the applyMatrix setting if it's different
 				// and the child has not its onw setting already.
-				if (item._transformContent ^ transformContent
-						&& !item.hasOwnProperty('_transformContent'))
-					item.setTransformContent(transformContent);
+				if (item._applyMatrix ^ applyMatrix
+						&& !item.hasOwnProperty('_applyMatrix'))
+					item.setApplyMatrix(applyMatrix);
 				// Setting the name again makes sure all name lookup structures
 				// are kept in sync.
 				if (item._name)
@@ -2059,6 +2066,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * the list of children and moving it above all other children. You can
 	 * use this function for groups, compound paths and layers.
 	 *
+	 * @function
 	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #addChild(item)} instead.
 	 */
@@ -2079,6 +2087,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Moves this item above the specified item.
 	 *
+	 * @function
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
@@ -2088,6 +2097,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Moves the item below the specified item.
 	 *
+	 * @function
 	 * @param {Item} item the item below which it should be moved
 	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
@@ -2767,11 +2777,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix, _applyMatrix) {
 		// If no matrix is provided, or the matrix is the identity, we might
-		// still have some work to do in case _transformContent is true
+		// still have some work to do in case _applyMatrix is true
 		if (matrix && matrix.isIdentity())
 			matrix = null;
 		var _matrix = this._matrix,
-			applyMatrix = (_applyMatrix || this._transformContent)
+			applyMatrix = (_applyMatrix || this._applyMatrix)
 				// Don't apply _matrix if the result of concatenating with
 				// matrix would be identity.
 				&& (!_matrix.isIdentity() || matrix);
@@ -2781,11 +2791,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Simply preconcatenate the internal matrix with the passed one:
 		if (matrix)
 			_matrix.preConcatenate(matrix);
-		// Call #_applyMatrix() now, if we need to directly apply the internal
-		// _matrix transformations to the item's content.
+		// Call #_transformContent() now, if we need to directly apply the
+		// internal _matrix transformations to the item's content.
 		// Application is not possible on Raster, PointText, PlacedSymbol, since
 		// the matrix is where the actual transformation state is stored.
-		if (applyMatrix = applyMatrix && this._applyMatrix(_matrix)) {
+		if (applyMatrix = applyMatrix && this._transformContent(_matrix)) {
 			// When the _matrix could be applied, we also need to transform
 			// color styles (only gradients so far) and pivot point:
 			var pivot = this._pivot,
@@ -2841,7 +2851,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	_applyMatrix: function(matrix) {
+	_transformContent: function(matrix) {
 		var children = this._children;
 		if (children) {
 			for (var i = 0, l = children.length; i < l; i++)
