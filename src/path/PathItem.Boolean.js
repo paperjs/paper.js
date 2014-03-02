@@ -380,50 +380,53 @@ PathItem.inject(new function() {
 						&& (inter = seg._intersection)
 						&& (interSeg = inter._segment)
 						&& interSeg !== startSeg) {
-					var c1 = seg.getCurve();
-					if (dir > 0)
-						c1 = c1.getPrevious();
-					var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
-						// Get both curves at the intersection (except the entry
-						// curves) along with their winding values and tangents.
-						c4 = interSeg.getCurve(),
-						c3 = c4.getPrevious(),
-						t3 = c3.getTangentAt(ONE, true),
-						t4 = c4.getTangentAt(ZERO, true),
-						// Cross product of the entry and exit tangent vectors
-						// at the intersection, will let us select the correct
-						// countour to traverse next.
-						w3 = t1.cross(t3),
-						w4 = t1.cross(t4);
 					if (selfOp) {
 						// Switch to the intersection segment, if we are
 						// resolving self-Intersections.
 						seg._visited = interSeg._visited;
 						seg = interSeg;
 						dir = 1;
-					} else if (w3 * w4 !== 0) {
-						// Do not attempt to switch contours if we aren't absolutely
-						// sure that there is a possible candidate.
-						var curve = w3 < w4 ? c3 : c4,
-							nextCurve = operator(curve._segment1._winding)
-								? curve
-								: w3 < w4 ? c4 : c3,
-							nextSeg = nextCurve._segment1;
-						dir = nextCurve === c3 ? -1 : 1;
-						// If we didn't manage to find a suitable direction for
-						// next contour to traverse, stay on the same contour.
-						if (nextSeg._visited && seg._path !== nextSeg._path
-									|| !operator(nextSeg._winding)) {
-							dir = 1;
-						} else {
-							// Switch to the intersection segment.
-							seg._visited = interSeg._visited;
-							seg = interSeg;
-							if (nextSeg._visited) 
-								dir = 1;
-						}
 					} else {
-						dir = 1;
+						var c1 = seg.getCurve();
+						if (dir > 0)
+							c1 = c1.getPrevious();
+						var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+							// Get both curves at the intersection (except the
+							// entry curves).
+							c4 = interSeg.getCurve(),
+							c3 = c4.getPrevious(),
+							// Calculate their winding values and tangents.
+							t3 = c3.getTangentAt(ONE, true),
+							t4 = c4.getTangentAt(ZERO, true),
+							// Cross product of the entry and exit tangent
+							// vectors at the intersection, will let us select
+							// the correct countour to traverse next.
+							w3 = t1.cross(t3),
+							w4 = t1.cross(t4);
+						if (w3 * w4 !== 0) {
+							// Do not attempt to switch contours if we aren't
+							// sure that there is a possible candidate.
+							var curve = w3 < w4 ? c3 : c4,
+								nextCurve = operator(curve._segment1._winding)
+									? curve
+									: w3 < w4 ? c4 : c3,
+								nextSeg = nextCurve._segment1;
+							dir = nextCurve === c3 ? -1 : 1;
+							// If we didn't find a suitable direction for next
+							// contour to traverse, stay on the same contour.
+							if (nextSeg._visited && seg._path !== nextSeg._path
+										|| !operator(nextSeg._winding)) {
+								dir = 1;
+							} else {
+								// Switch to the intersection segment.
+								seg._visited = interSeg._visited;
+								seg = interSeg;
+								if (nextSeg._visited) 
+									dir = 1;
+							}
+						} else {
+							dir = 1;
+						}
 					}
 					handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
 				}
