@@ -2238,11 +2238,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// moveTo should only be called at the beginning of paths. But it 
 			// can ce called again if there is nothing drawn yet, in which case
 			// the first segment gets readjusted.
-			if (this._segments.length === 1)
+			var segments = this._segments;
+			if (segments.length === 1)
 				this.removeSegment(0);
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
-			if (!this._segments.length)
+			if (!segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
@@ -2423,7 +2424,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		closePath: function() {
 			var first = this.getFirstSegment(),
 				last = this.getLastSegment();
-			if (first._point.equals(last._point)) {
+			if (first !== last && first._point.equals(last._point)) {
 				first.setHandleIn(last._handleIn);
 				last.remove();
 			}
