@@ -2221,7 +2221,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 */
 	function getCurrentSegment(that) {
 		var segments = that._segments;
-		if (segments.length == 0)
+		if (segments.length === 0)
 			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}

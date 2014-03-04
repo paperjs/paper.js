@@ -277,10 +277,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 * Helper method that returns the current path and checks if a moveTo()
 	 * command is required first.
 	 */
-	function getCurrentPath(that) {
-		if (!that._children.length)
+	function getCurrentPath(that, check) {
+		var children = that._children;
+		if (check && children.length === 0)
 			throw new Error('Use a moveTo() command first');
-		return that._children[that._children.length - 1];
+		return children[children.length - 1];
 	}
 
 	var fields = {
@@ -297,12 +298,14 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		},
 
 		moveBy: function(/* point */) {
-			this.moveTo(getCurrentPath(this).getLastSegment()._point.add(
-					Point.read(arguments)));
+			var current = getCurrentPath(this, true),
+				last = current && current.getLastSegment(),
+				point = Point.read(arguments);
+			this.moveTo(last ? point.add(last._point) : point);
 		},
 
 		closePath: function() {
-			getCurrentPath(this).closePath();
+			getCurrentPath(this, true).closePath();
 		}
 	};
 
@@ -311,7 +314,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
 			function(key) {
 				fields[key] = function() {
-					var path = getCurrentPath(this);
+					var path = getCurrentPath(this, true);
 					path[key].apply(path, arguments);
 				};
 			}
