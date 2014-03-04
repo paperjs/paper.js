@@ -96,6 +96,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			project = paper.project;
 		if (!internal)
 			this._id = Item._id = (Item._id || 0) + 1;
+		// Inherit the applyMatrix setting from paper.settings.applyMatrix
+		this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
 		// Handle matrix before everything else, to avoid issues with
 		// #addChild() calling _changed() and accessing _matrix already.
 		if (point)

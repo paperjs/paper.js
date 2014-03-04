@@ -49,6 +49,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		paper = this;
 		// Default configurable settings.
 		this.settings = {
+			applyMatrix: true,
 			handleSize: 4,
 			hitTolerance: 0
 		};
@@ -88,6 +89,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	// DOCS: PaperScope#settings
 	/**
 	 * Gives access to paper's configurable settings.
+	 *
+	 * <b>settings.applyMatrix:</b>
 	 *
 	 * <b>settings.handleSize:</b> 
 	 *
