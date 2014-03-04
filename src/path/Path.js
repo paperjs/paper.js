@@ -2084,8 +2084,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			drawSegments(ctx, this, matrix);
 			// Now stroke it and draw its handles:
 			ctx.stroke();
-			drawHandles(ctx, this._segments, matrix,
-					this._project.options.handleSize || 4);
+			drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
 		}
 	};
 }, new function() { // Path Smoothing

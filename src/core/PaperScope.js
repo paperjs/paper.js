@@ -41,11 +41,17 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * @name PaperScope#initialize
 	 * @function
 	 */
+	// DOCS: initialize() parameters
 	initialize: function PaperScope(script) {
 		// script is only used internally, when creating scopes for PaperScript.
 		// Whenever a PaperScope is created, it automatically becomes the active
 		// one.
 		paper = this;
+		// Default configurable settings.
+		this.settings = {
+			handleSize: 4,
+			hitTolerance: 0
+		};
 		this.project = null;
 		this.projects = [];
 		this.tools = [];
@@ -78,6 +84,18 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * @type String
 	 */
 	version: '/*#=*/ __options.version',
+
+	// DOCS: PaperScope#settings
+	/**
+	 * Gives access to paper's configurable settings.
+	 *
+	 * <b>settings.handleSize:</b> 
+	 *
+	 * <b>settings.hitTolerance:</b>
+	 *
+	 * @name PaperScope#settings
+	 * @type Object
+	 */
 
 	/**
 	 * The currently active project.

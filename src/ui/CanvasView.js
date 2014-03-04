@@ -155,7 +155,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// Run the hit-test first
 			var project = this._project,
 				hit = project.hitTest(point, {
-					tolerance: project.options.hitTolerance || 0,
+					tolerance: this._scope.settings.hitTolerance,
 					fill: true,
 					stroke: true
 				}),

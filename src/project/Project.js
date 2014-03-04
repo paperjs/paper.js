@@ -210,15 +210,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		return items;
 	},
 
-	// DOCS: Project#options
 	/**
-	 * <b>options.handleSize:</b> 
+	 * Gives access to the project's configurable options.
 	 *
-	 * <b>options.hitTolerance:</b>
-	 *
-	 * @name Project#options
 	 * @type Object
+	 * @bean
+	 * @deprecated use {@link PaperScope#settings} instead.
 	 */
+	getOptions: function() {
+		return this._scope.settings;
+	},
 
 	// TODO: Implement setSelectedItems?
 	_updateSelection: function(item) {
@@ -451,7 +452,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id],
-					size = this.options.handleSize || 4;
+					size = this._scope.settings.handleSize;
 					half = size / 2;
 				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
