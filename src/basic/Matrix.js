@@ -100,8 +100,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	_changed: function() {
-		if (this._owner)
-			this._owner._changed(/*#=*/ Change.GEOMETRY);
+		var owner = this._owner;
+		if (owner) {
+			// If owner has #applyMatrix set, directly bake it in now.
+			if (owner._applyMatrix) {
+				owner.transform(null, true);
+			} else {
+				owner._changed(/*#=*/ Change.GEOMETRY);
+			}
+		}
 	},
 
 	/**
