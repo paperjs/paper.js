@@ -1929,19 +1929,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (state & /*#=*/ SelectionState.HANDLE_OUT)
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
-			ctx.save();
-			ctx.beginPath();
-			ctx.rect(pX - half, pY - half, size, size);
-			ctx.fill();
+			ctx.fillRect(pX - half, pY - half, size, size);
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
 			if (!(state & /*#=*/ SelectionState.POINT)) {
-				ctx.beginPath();
-				ctx.rect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fill();
+				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				ctx.fillStyle = fillStyle;
 			}
-			ctx.restore();
 		}
 	}
 
@@ -2238,11 +2234,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// moveTo should only be called at the beginning of paths. But it 
 			// can ce called again if there is nothing drawn yet, in which case
 			// the first segment gets readjusted.
-			if (this._segments.length === 1)
+			var segments = this._segments;
+			if (segments.length === 1)
 				this.removeSegment(0);
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
-			if (!this._segments.length)
+			if (!segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
@@ -2423,7 +2420,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		closePath: function() {
 			var first = this.getFirstSegment(),
 				last = this.getLastSegment();
-			if (first._point.equals(last._point)) {
+			if (first !== last && first._point.equals(last._point)) {
 				first.setHandleIn(last._handleIn);
 				last.remove();
 			}

@@ -82,7 +82,9 @@ Base.inject(/** @lends Base# */{
 	statics: /** @lends Base */{
 
 		// Keep track of all named classes for serialization and exporting.
-		exports: {},
+		exports: {
+			enumerable: true // For PaperScope.inject() in export.js
+		},
 
 		extend: function extend() {
 			// Override Base.extend() to register named classes in Base.exports,

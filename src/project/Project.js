@@ -450,7 +450,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.save();
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
-				var item = this._selectedItems[id];
+				var item = this._selectedItems[id],
+					size = this.options.handleSize || 4;
+					half = size / 2;
 				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
@@ -473,11 +475,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 									coords[i], coords[++i]);
 						ctx.closePath();
 						ctx.stroke();
-						for (var i = 0; i < 8; i++) {
-							ctx.beginPath();
-							ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
-							ctx.fill();
-						}
+						for (var i = 0; i < 8; i++)
+							ctx.fillRect(coords[i] - half, coords[++i] - half,
+									size, size);
 					}
 				}
 			}

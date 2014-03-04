@@ -190,22 +190,21 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var parts = data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
 			coords,
 			relative = false,
+			previous,
 			control,
-			current = new Point(); // the current position
+			current = new Point();
 
-		function getCoord(index, coord, isCurrent) {
+		function getCoord(index, coord) {
 			var val = parseFloat(coords[index]);
 			if (relative)
 				val += current[coord];
-			if (isCurrent)
-				current[coord] = val;
 			return val;
 		}
 
-		function getPoint(index, isCurrent) {
+		function getPoint(index) {
 			return new Point(
-				getCoord(index, 'x', isCurrent),
-				getCoord(index + 1, 'y', isCurrent)
+				getCoord(index, 'x'),
+				getCoord(index + 1, 'y')
 			);
 		}
 
@@ -214,25 +213,25 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
 		for (var i = 0, l = parts.length; i < l; i++) {
 			var part = parts[i],
-				cmd = part[0],
-				lower = cmd.toLowerCase();
+				command = part[0],
+				lower = command.toLowerCase();
 			// Match all coordinate values
 			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
 			var length = coords && coords.length;
-			relative = cmd === lower;
+			relative = command === lower;
 			switch (lower) {
 			case 'm':
 			case 'l':
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
-							getPoint(j, true));
+							current = getPoint(j));
 				control = current;
 				break;
 			case 'h':
 			case 'v':
 				var coord = lower == 'h' ? 'x' : 'y';
 				for (var j = 0; j < length; j++) {
-					getCoord(j, coord, true);
+					current[coord] = getCoord(j, coord);
 					this.lineTo(current);
 				}
 				control = current;
@@ -242,33 +241,38 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					this.cubicCurveTo(
 							getPoint(j),
 							control = getPoint(j + 2),
-							getPoint(j + 4, true));
+							current = getPoint(j + 4));
 				}
 				break;
 			case 's':
 				// Smooth cubicCurveTo
 				for (var j = 0; j < length; j += 4) {
 					this.cubicCurveTo(
-							// Calculate reflection of previous control points
-							current.multiply(2).subtract(control),
+							/[cs]/i.test(previous)
+									? current.multiply(2).subtract(control)
+									: current,
 							control = getPoint(j),
-							getPoint(j + 2, true));
+							current = getPoint(j + 2));
+					previous = command;
 				}
 				break;
 			case 'q':
 				for (var j = 0; j < length; j += 4) {
 					this.quadraticCurveTo(
 							control = getPoint(j),
-							getPoint(j + 2, true));
+							current = getPoint(j + 2));
 				}
 				break;
 			case 't':
 				// Smooth quadraticCurveTo
 				for (var j = 0; j < length; j += 2) {
+					console.log(previous, /[qt]/i.test(previous));
 					this.quadraticCurveTo(
-							// Calculate reflection of previous control points
-							control = current.multiply(2).subtract(control),
-							getPoint(j, true));
+							control = (/[qt]/i.test(previous)
+									? current.multiply(2).subtract(control)
+									: current),
+							current = getPoint(j));
+					previous = command;
 				}
 				break;
 			case 'a':
@@ -278,6 +282,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				this.closePath();
 				break;
 			}
+			previous = command;
 		}
 	},
 
