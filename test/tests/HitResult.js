@@ -139,7 +139,9 @@ test('hitting the center of a path', function() {
 test('hitting the center of a path with tolerance', function() {
 	var path = new Path([0, 0], [100, 100], [200, 0]);
 	path.closed = true;
-	var hitResult = paper.project.hitTest(path.position.add(1, 1), {
+	var offset = new Point(1, 1);
+	var hitResult = paper.project.hitTest(path.position.add(offset), {
+		tolerance: offset.length,
 		center: true
 	});
 
