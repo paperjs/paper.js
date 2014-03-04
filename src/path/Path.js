@@ -1929,19 +1929,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (state & /*#=*/ SelectionState.HANDLE_OUT)
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
-			ctx.save();
-			ctx.beginPath();
-			ctx.rect(pX - half, pY - half, size, size);
-			ctx.fill();
+			ctx.fillRect(pX - half, pY - half, size, size);
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
 			if (!(state & /*#=*/ SelectionState.POINT)) {
-				ctx.beginPath();
-				ctx.rect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fill();
+				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				ctx.fillStyle = fillStyle;
 			}
-			ctx.restore();
 		}
 	}
 
