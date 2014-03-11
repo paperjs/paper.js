@@ -16,21 +16,18 @@
 		this.numSegment = Math.floor(r / 3 + 2);
 		this.boundOffset = [];
 		this.boundOffsetBuff = [];
-		this.cos = [];
-		this.sin = [];
-		this.path = new Path();
-		this.path.fillColor = new Color({
-			hue:Math.random() * 360,
-			saturation:1,
-			brightness:1
+		this.path = new Path({
+			fillColor: {
+				hue: Math.random() * 360,
+				saturation: 1,
+				brightness: 1
+			},
+			blendMode: 'screen'
 		});
 
-		this.path.blendMode = "screen";
 		for (var i = 0; i < this.numSegment; i ++) {
 			this.boundOffset.push(this.radius);
 			this.boundOffsetBuff.push(this.radius);
-			this.cos.push(Math.cos(Math.PI * 2 / this.numSegment * i));
-			this.sin.push(Math.sin(Math.PI * 2 / this.numSegment * i));
 			this.path.add(new Point());
 		}
 		this.path.add(new Point());
@@ -38,12 +35,12 @@
 
 
 	Ball.prototype.iterate = function() {
-			this.checkWallCollision();
-			if (this.vector.length > this.maxVec) {
-				this.vector = this.vector.normalize(this.maxVec);
-			}
-			this.point += this.vector;
-			this.updateShape();
+		this.checkWallCollision();
+		if (this.vector.length > this.maxVec) {
+			this.vector.length = this.maxVec;
+		}
+		this.point += this.vector;
+		this.updateShape();
 	}
 
 	Ball.prototype.checkWallCollision = function() {
@@ -56,7 +53,10 @@
 	Ball.prototype.updateShape = function() {
 		var points = [];
 		for (var i = 0; i < this.numSegment; i ++) {
-			points.push(new Point(this.point.x + this.cos[i] * this.boundOffset[i], this.point.y + this.sin[i] * this.boundOffset[i]));
+			points.push(this.point + {
+				angle: 360 / this.numSegment * i,
+				length: this.boundOffset[i]
+			});
 		}
 
 		for (var i = 0; i < this.path.segments.length; i ++) {
@@ -64,12 +64,12 @@
 			var point = (points[i % this.numSegment] + next) / 2;
 			var vector = (next - point) / 4;
 			this.path.segments[i].point = point + vector;
-			//this.path.segments[i].handleIn = -vector;
-			//this.path.segments[i].handleOut = vector;
 		}
 		this.path.smooth();
 		for (var i = 0; i < this.numSegment; i ++) {
-			if (this.boundOffset[i] < this.radius / 4) { this.boundOffset[i] = this.radius / 4};
+			if (this.boundOffset[i] < this.radius / 4) {
+				this.boundOffset[i] = this.radius / 4;
+			};
 	        var next = (i + 1) % this.numSegment;
 	        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
 	        this.boundOffsetBuff[i] = this.boundOffset[i] += (this.radius - this.boundOffset[i]) / 15;
@@ -80,10 +80,10 @@
 	Ball.prototype.react = function(b) {
 	    var dist = this.point.getDistance(b.point);
 	    if (dist < this.radius + b.radius && dist != 0) {
-	    	var direc = (this.point - b.point).normalize();
 			var overlap = this.radius + b.radius - dist;
-	        this.vector += direc * overlap * 0.015;
-	        b.vector -= direc * overlap * 0.015;
+	    	var direc = (this.point - b.point).normalize(overlap * 0.015);
+	        this.vector += direc;
+	        b.vector -= direc;
 
 	        this.calcBounds(b);
 	        b.calcBounds(this);
@@ -100,13 +100,20 @@
 
 	Ball.prototype.calcBounds = function(b) {
 		for (var i = 0; i < this.numSegment; i ++) {
-			var tp = this.point + new Point(this.cos[i] * this.boundOffset[i], this.sin[i] * this.boundOffset[i]);
+			var tp = this.getSidePoint(i);
 			var bLen = b.getboundOffset(tp);
 			var td = tp.getDistance(b.point);
 			if (td < bLen ) {
 				this.boundOffsetBuff[i] -= (bLen  - td) / 2;
 			}
 		}
+	}
+
+	Ball.prototype.getSidePoint = function(index) {
+		return this.point + {
+			angle: 360 / this.numSegment * index,
+			length: this.boundOffset[index]
+		};
 	}
 
 	Ball.prototype.updateBounds = function() {
@@ -118,11 +125,7 @@
 
 	//--------------------- main ---------------------
 
-	var unitAngle = 15 / 180 * Math.PI;
-	var bg = new Group();
 	var balls = [];
-	var bgRadius;
-
 	var numBalls = 18;
 	for (var i = 0; i < numBalls; i++) {
 		var position = Point.random() * view.size ,
@@ -130,7 +133,6 @@
 			ball = new Ball(Math.random() * 60 + 60, position, vector);
 		balls.push(ball);
 	}
-
 
 	function onFrame() {
 		for (var i = 0; i < balls.length - 1; i++) {
@@ -141,7 +143,6 @@
 		for (var i = 0, l = balls.length; i < l; i++) {
 			balls[i].iterate();
 		}
-		bg.rotate(2);
 	}
 
 	</script>
