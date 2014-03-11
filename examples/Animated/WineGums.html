@@ -30,7 +30,6 @@
 			this.boundOffsetBuff.push(this.radius);
 			this.path.add(new Point());
 		}
-		this.path.add(new Point());
 	}
 
 
@@ -51,20 +50,14 @@
 	}
 
 	Ball.prototype.updateShape = function() {
-		var points = [];
+		var segments = this.path.segments;
 		for (var i = 0; i < this.numSegment; i ++) {
-			points.push(this.point + {
+			segments[i].point = this.point + {
 				angle: 360 / this.numSegment * i,
 				length: this.boundOffset[i]
-			});
+			};
 		}
 
-		for (var i = 0; i < this.path.segments.length; i ++) {
-			var next = points[(i + 1) % this.numSegment];
-			var point = (points[i % this.numSegment] + next) / 2;
-			var vector = (next - point) / 4;
-			this.path.segments[i].point = point + vector;
-		}
 		this.path.smooth();
 		for (var i = 0; i < this.numSegment; i ++) {
 			if (this.boundOffset[i] < this.radius / 4) {
@@ -128,8 +121,11 @@
 	var balls = [];
 	var numBalls = 18;
 	for (var i = 0; i < numBalls; i++) {
-		var position = Point.random() * view.size ,
-			vector = (Point.random() - [0.5, 0]) * [5, 10],
+		var position = Point.random() * view.size,
+			vector = new Point({
+				angle: 360 * Math.random(),
+				length: Math.random() * 10
+			}),
 			ball = new Ball(Math.random() * 60 + 60, position, vector);
 		balls.push(ball);
 	}
