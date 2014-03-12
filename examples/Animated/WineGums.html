@@ -68,8 +68,10 @@
 					this.boundOffset[i] = this.radius / 4;
 		        var next = (i + 1) % this.numSegment;
 		        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
-		        this.boundOffsetBuff[i] = this.boundOffset[i] += (this.radius - this.boundOffset[i]) / 15;
-		        this.boundOffsetBuff[i] = this.boundOffset[i] += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - this.boundOffset[i]) / 3;
+		        var offset = this.boundOffset[i];
+		        offset += (this.radius - offset) / 15;
+		       	offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
+		        this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
 		    }
 		},
 
