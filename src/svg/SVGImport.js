@@ -130,14 +130,10 @@ new function() {
 	}
 
 	function importPath(node) {
-		// Get the path data, and determine whether it is a compound path or a
-		// normal path based on the amount of moveTo commands inside it.
-		var data = node.getAttribute('d'),
-			path = data.match(/m/gi).length > 1
-					? new CompoundPath()
-					: new Path();
-		path.setPathData(data);
-		return path;
+		return new CompoundPath({
+			pathData: node.getAttribute('d'),
+			insert: false
+		}).reduce();
 	}
 
 	function importGradient(node, type) {
