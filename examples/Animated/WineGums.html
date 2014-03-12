@@ -47,10 +47,14 @@
 		},
 
 		checkWallCollision: function() {
-			if (this.point.x < -this.radius) { this.point.x = view.size.width + this.radius;}
-			if (this.point.x > view.size.width + this.radius) { this.point.x = -this.radius;}
-			if (this.point.y < -this.radius) { this.point.y = view.size.height + this.radius;}
-			if (this.point.y > view.size.height + this.radius) { this.point.y = -this.radius;}
+			if (this.point.x < -this.radius)
+				this.point.x = view.size.width + this.radius;
+			if (this.point.x > view.size.width + this.radius)
+				this.point.x = -this.radius;
+			if (this.point.y < -this.radius)
+				this.point.y = view.size.height + this.radius;
+			if (this.point.y > view.size.height + this.radius)
+				this.point.y = -this.radius;
 		},
 
 		updateShape: function() {
@@ -95,7 +99,7 @@
 				var tp = this.getSidePoint(i);
 				var bLen = b.getboundOffset(tp);
 				var td = tp.getDistance(b.point);
-				if (td < bLen ) {
+				if (td < bLen) {
 					this.boundOffsetBuff[i] -= (bLen  - td) / 2;
 				}
 			}
