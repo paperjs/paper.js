@@ -266,7 +266,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			case 't':
 				// Smooth quadraticCurveTo
 				for (var j = 0; j < length; j += 2) {
-					console.log(previous, /[qt]/i.test(previous));
 					this.quadraticCurveTo(
 							control = (/[qt]/i.test(previous)
 									? current.multiply(2).subtract(control)
