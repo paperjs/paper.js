@@ -404,8 +404,8 @@ PathItem.inject(new function() {
 						seg = interSeg;
 						dir = 1;
 					} else if (w3 * w4 !== 0) {
-						// Do not attempt to switch contours if we aren't absolutely
-						// sure that there is a possible candidate.
+						// Do not attempt to switch contours if we aren't
+						// absolutely sure that there is a possible candidate.
 						var curve = w3 < w4 ? c3 : c4,
 							nextCurve = operator(curve._segment1._winding)
 								? curve
@@ -469,8 +469,8 @@ PathItem.inject(new function() {
 		 *
 		 * @param  {Point} point the location for which to determine the winding
 		 * direction
-		 * @param  {Boolean} horizontal whether we need to consider this point as
-		 * part of a horizontal curve
+		 * @param  {Boolean} horizontal whether we need to consider this point
+		 * as part of a horizontal curve
 		 * @param  {Boolean} testContains whether we need to consider this point 
 		 * as part of stationary points on the curve itself, used when checking 
 		 * the winding about a point.
