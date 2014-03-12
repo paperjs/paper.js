@@ -16,6 +16,7 @@
 		this.numSegment = Math.floor(r / 3 + 2);
 		this.boundOffset = [];
 		this.boundOffsetBuff = [];
+		this.sidePoints = [];
 		this.path = new Path({
 			fillColor: {
 				hue: Math.random() * 360,
@@ -29,6 +30,10 @@
 			this.boundOffset.push(this.radius);
 			this.boundOffsetBuff.push(this.radius);
 			this.path.add(new Point());
+			this.sidePoints.push(new Point({
+				angle: 360 / this.numSegment * i,
+				length: 1
+			}));
 		}
 	}
 
@@ -103,10 +108,7 @@
 	}
 
 	Ball.prototype.getSidePoint = function(index) {
-		return this.point + {
-			angle: 360 / this.numSegment * index,
-			length: this.boundOffset[index]
-		};
+		return this.point + this.sidePoints[index] * this.boundOffset[index];
 	}
 
 	Ball.prototype.updateBounds = function() {
