@@ -221,7 +221,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			var length = coords && coords.length;
 			relative = command === lower;
 			if (previous === 'z' && lower !== 'z')
-				this.moveTo(start);
+				this.moveTo(current = start);
 			switch (lower) {
 			case 'm':
 			case 'l':
