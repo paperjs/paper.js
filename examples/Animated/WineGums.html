@@ -8,7 +8,7 @@
 	<script type="text/paperscript" canvas="canvas">
 	// kynd.info 2014
 
-	var Ball = function(r, p, v) {
+	function Ball(r, p, v) {
 		this.radius = r;
 		this.point = p;
 		this.vector = v;
@@ -37,86 +37,85 @@
 		}
 	}
 
+	Ball.prototype = {
+		iterate: function() {
+			this.checkWallCollision();
+			if (this.vector.length > this.maxVec)
+				this.vector.length = this.maxVec;
+			this.point += this.vector;
+			this.updateShape();
+		},
 
-	Ball.prototype.iterate = function() {
-		this.checkWallCollision();
-		if (this.vector.length > this.maxVec) {
-			this.vector.length = this.maxVec;
-		}
-		this.point += this.vector;
-		this.updateShape();
-	}
+		checkWallCollision: function() {
+			if (this.point.x < -this.radius) { this.point.x = view.size.width + this.radius;}
+			if (this.point.x > view.size.width + this.radius) { this.point.x = -this.radius;}
+			if (this.point.y < -this.radius) { this.point.y = view.size.height + this.radius;}
+			if (this.point.y > view.size.height + this.radius) { this.point.y = -this.radius;}
+		},
 
-	Ball.prototype.checkWallCollision = function() {
-		if (this.point.x < -this.radius) { this.point.x = view.size.width + this.radius;}
-		if (this.point.x > view.size.width + this.radius) { this.point.x = -this.radius;}
-		if (this.point.y < -this.radius) { this.point.y = view.size.height + this.radius;}
-		if (this.point.y > view.size.height + this.radius) { this.point.y = -this.radius;}
-	}
+		updateShape: function() {
+			var segments = this.path.segments;
+			for (var i = 0; i < this.numSegment; i ++) {
+				segments[i].point = this.point + {
+					angle: 360 / this.numSegment * i,
+					length: this.boundOffset[i]
+				};
+			}
 
-	Ball.prototype.updateShape = function() {
-		var segments = this.path.segments;
-		for (var i = 0; i < this.numSegment; i ++) {
-			segments[i].point = this.point + {
-				angle: 360 / this.numSegment * i,
-				length: this.boundOffset[i]
-			};
-		}
+			this.path.smooth();
+			for (var i = 0; i < this.numSegment; i ++) {
+				if (this.boundOffset[i] < this.radius / 4) {
+					this.boundOffset[i] = this.radius / 4;
+				};
+		        var next = (i + 1) % this.numSegment;
+		        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
+		        this.boundOffsetBuff[i] = this.boundOffset[i] += (this.radius - this.boundOffset[i]) / 15;
+		        this.boundOffsetBuff[i] = this.boundOffset[i] += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - this.boundOffset[i]) / 3;
+		    }
+		},
 
-		this.path.smooth();
-		for (var i = 0; i < this.numSegment; i ++) {
-			if (this.boundOffset[i] < this.radius / 4) {
-				this.boundOffset[i] = this.radius / 4;
-			};
-	        var next = (i + 1) % this.numSegment;
-	        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
-	        this.boundOffsetBuff[i] = this.boundOffset[i] += (this.radius - this.boundOffset[i]) / 15;
-	        this.boundOffsetBuff[i] = this.boundOffset[i] += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - this.boundOffset[i]) / 3;
-	    }
-	}
+		react: function(b) {
+		    var dist = this.point.getDistance(b.point);
+		    if (dist < this.radius + b.radius && dist != 0) {
+				var overlap = this.radius + b.radius - dist;
+		    	var direc = (this.point - b.point).normalize(overlap * 0.015);
+		        this.vector += direc;
+		        b.vector -= direc;
 
-	Ball.prototype.react = function(b) {
-	    var dist = this.point.getDistance(b.point);
-	    if (dist < this.radius + b.radius && dist != 0) {
-			var overlap = this.radius + b.radius - dist;
-	    	var direc = (this.point - b.point).normalize(overlap * 0.015);
-	        this.vector += direc;
-	        b.vector -= direc;
+		        this.calcBounds(b);
+		        b.calcBounds(this);
+		        this.updateBounds();
+		        b.updateBounds();
+		    }
+		},
 
-	        this.calcBounds(b);
-	        b.calcBounds(this);
-	        this.updateBounds();
-	        b.updateBounds();
-	    }
-	}
+		getboundOffset: function(b) {
+			var diff = this.point - b;
+			var angle = (diff.angle + 180) % 360;
+			return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
+		},
 
-	Ball.prototype.getboundOffset = function(b) {
-		var diff = this.point - b;
-		var angle = (diff.angle + 180) % 360;
-		return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
-	}
+		calcBounds: function(b) {
+			for (var i = 0; i < this.numSegment; i ++) {
+				var tp = this.getSidePoint(i);
+				var bLen = b.getboundOffset(tp);
+				var td = tp.getDistance(b.point);
+				if (td < bLen ) {
+					this.boundOffsetBuff[i] -= (bLen  - td) / 2;
+				}
+			}
+		},
 
-	Ball.prototype.calcBounds = function(b) {
-		for (var i = 0; i < this.numSegment; i ++) {
-			var tp = this.getSidePoint(i);
-			var bLen = b.getboundOffset(tp);
-			var td = tp.getDistance(b.point);
-			if (td < bLen ) {
-				this.boundOffsetBuff[i] -= (bLen  - td) / 2;
+		getSidePoint: function(index) {
+			return this.point + this.sidePoints[index] * this.boundOffset[index];
+		},
+
+		updateBounds: function() {
+			for (var i = 0; i < this.numSegment; i ++) {
+				this.boundOffset[i] = this.boundOffsetBuff[i];
 			}
 		}
-	}
-
-	Ball.prototype.getSidePoint = function(index) {
-		return this.point + this.sidePoints[index] * this.boundOffset[index];
-	}
-
-	Ball.prototype.updateBounds = function() {
-		for (var i = 0; i < this.numSegment; i ++) {
-			this.boundOffset[i] = this.boundOffsetBuff[i];
-		}
-	}
-
+	};
 
 	//--------------------- main ---------------------
 
