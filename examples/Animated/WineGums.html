@@ -47,13 +47,14 @@
 		},
 
 		checkWallCollision: function() {
+			var size = view.size;
 			if (this.point.x < -this.radius)
-				this.point.x = view.size.width + this.radius;
-			if (this.point.x > view.size.width + this.radius)
+				this.point.x = size.width + this.radius;
+			if (this.point.x > size.width + this.radius)
 				this.point.x = -this.radius;
 			if (this.point.y < -this.radius)
-				this.point.y = view.size.height + this.radius;
-			if (this.point.y > view.size.height + this.radius)
+				this.point.y = size.height + this.radius;
+			if (this.point.y > size.height + this.radius)
 				this.point.y = -this.radius;
 		},
 
@@ -90,7 +91,7 @@
 		    }
 		},
 
-		getboundOffset: function(b) {
+		getBoundOffset: function(b) {
 			var diff = this.point - b;
 			var angle = (diff.angle + 180) % 360;
 			return this.boundOffset[Math.floor(angle / 360 * this.boundOffset.length)];
@@ -99,7 +100,7 @@
 		calcBounds: function(b) {
 			for (var i = 0; i < this.numSegment; i ++) {
 				var tp = this.getSidePoint(i);
-				var bLen = b.getboundOffset(tp);
+				var bLen = b.getBoundOffset(tp);
 				var td = tp.getDistance(b.point);
 				if (td < bLen) {
 					this.boundOffsetBuff[i] -= (bLen  - td) / 2;
