@@ -67,28 +67,28 @@
 			for (var i = 0; i < this.numSegment; i ++) {
 				if (this.boundOffset[i] < this.radius / 4)
 					this.boundOffset[i] = this.radius / 4;
-		        var next = (i + 1) % this.numSegment;
-		        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
-		        var offset = this.boundOffset[i];
-		        offset += (this.radius - offset) / 15;
-		       	offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
-		        this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
-		    }
+				var next = (i + 1) % this.numSegment;
+				var prev = (i > 0) ? i - 1 : this.numSegment - 1;
+				var offset = this.boundOffset[i];
+				offset += (this.radius - offset) / 15;
+				offset += ((this.boundOffset[next] + this.boundOffset[prev]) / 2 - offset) / 3;
+				this.boundOffsetBuff[i] = this.boundOffset[i] = offset;
+			}
 		},
 
 		react: function(b) {
-		    var dist = this.point.getDistance(b.point);
-		    if (dist < this.radius + b.radius && dist != 0) {
+			var dist = this.point.getDistance(b.point);
+			if (dist < this.radius + b.radius && dist != 0) {
 				var overlap = this.radius + b.radius - dist;
-		    	var direc = (this.point - b.point).normalize(overlap * 0.015);
-		        this.vector += direc;
-		        b.vector -= direc;
+				var direc = (this.point - b.point).normalize(overlap * 0.015);
+				this.vector += direc;
+				b.vector -= direc;
 
-		        this.calcBounds(b);
-		        b.calcBounds(this);
-		        this.updateBounds();
-		        b.updateBounds();
-		    }
+				this.calcBounds(b);
+				b.calcBounds(this);
+				this.updateBounds();
+				b.updateBounds();
+			}
 		},
 
 		getBoundOffset: function(b) {
