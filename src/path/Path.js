@@ -2297,7 +2297,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		arcTo: function(/* to, clockwise | through, to
-				| to, radius, angle, large, sweep */) {
+				| to, radius, rotation, large, sweep */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
@@ -2320,7 +2320,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				through = to;
 				to = Point.read(arguments);
 			} else {
-				// #3: arcTo(to, radius, angle, large, sweep)
+				// #3: arcTo(to, radius, rotation, large, sweep)
 				// Drawing arcs in SVG style:
 				var radius = Size.read(arguments);
 				// If rx = 0 or ry = 0 then this arc is treated as a
@@ -2329,11 +2329,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 					return this.lineTo(to);
 				// See for an explanation of the following calculations:
 				// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-				var angle = Base.read(arguments),
+				var rotation = Base.read(arguments),
 					large = !!Base.read(arguments),
 					sweep = !!Base.read(arguments),
 					middle = from.add(to).divide(2),
-					pt = from.subtract(middle).rotate(-angle),
+					pt = from.subtract(middle).rotate(-rotation),
 					x = pt.x,
 					y = pt.y,
 					abs = Math.abs,
@@ -2363,10 +2363,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 						// "...where the + sign is chosen if fA != fS,
 						// and the − sign is chosen if fA = fS."
 						.multiply((large == sweep ? -1 : 1) * Math.sqrt(factor))
-						.rotate(angle).add(middle);
+						.rotate(rotation).add(middle);
 				// Now create a matrix that maps the unit circle to the ellipse,
 				// for easier construction below.
-				matrix = new Matrix().translate(center).rotate(angle)
+				matrix = new Matrix().translate(center).rotate(rotation)
 						.scale(rx, ry);
 				// Transform from and to to the unit circle coordinate space
 				// and calculcate start vector and extend from there.
