@@ -212,7 +212,9 @@ PathItem.inject(new function() {
 			var loc = intersections[i],
 				t = loc._parameter;
 			// Check if we are splitting same curve multiple times
-			if (prevLoc && prevLoc._curve === loc._curve) {
+			if (prevLoc && prevLoc._curve === loc._curve
+					// Avoid dividing with zero
+					&& prevLoc._parameter > 0) {
 				// Scale parameter after previous split.
 				t /= prevLoc._parameter;
 			} else {
