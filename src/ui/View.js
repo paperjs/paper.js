@@ -736,7 +736,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	}
 
 	var viewEvents = {
-		selectstart: function(event) {
+		'selectstart dragstart': function(event) {
 			// Only stop this even if we're dragging already, since otherwise no
 			// text whatsoever can be selected on the page.
 			if (dragging)
