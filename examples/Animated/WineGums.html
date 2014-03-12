@@ -55,18 +55,13 @@
 
 		updateShape: function() {
 			var segments = this.path.segments;
-			for (var i = 0; i < this.numSegment; i ++) {
-				segments[i].point = this.point + {
-					angle: 360 / this.numSegment * i,
-					length: this.boundOffset[i]
-				};
-			}
+			for (var i = 0; i < this.numSegment; i ++)
+				segments[i].point = this.getSidePoint(i);
 
 			this.path.smooth();
 			for (var i = 0; i < this.numSegment; i ++) {
-				if (this.boundOffset[i] < this.radius / 4) {
+				if (this.boundOffset[i] < this.radius / 4)
 					this.boundOffset[i] = this.radius / 4;
-				};
 		        var next = (i + 1) % this.numSegment;
 		        var prev = (i > 0) ? i - 1 : this.numSegment - 1;
 		        this.boundOffsetBuff[i] = this.boundOffset[i] += (this.radius - this.boundOffset[i]) / 15;
@@ -111,9 +106,8 @@
 		},
 
 		updateBounds: function() {
-			for (var i = 0; i < this.numSegment; i ++) {
+			for (var i = 0; i < this.numSegment; i ++)
 				this.boundOffset[i] = this.boundOffsetBuff[i];
-			}
 		}
 	};
 
@@ -122,13 +116,12 @@
 	var balls = [];
 	var numBalls = 18;
 	for (var i = 0; i < numBalls; i++) {
-		var position = Point.random() * view.size,
-			vector = new Point({
-				angle: 360 * Math.random(),
-				length: Math.random() * 10
-			}),
-			ball = new Ball(Math.random() * 60 + 60, position, vector);
-		balls.push(ball);
+		var position = Point.random() * view.size;
+		var vector = new Point({
+			angle: 360 * Math.random(),
+			length: Math.random() * 10
+		});
+		balls.push(new Ball(Math.random() * 60 + 60, position, vector));
 	}
 
 	function onFrame() {
