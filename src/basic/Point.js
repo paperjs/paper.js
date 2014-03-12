@@ -673,7 +673,7 @@ var Point = Base.extend(/** @lends Point# */{
 			c = Math.cos(angle);
 		point = new Point(
 			point.x * c - point.y * s,
-			point.y * c + point.x * s
+			point.x * s + point.y * c
 		);
 		return center ? point.add(center) : point;
 	},
