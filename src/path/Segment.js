@@ -477,6 +477,16 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
+	/**
+	 * Transform the segment by the specified matrix.
+	 *
+	 * @param {Matrix} matrix the matrix to transform the segment by
+	 */
+	transform: function(matrix) {
+		this._transformCoordinates(matrix, new Array(6), true);
+		this._changed();
+	},
+
 	_transformCoordinates: function(matrix, coords, change) {
 		// Use matrix.transform version() that takes arrays of multiple
 		// points for largely improved performance, as no calls to
