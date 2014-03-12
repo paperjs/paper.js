@@ -2295,58 +2295,126 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(handle, to);
 		},
 
-		arcTo: function(/* to, clockwise | through, to */) {
+		arcTo: function(/* to, clockwise | through, to
+				| to, radius, rotation, large, sweep */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
-				through,
 				to = Point.read(arguments),
-				// Peek at next value to see if it's clockwise,
-				// with true as default value.
-				clockwise = Base.pick(Base.peek(arguments), true);
+				through,
+				// Peek at next value to see if it's clockwise, with true as the
+				// default value.
+				peek = Base.peek(arguments),
+				clockwise = Base.pick(peek, true),
+				center, extent, vector, matrix;
+			// We're handling three different approaches to drawing arcs in one
+			// large function:
 			if (typeof clockwise === 'boolean') {
-				// arcTo(to, clockwise)
+				// #1: arcTo(to, clockwise)
 				var middle = from.add(to).divide(2),
 				through = middle.add(middle.subtract(from).rotate(
 						clockwise ? -90 : 90));
-			} else {
-				// arcTo(through, to)
+			} else if (Base.remain(arguments) <= 2) {
+				// #2: arcTo(through, to)
 				through = to;
 				to = Point.read(arguments);
+			} else {
+				// #3: arcTo(to, radius, rotation, large, sweep)
+				// Drawing arcs in SVG style:
+				var radius = Size.read(arguments);
+				// If rx = 0 or ry = 0 then this arc is treated as a
+				// straight line joining the endpoints.
+				if (radius.isZero())
+					return this.lineTo(to);
+				// See for an explanation of the following calculations:
+				// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+				var rotation = Base.read(arguments),
+					large = !!Base.read(arguments),
+					sweep = !!Base.read(arguments),
+					middle = from.add(to).divide(2),
+					pt = from.subtract(middle).rotate(-rotation),
+					x = pt.x,
+					y = pt.y,
+					abs = Math.abs,
+					EPSILON = /*#=*/ Numerical.EPSILON,
+					rx = abs(radius.width),
+					ry = abs(radius.height),
+					rxSq = rx * rx,
+					rySq = ry * ry,
+					xSq =  x * x,
+					ySq =  y * y;
+				// "...ensure radii are large enough"
+				var factor = Math.sqrt(xSq / rxSq + ySq / rySq);
+				if (factor > 1) {
+					rx *= factor;
+					ry *= factor;
+					rxSq = rx * rx;
+					rySq = ry * ry;
+				}
+				factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
+						(rxSq * ySq + rySq * xSq);
+				if (abs(factor) < EPSILON)
+					factor = 0;
+				if (factor < 0)
+					throw new Error(
+							'Cannot create an arc with the given arguments');
+				center = new Point(rx * y / ry, -ry * x / rx)
+						// "...where the + sign is chosen if fA != fS,
+						// and the − sign is chosen if fA = fS."
+						.multiply((large == sweep ? -1 : 1) * Math.sqrt(factor))
+						.rotate(rotation).add(middle);
+				// Now create a matrix that maps the unit circle to the ellipse,
+				// for easier construction below.
+				matrix = new Matrix().translate(center).rotate(rotation)
+						.scale(rx, ry);
+				// Transform from and to to the unit circle coordinate space
+				// and calculcate start vector and extend from there.
+				vector = matrix._inverseTransform(from);
+				extent = vector.getDirectedAngle(matrix._inverseTransform(to));
+				// "...in other words, if sweep = 0 and extent is > 0, subtract
+				// 360, whereas if sweep = 1 and extent < 0, then add 360."
+				if (!sweep && extent > 0)
+					extent -= 360;
+				else if (sweep && extent < 0)
+					extent += 360;
 			}
-			// Construct the two perpendicular middle lines to (from, through)
-			// and (through, to), and intersect them to get the center
-			var l1 = new Line(from.add(through).divide(2),
-						through.subtract(from).rotate(90), true),
-				l2 = new Line(through.add(to).divide(2),
-						to.subtract(through).rotate(90), true),
-				center = l1.intersect(l2, true),
-				line = new Line(from, to),
-				throughSide = line.getSide(through);
-			if (!center) {
+			if (through) {
+				// Calculate center, vector and extend for non SVG versions:
+				// Construct the two perpendicular middle lines to
+				// (from, through) and (through, to), and intersect them to get
+				// the center.
+				var l1 = new Line(from.add(through).divide(2),
+							through.subtract(from).rotate(90), true),
+					l2 = new Line(through.add(to).divide(2),
+							to.subtract(through).rotate(90), true),
+					line = new Line(from, to),
+					throughSide = line.getSide(through);
+				center = l1.intersect(l2, true);
 				// If the two lines are colinear, there cannot be an arc as the
 				// circle is infinitely big and has no center point. If side is
 				// 0, the connecting arc line of this huge circle is a line
 				// between the two points, so we can use #lineTo instead.
 				// Otherwise we bail out:
-				if (!throughSide)
-					return this.lineTo(to);
-				throw new Error('Cannot put an arc through the given points: '
-					+ [from, through, to]);
-			}
-			var vector = from.subtract(center),
-				extent = vector.getDirectedAngle(to.subtract(center)),
-				centerSide = line.getSide(center);
-			if (centerSide == 0) {
-				// If the center is lying on the line, we might have gotten the
-				// wrong sign for extent above. Use the sign of the side of the
-				// through point.
-				extent = throughSide * Math.abs(extent);
-			} else if (throughSide == centerSide) {
-				// If the center is on the same side of the line (from, to) as
-				// the through point, we're extending bellow 180 degrees and
-				// need to adapt extent.
-				extent -= 360 * (extent < 0 ? -1 : 1);
+				if (!center) {
+					if (!throughSide)
+						return this.lineTo(to);
+					throw new Error(
+							'Cannot create an arc with the given arguments');
+				}
+				vector = from.subtract(center);
+				extent = vector.getDirectedAngle(to.subtract(center));
+				var centerSide = line.getSide(center);
+				if (centerSide === 0) {
+					// If the center is lying on the line, we might have gotten
+					// the wrong sign for extent above. Use the sign of the side
+					// of the through point.
+					extent = throughSide * Math.abs(extent);
+				} else if (throughSide === centerSide) {
+					// If the center is on the same side of the line (from, to)
+					// as the through point, we're extending bellow 180 degrees
+					// and need to adapt extent.
+					extent -= 360 * (extent < 0 ? -1 : 1);
+				}
 			}
 			var ext = Math.abs(extent),
 				count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
@@ -2357,15 +2425,29 @@ var Path = PathItem.extend(/** @lends Path# */{
 			for (var i = 0; i <= count; i++) {
 				// Explicitely use to point for last segment, since depending
 				// on values the calculation adds imprecision:
-				var pt = i < count ? center.add(vector) : to;
-				var out = i < count ? vector.rotate(90).multiply(z) : null;
-				if (i == 0) {
+				var pt = to,
+					out = null;
+				if (i < count) {
+					out = vector.rotate(90).multiply(z);
+					if (matrix) {
+						pt = matrix._transformPoint(vector);
+						out = matrix._transformPoint(vector.add(out))
+								.subtract(pt);
+					} else {
+						pt = center.add(vector);
+					}
+				}
+				if (i === 0) {
 					// Modify startSegment
 					current.setHandleOut(out);
 				} else {
 					// Add new Segment
-					segments.push(
-						new Segment(pt, vector.rotate(-90).multiply(z), out));
+					var _in = vector.rotate(-90).multiply(z);
+					if (matrix) {
+						_in = matrix._transformPoint(vector.add(_in))
+								.subtract(pt);
+					}
+					segments.push(new Segment(pt, _in, out));
 				}
 				vector = vector.rotate(inc);
 			}

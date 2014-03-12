@@ -202,6 +202,13 @@ Base.inject(/** @lends Base# */{
 		},
 
 		/**
+		 * Returns how many arguments remain to be read in the argument list.
+		 */
+		remain: function(list) {
+			return list.length - (list.__index || 0);
+		},
+
+		/**
 		 * Reads all readable arguments from the list, handling nested arrays
 		 * separately.
 		 * @param {Array} list the list to read from, either an arguments object

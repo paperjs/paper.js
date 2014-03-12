@@ -51,7 +51,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			// Hi-DPI Canvas support based on:
 			// http://www.html5rocks.com/en/tutorials/canvas/hidpi/
 			var deviceRatio = window.devicePixelRatio || 1,
-				backingStoreRatio = DomElement.getPrefixValue(this._context,
+				backingStoreRatio = DomElement.getPrefixed(this._context,
 						'backingStorePixelRatio') || 1;
 			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}

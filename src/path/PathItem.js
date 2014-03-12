@@ -192,10 +192,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			relative = false,
 			previous,
 			control,
-			current = new Point();
+			current = new Point(),
+			start = new Point();
 
 		function getCoord(index, coord) {
-			var val = parseFloat(coords[index]);
+			var val = +coords[index];
 			if (relative)
 				val += current[coord];
 			return val;
@@ -219,6 +220,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
 			var length = coords && coords.length;
 			relative = command === lower;
+			if (previous === 'z' && lower !== 'z')
+				this.moveTo(current = start);
 			switch (lower) {
 			case 'm':
 			case 'l':
@@ -226,6 +229,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							current = getPoint(j));
 				control = current;
+				if(lower == 'm')
+					start = current;
 				break;
 			case 'h':
 			case 'v':
@@ -248,12 +253,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				// Smooth cubicCurveTo
 				for (var j = 0; j < length; j += 4) {
 					this.cubicCurveTo(
-							/[cs]/i.test(previous)
+							/[cs]/.test(previous)
 									? current.multiply(2).subtract(control)
 									: current,
 							control = getPoint(j),
 							current = getPoint(j + 2));
-					previous = command;
+					previous = lower;
 				}
 				break;
 			case 'q':
@@ -266,23 +271,26 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			case 't':
 				// Smooth quadraticCurveTo
 				for (var j = 0; j < length; j += 2) {
-					console.log(previous, /[qt]/i.test(previous));
 					this.quadraticCurveTo(
-							control = (/[qt]/i.test(previous)
+							control = (/[qt]/.test(previous)
 									? current.multiply(2).subtract(control)
 									: current),
 							current = getPoint(j));
-					previous = command;
+					previous = lower;
 				}
 				break;
 			case 'a':
-				// TODO: Implement Arcs!
+				for (var j = 0; j < length; j += 7) {
+					this.arcTo(current = getPoint(j + 5),
+							new Size(+coords[0], +coords[1]),
+							+coords[2], +coords[3], +coords[4]);
+				}
 				break;
 			case 'z':
 				this.closePath();
 				break;
 			}
-			previous = command;
+			previous = lower;
 		}
 	},
 
