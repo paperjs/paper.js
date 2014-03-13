@@ -286,7 +286,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				for (var j = 0; j < length; j += 7) {
 					this.arcTo(current = getPoint(j + 5),
 							new Size(+coords[0], +coords[1]),
-							+coords[2], +coords[3], +coords[4]);
+							+coords[2], +coords[4], +coords[3]);
 				}
 				break;
 			case 'z':
@@ -555,6 +555,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * 	myPath.arcTo(event.point);
 	 * }
 	 */
+	// DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
 	/**
 	 * Closes the path. When closed, Paper.js connects the first and last

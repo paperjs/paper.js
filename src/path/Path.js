@@ -2296,7 +2296,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		arcTo: function(/* to, clockwise | through, to
-				| to, radius, rotation, large, sweep */) {
+				| to, radius, rotation, clockwise, large */) {
 			// Get the start point:
 			var current = getCurrentSegment(this),
 				from = current._point,
@@ -2319,7 +2319,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				through = to;
 				to = Point.read(arguments);
 			} else {
-				// #3: arcTo(to, radius, rotation, large, sweep)
+				// #3: arcTo(to, radius, rotation, clockwise, large)
 				// Drawing arcs in SVG style:
 				var radius = Size.read(arguments);
 				// If rx = 0 or ry = 0 then this arc is treated as a
@@ -2329,8 +2329,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// See for an explanation of the following calculations:
 				// http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 				var rotation = Base.read(arguments),
+					clockwise = !!Base.read(arguments),
 					large = !!Base.read(arguments),
-					sweep = !!Base.read(arguments),
 					middle = from.add(to).divide(2),
 					pt = from.subtract(middle).rotate(-rotation),
 					x = pt.x,
@@ -2361,7 +2361,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 				center = new Point(rx * y / ry, -ry * x / rx)
 						// "...where the + sign is chosen if fA != fS,
 						// and the − sign is chosen if fA = fS."
-						.multiply((large == sweep ? -1 : 1) * Math.sqrt(factor))
+						.multiply((large === clockwise ? -1 : 1)
+							* Math.sqrt(factor))
 						.rotate(rotation).add(middle);
 				// Now create a matrix that maps the unit circle to the ellipse,
 				// for easier construction below.
@@ -2371,11 +2372,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// and calculcate start vector and extend from there.
 				vector = matrix._inverseTransform(from);
 				extent = vector.getDirectedAngle(matrix._inverseTransform(to));
-				// "...in other words, if sweep = 0 and extent is > 0, subtract
-				// 360, whereas if sweep = 1 and extent < 0, then add 360."
-				if (!sweep && extent > 0)
+				// "...if fS = 0 and extent is > 0, then subtract 360, whereas
+				// if fS = 1 and extend is < 0, then add 360."
+				if (!clockwise && extent > 0)
 					extent -= 360;
-				else if (sweep && extent < 0)
+				else if (clockwise && extent < 0)
 					extent += 360;
 			}
 			if (through) {
@@ -2413,7 +2414,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// If the center is on the same side of the line (from, to)
 					// as the through point, we're extending bellow 180 degrees
 					// and need to adapt extent.
-					extent -= 360 * (extent < 0 ? -1 : 1);
+					extent += extent < 0 ? 360 : -360;
 				}
 			}
 			var ext = Math.abs(extent),
@@ -2485,6 +2486,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(current.add(handle), current.add(to));
 		},
 
+		// TODO: Implement version for: (to, radius, rotation, clockwise, large)
 		arcBy: function(/* to, clockwise | through, to */) {
 			var current = getCurrentSegment(this)._point,
 				point = current.add(Point.read(arguments)),
