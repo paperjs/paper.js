@@ -39,14 +39,14 @@
 
 	Ball.prototype = {
 		iterate: function() {
-			this.checkWallCollision();
+			this.checkBorders();
 			if (this.vector.length > this.maxVec)
 				this.vector.length = this.maxVec;
 			this.point += this.vector;
 			this.updateShape();
 		},
 
-		checkWallCollision: function() {
+		checkBorders: function() {
 			var size = view.size;
 			if (this.point.x < -this.radius)
 				this.point.x = size.width + this.radius;
@@ -128,7 +128,8 @@
 			angle: 360 * Math.random(),
 			length: Math.random() * 10
 		});
-		balls.push(new Ball(Math.random() * 60 + 60, position, vector));
+		var radius = Math.random() * 60 + 60;
+		balls.push(new Ball(radius, position, vector));
 	}
 
 	function onFrame() {
