@@ -229,12 +229,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 					this[j === 0 && lower === 'm' ? 'moveTo' : 'lineTo'](
 							current = getPoint(j));
 				control = current;
-				if(lower == 'm')
+				if(lower === 'm')
 					start = current;
 				break;
 			case 'h':
 			case 'v':
-				var coord = lower == 'h' ? 'x' : 'y';
+				var coord = lower === 'h' ? 'x' : 'y';
 				for (var j = 0; j < length; j++) {
 					current[coord] = getCoord(j, coord);
 					this.lineTo(current);
