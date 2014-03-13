@@ -34,9 +34,9 @@ git commit -m "Bump version to v$VERSION"
 # Tag
 git tag "v$VERSION"
 # Push
-git push --tags
+git push --follow-tags
 # Publish
-npm publish ..
+npm publish
 
 # Copy paperjs.zip to the website's download folder
 cd $SITE_DIR
@@ -47,6 +47,6 @@ git add -A $DIST_FILE
 git commit -m "Release version v$VERSION"
 # Tag
 git tag "v$VERSION"
-git push --tags
+git push --follow-tags
 
 cd "$PAPER_DIR/build"
