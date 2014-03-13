@@ -18,7 +18,7 @@ cd ..
 PAPER_DIR=`PWD`
 cd ../paperjs.org
 SITE_DIR=`PWD`
-DIST_FILE=content/10-Download/paperjs-v$VERSION.zip # Relative to $SITE_DIR
+DIST_FILE=content/11-Download/paperjs-v$VERSION.zip # Relative to $SITE_DIR
 
 cd $PAPER_DIR/build
 ./dist.sh
