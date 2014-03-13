@@ -293,7 +293,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	 * Checks if this curve is linear, meaning it does not define any curve
 	 * handle.
 
-	 * @return {Boolean} {@true the curve is linear}
+	 * @return {Boolean} {@true if the curve is linear}
 	 */
 	isLinear: function() {
 		return this._segment1._handleOut.isZero()

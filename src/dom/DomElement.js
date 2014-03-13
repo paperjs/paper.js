@@ -46,6 +46,24 @@ var DomElement = new function() {
 		return res;
 	}
 
+	// Handles both getting and setting of vendor prefix values
+	function handlePrefix(el, name, set, value) {
+		var prefixes = ['webkit', 'moz', 'Moz', 'ms', 'o', ''],
+			suffix = name[0].toUpperCase() + name.substring(1);
+		for (var i = 0; i < 6; i++) {
+			var prefix = prefixes[i],
+				key = prefix ? prefix + suffix : name;
+			if (key in el) {
+				if (set) {
+					el[key] = value;
+				} else {
+					return el[key];
+				}
+				break;
+			}
+		}
+	}
+
 	return /** @lends DomElement */{
 		create: function(nodes, parent) {
 			var isArray = Array.isArray(nodes),
@@ -203,13 +221,17 @@ var DomElement = new function() {
 		 * Gets the given property from the element, trying out all browser
 		 * prefix variants.
 		 */
-		getPrefixValue: function(el, name) {
-			var value = el[name],
-				prefixes = ['webkit', 'moz', 'ms', 'o'],
-				suffix = name[0].toUpperCase() + name.substring(1);
-			for (var i = 0; i < 4 && value == null; i++)
-				value = el[prefixes[i] + suffix];
-			return value;
+		getPrefixed: function(el, name) {
+			return handlePrefix(el, name);
+		},
+
+		setPrefixed: function(el, name, value) {
+			if (typeof name === 'object') {
+				for (var key in name)
+					handlePrefix(el, key, true, name[key]);
+			} else {
+				handlePrefix(el, name, true, value);
+			}
 		}
 	};
 };

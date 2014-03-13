@@ -183,7 +183,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 				// NOTE: If there is no layer and this project is not the active
 				// one, passing insert: false and calling addChild on the
 				// project will handle it correctly.
-				|| this.addChild(new Layer({ insert: false }))).addChild(child);
+				|| this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
 		} else {
 			child = null;
 		}
@@ -424,7 +424,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @type Symbol[]
 	 */
 
-	draw: function(ctx, matrix, ratio) {
+	draw: function(ctx, matrix, pixelRatio) {
 		// Increase the _updateVersion before the draw-loop. After that, items
 		// that are visible will have their _updateVersion set to the new value.
 		this._updateVersion++;
@@ -434,7 +434,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		// values
 		var param = new Base({
 			offset: new Point(0, 0),
-			ratio: ratio,
+			pixelRatio: pixelRatio,
 			// Tell the drawing routine that we want to track nested matrices
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do
@@ -450,7 +450,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.save();
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
-				var item = this._selectedItems[id];
+				var item = this._selectedItems[id],
+					size = this.options.handleSize || 4;
+					half = size / 2;
 				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
@@ -473,11 +475,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 									coords[i], coords[++i]);
 						ctx.closePath();
 						ctx.stroke();
-						for (var i = 0; i < 8; i++) {
-							ctx.beginPath();
-							ctx.rect(coords[i] - 2, coords[++i] - 2, 4, 4);
-							ctx.fill();
-						}
+						for (var i = 0; i < 8; i++)
+							ctx.fillRect(coords[i] - half, coords[++i] - half,
+									size, size);
 					}
 				}
 			}

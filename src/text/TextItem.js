@@ -24,6 +24,7 @@
 var TextItem = Item.extend(/** @lends TextItem# */{
 	_class: 'TextItem',
 	_boundsSelected: true,
+	_transformContent: false,
 	_serializeFields: {
 		content: null
 	},

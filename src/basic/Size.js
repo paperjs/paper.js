@@ -375,7 +375,7 @@ var Size = Base.extend(/** @lends Size# */{
 	 * {@grouptitle Tests}
 	 * Checks if this size has both the width and height set to 0.
 	 *
-	 * @return {Boolean} {@true both width and height are 0}
+	 * @return {Boolean} {@true if both width and height are 0}
 	 */
 	isZero: function() {
 		return Numerical.isZero(this.width) && Numerical.isZero(this.height);

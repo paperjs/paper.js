@@ -212,7 +212,9 @@ PathItem.inject(new function() {
 			var loc = intersections[i],
 				t = loc._parameter;
 			// Check if we are splitting same curve multiple times
-			if (prevLoc && prevLoc._curve === loc._curve) {
+			if (prevLoc && prevLoc._curve === loc._curve
+					// Avoid dividing with zero
+					&& prevLoc._parameter > 0) {
 				// Scale parameter after previous split.
 				t /= prevLoc._parameter;
 			} else {
@@ -364,7 +366,7 @@ PathItem.inject(new function() {
 			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
 				continue;
-			var path = new Path({ insert: false }),
+			var path = new Path(Item.NO_INSERT),
 				inter = seg._intersection,
 				startInterSeg = inter && inter._segment,
 				added = false, // Wether a first segment as added already

@@ -106,11 +106,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 				? arguments
 				: null;
 		// Always call setSegments() to initialize a few related variables.
-		this.setSegments(segments || []);
-		if (!segments && typeof arg === 'string') {
-			this.setPathData(arg);
-			// Erase for _initialize() call below.
-			arg = null;
+		if (segments && segments.length > 0) {
+			// This sets _curves and _selectedSegmentState too!
+			this.setSegments(segments);
+		} else {
+			this._curves = undefined; // For hidden class optimization
+			this._selectedSegmentState = 0;
+			if (!segments && typeof arg === 'string') {
+				this.setPathData(arg);
+				// Erase for _initialize() call below.
+				arg = null;
+			}
 		}
 		// Only pass on arg as props if it wasn't consumed for segments already.
 		this._initialize(!segments && arg);
@@ -121,15 +127,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	clone: function(insert) {
-		var copy = this._clone(new Path({
-			segments: this._segments,
-			insert: false
-		}), insert);
-		// Speed up things a little by copy over values that don't need checking
+		var copy = new Path(Item.NO_INSERT);
+		copy.setSegments(this._segments);
 		copy._closed = this._closed;
 		if (this._clockwise !== undefined)
 			copy._clockwise = this._clockwise;
-		return copy;
+		return this._clone(copy, insert);
 	},
 
 	_changed: function _changed(flags) {
@@ -177,7 +180,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 		this._selectedSegmentState = 0;
 		// Calculate new curves next time we call getCurves()
 		this._curves = undefined;
-		this._add(Segment.readAll(segments));
+		if (segments && segments.length > 0)
+			this._add(Segment.readAll(segments));
+		// Preserve fullySelected state.
+		// TODO: Do we still need this?
 		if (fullySelected)
 			this.setFullySelected(true);
 	},
@@ -1785,7 +1791,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 		// Code to check stroke join / cap areas
 
-		function addAreaPoint(point) {
+		function addToArea(point) {
 			area.add(point);
 		}
 
@@ -1802,11 +1808,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 					// the handles has to be zero too for this!)
 					if (join !== 'round' && (segment._handleIn.isZero() 
 							|| segment._handleOut.isZero()))
-						Path._addSquareJoin(segment, join, radius, miterLimit,
-								addAreaPoint, true);
+						// _addBevelJoin() handles both 'bevel' and 'miter'!
+						Path._addBevelJoin(segment, join, radius, miterLimit,
+								addToArea, true);
 				} else if (cap !== 'round') {
 					// It's a cap
-					Path._addSquareCap(segment, cap, radius, addAreaPoint, true);
+					Path._addSquareCap(segment, cap, radius, addToArea, true);
 				}
 				// See if the above produced an area to check for
 				if (!area.isEmpty()) {
@@ -1922,19 +1929,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (state & /*#=*/ SelectionState.HANDLE_OUT)
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
-			ctx.save();
-			ctx.beginPath();
-			ctx.rect(pX - half, pY - half, size, size);
-			ctx.fill();
+			ctx.fillRect(pX - half, pY - half, size, size);
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
 			if (!(state & /*#=*/ SelectionState.POINT)) {
-				ctx.beginPath();
-				ctx.rect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fill();
+				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				ctx.fillStyle = fillStyle;
 			}
-			ctx.restore();
 		}
 	}
 
@@ -2218,7 +2221,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 */
 	function getCurrentSegment(that) {
 		var segments = that._segments;
-		if (segments.length == 0)
+		if (segments.length === 0)
 			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
@@ -2231,11 +2234,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// moveTo should only be called at the beginning of paths. But it 
 			// can ce called again if there is nothing drawn yet, in which case
 			// the first segment gets readjusted.
-			if (this._segments.length === 1)
+			var segments = this._segments;
+			if (segments.length === 1)
 				this.removeSegment(0);
 			// Let's not be picky about calling moveTo() when not at the
 			// beginning of a path, just bail out:
-			if (!this._segments.length)
+			if (!segments.length)
 				this._add([ new Segment(Point.read(arguments)) ]);
 		},
 
@@ -2416,7 +2420,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		closePath: function() {
 			var first = this.getFirstSegment(),
 				last = this.getLastSegment();
-			if (first._point.equals(last._point)) {
+			if (first !== last && first._point.equals(last._point)) {
 				first.setHandleIn(last._handleIn);
 				last.remove();
 			}
@@ -2530,21 +2534,27 @@ statics: {
 				? matrix._transformPoint(point, point) : point);
 		}
 
+		function addRound(segment) {
+			bounds = bounds.unite(joinBounds.setCenter(matrix
+				? matrix._transformPoint(segment._point) : segment._point));
+		}
+
 		function addJoin(segment, join) {
-			// When both handles are set in a segment, the join setting is
-			// ignored and round is always used.
-			if (join === 'round' || !segment._handleIn.isZero()
-					&& !segment._handleOut.isZero()) {
-				bounds = bounds.unite(joinBounds.setCenter(matrix
-					? matrix._transformPoint(segment._point) : segment._point));
+			// When both handles are set in a segment and they are collinear,
+			// the join setting is ignored and round is always used.
+			var handleIn = segment._handleIn,
+				handleOut = segment._handleOut
+			if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
+					&& handleIn.isColinear(handleOut)) {
+				addRound(segment);
 			} else {
-				Path._addSquareJoin(segment, join, radius, miterLimit, add);
+				Path._addBevelJoin(segment, join, radius, miterLimit, add);
 			}
 		}
 
 		function addCap(segment, cap) {
 			if (cap === 'round') {
-				addJoin(segment, cap);
+				addRound(segment);
 			} else {
 				Path._addSquareCap(segment, cap, radius, add); 
 			}
@@ -2604,8 +2614,8 @@ statics: {
 				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	},
 
-	_addSquareJoin: function(segment, join, radius, miterLimit, addPoint, area) {
-		// Treat bevel and miter in one go, since they share a lot of code.
+	_addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
+		// Handles both 'bevel' and 'miter' joins, as they share a lot of code.
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPointAt(0, true),
@@ -2642,6 +2652,7 @@ statics: {
 	},
 
 	_addSquareCap: function(segment, cap, radius, addPoint, area) {
+		// Handles both 'square' and 'butt' caps, as they share a lot of code.
 		// Calculate the corner points of butt and square caps
 		var point = segment._point,
 			loc = segment.getLocation(),

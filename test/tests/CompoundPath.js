@@ -23,7 +23,7 @@ test('moveTo / lineTo', function() {
 	for (var i = 0; i < lists.length; i++) {
 		var list = lists[i];
 		for (var j = 0; j < list.length; j++) {
-			path[j == 0 ? 'moveTo' : 'lineTo'](list[j]);
+			path[j === 0 ? 'moveTo' : 'lineTo'](list[j]);
 		}
 	}
 

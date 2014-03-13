@@ -116,11 +116,14 @@ new function() {
 	}
 
 	function importPoly(node, type) {
-		var path = new Path(),
-			points = node.points;
-		path.moveTo(points.getItem(0));
-		for (var i = 1, l = points.numberOfItems; i < l; i++)
-			path.lineTo(points.getItem(i));
+		var coords = node.getAttribute('points').match(
+					/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g),
+			points = [];
+		for (var i = 0, l = coords.length; i < l; i += 2)
+			points.push(new Point(
+					parseFloat(coords[i]),
+					parseFloat(coords[i + 1])));
+		var path = new Path(points);
 		if (type === 'polygon')
 			path.closePath();
 		return path;
