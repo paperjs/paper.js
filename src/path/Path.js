@@ -2486,6 +2486,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this.quadraticCurveTo(current.add(handle), current.add(to));
 		},
 
+		// TODO: Implement version for: (to, radius, rotation, clockwise, large)
 		arcBy: function(/* to, clockwise | through, to */) {
 			var current = getCurrentSegment(this)._point,
 				point = current.add(Point.read(arguments)),

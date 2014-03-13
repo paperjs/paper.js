@@ -555,6 +555,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * 	myPath.arcTo(event.point);
 	 * }
 	 */
+	// DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
 	/**
 	 * Closes the path. When closed, Paper.js connects the first and last
