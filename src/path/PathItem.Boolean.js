@@ -43,25 +43,57 @@ PathItem.inject(new function() {
 	 * NOTE: Does NOT handle self-intersecting CompoundPaths.
 	 */
 	function reorientPath(path) {
+		/**
+		 * Returns a point that is inside the path
+		 */
+		function getInteriorPoint (path) {
+			var bounds = path.getBounds(),
+				point = bounds.getCenter(true);
+			if (!path.contains(point)) {
+				// Since there is no guarantee that a poly-bezier path contains
+				// the center of its bounding rectangle, we shoot a ray in
+				// +x direction from the center and select a point between
+				// consecutive intersections of the ray
+				var curves = path._getMonoCurves(),
+					roots = [],
+					x = point.x,
+					y = point.y,
+					xIntercepts = [];
+				for (var i = 0, l = curves.length; i < l; i++) {
+					var values = curves[i].values;
+					if ((curves[i].winding === 1
+							&& y >= values[1] && y <= values[7]
+							|| y >= values[7] && y <= values[1])
+							&& Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
+						for (var j = roots.length - 1; j >= 0; j--) {
+							var x0 = Curve.evaluate(values, roots[j], 0).x;
+							xIntercepts.push(x0);
+						}
+					}
+					if (xIntercepts.length > 1)
+						break;
+				}
+				point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
+			}
+			return point;
+		}
 		if (path instanceof CompoundPath) {
 			var children = path.removeChildren(),
 				length = children.length,
 				bounds = new Array(length),
 				counters = new Array(length),
-				clockwise;
+				clockwise, point;
 			children.sort(function(a, b) {
 				return b.getBounds().getArea() - a.getBounds().getArea();
 			});
 			path.addChildren(children);
 			clockwise = children[0].isClockwise();
 			for (var i = 0; i < length; i++) {
-				bounds[i] = children[i].getBounds();
 				counters[i] = 0;
-			}
-			for (var i = 0; i < length; i++) {
-				for (var j = 1; j < length; j++) {
-					if (i !== j && bounds[i].intersects(bounds[j]))
-						counters[j]++;
+				point = getInteriorPoint(children[i]);
+				for (var j = i-1; j >= 0; j--) {
+					if (children[j].contains(point))
+						counters[i]++;
 				}
 				// Omit the first child
 				if (i > 0 && counters[i] % 2 === 0)
