@@ -48,7 +48,6 @@
 		}
 
 		var segment, path;
-		var movePath = false;
 		function onMouseDown(event) {
 			segment = path = null;
 			var hitResult = project.hitTest(event.point, hitOptions);
@@ -69,10 +68,8 @@
 					segment = path.insert(location.index + 1, event.point);
 					path.smooth();
 				}
+				hitResult.item.bringToFront();
 			}
-			movePath = hitResult.type == 'fill';
-			if (movePath)
-				project.activeLayer.addChild(hitResult.item);
 		}
 
 		function onMouseMove(event) {
@@ -84,12 +81,11 @@
 
 		function onMouseDrag(event) {
 			if (segment) {
-				segment.point = event.point;
+				segment.point += event.delta;
 				path.smooth();
-			}
-
-			if (movePath)
+			} else if (path) {
 				path.position += event.delta;
+			}
 		}
 	</script>
 </head>

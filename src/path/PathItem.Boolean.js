@@ -77,6 +77,9 @@ PathItem.inject(new function() {
 			}
 			return point;
 		}
+		// Create a cloned version of the path firsts that we can modify freely,
+		// with its matrix applied to its geometry. 
+		path = path.clone(false).reduce().transform(null, true);
 		if (path instanceof CompoundPath) {
 			var children = path.removeChildren(),
 				length = children.length,
@@ -114,9 +117,8 @@ PathItem.inject(new function() {
 		// We call reduce() on both cloned paths to simplify compound paths and
 		// remove empty curves. We also apply matrices to both paths in case
 		// they were transformed.
-		var _path1 = reorientPath(path1.clone(false).reduce().applyMatrix());
-			_path2 = path2 && path1 !== path2
-					&& reorientPath(path2.clone(false).reduce().applyMatrix());
+		var _path1 = reorientPath(path1);
+			_path2 = path2 && path1 !== path2 && reorientPath(path2);
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when subtract = true
 		// We need both paths at opposite orientation for subtraction.
@@ -504,8 +506,8 @@ PathItem.inject(new function() {
 		 *
 		 * @param  {Point} point the location for which to determine the winding
 		 * direction
-		 * @param  {Boolean} horizontal whether we need to consider this point as
-		 * part of a horizontal curve
+		 * @param  {Boolean} horizontal whether we need to consider this point
+		 * as part of a horizontal curve
 		 * @param  {Boolean} testContains whether we need to consider this point 
 		 * as part of stationary points on the curve itself, used when checking 
 		 * the winding about a point.

@@ -71,7 +71,7 @@ var Color = Base.extend(new function() {
 			// RGB / RGBA
 			components = match[1].split(',');
 			for (var i = 0, l = components.length; i < l; i++) {
-				var value = parseFloat(components[i]);
+				var value = +components[i];
 				components[i] = i < 3 ? value / 255 : value;
 			}
 		} else {

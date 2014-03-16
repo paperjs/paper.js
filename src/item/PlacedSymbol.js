@@ -20,7 +20,8 @@
  */
 var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 	_class: 'PlacedSymbol',
-	_transformContent: false,
+	_applyMatrix: false,
+	_canApplyMatrix: false,
 	// PlacedSymbol uses strokeBounds for bounds
 	_boundsGetter: { getBounds: 'getStrokeBounds' },
 	_boundsSelected: true,

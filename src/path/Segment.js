@@ -150,25 +150,27 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	_changed: function(point) {
-		if (!this._path)
+		var path = this._path;
+		if (!path)
 			return;
-		// Delegate changes to affected curves if they exist. Check _curves
-		// first to make sure we're not creating it by calling this.getCurve().
-		var curve = this._path._curves && this.getCurve(),
-			other;
-		if (curve) {
-			curve._changed();
-			// Get the other affected curve, which is the previous one for
-			// _point or _handleIn changing when this segment is _segment1 of
-			// the curve, for all other cases it's the next (e.g. _handleOut
-			// when this segment is _segment2)
-			if (other = (curve[point == this._point
-					|| point == this._handleIn && curve._segment1 == this
-					? 'getPrevious' : 'getNext']())) {
-				other._changed();
-			}
+		// Delegate changes to affected curves if they exist.
+		var curves = path._curves,
+			index = this._index,
+			curveIn, curveOut;
+		if (curves) {
+			// Updated the neighboring affected curves, depending on which point
+			// is changing.
+			// TODO: Consider exposing these curves too, through #curveIn,
+			// and #curveOut, next to #curve?
+			if ((!point || point === this._point || point === this._handleIn)
+					&& (curveIn = curves[index - 1]
+						|| path._closed && curves[curves.length - 1]))
+				curveIn._changed();
+			if ((!point || point === this._point || point === this._handleOut)
+					&& (curveOut = curves[index]))
+				curveOut._changed();
 		}
-		this._path._changed(/*#=*/ Change.GEOMETRY);
+		path._changed(/*#=*/ Change.GEOMETRY);
 	},
 
 	/**
@@ -373,7 +375,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	/**
-	 * The curve that the segment belongs to.
+	 * The curve that the segment belongs to. For the last segment of an open
+	 * path, the previous segment is returned.
 	 *
 	 * @type Curve
 	 * @bean
@@ -472,6 +475,16 @@ var Segment = Base.extend(/** @lends Segment# */{
 		if (!this._handleOut.isZero())
 			parts.push('handleOut: ' + this._handleOut);
 		return '{ ' + parts.join(', ') + ' }';
+	},
+
+	/**
+	 * Transform the segment by the specified matrix.
+	 *
+	 * @param {Matrix} matrix the matrix to transform the segment by
+	 */
+	transform: function(matrix) {
+		this._transformCoordinates(matrix, new Array(6), true);
+		this._changed();
 	},
 
 	_transformCoordinates: function(matrix, coords, change) {

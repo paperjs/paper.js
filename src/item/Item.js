@@ -53,7 +53,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_class: 'Item',
 	// All items apply their matrix by default.
 	// Exceptions are Raster, PlacedSymbol, Clip and Shape.
-	_transformContent: true,
+	_applyMatrix: true,
+	_canApplyMatrix: true,
 	_boundsSelected: false,
 	_selectChildren: false,
 	// Provide information about fields to be serialized, with their defaults
@@ -69,6 +70,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		guide: false,
 		selected: false,
 		clipMask: false,
+		applyMatrix: null,
 		data: {}
 	},
 
@@ -89,19 +91,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_initialize: function(props, point) {
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
-		var internal = props && props.internal === true;
+		var internal = props && props.internal === true,
+			matrix = this._matrix = new Matrix();
+			project = paper.project;
 		if (!internal)
 			this._id = Item._id = (Item._id || 0) + 1;
+		// Inherit the applyMatrix setting from paper.settings.applyMatrix
+		this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
 		// Handle matrix before everything else, to avoid issues with
 		// #addChild() calling _changed() and accessing _matrix already.
-		var matrix = this._matrix = new Matrix();
 		if (point)
 			matrix.translate(point);
 		matrix._owner = this;
+		this._style = new Style(project._currentStyle, this);
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
-			var project = paper.project;
 			// Do not insert into DOM if it's an internal path or
 			// props.insert is false.
 			if (internal || props && props.insert === false) {
@@ -112,7 +117,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
-		this._style = new Style(this._project._currentStyle, this);
 		// Filter out Item.NO_INSERT before _set(), for performance reasons
 		return props && props !== Item.NO_INSERT
 				? this._set(props, { insert: true }) // Filter out insert prop.
@@ -1132,9 +1136,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setMatrix: function(matrix) {
 		// Use Matrix#initialize to easily copy over values.
 		this._matrix.initialize(matrix);
-		if (this._transformContent)
-			this.applyMatrix(true);
-		this._changed(/*#=*/ Change.GEOMETRY);
+		if (this._applyMatrix) {
+			// Directly apply the internal matrix. This will also call
+			// _changed() for us.
+			this.transform(null, true);
+		} else {
+			this._changed(/*#=*/ Change.GEOMETRY);
+		}
 	},
 
 	/**
@@ -1167,15 +1175,23 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @default true
 	 * @bean
 	 */
-	getTransformContent: function() {
-		return this._transformContent;
+	getApplyMatrix: function() {
+		return this._applyMatrix;
 	},
 
-	setTransformContent: function(transform) {
-		this._transformContent = transform;
-		if (transform)
-			this.applyMatrix();
+	setApplyMatrix: function(transform) {
+		// Tell #transform() to apply the internal matrix if _applyMatrix
+		// can be set to true.
+		if (this._applyMatrix = this._canApplyMatrix && !!transform)
+			this.transform(null, true);
 	},
+
+	/**
+	 * @bean
+	 * @deprecated use {@link #getApplyMatrix()} instead.
+	 */
+	getTransformContent: '#getApplyMatrix',
+	setTransformContent: '#setApplyMatrix',
 
 	/**
 	 * {@grouptitle Project Hierarchy}
@@ -1192,6 +1208,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (this._project !== project) {
 			// Uninstall events before switching project, then install them
 			// again.
+			// NOTE: _installEvents handles all children too!
 			if (this._project)
 				this._installEvents(false);
 			this._project = project;
@@ -1484,7 +1501,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// meaning the default value has been overwritten (default is on
 		// prototype).
 		var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-				'_clipMask', '_guide'];
+				'_clipMask', '_guide', '_applyMatrix'];
 		for (var i = 0, l = keys.length; i < l; i++) {
 			var key = keys[i];
 			if (this.hasOwnProperty(key))
@@ -1969,10 +1986,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Use the loop also to filter out wrong _type.
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i];
-				if (_type && item._type !== _type)
+				if (_type && item._type !== _type) {
 					items.splice(i, 1);
-				else
+				} else {
 					item._remove(true);
+				}
 			}
 			Base.splice(children, items, index, 0);
 			for (var i = 0, l = items.length; i < l; i++) {
@@ -2044,6 +2062,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * the list of children and moving it above all other children. You can
 	 * use this function for groups, compound paths and layers.
 	 *
+	 * @function
 	 * @param {Item} item The item to be appended as a child
 	 * @deprecated use {@link #addChild(item)} instead.
 	 */
@@ -2064,6 +2083,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Moves this item above the specified item.
 	 *
+	 * @function
 	 * @param {Item} item The item above which it should be moved
 	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertAbove(item)} instead.
@@ -2073,6 +2093,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	 * Moves the item below the specified item.
 	 *
+	 * @function
 	 * @param {Item} item the item below which it should be moved
 	 * @return {Boolean} {@true if it was moved}
 	 * @deprecated use {@link #insertBelow(item)} instead.
@@ -2751,34 +2772,63 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	//        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
 	//        'lines'. Default: ['objects', 'children']
 	transform: function(matrix, _applyMatrix) {
-		// Bail out immediatelly if there is nothing to do
-		if (matrix.isIdentity())
+		// If no matrix is provided, or the matrix is the identity, we might
+		// still have some work to do in case _applyMatrix is true
+		if (matrix && matrix.isIdentity())
+			matrix = null;
+		var _matrix = this._matrix,
+			applyMatrix = (_applyMatrix || this._applyMatrix)
+				// Don't apply _matrix if the result of concatenating with
+				// matrix would be identity.
+				&& (!_matrix.isIdentity() || matrix);
+		// Bail out if there is nothing to do.
+		if (!matrix && !applyMatrix)
 			return this;
+		// Simply preconcatenate the internal matrix with the passed one:
+		if (matrix)
+			_matrix.preConcatenate(matrix);
+		// Call #_transformContent() now, if we need to directly apply the
+		// internal _matrix transformations to the item's content.
+		// Application is not possible on Raster, PointText, PlacedSymbol, since
+		// the matrix is where the actual transformation state is stored.
+		if (applyMatrix = applyMatrix && this._transformContent(_matrix)) {
+			// When the _matrix could be applied, we also need to transform
+			// color styles (only gradients so far) and pivot point:
+			var pivot = this._pivot,
+				style = this._style,
+				// pass true for _dontMerge so we don't recursively transform
+				// styles on groups' children.
+				fillColor = style.getFillColor(true),
+				strokeColor = style.getStrokeColor(true);
+			if (pivot)
+				pivot.transform(_matrix);
+			if (fillColor)
+				fillColor.transform(_matrix);
+			if (strokeColor)
+				strokeColor.transform(_matrix);
+			// Reset the internal matrix to the identity transformation if it
+			// was possible to apply it.
+			_matrix.reset(true);
+		}
 		// Calling _changed will clear _bounds and _position, but depending
-		// on matrix we can calculate and set them again.
+		// on matrix we can calculate and set them again, so preserve them.
 		var bounds = this._bounds,
 			position = this._position;
-		// Simply preconcatenate the internal matrix with the passed one:
-		this._matrix.preConcatenate(matrix);
-		// Call applyMatrix if we need to directly apply the accumulated
-		// transformations to the item's content.
-		if (this._transformContent || _applyMatrix)
-			this.applyMatrix(true);
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
 		this._changed(/*#=*/ Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.
-		var decomp = bounds && matrix.decompose();
+		var decomp = bounds && matrix && matrix.decompose();
 		if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
 			// Transform the old bound by looping through all the cached bounds
 			// in _bounds and transform each.
 			for (var key in bounds) {
 				var rect = bounds[key];
 				// If these are internal bounds, only transform them if this
-				// item transforming its content.
-				if (this._transformContent || !rect._internal)
+				// item applied its matrix.
+				if (applyMatrix || !rect._internal)
 					matrix._transformBounds(rect, rect);
 			}
 			// If we have cached bounds, update _position again as its 
@@ -2789,7 +2839,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (rect)
 				this._position = rect.getCenter(true);
 			this._bounds = bounds;
-		} else if (position) {
+		} else if (matrix && position) {
 			// Transform position as well.
 			this._position = matrix._transformPoint(position, position);
 		}
@@ -2797,46 +2847,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this;
 	},
 
-	_applyMatrix: function(matrix, applyMatrix) {
+	_transformContent: function(matrix) {
 		var children = this._children;
-
-		if (children && children.length > 0) {
+		if (children) {
 			for (var i = 0, l = children.length; i < l; i++)
-				children[i].transform(matrix, applyMatrix);
+				children[i].transform(matrix, true);
 			return true;
 		}
-	},
-
-	applyMatrix: function(_dontNotify) {
-		// Call #_applyMatrix() with the internal _matrix and pass true for
-		// applyMatrix. Application is not possible on Raster, PointText,
-		// PlacedSymbol, since the matrix is where the actual location /
-		// transformation state is stored.
-		// Pass on the transformation to the content, and apply it there too,
-		// by passing true for the 2nd hidden parameter.
-		var matrix = this._matrix;
-		if (this._applyMatrix(matrix, true)) {
-			// When the matrix could be applied, we also need to transform
-			// color styles (only gradients so far) and pivot point:
-			var pivot = this._pivot,
-				style = this._style,
-				// pass true for _dontMerge so we don't recursively transform
-				// styles on groups' children.
-				fillColor = style.getFillColor(true),
-				strokeColor = style.getStrokeColor(true);
-			if (pivot)
-				pivot.transform(matrix);
-			if (fillColor)
-				fillColor.transform(matrix);
-			if (strokeColor)
-				strokeColor.transform(matrix);
-			// Reset the internal matrix to the identity transformation if it
-			// was possible to apply it.
-			matrix.reset(true);
-		}
-		if (!_dontNotify)
-			this._changed(/*#=*/ Change.GEOMETRY);
-		return this;
 	},
 
 	/**

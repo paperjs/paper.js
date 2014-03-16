@@ -100,8 +100,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	_changed: function() {
-		if (this._owner)
-			this._owner._changed(/*#=*/ Change.GEOMETRY);
+		var owner = this._owner;
+		if (owner) {
+			// If owner has #applyMatrix set, directly bake it in now.
+			if (owner._applyMatrix) {
+				owner.transform(null, true);
+			} else {
+				owner._changed(/*#=*/ Change.GEOMETRY);
+			}
+		}
 	},
 
 	/**
@@ -137,7 +144,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	},
 
 	/**
-	 * "Resets" the matrix by setting its values to the ones of the identity
+	 * Resets the matrix by setting its values to the ones of the identity
 	 * matrix that results in no transformation.
 	 */
 	reset: function(_dontNotify) {
@@ -146,6 +153,20 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		if (!_dontNotify)
 			this._changed();
 		return this;
+	},
+
+	/**
+	 * Applies the matrix to the item that it belongs to, if possible.
+	 * @return {Boolean} {@true if the matrix was applied}
+	 */
+	apply: function() {
+		var owner = this._owner;
+		if (owner) {
+			owner.transform(null, true);
+			// If the matrix was successfully applied, it will be reset now.
+			return this.isIdentity();
+		}
+		return false;
 	},
 
 	/**

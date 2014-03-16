@@ -147,7 +147,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 		if (stops.length < 2)
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
-		this._stops = GradientStop.readAll(stops, 0, false, true); // clone
+		this._stops = GradientStop.readAll(stops, 0, { clone: true });
 		// Now reassign ramp points if they were not specified.
 		for (var i = 0, l = this._stops.length; i < l; i++) {
 			var stop = this._stops[i];

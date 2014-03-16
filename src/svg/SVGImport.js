@@ -81,7 +81,7 @@ new function() {
 		if (!isClip) {
 			// Have the group not pass on all transformations to its children,
 			// as this is how SVG works too.
-			item._transformContent = false;
+			item._applyMatrix = false;
 			item = applyAttributes(item, node, isRoot);
 			// Style on items needs to be handled differently than all other
 			// items: We first apply the style to the item, then use it as the
@@ -133,11 +133,12 @@ new function() {
 		// Get the path data, and determine whether it is a compound path or a
 		// normal path based on the amount of moveTo commands inside it.
 		var data = node.getAttribute('d'),
-			path = data.match(/m/gi).length > 1
-					? new CompoundPath()
-					: new Path();
-		path.setPathData(data);
-		return path;
+			param = { pathData: data };
+		// If there are multiple moveTo commands or a closePath command followed
+		// by other commands, we have a CompoundPath:
+		return data.match(/m/gi).length > 1 || /z\S+/i.test(data)
+				? new CompoundPath(param)
+				: new Path(param);
 	}
 
 	function importGradient(node, type) {
