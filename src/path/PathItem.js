@@ -220,7 +220,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
 			var length = coords && coords.length;
 			relative = command === lower;
-			if (previous === 'z' && lower !== 'z')
+			if (previous === 'z' && !/[mz]/.test(lower))
 				this.moveTo(current = start);
 			switch (lower) {
 			case 'm':
