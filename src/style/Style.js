@@ -136,10 +136,11 @@ var Style = Base.extend(new function() {
 		// - Color values are not stored as converted colors immediately. The
 		//   raw value is stored, and conversion only happens in the getter.
 		fields[set] = function(value) {
-			var children = this._item && this._item._children;
+			var owner = this._owner,
+				children = owner && owner._children;
 			// Only unify styles on children of Groups, excluding CompoundPaths.
 			if (children && children.length > 0
-					&& this._item._type !== 'compound-path') {
+					&& !(owner instanceof CompoundPath)) {
 				for (var i = 0, l = children.length; i < l; i++)
 					children[i]._style[set](value);
 			} else {
@@ -154,28 +155,29 @@ var Style = Base.extend(new function() {
 							// converted and cloned in the getter further down.
 							if (value._owner)
 								value = value.clone();
-							value._owner = this._item;
+							value._owner = owner;
 						}
 					}
 					// Note: We do not convert the values to Colors in the 
 					// setter. This only happens once the getter is called.
 					this._values[key] = value;
-					// Notify the item of the style change STYLE is always set,
+					// Notify the owner of the style change STYLE is always set,
 					// additional flags come from flags, as used for STROKE:
-					if (this._item)
-						this._item._changed(flag || /*#=*/ Change.STYLE);
+					if (owner)
+						owner._changed(flag || /*#=*/ Change.STYLE);
 				}
 			}
 		};
 
 		fields[get] = function(_dontMerge) {
-			var value,
-				children = this._item && this._item._children;
-			// If this item has children, walk through all of them and see if
+			var owner = this._owner,
+				children = owner && owner._children,
+				value;
+			// If the owner has children, walk through all of them and see if
 			// they all have the same style.
 			// If true is passed for _dontMerge, don't merge children styles
 			if (!children || children.length === 0 || _dontMerge
-					|| this._item instanceof CompoundPath) {
+					|| owner instanceof CompoundPath) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
@@ -187,7 +189,7 @@ var Style = Base.extend(new function() {
 					this._values[key] = value = Color.read([value], 0,
 							{ readNull: true, clone: true });
 					if (value)
-						value._owner = this._item;
+						value._owner = owner;
 				}
 				return value;
 			}
@@ -196,7 +198,7 @@ var Style = Base.extend(new function() {
 				if (i === 0) {
 					value = childValue;
 				} else if (!Base.equals(value, childValue)) {
-					// If there is another item with a different
+					// If there is another child with a different
 					// style, the style is not defined:
 					return undefined;
 				}
@@ -220,11 +222,12 @@ var Style = Base.extend(new function() {
 }, /** @lends Style# */{
 	_class: 'Style',
 
-	initialize: function Style(style, _item) {
+	initialize: function Style(style, _owner, _project) {
 		// We keep values in a separate object that we can iterate over.
 		this._values = {};
-		this._item = _item;
-		if (_item instanceof TextItem)
+		this._owner = _owner;
+		this._project = _owner && _owner._project || _project || paper.project;
+		if (_owner instanceof TextItem)
 			this._defaults = this._textDefaults;
 		if (style)
 			this.set(style);
@@ -269,17 +272,27 @@ var Style = Base.extend(new function() {
 		return !!this.getShadowColor() && this.getShadowBlur() > 0;
 	},
 
+	/**
+	 * The view that this style belongs to.
+	 * @type View
+	 * @bean
+	 */
+	getView: function() {
+		return this._project.getView();
+	},
+
 	// Overrides
 
 	getFontStyle: function() {
-		var size = this.getFontSize();
+		var fontSize = this.getFontSize();
 		// To prevent an obscure iOS 7 crash, we have to convert the size to a
 		// string first before passing it to the regular expression.
-		// This nonsensical statement would also prevent the bug, prooving that
-		// the issue is not the regular expression itself, but something deeper
-		// down in the optimizer: if (size === 0) size = 0;
+		// The following nonsensical statement would also prevent the bug,
+		// prooving that the issue is not the regular expression itself, but
+		// something deeper down in the optimizer:
+		// `if (size === 0) size = 0;`
 		return this.getFontWeight()
-				+ ' ' + size + (/[a-z]/i.test(size + '') ? ' ' : 'px ')
+				+ ' ' + fontSize + (/\w/i.test(fontSize + '') ? ' ' : 'px ')
 				+ this.getFontFamily();
 	},
 
@@ -297,8 +310,11 @@ var Style = Base.extend(new function() {
 
 	getLeading: function getLeading() {
 		// Override leading to return fontSize * 1.2 by default.
-		var leading = getLeading.base.call(this);
-		return leading != null ? leading : this.getFontSize() * 1.2;
+		var leading = getLeading.base.call(this),
+			fontSize = this.getFontSize();
+		if (/pt|em|%|px/.test(fontSize))
+			fontSize = this.getView().getPixelSize(fontSize);
+		return leading != null ? leading : fontSize * 1.2;
 	}
 
 	// DOCS: why isn't the example code showing up?

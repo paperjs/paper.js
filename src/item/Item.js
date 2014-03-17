@@ -103,7 +103,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (point)
 			matrix.translate(point);
 		matrix._owner = this;
-		this._style = new Style(project._currentStyle, this);
+		this._style = new Style(project._currentStyle, this, project); 
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
@@ -154,7 +154,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			install: function(type) {
 				// If the view requires counting of installed mouse events,
 				// increase the counters now according to mouseFlags
-				var counters = this._project.view._eventCounters;
+				var counters = this.getView()._eventCounters;
 				if (counters) {
 					for (var key in mouseFlags) {
 						counters[key] = (counters[key] || 0)
@@ -165,7 +165,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			uninstall: function(type) {
 				// If the view requires counting of installed mouse events,
 				// decrease the counters now according to mouseFlags
-				var counters = this._project.view._eventCounters;
+				var counters = this.getView()._eventCounters;
 				if (counters) {
 					for (var key in mouseFlags)
 						counters[key] -= mouseFlags[key][type] || 0;
@@ -194,7 +194,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	_animateItem: function(animate) {
-		this._project.view._animateItem(this, animate);
+		this.getView()._animateItem(this, animate);
 	},
 
 	_serialize: function(options, dictionary) {
@@ -1226,6 +1226,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
+	 * The view that this item belongs to.
+	 * @type View
+	 * @bean
+	 */
+	getView: function() {
+		return this._project.getView();
+	},
+
+	/**
 	 * Overrides Callback#_installEvents to also call _installEvents on all
 	 * children.
 	 */
@@ -1566,8 +1575,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	rasterize: function(resolution) {
 		var bounds = this.getStrokeBounds(),
-			view = this._project.view,
-			scale = (resolution || view && view.getResolution() || 72) / 72,
+			scale = (resolution || this.getView().getResolution()) / 72,
 			// Floor top-left corner and ceil bottom-right corner, to never
 			// blur or cut pixels.
 			topLeft = bounds.getTopLeft().floor(),
@@ -1686,7 +1694,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// chain already to determine the rough bounds.
 		var matrix = this._matrix,
 			parentTotalMatrix = options._totalMatrix,
-			view = this._project.view,
+			view = this.getView(),
 			// Keep the accumulated matrices up to this item in options, so we
 			// can keep calculating the correct _tolerancePadding values.
 			totalMatrix = options._totalMatrix = parentTotalMatrix
@@ -1694,7 +1702,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					// If this is the first one in the recursion, factor in the
 					// zoom of the view and the globalMatrix of the item.
 					: this.getGlobalMatrix().clone().preConcatenate(
-						view ? view._matrix : new Matrix()),
+							view._matrix),
 			// Calculate the transformed padding as 2D size that describes the
 			// transformed tolerance circle / ellipse. Make sure it's never 0
 			// since we're using it for division.

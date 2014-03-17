@@ -22,11 +22,11 @@
 var View = Base.extend(Callback, /** @lends View# */{
 	_class: 'View',
 
-	initialize: function View(element) {
+	initialize: function View(project, element) {
 		// Store reference to the currently active global paper scope, and the
 		// active project, which will be represented by this view
-		this._scope = paper;
-		this._project = paper.project;
+		this._project = project;
+		this._scope = project._scope;
 		this._element = element;
 		var size;
 /*#*/ if (__options.environment == 'browser') {
@@ -139,8 +139,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		View._views.splice(View._views.indexOf(this), 1);
 		delete View._viewsById[this._id];
 		// Unlink from project
-		if (this._project.view == this)
-			this._project.view = null;
+		if (this._project._view === this)
+			this._project._view = null;
 /*#*/ if (__options.environment == 'browser') {
 		// Uninstall event handlers again for this view.
 		DomEvent.remove(this._element, this._viewEvents);
@@ -658,14 +658,14 @@ var View = Base.extend(Callback, /** @lends View# */{
 		_viewsById: {},
 		_id: 0,
 
-		create: function(element) {
+		create: function(project, element) {
 /*#*/ if (__options.environment == 'browser') {
 			if (typeof element === 'string')
 				element = document.getElementById(element);
 /*#*/ } // __options.environment == 'browser'
 			// Factory to provide the right View subclass for a given element.
 			// Produces only CanvasViews for now:
-			return new CanvasView(element);
+			return new CanvasView(project, element);
 		}
 	}
 }, new function() {

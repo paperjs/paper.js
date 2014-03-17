@@ -88,7 +88,6 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 			lines = this._lines,
 			leading = style.getLeading(),
 			shadowColor = ctx.shadowColor;
-
 		ctx.font = style.getFontStyle();
 		ctx.textAlign = style.getJustification();
 		for (var i = 0, l = lines.length; i < l; i++) {
@@ -103,36 +102,24 @@ var PointText = TextItem.extend(/** @lends PointText# */{
 				ctx.strokeText(line, 0, 0);
 			ctx.translate(0, leading);
 		}
-	}
-}, new function() {
-	var measureCtx = null;
+	},
 
-	return {
-		_getBounds: function(getter, matrix) {
-			// Create an in-memory canvas on which to do the measuring
-			if (!measureCtx)
-				measureCtx = CanvasProvider.getContext(1, 1);
-			var style = this._style,
-				lines = this._lines,
-				count = lines.length,
-				justification = style.getJustification(),
-				leading = style.getLeading(),
-				x = 0;
-			// Measure the real width of the text. Unfortunately, there is no
-			// sane way to measure text height with canvas
-			measureCtx.font = style.getFontStyle();
-			var width = 0;
-			for (var i = 0; i < count; i++)
-				width = Math.max(width, measureCtx.measureText(lines[i]).width);
-			// Adjust for different justifications
-			if (justification !== 'left')
-				x -= width / (justification === 'center' ? 2: 1);
-			// Until we don't have baseline measuring, assume 1 / 4 leading as a
-			// rough guess:
-			var bounds = new Rectangle(x,
-						count ? - 0.75 * leading : 0,
-						width, count * leading);
-			return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
-		}
-	};
+	_getBounds: function(getter, matrix) {
+		var style = this._style,
+			lines = this._lines,
+			numLines = lines.length,
+			justification = style.getJustification(),
+			leading = style.getLeading(),
+			width = this.getView().getTextWidth(style.getFontStyle(), lines),
+			x = 0;
+		// Adjust for different justifications.
+		if (justification !== 'left')
+			x -= width / (justification === 'center' ? 2: 1);
+		// Until we don't have baseline measuring, assume 1 / 4 leading as a
+		// rough guess:
+		var bounds = new Rectangle(x,
+					numLines ? - 0.75 * leading : 0,
+					width, numLines * leading);
+		return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
+	}
 });

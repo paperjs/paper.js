@@ -118,7 +118,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 * @bean
 	 */
 	getView: function() {
-		return this.project && this.project.view;
+		return this.project && this.project.getView();
 	},
 
 	/**

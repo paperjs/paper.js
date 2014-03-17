@@ -43,20 +43,23 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Note that when working with PaperScript, a project is automatically
 	 * created for us and the {@link PaperScope#project} variable points to it.
 	 *
-	 * @param {View|HTMLCanvasElement} view Either a view object or an HTML
-	 * Canvas element that should be wrapped in a newly created view.
+	 * @param {HTMLCanvasElement} element an HTML anvas element that should be
+	 * used as the element for the view.
 	 */
-	initialize: function Project(view) {
+	initialize: function Project(element) {
 		// Activate straight away by passing true to PaperScopeItem constructor,
 		// so paper.project is set, as required by Layer and DoumentView
 		// constructors.
 		PaperScopeItem.call(this, true);
 		this.layers = [];
 		this.symbols = [];
-		this._currentStyle = new Style();
+		this._currentStyle = new Style(null, null, this);
 		this.activeLayer = new Layer();
-		if (view)
-			this.view = view instanceof View ? view : View.create(view);
+		// If no view is provided, we create a 1x1 px canvas view just so we
+		// have something to do size calculations with.
+		// (e.g. PointText#_getBounds)
+		this._view = View.create(this,
+				element || CanvasProvider.getCanvas(1, 1));
 		this._selectedItems = {};
 		this._selectedItemCount = 0;
 		// See Item#draw() for an explanation of _updateVersion
@@ -110,8 +113,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	remove: function remove() {
 		if (!remove.base.call(this))
 			return false;
-		if (this.view)
-			this.view.remove();
+		if (this._view)
+			this._view.remove();
 		return true;
 	},
 
@@ -119,7 +122,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * The reference to the project's view.
 	 * @name Project#view
 	 * @type View
+	 * @bean
 	 */
+	getView: function() {
+		return this._view;
+	},
 
 	/**
 	 * The currently active path style. All selected items and newly

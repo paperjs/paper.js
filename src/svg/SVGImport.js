@@ -531,7 +531,7 @@ new function() {
 			paper = scope;
 			var item = importSVG(svg, isRoot, options),
 				onLoad = options.onLoad,
-				view = scope.project && scope.project.view;
+				view = scope.project && scope.getView();
 			if (onLoad)
 				onLoad.call(this, item);
 			view.update();

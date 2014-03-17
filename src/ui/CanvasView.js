@@ -31,7 +31,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	 * @name CanvasView#initialize
 	 * @param {Size} size the size of the canvas to be created
 	 */
-	initialize: function CanvasView(canvas) {
+	initialize: function CanvasView(project, canvas) {
 		// Handle canvas argument
 		if (!(canvas instanceof HTMLCanvasElement)) {
 			// See if the arguments describe the view size:
@@ -56,7 +56,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}
 /*#*/ } // __options.environment == 'browser'
-		View.call(this, canvas);
+		View.call(this, project, canvas);
 	},
 
 	_setViewSize: function(size) {
@@ -78,12 +78,39 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 	},
 
 	/**
+	 * Converts the provide size in any of the units allowed in the browser to
+	 * pixels, by the use of the context.font property.
+	 */
+	getPixelSize: function(size) {
+		var ctx = this._context,
+			prevFont = ctx.font;
+		ctx.font = size + ' serif';
+		size = parseFloat(ctx.font);
+		ctx.font = prevFont;
+		return size;
+	},
+
+	getTextWidth: function(font, lines) {
+		var ctx = this._context,
+			prevFont = ctx.font,
+			width = 0;
+		ctx.font = font;
+		// Measure the real width of the text. Unfortunately, there is no sane
+		// way to measure text height with canvas.
+		for (var i = 0, l = lines.length; i < l; i++)
+			width = Math.max(width, ctx.measureText(lines[i]).width);
+		ctx.font = prevFont;
+		return width;
+	},
+
+	/**
 	 * Updates the view if there are changes.
 	 *
 	 * @function
 	 */
 	update: function() {
-		if (!this._project._needsUpdate)
+		var project = this._project;
+		if (!project || !project._needsUpdate)
 			return false;
 		// Initial tests conclude that clearing the canvas using clearRect
 		// is always faster than setting canvas.width = canvas.width
@@ -91,8 +118,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 		var ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-		this._project.draw(ctx, this._matrix, this._pixelRatio);
-		this._project._needsUpdate = false;
+		project.draw(ctx, this._matrix, this._pixelRatio);
+		project._needsUpdate = false;
 		return true;
 	}
 }, new function() { // Item based mouse handling:

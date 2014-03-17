@@ -404,7 +404,7 @@ new function() {
 		exportSVG: function(options) {
 			options = setOptions(options);
 			var layers = this.layers,
-				size = this.view.getSize(),
+				size = this.getView().getSize(),
 				node = createElement('svg', {
 					x: 0,
 					y: 0,
