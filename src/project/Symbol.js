@@ -94,10 +94,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 	 */
 	_changed: function(flags) {
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Clear cached bounds of all items that this item contributes to.
-			// We don't call this on the parent, since we're already the parent
-			// of the child that modified the hierarchy (that's where these
-			// HIERARCHY notifications go)
+			// Clear cached bounds of all items that this symbol is linked to.
 			Item._clearBoundsCache(this);
 		}
 		if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
