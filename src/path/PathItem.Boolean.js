@@ -684,25 +684,20 @@ CompoundPath.inject(/** @lends CompoundPath# */{
 	 */
 	// NOTE: Does NOT handle self-intersecting CompoundPaths.
 	reorient: function() {
-		var children = this.removeChildren(),
-			length = children.length,
-			bounds = new Array(length),
-			counters = new Array(length);
-		children.sort(function(a, b) {
+		var children = this.removeChildren().sort(function(a, b) {
 			return b.getBounds().getArea() - a.getBounds().getArea();
 		});
 		this.addChildren(children);
 		var clockwise = children[0].isClockwise();
-		for (var i = 0; i < length; i++) {
-			counters[i] = 0;
-			var point = children[i].getInteriorPoint();
+		for (var i = 1, l = children.length; i < l; i++) { // Skip first child
+			var point = children[i].getInteriorPoint(),
+				counters = 0;
 			for (var j = i - 1; j >= 0; j--) {
 				if (children[j].contains(point))
-					counters[i]++;
+					counters++;
 			}
-			// Omit the first child
-			if (i > 0 && counters[i] % 2 === 0)
-				children[i].setClockwise(clockwise);
+			children[i].setClockwise(counters % 2 === 0 && clockwise);
 		}
+		return this;
 	}
 });
