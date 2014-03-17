@@ -610,11 +610,13 @@ Path.inject(/** @lends Path# */{
 					p2x = p2._x, p2y = p2._y;
 				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
 			}
-			// Link first and last curves
-			var first = monoCurves[0],
-				last = monoCurves[monoCurves.length - 1];
-			first.previous = last;
-			last.next = first;
+			if (monoCurves.length > 0) {
+				// Link first and last curves
+				var first = monoCurves[0],
+					last = monoCurves[monoCurves.length - 1];
+				first.previous = last;
+				last.next = first;
+			}
 		}
 		return monoCurves;
 	},
