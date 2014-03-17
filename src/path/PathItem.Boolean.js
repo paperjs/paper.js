@@ -32,77 +32,14 @@
  */
 
 PathItem.inject(new function() {
-	/*
-	 * To deal with a HTML5 canvas requirement where CompoundPaths' child
-	 * contours has to be of different winding direction for correctly
-	 * filling holes. But if some individual countours are disjoint, i.e.
-	 * islands, we have to reorient them so that:
-	 * - The holes have opposite winding direction, already handled by paper
-	 * - Islands have to have the same winding direction as the first child
-	 *
-	 * NOTE: Does NOT handle self-intersecting CompoundPaths.
-	 */
-	function reorientPath(path) {
-		/**
-		 * Returns a point that is inside the path
-		 */
-		function getInteriorPoint (path) {
-			var bounds = path.getBounds(),
-				point = bounds.getCenter(true);
-			if (!path.contains(point)) {
-				// Since there is no guarantee that a poly-bezier path contains
-				// the center of its bounding rectangle, we shoot a ray in
-				// +x direction from the center and select a point between
-				// consecutive intersections of the ray
-				var curves = path._getMonoCurves(),
-					roots = [],
-					x = point.x,
-					y = point.y,
-					xIntercepts = [];
-				for (var i = 0, l = curves.length; i < l; i++) {
-					var values = curves[i].values;
-					if ((curves[i].winding === 1
-							&& y >= values[1] && y <= values[7]
-							|| y >= values[7] && y <= values[1])
-							&& Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
-						for (var j = roots.length - 1; j >= 0; j--) {
-							var x0 = Curve.evaluate(values, roots[j], 0).x;
-							xIntercepts.push(x0);
-						}
-					}
-					if (xIntercepts.length > 1)
-						break;
-				}
-				point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
-			}
-			return point;
-		}
+	function preparePath(path) {
 		// Create a cloned version of the path firsts that we can modify freely,
-		// with its matrix applied to its geometry. 
+		// with its matrix applied to its geometry.
+		// Call reduce() cloned paths to simplify compound paths and remove
+		// empty curves.
 		path = path.clone(false).reduce().transform(null, true);
-		if (path instanceof CompoundPath) {
-			var children = path.removeChildren(),
-				length = children.length,
-				bounds = new Array(length),
-				counters = new Array(length),
-				clockwise, point;
-			children.sort(function(a, b) {
-				return b.getBounds().getArea() - a.getBounds().getArea();
-			});
-			path.addChildren(children);
-			clockwise = children[0].isClockwise();
-			for (var i = 0; i < length; i++) {
-				counters[i] = 0;
-				point = getInteriorPoint(children[i]);
-				for (var j = i-1; j >= 0; j--) {
-					if (children[j].contains(point))
-						counters[i]++;
-				}
-				// Omit the first child
-				if (i > 0 && counters[i] % 2 === 0)
-					children[i].setClockwise(clockwise);
-			}
-		}
+		if (path instanceof CompoundPath)
+			path.reorient();
 		return path;
 	}
 
@@ -114,11 +51,8 @@ PathItem.inject(new function() {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		// We call reduce() on both cloned paths to simplify compound paths and
-		// remove empty curves. We also apply matrices to both paths in case
-		// they were transformed.
-		var _path1 = reorientPath(path1);
-			_path2 = path2 && path1 !== path2 && reorientPath(path2);
+		var _path1 = preparePath(path1);
+			_path2 = path2 && path1 !== path2 && preparePath(path2);
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when subtract = true
 		// We need both paths at opposite orientation for subtraction.
@@ -686,6 +620,42 @@ Path.inject(/** @lends Path# */{
 			last.next = first;
 		}
 		return monoCurves;
+	},
+
+	/**
+	 * Returns a point that is guaranteed to be inside the path.
+	 *
+	 * @type Point
+	 * @bean
+	 */
+	getInteriorPoint: function() {
+		var bounds = this.getBounds(),
+			point = bounds.getCenter(true);
+		if (!this.contains(point)) {
+			// Since there is no guarantee that a poly-bezier path contains
+			// the center of its bounding rectangle, we shoot a ray in
+			// +x direction from the center and select a point between
+			// consecutive intersections of the ray
+			var curves = this._getMonoCurves(),
+				roots = [],
+				x = point.x,
+				y = point.y,
+				xIntercepts = [];
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var values = curves[i].values;
+				if ((curves[i].winding === 1
+						&& y >= values[1] && y <= values[7]
+						|| y >= values[7] && y <= values[1])
+						&& Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
+					for (var j = roots.length - 1; j >= 0; j--)
+						xIntercepts.push(Curve.evaluate(values, roots[j], 0).x);
+				}
+				if (xIntercepts.length > 1)
+					break;
+			}
+			point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
+		}
+		return point;
 	}
 });
 
@@ -701,5 +671,38 @@ CompoundPath.inject(/** @lends CompoundPath# */{
 		for (var i = 0, l = children.length; i < l; i++)
 			monoCurves.push.apply(monoCurves, children[i]._getMonoCurves());
 		return monoCurves;
+	},
+
+	/*
+	 * Fixes the orientation of a CompoundPath's child paths by first ordering
+	 * them according to their area, and then making sure that all children are
+	 * of different winding direction than the first child, ecxcept for when
+	 * some individual countours are disjoint, i.e. islands, they are reoriented
+	 * so that:
+	 * - The holes have opposite winding direction.
+	 * - Islands have to have the same winding direction as the first child.
+	 */
+	// NOTE: Does NOT handle self-intersecting CompoundPaths.
+	reorient: function() {
+		var children = this.removeChildren(),
+			length = children.length,
+			bounds = new Array(length),
+			counters = new Array(length);
+		children.sort(function(a, b) {
+			return b.getBounds().getArea() - a.getBounds().getArea();
+		});
+		this.addChildren(children);
+		var clockwise = children[0].isClockwise();
+		for (var i = 0; i < length; i++) {
+			counters[i] = 0;
+			var point = children[i].getInteriorPoint();
+			for (var j = i - 1; j >= 0; j--) {
+				if (children[j].contains(point))
+					counters[i]++;
+			}
+			// Omit the first child
+			if (i > 0 && counters[i] % 2 === 0)
+				children[i].setClockwise(clockwise);
+		}
 	}
 });
