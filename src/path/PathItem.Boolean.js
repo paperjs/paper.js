@@ -32,22 +32,19 @@
  */
 
 PathItem.inject(new function() {
-	function preparePath(path) {
-		// Create a cloned version of the path firsts that we can modify freely,
-		// with its matrix applied to its geometry.
-		// Call reduce() cloned paths to simplify compound paths and remove
-		// empty curves.
-		path = path.clone(false).reduce().transform(null, true);
-		if (path instanceof CompoundPath)
-			path.reorient();
-		return path;
-	}
-
 	// Boolean operators return true if a curve with the given winding 
 	// contribution contributes to the final result or not. They are called
 	// for each curve in the graph after curves in the operands are
 	// split at intersections.
 	function computeBoolean(path1, path2, operator, subtract) {
+		// Creates a cloned version of the path that we can modify freely, with
+		// its matrix applied to its geometry. Calls #reduce() to simplify
+		// compound paths and remove empty curves, and #reorient() to make sure
+		// all paths have correct winding direction.
+		function preparePath(path) {
+			return path.clone(false).reduce().reorient().transform(null, true);
+		}
+
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
@@ -656,6 +653,13 @@ Path.inject(/** @lends Path# */{
 			point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
 		}
 		return point;
+	},
+
+	reorient: function() {
+		// Paths that are not part of compound paths should never be counter-
+		// clockwise for boolean operations.
+		this.setClockwise(true);
+		return this;
 	}
 });
 
