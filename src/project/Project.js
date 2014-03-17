@@ -451,17 +451,19 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id],
+					globalMatrix = item._globalMatrix,
 					size = this._scope.settings.handleSize;
 					half = size / 2;
 				if (item._updateVersion === this._updateVersion
-						&& (item._drawSelected || item._boundsSelected)) {
+						&& (item._drawSelected || item._boundsSelected)
+						&& globalMatrix) {
 					// Allow definition of selected color on a per item and per
 					// layer level, with a fallback to #009dec
 					var color = item.getSelectedColor()
 							|| item.getLayer().getSelectedColor();
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
-					var mx = matrix.clone().concatenate(item._globalMatrix);
+					var mx = matrix.clone().concatenate(globalMatrix);
 					if (item._drawSelected)
 						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
