@@ -15,19 +15,12 @@
 var CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height, pixelRatio) {
+	getCanvas: function(width, height) {
 		var canvas,
 			init = true;
 		if (typeof width === 'object') {
-			pixelRatio = height;
 			height = width.height;
 			width = width.width;
-		}
-		if (!pixelRatio) {
-			pixelRatio = 1;
-		} else if (pixelRatio !== 1) {
-			width *= pixelRatio;
-			height *= pixelRatio;
 		}
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
@@ -52,8 +45,6 @@ var CanvasProvider = {
 		}
 		// We save on retrieval and restore on release.
 		ctx.save();
-		if (pixelRatio !== 1)
-			ctx.scale(pixelRatio, pixelRatio);
 		return canvas;
 	},
 
