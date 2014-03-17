@@ -309,8 +309,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
 		// To compare with native canvas approach:
 		var ctx = CanvasProvider.getContext(1, 1);
-		// Abuse clip = true to get a shape for ctx.isPointInPath().
-		this._draw(ctx, new Base({ clip: true }));
+		// Use dontFinish to tell _draw to only produce geometries for hit-test.
+		this._draw(ctx, new Base({ dontFinish: true }));
 		var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
 		CanvasProvider.release(ctx);
 		return res;

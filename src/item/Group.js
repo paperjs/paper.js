@@ -106,18 +106,22 @@ var Group = Item.extend(/** @lends Group# */{
 	},
 
 	_getClipItem: function() {
-		// Allow us to set _clipItem to null when none is found and still return
-		// it as a defined value without searching again
-		if (this._clipItem !== undefined)
-			return this._clipItem;
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var child = this._children[i];
-			if (child._clipMask)
-				return this._clipItem = child;
+		// NOTE: _clipItem is the child that has _clipMask set to true. 
+		var clipItem = this._clipItem;
+		// Distinguish null (no clipItem set) and undefined (clipItem was not
+		// looked for yet).
+		if (clipItem === undefined) {
+			clipItem = null;
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var child = this._children[i];
+				if (child._clipMask) {
+					clipItem = child;
+					break;
+				}
+			}
+			this._clipItem = clipItem;
 		}
-		// Make sure we're setting _clipItem to null so it won't be searched for
-		// nex time.
-		return this._clipItem = null;
+		return clipItem;
 	},
 
 	/**
@@ -164,14 +168,33 @@ var Group = Item.extend(/** @lends Group# */{
 	},
 
 	_draw: function(ctx, param) {
-		var clipItem = param.clipItem = this._getClipItem();
-		if (clipItem)
+		var clip = param.clip,
+			clipItem = !clip && this._getClipItem(),
+			draw = true;
+		param = param.extend({ clipItem: clipItem, clip: false });
+		if (clip) {
+			// If told to clip with a group, we start our own path and draw each
+			// child just like in a compound-path. We also cache the resulting
+			// path in _currentPath.
+			if (this._currentPath) {
+				ctx.currentPath = this._currentPath;
+				draw = false;
+			} else {
+				ctx.beginPath();
+				param.dontStart = param.dontFinish = true;
+			}
+		} else if (clipItem) {
 			clipItem.draw(ctx, param.extend({ clip: true }));
-		for (var i = 0, l = this._children.length; i < l; i++) {
-			var item = this._children[i];
-			if (item !== clipItem)
-				item.draw(ctx, param);
 		}
-		param.clipItem = null;
+		if (draw) {
+			for (var i = 0, l = this._children.length; i < l; i++) {
+				var item = this._children[i];
+				if (item !== clipItem)
+					item.draw(ctx, param);
+			}
+		}
+		if (clip) {
+			this._currentPath = ctx.currentPath;
+		}
 	}
 });

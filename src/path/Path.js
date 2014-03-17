@@ -2008,10 +2008,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	return {
 		_draw: function(ctx, param) {
-			var clip = param.clip,
-				// Also mark this Path as _compound so _changed() knows about it
-				compound = this._compound = param.compound;
-			if (!compound)
+			var dontStart = param.dontStart,
+				dontPaint = param.dontFinish || param.clip;
+			if (!dontStart)
 				ctx.beginPath();
 
 			var style = this.getStyle(),
@@ -2028,20 +2027,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
 
-			if (this._currentPath) {
+			if (!dontStart && this._currentPath) {
 				ctx.currentPath = this._currentPath;
-			} else if (hasFill || hasStroke && !dashLength || compound || clip){
+			} else if (hasFill || hasStroke && !dashLength || dontPaint) {
 				// Prepare the canvas path if we have any situation that
 				// requires it to be defined.
 				drawSegments(ctx, this);
 				if (this._closed)
 					ctx.closePath();
 				// CompoundPath collects its own _currentPath
-				if (!compound)
+				if (!dontStart)
 					this._currentPath = ctx.currentPath;
 			}
 
-			if (!clip && !compound && (hasFill || hasStroke)) {
+			if (!dontPaint && (hasFill || hasStroke)) {
 				// If the path is part of a compound path or doesn't have a fill
 				// or stroke, there is no need to continue.
 				this._setStyles(ctx);
@@ -2059,7 +2058,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 						// NOTE: We don't cache this path in another currentPath
 						// since browsers that support currentPath also support
 						// native dashes.
-						ctx.beginPath();
+						if (!dontStart)
+							ctx.beginPath();
 						var flattener = new PathFlattener(this),
 							length = flattener.length,
 							from = -style.getDashOffset(), to,

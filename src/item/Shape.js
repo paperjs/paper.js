@@ -169,11 +169,12 @@ var Shape = Item.extend(/** @lends Shape# */{
 		var style = this._style,
 			hasFill = style.hasFill(),
 			hasStroke = style.hasStroke(),
-			clip = param.clip;
-		if (hasFill || hasStroke || clip) {
+			dontPaint = param.dontFinish || param.clip;
+		if (hasFill || hasStroke || dontPaint) {
 			var radius = this._radius,
 				shape = this._shape;
-			ctx.beginPath();
+			if (!param.dontStart)
+				ctx.beginPath();
 			if (shape === 'circle') {
 				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
 			} else {
@@ -217,7 +218,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 			}
 			ctx.closePath();
 		}
-		if (!clip && (hasFill || hasStroke)) {
+		if (!dontPaint && (hasFill || hasStroke)) {
 			this._setStyles(ctx);
 			if (hasFill) {
 				ctx.fill(style.getWindingRule());

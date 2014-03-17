@@ -238,9 +238,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			cacheParent = this._parent || symbol,
 			project = this._project;
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Clear cached bounds and position whenever geometry changes
+			// Clear cached bounds, position and decomposed matrix whenever
+			// geometry changes. Also clear _currentPath since it can be used
+			// both on compound-paths and clipping groups.
 			this._bounds = this._position = this._decomposed =
-					this._globalMatrix = undefined;
+					this._globalMatrix = this._currentPath = undefined;
 		}
 		if (cacheParent && (flags
 				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
@@ -3509,6 +3511,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Determine if we can draw directly, or if we need to draw into a
 			// separate canvas and then composite onto the main canvas.
 			direct = normalBlend && opacity === 1
+					|| param.clip
 					// If native blending is possible, see if the item allows it
 					|| (nativeBlend || normalBlend && opacity < 1)
 						&& this._canComposite(),
@@ -3554,7 +3557,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		ctx.restore();
 		if (trackTransforms)
 			transforms.pop();
-		if (param.clip)
+		if (param.clip && !param.dontFinish)
 			ctx.clip();
 		// If a temporary canvas was created, composite it onto the main canvas:
 		if (!direct) {
