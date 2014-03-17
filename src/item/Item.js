@@ -251,11 +251,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// the parent, see getBounds().
 			Item._clearBoundsCache(cacheParent);
 		}
-		if (flags & /*#=*/ ChangeFlag.HIERARCHY) {
+		if (flags & /*#=*/ ChangeFlag.CHILDREN) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We don't call this on the parent, since we're already the parent
 			// of the child that modified the hierarchy (that's where these
-			// HIERARCHY notifications go)
+			// CHILDREN notifications go)
 			Item._clearBoundsCache(this);
 		}
 		if (project) {
@@ -960,7 +960,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Set up a boundsCache structure that keeps track of items that keep
 		// cached bounds that depend on this item. We store this in our parent,
 		// for multiple reasons:
-		// The parent receives HIERARCHY change notifications for when its
+		// The parent receives CHILDREN change notifications for when its
 		// children are added or removed and can thus clear the cache, and we
 		// save a lot of memory, e.g. when grouping 100 items and asking the
 		// group for its bounds. If stored on the children, we would have 100
@@ -2012,7 +2012,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				if (item._name)
 					item.setName(item._name);
 			}
-			this._changed(/*#=*/ Change.HIERARCHY);
+			this._changed(/*#=*/ Change.CHILDREN);
 		} else {
 			items = null;
 		}
@@ -2166,7 +2166,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			this._installEvents(false);
 			// Notify parent of changed hierarchy
 			if (notify)
-				this._parent._changed(/*#=*/ Change.HIERARCHY);
+				this._parent._changed(/*#=*/ Change.CHILDREN);
 			this._parent = null;
 			return true;
 		}
@@ -2213,7 +2213,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		for (var i = removed.length - 1; i >= 0; i--)
 			removed[i]._remove(false);
 		if (removed.length > 0)
-			this._changed(/*#=*/ Change.HIERARCHY);
+			this._changed(/*#=*/ Change.CHILDREN);
 		return removed;
 	},
 
@@ -2229,7 +2229,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Adjust inidces
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
-			this._changed(/*#=*/ Change.HIERARCHY);
+			this._changed(/*#=*/ Change.CHILDREN);
 		}
 	},
 

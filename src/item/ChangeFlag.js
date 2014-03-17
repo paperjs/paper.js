@@ -15,7 +15,7 @@ var ChangeFlag = {
 	// STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
 	APPEARANCE: 0x1,
 	// Change in item hierarchy
-	HIERARCHY: 0x2,
+	CHILDREN: 0x2,
 	// Item geometry (path, bounds)
 	GEOMETRY: 0x4,
 	// Only segment(s) have changed, and affected curves have alredy been
@@ -37,10 +37,9 @@ var ChangeFlag = {
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
 var Change = {
-	// HIERARCHY also changes GEOMETRY, since removing children from groups
-	// change bounds
-	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.GEOMETRY
-			| ChangeFlag.APPEARANCE,
+	// CHILDREN also changes GEOMETRY, since removing children from groups
+	// changes bounds.
+	CHILDREN: ChangeFlag.CHILDREN | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	SEGMENTS: ChangeFlag.SEGMENTS | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
