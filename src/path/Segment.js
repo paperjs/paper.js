@@ -170,7 +170,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 					&& (curveOut = curves[index]))
 				curveOut._changed();
 		}
-		path._changed(/*#=*/ Change.GEOMETRY);
+		path._changed(/*#=*/ Change.SEGMENTS);
 	},
 
 	/**

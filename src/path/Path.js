@@ -138,14 +138,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Clear cached native Path
-			(this._compound ? this._parent : this)._currentPath = undefined;
+			// Clear cached native Path. Clear on the parent too, for
+			// CompoundPaths and Groups (ab)used as clipping paths.
+			this._currentPath = undefined;
+			var parent = this._parent;
+			if (parent)
+				parent._currentPath = undefined;
 			// Clockwise state becomes undefined as soon as geometry changes.
 			this._length = this._clockwise = undefined;
-			// Curves are no longer valid
-			if (this._curves) {
+			// Only notify all curves if we're not told that only one Segment
+			// has changed and took already care of notifications.
+			if (this._curves && !(flags & /*#=*/ ChangeFlag.SEGMENTS)) {
 				for (var i = 0, l = this._curves.length; i < l; i++)
-					this._curves[i]._changed(/*#=*/ Change.GEOMETRY);
+					this._curves[i]._changed();
 			}
 			// Clear cached curves used for winding direction and containment
 			// calculation.
@@ -327,7 +332,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					this._curves[length - 1] = new Curve(this,
 						this._segments[length - 1], this._segments[0]);
 			}
-			this._changed(/*#=*/ Change.GEOMETRY);
+			this._changed(/*#=*/ Change.SEGMENTS);
 		}
 	},
 
@@ -414,7 +419,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(from, to);
 		}
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/ Change.SEGMENTS);
 		return segs;
 	},
 
@@ -738,7 +743,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(index, index);
 		}
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/ Change.SEGMENTS);
 		return removed;
 	},
 
@@ -1280,7 +1285,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 				last1.remove();
 				this.setClosed(true);
 			}
-			this._changed(/*#=*/ Change.GEOMETRY);
 			return true;
 		}
 		return false;

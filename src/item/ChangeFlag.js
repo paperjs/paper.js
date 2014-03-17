@@ -13,23 +13,26 @@
 var ChangeFlag = {
 	// Anything affecting the appearance of an item, including GEOMETRY,
 	// STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
-	APPEARANCE: 1,
+	APPEARANCE: 0x1,
 	// Change in item hierarchy
-	HIERARCHY: 2,
+	HIERARCHY: 0x2,
 	// Item geometry (path, bounds)
-	GEOMETRY: 4,
+	GEOMETRY: 0x4,
+	// Only segment(s) have changed, and affected curves have alredy been
+	// notified. This is to implement an optimization in _changed() calls.
+	SEGMENTS: 0x8,
 	// Stroke geometry (excluding color)
-	STROKE: 8,
+	STROKE: 0x10,
 	// Fill style or stroke color / dash
-	STYLE: 16,
+	STYLE: 0x20,
 	// Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
-	ATTRIBUTE: 32,
+	ATTRIBUTE: 0x40,
 	// Text content
-	CONTENT: 64,
+	CONTENT: 0x80,
 	// Raster pixels
-	PIXELS: 128,
+	PIXELS: 0x100,
 	// Clipping in one of the child items
-	CLIPPING: 256
+	CLIPPING: 0x200
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
@@ -39,6 +42,7 @@ var Change = {
 	HIERARCHY: ChangeFlag.HIERARCHY | ChangeFlag.GEOMETRY
 			| ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	SEGMENTS: ChangeFlag.SEGMENTS | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
 	ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
