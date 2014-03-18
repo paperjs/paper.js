@@ -50,7 +50,7 @@
 				for (var i = 1; i < this.amount; i++) {
 					var vector = segments[i].point - point;
 					this.count += speed * 15;
-					var wave = Math.sin((this.count + i * 3) * 0.003);
+					var wave = Math.sin((this.count + i * 3) / 300);
 					var sway = lastVector.rotate(90).normalize(wave);
 					point += lastVector.normalize(pieceLength) + sway;
 					segments[i].point = point;
@@ -155,7 +155,7 @@
 				// (1 -- based on distance, 2 -- maxSpeed)
 				if (slowdown && distance < 100) {
 					// This damping is somewhat arbitrary:
-					desired.length = this.maxSpeed * (distance * 0.001);
+					desired.length = this.maxSpeed * (distance / 100);
 				} else {
 					desired.length = this.maxSpeed;
 				}
