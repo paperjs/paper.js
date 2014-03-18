@@ -149,7 +149,7 @@ test('Raster#clone()', function() {
 		fillColor: new Color(0, 0, 1),
 		strokeColor: new Color(0, 0, 1)
 	};
-	var raster = path.rasterize();
+	var raster = path.rasterize(72);
 	raster.opacity = 0.5;
 	raster.locked = true;
 	raster.visible = false;

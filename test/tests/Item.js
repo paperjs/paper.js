@@ -646,7 +646,7 @@ test('Item#blendMode in a transformed Group', function() {
 		blendMode: 'screen'
 	});
 
-	var raster = layer.rasterize();
+	var raster = layer.rasterize(72);
 	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
 			'Top left pixel should be red:');
 	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
@@ -658,7 +658,7 @@ test('Item#blendMode in a transformed Group', function() {
 	var group = new Group(path2);
 	group.position = [50, 50];
 
-	var raster = layer.rasterize();
+	var raster = layer.rasterize(72);
 	compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
 			'Top left pixel should be red:');
 	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),

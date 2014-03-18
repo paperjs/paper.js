@@ -380,7 +380,7 @@ test('hitting raster bounding box', function() {
 		radius: 50,
 		fillColor: 'red'
 	});
-	var raster = path.rasterize();
+	var raster = path.rasterize(72);
 	path.remove();
 
 	var hitResult = paper.project.hitTest(raster.bounds.topLeft, {
@@ -432,7 +432,7 @@ test('hitting raster items', function() {
 	// Create a path, rasterize it and then remove the path:
 	var path = new Path.Rectangle(new Point(), new Size(320, 240));
 	path.fillColor = 'red';
-	var raster = path.rasterize();
+	var raster = path.rasterize(72);
 	
 	var hitResult = paper.project.hitTest(new Point(160, 120));
 
