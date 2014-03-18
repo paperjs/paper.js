@@ -578,15 +578,13 @@ test('Cloning a linked size', function() {
 	equals(error == null, true, description);
 });
 
-test('Item#type', function() {
-	equals(new Group().type, 'group');
-	equals(new Path().type, 'path');
-	equals(new CompoundPath().type, 'compound-path');
-
-	var canvas = document.createElement('canvas');
-	equals(new Raster(canvas).type, 'raster');
-	equals(new PlacedSymbol().type, 'placed-symbol');
-	equals(new PointText().type, 'point-text');
+test('Item#className', function() {
+	equals(new Group().className, 'Group');
+	equals(new Path().className, 'Path');
+	equals(new CompoundPath().className, 'CompoundPath');
+	equals(new Raster().className, 'Raster');
+	equals(new PlacedSymbol().className, 'PlacedSymbol');
+	equals(new PointText().className, 'PointText');
 });
 
 test('Item#isInserted', function() {

@@ -104,7 +104,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	insertChildren: function insertChildren(index, items, _preserve) {
 		// Pass on 'path' for _type, to make sure that only paths are added as
 		// children.
-		items = insertChildren.base.call(this, index, items, _preserve, 'path');
+		items = insertChildren.base.call(this, index, items, _preserve, Path);
 		// All children except for the bottom one (first one in list) are set
 		// to anti-clockwise orientation, so that they appear as holes, but
 		// only if their orientation was not already specified before

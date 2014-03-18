@@ -32,13 +32,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (src._serializeFields)
 				src._serializeFields = new Base(
 						this.prototype._serializeFields, src._serializeFields);
-			var res = extend.base.apply(this, arguments),
-				proto = res.prototype,
-				name = proto._class;
-			// Derive the _type string from class name
-			if (name)
-				proto._type = Base.hyphenate(name);
-			return res;
+			return extend.base.apply(this, arguments);
 		},
 
 		/**
@@ -253,9 +247,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		if (flags & /*#=*/ ChangeFlag.CHILDREN) {
 			// Clear cached bounds of all items that this item contributes to.
-			// We don't call this on the parent, since we're already the parent
-			// of the child that modified the hierarchy (that's where these
-			// CHILDREN notifications go)
+			// Here we don't call this on the parent, since adding / removing a
+			// child triggers this notification on the parent.
 			Item._clearBoundsCache(this);
 		}
 		if (project) {
@@ -319,14 +312,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * The type of the item as a string.
+	 * The class name of the item as a string.
 	 *
-	 * @type String('group', 'layer', 'path', 'compound-path', 'shape',
-	 * 'raster', 'placed-symbol', 'point-text')
+	 * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Shape',
+	 * 'Raster', 'PlacedSymbol', 'PointText')
 	 * @bean
 	 */
-	getType: function() {
-		return this._type;
+	getClassName: function() {
+		return this._class;
 	},
 
 	/**
@@ -1655,9 +1648,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test
 	 * in points. Can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
-	 * <b>options.type:</b> Only hit test again a certain item
-	 * type: {String('group', 'layer', 'path', 'compound-path', 'shape',
-	 * 'raster', 'placed-symbol', 'point-text')}, etc.
+	 * <b>options.type:</b> Only hit test again a certain item type:
+	 * {@code Group, Layer, Path, CompoundPath, Shape, Raster, PlacedSymbol,
+	 * PointText}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
 	 * items, taking into account stroke width.
@@ -1718,9 +1711,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				.expand(tolerancePadding.multiply(2))._containsPoint(point))
 			return null;
 		// Filter for type, guides and selected items if that's required.
-		var checkSelf = !(options.guides && !this._guide
+		var type,
+			checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
-				|| options.type && this._type !== options.type),
+				|| (type = options.type) && (typeof type === 'string'
+						// Support legacy #type property to match hyphenated
+						// class-names.
+						? type !== Base.hyphenate(this._class)
+						: !(this instanceof type))),
 			that = this,
 			res;
 
@@ -1980,10 +1978,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Item[]} the inserted items, or {@code null} if inserted was not
 	 * possible.
 	 */
-	insertChildren: function(index, items, _preserve, _type) {
+	insertChildren: function(index, items, _preserve, _proto) {
 		// CompoundPath#insertChildren() requires _preserve and _type:
 		// _preserve avoids changing of the children's path orientation
-		// _type enforces the inserted type.
+		// _proto enforces the prototye of the inserted items, as used by
+		// CompoundPath#insertChildren()
 		var children = this._children;
 		if (children && items && items.length > 0) {
 			// We need to clone items because it might be
@@ -1996,7 +1995,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Use the loop also to filter out wrong _type.
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i];
-				if (_type && item._type !== _type) {
+				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
 					item._remove(true);
@@ -2389,7 +2388,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Find group parents. Check for parent._parent, since don't want
 			// top level layers, because they also inherit from Group
 			if (parent._parent
-				&& /^(group|layer|compound-path)$/.test(parent._type)
+				&& /^(Group|Layer|CompoundPath)$/.test(parent._class)
 				&& item.isDescendant(parent))
 					return true;
 			// Keep walking up otherwise

@@ -138,9 +138,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
-			// Clear cached native Path. Clear on the parent too, for
-			// CompoundPaths and Groups (ab)used as clipping paths.
-			this._currentPath = undefined;
+			// The _currentPath is already cleared in Item, but clear it on the
+			// parent too, for children of CompoundPaths, and Groups (ab)used as
+			// clipping paths.
 			var parent = this._parent;
 			if (parent)
 				parent._currentPath = undefined;
@@ -164,7 +164,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	getStyle: function() {
-		// If this path is part of a CompoundPath, use the paren't style instead
+		// If this path is part of a compound-path, return the parent's style.
 		var parent = this._parent;
 		return (parent instanceof CompoundPath ? parent : this)._style;
 	},
@@ -332,6 +332,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					this._curves[length - 1] = new Curve(this,
 						this._segments[length - 1], this._segments[0]);
 			}
+			// Use SEGMENTS notification instead of GEOMETRY since curves are
+			// up-to-date and don't need notification.
 			this._changed(/*#=*/ Change.SEGMENTS);
 		}
 	},
@@ -419,6 +421,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(from, to);
 		}
+		// Use SEGMENTS notification instead of GEOMETRY since curves are kept
+		// up-to-date by _adjustCurves() and don't need notification.
 		this._changed(/*#=*/ Change.SEGMENTS);
 		return segs;
 	},
@@ -743,6 +747,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// Adjust segments for the curves before and after the removed ones
 			this._adjustCurves(index, index);
 		}
+		// Use SEGMENTS notification instead of GEOMETRY since curves are kept
+		// up-to-date by _adjustCurves() and don't need notification.
 		this._changed(/*#=*/ Change.SEGMENTS);
 		return removed;
 	},

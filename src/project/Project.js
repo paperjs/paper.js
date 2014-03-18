@@ -269,9 +269,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test
 	 * in points, can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
-	 * <b>options.type:</b> Only hit test again a certain item
-	 * type: {String('group', 'layer', 'path', 'compound-path', 'shape',
-	 * 'raster', 'placed-symbol', 'point-text')}, etc.
+	 * <b>options.type:</b> Only hit test again a certain item type:
+	 * {@code Group, Layer, Path, CompoundPath, Shape, Raster, PlacedSymbol,
+	 * PointText}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
 	 * items, taking into account stroke width.
