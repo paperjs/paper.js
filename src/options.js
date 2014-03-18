@@ -18,6 +18,7 @@ var __options = {
 	parser: 'acorn',
 	version: 'dev',
 	environment: 'browser',
+	legacy: true,
 	stats: true,
 	svg: true,
 	fatlineClipping: true,

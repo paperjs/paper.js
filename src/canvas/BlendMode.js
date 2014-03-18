@@ -232,20 +232,24 @@ var BlendMode = new function() {
 	Base.each(modes, function(func, mode) {
 		// Blend #330000 (51) and #aa0000 (170):
 		// Multiplying should lead to #220000 (34)
-		ctx.save();
 		// For darken we need to reverse color parameters in order to test mode.
 		var darken = mode === 'darken',
 			ok = false;
-		ctx.fillStyle = darken ? '#300' : '#a00';
-		ctx.fillRect(0, 0, 1, 1);
-		ctx.globalCompositeOperation = mode;
-		if (ctx.globalCompositeOperation === mode) {
-			ctx.fillStyle = darken ? '#a00' : '#300';
+		ctx.save();
+		// FF 3.6 throws exception when setting globalCompositeOperation to
+		// unsupported values.
+		try {
+			ctx.fillStyle = darken ? '#300' : '#a00';
 			ctx.fillRect(0, 0, 1, 1);
-			ok = ctx.getImageData(0, 0, 1, 1).data[0] !== (darken ? 170 : 51);
-		}
-		nativeModes[mode] = ok; 
+			ctx.globalCompositeOperation = mode;
+			if (ctx.globalCompositeOperation === mode) {
+				ctx.fillStyle = darken ? '#a00' : '#300';
+				ctx.fillRect(0, 0, 1, 1);
+				ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken ? 170 : 51;
+			}
+		} catch (e) {}
 		ctx.restore();
+		nativeModes[mode] = ok; 
 	});
 	CanvasProvider.release(ctx);
 
