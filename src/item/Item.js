@@ -1816,41 +1816,42 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		return true;
 	}
-}, new function() {
-	function getItems(item, match, list) {
-		var children = item._children,
-			items = list && [];
-		for (var i = 0, l = children && children.length; i < l; i++) {
-			var child = children[i];
-			if (child.matches(match)) {
+}, {
+	statics: {
+		// NOTE: We pass children instead of item as first argument so the
+		// method can be used for Project#layers as well in Project.
+		_getItems: function _getItems(children, match, list) {
+			var items = list && [];
+			for (var i = 0, l = children && children.length; i < l; i++) {
+				var child = children[i];
+				if (child.matches(match)) {
+					if (list) {
+						items.push(child);
+					} else {
+						return child;
+					}
+				}
+				var res = _getItems(child._children, match, list);
 				if (list) {
-					items.push(child);
-				} else {
-					return child;
+					items.push.apply(items, res);
+				} else if (res) {
+					return res;
 				}
 			}
-			var res = getItems(child, match, list);
-			if (list) {
-				items.push.apply(items, res);
-			} else if (res) {
-				return res;
-			}
+			return list ? items : null;
 		}
-		return list ? items : null;
-	}
+	},
 
-	return /** @lends Item# */{
-		// DOCS: Item#getItems
-		getItems: function(match) {
-			return getItems(this, match, true);
-		},
+	// DOCS: Item#getItems
+	getItems: function(match) {
+		return Item._getItems(this._children, match, true);
+	},
 
-		// DOCS: Item#getItem
-		getItem: function(match) {
-			return getItems(this, match, false);
-		}
-	};
-}, /** @lends Item# */{
+	// DOCS: Item#getItem
+	getItem: function(match) {
+		return Item._getItems(this._children, match, false);
+	},
+
 	/**
 	 * {@grouptitle Importing / Exporting JSON and SVG}
 	 *

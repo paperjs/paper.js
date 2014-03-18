@@ -308,33 +308,18 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			if (res) return res;
 		}
 		return null;
-	}
-}, new function() {
-	function getItems(project, match, list) {
-		var layers = project.layers,
-			items = list && [];
-		for (var i = 0, l = layers.length; i < l; i++) {
-			var res = layers[i][list ? 'getItems' : 'getItem'](match);
-			if (list) {
-				items.push.apply(items, res);
-			} else if (res)
-				return res;
-		}
-		return list ? items : null;
-	}
+	},
 
-	return /** @lends Project# */{
-		// DOCS: Project#getItems
-		getItems: function(match) {
-			return getItems(this, match, true);
-		},
+	// DOCS: Project#getItems
+	getItems: function(match) {
+		return Item._getItems(this.layers, match, true);
+	},
 
-		// DOCS: Project#getItems
-		getItem: function(match) {
-			return getItems(this, match, false);
-		}
-	};
-}, /** @lends Project# */{
+	// DOCS: Project#getItems
+	getItem: function(match) {
+		return Item._getItems(this.layers, match, false);
+	},
+
 	/**
 	 * {@grouptitle Importing / Exporting JSON and SVG}
 	 *
