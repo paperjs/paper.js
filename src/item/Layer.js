@@ -131,7 +131,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 		// If the item is a layer and contained within Project#layers, use
 		// our own version of move().
 		if (item instanceof Layer && !item._parent) {
-			this._remove(true);
+			this._remove(true, true);
 			Base.splice(item._project.layers, [this],
 					item._index + (above ? 1 : 0), 0);
 			this._setProject(item._project, true);

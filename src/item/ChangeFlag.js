@@ -14,25 +14,27 @@ var ChangeFlag = {
 	// Anything affecting the appearance of an item, including GEOMETRY,
 	// STROKE, STYLE and ATTRIBUTE (except for the invisible ones: locked, name)
 	APPEARANCE: 0x1,
-	// Change in item hierarchy
+	// A change in the item's children
 	CHILDREN: 0x2,
+	// A change in the item's place in the DOM (removed, inserted, moved). 
+	INSERTION: 0x4,
 	// Item geometry (path, bounds)
-	GEOMETRY: 0x4,
-	// Only segment(s) have changed, and affected curves have alredy been
+	GEOMETRY: 0x8,
+	// Only segment(s) have changed, and affected curves have already been
 	// notified. This is to implement an optimization in _changed() calls.
-	SEGMENTS: 0x8,
+	SEGMENTS: 0x10,
 	// Stroke geometry (excluding color)
-	STROKE: 0x10,
+	STROKE: 0x20,
 	// Fill style or stroke color / dash
-	STYLE: 0x20,
+	STYLE: 0x40,
 	// Item attributes: visible, blendMode, locked, name, opacity, clipMask ...
-	ATTRIBUTE: 0x40,
+	ATTRIBUTE: 0x80,
 	// Text content
-	CONTENT: 0x80,
+	CONTENT: 0x100,
 	// Raster pixels
-	PIXELS: 0x100,
+	PIXELS: 0x200,
 	// Clipping in one of the child items
-	CLIPPING: 0x200
+	CLIPPING: 0x400
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
@@ -40,6 +42,8 @@ var Change = {
 	// CHILDREN also changes GEOMETRY, since removing children from groups
 	// changes bounds.
 	CHILDREN: ChangeFlag.CHILDREN | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
+	// Changing the insertion can change the appearance through parent's matrix.
+	INSERTION: ChangeFlag.INSERTION | ChangeFlag.APPEARANCE,
 	GEOMETRY: ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	SEGMENTS: ChangeFlag.SEGMENTS | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
 	STROKE: ChangeFlag.STROKE | ChangeFlag.STYLE | ChangeFlag.APPEARANCE,

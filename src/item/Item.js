@@ -2006,10 +2006,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
-					item._remove(true);
+					// Notify parent of change. Don't notify item itself yet,
+					// as we're doing so when adding it to the new parent below.
+					item._remove(false, true);
 				}
 			}
 			Base.splice(children, items, index, 0);
+			var project = this._project,
+				// See #_remove() for an explanation of this:
+				notifySelf = project && project._changes;
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				item._parent = this;
@@ -2018,6 +2023,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				// are kept in sync.
 				if (item._name)
 					item.setName(item._name);
+				if (notifySelf)
+					this._changed(/*#=*/ Change.INSERTION);
 			}
 			this._changed(/*#=*/ Change.CHILDREN);
 		} else {
@@ -2164,16 +2171,24 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	/**
 	* Removes the item from its parent's children list.
 	*/
-	_remove: function(notify) {
-		if (this._parent) {
+	_remove: function(notifySelf, notifyParent) {
+		var parent = this._parent;
+		if (parent) {
 			if (this._name)
 				this._removeNamed();
 			if (this._index != null)
-				Base.splice(this._parent._children, null, this._index, 1);
+				Base.splice(parent._children, null, this._index, 1);
 			this._installEvents(false);
-			// Notify parent of changed hierarchy
-			if (notify)
-				this._parent._changed(/*#=*/ Change.CHILDREN);
+			// Notify self of the insertion change. We only need this
+			// notification if we're tracking changes for now.
+			if (notifySelf) {
+				var project = this._project;
+				if (project && project._changes)
+					this._changed(/*#=*/ Change.INSERTION);
+			}
+			// Notify parent of changed children
+			if (notifyParent)
+				parent._changed(/*#=*/ Change.CHILDREN);
 			this._parent = null;
 			return true;
 		}
@@ -2187,7 +2202,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	* @return {Boolean} {@true if the item was removed}
 	*/
 	remove: function() {
-		return this._remove(true);
+		// Notify self and parent of change:
+		return this._remove(true, true);
 	},
 
 	/**
@@ -2217,8 +2233,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// deletes it for the removed items. Calling #_remove() afterwards is
 		// fine, since it only calls Base.splice() if #_index is set.
 		var removed = Base.splice(this._children, null, from, to - from);
-		for (var i = removed.length - 1; i >= 0; i--)
-			removed[i]._remove(false);
+		for (var i = removed.length - 1; i >= 0; i--) {
+			// Don't notify parent each time, notify it separately after.
+			removed[i]._remove(true, false);
+		}
 		if (removed.length > 0)
 			this._changed(/*#=*/ Change.CHILDREN);
 		return removed;
