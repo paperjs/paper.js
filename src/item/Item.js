@@ -1866,8 +1866,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * data string.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether the JSON is returned as
-	 * a {@code Object} or a {@code String}.
+	 * <b>options.asString:</b> {@code Boolean} – whether the JSON is returned
+	 * as a {@code Object} or a {@code String}.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in JSON data.
 	 *
@@ -1901,11 +1901,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * Exports the item with its content and child items as an SVG DOM.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a
+	 * <b>options.asString:</b> {@code Boolean} – whether a SVG node or a
 	 * {@code String} is to be returned.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in SVG data.
-	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path
+	 * <b>options.matchShapes:</b> {@code Boolean} – whether imported path
 	 * items should tried to be converted to shape items, if their geometries
 	 * match.
 	 *
@@ -1924,7 +1924,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * {@link Item#removeChildren()} to do so.
 	 *
 	 * The options object offers control over some aspects of the SVG import:
-	 * <b>options.expandShapes:</b> {@code Boolean} – wether imported shape
+	 * <b>options.expandShapes:</b> {@code Boolean} – whether imported shape
 	 * items should be expanded to path items.
 	 *
 	 * @name Item#importSVG
@@ -1989,13 +1989,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	insertChildren: function(index, items, _preserve, _proto) {
 		// CompoundPath#insertChildren() requires _preserve and _type:
 		// _preserve avoids changing of the children's path orientation
-		// _proto enforces the prototye of the inserted items, as used by
+		// _proto enforces the prototype of the inserted items, as used by
 		// CompoundPath#insertChildren()
 		var children = this._children;
 		if (children && items && items.length > 0) {
 			// We need to clone items because it might be
 			// an Item#children array. Also, we're removing elements if they
-			// don't match _type. Use Array.prototype.slice becaus items can be
+			// don't match _type. Use Array.prototype.slice because items can be
 			// an arguments object.
 			items = Array.prototype.slice.apply(items);
 			// Remove the items from their parents first, since they might be
@@ -2213,7 +2213,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			return null;
 		from = from || 0;
 		to = Base.pick(to, this._children.length);
-		// Use Base.splice(), wich adjusts #_index for the items above, and
+		// Use Base.splice(), which adjusts #_index for the items above, and
 		// deletes it for the removed items. Calling #_remove() afterwards is
 		// fine, since it only calls Base.splice() if #_index is set.
 		var removed = Base.splice(this._children, null, from, to - from);
@@ -2233,7 +2233,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	reverseChildren: function() {
 		if (this._children) {
 			this._children.reverse();
-			// Adjust inidces
+			// Adjust indices
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
 			this._changed(/*#=*/ Change.CHILDREN);

@@ -18,7 +18,7 @@
  * scene graph. As the term document is already taken in the browser context,
  * it is called Project.
  *
- * Projects allow the manipluation of the styles that are applied to all newly
+ * Projects allow the manipulation of the styles that are applied to all newly
  * created items, give access to the selected items, and will in future versions
  * offer ways to query for items in the scene graph defining specific
  * requirements, and means to persist and load from different formats, such as
@@ -96,7 +96,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
 	/**
 	 * Specifies whether the project has any content or not. Note that since
-	 * projects by default are created with one empty layer, this returns alos
+	 * projects by default are created with one empty layer, this returns also
 	 * {@code true} if that layer exists but is itself empty.
 	 *
 	 * @return Boolean
@@ -299,7 +299,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 */
 	hitTest: function(/* point, options */) {
 		// We don't need to do this here, but it speeds up things since we won't
-		// repeatetly convert in Item#hitTest() then.
+		// repeatedly convert in Item#hitTest() then.
 		var point = Point.read(arguments),
 			options = HitResult.getOptions(Base.read(arguments));
 		// Loop backwards, so layers that get drawn last are tested first
@@ -327,8 +327,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * a JSON data string.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether the JSON is returned as
-	 * a {@code Object} or a {@code String}.
+	 * <b>options.asString:</b> {@code Boolean} – whether the JSON is returned
+	 * as a {@code Object} or a {@code String}.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in JSON data.
 	 *
@@ -359,11 +359,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * all contained in one top level SVG group node.
 	 *
 	 * The options object offers control over some aspects of the SVG export:
-	 * <b>options.asString:</b> {@code Boolean} – wether a SVG node or a
+	 * <b>options.asString:</b> {@code Boolean} – whether a SVG node or a
 	 * {@code String} is to be returned.
 	 * <b>options.precision:</b> {@code Number} – the amount of fractional
 	 * digits in numbers used in SVG data.
-	 * <b>options.matchShapes:</b> {@code Boolean} – wether imported path
+	 * <b>options.matchShapes:</b> {@code Boolean} – whether imported path
 	 * items should tried to be converted to shape items, if their geometries
 	 * match.
 	 *
@@ -382,7 +382,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * {@link Project#clear()} to do so.
 	 *
 	 * The options object offers control over some aspects of the SVG import:
-	 * <b>options.expandShapes:</b> {@code Boolean} – wether imported shape
+	 * <b>options.expandShapes:</b> {@code Boolean} – whether imported shape
 	 * items should be expanded to path items.
 	 *
 	 * @name Project#importSVG
