@@ -20,8 +20,6 @@
 				this.maxForce = maxForce + strength;
 				this.amount = strength * 10 + 10;
 				this.count = 0;
-				this.lastAngle = 0;
-				this.distances = [];
 				this.createItems();
 			},
 
@@ -35,21 +33,21 @@
 				this.borders();
 				this.update();
 				this.calculateTail();
-				this.updateItems();
+				this.moveHead();
 			},
 
 			calculateTail: function() {
 				var segments = this.path.segments,
 					shortSegments = this.shortPath.segments;
 				var speed = this.vector.length;
-				var pieceLength = 5 + speed * 0.3;
+				var pieceLength = 5 + speed / 3;
 				var point = this.position;
 				segments[0].point = shortSegments[0].point = point;
 				// Chain goes the other way than the movement
 				var lastVector = -this.vector;
 				for (var i = 1; i < this.amount; i++) {
 					var vector = segments[i].point - point;
-					this.count += speed * 15;
+					this.count += speed * 10;
 					var wave = Math.sin((this.count + i * 3) / 300);
 					var sway = lastVector.rotate(90).normalize(wave);
 					point += lastVector.normalize(pieceLength) + sway;
@@ -58,7 +56,7 @@
 						shortSegments[i].point = point;
 					lastVector = vector;
 				}
-				// this.path.smooth();
+				this.path.smooth();
 			},
 
 			createItems: function() {
@@ -85,27 +83,17 @@
 					this.shortPath.add(new Point());
 			},
 
-			updateItems: function() {
+			moveHead: function() {
 				this.head.position = this.position;
-				var angle = this.vector.angle;
-				this.head.rotate(angle - this.lastAngle);
-				this.lastAngle = angle;
+				this.head.rotation = this.vector.angle;
 			},
 
 			// We accumulate a new acceleration each time based on three rules
 			flock: function(boids) {
-				this.calculateDistances(boids);
 				var separation = this.separate(boids) * 3;
 				var alignment = this.align(boids);
 				var cohesion = this.cohesion(boids);
 				this.acceleration += separation + alignment + cohesion;
-			},
-
-			calculateDistances: function(boids) {
-				for (var i = 0, l = boids.length; i < l; i++) {
-					var other = boids[i];
-					this.distances[i] = other.position.getDistance(this.position, true);
-				}
 			},
 
 			update: function() {
@@ -165,17 +153,17 @@
 			},
 
 			separate: function(boids) {
-				var desiredSeperation = 3600;
+				var desiredSeperation = 60;
 				var steer = new Point();
 				var count = 0;
 				// For every boid in the system, check if it's too close
 				for (var i = 0, l = boids.length; i < l; i++) {
-					var distance = this.distances[i];
+					var other = boids[i];
+					var vector = this.position - other.position;
+					var distance = vector.length;
 					if (distance > 0 && distance < desiredSeperation) {
 						// Calculate vector pointing away from neighbor
-						var delta = this.position - boids[i].position;
-						delta.length = 1 / distance;
-						steer += delta;
+						steer += vector.normalize(1 / distance);
 						count++;
 					}
 				}
@@ -198,9 +186,10 @@
 				var steer = new Point();
 				var count = 0;
 				for (var i = 0, l = boids.length; i < l; i++) {
-					var distance = this.distances[i];
+					var other = boids[i];
+					var distance = this.position.getDistance(other.position);
 					if (distance > 0 && distance < neighborDist) {
-						steer += boids[i].vector;
+						steer += other.vector;
 						count++;
 					}
 				}
@@ -220,13 +209,14 @@
 			// For the average location (i.e. center) of all nearby boids,
 			// calculate steering vector towards that location
 			cohesion: function(boids) {
-				var neighborDist = 10000;
-				var sum = new Point(0, 0);
+				var neighborDist = 100;
+				var sum = new Point();
 				var count = 0;
 				for (var i = 0, l = boids.length; i < l; i++) {
-					var distance = this.distances[i];
+					var other = boids[i];
+					var distance = this.position.getDistance(other.position);
 					if (distance > 0 && distance < neighborDist) {
-						sum += boids[i].position; // Add location
+						sum += other.position; // Add location
 						count++;
 					}
 				}
