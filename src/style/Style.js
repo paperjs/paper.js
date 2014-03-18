@@ -298,14 +298,10 @@ var Style = Base.extend(new function() {
 
 	/**
 	 * @private
+	 * @bean
 	 * @deprecated use {@link #getFontFamily()} instead.
 	 */
 	getFont: '#getFontFamily',
-
-	/**
-	 * @private
-	 * @deprecated use {@link #setFontFamily(font)} instead.
-	 */
 	setFont: '#setFontFamily',
 
 	getLeading: function getLeading() {

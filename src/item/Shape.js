@@ -23,7 +23,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 	_canApplyMatrix: false,
 	_boundsSelected: true,
 	_serializeFields: {
-		shape: null,
+		type: null,
 		size: null,
 		radius: null
 	},
@@ -33,7 +33,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	_equals: function(item) {
-		return this._shape === item._shape
+		return this._type === item._type
 			&& this._size.equals(item._size)
 			// Radius can be a number or size:
 			&& Base.equals(this._radius, item._radius);
@@ -41,7 +41,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	clone: function(insert) {
 		var copy = new Shape(Item.NO_INSERT);
-		copy.setShape(this._shape);
+		copy.setType(this._type);
 		copy.setSize(this._size);
 		copy.setRadius(this._radius);
 		return this._clone(copy, insert);
@@ -53,13 +53,21 @@ var Shape = Item.extend(/** @lends Shape# */{
 	 * @type String('rectangle', 'circle', 'ellipse')
 	 * @bean
 	 */
-	getShape: function() {
-		return this._shape;
+	getType: function() {
+		return this._type;
 	},
 
-	setShape: function(shape) {
-		this._shape = shape;
+	setType: function(type) {
+		this._type = type;
 	},
+
+	/**
+	 * @private
+	 * @bean
+	 * @deprecated use {@link #getType()} instead.
+	 */
+	getShape: '#getType',
+	setShape: '#setType',
 
 	/**
 	 * The size of the shape.
@@ -78,19 +86,19 @@ var Shape = Item.extend(/** @lends Shape# */{
 			// First time, e.g. whean reading from JSON...
 			this._size = size.clone();
 		} else if (!this._size.equals(size)) {
-			var shape = this._shape,
+			var type = this._type,
 				width = size.width,
 				height = size.height;
-			if (shape === 'rectangle') {
+			if (type === 'rectangle') {
 				// Shrink radius accordingly
 				var radius = Size.min(this._radius, size.divide(2));
 				this._radius.set(radius.width, radius.height);
-			} else if (shape === 'circle') {
+			} else if (type === 'circle') {
 				// Use average of width and height as new size, then calculate
 				// radius as a number from that:
 				width = height = (width + height) / 2;
 				this._radius = width / 2;
-			} else if (shape === 'ellipse') {
+			} else if (type === 'ellipse') {
 				// The radius is a size.
 				this._radius.set(width / 2, height / 2);
 			}
@@ -108,14 +116,14 @@ var Shape = Item.extend(/** @lends Shape# */{
 	 */
 	getRadius: function() {
 		var rad = this._radius;
-		return this._shape === 'circle'
+		return this._type === 'circle'
 				? rad
 				: new LinkedSize(rad.width, rad.height, this, 'setRadius');
 	},
 
 	setRadius: function(radius) {
-		var shape = this._shape;
-		if (shape === 'circle') {
+		var type = this._type;
+		if (type === 'circle') {
 			if (radius === this._radius)
 				return;
 			var size = radius * 2;
@@ -130,11 +138,11 @@ var Shape = Item.extend(/** @lends Shape# */{
 				if (this._radius.equals(radius))
 					return;
 				this._radius.set(radius.width, radius.height);
-				if (shape === 'rectangle') {
+				if (type === 'rectangle') {
 					// Grow size accordingly
 					var size = Size.max(this._size, radius.multiply(2));
 					this._size.set(size.width, size.height);
-				} else if (shape === 'ellipse') {
+				} else if (type === 'ellipse') {
 					this._size.set(radius.width * 2, radius.height * 2);
 				}
 			}
@@ -151,7 +159,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 
 	// DOCS: #toPath([insert=true])
 	toPath: function(insert) {
-		var path = new Path[Base.capitalize(this._shape)]({
+		var path = new Path[Base.capitalize(this._type)]({
 			center: new Point(),
 			size: this._size,
 			radius: this._radius,
@@ -172,16 +180,16 @@ var Shape = Item.extend(/** @lends Shape# */{
 			dontPaint = param.dontFinish || param.clip;
 		if (hasFill || hasStroke || dontPaint) {
 			var radius = this._radius,
-				shape = this._shape;
+				type = this._type;
 			if (!param.dontStart)
 				ctx.beginPath();
-			if (shape === 'circle') {
+			if (type === 'circle') {
 				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
 			} else {
 				var rx = radius.width,
 					ry = radius.height,
 					kappa = /*#=*/ Numerical.KAPPA;
-				if (shape === 'ellipse') {
+				if (type === 'ellipse') {
 					// Approximate ellipse with four bezier curves and KAPPA. 
 					var	cx = rx * kappa,
 						cy = ry * kappa;
@@ -275,7 +283,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 
 	return /** @lends Shape# */{
 		_contains: function _contains(point) {
-			if (this._shape === 'rectangle') {
+			if (this._type === 'rectangle') {
 				var center = getCornerCenter(this, point);
 				return center
 						// If there's a quarter ellipse center, use the same
@@ -291,10 +299,10 @@ new function() { // Scope for _contains() and _hitTest() code.
 		_hitTest: function _hitTest(point, options) {
 			var hit = false;
 			if (this.hasStroke()) {
-				var shape = this._shape,
+				var type = this._type,
 					radius = this._radius,
 					strokeWidth = this.getStrokeWidth() + 2 * options.tolerance;
-				if (shape === 'rectangle') {
+				if (type === 'rectangle') {
 					var center = getCornerCenter(this, point, strokeWidth);
 					if (center) {
 						// Check the stroke of the quarter corner ellipse,
@@ -310,7 +318,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 								&& !inner._containsPoint(point);
 					}
 				} else {
-					if (shape === 'ellipse')
+					if (type === 'ellipse')
 						radius = getEllipseRadius(point, radius);
 					hit = 2 * Math.abs(point.getLength() - radius)
 							<= strokeWidth;
@@ -324,9 +332,9 @@ new function() { // Scope for _contains() and _hitTest() code.
 }, {
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
-	function createShape(shape, point, size, radius, args) {
+	function createShape(type, point, size, radius, args) {
 		var item = new Shape(Base.getNamed(args));
-		item._shape = shape;
+		item._type = type;
 		item._size = size;
 		item._radius = radius;
 		return item.translate(point);

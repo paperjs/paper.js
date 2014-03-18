@@ -153,11 +153,11 @@ new function() {
 	}
 
 	function exportShape(item) {
-		var shape = item._shape,
+		var type = item._type,
 			radius = item._radius,
-			attrs = getTransform(item, true, shape !== 'rectangle');
-		if (shape === 'rectangle') {
-			shape = 'rect'; // SVG
+			attrs = getTransform(item, true, type !== 'rectangle');
+		if (type === 'rectangle') {
+			type = 'rect'; // SVG
 			var size = item._size,
 				width = size.width,
 				height = size.height;
@@ -169,14 +169,14 @@ new function() {
 				radius = null;
 		}
 		if (radius) {
-			if (shape === 'circle') {
+			if (type === 'circle') {
 				attrs.r = radius;
 			} else {
 				attrs.rx = radius.width;
 				attrs.ry = radius.height;
 			}
 		}
-		return createElement(shape, attrs);
+		return createElement(type, attrs);
 	}
 
 	function exportCompoundPath(item) {
