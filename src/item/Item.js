@@ -1715,7 +1715,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
 				|| (type = options.type) && (typeof type === 'string'
-						// Support legacy #type property to match hyphenated
+						// Support legacy Item#type property to match hyphenated
 						// class-names.
 						? type !== Base.hyphenate(this._class)
 						: !(this instanceof type))),
@@ -1776,7 +1776,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (options.fill && this.hasFill() && this._contains(point))
 			return new HitResult('fill', this);
 	},
-
+}, { // Now injection block for statics below
 	// DOCS: Item#matches
 	matches: function(match) {
 		// matchObject() is used to match against objects in a nested manner.
@@ -1800,7 +1800,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (match.hasOwnProperty(key)) {
 				var value = this[key],
 					compare = match[key];
-				if (compare instanceof RegExp) {
+				// Support legacy Item#type property to match hyphenated
+				// class-names.
+				if (value === undefined && key === 'type')
+					value = Base.hyphenate(this._class);
+				if (/^(constructor|class)$/.test(key)) {
+					if (!(this instanceof compare))
+						return false;
+				} else if (compare instanceof RegExp) {
 					if (!compare.test(value))
 						return false;
 				} else if (typeof compare === 'function') {
@@ -1815,8 +1822,18 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		}
 		return true;
-	}
-}, {
+	},
+
+	// DOCS: Item#getItems
+	getItems: function(match) {
+		return Item._getItems(this._children, match, true);
+	},
+
+	// DOCS: Item#getItem
+	getItem: function(match) {
+		return Item._getItems(this._children, match, false);
+	},
+
 	statics: {
 		// NOTE: We pass children instead of item as first argument so the
 		// method can be used for Project#layers as well in Project.
@@ -1840,18 +1857,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 			return list ? items : null;
 		}
-	},
-
-	// DOCS: Item#getItems
-	getItems: function(match) {
-		return Item._getItems(this._children, match, true);
-	},
-
-	// DOCS: Item#getItem
-	getItem: function(match) {
-		return Item._getItems(this._children, match, false);
-	},
-
+	}
+}, {
 	/**
 	 * {@grouptitle Importing / Exporting JSON and SVG}
 	 *
