@@ -1023,7 +1023,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					// the cache for this child's children is not valid anymore,
 					// that propagates up the DOM tree.
 					if (child !== item && child._boundsCache)
-						child._clearBoundsCache();
+						Item._clearBoundsCache(child);
 				}
 				item._boundsCache = undefined;
 			}
