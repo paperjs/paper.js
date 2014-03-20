@@ -637,7 +637,6 @@ Path.inject(/** @lends Path# */{
 			// consecutive intersections of the ray
 			var curves = this._getMonoCurves(),
 				roots = [],
-				x = point.x,
 				y = point.y,
 				xIntercepts = [];
 			for (var i = 0, l = curves.length; i < l; i++) {
