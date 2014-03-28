@@ -510,7 +510,7 @@ statics: new function() {
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
-			var ellipse = Shape._readEllipse(arguments);
+			var ellipse = Shape._readEllipse(arguments),
 				radius = ellipse.radius;
 			return createShape('ellipse', ellipse.center, radius.multiply(2),
 					radius, arguments);

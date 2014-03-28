@@ -48,7 +48,7 @@ PathItem.inject(new function() {
 		// We do not modify the operands themselves
 		// The result might not belong to the same type
 		// i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-		var _path1 = preparePath(path1);
+		var _path1 = preparePath(path1),
 			_path2 = path2 && path1 !== path2 && preparePath(path2);
 		// Do operator specific calculations before we begin
 		// Make both paths at clockwise orientation, except when subtract = true
@@ -110,7 +110,7 @@ PathItem.inject(new function() {
 			// dividing the curve chain, with the same (amortised) time.
 			for (var j = 0; j < 3; j++) {
 				var length = totalLength * Math.random(),
-					amount = lengths.length;
+					amount = lengths.length,
 					k = 0;
 				do {
 					if (lengths[k] >= length) {

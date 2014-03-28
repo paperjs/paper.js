@@ -444,7 +444,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			for (var id in this._selectedItems) {
 				var item = this._selectedItems[id],
 					globalMatrix = item._globalMatrix,
-					size = this._scope.settings.handleSize;
+					size = this._scope.settings.handleSize,
 					half = size / 2;
 				if (item._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)

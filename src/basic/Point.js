@@ -871,7 +871,7 @@ var Point = Base.extend(/** @lends Point# */{
 		 * console.log(minPoint); // {x: 10, y: 5}
 		 */
 		min: function(/* point1, point2 */) {
-			var point1 = Point.read(arguments);
+			var point1 = Point.read(arguments),
 				point2 = Point.read(arguments);
 			return new Point(
 				Math.min(point1.x, point2.x),
@@ -895,7 +895,7 @@ var Point = Base.extend(/** @lends Point# */{
 		 * console.log(maxPoint); // {x: 200, y: 100}
 		 */
 		max: function(/* point1, point2 */) {
-			var point1 = Point.read(arguments);
+			var point1 = Point.read(arguments),
 				point2 = Point.read(arguments);
 			return new Point(
 				Math.max(point1.x, point2.x),

@@ -810,7 +810,6 @@ var View = Base.extend(Callback, /** @lends View# */{
 		if (!view || !dragging)
 			return;
 		var point = viewToProject(view, event);
-		curPoint = null;
 		dragging = false;
 		view._handleEvent('mouseup', point, event);
 		if (tool)

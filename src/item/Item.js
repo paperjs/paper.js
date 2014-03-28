@@ -86,7 +86,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
 		var internal = props && props.internal === true,
-			matrix = this._matrix = new Matrix();
+			matrix = this._matrix = new Matrix(),
 			project = paper.project;
 		if (!internal)
 			this._id = Item._id = (Item._id || 0) + 1;
@@ -1572,7 +1572,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Floor top-left corner and ceil bottom-right corner, to never
 			// blur or cut pixels.
 			topLeft = bounds.getTopLeft().floor(),
-			bottomRight = bounds.getBottomRight().ceil()
+			bottomRight = bounds.getBottomRight().ceil(),
 			size = new Size(bottomRight.subtract(topLeft)),
 			canvas = CanvasProvider.getCanvas(size.multiply(scale)),
 			ctx = canvas.getContext('2d'),
