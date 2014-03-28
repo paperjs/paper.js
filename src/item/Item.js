@@ -1775,7 +1775,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// The default implementation honly handles 'fill' through #_contains()
 		if (options.fill && this.hasFill() && this._contains(point))
 			return new HitResult('fill', this);
-	},
+	}
 }, { // Now injection block for statics below
 	// DOCS: Item#matches
 	matches: function(match) {

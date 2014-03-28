@@ -318,7 +318,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		var winding = this._getWinding(point, false, true);
 		return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
-	},
+	}
 
 	/**
 	 * Smooth bezier curves without changing the amount of segments or their
