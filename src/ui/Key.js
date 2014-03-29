@@ -62,7 +62,7 @@ var Key = new function() {
 	// in onKeyDown/Up: keydown is used to store the downCode and handle
 	// modifiers and special keys such as arrows, space, etc, keypress fires the
 	// actual onKeyDown event and maps the keydown keyCode to the keypress
-	// charCode so keyup can do the right thing too.
+	// charCode so keyup can do the right.
 	charCodeMap = {}, // keyCode -> charCode mappings for pressed keys
 	keyMap = {}, // Map for currently pressed keys
 	downCode; // The last keyCode from keydown

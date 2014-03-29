@@ -250,7 +250,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	// DOCS: #isColinear(segment), #isOrthogonal(), #isArc()
 
 	/**
-	 * Returns true if the the two segments are the beggining of two lines and
+	 * Returns true if the the two segments are the beginning of two lines and
 	 * if these two lines are running parallel.
 	 */
 	isColinear: function(segment) {

@@ -120,7 +120,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
 	/**
 	 * The reference to the project's view.
-	 * @name Project#view
 	 * @type View
 	 * @bean
 	 */
