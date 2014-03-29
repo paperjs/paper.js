@@ -42,6 +42,8 @@ npm publish
 cd $SITE_DIR
 echo `PWD`
 cp $PAPER_DIR/dist/paperjs.zip $DIST_FILE
+# Update the online version of paper.js
+cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
 # Commit to paperjs.org
 git add -A $DIST_FILE
 git commit -m "Release version v$VERSION"
