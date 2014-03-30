@@ -29,13 +29,17 @@
 /*#*/ include('Segment.js');
 
 /*#*/ include('Path.js');
-/*#*/ include('Style.js');
-/*#*/ include('Curve.js');
 /*#*/ include('Path_Shapes.js');
 /*#*/ include('Path_Drawing_Commands.js');
 /*#*/ include('Path_Curves.js');
 /*#*/ include('Path_Bounds.js');
 /*#*/ include('Path_Length.js');
+
+/*#*/ include('Curve.js');
+/*#*/ include('CurveLocation.js');
+
+/*#*/ include('Style.js');
+
 /*#*/ include('CompoundPath.js');
 
 /*#*/ include('PathItem_Contains.js');
