@@ -401,10 +401,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 */
 	getLocation: function() {
 		var curve = this.getCurve();
-		// Determine whether the parameter for this segment is 0 or 1 based on
-		// whether there is a next curve or not, as #getNext() takes closed into
-		// account and all.
-		return curve ? new CurveLocation(curve, curve.getNext() ? 0 : 1) : null;
+		return curve
+				// Determine whether the parameter for this segment is 0 or 1.
+				? new CurveLocation(curve, this === curve._segment1 ? 0 : 1)
+				: null;
 	},
 
 	/**
