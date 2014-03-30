@@ -1334,8 +1334,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 				offset = 0;
 			for (var i = 0; i < index; i++)
 				offset += curves[i].getLength();
-			var curve = curves[index];
-			return offset + curve.getLength(0, location.getParameter());
+			var curve = curves[index],
+				parameter = location.getParameter();
+			if (parameter > 0)
+				offset += curve.getPartLength(0, parameter);
+			return offset;
 		}
 		return null;
 	},

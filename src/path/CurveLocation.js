@@ -73,8 +73,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 				return null;
 			} else {
 				// Determine the closest segment by comparing curve lengths
-				this._segment = curve.getLength(0, parameter)
-					< curve.getLength(parameter, 1)
+				this._segment = curve.getPartLength(0, parameter)
+					< curve.getPartLength(parameter, 1)
 						? curve._segment1
 						: curve._segment2;
 			}
@@ -180,7 +180,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	getCurveOffset: function() {
 		var curve = this.getCurve(),
 			parameter = this.getParameter();
-		return parameter != null && curve && curve.getLength(0, parameter);
+		return parameter != null && curve && curve.getPartLength(0, parameter);
 	},
 
 	/**
