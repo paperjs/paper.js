@@ -450,14 +450,14 @@ var Point = Base.extend(/** @lends Point# */{
 	 *        remain squared, or its square root should be calculated.
 	 * @return {Number}
 	 */
-	getDistance: function(_point, squared) {
+	getDistance: function(point, squared) {
 		// NOTE: Although we're reading from the argument list, we need the
-		// above arguments to prevent beans from being created (Strap.js issue).
-		// And for browser optimization we shouldn't re-asign an object to it,
+		// above arguments to prevent beans from being created (Straps.js issue)
+		// And for browser optimization we shouldn't re-assign an object to it,
 		// but we need to prevent the minifier from removing it again, so:
-		var point = Point.read(arguments),
-			x = point.x - this.x,
-			y = point.y - this.y,
+		var _point = Point.read(arguments),
+			x = _point.x - this.x,
+			y = _point.y - this.y,
 			d = x * x + y * y;
 		// Reassigning boolean values to arguments is apparently OK.
 		squared = Base.read(arguments);
@@ -478,8 +478,8 @@ var Point = Base.extend(/** @lends Point# */{
 	},
 
 	setLength: function(length) {
-		// Whenever chaning both x & y, use #set() instead of direct assignment,
-		// so LinkedPoint does not report changes twice.
+		// Whenever chaining both x & y, use #set() instead of direct
+		// assignment, so LinkedPoint does not report changes twice.
 		if (this.isZero()) {
 			var angle = this._angle || 0;
 			this.set(
@@ -643,14 +643,14 @@ var Point = Base.extend(/** @lends Point# */{
 	 * @param {Point} point
 	 * @return {Number} the angle between the two vectors
 	 */
-	getDirectedAngle: function(_point) {
+	getDirectedAngle: function(point) {
 		// NOTE: Although we're reading from the argument list, we need the
-		// above arguments to prevent beans from being created (Strap.js issue).
+		// above arguments to prevent beans from being created (Straps.js issue)
 		// And for browser optimization we shouldn't re-asign an object to it,
 		// but we need to prevent the minifier from removing it again, so:
-		var point = _point;
-		point = Point.read(arguments);
-		return Math.atan2(this.cross(point), this.dot(point)) * 180 / Math.PI;
+		var _point = point;
+		_point = Point.read(arguments);
+		return Math.atan2(this.cross(_point), this.dot(_point)) * 180 / Math.PI;
 	},
 
 	/**

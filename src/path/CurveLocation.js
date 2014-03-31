@@ -85,7 +85,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	setSegment: function(segment) {
 		// NOTE: We only include this setter so the above getter can declare
 		// the _preferFirst parameter without having to hide it.
-		// See Strap.js beans conventions.
+		// See Straps.js beans conventions.
 		this._segment = segment;
 	},
 
