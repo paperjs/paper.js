@@ -78,12 +78,16 @@ var View = Base.extend(Callback, /** @lends View# */{
 			// Try visible size first, since that will help handling previously
 			// scaled canvases (e.g. when dealing with pixel-ratio)
 			size = DomElement.getSize(element);
-			// If the element is invisible, we cannot directly access
-			// element.width / height, because they would appear 0.
-			// Reading the attributes should still work.
-			if (size.isNaN() || size.isZero())
-				size = new Size(parseInt(element.getAttribute('width'), 10),
-							parseInt(element.getAttribute('height'), 10));
+			if (size.isNaN() || size.isZero()) {
+				// If the element is invisible, we cannot directly access
+				// element.width / height, because they would appear 0.
+				// Reading the attributes should still work.
+				var getSize = function(name) {
+					return element[name]
+							|| parseInt(element.getAttribute(name), 10);
+				};
+				size = new Size(getSize('width'), getSize('height'));
+			}
 		}
 		// Set canvas size even if we just deterined the size from it, since
 		// it might have been set to a % size, in which case it would use some
