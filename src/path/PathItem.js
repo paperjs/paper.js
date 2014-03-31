@@ -227,7 +227,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			case 'l':
 				var move = lower === 'm';
 				if (move && previous && previous !== 'z')
-					this.closePath();
+					this.closePath(true);
 				for (var j = 0; j < length; j += 2)
 					this[j === 0 && move ? 'moveTo' : 'lineTo'](
 							current = getPoint(j));
@@ -290,7 +290,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				}
 				break;
 			case 'z':
-				this.closePath();
+				this.closePath(true);
 				break;
 			}
 			previous = lower;
@@ -563,6 +563,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * @name PathItem#closePath
 	 * @function
+	 * @param {Boolean} join controls whether the method should attempt to merge
+	 * the first segment with the last if they lie in the same location. 
 	 * @see Path#closed
 	 */
 

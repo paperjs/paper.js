@@ -2515,8 +2515,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 		},
 
-		closePath: function() {
+		closePath: function(join) {
 			this.setClosed(true);
+			if (join)
+				this.join();
 		}
 	};
 }, {  // A dedicated scope for the tricky bounds calculations

@@ -297,8 +297,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			this.moveTo(last ? point.add(last._point) : point);
 		},
 
-		closePath: function() {
-			getCurrentPath(this, true).closePath();
+		closePath: function(join) {
+			getCurrentPath(this, true).closePath(join);
 		}
 	};
 
