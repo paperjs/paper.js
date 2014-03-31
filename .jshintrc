@@ -1,0 +1,15 @@
+{
+	"browser" : true,
+	"evil": true,
+	"wsh": true,
+	"trailing": false,
+	"smarttabs": false,
+	"sub": true,
+	"supernew": true,
+	"laxbreak": true,
+	"eqeqeq": false,
+	"eqnull": true,
+	"loopfunc": true,
+	"boss": true,
+	"shadow": true
+}
