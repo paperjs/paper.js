@@ -3522,8 +3522,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			return;
 		// Only keep track of transformation if told so. See Project#draw()
 		if (trackTransforms) {
-			if (!transforms)
-				transforms = param.transforms = [];
 			transforms.push(this._globalMatrix = globalMatrix);
 			// We also keep the cached _globalMatrix versioned.
 			globalMatrix._updateVersion = updateVersion;
