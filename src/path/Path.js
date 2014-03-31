@@ -1188,7 +1188,9 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this._clockwise = !this._clockwise;
 	},
 
-	// DOCS: document Path#join in more detail.
+	// DOCS: document Path#join(path) in more detail.
+	// DOCS: document Path#join() (joining with itself)
+	// TODO: Consider adding a distance / tolerance parameter for merging.
 	/**
 	 * Joins the path with the specified path, which will be removed in the
 	 * process.
@@ -1282,18 +1284,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 			if (path.closed)
 				this._add([segments[0]]);
 			path.remove();
-			// Close if they touch in both places. Fetch the segments again
-			// since they may have changed.
-			first1 = this.getFirstSegment();
-			last1 = this.getLastSegment();
-			if (last1._point.equals(first1._point)) {
-				first1.setHandleIn(last1._handleIn);
-				last1.remove();
-				this.setClosed(true);
-			}
-			return true;
 		}
-		return false;
+		// Close the resulting path and merge first and last segment if they
+		// touch, meaning the touched at path ends. Also do this if no path
+		// argument was provided, in which cases the path is joined with itself
+		// only if its ends touch.
+		var first = this.getFirstSegment(),
+			last = this.getLastSegment();
+		if (first !== last && first._point.equals(last._point)) {
+			first.setHandleIn(last._handleIn);
+			last.remove();
+			this.setClosed(true);
+		}
 	},
 
 	/**
@@ -2514,12 +2516,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		},
 
 		closePath: function() {
-			var first = this.getFirstSegment(),
-				last = this.getLastSegment();
-			if (first !== last && first._point.equals(last._point)) {
-				first.setHandleIn(last._handleIn);
-				last.remove();
-			}
 			this.setClosed(true);
 		}
 	};

@@ -558,8 +558,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	// DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
 	/**
-	 * Closes the path. When closed, Paper.js connects the first and last
-	 * segments.
+	 * Closes the path. When closed, Paper.js connects the first and
+	 * last segment of the path with an additional curve.
 	 *
 	 * @name PathItem#closePath
 	 * @function
