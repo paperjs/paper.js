@@ -3516,7 +3516,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			globalMatrix = parentMatrix.clone().concatenate(matrix);
 		// If this item is not invertible, do not draw it, since it would cause
 		// empty ctx.currentPath and mess up caching. It appears to also be a
-		// good idea generally to not draw in such cirucmstances, e.g. SVG
+		// good idea generally to not draw in such circumstances, e.g. SVG
 		// handles it the same way.
 		if (!globalMatrix.isInvertible())
 			return;
@@ -3548,7 +3548,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						&& this._canComposite(),
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			// Apply the paren't global matrix to the calculation of correct
+			// Apply the parent's global matrix to the calculation of correct
 			// bounds.
 			var bounds = this.getStrokeBounds(parentMatrix);
 			if (!bounds.width || !bounds.height)
