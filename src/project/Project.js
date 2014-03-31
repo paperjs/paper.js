@@ -430,7 +430,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			// in param.transforms, and that we want it to set _globalMatrix
 			// as used below. Item#rasterize() and Raster#getAverageColor() do
 			// not need to set this.
-			trackTransforms: true
+			trackTransforms: true,
+			transforms: [matrix]
 		});
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].draw(ctx, param);
@@ -454,11 +455,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 							|| item.getLayer().getSelectedColor();
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
-					var mx = matrix.clone().concatenate(globalMatrix);
 					if (item._drawSelected)
-						item._drawSelected(ctx, mx);
+						item._drawSelected(ctx, globalMatrix);
 					if (item._boundsSelected) {
-						var coords = mx._transformCorners(
+						var coords = globalMatrix._transformCorners(
 								item.getInternalBounds());
 						// Now draw a rectangle that connects the transformed
 						// bounds corners, and draw the corners.

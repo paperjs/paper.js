@@ -1142,24 +1142,33 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	/**
 	 * The item's global transformation matrix in relation to the global project
-	 * coordinate space.
+	 * coordinate space. Note that the view's transformations resulting from
+	 * zooming and panning are not factored in.
 	 *
 	 * @type Matrix
 	 * @bean
 	 */
 	getGlobalMatrix: function() {
 		var matrix = this._globalMatrix,
-			updateVersion = this._project._updateVersion;
-		// If _globalMatrix is out of sync, recalculate it now
+			updateVersion = this._project._updateVersion,
+			viewMatrix = this.getView()._matrix;
+		// Internally we actually do factor in the view's transformations as
+		// well, but these are removed again in the return statement below.
+		// This way it is easier to draw selections and handle non-direct
+		// blitting, see Item#draw().
+		// If #_globalMatrix is out of sync, recalculate it now.
 		if (matrix && matrix._updateVersion !== updateVersion)
 			matrix = null;
 		if (!matrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
-			if (this._parent)
-				matrix.preConcatenate(this._parent.getGlobalMatrix());
+			matrix.preConcatenate(this._parent
+					? this._parent.getGlobalMatrix(true)
+					: viewMatrix);
 			matrix._updateVersion = updateVersion;
 		}
-		return matrix;
+		// TODO: Fix Straps.js so we can pass this on as _internal argument and
+		// still have a bean created.
+		return arguments[0] ? matrix : viewMatrix.inverted().concatenate(matrix);
 	},
 
 	/**
@@ -3509,8 +3518,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
 		var trackTransforms = param.trackTransforms,
-			// If transforms does not exist, set it up with the identity matrix
-			transforms = param.transforms = param.transforms || [new Matrix()],
+			transforms = param.transforms,
 			matrix = this._matrix,
 			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(matrix);
