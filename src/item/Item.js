@@ -476,6 +476,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			}
 		};
 }, {}), /** @lends Item# */{
+	// Enforce creation of beans, as bean getters have hidden parameters.
+	// See #getPosition() below.
+	beans: true,
+
 	// Note: These properties have their getter / setters produced in the
 	// injection scope above.
 
@@ -873,14 +877,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 							bounds.height, this, 'setBounds')
 					: bounds;
 		};
-		// As the function defines a _matrix parameter and has no setter,
-		// Straps.js doesn't produce a bean for it. Explicitely define an
-		// accesor now too:
-		this[key] = {
-			get: this[getter]
-		};
 	},
 /** @lends Item# */{
+	// Enforce creation of beans, as bean getters have hidden parameters.
+	// See _matrix parameter above.
+	beans: true,
+
 	/**
 	 * Protected method used in all the bounds getters. It loops through all the
 	 * children, gets their bounds and finds the bounds around all of them.
@@ -1062,6 +1064,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @ignore
 	 */
 }), /** @lends Item# */{
+	// Enforce creation of beans, as bean getters have hidden parameters.
+	// See #getGlobalMatrix() below.
+	beans: true,
+
 	_decompose: function() {
 		return this._decomposed = this._matrix.decompose();
 	},
@@ -1146,7 +1152,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Matrix
 	 * @bean
 	 */
-	getGlobalMatrix: function() {
+	getGlobalMatrix: function(_internal) {
 		var matrix = this._globalMatrix,
 			updateVersion = this._project._updateVersion,
 			viewMatrix = this.getView()._matrix;
@@ -1164,9 +1170,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					: viewMatrix);
 			matrix._updateVersion = updateVersion;
 		}
-		// TODO: Fix Straps.js so we can pass this on as _internal argument and
-		// still have a bean created.
-		return arguments[0] ? matrix : viewMatrix.inverted().concatenate(matrix);
+		return _internal ? matrix : viewMatrix.inverted().concatenate(matrix);
 	},
 
 	/**
@@ -1194,7 +1198,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	getTransformContent: '#getApplyMatrix',
 	setTransformContent: '#setApplyMatrix',
-
+}, /** @lends Item# */{
 	/**
 	 * {@grouptitle Project Hierarchy}
 	 * The project that this item belongs to.

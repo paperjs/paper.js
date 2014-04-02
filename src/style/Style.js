@@ -116,7 +116,10 @@ var Style = Base.extend(new function() {
 			// Override default fillColor for text items
 			_textDefaults: new Base(defaults, {
 				fillColor: new Color() // black
-			})
+			}),
+			// Enforce creation of beans, as bean getters have hidden parameters
+			// See _dontMerge argument below.
+			beans: true
 		};
 
 	Base.each(defaults, function(value, key) {

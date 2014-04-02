@@ -219,16 +219,20 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		for (var i = 0, l = children.length; i < l; i++)
 			area += children[i].getArea();
 		return area;
-	},
+	}
+}, /** @lends CompoundPath# */{
+	// Enforce bean creation for getPathData(), as it has hidden parameters.
+	beans: true,
 
-	getPathData: function(precision) {
+	getPathData: function(_precision) {
+		// NOTE: #setPathData() is defined in PathItem.
 		var children = this._children,
 			paths = [];
 		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(children[i].getPathData(precision));
+			paths.push(children[i].getPathData(_precision));
 		return paths.join(' ');
-	},
-
+	}
+}, /** @lends CompoundPath# */{
 	_getChildHitTestOptions: function(options) {
 		// If we're not specifically asked to returns paths through
 		// options.type == 'path' do not test children for fill, since a

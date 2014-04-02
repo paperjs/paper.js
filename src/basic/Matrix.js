@@ -716,17 +716,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	applyToContext: function(ctx) {
 		ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
 	}
-}, new function() {
+}, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
 	// Create getters and setters for all internal attributes.
-	return Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
-		var part = Base.capitalize(name),
-			prop = '_' + name;
-		this['get' + part] = function() {
-			return this[prop];
-		};
-		this['set' + part] = function(value) {
-			this[prop] = value;
-			this._changed();
-		};
-	}, {});
-});
+	var part = Base.capitalize(name),
+		prop = '_' + name;
+	this['get' + part] = function() {
+		return this[prop];
+	};
+	this['set' + part] = function(value) {
+		this[prop] = value;
+		this._changed();
+	};
+}, {}));

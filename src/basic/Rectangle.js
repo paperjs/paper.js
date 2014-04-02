@@ -21,6 +21,9 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	_class: 'Rectangle',
 	// Tell Base.read that the Rectangle constructor supports reading with index
 	_readIndex: true,
+	// Enforce creation of beans, as bean getters have hidden parameters.
+	// See  #getPoint() below.
+	beans: true,
 
 	/**
 	 * Creates a Rectangle object.
@@ -821,7 +824,11 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 				this[setX](point.x);
 				this[setY](point.y);
 			};
-		}, {});
+		}, {
+			// Enforce creation of beans, as bean getters have hidden parameters
+			// See _dontLink argument above.
+			beans: true
+		});
 });
 
 /**

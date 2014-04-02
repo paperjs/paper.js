@@ -24,6 +24,7 @@
  */
 var Segment = Base.extend(/** @lends Segment# */{
 	_class: 'Segment',
+	beans: true,
 
 	/**
 	 * Creates a new Segment object.
@@ -146,7 +147,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 	_serialize: function(options) {
 		// If the Segment is linear, only serialize point, otherwise handles too
 		return Base.serialize(this.isLinear() ? this._point
-				: [this._point, this._handleIn, this._handleOut], options, true);
+				: [this._point, this._handleIn, this._handleOut],
+				options, true);
 	},
 
 	_changed: function(point) {

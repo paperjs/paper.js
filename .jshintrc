@@ -1,5 +1,5 @@
 {
-	"browser" : true,
+	"browser": true,
 	"evil": true,
 	"wsh": true,
 	"trailing": false,

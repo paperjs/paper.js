@@ -181,7 +181,16 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		return locations;
 	},
 
+	/**
+	 * The path's geometry, formatted as SVG style path data.
+	 *
+	 * @name PathItem#getPathData
+	 * @type String
+	 * @bean
+	 */
+
 	setPathData: function(data) {
+		// NOTE: #getPathData() is defined in CompoundPath / Path
 		// This is a very compact SVG Path Data parser that works both for Path
 		// and CompoundPath.
 

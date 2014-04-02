@@ -255,51 +255,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * The segments contained within the path, described as SVG style path data.
-	 *
-	 * @type String
-	 * @bean
-	 */
-	getPathData: function(precision) {
-		var segments = this._segments,
-			f = Formatter.instance,
-			parts = [];
-
-		// TODO: Add support for H/V and/or relative commands, where appropriate
-		// and resulting in shorter strings
-		function addCurve(seg1, seg2, skipLine) {
-			var point1 = seg1._point,
-				point2 = seg2._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn;
-			if (handle1.isZero() && handle2.isZero()) {
-				if (!skipLine) {
-					// L = absolute lineto: moving to a point with drawing
-					parts.push('L' + f.point(point2, precision));
-				}
-			} else {
-				// c = relative curveto: handle1, handle2 + end - start,
-				// end - start
-				var end = point2.subtract(point1);
-				parts.push('c' + f.point(handle1, precision)
-						+ ' ' + f.point(end.add(handle2), precision)
-						+ ' ' + f.point(end, precision));
-			}
-		}
-
-		if (segments.length === 0)
-			return '';
-		parts.push('M' + f.point(segments[0]._point));
-		for (var i = 0, l = segments.length  - 1; i < l; i++)
-			addCurve(segments[i], segments[i + 1], false);
-		if (this._closed) {
-			addCurve(segments[segments.length - 1], segments[0], true);
-			parts.push('z');
-		}
-		return parts.join('');
-	},
-
-	/**
 	 * Specifies whether the path is closed. If it is closed, Paper.js connects
 	 * the first and last segments.
 	 *
@@ -336,7 +291,51 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// up-to-date and don't need notification.
 			this._changed(/*#=*/ Change.SEGMENTS);
 		}
-	},
+	}
+}, /** @lends Path# */{
+	// Enforce bean creation for getPathData(), as it has hidden parameters.
+	beans: true,
+
+	getPathData: function(_precision) {
+		// NOTE: #setPathData() is defined in PathItem.
+		var segments = this._segments,
+			f = Formatter.instance,
+			parts = [];
+
+		// TODO: Add support for H/V and/or relative commands, where appropriate
+		// and resulting in shorter strings
+		function addCurve(seg1, seg2, skipLine) {
+			var point1 = seg1._point,
+				point2 = seg2._point,
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn;
+			if (handle1.isZero() && handle2.isZero()) {
+				if (!skipLine) {
+					// L = absolute lineto: moving to a point with drawing
+					parts.push('L' + f.point(point2, _precision));
+				}
+			} else {
+				// c = relative curveto: handle1, handle2 + end - start,
+				// end - start
+				var end = point2.subtract(point1);
+				parts.push('c' + f.point(handle1, _precision)
+						+ ' ' + f.point(end.add(handle2), _precision)
+						+ ' ' + f.point(end, _precision));
+			}
+		}
+
+		if (segments.length === 0)
+			return '';
+		parts.push('M' + f.point(segments[0]._point));
+		for (var i = 0, l = segments.length  - 1; i < l; i++)
+			addCurve(segments[i], segments[i + 1], false);
+		if (this._closed) {
+			addCurve(segments[segments.length - 1], segments[0], true);
+			parts.push('z');
+		}
+		return parts.join('');
+	}
+}, /** @lends Path# */{
 
 	// TODO: Consider adding getSubPath(a, b), returning a part of the current
 	// path, with the added benefit that b can be < a, and closed looping is
@@ -2439,7 +2438,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
 				segments = [];
 			for (var i = 0; i <= count; i++) {
-				// Explicitely use to point for last segment, since depending
+				// Explicitly use to point for last segment, since depending
 				// on values the calculation adds imprecision:
 				var pt = to,
 					out = null;
