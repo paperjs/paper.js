@@ -113,7 +113,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
 	},
 
 	setDefinition: function(item, _dontCenter) {
-		// Make sure we're not steatling another symbol's definition
+		// Make sure we're not stealing another symbol's definition
 		if (item._parentSymbol)
 			item = item.clone();
 		// Remove previous definition's reference to this symbol

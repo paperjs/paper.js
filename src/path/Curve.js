@@ -1198,7 +1198,7 @@ new function() { // Scope for methods that require numerical integration
 			// p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
 			// quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
 			// are pretty much done here.
-			// The top part includes p1, 
+			// The top part includes p1,
 			// we will reverse it later if that is not the case
 			hull = [[p0, p1, p3], [p0, p2, p3]];
 			flip = dist1 < 0;
@@ -1326,7 +1326,7 @@ new function() { // Scope for methods that require numerical integration
 			// We do have a point on the infinite line. Check if it falls on
 			// the line *segment*.
 			if (x >= 0 && x <= rlx2) {
-				// Find the parameter of the intersection on the rotated line. 
+				// Find the parameter of the intersection on the rotated line.
 				var tl = Curve.getParameterOf(rvl, x, 0),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
