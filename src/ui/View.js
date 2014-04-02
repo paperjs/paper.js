@@ -520,8 +520,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * path.fillColor = 'black';
 	 *
 	 * function onFrame(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	path.rotate(3);
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
 	 * }
 	 *
 	 * @name View#onFrame
@@ -540,8 +540,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * path.fillColor = 'red';
 	 *
 	 * function onResize(event) {
-	 * 	// Whenever the view is resized, move the path to its center:
-	 * 	path.position = view.center;
+	 *     // Whenever the view is resized, move the path to its center:
+	 *     path.position = view.center;
 	 * }
 	 *
 	 * @name View#onResize
@@ -567,8 +567,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * path.fillColor = 'black';
 	 * 
 	 * var frameHandler = function(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	path.rotate(3);
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
 	 * };
 	 * 
 	 * view.on('frame', frameHandler);
@@ -587,12 +587,12 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * path.fillColor = 'black';
 	 * 
 	 * var frameHandler = function(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	path.rotate(3);
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
 	 * };
 	 * 
 	 * view.on({
-	 * 	frame: frameHandler
+	 *     frame: frameHandler
 	 * });
 	 */
 
@@ -612,18 +612,18 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * path.fillColor = 'black';
 	 * 
 	 * var frameHandler = function(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	path.rotate(3);
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     path.rotate(3);
 	 * };
 	 * 
 	 * view.on({
-	 * 	frame: frameHandler
+	 *     frame: frameHandler
 	 * });
 	 * 
 	 * // When the user presses the mouse,
 	 * // detach the frame handler from the view:
 	 * function onMouseDown(event) {
-	 * 	view.detach('frame');
+	 *     view.detach('frame');
 	 * }
 	 */
 	/**

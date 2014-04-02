@@ -48,7 +48,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * // If you create a Raster using a url, you can use the onLoad
 	 * // handler to do something once it is loaded:
 	 * raster.onLoad = function() {
-	 * 	console.log('The image has loaded.');
+	 *     console.log('The image has loaded.');
 	 * };
 	 * 
 	 * @example // Creating a raster using the id of a DOM Image:
@@ -66,8 +66,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * 
 	 * @example {@paperscript height=300}
 	 * var raster = new Raster({
-	 * 	source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
-	 * 	position: view.center
+	 *     source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+	 *     position: view.center
 	 * });
 	 * 
 	 * raster.scale(0.5);
@@ -285,8 +285,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * 
 	 * @example {@paperscript}
 	 * var raster = new Raster({
-	 * 	source: 'http://paperjs.org/about/resources/paper-js.gif',
-	 * 	position: view.center
+	 *     source: 'http://paperjs.org/about/resources/paper-js.gif',
+	 *     position: view.center
 	 * });
 	 */
 	getSource: function() {

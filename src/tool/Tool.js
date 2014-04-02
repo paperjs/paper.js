@@ -31,15 +31,15 @@
  * tool.distanceThreshold = 10;
  *
  * function onMouseDown(event) {
- * 	// Create a new path every time the mouse is clicked
- * 	path = new Path();
- * 	path.add(event.point);
- * 	path.strokeColor = 'black';
+ *     // Create a new path every time the mouse is clicked
+ *     path = new Path();
+ *     path.add(event.point);
+ *     path.strokeColor = 'black';
  * }
  *
  * function onMouseDrag(event) {
- * 	// Add a point to the path every time the mouse is dragged
- * 	path.add(event.point);
+ *     // Add a point to the path every time the mouse is dragged
+ *     path.add(event.point);
  * }
  */
 var Tool = PaperScopeItem.extend(/** @lends Tool# */{
@@ -141,13 +141,13 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user presses the mouse button:
 	 * function onMouseDown(event) {
-	 * 	// Create a new circle shaped path with a radius of 10
-	 * 	// at the position of the mouse (event.point):
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a new circle shaped path with a radius of 10
+	 *     // at the position of the mouse (event.point):
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 * }
 	 */
 
@@ -165,12 +165,12 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *
 	 * // Create an empty path:
 	 * var path = new Path({
-	 * 	strokeColor: 'black'
+	 *     strokeColor: 'black'
 	 * });
 	 * 
 	 * function onMouseDrag(event) {
-	 * 	// Add a segment to the path at the position of the mouse:
-	 * 	path.add(event.point);
+	 *     // Add a segment to the path at the position of the mouse:
+	 *     path.add(event.point);
 	 * }
 	 */
 
@@ -188,15 +188,15 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *
 	 * // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
 	 * var path = new Path.Circle({
-	 * 	center: [0, 0],
-	 * 	radius: 10,
-	 * 	fillColor: 'black'
+	 *     center: [0, 0],
+	 *     radius: 10,
+	 *     fillColor: 'black'
 	 * });
 	 * 
 	 * function onMouseMove(event) {
-	 * 	// Whenever the user moves the mouse, move the path
-	 * 	// to that position:
-	 * 	path.position = event.point;
+	 *     // Whenever the user moves the mouse, move the path
+	 *     // to that position:
+	 *     path.position = event.point;
 	 * }
 	 */
 
@@ -212,13 +212,13 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * @example {@paperscript}
 	 * // Creating circle shaped paths where the user releases the mouse:
 	 * function onMouseUp(event) {
-	 * 	// Create a new circle shaped path with a radius of 10
-	 * 	// at the position of the mouse (event.point):
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a new circle shaped path with a radius of 10
+	 *     // at the position of the mouse (event.point):
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 * }
 	 */
 
@@ -241,20 +241,20 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * // Scaling a path whenever the user presses the space bar:
 	 *
 	 * // Create a circle shaped path:
-	 * 	var path = new Path.Circle({
-	 * 		center: new Point(50, 50),
-	 * 		radius: 30,
-	 * 		fillColor: 'red'
-	 * 	});
+	 *     var path = new Path.Circle({
+	 *         center: new Point(50, 50),
+	 *         radius: 30,
+	 *         fillColor: 'red'
+	 *     });
 	 *
 	 * function onKeyDown(event) {
-	 * 	if (event.key == 'space') {
-	 * 		// Scale the path by 110%:
-	 * 		path.scale(1.1);
+	 *     if (event.key == 'space') {
+	 *         // Scale the path by 110%:
+	 *         path.scale(1.1);
 	 *
-	 * 		// Prevent the key event from bubbling
-	 * 		return false;
-	 * 	}
+	 *         // Prevent the key event from bubbling
+	 *         return false;
+	 *     }
 	 * }
 	 */
 
@@ -273,9 +273,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *
 	 * @example
 	 * function onKeyUp(event) {
-	 * 	if (event.key == 'space') {
-	 * 		console.log('The spacebar was released!');
-	 * 	}
+	 *     if (event.key == 'space') {
+	 *         console.log('The spacebar was released!');
+	 *     }
 	 * }
 	 */
 

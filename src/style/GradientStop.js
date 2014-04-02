@@ -85,30 +85,30 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * // using 40% of the height of the view as its radius
 	 * // and fill it with a radial gradient color:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: view.bounds.height * 0.4
+	 *     center: view.center,
+	 *     radius: view.bounds.height * 0.4
 	 * });
 	 * 
 	 * path.fillColor = {
-	 * 	gradient: {
-	 * 		stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
-	 * 		radial: true
-	 * 	},
-	 * 	origin: path.position,
-	 * 	destination: path.bounds.rightCenter
+	 *     gradient: {
+	 *         stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+	 *         radial: true
+	 *     },
+	 *     origin: path.position,
+	 *     destination: path.bounds.rightCenter
 	 * };
 	 * 
 	 * var gradient = path.fillColor.gradient;
 	 * 
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
-	 * 	var blackStop = gradient.stops[2];
-	 * 	// Animate the rampPoint between 0.7 and 0.9:
-	 * 	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+	 *     var blackStop = gradient.stops[2];
+	 *     // Animate the rampPoint between 0.7 and 0.9:
+	 *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
 	 * 
-	 * 	// Animate the rampPoint between 0.2 and 0.4
-	 * 	var redStop = gradient.stops[1];
-	 * 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+	 *     // Animate the rampPoint between 0.2 and 0.4
+	 *     var redStop = gradient.stops[1];
+	 *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
 	 * }
 	 */
 	getRampPoint: function() {
@@ -134,17 +134,17 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * // using 40% of the height of the view as its radius
 	 * // and fill it with a radial gradient color:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: view.bounds.height * 0.4
+	 *     center: view.center,
+	 *     radius: view.bounds.height * 0.4
 	 * });
 	 * 
 	 * path.fillColor = {
-	 * 	gradient: {
-	 * 		stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
-	 * 		radial: true
-	 * 	},
-	 * 	origin: path.position,
-	 * 	destination: path.bounds.rightCenter
+	 *     gradient: {
+	 *         stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+	 *         radial: true
+	 *     },
+	 *     origin: path.position,
+	 *     destination: path.bounds.rightCenter
 	 * };
 	 * 
 	 * var redStop = path.fillColor.gradient.stops[1];
@@ -152,11 +152,11 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 * 
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
-	 * 	// Animate the rampPoint between 0.7 and 0.9:
-	 * 	blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+	 *     // Animate the rampPoint between 0.7 and 0.9:
+	 *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
 	 * 
-	 * 	// Animate the rampPoint between 0.2 and 0.4
-	 * 	redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+	 *     // Animate the rampPoint between 0.2 and 0.4
+	 *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
 	 * }
 	 */
 	getColor: function() {

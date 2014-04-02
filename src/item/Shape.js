@@ -364,9 +364,9 @@ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Circle({
-		 * 	center: [80, 50],
-		 * 	radius: 30,
-		 * 	strokeColor: 'black'
+		 *     center: [80, 50],
+		 *     radius: 30,
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Circle: function(/* center, radius */) {
@@ -437,33 +437,33 @@ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Rectangle({
-		 * 	point: [20, 20],
-		 * 	size: [60, 60],
-		 * 	strokeColor: 'black'
+		 *     point: [20, 20],
+		 *     size: [60, 60],
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Rectangle({
-		 * 	from: [20, 20],
-		 * 	to: [80, 80],
-		 * 	strokeColor: 'black'
+		 *     from: [20, 20],
+		 *     to: [80, 80],
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Rectangle({
-		 * 	rectangle: {
-		 * 		topLeft: [20, 20],
-		 * 		bottomRight: [80, 80]
-		 * 	},
-		 * 	strokeColor: 'black'
+		 *     rectangle: {
+		 *         topLeft: [20, 20],
+		 *         bottomRight: [80, 80]
+		 *     },
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Rectangle({
 	 	 *	topLeft: [20, 20],
-	 	 * 	bottomRight: [80, 80],
-		 * 	radius: 10,
-		 * 	strokeColor: 'black'
+	 	 *     bottomRight: [80, 80],
+		 *     radius: 10,
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Rectangle: function(/* rectangle */) {
@@ -497,16 +497,16 @@ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var shape = new Shape.Ellipse({
-		 * 	point: [20, 20],
-		 * 	size: [180, 60],
-		 * 	fillColor: 'black'
+		 *     point: [20, 20],
+		 *     size: [180, 60],
+		 *     fillColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript} // Placing by center and radius
 		 * var shape = new Shape.Ellipse({
-		 * 	center: [110, 50],
-		 * 	radius: [90, 30],
-		 * 	fillColor: 'black'
+		 *     center: [110, 50],
+		 *     radius: [90, 30],
+		 *     fillColor: 'black'
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {

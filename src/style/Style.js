@@ -28,31 +28,31 @@
  *
  * var path = new Path.Circle(new Point(80, 50), 30);
  * path.style = {
- * 	fillColor: new Color(1, 0, 0),
- * 	strokeColor: 'black',
- * 	strokeWidth: 5
+ *     fillColor: new Color(1, 0, 0),
+ *     strokeColor: 'black',
+ *     strokeWidth: 5
  * };
  *
  * @classexample {@paperscript} // Styling text items
  * var text = new PointText(view.center);
  * text.content = 'Hello world.';
  * text.style = {
- * 	fontFamily: 'Courier New',
- * 	fontWeight: 'bold',
- * 	fontSize: 20,
- * 	fillColor: 'red',
- * 	justification: 'center'
+ *     fontFamily: 'Courier New',
+ *     fontWeight: 'bold',
+ *     fontSize: 20,
+ *     fillColor: 'red',
+ *     justification: 'center'
  * };
  * 
  * @classexample {@paperscript} // Styling groups
  * var path1 = new Path.Circle({
- * 	center: [100, 50],
- * 	radius: 30
+ *     center: [100, 50],
+ *     radius: 30
  * });
  * 
  * var path2 = new Path.Rectangle({
- * 	from: [170, 20],
- * 	to: [230, 80]
+ *     from: [170, 20],
+ *     to: [230, 80]
  * });
  * 
  * var group = new Group(path1, path2);
@@ -60,10 +60,10 @@
  * // All styles set on a group are automatically
  * // set on the children of the group:
  * group.style = {
- * 	strokeColor: 'black',
- * 	dashArray: [4, 10],
- * 	strokeWidth: 4,
- * 	strokeCap: 'round'
+ *     strokeColor: 'black',
+ *     dashArray: [4, 10],
+ *     strokeWidth: 4,
+ *     strokeCap: 'round'
  * };
  * 
  */

@@ -79,8 +79,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * // properties:
 	 *
 	 * var point = new Point({
-	 * 	length: 10,
-	 * 	angle: 90
+	 *     length: 10,
+	 *     angle: 90
 	 * });
 	 * console.log(point.length); // 10
 	 * console.log(point.angle); // 90
@@ -89,8 +89,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * // Creating a point at x: 10, y: 20 using an object literal:
 	 *
 	 * var point = new Point({
-	 * 	x: 10,
-	 * 	y: 20
+	 *     x: 10,
+	 *     y: 20
 	 * });
 	 * console.log(point.x); // 10
 	 * console.log(point.y); // 20
@@ -99,8 +99,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 * // Passing an object to a functionality that expects a point:
 	 *
 	 * var center = {
-	 * 	x: 50,
-	 * 	y: 50
+	 *     x: 50,
+	 *     y: 50
 	 * };
 	 *
 	 * // Creates a circle shaped path at x: 50, y: 50
@@ -366,8 +366,8 @@ var Point = Base.extend(/** @lends Point# */{
 	 *
 	 * @example
 	 * var point = new Point({
-	 * 	angle: 10,
-	 * 	length: 20
+	 *     angle: 10,
+	 *     length: 20
 	 * });
 	 * console.log(point.quadrant); // 1
 	 *

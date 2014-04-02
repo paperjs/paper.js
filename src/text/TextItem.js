@@ -81,9 +81,9 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 	 * text.content = 'Move your mouse over the view, to see its position';
 	 *
 	 * function onMouseMove(event) {
-	 * 	// Each time the mouse is moved, set the content of
-	 * 	// the point text to describe the position of the mouse:
-	 * 	text.content = 'Your position is: ' + event.point.toString();
+	 *     // Each time the mouse is moved, set the content of
+	 *     // the point text to describe the position of the mouse:
+	 *     text.content = 'Your position is: ' + event.point.toString();
 	 * }
 	 */
 	getContent: function() {

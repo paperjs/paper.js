@@ -54,19 +54,19 @@ var Group = Item.extend(/** @lends Group# */{
 	 * var group = new Group();
 	 *
 	 * function onMouseDown(event) {
-	 * 	// Create a new circle shaped path at the position
-	 * 	// of the mouse:
-	 * 	var path = new Path.Circle(event.point, 5);
-	 * 	path.fillColor = 'black';
+	 *     // Create a new circle shaped path at the position
+	 *     // of the mouse:
+	 *     var path = new Path.Circle(event.point, 5);
+	 *     path.fillColor = 'black';
 	 *
-	 * 	// Add the path to the group's children list:
-	 * 	group.addChild(path);
+	 *     // Add the path to the group's children list:
+	 *     group.addChild(path);
 	 * }
 	 *
 	 * function onFrame(event) {
-	 * 	// Rotate the group by 1 degree from
-	 * 	// the centerpoint of the view:
-	 * 	group.rotate(1, view.center);
+	 *     // Rotate the group by 1 degree from
+	 *     // the centerpoint of the view:
+	 *     group.rotate(1, view.center);
 	 * }
 	 */
 	/**
@@ -82,11 +82,11 @@ var Group = Item.extend(/** @lends Group# */{
 	 * 
 	 * // Create a group from the two paths:
 	 * var group = new Group({
-	 * 	children: [path, path2],
-	 * 	// Set the stroke color of all items in the group:
-	 * 	strokeColor: 'black',
-	 * 	// Move the group to the center of the view:
-	 * 	position: view.center
+	 *     children: [path, path2],
+	 *     // Set the stroke color of all items in the group:
+	 *     strokeColor: 'black',
+	 *     // Move the group to the center of the view:
+	 *     position: view.center
 	 * });
 	 */
 	initialize: function Group(arg) {
@@ -134,17 +134,17 @@ var Group = Item.extend(/** @lends Group# */{
 	 * 
 	 * @example {@paperscript}
 	 * var star = new Path.Star({
-	 * 	center: view.center,
-	 * 	points: 6,
-	 * 	radius1: 20,
-	 * 	radius2: 40,
-	 * 	fillColor: 'red'
+	 *     center: view.center,
+	 *     points: 6,
+	 *     radius1: 20,
+	 *     radius2: 40,
+	 *     fillColor: 'red'
 	 * });
 	 * 
 	 * var circle = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	strokeColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     strokeColor: 'black'
 	 * });
 	 * 
 	 * // Create a group of the two items and clip it:
@@ -153,8 +153,8 @@ var Group = Item.extend(/** @lends Group# */{
 	 * 
 	 * // Lets animate the circle:
 	 * function onFrame(event) {
-	 * 	var offset = Math.sin(event.count / 30) * 30;
-	 * 	circle.position.x = view.center.x + offset;
+	 *     var offset = Math.sin(event.count / 30) * 30;
+	 *     circle.position.x = view.center.x + offset;
 	 * }
 	 */
 	isClipped: function() {

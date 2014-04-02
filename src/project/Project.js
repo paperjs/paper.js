@@ -136,9 +136,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *
 	 * @example {@paperscript}
 	 * project.currentStyle = {
-	 * 	fillColor: 'red',
-	 * 	strokeColor: 'black',
-	 * 	strokeWidth: 5
+	 *     fillColor: 'red',
+	 *     strokeColor: 'black',
+	 *     strokeWidth: 5
 	 * }
 	 *
 	 * // The following paths will take over all style properties of

@@ -61,18 +61,18 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * @example {@paperscript}
 	 * // Creating segments using object notation:
 	 * var firstSegment = new Segment({
-	 * 	point: [100, 50],
-	 * 	handleOut: [80, 100]
+	 *     point: [100, 50],
+	 *     handleOut: [80, 100]
 	 * });
 	 * 
 	 * var secondSegment = new Segment({
-	 * 	point: [300, 50],
-	 * 	handleIn: [-80, -100]
+	 *     point: [300, 50],
+	 *     handleIn: [-80, -100]
 	 * });
 	 * 
 	 * var path = new Path({
-	 * 	segments: [firstSegment, secondSegment],
-	 * 	strokeColor: 'black'
+	 *     segments: [firstSegment, secondSegment],
+	 *     strokeColor: 'black'
 	 * });
 	 */
 	/**
@@ -307,8 +307,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * @bean
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 40
+	 *     center: [80, 50],
+	 *     radius: 40
 	 * });
 	 * 
 	 * // Select the third segment point:

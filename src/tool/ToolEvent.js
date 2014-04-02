@@ -53,13 +53,13 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 	 *
 	 * @example
 	 * function onMouseDrag(event) {
-	 * 	// the position of the mouse when it is dragged
-	 * 	console.log(event.point);
+	 *     // the position of the mouse when it is dragged
+	 *     console.log(event.point);
 	 * }
 	 *
 	 * function onMouseUp(event) {
-	 * 	// the position of the mouse when it is released
-	 * 	console.log(event.point);
+	 *     // the position of the mouse when it is released
+	 *     console.log(event.point);
 	 * }
 	 *
 	 * @type Point

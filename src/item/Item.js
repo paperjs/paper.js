@@ -284,15 +284,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Setting properties through an object literal
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 *
 	 * circle.set({
-	 * 	strokeColor: 'red',
-	 * 	strokeWidth: 10,
-	 * 	fillColor: 'black',
-	 * 	selected: true
+	 *     strokeColor: 'red',
+	 *     strokeWidth: 10,
+	 *     fillColor: 'black',
+	 *     selected: true
 	 * });
 	 */
 	set: function(props) {
@@ -331,8 +331,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 
 	 * // Set the name of the path:
@@ -389,26 +389,26 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Applying several styles to an item in one go, by passing an object
 	 * // to its style property:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 30
+	 *     center: [80, 50],
+	 *     radius: 30
 	 * });
 	 * circle.style = {
-	 * 	fillColor: 'blue',
-	 * 	strokeColor: 'red',
-	 * 	strokeWidth: 5
+	 *     fillColor: 'blue',
+	 *     strokeColor: 'red',
+	 *     strokeWidth: 5
 	 * };
 	 *
 	 * @example {@paperscript split=true height=100}
 	 * // Copying the style of another item:
 	 * var path = new Path.Circle({
-	 * 	center: [50, 50],
-	 * 	radius: 30,
-	 * 	fillColor: 'red'
+	 *     center: [50, 50],
+	 *     radius: 30,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * var path2 = new Path.Circle({
-	 * 	center: new Point(180, 50),
-	 * 	radius: 20
+	 *     center: new Point(180, 50),
+	 *     radius: 20
 	 * });
 	 *
 	 * // Copy the path style of path:
@@ -417,20 +417,20 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Applying the same style object to multiple items:
 	 * var myStyle = {
-	 * 	fillColor: 'red',
-	 * 	strokeColor: 'blue',
-	 * 	strokeWidth: 4
+	 *     fillColor: 'red',
+	 *     strokeColor: 'blue',
+	 *     strokeWidth: 4
 	 * };
 	 *
 	 * var path = new Path.Circle({
-	 * 	center: [50, 50],
-	 * 	radius: 30
+	 *     center: [50, 50],
+	 *     radius: 30
 	 * });
 	 * path.style = myStyle;
 	 *
 	 * var path2 = new Path.Circle({
-	 * 	center: new Point(150, 50),
-	 * 	radius: 20
+	 *     center: new Point(150, 50),
+	 *     radius: 20
 	 * });
 	 * path2.style = myStyle;
 	 */
@@ -504,9 +504,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Hiding an item:
 	 * var path = new Path.Circle({
-	 * 	center: [50, 50],
-	 * 	radius: 20,
-	 * 	fillColor: 'red'
+	 *     center: [50, 50],
+	 *     radius: 20,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Hide the path:
@@ -539,15 +539,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * background.fillColor = 'white';
 	 *
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 35,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * var circle2 = new Path.Circle({
-	 * 	center: new Point(120, 50),
-	 * 	radius: 35,
-	 * 	fillColor: 'blue'
+	 *     center: new Point(120, 50),
+	 *     radius: 35,
+	 *     fillColor: 'blue'
 	 * });
 	 *
 	 * // Set the blend mode of circle2:
@@ -565,17 +565,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Making an item 50% transparent:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 35,
+	 *     fillColor: 'red'
 	 * });
      *
 	 * var circle2 = new Path.Circle({
-	 * 	center: new Point(120, 50),
-	 * 	radius: 35,
-	 * 	fillColor: 'blue',
-	 * 	strokeColor: 'green',
-	 * 	strokeWidth: 10
+	 *     center: new Point(120, 50),
+	 *     radius: 35,
+	 *     fillColor: 'blue',
+	 *     strokeColor: 'green',
+	 *     strokeWidth: 10
 	 * });
 	 *
 	 * // Make circle2 50% transparent:
@@ -616,8 +616,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Selecting an item:
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 * path.selected = true; // Select the path
 	 */
@@ -719,19 +719,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example
 	 * var path = new Path();
 	 * path.data = {
-	 * 	home: 'Omicron Theta',
-	 * 	found: 2338,
-	 * 	pets: ['Spot']
+	 *     home: 'Omicron Theta',
+	 *     found: 2338,
+	 *     pets: ['Spot']
 	 * };
 	 * console.log(path.data.pets.length); // 1
 	 *
 	 * @example
 	 * var path = new Path({
-	 * 	data: {
-	 * 		home: 'Omicron Theta',
-	 * 		found: 2338,
-	 * 		pets: ['Spot']
-	 * 	}
+	 *     data: {
+	 *         home: 'Omicron Theta',
+	 *         found: 2338,
+	 *         pets: ['Spot']
+	 *     }
 	 * });
 	 * console.log(path.data.pets.length); // 1
 	 */
@@ -760,9 +760,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle at position { x: 10, y: 10 }
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(10, 10),
-	 * 	radius: 10,
-	 * 	fillColor: 'red'
+	 *     center: new Point(10, 10),
+	 *     radius: 10,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Move the circle to { x: 20, y: 20 }
@@ -776,9 +776,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle at position { x: 20, y: 20 }
 	 * var circle = new Path.Circle({
-	 * 	center: new Point(20, 20),
-	 * 	radius: 10,
-	 * 	fillColor: 'red'
+	 *     center: new Point(20, 20),
+	 *     radius: 10,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Move the circle 100 points to the right
@@ -1301,7 +1301,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * var group = new Group();
 	 *
 	 * var path = new Path({
-	 * 	parent: group
+	 *     parent: group
 	 * });
 	 *
 	 * // The parent of the path is the group:
@@ -1334,8 +1334,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Accessing items in the children array:
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 *
 	 * // Create a group and move the path into it:
@@ -1348,8 +1348,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Accessing children by name:
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 * // Set the name of the path:
 	 * path.name = 'example';
@@ -1364,8 +1364,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Passing an array of items to item.children:
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 *
 	 * var group = new Group();
@@ -1482,17 +1482,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Cloning items:
 	 * var circle = new Path.Circle({
-	 * 	center: [50, 50],
-	 * 	radius: 10,
-	 * 	fillColor: 'red'
+	 *     center: [50, 50],
+	 *     radius: 10,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Make 20 copies of the circle:
 	 * for (var i = 0; i < 20; i++) {
-	 * 	var copy = circle.clone();
+	 *     var copy = circle.clone();
 	 *
-	 * 	// Distribute the copies horizontally, so we can see them:
-	 * 	copy.position.x += i * copy.bounds.width;
+	 *     // Distribute the copies horizontally, so we can see them:
+	 *     copy.position.x += i * copy.bounds.width;
 	 * }
 	 */
 	clone: function(insert) {
@@ -1562,9 +1562,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript}
 	 * // Rasterizing an item:
 	 * var circle = new Path.Circle({
-	 * 	center: [50, 50],
-	 * 	radius: 5,
-	 * 	fillColor: 'red'
+	 *     center: [50, 50],
+	 *     radius: 5,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Create a rasterized version of the path:
@@ -1610,23 +1610,23 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript} // Click within and outside the star below
 	 * // Create a star shaped path:
 	 * var path = new Path.Star({
-	 * 	center: [50, 50],
-	 * 	points: 12,
-	 * 	radius1: 20,
-	 * 	radius2: 40,
-	 * 	fillColor: 'black'
+	 *     center: [50, 50],
+	 *     points: 12,
+	 *     radius1: 20,
+	 *     radius2: 40,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // Whenever the user presses the mouse:
 	 * function onMouseDown(event) {
-	 * 	// If the position of the mouse is within the path,
-	 * 	// set its fill color to red, otherwise set it to
-	 * 	// black:
-	 * 	if (path.contains(event.point)) {
-	 * 		path.fillColor = 'red';
-	 * 	} else {
-	 * 		path.fillColor = 'black';
-	 * 	}
+	 *     // If the position of the mouse is within the path,
+	 *     // set its fill color to red, otherwise set it to
+	 *     // black:
+	 *     if (path.contains(event.point)) {
+	 *         path.fillColor = 'red';
+	 *     } else {
+	 *         path.fillColor = 'black';
+	 *     }
 	 * }
 	 *
 	 * @param {Point} point The point to check for.
@@ -2451,8 +2451,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 *
 	 * // Set its stroke color to RGB red:
@@ -2472,9 +2472,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35,
-	 * 	strokeColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 35,
+	 *     strokeColor: 'red'
 	 * });
 	 *
 	 * // Set its stroke width to 10:
@@ -2494,10 +2494,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // A look at the different stroke caps:
 	 *
 	 * var line = new Path({
-	 * 	segments: [[80, 50], [420, 50]],
-	 * 	strokeColor: 'black',
-	 * 	strokeWidth: 20,
-	 * 	selected: true
+	 *     segments: [[80, 50], [420, 50]],
+	 *     strokeColor: 'black',
+	 *     strokeWidth: 20,
+	 *     selected: true
 	 * });
 	 *
 	 * // Set the stroke cap of the line to be round:
@@ -2526,11 +2526,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=120}
 	 * // A look at the different stroke joins:
 	 * var path = new Path({
-	 * 	segments: [[80, 100], [120, 40], [160, 100]],
-	 * 	strokeColor: 'black',
-	 * 	strokeWidth: 20,
-	 * 	// Select the path, in order to see where the stroke is formed:
-	 * 	selected: true
+	 *     segments: [[80, 100], [120, 40], [160, 100]],
+	 *     strokeColor: 'black',
+	 *     strokeWidth: 20,
+	 *     // Select the path, in order to see where the stroke is formed:
+	 *     selected: true
 	 * });
      *
 	 * var path2 = path.clone();
@@ -2556,10 +2556,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 40,
-	 * 	strokeWidth: 2,
-	 * 	strokeColor: 'black'
+	 *     center: [80, 50],
+	 *     radius: 40,
+	 *     strokeWidth: 2,
+	 *     strokeColor: 'black'
 	 * });
 	 *
 	 * // Set the dashed stroke to [10pt dash, 4pt gap]:
@@ -2610,8 +2610,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 35:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 35
+	 *     center: [80, 50],
+	 *     radius: 35
 	 * });
 	 *
 	 * // Set the fill color of the circle to RGB red:
@@ -2676,15 +2676,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Draw a circle shaped path in the center of the view,
 	 * // to show the rotation point:
 	 * var circle = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 5,
-	 * 	fillColor: 'white'
+	 *     center: view.center,
+	 *     radius: 5,
+	 *     fillColor: 'white'
 	 * });
 	 *
 	 * // Each frame rotate the path 3 degrees around the center point
 	 * // of the view:
 	 * function onFrame(event) {
-	 * 	path.rotate(3, view.center);
+	 *     path.rotate(3, view.center);
 	 * }
 	 */
 	rotate: function(angle /*, center */) {
@@ -2716,9 +2716,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 20,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 20,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Scale the path by 150% from its center point
@@ -2730,9 +2730,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 80, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 20,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 20,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Scale the path 150% from its bottom left corner
@@ -2754,9 +2754,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a circle shaped path at { x: 100, y: 50 }
 	 * // with a radius of 20:
 	 * var circle = new Path.Circle({
-	 * 	center: [100, 50],
-	 * 	radius: 20,
-	 * 	fillColor: 'red'
+	 *     center: [100, 50],
+	 *     radius: 20,
+	 *     fillColor: 'red'
 	 * });
      *
 	 * // Scale the path horizontally by 300%
@@ -2940,17 +2940,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a rectangle shaped path with its top left corner
 	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 	 * var path = new Path.Rectangle({
-	 * 	point: [80, 25],
-	 * 	size: [75, 50],
-	 * 	fillColor: 'black'
+	 *     point: [80, 25],
+	 *     size: [75, 50],
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // Create a circle shaped path with its center at {x: 80, y: 50}
 	 * // and a radius of 30.
 	 * var circlePath = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 30,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 30,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Fit the circlePath to the bounding rectangle of
@@ -2964,17 +2964,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Create a rectangle shaped path with its top left corner
 	 * // at {x: 80, y: 25} and a size of {width: 75, height: 50}:
 	 * var path = new Path.Rectangle({
-	 * 	point: [80, 25],
-	 * 	size: [75, 50],
-	 * 	fillColor: 'black'
+	 *     point: [80, 25],
+	 *     size: [75, 50],
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // Create a circle shaped path with its center at {x: 80, y: 50}
 	 * // and a radius of 30.
 	 * var circlePath = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 30,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 30,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Fit the circlePath to the bounding rectangle of
@@ -2984,9 +2984,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Fitting an item to the bounding rectangle of the view
 	 * var path = new Path.Circle({
-	 * 	center: [80, 50],
-	 * 	radius: 30,
-	 * 	fillColor: 'red'
+	 *     center: [80, 50],
+	 *     radius: 30,
+	 *     fillColor: 'red'
 	 * });
 	 *
 	 * // Fit the path to the bounding rectangle of the view:
@@ -3031,8 +3031,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * path.fillColor = 'black';
 	 *
 	 * path.onFrame = function(event) {
-	 * 	// Every frame, rotate the path by 3 degrees:
-	 * 	this.rotate(3);
+	 *     // Every frame, rotate the path by 3 degrees:
+	 *     this.rotate(3);
 	 * }
 	 *
 	 * @name Item#onFrame
@@ -3054,15 +3054,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse is pressed on the item,
 	 * // set its fill color to red:
 	 * path.onMouseDown = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 *
 	 * @example {@paperscript}
@@ -3070,19 +3070,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Loop 30 times:
 	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var path = new Path.Circle({
-	 * 		center: Point.random() * view.size,
-	 * 		radius: 25,
-	 * 		fillColor: 'black',
-	 * 		strokeColor: 'white'
-	 * 	});
+	 *     // Create a circle shaped path at a random position
+	 *     // in the view:
+	 *     var path = new Path.Circle({
+	 *         center: Point.random() * view.size,
+	 *         radius: 25,
+	 *         fillColor: 'black',
+	 *         strokeColor: 'white'
+	 *     });
 	 *
-	 * 	// When the mouse is pressed on the item, remove it:
-	 * 	path.onMouseDown = function(event) {
-	 * 		this.remove();
-	 * 	}
+	 *     // When the mouse is pressed on the item, remove it:
+	 *     path.onMouseDown = function(event) {
+	 *         this.remove();
+	 *     }
 	 * }
 	 */
 
@@ -3100,15 +3100,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse is released over the item,
 	 * // set its fill color to red:
 	 * path.onMouseUp = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 */
 
@@ -3126,15 +3126,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse is clicked on the item,
 	 * // set its fill color to red:
 	 * path.onClick = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 *
 	 * @example {@paperscript}
@@ -3142,19 +3142,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Loop 30 times:
 	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var path = new Path.Circle({
-	 * 		center: Point.random() * view.size,
-	 * 		radius: 25,
-	 * 		fillColor: 'black',
-	 * 		strokeColor: 'white'
-	 * 	});
+	 *     // Create a circle shaped path at a random position
+	 *     // in the view:
+	 *     var path = new Path.Circle({
+	 *         center: Point.random() * view.size,
+	 *         radius: 25,
+	 *         fillColor: 'black',
+	 *         strokeColor: 'white'
+	 *     });
 	 *
-	 * 	// When the mouse clicks on the item, remove it:
-	 * 	path.onClick = function(event) {
-	 * 		this.remove();
-	 * 	}
+	 *     // When the mouse clicks on the item, remove it:
+	 *     path.onClick = function(event) {
+	 *         this.remove();
+	 *     }
 	 * }
 	 */
 
@@ -3172,15 +3172,15 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse is double clicked on the item,
 	 * // set its fill color to red:
 	 * path.onDoubleClick = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 *
 	 * @example {@paperscript}
@@ -3188,19 +3188,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Loop 30 times:
 	 * for (var i = 0; i < 30; i++) {
-	 * 	// Create a circle shaped path at a random position
-	 * 	// in the view:
-	 * 	var path = new Path.Circle({
-	 * 		center: Point.random() * view.size,
-	 * 		radius: 25,
-	 * 		fillColor: 'black',
-	 * 		strokeColor: 'white'
-	 * 	});
+	 *     // Create a circle shaped path at a random position
+	 *     // in the view:
+	 *     var path = new Path.Circle({
+	 *         center: Point.random() * view.size,
+	 *         radius: 25,
+	 *         fillColor: 'black',
+	 *         strokeColor: 'white'
+	 *     });
 	 *
-	 * 	// When the mouse is double clicked on the item, remove it:
-	 * 	path.onDoubleClick = function(event) {
-	 * 		this.remove();
-	 * 	}
+	 *     // When the mouse is double clicked on the item, remove it:
+	 *     path.onDoubleClick = function(event) {
+	 *         this.remove();
+	 *     }
 	 * }
 	 */
 
@@ -3217,16 +3217,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // Move over the circle shaped path, to change its opacity:
 	 *
 	 * // Create a circle shaped path at the center of the view:
-	 * 	var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
-	 * 	});
+	 *     var path = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
+	 *     });
 	 *
 	 * // When the mouse moves on top of the item, set its opacity
 	 * // to a random value between 0 and 1:
 	 * path.onMouseMove = function(event) {
-	 * 	this.opacity = Math.random();
+	 *     this.opacity = Math.random();
 	 * }
 	 */
 
@@ -3247,19 +3247,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse enters the item, set its fill color to red:
 	 * path.onMouseEnter = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 *
 	 * // When the mouse leaves the item, set its fill color to black:
 	 * path.onMouseLeave = function(event) {
-	 * 	this.fillColor = 'black';
+	 *     this.fillColor = 'black';
 	 * }
 	 * @example {@paperscript}
 	 * // When you click the mouse, you create new circle shaped items. When you
@@ -3268,24 +3268,24 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // to black.
 	 *
 	 * function enter(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 *
 	 * function leave(event) {
-	 * 	this.fillColor = 'black';
+	 *     this.fillColor = 'black';
 	 * }
 	 *
 	 * // When the mouse is pressed:
 	 * function onMouseDown(event) {
-	 * 	// Create a circle shaped path at the position of the mouse:
-	 * 	var path = new Path.Circle(event.point, 25);
-	 * 	path.fillColor = 'black';
+	 *     // Create a circle shaped path at the position of the mouse:
+	 *     var path = new Path.Circle(event.point, 25);
+	 *     path.fillColor = 'black';
 	 *
-	 * 	// When the mouse enters the item, set its fill color to red:
-	 * 	path.onMouseEnter = enter;
+	 *     // When the mouse enters the item, set its fill color to red:
+	 *     path.onMouseEnter = enter;
 	 *
-	 * 	// When the mouse leaves the item, set its fill color to black:
-	 * 	path.onMouseLeave = leave;
+	 *     // When the mouse leaves the item, set its fill color to black:
+	 *     path.onMouseLeave = leave;
 	 * }
 	 */
 
@@ -3304,14 +3304,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse leaves the item, set its fill color to red:
 	 * path.onMouseLeave = function(event) {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * }
 	 */
 
@@ -3335,19 +3335,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25,
-	 * 	fillColor: 'black'
+	 *     center: view.center,
+	 *     radius: 25,
+	 *     fillColor: 'black'
 	 * });
 	 *
 	 * // When the mouse enters the item, set its fill color to red:
 	 * path.on('mouseenter', function() {
-	 * 	this.fillColor = 'red';
+	 *     this.fillColor = 'red';
 	 * });
 	 *
 	 * // When the mouse leaves the item, set its fill color to black:
 	 * path.on('mouseleave', function() {
-	 * 	this.fillColor = 'black';
+	 *     this.fillColor = 'black';
 	 * });
 	 */
 	/**
@@ -3366,19 +3366,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 *
 	 * // Create a circle shaped path at the center of the view:
 	 * var path = new Path.Circle({
-	 * 	center: view.center,
-	 * 	radius: 25
+	 *     center: view.center,
+	 *     radius: 25
 	 * });
 	 * path.fillColor = 'black';
 	 *
 	 * // When the mouse enters the item, set its fill color to red:
 	 * path.on({
-	 * 	mouseenter: function(event) {
-	 * 		this.fillColor = 'red';
-	 * 	},
-	 * 	mouseleave: function(event) {
-	 * 		this.fillColor = 'black';
-	 * 	}
+	 *     mouseenter: function(event) {
+	 *         this.fillColor = 'red';
+	 *     },
+	 *     mouseleave: function(event) {
+	 *         this.fillColor = 'black';
+	 *     }
 	 * });
 	 * @example {@paperscript}
 	 * // When you click the mouse, you create new circle shaped items. When you
@@ -3386,25 +3386,25 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * // move the mouse outside again, its fill color is set black.
 	 *
 	 * var pathHandlers = {
-	 * 	mouseenter: function(event) {
-	 * 		this.fillColor = 'red';
-	 * 	},
-	 * 	mouseleave: function(event) {
-	 * 		this.fillColor = 'black';
-	 * 	}
+	 *     mouseenter: function(event) {
+	 *         this.fillColor = 'red';
+	 *     },
+	 *     mouseleave: function(event) {
+	 *         this.fillColor = 'black';
+	 *     }
 	 * }
 	 *
 	 * // When the mouse is pressed:
 	 * function onMouseDown(event) {
-	 * 	// Create a circle shaped path at the position of the mouse:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 25,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the position of the mouse:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 25,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// Attach the handers inside the object literal to the path:
-	 * 	path.on(pathHandlers);
+	 *     // Attach the handers inside the object literal to the path:
+	 *     path.on(pathHandlers);
 	 * }
 	 */
 
@@ -3650,19 +3650,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Click and drag below:
 	 * function onMouseDrag(event) {
-	 * 	// Create a circle shaped path at the mouse position,
-	 * 	// with a radius of 10:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the mouse position,
+	 *     // with a radius of 10:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// Remove the path on the next onMouseDrag or onMouseDown event:
-	 * 	path.removeOn({
-	 * 		drag: true,
-	 * 		down: true
-	 * 	});
+	 *     // Remove the path on the next onMouseDrag or onMouseDown event:
+	 *     path.removeOn({
+	 *         drag: true,
+	 *         down: true
+	 *     });
 	 * }
 	 */
 
@@ -3675,16 +3675,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Move your mouse below:
 	 * function onMouseMove(event) {
-	 * 	// Create a circle shaped path at the mouse position,
-	 * 	// with a radius of 10:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the mouse position,
+	 *     // with a radius of 10:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// On the next move event, automatically remove the path:
-	 * 	path.removeOnMove();
+	 *     // On the next move event, automatically remove the path:
+	 *     path.removeOnMove();
 	 * }
 	 */
 
@@ -3697,16 +3697,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Click a few times below:
 	 * function onMouseDown(event) {
-	 * 	// Create a circle shaped path at the mouse position,
-	 * 	// with a radius of 10:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the mouse position,
+	 *     // with a radius of 10:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// Remove the path, next time the mouse is pressed:
-	 * 	path.removeOnDown();
+	 *     // Remove the path, next time the mouse is pressed:
+	 *     path.removeOnDown();
 	 * }
 	 */
 
@@ -3719,16 +3719,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Click and drag below:
 	 * function onMouseDrag(event) {
-	 * 	// Create a circle shaped path at the mouse position,
-	 * 	// with a radius of 10:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the mouse position,
+	 *     // with a radius of 10:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// On the next drag event, automatically remove the path:
-	 * 	path.removeOnDrag();
+	 *     // On the next drag event, automatically remove the path:
+	 *     path.removeOnDrag();
 	 * }
 	 */
 
@@ -3741,16 +3741,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @example {@paperscript height=200}
 	 * // Click a few times below:
 	 * function onMouseDown(event) {
-	 * 	// Create a circle shaped path at the mouse position,
-	 * 	// with a radius of 10:
-	 * 	var path = new Path.Circle({
-	 * 		center: event.point,
-	 * 		radius: 10,
-	 * 		fillColor: 'black'
-	 * 	});
+	 *     // Create a circle shaped path at the mouse position,
+	 *     // with a radius of 10:
+	 *     var path = new Path.Circle({
+	 *         center: event.point,
+	 *         radius: 10,
+	 *         fillColor: 'black'
+	 *     });
 	 *
-	 * 	// Remove the path, when the mouse is released:
-	 * 	path.removeOnUp();
+	 *     // Remove the path, when the mouse is released:
+	 *     path.removeOnUp();
 	 * }
 	 */
 	// TODO: implement Item#removeOnFrame

@@ -452,17 +452,17 @@ var Color = Base.extend(new function() {
 		 * // Create a circle shaped path at the center of the view
 		 * // with a radius of 80:
 		 * var path = new Path.Circle({
-		 * 	center: view.center,
-		 * 	radius: 80
+		 *     center: view.center,
+		 *     radius: 80
 		 * });
 		 *
 		 * // The stops array: yellow mixes with red between 0 and 15%,
 		 * // 15% to 30% is pure red, red mixes with black between 30% to 100%:
 		 * var stops = [
-		 * 	['yellow', 0],
-		 * 	['red', 0.15],
-		 * 	['red', 0.3],
-		 * 	['black', 0.9]
+		 *     ['yellow', 0],
+		 *     ['red', 0.15],
+		 *     ['red', 0.3],
+		 *     ['black', 0.9]
 		 * ];
 		 *
 		 * // Create a radial gradient using the color stops array:

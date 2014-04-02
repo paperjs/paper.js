@@ -67,8 +67,8 @@ var Size = Base.extend(/** @lends Size# */{
 	 * // Creating a size of width: 10, height: 20 using an object literal:
 	 *
 	 * var size = new Size({
-	 * 	width: 10,
-	 * 	height: 20
+	 *     width: 10,
+	 *     height: 20
 	 * });
 	 * console.log(size.width); // 10
 	 * console.log(size.height); // 20

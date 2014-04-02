@@ -73,9 +73,9 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Line({
-		 * 	from: [20, 20],
-		 * 	to: [80, 80],
-		 * 	strokeColor: 'black'
+		 *     from: [20, 20],
+		 *     to: [80, 80],
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Line: function(/* from, to */) {
@@ -108,9 +108,9 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Circle({
-		 * 	center: [80, 50],
-		 * 	radius: 30,
-		 * 	strokeColor: 'black'
+		 *     center: [80, 50],
+		 *     radius: 30,
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Circle: function(/* center, radius */) {
@@ -180,33 +180,33 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Rectangle({
-		 * 	point: [20, 20],
-		 * 	size: [60, 60],
-		 * 	strokeColor: 'black'
+		 *     point: [20, 20],
+		 *     size: [60, 60],
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Rectangle({
-		 * 	from: [20, 20],
-		 * 	to: [80, 80],
-		 * 	strokeColor: 'black'
+		 *     from: [20, 20],
+		 *     to: [80, 80],
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Rectangle({
-		 * 	rectangle: {
-		 * 		topLeft: [20, 20],
-		 * 		bottomRight: [80, 80]
-		 * 	},
-		 * 	strokeColor: 'black'
+		 *     rectangle: {
+		 *         topLeft: [20, 20],
+		 *         bottomRight: [80, 80]
+		 *     },
+		 *     strokeColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Rectangle({
 	 	 *	topLeft: [20, 20],
-	 	 * 	bottomRight: [80, 80],
-		 * 	radius: 10,
-		 * 	strokeColor: 'black'
+	 	 *     bottomRight: [80, 80],
+		 *     radius: 10,
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Rectangle: function(/* rectangle */) {
@@ -273,16 +273,16 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Ellipse({
-		 * 	point: [20, 20],
-		 * 	size: [180, 60],
-		 * 	fillColor: 'black'
+		 *     point: [20, 20],
+		 *     size: [180, 60],
+		 *     fillColor: 'black'
 		 * });
 		 *
 		 * @example {@paperscript} // Placing by center and radius
 		 * var shape = new Path.Ellipse({
-		 * 	center: [110, 50],
-		 * 	radius: [90, 30],
-		 * 	fillColor: 'black'
+		 *     center: [110, 50],
+		 *     radius: [90, 30],
+		 *     fillColor: 'black'
 		 * });
 		 */
 		Ellipse: function(/* rectangle */) {
@@ -323,10 +323,10 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Arc({
-		 * 	from: [20, 20],
-		 * 	through: [60, 20],
-		 * 	to: [80, 80],
-		 * 	strokeColor: 'black'
+		 *     from: [20, 20],
+		 *     through: [60, 20],
+		 *     to: [80, 80],
+		 *     strokeColor: 'black'
 		 * });
 		 */
 		Arc: function(/* from, through, to */) {
@@ -369,10 +369,10 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var triangle = new Path.RegularPolygon({
-		 * 	center: [50, 50],
-		 * 	sides: 10,
-		 * 	radius: 40,
-		 * 	fillColor: 'black'
+		 *     center: [50, 50],
+		 *     sides: 10,
+		 *     radius: 40,
+		 *     fillColor: 'black'
 		 * });
 		 */
 		RegularPolygon: function(/* center, sides, radius */) {
@@ -423,11 +423,11 @@ Path.inject({ statics: new function() {
 		 *
 		 * @example {@paperscript}
 		 * var path = new Path.Star({
-		 * 	center: [50, 50],
-		 * 	points: 12,
-		 * 	radius1: 25,
-		 * 	radius2: 40,
-		 * 	fillColor: 'black'
+		 *     center: [50, 50],
+		 *     points: 12,
+		 *     radius1: 25,
+		 *     radius2: 40,
+		 *     fillColor: 'black'
 		 * });
 		 */
 		Star: function(/* center, points, radius1, radius2 */) {

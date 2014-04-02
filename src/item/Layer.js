@@ -57,9 +57,9 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 * // Create a layer. The properties in the object literal
 	 * // are set on the newly created layer.
 	 * var layer = new Layer({
-	 * 	children: [path, path2],
-	 * 	strokeColor: 'black',
-	 * 	position: view.center
+	 *     children: [path, path2],
+	 *     strokeColor: 'black',
+	 *     position: view.center
 	 * });
 	 */
 	initialize: function Layer(arg) {

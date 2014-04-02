@@ -47,19 +47,19 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * var intersectionGroup = new Group();
 	 *
 	 * function onFrame(event) {
-	 * 	secondPath.rotate(3);
+	 *     secondPath.rotate(3);
 	 *
-	 * 	var intersections = path.getIntersections(secondPath);
-	 * 	intersectionGroup.removeChildren();
+	 *     var intersections = path.getIntersections(secondPath);
+	 *     intersectionGroup.removeChildren();
 	 *
-	 * 	for (var i = 0; i < intersections.length; i++) {
-	 * 		var intersectionPath = new Path.Circle({
-	 * 			center: intersections[i].point,
-	 * 			radius: 4,
-	 * 			fillColor: 'red'
-	 * 		});
-	 * 		intersectionGroup.addChild(intersectionPath);
-	 * 	}
+	 *     for (var i = 0; i < intersections.length; i++) {
+	 *         var intersectionPath = new Path.Circle({
+	 *             center: intersections[i].point,
+	 *             radius: 4,
+	 *             fillColor: 'red'
+	 *         });
+	 *         intersectionGroup.addChild(intersectionPath);
+	 *     }
 	 * }
 	 */
 	getIntersections: function(path, _expand) {
@@ -438,22 +438,22 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * var myPath;
 	 * function onMouseMove(event) {
-	 * 	// If we created a path before, remove it:
-	 * 	if (myPath) {
-	 * 		myPath.remove();
-	 * 	}
+	 *     // If we created a path before, remove it:
+	 *     if (myPath) {
+	 *         myPath.remove();
+	 *     }
 	 *
-	 * 	// Create a new path and add a segment point to it
-	 * 	// at {x: 150, y: 150):
-	 * 	myPath = new Path();
-	 * 	myPath.add(150, 150);
+	 *     // Create a new path and add a segment point to it
+	 *     // at {x: 150, y: 150):
+	 *     myPath = new Path();
+	 *     myPath.add(150, 150);
 	 *
-	 * 	// Draw a curve through the position of the mouse to 'toPoint'
-	 * 	var toPoint = new Point(350, 150);
-	 * 	myPath.curveTo(event.point, toPoint);
+	 *     // Draw a curve through the position of the mouse to 'toPoint'
+	 *     var toPoint = new Point(350, 150);
+	 *     myPath.curveTo(event.point, toPoint);
 	 *
-	 * 	// Select the path, so we can see its segments:
-	 * 	myPath.selected = true;
+	 *     // Select the path, so we can see its segments:
+	 *     myPath.selected = true;
 	 * }
 	 */
 
@@ -492,29 +492,29 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * var myPath;
 	 * function onMouseDrag(event) {
-	 * 	// If we created a path before, remove it:
-	 * 	if (myPath) {
-	 * 	    myPath.remove();
-	 * 	}
+	 *     // If we created a path before, remove it:
+	 *     if (myPath) {
+	 *         myPath.remove();
+	 *     }
 	 *
-	 * 	// Create a new path and add a segment point to it
-	 * 	// at {x: 150, y: 150):
-	 * 	myPath = new Path();
-	 * 	myPath.add(150, 150);
+	 *     // Create a new path and add a segment point to it
+	 *     // at {x: 150, y: 150):
+	 *     myPath = new Path();
+	 *     myPath.add(150, 150);
 	 *
-	 * 	// Draw an arc through the position of the mouse to 'toPoint'
-	 * 	var toPoint = new Point(350, 150);
-	 * 	myPath.arcTo(event.point, toPoint);
+	 *     // Draw an arc through the position of the mouse to 'toPoint'
+	 *     var toPoint = new Point(350, 150);
+	 *     myPath.arcTo(event.point, toPoint);
 	 *
-	 * 	// Select the path, so we can see its segments:
-	 * 	myPath.selected = true;
+	 *     // Select the path, so we can see its segments:
+	 *     myPath.selected = true;
 	 * }
 	 *
 	 * // When the mouse is released, deselect the path
 	 * // and fill it with black.
 	 * function onMouseUp(event) {
-	 * 	myPath.selected = false;
-	 * 	myPath.fillColor = 'black';
+	 *     myPath.selected = false;
+	 *     myPath.fillColor = 'black';
 	 * }
 	 */
 	/**
@@ -553,15 +553,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * // When the user clicks, create a new path and add
 	 * // the current mouse position to it as its first segment:
 	 * function onMouseDown(event) {
-	 * 	myPath = new Path();
-	 * 	myPath.strokeColor = 'black';
-	 * 	myPath.add(event.point);
+	 *     myPath = new Path();
+	 *     myPath.strokeColor = 'black';
+	 *     myPath.add(event.point);
 	 * }
 	 *
 	 * // On each mouse drag event, draw an arc to the current
 	 * // position of the mouse:
 	 * function onMouseDrag(event) {
-	 * 	myPath.arcTo(event.point);
+	 *     myPath.arcTo(event.point);
 	 * }
 	 */
 	// DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
@@ -621,14 +621,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *
 	 * // Loop 500 times:
 	 * for (var i = 0; i < 500; i++) {
-	 * 	// Create a vector with an ever increasing length
-	 * 	// and an angle in increments of 45 degrees
-	 * 	var vector = new Point({
-	 * 	    angle: i * 45,
-	 * 	    length: i / 2
-	 * 	});
-	 * 	// Add the vector relatively to the last segment point:
-	 * 	path.lineBy(vector);
+	 *     // Create a vector with an ever increasing length
+	 *     // and an angle in increments of 45 degrees
+	 *     var vector = new Point({
+	 *         angle: i * 45,
+	 *         length: i / 2
+	 *     });
+	 *     // Add the vector relatively to the last segment point:
+	 *     path.lineBy(vector);
 	 * }
 	 *
 	 * // Smooth the handles of the path:
