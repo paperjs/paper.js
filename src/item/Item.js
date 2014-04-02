@@ -1869,7 +1869,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			return list ? items : null;
 		}
 	}
-}, {
+}, /** @lends Item# */{
 	/**
 	 * {@grouptitle Importing / Exporting JSON and SVG}
 	 *
