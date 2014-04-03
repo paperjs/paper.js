@@ -109,8 +109,8 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 			// Use _merged property to not repeatetly merge using new Base in
 			// recursion.
 			return options && options._merged ? options : new Base({
-				// Type of item, for instanceof check: 'group', 'layer', 'path',
-				// 'compound-path', 'shape','raster', 'placed-symbol', ...
+				// Type of item, for instanceof check: Group, Layer, Path,
+				// CompoundPath, Shape, Raster, PlacedSymbol, ...
 				type: null,
 				// Tolerance
 				tolerance: paper.settings.hitTolerance,
