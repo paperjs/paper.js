@@ -295,7 +295,7 @@ var Style = Base.extend(new function() {
 		// something deeper down in the optimizer:
 		// `if (size === 0) size = 0;`
 		return this.getFontWeight()
-				+ ' ' + fontSize + (/\[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
+				+ ' ' + fontSize + (/[a-z]/i.test(fontSize + '') ? ' ' : 'px ')
 				+ this.getFontFamily();
 	},
 
