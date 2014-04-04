@@ -1747,6 +1747,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		var that = this,
 			style = this.getStyle(),
 			segments = this._segments,
+			numSegments = segments.length,
 			closed = this._closed,
 			// transformed tolerance padding, see Item#hitTest. We will add
 			// stroke padding on top if stroke is defined.
@@ -1817,7 +1818,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// to run the hit-test on it.
 				area = new Path({ internal: true, closed: true });
 				if (closed || segment._index > 0
-						&& segment._index < segments.length - 1) {
+						&& segment._index < numSegments - 1) {
 					// It's a join. See that it's not a round one (one of
 					// the handles has to be zero too for this!)
 					if (join !== 'round' && (segment._handleIn.isZero() 
@@ -1848,22 +1849,25 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// before stroke or fill.
 		if (options.ends && !options.segments && !closed) {
 			if (res = checkSegmentPoints(segments[0], true)
-					|| checkSegmentPoints(segments[segments.length - 1], true))
+					|| checkSegmentPoints(segments[numSegments - 1], true))
 				return res;
 		} else if (options.segments || options.handles) {
-			for (var i = 0, l = segments.length; i < l; i++)
+			for (var i = 0; i < numSegments; i++)
 				if (res = checkSegmentPoints(segments[i]))
 					return res;
 		}
 		// If we're querying for stroke, perform that before fill
 		if (radius != null) {
 			loc = this.getNearestLocation(point);
+			// Note that paths need at least two segments to have an actual
+			// stroke. But we still check for segments with the radius fallback
+			// check if there is only one segment.
 			if (loc) {
 				// Now see if we're on a segment, and if so, check for its
 				// stroke join / cap first. If not, do a normal radius check
 				// for round strokes.
 				var parameter = loc.getParameter();
-				if (parameter === 0 || parameter === 1) {
+				if (parameter === 0 || parameter === 1 && numSegments > 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
 				} else  if (!isCloseEnough(loc.getPoint(), strokePadding)) {
@@ -1872,8 +1876,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			// If we have miter joins, we may not be done yet, since they can be
 			// longer than the radius. Check for each segment within reach now.
-			if (!loc && join === 'miter') {
-				for (var i = 0, l = segments.length; i < l; i++) {
+			if (!loc && join === 'miter' && numSegments > 1) {
+				for (var i = 0; i < numSegments; i++) {
 					var segment = segments[i];
 					if (point.getDistance(segment._point) <= miterLimit
 							&& checkSegmentStroke(segment)) {

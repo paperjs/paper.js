@@ -151,7 +151,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 	},
 
 	isEmpty: function() {
-		// A shape can never be "empty" in the sense that it does not hold a
+		// A shape can never be "empty" in the sense that it always holds a
 		// definition. This is required for Group#bounds to work correctly when
 		// containing a Shape.
 		return false;

@@ -387,8 +387,9 @@ var Segment = Base.extend(/** @lends Segment# */{
 		var path = this._path,
 			index = this._index;
 		if (path) {
-			// The last segment of an open path belongs to the last curve
-			if (!path._closed && index == path._segments.length - 1)
+			// The last segment of an open path belongs to the last curve.
+			if (index > 0 && !path._closed
+					&& index === path._segments.length - 1)
 				index--;
 			return path.getCurves()[index] || null;
 		}

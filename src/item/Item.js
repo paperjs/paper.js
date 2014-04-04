@@ -1690,7 +1690,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	hitTest: function(point, options) {
 		point = Point.read(arguments);
 		options = HitResult.getOptions(Base.read(arguments));
-		if (this._locked || !this._visible || this._guide && !options.guides)
+		if (this._locked || !this._visible || this._guide && !options.guides
+				|| this.isEmpty())
 			return null;
 
 		// Check if the point is withing roughBounds + tolerance, but only if
