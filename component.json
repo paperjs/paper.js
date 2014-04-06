@@ -5,8 +5,27 @@
   "repo": "paperjs/paper.js",
   "license": "MIT",
   "keywords": [
-    "vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve",
-    "curves", "path", "paths", "canvas", "svg", "paper", "paper.js"
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js"
   ],
-  "scripts": ["blob/master/dist/paper-full.js"]
+  "scripts":  [
+    "blob/master/dist/paper-full.js"
+  ],
+  "files": [
+    "AUTHORS.md",
+    "LICENSE.txt",
+    "README.md"
+  ]
 }

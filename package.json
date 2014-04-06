@@ -13,10 +13,22 @@
   ],
   "license": "MIT",
   "keywords": [
-    "vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve",
-    "curves", "path", "paths", "canvas", "svg", "paper", "paper.js"
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js"
   ],
-  "main": "./dist/paper-node.js",
+  "main": "dist/paper-node.js",
   "files": [
     "AUTHORS.md",
     "dist/paper-node.js",
