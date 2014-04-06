@@ -8,5 +8,5 @@
     "vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve",
     "curves", "path", "paths", "canvas", "svg", "paper", "paper.js"
   ],
-  "scripts": ["./dist/paper-full.js"]
+  "scripts": ["./blob/master/dist/paper-full.js"]
 }
