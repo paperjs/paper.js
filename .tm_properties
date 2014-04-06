@@ -1,6 +1,6 @@
 projectDirectory = "$CWD"
 windowTitle = "$TM_DISPLAYNAME — Paper.js"
-excludeDirectories = "{$excludeDirectories,dist,build/jsdoc-toolkit}"
+excludeDirectories = "{$excludeDirectories,dist,build/jsdoc-toolkit,node_modules,bower_components,patch,projects}"
 
 # JavaScript coding conventions
 showInvisibles = true
