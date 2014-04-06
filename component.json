@@ -20,8 +20,11 @@
     "paper",
     "paper.js"
   ],
-  "scripts":  [
-    "blob/master/dist/paper-full.js"
+  "main": [
+    "dist/paper-full.js"
+  ],
+  "scripts": [
+    "dist/paper-full.js"
   ],
   "files": [
     "AUTHORS.md",
