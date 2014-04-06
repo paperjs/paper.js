@@ -29,5 +29,6 @@ var __options = {
 	debug: false
 };
 
+// If this file is loaded in the browser, we're in dev mode through load.js
 if (typeof window === 'object')
 	__options.version = 'dev';

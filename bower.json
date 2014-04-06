@@ -2,6 +2,7 @@
   "name": "paper",
   "version": "0.9.17",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
+  "license": "MIT",
   "homepage": "http://paperjs.org",
   "repository": {
     "type": "git",
@@ -10,23 +11,6 @@
   "authors": [
     "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
-  ],
-  "license": "MIT",
-  "keywords": [
-    "vector",
-    "graphic",
-    "graphics",
-    "2d",
-    "geometry",
-    "bezier",
-    "curve",
-    "curves",
-    "path",
-    "paths",
-    "canvas",
-    "svg",
-    "paper",
-    "paper.js"
   ],
   "main": "dist/paper-full.js",
   "ignore": [
@@ -44,5 +28,21 @@
     "acorn": "git://github.com/paperjs/acorn#0.3.2",
     "esprima": "~1.0.3",
     "stats.js": "r11"
-  }
+  },
+  "keywords": [
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js"
+  ]
 }
