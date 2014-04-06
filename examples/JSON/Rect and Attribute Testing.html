@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Rectangle Testing</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas1">
 		var point1 = new Point(10, 10);
 		var size1 = new Size(50, 50);
@@ -17,7 +17,7 @@
 		path1.opacity = ".1";
 		path1.dashArray = [5, 2];
 		path1.dashOffset = "0";
-		
+
 		var point2 = new Point(75, 75);
 		var point22 = new Point(100, 100);
 		var path2 = new Path.Rectangle(point2, point22);
@@ -27,13 +27,13 @@
 		path2.id = "square2";
 		path2.strokeCap = "butt";
 		path2.opacity = "1";
-		
+
 		var point3 = new Point(150, 150);
 		var size3 = new Size(50, 50);
 		var rectangle3 = new Rectangle(point3, size3);
 		var path3 = new Path.Rectangle(rectangle3);
 		path3.strokeColor = 'blue';
-		
+
 		var point4 = new Point(200, 200);
 		var size4 = new Size(100, 100);
 		var rectangle4 = new Rectangle(point4, size4);
@@ -41,7 +41,7 @@
 		var path4 = new Path.Rectangle(rectangle4, cornerSize4);
 		path4.strokeColor= 'yellow';
 		path4.fillColor='purple';
-		
+
 		window._json = project.exportJSON();
 		console.log(window._json);
 	</script>

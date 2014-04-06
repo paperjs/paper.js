@@ -16,7 +16,7 @@
     "vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve",
     "curves", "path", "paths", "canvas", "svg", "paper", "paper.js"
   ],
-  "main": "dist/paper.js",
+  "main": "dist/paper-full.js",
   "ignore": [
     "build",
     "components",

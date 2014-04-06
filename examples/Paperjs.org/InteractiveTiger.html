@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Interactive Tiger</title>
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		// Import the tiger svg:
 		project.importSVG(document.getElementById('svg'));
@@ -31,7 +31,7 @@
 				},
 				mousedrag: function(event) {
 					this.position += event.delta;
-				} 
+				}
 			})
 		}
 
@@ -43,7 +43,7 @@
 		});
 	</script>
 </head>
-<body>	
+<body>
 <canvas id="canvas" width="600" height="600" resize=true></canvas>
 <svg xmlns="http://www.w3.org/2000/svg"
 		 xmlns:xlink="http://www.w3.org/1999/xlink"

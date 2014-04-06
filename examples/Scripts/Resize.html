@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Resize</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var redPath = new Path.Circle({
 			center: view.center,
@@ -23,7 +23,7 @@
 			justification: 'center',
 			point: view.center
 		});
-		
+
 		function onResize(event) {
 			// Resize the red circle to fill the bounds of the view:
 			redPath.fitBounds(view.bounds, true);

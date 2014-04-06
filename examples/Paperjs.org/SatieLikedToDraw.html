@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Erik Liked To Dance</title>
 <link rel="stylesheet" href="../css/style.css">
-<script type="text/javascript" src="../../dist/paper.js"></script>
+<script type="text/javascript" src="../../dist/paper-full.js"></script>
 <script type="text/paperscript" canvas="canvas">
 	var leftPath = new Path({
 	    strokeColor: 'red',
@@ -99,7 +99,7 @@
 		request.open("GET", url, true);
 		request.responseType = "arraybuffer";
 
-		request.onload = function() { 
+		request.onload = function() {
 			audio.decodeAudioData(
 				request.response,
 				function(buffer) {
@@ -108,7 +108,7 @@
 					source.start(0);
 					view.play();
 				},
-				
+
 				function(buffer) {
 					alert("Error loading MP3");
 				}

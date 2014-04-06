@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Bouncing Balls</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var Ball = function(point, vector) {
 			if (!vector || vector.isZero()) {
@@ -25,7 +25,7 @@
 			var gradient = new Gradient([color, 'black'], true);
 
 			var radius = this.radius = 50 * Math.random() + 30;
-			// Wrap CompoundPath in a Group, since CompoundPaths directly 
+			// Wrap CompoundPath in a Group, since CompoundPaths directly
 			// applies the transformations to the content, just like Path.
 			var ball = new CompoundPath({
 				children: [

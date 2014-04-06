@@ -4,12 +4,12 @@
 	<meta charset="UTF-8">
 	<title>Text Testing</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var text = new PointText(new Point(50, 100));
 		text.fillColor = 'black';
 		text.content = 'This is a test';
-		
+
 		var text = new PointText(new Point(100, 150));
 		text.fillColor = 'red';
 		text.strokeWidth = '4';
@@ -23,7 +23,7 @@
 		text.rotate(45);
 		text.shear(.85, .15);
 		text.scale(.85, 2);
-		
+
 		var path2 = new Path.Circle(new Point(100, 100), 50);
 		path2.strokeColor = 'black';
 		path2.shear(.5, .5);
@@ -32,7 +32,7 @@
 			var p = path2.segments[i].point;
 			var c = new Path.Circle(p, 2);
 			c.fillColor = colors[i];
-		}		
+		}
 
 		document.getElementById('svg').appendChild(project.exportSVG());
 	</script>

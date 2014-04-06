@@ -24,7 +24,15 @@ With Bower installed, simply type this command in your project folder:
 
 	bower install paper
 
-Upon execution, you will find a `paper` folder inside the project's `component` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
+Upon execution, you will find a `paper` folder inside the project's `bower_components` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
+
+## Which Version to Use?
+
+The various distributions come with three different pre-build versions of Paper.js, in minified and normal variants:
+
+- `paper-full.js` – The full version for the browser, including PaperScript support and Acorn.js
+- `paper-core.js` – The core version for the browser, without PaperScript support nor Acorn.js. Use this to shave off some bytes when working with JavaScript directly.
+- `paper-node.js` – The version for Node.js. It is recommended to install this through NPM, see below.
 
 ## Installing Paper.js for Node.js through NPM
 
@@ -50,7 +58,7 @@ Also, whenever you would like to update the modules, you will need to execute:
 
 You might also need these additional packages if you don't usually build from c++ sources:
 
-	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev 
+	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev
 
 **Ater Cairo has been installed:**
 
@@ -142,7 +150,7 @@ And to go back to a built library
 	cd build
 	./build.sh
 
-Note that your PaperScripts examples do not need to change, they can simply load `dist/paper.js`, which will always do the right rhing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro library <http://github.com/lehni/prepro.js>.
+Note that your PaperScripts examples do not need to change, they can keep loading `dist/paper-full.js`, which will always do the right thing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro JS preprocessing library <http://github.com/lehni/prepro.js>.
 
 ### Testing
 

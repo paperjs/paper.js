@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 	<title>Paperoids</title>
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 
 	//
@@ -152,22 +152,22 @@
 				if (!this.dying)
 					Bullets.fire(this.item.position, this.angle);
 			},
-			
+
 			coast: function() {
 				thrust.visible = false;
 				this.vector *= .992;
 			},
-			
+
 			move: function() {
 				group.position += this.vector;
 				keepInView(group);
 			},
-			
+
 			moveTo: function(position) {
 				group.position = position;
 				keepInView(group);
 			},
-			
+
 			destroy: function() {
 				this.destroyedShip = assets.destroyedShip.clone();
 				this.destroyedShip.position = this.item.position;
@@ -177,7 +177,7 @@
 				this.item.position = view.center;
 				this.dying = true;
 			},
-			
+
 			destroyed: function() {
 				this.item.visible = true;
 				this.stop();
@@ -185,7 +185,7 @@
 				this.dying = false;
 				this.destroyedShip.visible = false;
 			},
-			
+
 			checkCollisions: function() {
 				var crashRock;
 
@@ -293,7 +293,7 @@
 			new Path(
 				[-23, -40.5], [0, -30.5], [24, -40.5], [45, -21.5], [25, -12.5],
 				[46, 9.5], [22, 38.5], [-10, 30.5], [-22, 40.5], [-46, 18.5],
-				[-33, 0.5], [-44, -21.5], [-23, -40.5]), 
+				[-33, 0.5], [-44, -21.5], [-23, -40.5]),
 			new Path(
 				[-45, -9.5], [-12, -40.5], [24, -40.5], [46, -11.5], [45, 10.5],
 				[24, 40.5], [0, 40.5], [0, 10.5], [-23, 38.5], [-46, 9.5], [-25, 0.5],
@@ -491,7 +491,7 @@
 	}
 	</script>
 	<style type="text/css">
-		body { 
+		body {
 			margin: 0;
 			overflow: hidden;
 			background-color: #000;
@@ -530,12 +530,12 @@
 			color: #fff;
 			background-color: rgba(60,60,60,0.8);
 			padding: 32px;
-			-moz-border-radius: 12px; 
-			-webkit-border-radius: 12px; 
-			border-radius: 12px; 
+			-moz-border-radius: 12px;
+			-webkit-border-radius: 12px;
+			border-radius: 12px;
 			-moz-background-clip: padding;
 			-webkit-background-clip: padding-box;
-			background-clip: padding-box; 
+			background-clip: padding-box;
 		}
 
 		.gameover a {
@@ -553,7 +553,7 @@
 <body style="background:black">
 	<canvas style="position:absolute" id="canvas" resize stats></canvas>
 	<div id="footer" class="footer"><a href=#">Paperoids</a>.  To Play: <b>&#8592;</b> and <b>&#8594;</b> to rotate.  <b>&#8593;</b> for thrust.  <b>Z</b> to fire. <b>F</b> to show FPS. Follow @<a href="http://twitter.com/#/hirmes">hirmes</a> for updates. Made with the amazing <a href="http://paperjs.org">Paper.js</a></div>
-	
+
 	<div id="gameover" class="gameover">Game Over.  <a href="Paperoids.html">Play again</a>?</div>
 </body>
 </html>

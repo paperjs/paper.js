@@ -19,8 +19,8 @@ if (typeof window === 'object') {
 		var scripts = document.getElementsByTagName('script');
 		var src = scripts[scripts.length - 1].getAttribute('src');
 		// Assume that we're loading browser.js from a root folder, either
-		// through dist/paper.js, or directly through src/load.js, and match
-		// root as all the parts of the path that lead to that folder.
+		// through dist/paper-full.js, or directly through src/load.js, and
+		// match root as all the parts of the path that lead to that folder.
 		var root = src.match(/^(.*\/)\w*\//)[1];
 		// First load the PrePro's browser.js file, which provides the include()
 		// function for the browser.

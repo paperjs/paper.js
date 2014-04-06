@@ -32,11 +32,4 @@ fi
 
 ./preprocess.sh $MODE ../src/paper.js "-i '../src/constants.js'" ../dist/paper-full.js
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"paperScript\": false, \"palette\": false }' -i '../src/constants.js'" ../dist/paper-core.js
-./preprocess.sh $MODE ../src/paper.js "-o '{ \"environment\": \"node\", \"legacy\": false }' -i '../src/constants.js'" ../dist/paper-node.js 
-
-# Remove the existing file and copy paper-full.js to paper.js now
-if [ -f ../dist/paper.js ]
-then
-	rm ../dist/paper.js
-fi
-cp ../dist/paper-full.js ../dist/paper.js
+./preprocess.sh $MODE ../src/paper.js "-o '{ \"environment\": \"node\", \"legacy\": false }' -i '../src/constants.js'" ../dist/paper-node.js

@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>HslColor</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var steps = {
 			hue: 100,
@@ -19,7 +19,7 @@
 			var lightness = 1 - (i + 1) / (steps.lightness + 1);
 			createWheel(position, radius, steps, lightness);
 		};
-		
+
 		function createWheel(center, radius, steps, lightness) {
 			var hUnit =  360 / steps.hue;
 			for (var h = 0; h < steps.hue; h++) {

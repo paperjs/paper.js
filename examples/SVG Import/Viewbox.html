@@ -4,16 +4,16 @@
 	<meta charset="UTF-8">
 	<title>Viewbox 1</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		project.importSVG(document.getElementById('svg'));
 	</script>
 </head>
-<body>	
-<svg width="300" height="200" 
+<body>
+<svg width="300" height="200"
      viewBox="100 100 1500 1000" preserveAspectRatio="none"
      xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg">
-  <desc>Example ViewBox - uses the viewBox 
+  <desc>Example ViewBox - uses the viewBox
    attribute to automatically create an initial user coordinate
    system which causes the graphic to scale to fit into the
    viewport no matter what size the viewport is.</desc>
@@ -22,7 +22,7 @@
        Because of the viewBox attribute above,
        the rectangle will end up filling the entire area
        reserved for the SVG content. -->
-  <rect x="0" y="0" width="1500" height="1000" 
+  <rect x="0" y="0" width="1500" height="1000"
         fill="yellow" stroke="blue" stroke-width="12"  />
 
   <!-- A large, red triangle -->

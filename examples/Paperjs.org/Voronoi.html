@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<title>Voronoi</title>
 	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper.js"></script>
+	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/javascript" src="http://jonathanpuckey.com/static/rhill-voronoi-core.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		var voronoi =  new Voronoi();
@@ -83,7 +83,7 @@
 		}
 		function createPath(points, center) {
 			var path = new Path();
-			if (!selected) { 
+			if (!selected) {
 				path.fillColor = spotColor;
 			} else {
 				path.fullySelected = selected;
