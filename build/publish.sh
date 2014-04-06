@@ -27,6 +27,7 @@ echo "Commiting Version"
 # Add changed json configuration files
 git add -u package.json
 git add -u bower.json
+git add -u component.json
 # Add all changed files in dist
 git add -u dist
 # Commit
