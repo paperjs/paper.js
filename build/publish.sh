@@ -10,10 +10,23 @@
 #
 # All rights reserved.
 
-# Extract the paper.js version from package.json:
-VERSION=$(node -e "
-	process.stdout.write(require('../package.json').version)
-")
+# Extract the paper.js version from options.js:
+VERSION=$(printf '%q' $(node -e "
+	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+	process.stdout.write(__options.version);
+"))
+
+# Helper function that updates paper.js vesion in JSON files
+function update_version()
+{
+node -e "
+	var data = require('$1');
+	data.version = '$VERSION';
+	require('fs').writeFile('$1',
+			JSON.stringify(data, null, '  ') + require('os').EOL);
+"
+}
+
 cd ..
 PAPER_DIR=`PWD`
 cd ../paperjs.org
@@ -24,6 +37,10 @@ cd $PAPER_DIR/build
 ./dist.sh
 cd $PAPER_DIR
 echo "Commiting Version"
+# Update versions
+update_version 'package.json'
+update_version 'bower.json'
+update_version 'component.json'
 # Add changed json configuration files
 git add -u package.json
 git add -u bower.json

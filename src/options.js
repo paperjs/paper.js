@@ -16,7 +16,7 @@
 
 var __options = {
 	parser: 'acorn',
-	version: 'dev',
+	version: '0.9.17',
 	environment: 'browser',
 	legacy: true,
 	stats: true,
@@ -28,3 +28,6 @@ var __options = {
 	palette: true,
 	debug: false
 };
+
+if (typeof window === 'object')
+	__options.version = 'dev';
