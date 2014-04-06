@@ -79,9 +79,6 @@ new function() {
 			currentStyle = project._currentStyle,
 			children = [];
 		if (!isClip) {
-			// Have the group not pass on all transformations to its children,
-			// as this is how SVG works too.
-			item._applyMatrix = false;
 			item = applyAttributes(item, node, isRoot);
 			// Style on items needs to be handled differently than all other
 			// items: We first apply the style to the item, then use it as the
@@ -142,16 +139,25 @@ new function() {
 	}
 
 	function importGradient(node, type) {
-		var nodes = node.childNodes,
-			stops = [];
-		for (var i = 0, l = nodes.length; i < l; i++) {
-			var child = nodes[i];
-			if (child.nodeType === 1)
-				stops.push(applyAttributes(new GradientStop(), child));
+		var id = (getValue(node, 'href', true) || '').substring(1),
+			isRadial = type === 'radialgradient',
+			gradient;
+		if (id) {
+			// Gradients are always wrapped in a Color object, so get the
+			// gradient object from there.
+			// TODO: Handle exception if there is no definition for this id.
+			gradient = definitions[id].getGradient();
+		} else {
+			var nodes = node.childNodes,
+				stops = [];
+			for (var i = 0, l = nodes.length; i < l; i++) {
+				var child = nodes[i];
+				if (child.nodeType === 1)
+					stops.push(applyAttributes(new GradientStop(), child));
+			}
+			gradient = new Gradient(stops, isRadial);
 		}
-		var isRadial = type === 'radialgradient',
-			gradient = new Gradient(stops, isRadial),
-			origin, destination, highlight;
+		var origin, destination, highlight;
 		if (isRadial) {
 			origin = getPoint(node, 'cx', 'cy');
 			destination = origin.add(getValue(node, 'r'), 0);
@@ -538,6 +544,8 @@ new function() {
 		}
 
 		if (isRoot) {
+			// Have the group not pass on all transformations to its children,
+			// as this is how SVG works too.
 			// See if it's a string but handle markup separately
 			if (typeof source === 'string' && !/^.*</.test(source)) {
 /*#*/ if (__options.environment == 'browser') {
@@ -571,8 +579,16 @@ new function() {
 		// jsdom in Node.js uses uppercase values for nodeName...
 		var type = node.nodeName.toLowerCase(),
 			importer = importers[type],
-			item = importer && importer(node, type, isRoot, options) || null,
-			data = node.getAttribute && node.getAttribute('data-paper-data');
+			item,
+			data = node.getAttribute && node.getAttribute('data-paper-data'),
+			settings = scope.settings,
+			prevApplyMatrix = settings.applyMatrix;
+		// Have items imported from SVG not bake in all transformations to their
+		// content and children, as this is how SVG works too, but preserve the
+		// current setting so we can restore it after.
+		settings.applyMatrix = false;
+		item = importer && importer(node, type, isRoot, options) || null;
+		settings.applyMatrix = prevApplyMatrix;
 		if (item) {
 			// See importGroup() for an explanation of this filtering:
 			if (!(item instanceof Group))
