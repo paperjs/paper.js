@@ -91,7 +91,7 @@ test('compare invalid line path functions', function() {
 	shape.setAttribute('y1', y1);
 	shape.setAttribute('x2', x2);
 	shape.setAttribute('y2', y2);
-	
+
 	var line = new Path.Line([x1, y1], [x2, y2]);
 
 	var exportedLine = line.exportSVG();
@@ -129,7 +129,7 @@ test('compare rectangle values', function() {
 	var point = new Point(100, 100);
 	var size = new Size(100, 100);
 	var path = new Path.Rectangle(point, size);
-	
+
 	var exportedRectangle = path.exportSVG();
 
 	var shapex1 = shape.getAttribute('x');
@@ -393,7 +393,7 @@ test('compare circle values', function() {
 	var shape = document.createElementNS(svgns, 'circle');
 	var cx = 100,
 		cy = 80,
-		r = 50;	
+		r = 50;
 	shape.setAttribute('cx', cx);
 	shape.setAttribute('cy', cy);
 	shape.setAttribute('r', r);
@@ -444,7 +444,7 @@ test('compare polygon values', function() {
 	var exportedPoints = shape.getAttribute('points');
 
 	equals(svgPoints, exportedPoints);
-	
+
 });
 
 test('compare negative polygon values', function() {

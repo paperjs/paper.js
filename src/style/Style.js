@@ -43,20 +43,20 @@
  *     fillColor: 'red',
  *     justification: 'center'
  * };
- * 
+ *
  * @classexample {@paperscript} // Styling groups
  * var path1 = new Path.Circle({
  *     center: [100, 50],
  *     radius: 30
  * });
- * 
+ *
  * var path2 = new Path.Rectangle({
  *     from: [170, 20],
  *     to: [230, 80]
  * });
- * 
+ *
  * var group = new Group(path1, path2);
- * 
+ *
  * // All styles set on a group are automatically
  * // set on the children of the group:
  * group.style = {
@@ -65,7 +65,7 @@
  *     strokeWidth: 4,
  *     strokeCap: 'round'
  * };
- * 
+ *
  */
 var Style = Base.extend(new function() {
 	// windingRule / resolution / fillOverprint / strokeOverprint are currently
@@ -161,7 +161,7 @@ var Style = Base.extend(new function() {
 							value._owner = owner;
 						}
 					}
-					// Note: We do not convert the values to Colors in the 
+					// Note: We do not convert the values to Colors in the
 					// setter. This only happens once the getter is called.
 					this._values[key] = value;
 					// Notify the owner of the style change STYLE is always set,

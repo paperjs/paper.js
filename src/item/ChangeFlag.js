@@ -16,7 +16,7 @@ var ChangeFlag = {
 	APPEARANCE: 0x1,
 	// A change in the item's children
 	CHILDREN: 0x2,
-	// A change in the item's place in the DOM (removed, inserted, moved). 
+	// A change in the item's place in the DOM (removed, inserted, moved).
 	INSERTION: 0x4,
 	// Item geometry (path, bounds)
 	GEOMETRY: 0x8,

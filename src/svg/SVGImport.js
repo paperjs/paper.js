@@ -300,7 +300,7 @@ new function() {
 
 	// Attributes and Styles
 
-	// NOTE: Parmeter sequence for all apply*() functions is: 
+	// NOTE: Parmeter sequence for all apply*() functions is:
 	// (item, value, name, node) rather than (item, node, name, value),
 	// so we can ommit the less likely parameters from right to left.
 
@@ -508,7 +508,7 @@ new function() {
 
 	var definitions = {};
 	function getDefinition(value) {
-		// When url() comes from a style property, '#'' seems to be missing on 
+		// When url() comes from a style property, '#'' seems to be missing on
 		// WebKit, so let's make it optional here:
 		var match = value && value.match(/\((?:#|)([^)']+)/);
 		return match && definitions[match[1]];

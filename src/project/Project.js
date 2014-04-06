@@ -262,7 +262,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	/**
 	 * Perform a hit test on the items contained within the project at the
 	 * location of the specified point.
-	 * 
+	 *
 	 * The options object allows you to control the specifics of the hit test
 	 * and may contain a combination of the following values:
 	 * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test

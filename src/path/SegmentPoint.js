@@ -24,7 +24,7 @@ var SegmentPoint = Point.extend({
 			x = y = 0;
 		} else if ((x = point[0]) !== undefined) { // Array-like
 			y = point[1];
-		} else { 
+		} else {
 			// So we don't have to modify the point argument which causes
 			// deoptimization:
 			var pt = point;

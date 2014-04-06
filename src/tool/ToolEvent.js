@@ -169,7 +169,7 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 
 	/**
 	 * The item at the position of the mouse (if any).
-	 * 
+	 *
 	 * If the item is contained within one or more {@link Group} or
 	 * {@link CompoundPath} items, the most top level group or compound path
 	 * that it is contained within is returned.
@@ -193,7 +193,7 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
 		}
 		return this._item;
 	},
-	
+
 	setItem: function(item) {
 		this._item = item;
 	},

@@ -167,7 +167,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 * var path = new Path({
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * function onMouseDrag(event) {
 	 *     // Add a segment to the path at the position of the mouse:
 	 *     path.add(event.point);
@@ -192,7 +192,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	 *     radius: 10,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * function onMouseMove(event) {
 	 *     // Whenever the user moves the mouse, move the path
 	 *     // to that position:
@@ -408,7 +408,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 	}
 	/**
 	 * {@grouptitle Event Handling}
-	 * 
+	 *
 	 * Attach an event handler to the tool.
 	 *
 	 * @name Tool#attach

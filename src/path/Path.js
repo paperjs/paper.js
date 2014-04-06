@@ -796,7 +796,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *
 	 */
 	/**
-	 * Specifies whether the path and all its segments are selected. Cannot be 
+	 * Specifies whether the path and all its segments are selected. Cannot be
 	 * {@code true} on an empty path.
 	 *
 	 * @type Boolean
@@ -947,7 +947,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *     if (path) {
 	 *         path.selected = false;
 	 *     }
-	 * 
+	 *
 	 *     // Create a new path and add the position of the mouse
 	 *     // as its first segment. Select it, so we can see the
 	 *     // segment points:
@@ -957,13 +957,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *         selected: true
 	 *     });
 	 * }
-	 * 
+	 *
 	 * function onMouseDrag(event) {
 	 *     // On every drag event, add a segment to the path
 	 *     // at the position of the mouse:
 	 *     path.add(event.point);
 	 * }
-	 * 
+	 *
 	 * function onMouseUp(event) {
 	 *     // When the mouse is released, simplify the path:
 	 *     path.simplify();
@@ -982,42 +982,42 @@ var Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Splits the path at the given offset. After splitting, the path will be
 	 * open. If the path was open already, splitting will result in two paths.
-	 * 
+	 *
 	 * @name Path#split
 	 * @function
 	 * @param {Number} offset the offset at which to split the path
 	 * as a number between 0 and {@link Path#length}
 	 * @return {Path} the newly created path after splitting, if any
-	 * 
+	 *
 	 * @example {@paperscript} // Splitting an open path
 	 * var path = new Path();
 	 * path.strokeColor = 'black';
 	 * path.add(20, 20);
-	 * 
+	 *
 	 * // Add an arc through {x: 90, y: 80} to {x: 160, y: 20}
 	 * path.arcTo([90, 80], [160, 20]);
-	 * 
+	 *
 	 * // Split the path at 30% of its length:
 	 * var path2 = path.split(path.length * 0.3);
 	 * path2.strokeColor = 'red';
-	 * 
+	 *
 	 * // Move the newly created path 40px to the right:
 	 * path2.position.x += 40;
-	 * 
+	 *
 	 * @example {@paperscript} // Splitting a closed path
 	 * var path = new Path.Rectangle({
 	 *     from: [20, 20],
 	 *     to: [80, 80],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Split the path at 60% of its length:
 	 * path.split(path.length * 0.6);
-	 * 
+	 *
 	 * // Move the first segment, to show where the path
 	 * // was split:
 	 * path.firstSegment.point.x += 20;
-	 * 
+	 *
 	 * // Select the first segment:
 	 * path.firstSegment.selected = true;
 	 */
@@ -1025,27 +1025,27 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Splits the path at the given curve location. After splitting, the path
 	 * will be open. If the path was open already, splitting will result in two
 	 * paths.
-	 * 
+	 *
 	 * @name Path#split
 	 * @function
 	 * @param {CurveLocation} location the curve location at which to split
 	 * the path
 	 * @return {Path} the newly created path after splitting, if any
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var path = new Path.Circle({
 	 *     center: view.center,
 	 *     radius: 40,
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var pointOnCircle = view.center + {
 	 *     length: 40,
 	 *     angle: 30
 	 * };
-	 * 
+	 *
 	 * var curveLocation = path.getNearestLocation(pointOnCircle);
-	 * 
+	 *
 	 * path.split(curveLocation);
 	 * path.lastSegment.selected = true;
 	 */
@@ -1053,37 +1053,37 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * Splits the path at the given curve index and parameter. After splitting,
 	 * the path will be open. If the path was open already, splitting will
 	 * result in two paths.
-	 * 
+	 *
 	 * @example {@paperscript} // Splitting an open path
 	 * // Draw a V shaped path:
 	 * var path = new Path([20, 20], [50, 80], [80, 20]);
 	 * path.strokeColor = 'black';
-	 * 
+	 *
 	 * // Split the path half-way down its second curve:
 	 * var path2 = path.split(1, 0.5);
-	 * 
+	 *
 	 * // Give the resulting path a red stroke-color
 	 * // and move it 20px to the right:
 	 * path2.strokeColor = 'red';
 	 * path2.position.x += 20;
-	 * 
+	 *
 	 * @example {@paperscript} // Splitting a closed path
 	 * var path = new Path.Rectangle({
 	 *     from: [20, 20],
 	 *     to: [80, 80],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Split the path half-way down its second curve:
 	 * path.split(2, 0.5);
-	 * 
+	 *
 	 * // Move the first segment, to show where the path
 	 * // was split:
 	 * path.firstSegment.point.x += 20;
-	 * 
+	 *
 	 * // Select the first segment:
 	 * path.firstSegment.selected = true;
-	 * 
+	 *
 	 * @param {Number} index the index of the curve in the {@link Path#curves}
 	 * array at which to split
 	 * @param {Number} parameter the parameter at which the curve will be split
@@ -1119,7 +1119,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// parameter, which are removed from the current path. Pass true
 			// for includeCurves, since we want to preserve and move them to
 			// the new path through _add(), allowing us to have CurveLocation
-			// keep the connection to the new path through moved curves. 
+			// keep the connection to the new path through moved curves.
 			var segs = this.removeSegments(index, this._segments.length, true),
 				path;
 			if (this._closed) {
@@ -1130,7 +1130,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				// will happen below.
 				path = this;
 			} else if (index > 0) {
-				// Pass true for _preserve, in case of CompoundPath, to avoid 
+				// Pass true for _preserve, in case of CompoundPath, to avoid
 				// reversing of path direction, which would mess with segs!
 				// Use _clone to copy over all other attributes, including style
 				path = this._clone(new Path().insertAbove(this, true));
@@ -1202,12 +1202,12 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *     segments: [[30, 25], [30, 75]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path({
 	 *     segments: [[200, 25], [200, 75]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Join the paths:
 	 * path.join(path2);
 	 *
@@ -1218,19 +1218,19 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *     segments: [[30, 25], [30, 75]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path({
 	 *     segments: [[30, 25], [80, 25]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Join the paths:
 	 * path.join(path2);
-	 * 
+	 *
 	 * // After joining, path with have 3 segments, since it
 	 * // shared its first segment point with the first
 	 * // segment point of path2.
-	 * 
+	 *
 	 * // Select the path to show that they have joined:
 	 * path.selected = true;
 	 *
@@ -1240,18 +1240,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *     segments: [[30, 25], [80, 25], [80, 75]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path({
 	 *     segments: [[30, 25], [30, 75], [80, 75]],
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Join the paths:
 	 * path.join(path2);
-	 * 
+	 *
 	 * // Because the paths were joined at two points, the path is closed
 	 * // and has 4 segments.
-	 * 
+	 *
 	 * // Select the path to show that they have joined:
 	 * path.selected = true;
 	 */
@@ -1408,17 +1408,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * var path = new Path({
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * path.add(new Point(40, 100));
 	 * path.arcTo(new Point(150, 100));
-	 * 
+	 *
 	 * // We're going to be working with a third of the length
 	 * // of the path as the offset:
 	 * var offset = path.length / 3;
-	 * 
+	 *
 	 * // Find the point on the path:
 	 * var point = path.getPointAt(offset);
-	 * 
+	 *
 	 * // Create a small circle shaped path at the point:
 	 * var circle = new Path.Circle({
 	 *     center: point,
@@ -1632,7 +1632,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 * @param point {Point} the point for which we search the nearest point
 	 * @return {Point} the point on the path that's the closest to the specified
 	 * point
-	 * 
+	 *
 	 * @example {@paperscript height=200}
 	 * var star = new Path.Star({
 	 *     center: view.center,
@@ -1641,18 +1641,18 @@ var Path = PathItem.extend(/** @lends Path# */{
 	 *     radius2: 60,
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var circle = new Path.Circle({
 	 *     center: view.center,
 	 *     radius: 3,
 	 *     fillColor: 'red'
 	 * });
-	 * 
+	 *
 	 * function onMouseMove(event) {
 	 *     // Get the nearest point from the mouse position
 	 *     // to the star shaped path:
 	 *     var nearestPoint = star.getNearestPoint(event.point);
-	 * 
+	 *
 	 *     // Move the red circle to the nearest point:
 	 *     circle.position = nearestPoint;
 	 * }
@@ -1821,7 +1821,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 						&& segment._index < numSegments - 1) {
 					// It's a join. See that it's not a round one (one of
 					// the handles has to be zero too for this!)
-					if (join !== 'round' && (segment._handleIn.isZero() 
+					if (join !== 'round' && (segment._handleIn.isZero()
 							|| segment._handleOut.isZero()))
 						// _addBevelJoin() handles both 'bevel' and 'miter'!
 						Path._addBevelJoin(segment, join, radius, miterLimit,
@@ -2036,7 +2036,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 						&& dashArray && dashArray.length;
 
 			function getOffset(i) {
-				// Negative modulo is necessary since we're stepping back 
+				// Negative modulo is necessary since we're stepping back
 				// in the dash sequence first.
 				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
@@ -2248,7 +2248,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// are considered abstract methods of PathItem and need to be defined in
 		// all implementing classes.
 		moveTo: function(/* point */) {
-			// moveTo should only be called at the beginning of paths. But it 
+			// moveTo should only be called at the beginning of paths. But it
 			// can ce called again if there is nothing drawn yet, in which case
 			// the first segment gets readjusted.
 			var segments = this._segments;
@@ -2653,7 +2653,7 @@ statics: {
 			if (cap === 'round') {
 				addRound(segment);
 			} else {
-				Path._addSquareCap(segment, cap, radius, add); 
+				Path._addSquareCap(segment, cap, radius, add);
 			}
 		}
 

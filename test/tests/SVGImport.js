@@ -92,7 +92,7 @@ test('compare negative rectangle values', function() {
 		var size = new Size(width, height);
 		var rectangle = new Rectangle(topLeft, size);
 		var realRectangle = new Shape.Rectangle(rectangle);
-	
+
 	compareItems(importedRectangle, realRectangle);
 });
 
@@ -107,7 +107,7 @@ test('compare invalid rectangle values', function() {
 	shape.setAttribute('height', null);
 
 	var importedRectangle = paper.project.importSVG(shape);
-	
+
 	var topLeft = new Point(0, 0);
 	var size = new Size(0, 0);
 	var rectangle = new Rectangle(topLeft, size);
@@ -264,7 +264,7 @@ test('compare circle values', function() {
 	var shape = document.createElementNS(svgns, 'circle');
 	var cx = 100,
 		cy = 80,
-		r = 50;	
+		r = 50;
 	shape.setAttribute('cx', cx);
 	shape.setAttribute('cy', cy);
 	shape.setAttribute('r', r);

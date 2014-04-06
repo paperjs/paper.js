@@ -32,7 +32,7 @@
  */
 
 PathItem.inject(new function() {
-	// Boolean operators return true if a curve with the given winding 
+	// Boolean operators return true if a curve with the given winding
 	// contribution contributes to the final result or not. They are called
 	// for each curve in the graph after curves in the operands are
 	// split at intersections.
@@ -114,7 +114,7 @@ PathItem.inject(new function() {
 					k = 0;
 				do {
 					if (lengths[k] >= length) {
-						if (k > 0) 
+						if (k > 0)
 							length -= lengths[k - 1];
 						break;
 					}
@@ -125,7 +125,7 @@ PathItem.inject(new function() {
 					path = curve._path;
 				if (path._parent instanceof CompoundPath)
 					path = path._parent;
-				// While subtracting, we need to omit this curve if this 
+				// While subtracting, we need to omit this curve if this
 				// curve is contributing to the second operand and is outside
 				// the first operand.
 				windings[j] = subtract && _path2
@@ -153,7 +153,7 @@ PathItem.inject(new function() {
 
 	/**
 	 * Private method for splitting a PathItem at the given intersections.
-	 * The routine works for both self intersections and intersections 
+	 * The routine works for both self intersections and intersections
 	 * between PathItems.
 	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
 	 */
@@ -162,7 +162,7 @@ PathItem.inject(new function() {
 			linearSegments;
 
 		function resetLinear() {
-			// Reset linear segments if they were part of a linear curve 
+			// Reset linear segments if they were part of a linear curve
 			// and if we are done with the entire curve.
 			for (var i = 0, l = linearSegments.length; i < l; i++) {
 				var segment = linearSegments[i];
@@ -272,7 +272,7 @@ PathItem.inject(new function() {
 					// compare the endpoints of the curve to determine if the
 					// ray from query point along +-x direction will intersect
 					// the monotone curve. Results in quite significant speedup.
-				if (winding && (winding === 1 
+				if (winding && (winding === 1
 						&& y >= values[1] && y <= values[7]
 						|| y >= values[7] && y <= values[1])
 					&& Curve.solveCubic(values, 1, y, roots, 0,
@@ -306,13 +306,13 @@ PathItem.inject(new function() {
 	}
 
 	/**
-	 * Private method to trace closed contours from a set of segments according 
+	 * Private method to trace closed contours from a set of segments according
 	 * to a set of constraints—winding contribution and a custom operator.
-	 * 
+	 *
 	 * @param {Segment[]} segments Array of 'seed' segments for tracing closed
 	 * contours
 	 * @param {Function} the operator function that receives as argument the
-	 * winding number contribution of a curve and returns a boolean value 
+	 * winding number contribution of a curve and returns a boolean value
 	 * indicating whether the curve should be  included in the final contour or
 	 * not
 	 * @return {Path[]} the contours traced
@@ -388,7 +388,7 @@ PathItem.inject(new function() {
 								// Switch to the intersection segment.
 								seg._visited = interSeg._visited;
 								seg = interSeg;
-								if (nextSeg._visited) 
+								if (nextSeg._visited)
 									dir = 1;
 							}
 						} else {
@@ -439,8 +439,8 @@ PathItem.inject(new function() {
 		 * direction
 		 * @param  {Boolean} horizontal whether we need to consider this point
 		 * as part of a horizontal curve
-		 * @param  {Boolean} testContains whether we need to consider this point 
-		 * as part of stationary points on the curve itself, used when checking 
+		 * @param  {Boolean} testContains whether we need to consider this point
+		 * as part of stationary points on the curve itself, used when checking
 		 * the winding about a point.
 		 * @return {Number} the winding number
 		 */
@@ -454,7 +454,7 @@ PathItem.inject(new function() {
 		 *
 		 * Merges the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to unite with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -467,7 +467,7 @@ PathItem.inject(new function() {
 		/**
 		 * Intersects the geometry of the specified path with this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to intersect with
 		 * @return {PathItem} the resulting path item
 		 */
@@ -480,7 +480,7 @@ PathItem.inject(new function() {
 		/**
 		 * Subtracts the geometry of the specified path from this path's
 		 * geometry and returns the result as a new path item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to subtract
 		 * @return {PathItem} the resulting path item
 		 */
@@ -495,18 +495,18 @@ PathItem.inject(new function() {
 		/**
 		 * Excludes the intersection of the geometry of the specified path with
 		 * this path's geometry and returns the result as a new group item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to exclude the intersection of
 		 * @return {Group} the resulting group item
 		 */
 		exclude: function(path) {
 			return new Group([this.subtract(path), path.subtract(this)]);
 		},
-		
+
 		/**
 		 * Splits the geometry of this path along the geometry of the specified
 		 * path returns the result as a new group item.
-		 * 
+		 *
 		 * @param {PathItem} path the path to divide by
 		 * @return {Group} the resulting group item
 		 */

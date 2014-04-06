@@ -20,14 +20,14 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
 	/**
 	 * Creates a view object that wraps a canvas element.
-	 * 
+	 *
 	 * @name CanvasView#initialize
 	 * @param {HTMLCanvasElement} canvas the canvas object that this view should
 	 * wrap
 	 */
 	/**
 	 * Creates a view object that wraps a newly created canvas element.
-	 * 
+	 *
 	 * @name CanvasView#initialize
 	 * @param {Size} size the size of the canvas to be created
 	 */

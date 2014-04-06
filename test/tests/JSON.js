@@ -27,13 +27,13 @@ test('Circles', function() {
 	var path = new Path.Ellipse(rectangle);
 	path.fillColor = 'black';
 	console.log('JSON', path.exportJSON());
-	
+
 	var topLeft = new Point(5, 400);
 	var size = new Size(100, 50);
 	var rectangle = new Rectangle(topLeft, size);
 	var path = new Path.Ellipse(rectangle);
 	path.fillColor = 'yellow';
-	
+
 	var path = new Path.Circle(new Point(50, 50), 25);
 	path.fillColor = 'red';
 
@@ -90,7 +90,7 @@ test('Rectangle testing', function() {
 	path1.opacity = .1;
 	path1.dashArray = [5, 2];
 	path1.dashOffset = 0;
-	
+
 	var point2 = new Point(75, 75);
 	var point22 = new Point(100, 100);
 	var path2 = new Path.Rectangle(point2, point22);
@@ -99,13 +99,13 @@ test('Rectangle testing', function() {
 	path2.fillColor = 'blue';
 	path2.name = 'square2';
 	path2.strokeCap = 'butt';
-	
+
 	var point3 = new Point(150, 150);
 	var size3 = new Size(50, 50);
 	var rectangle3 = new Rectangle(point3, size3);
 	var path3 = new Path.Rectangle(rectangle3);
 	path3.strokeColor = 'blue';
-	
+
 	var point4 = new Point(200, 200);
 	var size4 = new Size(100, 100);
 	var rectangle4 = new Rectangle(point4, size4);
@@ -135,7 +135,7 @@ test('PointText testing', function() {
 	var text = new PointText(new Point(50, 100));
 	text.fillColor = 'black';
 	text.content = 'This is a test';
-	
+
 	var text = new PointText(new Point(100, 150));
 	text.fillColor = 'red';
 	text.strokeWidth = '4';

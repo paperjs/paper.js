@@ -37,15 +37,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	 *     center: new Point(50, 50),
 	 *     radius: 30
 	 * });
-	 * 
+	 *
 	 * var innerCircle = new Path.Circle({
 	 *     center: new Point(50, 50),
 	 *     radius: 10
 	 * });
-	 * 
+	 *
 	 * var compoundPath = new CompoundPath([circle, innerCircle]);
 	 * compoundPath.fillColor = 'red';
-	 * 
+	 *
 	 * // Move the inner circle 5pt to the right:
 	 * compoundPath.children[1].position.x += 5;
 	 */
@@ -143,7 +143,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	},
 
 	setClockwise: function(clockwise) {
-		if (this.isClockwise() != !!clockwise)
+		/*jshint -W018 */
+		if (this.isClockwise() !== !!clockwise)
 			this.reverse();
 	},
 

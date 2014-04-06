@@ -140,7 +140,7 @@ var Numerical = new function() {
 					x = nx >= b ? 0.5 * (a + b) : nx;
 				}
 			}
-			// Return the best result even though we haven't gotten close 
+			// Return the best result even though we haven't gotten close
 			// enough to the root... (In paper.js this never seems to happen).
 			return x;
 		},

@@ -139,7 +139,7 @@ function compareStyles(style, style2, checkIdentity) {
 				if (style[key].type === 'gradient' && checkIdentity) {
 					equals(function() {
 						return style[key].gradient === style2[key].gradient;
-					}, true, 'The ' + key 
+					}, true, 'The ' + key
 							+ '.gradient should point to the same object:');
 				}
 				compareColors(style[key], style2[key],

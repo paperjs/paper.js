@@ -79,7 +79,7 @@ var Group = Item.extend(/** @lends Group# */{
 	 * @example {@paperscript}
 	 * var path = new Path([100, 100], [100, 200]);
 	 * var path2 = new Path([50, 150], [150, 150]);
-	 * 
+	 *
 	 * // Create a group from the two paths:
 	 * var group = new Group({
 	 *     children: [path, path2],
@@ -106,7 +106,7 @@ var Group = Item.extend(/** @lends Group# */{
 	},
 
 	_getClipItem: function() {
-		// NOTE: _clipItem is the child that has _clipMask set to true. 
+		// NOTE: _clipItem is the child that has _clipMask set to true.
 		var clipItem = this._clipItem;
 		// Distinguish null (no clipItem set) and undefined (clipItem was not
 		// looked for yet).
@@ -131,7 +131,7 @@ var Group = Item.extend(/** @lends Group# */{
 	 *
 	 * @type Boolean
 	 * @bean
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var star = new Path.Star({
 	 *     center: view.center,
@@ -140,17 +140,17 @@ var Group = Item.extend(/** @lends Group# */{
 	 *     radius2: 40,
 	 *     fillColor: 'red'
 	 * });
-	 * 
+	 *
 	 * var circle = new Path.Circle({
 	 *     center: view.center,
 	 *     radius: 25,
 	 *     strokeColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Create a group of the two items and clip it:
 	 * var group = new Group(circle, star);
 	 * group.clipped = true;
-	 * 
+	 *
 	 * // Lets animate the circle:
 	 * function onFrame(event) {
 	 *     var offset = Math.sin(event.count / 30) * 30;

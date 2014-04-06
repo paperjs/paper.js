@@ -155,7 +155,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			var path1 = loc1.getPath(),
 				path2 = loc2.getPath();
 			return path1 === path2
-					// We can add parameter (0 <= t <= 1) to index 
+					// We can add parameter (0 <= t <= 1) to index
 					// (a integer) to compare both at the same time
 					? (loc1.getIndex() + loc1.getParameter())
 							- (loc2.getIndex() + loc2.getParameter())
@@ -313,7 +313,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	},
 
 	_contains: function(point) {
-		// NOTE: point is reverse transformed by _matrix, so we don't need to 
+		// NOTE: point is reverse transformed by _matrix, so we don't need to
 		// apply here.
 /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
 		// To compare with native canvas approach:
@@ -573,7 +573,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * @name PathItem#closePath
 	 * @function
 	 * @param {Boolean} join controls whether the method should attempt to merge
-	 * the first segment with the last if they lie in the same location. 
+	 * the first segment with the last if they lie in the same location.
 	 * @see Path#closed
 	 */
 

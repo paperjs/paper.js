@@ -310,7 +310,7 @@ new function() {
 						: type === 'color'
 							? value.gradient
 								? exportGradient(value, item)
-								// true for noAlpha, see above	
+								// true for noAlpha, see above
 								: value.toCSS(true)
 							: type === 'array'
 								? value.join(',')

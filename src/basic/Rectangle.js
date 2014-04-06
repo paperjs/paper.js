@@ -38,13 +38,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 	 * @name Rectangle#initialize
 	 * @param {Object} object an object containing properties to be set on the
 	 *        rectangle.
-	 * 
+	 *
 	 * @example // Create a rectangle between {x: 20, y: 20} and {x: 80, y:80}
 	 * var rectangle = new Rectangle({
 	 *     point: [20, 20],
 	 *     size: [60, 60]
 	 * });
-	 * 
+	 *
 	 * @example // Create a rectangle between {x: 20, y: 20} and {x: 80, y:80}
 	 * var rectangle = new Rectangle({
 	 *     from: [20, 20],
@@ -914,7 +914,7 @@ var LinkedRectangle = Rectangle.extend({
 				if (owner.setSelected) {
 					owner._boundsSelected = selected;
 					// Update the owner's selected state too, so the bounds
-					// actually get drawn. When deselecting, take a path's  
+					// actually get drawn. When deselecting, take a path's
 					// _selectedSegmentState into account too, since it will
 					// have to remain selected even when bounds are deselected
 					owner.setSelected(selected || owner._selectedSegmentState > 0);

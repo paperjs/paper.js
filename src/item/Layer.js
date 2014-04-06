@@ -53,7 +53,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 	 * @example {@paperscript}
 	 * var path = new Path([100, 100], [100, 200]);
 	 * var path2 = new Path([50, 150], [150, 150]);
-	 * 
+	 *
 	 * // Create a layer. The properties in the object literal
 	 * // are set on the newly created layer.
 	 * var layer = new Layer({
@@ -98,7 +98,7 @@ var Layer = Group.extend(/** @lends Layer# */{
 		return false;
 	},
 
-	getNextSibling: function getNextSibling() {		
+	getNextSibling: function getNextSibling() {
 		return this._parent ? getNextSibling.base.call(this)
 				: this._project.layers[this._index + 1] || null;
 	},

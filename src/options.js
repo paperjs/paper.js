@@ -12,7 +12,7 @@
 
 // Define default options for browser based compile-time preprocessing.
 // These are also used for building, but some values are overridden
-// (e.g. version, stats). 
+// (e.g. version, stats).
 
 var __options = {
 	parser: 'acorn',

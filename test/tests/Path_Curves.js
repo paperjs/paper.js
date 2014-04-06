@@ -34,7 +34,7 @@ test('path.curves synchronisation', function() {
 	path.removeSegments(1, 2);
 	equals(path.segments.toString(), "{ point: { x: 0, y: 100 } },{ point: { x: 100, y: 100 } }", "path.segments: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
 	equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, point2: { x: 100, y: 100 } },{ point1: { x: 100, y: 100 }, point2: { x: 0, y: 100 } }", "path.curves: path.add(new Point(100, 100));\npath.removeSegments(1, 2);");
-	
+
 	// Transform the path, and the curves length should be invalidated (first, force-cache the first segment's length by accessing it
 	var length = path.curves[0].length;
 	ok(path.curves[0]._length, 'Curve length does not appear to be cached');
@@ -47,7 +47,7 @@ test('path.curves synchronisation', function() {
 	var path = new Path(points);
 	equals(path.segments.length, 40, 'segments.length');
 	equals(path.curves.length, 39, 'curves.length');
-	path.removeSegments();    
+	path.removeSegments();
 	equals(path.segments.length, 0, 'segments.length');
 	equals(path.curves.length, 0, 'curves.length');
 });

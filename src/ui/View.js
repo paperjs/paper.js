@@ -181,7 +181,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		onResize: {}
 	},
 
-	// These are default values for event related properties on the prototype. 
+	// These are default values for event related properties on the prototype.
 	// Writing item._count++ does not change the defaults, it creates / updates
 	// the property on the instance. Useful!
 	_animate: false,
@@ -550,7 +550,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 */
 	/**
 	 * {@grouptitle Event Handling}
-	 * 
+	 *
 	 * Attach an event handler to the view.
 	 *
 	 * @name View#attach
@@ -559,18 +559,18 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be called when the event
 	 * occurs
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Create a rectangle shaped path with its top left point at:
 	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
 	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 	 * path.fillColor = 'black';
-	 * 
+	 *
 	 * var frameHandler = function(event) {
 	 *     // Every frame, rotate the path by 3 degrees:
 	 *     path.rotate(3);
 	 * };
-	 * 
+	 *
 	 * view.on('frame', frameHandler);
 	 */
 	/**
@@ -585,12 +585,12 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
 	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 	 * path.fillColor = 'black';
-	 * 
+	 *
 	 * var frameHandler = function(event) {
 	 *     // Every frame, rotate the path by 3 degrees:
 	 *     path.rotate(3);
 	 * };
-	 * 
+	 *
 	 * view.on({
 	 *     frame: frameHandler
 	 * });
@@ -604,22 +604,22 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @function
 	 * @param {String('frame', 'resize')} type the event type
 	 * @param {Function} function The function to be detached
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * // Create a rectangle shaped path with its top left point at:
 	 * // {x: 50, y: 25} and a size of {width: 50, height: 50}
 	 * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
 	 * path.fillColor = 'black';
-	 * 
+	 *
 	 * var frameHandler = function(event) {
 	 *     // Every frame, rotate the path by 3 degrees:
 	 *     path.rotate(3);
 	 * };
-	 * 
+	 *
 	 * view.on({
 	 *     frame: frameHandler
 	 * });
-	 * 
+	 *
 	 * // When the user presses the mouse,
 	 * // detach the frame handler from the view:
 	 * function onMouseDown(event) {

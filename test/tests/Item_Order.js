@@ -80,7 +80,7 @@ test('Item#insertAbove(item) / Item#insertBelow(item)', function() {
 	testMove(function() { item2.insertBelow(item0) }, [1,2,0]);
 	testMove(function() { item2.insertBelow(item1) }, [0,2,1]);
 	testMove(function() { item2.insertBelow(item2) }, [0,1,2]);
- 
+
 	testMove(function() { item0.insertAbove(item0) }, [0,1,2]);
 	testMove(function() { item0.insertAbove(item1) }, [1,0,2]);
 	testMove(function() { item0.insertAbove(item2) }, [2,0,1]);

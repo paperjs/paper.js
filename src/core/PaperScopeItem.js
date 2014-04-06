@@ -23,7 +23,7 @@ var PaperScopeItem = Base.extend(Callback, /** @lends PaperScopeItem# */{
 
 	/**
 	 * Creates a PaperScopeItem object.
-	 */  
+	 */
 	initialize: function(activate) {
 		// Store reference to the currently active global paper scope:
 		this._scope = paper;

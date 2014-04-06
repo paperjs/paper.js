@@ -64,12 +64,12 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 *     point: [100, 50],
 	 *     handleOut: [80, 100]
 	 * });
-	 * 
+	 *
 	 * var secondSegment = new Segment({
 	 *     point: [300, 50],
 	 *     handleIn: [-80, -100]
 	 * });
-	 * 
+	 *
 	 * var path = new Path({
 	 *     segments: [firstSegment, secondSegment],
 	 *     strokeColor: 'black'
@@ -98,15 +98,15 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * var inY = -100;
 	 * var outX = 80;
 	 * var outY = 100;
-	 * 
+	 *
 	 * var x = 100;
 	 * var y = 50;
 	 * var firstSegment = new Segment(x, y, inX, inY, outX, outY);
-	 * 
+	 *
 	 * var x2 = 300;
 	 * var y2 = 50;
 	 * var secondSegment = new Segment( x2, y2, inX, inY, outX, outY);
-	 * 
+	 *
 	 * var path = new Path(firstSegment, secondSegment);
 	 * path.strokeColor = 'black';
 	 * @ignore
@@ -310,7 +310,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 *     center: [80, 50],
 	 *     radius: 40
 	 * });
-	 * 
+	 *
 	 * // Select the third segment point:
 	 * path.segments[2].selected = true;
 	 */
@@ -338,9 +338,9 @@ var Segment = Base.extend(/** @lends Segment# */{
 		} else {
 			state &= ~flag;
 		}
-		// Set the selectio state even if path is not defined yet, to allow
+		// Set the selection state even if path is not defined yet, to allow
 		// selected segments to be inserted into paths and make JSON
-		// deserialization work.  
+		// deserialization work.
 		this._selectionState = state;
 		// If the selection state of the segment has changed, we need to let
 		// it's path know and possibly add or remove it from

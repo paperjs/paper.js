@@ -40,36 +40,36 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {HTMLImageElement|Canvas|String} [source] the source of the raster
 	 * @param {HTMLImageElement|Canvas|String} [position] the center position at
 	 * which the raster item is placed.
-	 * 
+	 *
 	 * @example {@paperscript height=300} // Creating a raster using a url
 	 * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
 	 * var raster = new Raster(url);
-	 * 
+	 *
 	 * // If you create a Raster using a url, you can use the onLoad
 	 * // handler to do something once it is loaded:
 	 * raster.onLoad = function() {
 	 *     console.log('The image has loaded.');
 	 * };
-	 * 
+	 *
 	 * @example // Creating a raster using the id of a DOM Image:
-	 * 
+	 *
 	 * // Create a raster using the id of the image:
 	 * var raster = new Raster('art');
-	 * 
+	 *
 	 * @example // Creating a raster using a DOM Image:
-	 * 
+	 *
 	 * // Find the element using its id:
 	 * var imageElement = document.getElementById('art');
-	 * 
+	 *
 	 * // Create the raster:
 	 * var raster = new Raster(imageElement);
-	 * 
+	 *
 	 * @example {@paperscript height=300}
 	 * var raster = new Raster({
 	 *     source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
 	 *     position: view.center
 	 * });
-	 * 
+	 *
 	 * raster.scale(0.5);
 	 * raster.rotate(10);
 	 */
@@ -274,15 +274,15 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * ID of a DOM element to get the image from (either a DOM Image or a
 	 * Canvas). Reading this property will return the url of the source image or
 	 * a data-url.
-	 * 
+	 *
 	 * @bean
 	 * @type HTMLImageElement|Canvas|String
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var raster = new Raster();
 	 * raster.source = 'http://paperjs.org/about/resources/paper-js.gif';
 	 * raster.position = view.center;
-	 * 
+	 *
 	 * @example {@paperscript}
 	 * var raster = new Raster({
 	 *     source: 'http://paperjs.org/about/resources/paper-js.gif',
@@ -314,7 +314,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// IE has naturalWidth / Height defined, but width / height set to 0
 		// when the image is invisible in the document.
 		if (image.naturalWidth && image.naturalHeight) {
-			// Fire load event delayed, so behavior is the same as when it's 
+			// Fire load event delayed, so behavior is the same as when it's
 			// actually loaded and we give the code time to install event
 			setTimeout(loaded, 0);
 		} else {
@@ -335,7 +335,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			// Preserve the data in this._data since canvas-node eats it.
 			// TODO: Fix canvas-node instead
 			image.src = this._data = src;
-			// Fire load event delayed, so behavior is the same as when it's 
+			// Fire load event delayed, so behavior is the same as when it's
 			// actually loaded and we give the code time to install event
 			setTimeout(loaded, 0);
 		} else if (/^https?:\/\//.test(src)) {

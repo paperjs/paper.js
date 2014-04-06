@@ -50,9 +50,9 @@ Base.exports.PaperScript = (function() {
 		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
 		function(name) {
 			// Create an alias for each math method to be injected into the
-			// classes using Straps.js' #inject() 
+			// classes using Straps.js' #inject()
 			this['__' + name] = '#' + name;
-		}, 
+		},
 		{}
 	);
 	Point.inject(fields);
@@ -105,7 +105,7 @@ Base.exports.PaperScript = (function() {
 	function compile(code) {
 		// Use Acorn or Esprima to translate the code into an AST structure
 		// which is then walked and parsed for operators to overload. Instead of
-		// modifying the AST and translating it back to code, we directly change 
+		// modifying the AST and translating it back to code, we directly change
 		// the source code based on the parser's range information, to preserve
 		// line-numbers in syntax errors and remove the need for Escodegen.
 
@@ -113,7 +113,7 @@ Base.exports.PaperScript = (function() {
 		// original offsets.
 		var insertions = [];
 
-		// Converts an original offset to the one in the current state of the 
+		// Converts an original offset to the one in the current state of the
 		// modified code.
 		function getOffset(offset) {
 			// Add all insertions before this location together to calculate
@@ -176,7 +176,7 @@ Base.exports.PaperScript = (function() {
 							+ arg + ')');
 				}
 				break;
-			case 'BinaryExpression': // a + b, a - b, a / b, a * b, a == b, ...				
+			case 'BinaryExpression': // a + b, a - b, a / b, a * b, a == b, ...
 				if (node.operator in binaryOperators
 						&& node.left.type !== 'Literal') {
 					var left = getCode(node.left),
@@ -259,7 +259,7 @@ Base.exports.PaperScript = (function() {
 			// compile a list of paramter names for all variables that need to
 			// appear as globals inside the script. At the same time, also
 			// collect their values, so we can pass them on as arguments in the
-			// function call. 
+			// function call.
 			params = [],
 			args = [],
 			func;
@@ -430,6 +430,6 @@ Base.exports.PaperScript = (function() {
 	};
 
 /*#*/ } // !__options.environment == 'browser'
-// Pass on `this` as the binding object, so we can reference Acorn both in 
+// Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
 }).call(this);

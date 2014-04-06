@@ -111,7 +111,7 @@ var BlendMode = new function() {
 		},
 
 		// if (Cs <= 0.5) B(Cb, Cs) = Multiply(Cb, 2 x Cs)
-		// else B(Cb, Cs) = Screen(Cb, 2 x Cs -1)	
+		// else B(Cb, Cs) = Screen(Cb, 2 x Cs -1)
 		'hard-light': function() {
 			dr = sr < 128 ? 2 * sr * br / 255 : 255 - 2 * (255 - sr) * (255 - br) / 255;
 			dg = sg < 128 ? 2 * sg * bg / 255 : 255 - 2 * (255 - sg) * (255 - bg) / 255;
@@ -249,7 +249,7 @@ var BlendMode = new function() {
 			}
 		} catch (e) {}
 		ctx.restore();
-		nativeModes[mode] = ok; 
+		nativeModes[mode] = ok;
 	});
 	CanvasProvider.release(ctx);
 
@@ -266,7 +266,7 @@ var BlendMode = new function() {
 			if (!normal)
 				dstContext.globalCompositeOperation = mode;
 			dstContext.drawImage(srcCanvas, offset.x, offset.y);
-			dstContext.restore();	
+			dstContext.restore();
 		} else {
 			var process = modes[mode];
 			if (!process)

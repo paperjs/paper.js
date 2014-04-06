@@ -190,7 +190,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 					ry = radius.height,
 					kappa = /*#=*/ Numerical.KAPPA;
 				if (type === 'ellipse') {
-					// Approximate ellipse with four bezier curves and KAPPA. 
+					// Approximate ellipse with four bezier curves and KAPPA.
 					var	cx = rx * kappa,
 						cy = ry * kappa;
 					ctx.moveTo(-rx, 0);

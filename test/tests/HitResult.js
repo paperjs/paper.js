@@ -14,7 +14,7 @@ module('HitResult');
 
 test('hitting a filled shape', function() {
 	var path = new Path.Circle([50, 50], 50);
-	
+
 	var hitResult = path.hitTest([75, 75]);
 	equals(function() {
 		return hitResult == null;
@@ -45,7 +45,7 @@ test('the item on top should be returned', function() {
 
 test('hitting a stroked path', function() {
 	var path = new Path([0, 0], [50, 0]);
-	
+
 	// We are hit testing with an offset of 5pt on a path with a stroke width
 	// of 10:
 
@@ -68,7 +68,7 @@ test('hitting a stroked path', function() {
 test('hitting a selected path', function() {
 	var path = new Path.Circle([50, 50], 50);
 	path.fillColor = 'red';
-	
+
 	var hitResult = paper.project.hitTest([75, 75], {
 		selected: true
 	});
@@ -90,16 +90,16 @@ test('hitting path segments', function() {
 	var path = new Path([0, 0], [10, 10], [20, 0]);
 
 	var hitResult = paper.project.hitTest([10, 10]);
-	
+
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned.');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
 		}, 'segment');
-	
+
 		equals(function() {
 			return hitResult.item == path;
 		}, true);
@@ -117,7 +117,7 @@ test('hitting the center of a path', function() {
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned.');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.point.toString();
@@ -148,12 +148,12 @@ test('hitting the center of a path with tolerance', function() {
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned.');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return !!hitResult.point;
 		}, true, 'HitResult#point should not be empty');
-		
+
 		if (hitResult.point) {
 			equals(function() {
 				return hitResult.point.toString();
@@ -186,12 +186,12 @@ test('hitting path handles', function() {
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned (1)');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
 		}, 'handle-out');
-	
+
 		equals(function() {
 			return hitResult.item == path;
 		}, true);
@@ -226,16 +226,16 @@ test('hitting path handles (2)', function() {
 	var hitResult = paper.project.hitTest([50, 50], {
 		handles: true
 	});
-	
+
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned (1)');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
 		}, 'handle-out');
-	
+
 		equals(function() {
 			return hitResult.item == path;
 		}, true);
@@ -316,12 +316,12 @@ test('hitting path ends', function() {
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A HitResult should be returned (1)');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
 		}, 'segment');
-	
+
 		equals(function() {
 			return hitResult.segment == path.lastSegment;
 		}, true);
@@ -358,7 +358,7 @@ test('hitting path bounding box', function() {
 	});
 
 	equals(!!hitResult, true, 'A HitResult should be returned');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
@@ -388,7 +388,7 @@ test('hitting raster bounding box', function() {
 	});
 
 	equals(!!hitResult, true, 'A HitResult should be returned');
-	
+
 	if (hitResult) {
 		equals(function() {
 			return hitResult.type;
@@ -416,14 +416,14 @@ test('hitting guides', function() {
 
 	equals(result && result.item, copy,
 			'The copy should be returned, because it is on top.');
-	
+
 	path.guide = true;
-	
+
 	var result = paper.project.hitTest(path.position, {
 		guides: true,
 		fill: true
 	});
-	
+
 	equals(result && result.item, path,
 			'The path should be returned, because it is a guide.');
 });
@@ -433,27 +433,27 @@ test('hitting raster items', function() {
 	var path = new Path.Rectangle(new Point(), new Size(320, 240));
 	path.fillColor = 'red';
 	var raster = path.rasterize(72);
-	
+
 	var hitResult = paper.project.hitTest(new Point(160, 120));
 
 	equals(function() {
 		return hitResult && hitResult.item == raster;
 	}, true, 'Hit raster item before moving');
-	
+
 	// Move the raster:
 	raster.translate(100, 100);
-	
+
 	var hitResult = paper.project.hitTest(new Point(160, 120));
 
 	equals(function() {
 		return hitResult && hitResult.item == raster;
-	}, true, 'Hit raster item after moving');	
+	}, true, 'Hit raster item after moving');
 });
 
 test('hitting path with a text item in the project', function() {
     var path = new Path.Rectangle(new Point(50, 50), new Point(100, 100));
     path.fillColor = 'blue';
-	
+
 	var hitResult = paper.project.hitTest(new Point(75, 75));
 
 	equals(function() {
@@ -464,7 +464,7 @@ test('hitting path with a text item in the project', function() {
 	text1.content = "Text 1";
 
 	var hitResult = paper.project.hitTest(new Point(75, 75));
-	
+
 	equals(function() {
 		return !!hitResult;
 	}, true, 'A hitresult should be returned.');
@@ -472,7 +472,7 @@ test('hitting path with a text item in the project', function() {
 	equals(function() {
 		return !!hitResult && hitResult.item == path;
 	}, true, 'We should have hit the path');
-	
+
 });
 
 test('Check hit testing of items that come after a transformed group.', function() {

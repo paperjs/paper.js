@@ -56,7 +56,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	},
 
 	_serialize: function(options, dictionary) {
-		return Base.serialize([this._color, this._rampPoint], options, true, 
+		return Base.serialize([this._color, this._rampPoint], options, true,
 				dictionary);
 	},
 
@@ -88,7 +88,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *     center: view.center,
 	 *     radius: view.bounds.height * 0.4
 	 * });
-	 * 
+	 *
 	 * path.fillColor = {
 	 *     gradient: {
 	 *         stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
@@ -97,15 +97,15 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *     origin: path.position,
 	 *     destination: path.bounds.rightCenter
 	 * };
-	 * 
+	 *
 	 * var gradient = path.fillColor.gradient;
-	 * 
+	 *
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
 	 *     var blackStop = gradient.stops[2];
 	 *     // Animate the rampPoint between 0.7 and 0.9:
 	 *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
-	 * 
+	 *
 	 *     // Animate the rampPoint between 0.2 and 0.4
 	 *     var redStop = gradient.stops[1];
 	 *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
@@ -137,7 +137,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *     center: view.center,
 	 *     radius: view.bounds.height * 0.4
 	 * });
-	 * 
+	 *
 	 * path.fillColor = {
 	 *     gradient: {
 	 *         stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
@@ -146,15 +146,15 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
 	 *     origin: path.position,
 	 *     destination: path.bounds.rightCenter
 	 * };
-	 * 
+	 *
 	 * var redStop = path.fillColor.gradient.stops[1];
 	 * var blackStop = path.fillColor.gradient.stops[2];
-	 * 
+	 *
 	 * // This function is called each frame of the animation:
 	 * function onFrame(event) {
 	 *     // Animate the rampPoint between 0.7 and 0.9:
 	 *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
-	 * 
+	 *
 	 *     // Animate the rampPoint between 0.2 and 0.4
 	 *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
 	 * }

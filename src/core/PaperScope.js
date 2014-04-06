@@ -92,7 +92,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 *
 	 * <b>settings.applyMatrix:</b>
 	 *
-	 * <b>settings.handleSize:</b> 
+	 * <b>settings.handleSize:</b>
 	 *
 	 * <b>settings.hitTolerance:</b>
 	 *

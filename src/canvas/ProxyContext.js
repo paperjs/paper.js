@@ -13,9 +13,9 @@
  /**
  * @name ProxyContext
  *
- * @class The ProxyContext is a helper class that helps Canvas debugging 
+ * @class The ProxyContext is a helper class that helps Canvas debugging
  * by logging all interactions with a 2D Canvas context.
- * 
+ *
  * @private
  *
  * @classexample
@@ -68,7 +68,7 @@ var ProxyContext = new function() {
 					this._indents--;
 				console.log(this.getIndentation() + 'ctx.' + name + '('
 						+ Array.prototype.slice.call(arguments, 0)
-							.map(JSON.stringify).join(', ') 
+							.map(JSON.stringify).join(', ')
 						+ ');');
 				if (name === 'save')
 					this._indents++;

@@ -44,7 +44,7 @@ Path.inject({ statics: new function() {
 		return createPath(segments, true, args);
 	}
 
-	 
+
 	return /** @lends Path */{
 		/**
 		 * {@grouptitle Shaped Paths}
@@ -52,7 +52,7 @@ Path.inject({ statics: new function() {
 		 * Creates a linear path item from two points describing a line.
 		 *
 		 * @name Path.Line
-		 * @param {Point} from the line's starting point 
+		 * @param {Point} from the line's starting point
 		 * @param {Point} to the line's ending point
 		 * @return {Path} the newly created path
 		 *

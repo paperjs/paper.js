@@ -156,7 +156,7 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
 	compareRectangles(path.bounds,
 			{ x: 199.01325, y: 166.78419, width: 113.50622, height: 90.96766 },
 			'square/round path.bounds');
-	compareRectangles(path.strokeBounds, 
+	compareRectangles(path.strokeBounds,
 		 	{ x: 178.06332, y: 151.78419, width: 149.45615, height: 120.96766 },
 			'square/strokeBounds path.bounds');
 

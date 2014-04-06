@@ -30,7 +30,7 @@ var Callback = {
 			handlers = handlers[type] = handlers[type] || [];
 			if (handlers.indexOf(func) == -1) { // Not added yet, add it now
 				handlers.push(func);
-				// See if this is the first handler that we're attaching, and 
+				// See if this is the first handler that we're attaching, and
 				// call install if defined.
 				if (entry.install && handlers.length == 1)
 					entry.install.call(this, type);
