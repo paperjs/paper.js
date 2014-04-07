@@ -10,14 +10,11 @@
 #
 # All rights reserved.
 
-if [ -f paperjs.zip ]
-then
-	rm paperjs.zip
-fi
 # Create a temporary folder to copy all files in for zipping
 mkdir zip
 cd zip
 BASE=../..
+
 # Copy license over
 cp $BASE/LICENSE.txt .
 # Make library folder and copy paper.js there
@@ -31,6 +28,11 @@ cp $BASE/dist/paper-core.min.js dist
 cp -r $BASE/examples .
 # Copy docs over
 cp -r $BASE/dist/docs .
+# Erase the old Zip file
+if [ -f $BASE/dist/paperjs.zip ]
+then
+	rm $BASE/dist/paperjs.zip
+fi
 # Zip the whole thing
 zip -9 -r $BASE/dist/paperjs.zip * LICENSE.txt -x "*/.DS_Store"
 cd ..
