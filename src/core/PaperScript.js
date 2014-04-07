@@ -275,7 +275,7 @@ Base.exports.PaperScript = (function() {
 				}
 			}
 		}
-		expose({ _$_: _$_, $_: $_, view: view, tool: tool }, true);
+		expose({ _$_: _$_, $_: $_, paper: scope, view: view, tool: tool }, true);
 		expose(scope);
 		// Finally define the handler variable names as parameters and compose
 		// the string describing the properties for the returned object at the
