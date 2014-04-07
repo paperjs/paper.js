@@ -68,6 +68,7 @@ git add -A $DIST_FILE
 git commit -m "Release version v$VERSION"
 # Tag
 git tag "v$VERSION"
-git push --follow-tags
+git push
+git push --tags
 
 cd "$PAPER_DIR/build"
