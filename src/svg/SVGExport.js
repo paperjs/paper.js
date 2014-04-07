@@ -381,8 +381,11 @@ new function() {
 	function exportSVG(item, options) {
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
-		if (node && item._data)
-			node.setAttribute('data-paper-data', JSON.stringify(item._data));
+		if (node && item._data) {
+			var data = JSON.stringify(item._data);
+			if (data !== '{}')
+				node.setAttribute('data-paper-data', data);
+		}
 		return node && applyStyle(item, node);
 	}
 
