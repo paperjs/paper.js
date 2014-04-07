@@ -1152,25 +1152,20 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @type Matrix
 	 * @bean
 	 */
-	getGlobalMatrix: function(_internal) {
+	getGlobalMatrix: function(_dontClone) {
 		var matrix = this._globalMatrix,
-			updateVersion = this._project._updateVersion,
-			viewMatrix = this.getView()._matrix;
-		// Internally we actually do factor in the view's transformations as
-		// well, but these are removed again in the return statement below.
-		// This way it is easier to draw selections and handle non-direct
-		// blitting, see Item#draw().
+			updateVersion = this._project._updateVersion;
 		// If #_globalMatrix is out of sync, recalculate it now.
 		if (matrix && matrix._updateVersion !== updateVersion)
 			matrix = null;
 		if (!matrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
-			matrix.preConcatenate(this._parent
-					? this._parent.getGlobalMatrix(true)
-					: viewMatrix);
+			var parent = this._parent;
+			if (parent)
+				matrix.preConcatenate(parent.getGlobalMatrix(true));
 			matrix._updateVersion = updateVersion;
 		}
-		return _internal ? matrix : viewMatrix.inverted().concatenate(matrix);
+		return _dontClone ? matrix : matrix.clone();
 	},
 
 	/**
@@ -1591,7 +1586,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		ctx.save();
 		matrix.applyToContext(ctx);
 		// See Project#draw() for an explanation of new Base()
-		this.draw(ctx, new Base({ transforms: [matrix] }));
+		this.draw(ctx, new Base({ matrices: [matrix] }));
 		ctx.restore();
 		var raster = new Raster(Item.NO_INSERT);
 		raster.setCanvas(canvas);
@@ -1706,8 +1701,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					? parentTotalMatrix.clone().concatenate(matrix)
 					// If this is the first one in the recursion, factor in the
 					// zoom of the view and the globalMatrix of the item.
-					: this.getGlobalMatrix().clone().preConcatenate(
-							view._matrix),
+					: this.getGlobalMatrix().preConcatenate(view._matrix),
 			// Calculate the transformed padding as 2D size that describes the
 			// transformed tolerance circle / ellipse. Make sure it's never 0
 			// since we're using it for division.
@@ -2911,8 +2905,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Point} the transformed point as a new instance
 	 */
 	globalToLocal: function(/* point */) {
-		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._inverseTransform(Point.read(arguments));
+		return this.getGlobalMatrix(true)._inverseTransform(
+				Point.read(arguments));
 	},
 
 	/**
@@ -2923,8 +2917,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Point} the transformed point as a new instance
 	 */
 	localToGlobal: function(/* point */) {
-		var matrix = this.getGlobalMatrix();
-		return matrix && matrix._transformPoint(Point.read(arguments));
+		return this.getGlobalMatrix(true)._transformPoint(
+				Point.read(arguments));
 	},
 
 	/**
@@ -3520,10 +3514,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var updateVersion = this._updateVersion = this._project._updateVersion;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
-		var trackTransforms = param.trackTransforms,
-			transforms = param.transforms,
+		var matrices = param.matrices,
+			parentMatrix = matrices[matrices.length - 1],
+			viewMatrix = param.viewMatrix,
 			matrix = this._matrix,
-			parentMatrix = transforms[transforms.length - 1],
 			globalMatrix = parentMatrix.clone().concatenate(matrix);
 		// If this item is not invertible, do not draw it, since it would cause
 		// empty ctx.currentPath and mess up caching. It appears to also be a
@@ -3531,11 +3525,21 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// handles it the same way.
 		if (!globalMatrix.isInvertible())
 			return;
+
+		// Since globalMatrix does not take the view's matrix into account (we
+		// could have multiple views with different zooms), we may have to
+		// pre-concatenate the view's matrix.
+		// Note that it's only provided if it isn't the identity matrix.
+		function getViewMatrix(matrix) {
+			return viewMatrix ? viewMatrix.clone().concatenate(matrix) : matrix;
+		}
+
 		// Only keep track of transformation if told so. See Project#draw()
-		if (trackTransforms) {
-			transforms.push(this._globalMatrix = globalMatrix);
-			// We also keep the cached _globalMatrix versioned.
+		matrices.push(globalMatrix);
+		if (param.updateMatrix) {
+			// Update the cached _globalMatrix and keep it versioned.
 			globalMatrix._updateVersion = updateVersion;
+			this._globalMatrix = globalMatrix;
 		}
 
 		// If the item has a blendMode or is defining an opacity, draw it on
@@ -3561,7 +3565,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (!direct) {
 			// Apply the parent's global matrix to the calculation of correct
 			// bounds.
-			var bounds = this.getStrokeBounds(parentMatrix);
+			var bounds = this.getStrokeBounds(getViewMatrix(parentMatrix));
 			if (!bounds.width || !bounds.height)
 				return;
 			// Store previous offset and save the main context, so we can
@@ -3590,15 +3594,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
 		// Apply globalMatrix when drawing into temporary canvas.
-		(direct ? matrix : globalMatrix).applyToContext(ctx);
+		(direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
 		// If we're drawing into a separate canvas and a clipItem is defined for
 		// the current rendering loop, we need to draw the clip item again.
 		if (!direct && param.clipItem)
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
 		this._draw(ctx, param);
 		ctx.restore();
-		if (trackTransforms)
-			transforms.pop();
+		matrices.pop();
 		if (param.clip && !param.dontFinish)
 			ctx.clip();
 		// If a temporary canvas was created, composite it onto the main canvas:

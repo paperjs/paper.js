@@ -150,6 +150,8 @@ PathItem.inject(new function() {
 		// See if the CompoundPath can be reduced to just a simple Path.
 		result = result.reduce();
 		// Copy over the left-hand item's style and we're done.
+		// TODO: Consider using Item#_clone() for this, but find a way to not
+		// clone children / name (content).
 		result.setStyle(path1._style);
 		return result;
 	}

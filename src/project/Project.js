@@ -426,12 +426,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		var param = new Base({
 			offset: new Point(0, 0),
 			pixelRatio: pixelRatio,
-			// Tell the drawing routine that we want to track nested matrices
-			// in param.transforms, and that we want it to set _globalMatrix
-			// as used below. Item#rasterize() and Raster#getAverageColor() do
-			// not need to set this.
-			trackTransforms: true,
-			transforms: [matrix]
+			viewMatrix: matrix.isIdentity() ? null : matrix,
+			matrices: [new Matrix()], // Start with the identity matrix.
+			// Tell the drawing routine that we want to keep _globalMatrix up to
+			// date. Item#rasterize() and Raster#getAverageColor() should not
+			// set this.
+			updateMatrix: true
 		});
 		for (var i = 0, l = this.layers.length; i < l; i++)
 			this.layers[i].draw(ctx, param);
@@ -441,24 +441,24 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (this._selectedItemCount > 0) {
 			ctx.save();
 			ctx.strokeWidth = 1;
+			var size = this._scope.settings.handleSize,
+				half = size / 2;
 			for (var id in this._selectedItems) {
-				var item = this._selectedItems[id],
-					globalMatrix = item._globalMatrix,
-					size = this._scope.settings.handleSize,
-					half = size / 2;
+				var item = this._selectedItems[id];
 				if (item._updateVersion === this._updateVersion
-						&& (item._drawSelected || item._boundsSelected)
-						&& globalMatrix) {
+						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
 					// layer level, with a fallback to #009dec
 					var color = item.getSelectedColor()
-							|| item.getLayer().getSelectedColor();
+							|| item.getLayer().getSelectedColor(),
+						mx = matrix.clone().concatenate(
+								item.getGlobalMatrix(true));
 					ctx.strokeStyle = ctx.fillStyle = color
 							? color.toCanvasStyle(ctx) : '#009dec';
 					if (item._drawSelected)
-						item._drawSelected(ctx, globalMatrix);
+						item._drawSelected(ctx, mx);
 					if (item._boundsSelected) {
-						var coords = globalMatrix._transformCorners(
+						var coords = mx._transformCorners(
 								item.getInternalBounds());
 						// Now draw a rectangle that connects the transformed
 						// bounds corners, and draw the corners.

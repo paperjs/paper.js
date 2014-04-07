@@ -489,7 +489,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// If a path was passed, draw it as a clipping mask:
 		// See Project#draw() for an explanation of new Base()
 		if (path)
-			path.draw(ctx, new Base({ clip: true, transforms: [matrix] }));
+			path.draw(ctx, new Base({ clip: true, matrices: [matrix] }));
 		// Now draw the image clipped into it.
 		this._matrix.applyToContext(ctx);
 		ctx.drawImage(this.getElement(),
