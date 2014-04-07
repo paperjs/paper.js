@@ -269,6 +269,16 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			if (style.hasStroke())
 				ctx.stroke();
 		}
+	},
+
+	_drawSelected: function(ctx, matrix) {
+		var children = this._children;
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i],
+				mx = child._matrix;
+			child._drawSelected(ctx, mx.isIdentity() ? matrix
+					: matrix.clone().concatenate(child._matrix));
+		}
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions
 	/**
