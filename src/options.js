@@ -16,7 +16,7 @@
 
 var __options = {
 	parser: 'acorn',
-	version: '0.9.17',
+	version: '0.9.18',
 	environment: 'browser',
 	legacy: true,
 	stats: true,
