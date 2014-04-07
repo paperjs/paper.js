@@ -147,8 +147,11 @@ PathItem.inject(new function() {
 		_path1.remove();
 		if (_path2)
 			_path2.remove();
-		// And then, we are done.
-		return result.reduce();
+		// See if the CompoundPath can be reduced to just a simple Path.
+		result = result.reduce();
+		// Copy over the left-hand item's style and we're done.
+		result.setStyle(path1._style);
+		return result;
 	}
 
 	/**
