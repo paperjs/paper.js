@@ -55,6 +55,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	// that can be ommited.
 	_serializeFields: {
 		name: null,
+		applyMatrix: null,
 		matrix: new Matrix(),
 		pivot: null,
 		locked: false,
@@ -64,7 +65,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		guide: false,
 		selected: false,
 		clipMask: false,
-		applyMatrix: null,
 		data: {}
 	},
 
