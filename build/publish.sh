@@ -65,6 +65,7 @@ cp $PAPER_DIR/dist/paperjs.zip $DIST_FILE
 cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
 # Commit to paperjs.org
 git add -A $DIST_FILE
+git add -u assets/js/paper.js
 git commit -m "Release version v$VERSION"
 # Tag
 git tag "v$VERSION"
