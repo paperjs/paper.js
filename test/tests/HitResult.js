@@ -451,8 +451,8 @@ test('hitting raster items', function() {
 });
 
 test('hitting path with a text item in the project', function() {
-    var path = new Path.Rectangle(new Point(50, 50), new Point(100, 100));
-    path.fillColor = 'blue';
+	var path = new Path.Rectangle(new Point(50, 50), new Point(100, 100));
+	path.fillColor = 'blue';
 
 	var hitResult = paper.project.hitTest(new Point(75, 75));
 
@@ -555,11 +555,11 @@ test('Check hit testing of placed symbols.', function() {
 
 test('Hit testing the corner of a rectangle with miter stroke.', function() {
 	var rect = new Path.Rectangle({
-	    rectangle: [100, 100, 300, 200],
-	    fillColor: '#f00',
-	    strokeColor: 'blue',
-	    strokeJoin: 'miter',
-	    strokeWidth: 20
+		rectangle: [100, 100, 300, 200],
+		fillColor: '#f00',
+		strokeColor: 'blue',
+		strokeJoin: 'miter',
+		strokeWidth: 20
 	});
 	equals(function() {
 		return rect.hitTest(rect.strokeBounds.topRight) != null;
@@ -626,9 +626,9 @@ test('Hit testing guides.', function() {
 
 test('Hit testing fill with tolerance', function() {
 	var path = new Path.Rectangle({
-	    from: [50, 50],
-	    to: [200, 200],
-	    fillColor: 'red'
+		from: [50, 50],
+		to: [200, 200],
+		fillColor: 'red'
 	});
 
 	equals(function() {
@@ -641,4 +641,44 @@ test('Hit testing fill with tolerance', function() {
 	}, true);
 });
 
+test('Hit testing compound-paths', function() {
+	var center = new Point(100, 100);
+	var path1 = new Path.Circle({
+		center: center,
+		radius: 100
+	});
+	var path2 = new Path.Circle({
+		center: center,
+		radius: 50
+	});
+	var compoundPath = new CompoundPath({
+		children: [path1, path2],
+		fillColor: 'blue'
+	});
+	// When hit-testing a side, we should  get a result on the torus
+	equals(function() {
+		var result = paper.project.hitTest(center.add([75, 0]), {
+			fill: true
+		});
+		return result && result.item === compoundPath;
+	}, true);
+	// When hit-testing the center, we should not get a result on the torus
+	equals(function() {
+		var result = paper.project.hitTest(center, {
+			fill: true
+		});
+		return result === null	;
+	}, true);
+	// When asking specifically for paths, she should get the top-most path in
+	// the center (the one that cuts out the hole)
+	equals(function() {
+		var result = paper.project.hitTest(center, {
+			type: Path,
+			fill: true
+		});
+		return result && result.item === path2;
+	}, true);
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
+
