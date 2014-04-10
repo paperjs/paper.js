@@ -1773,7 +1773,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	_getChildHitTestOptions: function(options) {
-		// This is overriden in CompoundPath, for treatment of type === 'path'.
+		// This is overridden in CompoundPath, for treatment of type === 'path'.
 		return options;
 	},
 
