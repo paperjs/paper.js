@@ -433,8 +433,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			// set this.
 			updateMatrix: true
 		});
-		for (var i = 0, l = this.layers.length; i < l; i++)
-			this.layers[i].draw(ctx, param);
+		for (var i = 0, layers = this.layers, l = layers.length; i < l; i++)
+			layers[i].draw(ctx, param);
 		ctx.restore();
 
 		// Draw the selection of the selected items in the project:
@@ -444,8 +444,17 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			var size = this._scope.settings.handleSize,
 				half = size / 2;
 			for (var id in this._selectedItems) {
-				var item = this._selectedItems[id];
-				if (item._updateVersion === this._updateVersion
+				// Check the updateVersion of each item to see if it got drawn
+				// in the above draw loop. If the version is out of sync, the
+				// item is either not in the DOM anymore or is invisible.
+				var item = this._selectedItems[id],
+					parent = item._parent,
+					// For compound-paths, we need to use the updateVersion of
+					// the parent, because when using the ctx.currentPath
+					// optimization, the children don't have to get drawn on
+					// each frame and thus won't change their updateVersion.
+					versionItem = parent instanceof CompoundPath ? parent : item;
+				if (versionItem._updateVersion === this._updateVersion
 						&& (item._drawSelected || item._boundsSelected)) {
 					// Allow definition of selected color on a per item and per
 					// layer level, with a fallback to #009dec
