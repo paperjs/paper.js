@@ -1185,6 +1185,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
 			this._clockwise = !this._clockwise;
+		this._changed(/*#=*/ ChangeFlag.GEOMETRY);
 	},
 
 	// DOCS: document Path#join(path) in more detail.
