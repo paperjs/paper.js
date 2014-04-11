@@ -1756,13 +1756,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 			strokePadding = tolerancePadding,
 			join, cap, miterLimit,
 			area, loc, res,
-			hasStroke = options.stroke && style.hasStroke(),
-			hasFill = options.fill && style.hasFill(),
-			radius = hasStroke ? style.getStrokeWidth() / 2
-					// Set radius to 0 so when we're hit-testing, the tolerance
-					// is used for fill too, through stroke functionality.
-					: hasFill ? 0 : null;
-		if (radius != null) {
+			hitStroke = options.stroke && style.hasStroke(),
+			hitFill = options.fill && style.hasFill(),
+			hitCurves = options.curves,
+			radius = hitStroke
+					? style.getStrokeWidth() / 2
+					// Set radius to 0 when we're hit-testing fills with
+					// tolerance, to handle tolerance  through stroke hit-test
+					// functionality. Also use 0 when hit-testing curves.
+					: hitFill && options.tolerance > 0 || hitCurves
+						? 0 : null;
+		if (radius !== null) {
 			if (radius > 0) {
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
@@ -1858,7 +1862,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					return res;
 		}
 		// If we're querying for stroke, perform that before fill
-		if (radius != null) {
+		if (radius !== null) {
 			loc = this.getNearestLocation(point);
 			// Note that paths need at least two segments to have an actual
 			// stroke. But we still check for segments with the radius fallback
@@ -1891,16 +1895,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Don't process loc yet, as we also need to query for stroke after fill
 		// in some cases. Simply skip fill query if we already have a matching
 		// stroke. If we have a loc and no stroke then it's a result for fill.
-		return !loc && hasFill && this._contains(point) || loc && !hasStroke
-				? new HitResult('fill', this)
-				: loc
-					? new HitResult('stroke', this, {
-						location: loc,
-						// It's fine performance wise to call getPoint() again
-						// since it was already called before.
-						point: loc.getPoint()
-					})
-					: null;
+		return !loc && hitFill && this._contains(point)
+				|| loc && !hitStroke && !hitCurves
+					? new HitResult('fill', this)
+					: loc
+						? new HitResult(hitStroke ? 'stroke' : 'curve', this, {
+							location: loc,
+							// It's fine performance wise to call getPoint()
+							// again since it was already called before.
+							point: loc.getPoint()
+						})
+						: null;
 	}
 
 	// TODO: intersects(item)

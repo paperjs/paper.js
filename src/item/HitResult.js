@@ -39,8 +39,8 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 	 *
 	 * @name HitResult#type
 	 * @property
-	 * @type String('segment', 'handle-in', 'handle-out', 'stroke', 'fill',
-	 * 'bounds', 'center', 'pixel')
+	 * @type String('segment', 'handle-in', 'handle-out', 'curve', 'stroke',
+	 * 'fill', 'bounds', 'center', 'pixel')
 	 */
 
 	/**
@@ -62,8 +62,8 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 	 */
 
 	/**
-	 * If the HitResult has a type of 'stroke', this property gives more
-	 * information about the exact position that was hit on the path.
+	 * If the HitResult has a type of 'curve' or 'stroke', this property gives
+	 * more information about the exact position that was hit on the path.
 	 *
 	 * @name HitResult#location
 	 * @property

@@ -272,10 +272,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * {@code Group, Layer, Path, CompoundPath, Shape, Raster, PlacedSymbol,
 	 * PointText}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
-	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
-	 * items, taking into account stroke width.
+	 * <b>options.stroke:</b> {@code Boolean} – hit test the stroke of path
+	 * items, taking into account the setting of stroke color and width.
 	 * <b>options.segments:</b> {@code Boolean} – hit test for
 	 * {@link Segment#point} of {@link Path} items.
+	 * <b>options.curves:</b> {@code Boolean} – hit test the curves of path
+	 * items, without taking the stroke color or width into account.
 	 * <b>options.handles:</b> {@code Boolean} – hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
 	 * <b>options.ends:</b> {@code Boolean} – only hit test for the first or

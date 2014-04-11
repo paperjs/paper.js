@@ -296,6 +296,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * });
 	 */
 	set: function(props) {
+		// Filter out `insert` since that only makes sense at creation time and
+		// is handled separately in the constructor.Also avoids overriding
+		// Path#insert().
 		if (props)
 			this._set(props, { insert: true });
 		return this;
@@ -1658,10 +1661,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * {@code Group, Layer, Path, CompoundPath, Shape, Raster, PlacedSymbol,
 	 * PointText}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
-	 * <b>options.stroke:</b> {@code Boolean} – hit test the curves of path
-	 * items, taking into account stroke width.
-	 * <b>options.segment:</b> {@code Boolean} – hit test for
+	 * <b>options.stroke:</b> {@code Boolean} – hit test the stroke of path
+	 * items, taking into account the setting of stroke color and width.
+	 * <b>options.segments:</b> {@code Boolean} – hit test for
 	 * {@link Segment#point} of {@link Path} items.
+	 * <b>options.curves:</b> {@code Boolean} – hit test the curves of path
+	 * items, without taking the stroke color or width into account.
 	 * <b>options.handles:</b> {@code Boolean} – hit test for the handles
 	 * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
 	 * <b>options.ends:</b> {@code Boolean} – only hit test for the first or
