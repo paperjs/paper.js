@@ -87,7 +87,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	},
 
 	/**
-	 * The curve by which the location is defined.
+	 * The curve that this location belongs to.
 	 *
 	 * @type Curve
 	 * @bean
