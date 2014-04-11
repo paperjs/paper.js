@@ -826,7 +826,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var pivot = this._pivot;
 		if (pivot) {
 			var ctor = _dontLink ? Point : LinkedPoint;
-			pivot = new ctor(pivot.x, pivot.y, this, 'setAnchor');
+			pivot = new ctor(pivot.x, pivot.y, this, 'setPivot');
 		}
 		return pivot;
 	},
@@ -2842,7 +2842,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
 			if (pivot)
-				pivot.transform(_matrix);
+				_matrix._transformPoint(pivot, pivot, true);
 			if (fillColor)
 				fillColor.transform(_matrix);
 			if (strokeColor)

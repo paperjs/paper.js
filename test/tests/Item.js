@@ -662,3 +662,31 @@ test('Item#blendMode in a transformed Group', function() {
 	compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
 			'Middle center pixel should be yellow:');
 });
+
+
+test('Item#pivot', function() {
+	var path1 = new Path.Rectangle({
+		point: [50, 50],
+		size: [100, 100],
+		strokeColor: 'red',
+		applyMatrix: false
+	});
+
+	var path2 = new Path.Rectangle({
+		point: [50, 50],
+		size: [100, 100],
+		strokeColor: 'green',
+		applyMatrix: true
+	});
+
+	var pivot1 = path1.bounds.topLeft.clone();
+	path1.pivot = pivot1;
+	path1.position = [200, 200];
+	comparePoints(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
+
+	var pivot2 = path2.bounds.topLeft.clone();
+	path2.pivot = pivot2;
+	path2.position = [200, 200];
+	comparePoints(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
+
+});
