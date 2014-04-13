@@ -111,7 +111,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
-		// Filter out Item.NO_INSERT before _set(), for performance reasons
+		// Filter out Item.NO_INSERT before _set(), for performance reasons.
 		return props && props !== Item.NO_INSERT
 				? this._set(props, { insert: true }) // Filter out insert prop.
 				: true;
@@ -973,7 +973,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// exist yet and add the cacheItem to it.
 			var id = cacheItem._id,
 				ref = cacheParent._boundsCache = cacheParent._boundsCache || {
-					// Use both a hashtable for ids and an array for the list,
+					// Use both a hash-table for ids and an array for the list,
 					// so we can keep track of items that were added already
 					ids: {},
 					list: []
@@ -985,7 +985,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache].clone();
-		// If the result of concatinating the passed matrix with our internal
+		// If the result of concatenating the passed matrix with our internal
 		// one is an identity transformation, set it to null for faster
 		// processing
 		matrix = !matrix
@@ -1062,7 +1062,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	/**
-	 * The rough bounding rectangle of the item that is shure to include all of
+	 * The rough bounding rectangle of the item that is sure to include all of
 	 * the drawing, including stroke width.
 	 *
 	 * @name Item#getRoughBounds
@@ -1094,7 +1094,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
-			// Preseve the cached _decomposed values over rotation, and only
+			// Preserve the cached _decomposed values over rotation, and only
 			// update the rotation property on it.
 			var decomposed = this._decomposed;
 			this.rotate(rotation - current);
@@ -1557,7 +1557,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * is not removed after rasterization.
 	 *
 	 * @param {Number} [resolution=view.resolution] the resolution of the raster
-	 * in pixels per inch (DPI). If not speceified, the value of
+	 * in pixels per inch (DPI). If not specified, the value of
 	 * {@code view.resolution} is used.
 	 * @return {Raster} the newly created raster item
 	 *
