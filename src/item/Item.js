@@ -626,8 +626,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	isSelected: function() {
 		if (this._selectChildren) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				if (this._children[i].isSelected())
+			var children = this._children;
+			for (var i = 0, l = children.length; i < l; i++)
+				if (children[i].isSelected())
 					return true;
 		}
 		return this._selected;
@@ -637,8 +638,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Don't recursively call #setSelected() if it was called with
 		// noChildren set to true, see #setFullySelected().
 		if (!noChildren && this._selectChildren) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i].setSelected(selected);
+			var children = this._children;
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].setSelected(selected);
 		}
 		if ((selected = !!selected) ^ this._selected) {
 			this._selected = selected;
@@ -650,9 +652,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_selected: false,
 
 	isFullySelected: function() {
-		if (this._children && this._selected) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				if (!this._children[i].isFullySelected())
+		var children = this._children;
+		if (children && this._selected) {
+			for (var i = 0, l = children.length; i < l; i++)
+				if (!children[i].isFullySelected())
 					return false;
 			return true;
 		}
@@ -661,9 +664,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	setFullySelected: function(selected) {
-		if (this._children) {
-			for (var i = 0, l = this._children.length; i < l; i++)
-				this._children[i].setFullySelected(selected);
+		var children = this._children;
+		if (children) {
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].setFullySelected(selected);
 		}
 		// Pass true for hidden noChildren argument
 		this.setSelected(selected, true);
