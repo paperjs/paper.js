@@ -877,7 +877,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				name = !internalGetter && (typeof boundsGetter === 'string'
 						? boundsGetter : boundsGetter && boundsGetter[getter])
 						|| getter,
-				bounds = this._getCachedBounds(name, _matrix, null,
+				bounds = this._getCachedBounds(name, _matrix, this,
 						internalGetter);
 			// If we're returning 'bounds', create a LinkedRectangle that uses
 			// the setBounds() setter to update the Item whenever the bounds are
@@ -971,7 +971,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Note: This needs to happen before returning cached values, since even
 		// then, _boundsCache needs to be kept up-to-date.
 		var cacheParent = this._parent || this._parentSymbol;
-		if (cacheItem && cacheParent) {
+		if (cacheParent) {
 			// Set-up the parent's boundsCache structure if it does not
 			// exist yet and add the cacheItem to it.
 			var id = cacheItem._id,
@@ -1002,7 +1002,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// so we can cache both separately, since they're not in the same
 		// transformation space!
 		var bounds = this._getBounds(internalGetter || getter, matrix,
-				cache ? this : cacheItem);
+				cacheItem);
 		// If we can cache the result, update the _bounds cache structure
 		// before returning
 		if (cache) {
@@ -1023,19 +1023,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		 */
 		_clearBoundsCache: function(item) {
 			// This is defined as a static method so Symbol can used it too.
+			// Clear the position as well, since it's depending on bounds.
 			if (item._boundsCache) {
 				for (var i = 0, list = item._boundsCache.list, l = list.length;
 						i < l; i++) {
 					var child = list[i];
-					child._bounds = child._position = undefined;
-					// Delete position as well, since it's depending on bounds.
-					// We need to recursively call _clearBoundsCache, because if
-					// the cache for this child's children is not valid anymore,
-					// that propagates up the DOM tree.
-					if (child !== item && child._boundsCache)
-						Item._clearBoundsCache(child);
+					if (child !== item) {
+						child._bounds = child._position = undefined;
+						// We need to recursively call _clearBoundsCache,
+						// because when the cache for this child's children is
+						// not valid anymore, that propagates up the DOM tree.
+						if (child._boundsCache)
+							Item._clearBoundsCache(child);
+					}
 				}
-				item._boundsCache = undefined;
+				// Clear the item itself, as well as its bounds cache.
+				item._bounds = item._position = item._boundsCache = undefined;
 			}
 		}
 	}
