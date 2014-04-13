@@ -193,7 +193,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 		if (this._canvas)
 			CanvasProvider.release(this._canvas);
 		// Due to similarities, we can handle both canvas and image types here.
-		if (image.getContext) {
+		if (image && image.getContext) {
 			// A canvas object
 			this._image = null;
 			this._canvas = image;
@@ -207,8 +207,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 		// apparently can have width / height set to 0 when the image is
 		// invisible in the document.
 		this._size = new Size(
-				image.naturalWidth || image.width,
-				image.naturalHeight || image.height);
+				image ? image.naturalWidth || image.width : 0,
+				image ? image.naturalHeight || image.height : 0);
 		this._context = null;
 		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
 	},
