@@ -673,7 +673,7 @@ test('Hit testing compound-paths', function() {
 	// the center (the one that cuts out the hole)
 	equals(function() {
 		var result = paper.project.hitTest(center, {
-			type: Path,
+			class: Path,
 			fill: true
 		});
 		return result && result.item === path2;
