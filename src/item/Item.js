@@ -1657,9 +1657,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test
 	 * in points. Can also be controlled through
 	 * {@link Project#options}{@code .hitTolerance}.
-	 * <b>options.type:</b> Only hit test again a certain item type:
-	 * {@code Group, Layer, Path, CompoundPath, Shape, Raster, PlacedSymbol,
-	 * PointText}, etc.
+	 * <b>options.class:</b> Only hit test again a certain item class and its
+	 * sub-classes: {@code Group, Layer, Path, CompoundPath, Shape, Raster,
+	 * PlacedSymbol, PointText}, etc.
 	 * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
 	 * <b>options.stroke:</b> {@code Boolean} – hit test the stroke of path
 	 * items, taking into account the setting of stroke color and width.
@@ -1722,14 +1722,12 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				.expand(tolerancePadding.multiply(2))._containsPoint(point))
 			return null;
 		// Filter for type, guides and selected items if that's required.
-		var type,
-			checkSelf = !(options.guides && !this._guide
+		var checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
-				|| (type = options.type) && (typeof type === 'string'
-						// Support legacy Item#type property to match hyphenated
-						// class-names.
-						? type !== Base.hyphenate(this._class)
-						: !(this instanceof type))),
+				// Support legacy Item#type property to match hyphenated
+				// class-names.
+				|| options.type && options.type !== Base.hyphenate(this._class)
+				|| options.class && !(this instanceof options.class)),
 			that = this,
 			res;
 

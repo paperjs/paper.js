@@ -236,9 +236,10 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 }, /** @lends CompoundPath# */{
 	_getChildHitTestOptions: function(options) {
 		// If we're not specifically asked to returns paths through
-		// options.type == Path, do not test children for fill, since a
-		// compound path forms one shape. Also support legacy format 'path'
-		return options.type === Path || typeof type === 'path'
+		// options.class == Path, do not test children for fill, since a
+		// compound path forms one shape.
+		// Also support legacy format `type: 'path'`.
+		return options.class === Path || options.type === 'path'
 				? options
 				: new Base(options, { fill: false });
 	},
