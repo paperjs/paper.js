@@ -85,7 +85,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	_initialize: function(props, point) {
 		// Define this Item's unique id. But allow the creation of internally
 		// used paths with no ids.
-		var internal = props && props.internal === true,
+		var hasProps = props && Base.isPlainObject(props),
+			internal = hasProps && props.internal === true,
 			matrix = this._matrix = new Matrix(),
 			project = paper.project;
 		if (!internal)
@@ -101,20 +102,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If _project is already set, the item was already moved into the DOM
 		// hierarchy. Used by Layer, where it's added to project.layers instead
 		if (!this._project) {
-			// Do not insert into DOM if it's an internal path or
-			// props.insert is false.
-			if (internal || props && props.insert === false) {
+			// Do not insert into DOM if it's an internal path, if props.insert
+			// is false, or if the props are setting a different parent anyway.
+			if (internal || hasProps && props.insert === false) {
 				this._setProject(project);
-			} else {
+			} else if (!hasProps || !props.parent) {
 				// Create a new layer if there is no active one. This will
 				// automatically make it the new activeLayer.
 				(project.activeLayer || new Layer()).addChild(this);
 			}
 		}
 		// Filter out Item.NO_INSERT before _set(), for performance reasons.
-		return props && props !== Item.NO_INSERT
-				? this._set(props, { insert: true }) // Filter out insert prop.
-				: true;
+		if (hasProps && props !== Item.NO_INSERT)
+			// Filter out insert property, and don't check for plain object
+			// as we already do so through hasProps.
+			this._set(props, { insert: true }, true);
+		return hasProps;
 	},
 
 	_events: new function() {

@@ -56,11 +56,13 @@ Base.inject(/** @lends Base# */{
 	 *
 	 * @param {Object} props an object describing the properties to set
 	 * @param {Object} [exclude=undefined] a lookup table listing properties to
-	 * exclude.
+	 * exclude
+	 * @param {Boolean} [dontCheck=false] whether to perform a
+	 * Base.isPlainObject() check on props or not
 	 * @return {Boolean} {@true if the object is a plain object}
 	 */
-	_set: function(props, exclude) {
-		if (props && Base.isPlainObject(props)) {
+	_set: function(props, exclude, dontCheck) {
+		if (props && (dontCheck || Base.isPlainObject(props))) {
 			// If props is a filtering object, we need to execute hasOwnProperty
 			// on the original object (it's parent / prototype). See _filtered
 			// inheritance trick in the argument reading code.
