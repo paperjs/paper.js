@@ -202,7 +202,7 @@ var PathFitter = Base.extend({
 		return u - diff.dot(pt1) / df;
 	},
 
-	// Evaluate a Bezier curve at a particular parameter value
+	// Evaluate a bezier curve at a particular parameter value
 	evaluate: function(degree, curve, t) {
 		// Copy array
 		var tmp = curve.slice();

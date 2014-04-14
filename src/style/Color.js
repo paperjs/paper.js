@@ -41,7 +41,6 @@
  * circle.fillColor = '#ff0000';
  */
 var Color = Base.extend(new function() {
-
 	var types = {
 		gray: ['gray'],
 		rgb: ['red', 'green', 'blue'],

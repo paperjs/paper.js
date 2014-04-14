@@ -2384,7 +2384,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 							'Cannot create an arc with the given arguments');
 				center = new Point(rx * y / ry, -ry * x / rx)
 						// "...where the + sign is chosen if fA != fS,
-						// and the − sign is chosen if fA = fS."
+						// and the - sign is chosen if fA = fS."
 						.multiply((large === clockwise ? -1 : 1)
 							* Math.sqrt(factor))
 						.rotate(rotation).add(middle);
@@ -2393,7 +2393,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 				matrix = new Matrix().translate(center).rotate(rotation)
 						.scale(rx, ry);
 				// Transform from and to to the unit circle coordinate space
-				// and calculcate start vector and extend from there.
+				// and calculate start vector and extend from there.
 				vector = matrix._inverseTransform(from);
 				extent = vector.getDirectedAngle(matrix._inverseTransform(to));
 				// "...if fS = 0 and extent is > 0, then subtract 360, whereas
@@ -2646,7 +2646,7 @@ statics: {
 			// When both handles are set in a segment and they are collinear,
 			// the join setting is ignored and round is always used.
 			var handleIn = segment._handleIn,
-				handleOut = segment._handleOut
+				handleOut = segment._handleOut;
 			if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
 					&& handleIn.isColinear(handleOut)) {
 				addRound(segment);
@@ -2770,7 +2770,7 @@ statics: {
 		// or the last segment of the open path, in order to determine in which
 		// direction to move the point.
 		if (cap === 'square')
-			point = point.add(normal.rotate(loc.getParameter() == 0 ? -90 : 90));
+			point = point.add(normal.rotate(loc.getParameter() === 0 ? -90 : 90));
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
 	},
@@ -2792,7 +2792,7 @@ statics: {
 			segment._transformCoordinates(matrix, coords, false);
 			for (var j = 0; j < 6; j += 2) {
 				// Use different padding for points or handles
-				var padding = j == 0 ? joinPadding : strokePadding,
+				var padding = j === 0 ? joinPadding : strokePadding,
 					paddingX = padding ? padding[0] : 0,
 					paddingY = padding ? padding[1] : 0,
 					x = coords[j],

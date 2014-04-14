@@ -159,7 +159,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	isEmpty: function() {
-		return this._size.width == 0 && this._size.height == 0;
+		return this._size.width === 0 && this._size.height === 0;
 	},
 
 	/**

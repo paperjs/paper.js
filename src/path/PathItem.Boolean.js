@@ -82,7 +82,7 @@ PathItem.inject(new function() {
 			collect(_path2._children || [_path2]);
 		// Propagate the winding contribution. Winding contribution of curves
 		// does not change between two intersections.
-		// First, sort all segments with an intersection to the begining.
+		// First, sort all segments with an intersection to the beginning.
 		segments.sort(function(a, b) {
 			var _a = a._intersection,
 				_b = b._intersection;
@@ -312,7 +312,7 @@ PathItem.inject(new function() {
 
 	/**
 	 * Private method to trace closed contours from a set of segments according
-	 * to a set of constraints—winding contribution and a custom operator.
+	 * to a set of constraints-winding contribution and a custom operator.
 	 *
 	 * @param {Segment[]} segments Array of 'seed' segments for tracing closed
 	 * contours
@@ -440,11 +440,11 @@ PathItem.inject(new function() {
 		 * Returns the winding contribution of the given point with respect to
 		 * this PathItem.
 		 *
-		 * @param  {Point} point the location for which to determine the winding
+		 * @param {Point} point the location for which to determine the winding
 		 * direction
-		 * @param  {Boolean} horizontal whether we need to consider this point
-		 * as part of a horizontal curve
-		 * @param  {Boolean} testContains whether we need to consider this point
+		 * @param {Boolean} horizontal whether we need to consider this point as
+		 * part of a horizontal curve
+		 * @param {Boolean} testContains whether we need to consider this point
 		 * as part of stationary points on the curve itself, used when checking
 		 * the winding about a point.
 		 * @return {Number} the winding number

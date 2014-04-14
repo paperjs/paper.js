@@ -1022,7 +1022,7 @@ new function() { // Scope for methods that require numerical integration
 			// Iteratively calculate curve range lengths, and add them up,
 			// using integration precision depending on the size of the
 			// range. This is much faster and also more precise than not
-			// modifing start and calculating total length each time.
+			// modifying start and calculating total length each time.
 			function f(t) {
 				var count = getIterations(start, t);
 				length += start < t
@@ -1083,7 +1083,7 @@ new function() { // Scope for methods that require numerical integration
 				top = hull[0],
 				bottom = hull[1],
 				tMinClip, tMaxClip;
-			// Clip the convexhull with dMin and dMax
+			// Clip the convex-hull with dMin and dMax
 			tMinClip = clipConvexHull(top, bottom, dMin, dMax);
 			top.reverse();
 			bottom.reverse();
@@ -1169,7 +1169,7 @@ new function() { // Scope for methods that require numerical integration
 
 /*#*/ if (__options.fatlineClipping) {
 	/**
-	 * Calculate the convex hull for the non-paramertic bezier curve D(ti, di(t))
+	 * Calculate the convex hull for the non-parametric bezier curve D(ti, di(t))
 	 * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
 	 * di(t), [dq0, dq1, dq2, dq3] respectively. In other words our CVs for the
 	 * curve are already sorted in the X axis in the increasing order.
@@ -1206,7 +1206,7 @@ new function() { // Scope for methods that require numerical integration
 			// p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
 			// a triangle or a quadrilateral and line [ p0, p3 ] is part of the
 			// hull. Check if the hull is a triangle or a quadrilateral.
-			// Also, if atleast one of the distances for p1 or p2, from line
+			// Also, if at least one of the distances for p1 or p2, from line
 			// [p0, p3] is zero then hull must at most have 3 vertices.
 			var pmax, cross = 0,
 				distZero = dist1 === 0 || dist2 === 0;
@@ -1318,7 +1318,7 @@ new function() { // Scope for methods that require numerical integration
 		}
 		var roots = [],
 			count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
-		// NOTE: count could be -1 for inifnite solutions, but that should only
+		// NOTE: count could be -1 for infinite solutions, but that should only
 		// happen with lines, in which case we should not be here.
 		for (var i = 0; i < count; i++) {
 			var tc = roots[i],

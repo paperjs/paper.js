@@ -2060,7 +2060,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// If the item is removed and inserted it again further above,
 		// the index needs to be adjusted accordingly.
 		if (item._parent === this._parent && index > this._index)
-			 index--;
+			index--;
 		return item._parent.insertChild(index, this, _preserve);
 	},
 
@@ -2083,8 +2083,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * possible.
 	 */
 	insertBelow: function(item, _preserve) {
-	 	return this._insert(false, item, _preserve);
-	 },
+		return this._insert(false, item, _preserve);
+	},
 
 	/**
 	 * Sends this item to the back of all other items within the same parent.
@@ -2289,7 +2289,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return Boolean
 	 */
 	isEmpty: function() {
-		return !this._children || this._children.length == 0;
+		return !this._children || this._children.length === 0;
 	},
 
 	/**
@@ -3029,7 +3029,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * <b>{@code event.delta}</b>: the time passed in seconds since the last
 	 * frame event.
 	 *
- 	 * @see View#onFrame
+	 * @see View#onFrame
 	 * @example {@paperscript}
 	 * // Creating an animation:
 	 *
