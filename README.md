@@ -60,7 +60,7 @@ You might also need these additional packages if you don't usually build from c+
 
 	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev
 
-**Ater Cairo has been installed:**
+**After Cairo has been installed:**
 
 You should now be able to install the Paper.js module from NPM:
 
