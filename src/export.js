@@ -16,7 +16,7 @@
 /*#*/ if (__options.environment == 'browser') {
 
 paper = new (PaperScope.inject(Base.exports, {
-	// Mark fields as enumeralbe so PaperScope.inject can pick them up
+	// Mark fields as enumerable so PaperScope.inject can pick them up
 	enumerable: true,
 	Base: Base,
 	Numerical: Numerical,
@@ -36,7 +36,7 @@ if (typeof define === 'function' && define.amd)
 /*#*/ } else if (__options.environment == 'node') {
 
 paper = new (PaperScope.inject(Base.exports, {
-	// Mark fields as enumeralbe so PaperScope.inject can pick them up
+	// Mark fields as enumerable so PaperScope.inject can pick them up
 	enumerable: true,
 	Base: Base,
 	Numerical: Numerical,
