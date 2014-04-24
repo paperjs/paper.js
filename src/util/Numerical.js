@@ -18,8 +18,8 @@
 var Numerical = new function() {
 
 	// Lookup tables for abscissas and weights with values for n = 2 .. 16.
-	// As values are symetric, only store half of them and addapt algorithm
-	// to factor in symetry.
+	// As values are symmetric, only store half of them and adapt algorithm
+	// to factor in symmetry.
 	var abscissas = [
 		[  0.5773502691896257645091488],
 		[0,0.7745966692414833770358531],
@@ -66,7 +66,7 @@ var Numerical = new function() {
 		EPSILON = 10e-12;
 
 	// Sets up min and max values for roots and returns a add() function that
-	// handles bounds checks and itself retuns the amount of added roots.
+	// handles bounds checks and itself returns the amount of added roots.
 	function setupRoots(roots, min, max) {
 		var unbound = min === undefined,
 			minE = min - EPSILON,
@@ -123,7 +123,7 @@ var Numerical = new function() {
 					dx = fx / df(x),
 					nx = x - dx;
 				// See if we can trust the Newton-Raphson result. If not we use
-				// bisection to find another candiate for Newton's method.
+				// bisection to find another candidate for Newton's method.
 				if (abs(dx) < tolerance)
 					return nx;
 				// Update the root-bounding interval and test for containment of

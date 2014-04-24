@@ -100,8 +100,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 				if (new Line(seg1._point.subtract(h1), h1.multiply(2), true)
 						.intersect(new Line(seg2._point.subtract(h2),
 						h2.multiply(2), true), false)) {
-					// Self intersectin is found by dividng the curve in two and
-					// and then applying the normal curve intersection code.
+					// Self intersecting is found by dividing the curve in two
+					// and and then applying the normal curve intersection code.
 					var parts = Curve.subdivide(values1);
 					Curve.getIntersections(
 						parts[0], parts[1], curve1, curve1, locations,
@@ -122,7 +122,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			for (var j = path ? 0 : i + 1; j < length2; j++) {
 				Curve.getIntersections(
 					values1, values2[j], curve1, curves2[j], locations,
-					// Avoid end point intersections on consecutive curves whe
+					// Avoid end point intersections on consecutive curves when
 					// self intersecting.
 					!path && (j === i + 1 || j === length2 - 1 && i === 0)
 						&& function(loc) {
@@ -134,7 +134,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		}
 		// Now filter the locations and process _expand:
 		var last = locations.length - 1;
-		// Merge intersections very close to the end of a curve to the begining
+		// Merge intersections very close to the end of a curve to the beginning
 		// of the next curve.
 		for (var i = last; i >= 0; i--) {
 			var loc = locations[i],

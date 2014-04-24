@@ -288,7 +288,7 @@ PathItem.inject(new function() {
 					var t = roots[0],
 						x0 = Curve.evaluate(values, t, 0).x,
 						slope = Curve.evaluate(values, t, 1).y;
-					// Take care of cases where the curve and the preceeding
+					// Take care of cases where the curve and the preceding
 					// curve merely touches the ray towards +-x direction, but
 					// proceeds to the same side of the ray. This essentially is
 					// not a crossing.
@@ -339,7 +339,7 @@ PathItem.inject(new function() {
 			var path = new Path(Item.NO_INSERT),
 				inter = seg._intersection,
 				startInterSeg = inter && inter._segment,
-				added = false, // Wether a first segment as added already
+				added = false, // Whether a first segment as added already
 				dir = 1;
 			do {
 				var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
@@ -372,7 +372,7 @@ PathItem.inject(new function() {
 							t4 = c4.getTangentAt(ZERO, true),
 							// Cross product of the entry and exit tangent
 							// vectors at the intersection, will let us select
-							// the correct countour to traverse next.
+							// the correct contour to traverse next.
 							w3 = t1.cross(t3),
 							w4 = t1.cross(t4);
 						if (w3 * w4 !== 0) {
@@ -586,7 +586,7 @@ Path.inject(/** @lends Path# */{
 						parts = Curve.subdivide(v, t);
 					insertCurve(parts[0]);
 					if (count > 1) {
-						// If there are two extremas, renormalize t to the range
+						// If there are two extrema, renormalize t to the range
 						// of the second range and split again.
 						t = (roots[1] - t) / (1 - t);
 						// Since we already processed parts[0], we can override
@@ -686,8 +686,8 @@ CompoundPath.inject(/** @lends CompoundPath# */{
 	/*
 	 * Fixes the orientation of a CompoundPath's child paths by first ordering
 	 * them according to their area, and then making sure that all children are
-	 * of different winding direction than the first child, ecxcept for when
-	 * some individual countours are disjoint, i.e. islands, they are reoriented
+	 * of different winding direction than the first child, except for when
+	 * some individual contours are disjoint, i.e. islands, they are reoriented
 	 * so that:
 	 * - The holes have opposite winding direction.
 	 * - Islands have to have the same winding direction as the first child.

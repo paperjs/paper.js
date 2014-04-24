@@ -2415,7 +2415,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					line = new Line(from, to),
 					throughSide = line.getSide(through);
 				center = l1.intersect(l2, true);
-				// If the two lines are colinear, there cannot be an arc as the
+				// If the two lines are collinear, there cannot be an arc as the
 				// circle is infinitely big and has no center point. If side is
 				// 0, the connecting arc line of this huge circle is a line
 				// between the two points, so we can use #lineTo instead.
