@@ -145,10 +145,8 @@ test('Project#getItems() with specific property value', function() {
 });
 
 test('Project#getItems() with color', function() {
-	var red = new Color('red');
-
 	var path = new Path({
-		fillColor: red
+		fillColor: 'red'
 	});
 
 	var decoyPath = new Path({
@@ -157,7 +155,7 @@ test('Project#getItems() with color', function() {
 
 	equals(function() {
 		var items = paper.project.getItems({
-			fillColor: new Color('red'),
+			fillColor: 'red',
 			type: 'path'
 		});
 		return items.length == 1 && items[0] == path;
