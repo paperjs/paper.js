@@ -314,12 +314,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	/**
 	 * Fetch items contained within the project whose properties match the
 	 * criteria in the specified object.
-	 * Matching supports regular expressions for 
-	 * strings, function callbacks, and plain object matching (as a subset).
-	 * Matching segments is not supported yet. Matching points, colors only 
-	 * work as a comparison of the full object, not partial matching 
-	 * (e.g. only providing the x-coordinate to match all points with that
-	 * x-value). Partial matching does work for {@link Item#data}.
+	 * Extended matching is possible by providing a compare function or
+	 * regular expression. Matching points, colors only work as a comparison 
+	 * of the full object, not partial matching (e.g. only providing the x-
+	 * coordinate to match all points with that x-value). Partial matching 
+	 * does work for {@link Item#data}.
 	 *
 	 * @example {@paperscript} // Fetch all selected path items:
 	 * var path1 = new Path.Circle({
@@ -346,6 +345,27 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * // Change the fill color of the selected path to red:
 	 * items[0].fillColor = 'red';
 	 *
+	 * @example {@paperscript} // Fetch all items with a specific fill color:
+	 * var path1 = new Path.Circle({
+	 *     center: [50, 50],
+	 *     radius: 25,
+	 *     fillColor: 'black'
+	 * });
+	 * 
+	 * var path2 = new Path.Circle({
+	 *     center: [150, 50],
+	 *     radius: 25,
+	 *     fillColor: 'purple'
+	 * });
+	 * 
+	 * // Fetch all items with a purple fill color:
+	 * var items = project.getItems({
+	 *     fillColor: 'purple'
+	 * });
+	 * 
+	 * // Change the fill color of the selected path to red:
+	 * items[0].selected = true;
+	 * 
 	 * @example {@paperscript} // Fetch items at a specific position:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
