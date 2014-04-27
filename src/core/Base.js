@@ -291,8 +291,9 @@ Base.inject(/** @lends Base# */{
 		 * Returns true if obj is either a plain object or an array, as used by
 		 * many argument reading methods.
 		 */
-		isPlainValue: function(obj) {
-			return this.isPlainObject(obj) || Array.isArray(obj);
+		isPlainValue: function(obj, asString) {
+			return this.isPlainObject(obj) || Array.isArray(obj)
+					|| asString && typeof obj === 'string';
 		},
 
 		/**
