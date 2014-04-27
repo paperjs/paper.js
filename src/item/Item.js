@@ -1794,9 +1794,22 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// The default implementation honly handles 'fill' through #_contains()
 		if (options.fill && this.hasFill() && this._contains(point))
 			return new HitResult('fill', this);
-	}
-}, { // Now injection block for statics below
-	// DOCS: Item#matches
+	},
+
+	/**
+	 * {@grouptitle Fetching and matching items}
+	 * 
+	 * Check whether the item matches the properties in the specified object.
+	 * Extended matching is possible by providing a compare function or
+	 * regular expression. Matching points, colors only work as a comparison 
+	 * of the full object, not partial matching (e.g. only providing the x-
+	 * coordinate to match all points with that x-value). Partial matching 
+	 * does work for {@link Item#data}.
+	 * 
+	 * @see Project#getItems(match)
+	 * @param {Object} match The criteria to match against.
+	 * @return {@true if the item matches the criteria}
+	 */
 	matches: function(match) {
 		// matchObject() is used to match against objects in a nested manner.
 		// This is useful for matching against Item#data.
@@ -1843,12 +1856,37 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return true;
 	},
 
-	// DOCS: Item#getItems
+
+	/**
+	 * Fetch the descendants (children or children of children) of this item 
+	 * that match the properties in the specified object.
+	 * Extended matching is possible by providing a compare function or
+	 * regular expression. Matching points, colors only work as a comparison 
+	 * of the full object, not partial matching (e.g. only providing the x-
+	 * coordinate to match all points with that x-value). Partial matching 
+	 * does work for {@link Item#data}.
+	 * 
+	 * @see Project#getItems(match)
+	 * @param {Object} match The criteria to match against.
+	 * @return {Item[]}
+	 */
 	getItems: function(match) {
 		return Item._getItems(this._children, match, true);
 	},
 
-	// DOCS: Item#getItem
+	/**
+	 * Fetch the first descendant (child or child of child) of this item 
+	 * that matches the properties in the specified object.
+	 * Extended matching is possible by providing a compare function or
+	 * regular expression. Matching points, colors only work as a comparison 
+	 * of the full object, not partial matching (e.g. only providing the x-
+	 * coordinate to match all points with that x-value). Partial matching 
+	 * does work for {@link Item#data}.
+	 * 
+	 * @see Project#getItem(match)
+	 * @param {Object} match The criteria to match against.
+	 * @return {Item}
+	 */
 	getItem: function(match) {
 		return Item._getItems(this._children, match, false);
 	},
