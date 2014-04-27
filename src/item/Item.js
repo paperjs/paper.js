@@ -1444,16 +1444,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return this._index;
 	},
 
-	/**
-	 * Checks whether the item and all its parents are inserted into the DOM or
-	 * not.
-	 *
-	 * @return {Boolean} {@true if the item is inserted into the DOM}
-	 */
-	isInserted: function() {
-		return this._parent ? this._parent.isInserted() : false;
-	},
-
 	equals: function(item) {
 		// Note: We do not compare name and selected state.
 		return item === this || item && this._class === item._class
@@ -2328,6 +2318,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	isEmpty: function() {
 		return !this._children || this._children.length === 0;
+	},
+
+	/**
+	 * Checks whether the item and all its parents are inserted into the DOM or
+	 * not.
+	 *
+	 * @return {Boolean} {@true if the item is inserted into the DOM}
+	 */
+	isInserted: function() {
+		return this._parent ? this._parent.isInserted() : false;
 	},
 
 	/**
