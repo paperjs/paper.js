@@ -42,7 +42,8 @@ var ProxyContext = new function() {
 		'drawImage(image,dx,dy)', 'drawImage(image,dx,dy,dw,dh)',
 		'drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh)', 'createImageData(sw,sh)',
 		'createImageData(imagedata)', 'getImageData(sx,sy,sw,sh)',
-		'putImageData(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)'
+		'putImageData(imagedata,dx,dy,dirtyX,dirtyY,dirtyWidth,dirtyHeight)',
+		'setLineDash(array)', 'lineDashOffset'
 	];
 	var fields = /** @lends ProxyContext# */ {
 		initialize: function(context) {
