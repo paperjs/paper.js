@@ -488,10 +488,18 @@ var View = Base.extend(Callback, /** @lends View# */{
 	// TODO: projectToView(rect)
 
 	// DOCS: projectToView(point), viewToProject(point)
+	/**
+	 * @param {Point}
+	 * @return {Point}
+	 */
 	projectToView: function(/* point */) {
 		return this._matrix._transformPoint(Point.read(arguments));
 	},
 
+	/**
+	 * @param {Point}
+	 * @return {Point}
+	 */
 	viewToProject: function(/* point */) {
 		return this._matrix._inverseTransform(Point.read(arguments));
 	}
