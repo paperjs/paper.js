@@ -565,7 +565,7 @@ statics: {
 			p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
 			// Interpolate from 2 points to 1 point
 			p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
-		// We now have all the values we need to build the subcurves:
+		// We now have all the values we need to build the sub-curves:
 		return [
 			[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y], // left
 			[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y] // right

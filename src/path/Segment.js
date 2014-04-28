@@ -235,7 +235,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 * Specifies whether the segment has no handles defined, meaning it connects
 	 * two straight lines.
 	 *
-	 * @type Point
+	 * @type Boolean
 	 * @bean
 	 */
 	isLinear: function() {
@@ -246,6 +246,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 		if (linear) {
 			this._handleIn.set(0, 0);
 			this._handleOut.set(0, 0);
+		} else {
+			// TODO: smooth() ?
 		}
 	},
 
