@@ -31,15 +31,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * of {@link CurveLocation} objects. {@link CompoundPath} items are also
 	 * supported.
 	 *
-	 * @name PathItem#getIntersections(path, sorted)
-	 * @function
-	 *
 	 * @param {PathItem} path the other item to find the intersections with
+	 * @param {Boolean} [sorted=false] specifies whether the returned
+	 * {@link CurveLocation} objects should be sorted by path and offset
 	 * @return {CurveLocation[]} the locations of all intersection between the
 	 * paths
-	 * @example {@paperscript}
-	 * // Create a rectangular path with its top-left point at
-	 * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
+	 * @example {@paperscript} // Finding the intersections between two paths
 	 * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
 	 * path.strokeColor = 'black';
 	 *
@@ -47,7 +44,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 * var intersectionGroup = new Group();
 	 *
 	 * function onFrame(event) {
-	 *     secondPath.rotate(3);
+	 *     secondPath.rotate(1);
 	 *
 	 *     var intersections = path.getIntersections(secondPath);
 	 *     intersectionGroup.removeChildren();
@@ -56,9 +53,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 	 *         var intersectionPath = new Path.Circle({
 	 *             center: intersections[i].point,
 	 *             radius: 4,
-	 *             fillColor: 'red'
+	 *             fillColor: 'red',
+	 *             parent: intersectionGroup
 	 *         });
-	 *         intersectionGroup.addChild(intersectionPath);
 	 *     }
 	 * }
 	 */
