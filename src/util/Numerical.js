@@ -62,28 +62,37 @@ var Numerical = new function() {
 		pow = Math.pow,
 		cos = Math.cos,
 		PI = Math.PI,
+		isFinite = Number.isFinite,
 		TOLERANCE = 10e-6,
-		EPSILON = 10e-12;
-
-	// Sets up min and max values for roots and returns a add() function that
-	// handles bounds checks and itself returns the amount of added roots.
-	function setupRoots(roots, min, max) {
-		var unbound = min === undefined,
-			minE = min - EPSILON,
-			maxE = max + EPSILON,
-			count = 0;
-		// Returns a function that adds roots with checks
-		return function(root) {
-			if (unbound || root > minE && root < maxE)
-				roots[count++] = root < min ? min : root > max ? max : root;
-			return count;
-		};
-	}
+		EPSILON = 1e-14,
+		MACHINE_EPSILON = 2.220446049250313e-16;
 
 	return /** @lends Numerical */{
 		TOLERANCE: TOLERANCE,
 		// Precision when comparing against 0
+		// References:
+		//  http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+		//  http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+		/**
+		 * A very small absolute value used to check if a value is very close to
+		 * zero. The value should be large enough to offset any floating point
+		 * noise, but small enough to be meaningful in computation in a nominal
+		 * range (see MACHINE_EPSILON).
+		 */
 		EPSILON: EPSILON,
+		/**
+		 * MACHINE_EPSILON for a double precision (Javascript Number) is
+		 * 2.220446049250313e-16. (try this in the js console)
+		 *     (function(){for(var e=1;1<1+e/2;)e/=2;return e}())
+		 *
+		 * Here the constant MACHINE_EPSILON refers to the constants 'δ' and 'ε'
+		 * such that, the error introduced by addition, multiplication
+		 * on a 64bit float (js Number) will be less than δ and ε. That is to
+		 * say, for all X and Y representable by a js Number object, S, D, and P
+		 * be their 'exact' sum, difference, and product respectively, then
+		 * |s - (x+y)| <= δ|s|, and |s - (x*y)| <= ε|s|
+		 */
+		MACHINE_EPSILON: MACHINE_EPSILON,
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
@@ -146,82 +155,156 @@ var Numerical = new function() {
 		},
 
 		/**
-		 * Solves the quadratic polynomial with coefficients a, b, c for roots
-		 * (zero crossings) and and returns the solutions in an array.
+		 * Solve a quadratic equation in a numerically robust manner;
+		 * given a quadratic equation  ax² + bx + c = 0, find the values of x.
 		 *
-		 * a*x^2 + b*x + c = 0
+		 * References:
+		 *  Kahan W. - "To Solve a Real Cubic Equation"
+		 *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+		 *  Blinn J. - "How to solve a Quadratic Equation"
+		 *
+		 * @param {Number} a The quadratic term.
+		 * @param {Number} b The linear term.
+		 * @param {Number} c The constant term.
+		 * @param {Number[]} roots The array to store the roots in.
+		 * @return {Number} The number of real roots found, or -1 if there are
+		 * infinite solutions.
+		 *
+		 * @author Harikrishnan Gopalakrishnan
 		 */
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var add = setupRoots(roots, min, max);
-
-			// Code ported over and adapted from Uintah library (MIT license).
-			// If a is 0, equation is actually linear, return 0 or 1 easy roots.
-			if (abs(a) < EPSILON) {
-				if (abs(b) >= EPSILON)
-					return add(-c / b);
-				// If all the coefficients are 0, we have infinite solutions!
-				return abs(c) < EPSILON ? -1 : 0; // Infinite or 0 solutions
+			var nRoots = 0,
+				x1, x2 = Infinity;
+			if (abs(a) < MACHINE_EPSILON) {
+				// This could just be a linear equation
+				if (abs(b) < MACHINE_EPSILON)
+					return abs(c) < MACHINE_EPSILON ? -1 : 0;
+				x1 = -c / b;
+			} else {
+				b /= 2;
+				var D = b * b - a * c; // Discriminant
+				// No real roots if D < 0
+				if (D >= -MACHINE_EPSILON) {
+					D = D < 0 ? 0 : D;
+					var R = sqrt(D);
+					// Try to minimise floating point noise.
+					if (b >= MACHINE_EPSILON && b <= MACHINE_EPSILON) {
+						x1 = abs(a) >= abs(c) ? R / a : -c / R;
+						x2 = -x1;
+					} else {
+						var q = -(b + (b < 0 ? -1 : 1) * R);
+						x1 = q / a;
+						x2 = c / q;
+					}
+					// Do we actually have two real roots?
+					// nRoots = D > MACHINE_EPSILON ? 2 : 1;
+				}
 			}
-			// Convert to normal form: x^2 + px + q = 0
-			var p = b / (2 * a);
-			var q = c / a;
-			var p2 = p * p;
-			if (p2 < q - EPSILON)
-				return 0;
-			var s = p2 > q ? sqrt(p2 - q) : 0,
-				count = add(s - p);
-			if (s > 0)
-				count = add(-s - p);
-			return count;
+			var unbound = min == null,
+				minE = min - MACHINE_EPSILON,
+				maxE = max + MACHINE_EPSILON;
+			if (isFinite(x1) && (unbound || (x1 > minE && x1 < maxE)))
+				roots[nRoots++] = x1 < min ? min : x1 > max ? max : x1;
+			if (x2 !== x1 && isFinite(x2)
+					&& (unbound || (x2 > minE && x2 < maxE)))
+				roots[nRoots++] = x2 < min ? min : x2 > max ? max : x2;
+			return nRoots;
 		},
 
 		/**
-		 * Solves the cubic polynomial with coefficients a, b, c, d for roots
-		 * (zero crossings) and and returns the solutions in an array.
+		 * Solve a cubic equation, using numerically stable methods,
+		 * given an equation of the form ax³ + bx² + cx + d = 0.
 		 *
-		 * a*x^3 + b*x^2 + c*x + d = 0
+		 * This algorithm avoids the trigonometric/inverse trigonometric
+		 * calculations required by the "Italins"' formula. Cardano's method
+		 * works well enough for exact computations, this method takes a
+		 * numerical approach where the double precision error bound is kept
+		 * very low.
+		 *
+		 * References:
+		 *  Kahan W. - "To Solve a Real Cubic Equation"
+		 *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+		 *
+		 * W. Kahan's paper contains inferences on accuracy of cubic
+		 * zero-finding methods. Also testing methods for robustness.
+		 *
+		 * @param {Number} a The cubic term (x³ term).
+		 * @param {Number} b The quadratic term (x² term).
+		 * @param {Number} c The linear term (x term).
+		 * @param {Number} d The constant term.
+		 * @param {Number[]} roots The array to store the roots in.
+		 * @return {Number} The number of real roots found, or -1 if there are
+		 * infinite solutions.
+		 *
+		 * @author Harikrishnan Gopalakrishnan
 		 */
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			// If a is 0, equation is actually quadratic.
-			if (abs(a) < EPSILON)
-				return Numerical.solveQuadratic(b, c, d, roots, min, max);
-
-			// Code ported over and adapted from Uintah library (MIT license).
-			// Normalize to form: x^3 + b x^2 + c x + d = 0:
-			b /= a;
-			c /= a;
-			d /= a;
-			var add = setupRoots(roots, min, max),
-				// Compute discriminants
-				bb = b * b,
-				p = (bb - 3 * c) / 9,
-				q = (2 * bb * b - 9 * b * c + 27 * d) / 54,
-				// Use Cardano's formula
-				ppp = p * p * p,
-				D = q * q - ppp;
-			// Substitute x = y - b/3 to eliminate quadric term: x^3 +px + q = 0
-			b /= 3;
-			if (abs(D) < EPSILON) {
-				if (abs(q) < EPSILON) // One triple solution.
-					return add(-b);
-				// One single and one double solution.
-				var sqp = sqrt(p),
-					snq = q > 0 ? 1 : -1;
-				add(-snq * 2 * sqp - b);
-				return add(snq * sqp - b);
+			var x, b1, c2, nRoots = 0;
+			if (a === 0 || d ===0) {
+				// We only need to solve a quadratic.
+				// So we set the coefficients appropriately.
+				if (a === 0) {
+					a = b;
+					b1 = c;
+					c2 = d;
+					x = Infinity;
+				} else {
+					b1 = b;
+					c2 = c;
+					x = 0;
+				}
+			} else {
+				var ec = 1 + MACHINE_EPSILON, // 1.000...002
+					x0, q, qd, t, r, s, tmp;
+				// Here onwards we iterate for the leftmost root. Proceed to
+				// deflate the cubic into a quadratic (as a side effect to the
+				// iteration) and solve the quadratic.
+				x = -(b / a) / 3;
+				// Evaluate q, q', b1 and c2 at x
+				tmp = a * x,
+				b1 = tmp + b,
+				c2 = b1 * x + c,
+				qd = (tmp + b1) * x + c2,
+				q = c2 * x + d;
+				// Get a good initial approximation.
+				t = q /a;
+				r = pow(abs(t), 1/3);
+				s = t < 0 ? -1 : 1;
+				t = -qd / a;
+				// See Kahan's notes on why 1.324718*... works.
+				r = t > 0 ? 1.3247179572 * Math.max(r, sqrt(t)) : r;
+				x0 = x - s * r;
+				if (x0 !== x) {
+					do {
+						x = x0;
+						// Evaluate q, q', b1 and c2 at x
+						tmp = a * x,
+						b1 = tmp + b,
+						c2 = b1 * x + c,
+						qd = (tmp + b1) * x + c2,
+						q = c2 * x + d;
+						// Newton's. Divide by ec to avoid x0 crossing over a
+						// root.
+						x0 = qd === 0 ? x : x - q / qd / ec;
+						if (x0 === x) {
+							x = x0;
+							break;
+						}
+					} while (s * x0 > s * x);
+					// Adjust the coefficients for the quadratic.
+					if (abs(a) * x * x > abs(d / x)) {
+						c2 = -d / x;
+						b1 = (c2 - c) / x;
+					}
+				}
 			}
-			if (D < 0) { // Casus irreducibilis: three real solutions
-				var sqp = sqrt(p),
-					phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
-					t = -2 * sqp,
-					o = 2 * PI / 3;
-				add(t * cos(phi) - b);
-				add(t * cos(phi + o) - b);
-				return add(t * cos(phi - o) - b);
-			}
-			// One real solution
-			var A = (q > 0 ? -1 : 1) * pow(abs(q) + sqrt(D), 1 / 3);
-			return add(A + p / A - b);
+			// The cubic has been deflated to a quadratic.
+			var nRoots = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
+			if (isFinite(x) && (nRoots === 0 || x !== roots[nRoots - 1])
+					&& (min == null || (x > min - MACHINE_EPSILON
+						&& x < max + MACHINE_EPSILON)))
+				roots[nRoots++] = x < min ? min : x > max ? max : x;
+			return nRoots;
 		}
 	};
 };
