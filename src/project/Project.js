@@ -792,7 +792,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @function
 	 * @param {Object} [options={ asString: false, precision: 5,
 	 * matchShapes: false }] the export options.
-	 * @return {SVGSVGElement} the project converted to an SVG node
+	 * @return {SVGElement} the project converted to an SVG node
 	 */
 
 	// DOCS: Document importSVG('file.svg', callback);
@@ -808,7 +808,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *
 	 * @name Project#importSVG
 	 * @function
-	 * @param {SVGSVGElement|String} svg the SVG content to import
+	 * @param {SVGElement|String} svg the SVG content to import
 	 * @param {Object} [options={ expandShapes: false }] the import options
 	 * @return {Item} the imported Paper.js parent item
 	 */

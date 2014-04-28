@@ -492,7 +492,7 @@ new function() {
 	 * Converts various SVG styles and attributes into Paper.js styles and
 	 * attributes and applies them to the passed item.
 	 *
-	 * @param {SVGSVGElement} node an SVG node to read style and attributes from.
+	 * @param {SVGElement} node an SVG node to read style and attributes from.
 	 * @param {Item} item the item to apply the style and attributes to.
 	 */
 	function applyAttributes(item, node, isRoot) {
