@@ -447,21 +447,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Don't access _style directly so Path#getStyle() can be overriden for
 		// CompoundPaths.
 		this.getStyle().set(style);
-	},
-
-	// DOCS: Item#hasFill()
-	hasFill: function() {
-		return this.getStyle().hasFill();
-	},
-
-	// DOCS: Item#hasStroke()
-	hasStroke: function() {
-		return this.getStyle().hasStroke();
-	},
-
-	// DOCS: Item#hasShadow()
-	hasShadow: function() {
-		return this.getStyle().hasShadow();
 	}
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	// Produce getter/setters for properties. We need setters because we want to
@@ -2320,16 +2305,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * Checks whether the item and all its parents are inserted into the DOM or
-	 * not.
-	 *
-	 * @return {Boolean} {@true if the item is inserted into the DOM}
-	 */
-	isInserted: function() {
-		return this._parent ? this._parent.isInserted() : false;
-	},
-
-	/**
 	 * Checks whether the item is editable.
 	 *
 	 * @return {Boolean} {@true when neither the item, nor its parents are
@@ -2352,6 +2327,35 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @return {Boolean} {@true if the item is valid}
 	 */
 	// TODO: isValid / checkValid
+
+	/**
+	 * {@grouptitle Style Tests}
+	 * 
+	 * Checks whether the item has a fill.
+	 *
+	 * @return {Boolean} {@true if the item has a fill}
+	 */
+	hasFill: function() {
+		return this.getStyle().hasFill();
+	},
+
+	/**
+	 * Checks whether the item has a stroke.
+	 *
+	 * @return {Boolean} {@true if the item has a stroke}
+	 */
+	hasStroke: function() {
+		return this.getStyle().hasStroke();
+	},
+
+	/**
+	 * Checks whether the item has a shadow.
+	 *
+	 * @return {Boolean} {@true if the item has a shadow}
+	 */
+	hasShadow: function() {
+		return this.getStyle().hasShadow();
+	},
 
 	/**
 	 * Returns -1 if 'this' is above 'item', 1 if below, 0 if their order is not
@@ -2388,6 +2392,16 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 	hasChildren: function() {
 		return this._children && this._children.length > 0;
+	},
+
+	/**
+	 * Checks whether the item and all its parents are inserted into the DOM or
+	 * not.
+	 *
+	 * @return {Boolean} {@true if the item is inserted into the DOM}
+	 */
+	isInserted: function() {
+		return this._parent ? this._parent.isInserted() : false;
 	},
 
 	/**
