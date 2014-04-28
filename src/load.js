@@ -43,7 +43,9 @@ if (typeof window === 'object') {
 	// Override node specific options.
 	prepro.setOptions({
 		environment: 'node',
-		stats: false
+		legacy: false,
+		stats: false,
+		version: 'dev'
 	});
 	// Load Paper.js library files.
 	prepro.include('../src/paper.js');
