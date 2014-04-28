@@ -106,7 +106,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// is false, or if the props are setting a different parent anyway.
 			if (internal || hasProps && props.insert === false) {
 				this._setProject(project);
-			} else if (!hasProps || !props.parent) {
+			} else if (hasProps && props.parent) {
+				this.setParent(props.parent);
+			} else {
 				// Create a new layer if there is no active one. This will
 				// automatically make it the new activeLayer.
 				(project.activeLayer || new Layer()).addChild(this);
@@ -114,9 +116,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 		// Filter out Item.NO_INSERT before _set(), for performance reasons.
 		if (hasProps && props !== Item.NO_INSERT)
-			// Filter out insert property, and don't check for plain object
-			// as we already do so through hasProps.
-			this._set(props, { insert: true }, true);
+			// Filter out insert and parent property as these were handled above
+			// and don't check for plain object as that's done through hasProps.
+			this._set(props, { insert: true, parent: true }, true);
 		return hasProps;
 	},
 
@@ -299,11 +301,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * });
 	 */
 	set: function(props) {
-		// Filter out `insert` since that only makes sense at creation time and
-		// is handled separately in the constructor.Also avoids overriding
-		// Path#insert().
 		if (props)
-			this._set(props, { insert: true });
+			this._set(props);
 		return this;
 	},
 
@@ -1788,14 +1787,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	/**
 	 * {@grouptitle Fetching and matching items}
-	 * 
+	 *
 	 * Check whether the item matches the properties in the specified object.
 	 * Extended matching is possible by providing a compare function or
-	 * regular expression. Matching points, colors only work as a comparison 
+	 * regular expression. Matching points, colors only work as a comparison
 	 * of the full object, not partial matching (e.g. only providing the x-
-	 * coordinate to match all points with that x-value). Partial matching 
+	 * coordinate to match all points with that x-value). Partial matching
 	 * does work for {@link Item#data}.
-	 * 
+	 *
 	 * @see Project#getItems(match)
 	 * @param {Object} match The criteria to match against.
 	 * @return {@true if the item matches the criteria}
@@ -1848,14 +1847,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 
 	/**
-	 * Fetch the descendants (children or children of children) of this item 
+	 * Fetch the descendants (children or children of children) of this item
 	 * that match the properties in the specified object.
 	 * Extended matching is possible by providing a compare function or
-	 * regular expression. Matching points, colors only work as a comparison 
+	 * regular expression. Matching points, colors only work as a comparison
 	 * of the full object, not partial matching (e.g. only providing the x-
-	 * coordinate to match all points with that x-value). Partial matching 
+	 * coordinate to match all points with that x-value). Partial matching
 	 * does work for {@link Item#data}.
-	 * 
+	 *
 	 * @see Project#getItems(match)
 	 * @param {Object} match The criteria to match against.
 	 * @return {Item[]}
@@ -1865,14 +1864,14 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * Fetch the first descendant (child or child of child) of this item 
+	 * Fetch the first descendant (child or child of child) of this item
 	 * that matches the properties in the specified object.
 	 * Extended matching is possible by providing a compare function or
-	 * regular expression. Matching points, colors only work as a comparison 
+	 * regular expression. Matching points, colors only work as a comparison
 	 * of the full object, not partial matching (e.g. only providing the x-
-	 * coordinate to match all points with that x-value). Partial matching 
+	 * coordinate to match all points with that x-value). Partial matching
 	 * does work for {@link Item#data}.
-	 * 
+	 *
 	 * @see Project#getItem(match)
 	 * @param {Object} match The criteria to match against.
 	 * @return {Item}
