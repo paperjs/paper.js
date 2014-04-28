@@ -1575,9 +1575,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	// TODO: intersects(item)
 	// TODO: contains(item)
-	// TODO: intersect(item)
-	// TODO: unite(item)
-	// TODO: exclude(item)
 }, /** @lends Path# */{
 	// Explicitly deactivate the creation of beans, as we have functions here
 	// that look like bean getters but actually read arguments.
