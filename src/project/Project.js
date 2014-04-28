@@ -86,8 +86,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * @function
 	 */
 
-	// DOCS: Project#clear()
-
+	/**
+	 * Clears the project by removing all {@link Project#layers} and
+	 * {@link Project#symbols}.
+	 */
 	clear: function() {
 		for (var i = this.layers.length - 1; i >= 0; i--)
 			this.layers[i].remove();
