@@ -1616,12 +1616,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	// DOCS: document Path#getLocationAt
 	/**
-	 *
-	 * @param {Number} offset
+	 * Returns the curve location of the specified offset on the path.
+	 * 
+	 * @param {Number} offset the offset on the path, where {@code 0} is at
+	 * the beginning of the path and {@link Path#length} at the end.
 	 * @param {Boolean} [isParameter=false]
-	 * @return {CurveLocation}
+	 * @return {CurveLocation} the curve location at the specified offset
 	 */
 	getLocationAt: function(offset, isParameter) {
 		var curves = this.getCurves(),
@@ -1651,7 +1652,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Calculates the point on the path at the given offset.
 	 *
-	 * @param {Number} offset
+	 * @param {Number} offset the offset on the path, where {@code 0} is at
+	 * the beginning of the path and {@link Path#length} at the end.
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the point at the given offset
 	 *
@@ -1713,9 +1715,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
-	 * Calculates the tangent to the path at the given offset as a vector point.
+	 * Calculates the tangent to the path at the given offset as a vector
+	 * point.
 	 *
-	 * @param {Number} offset
+	 * @param {Number} offset the offset on the path, where {@code 0} is at
+	 * the beginning of the path and {@link Path#length} at the end.
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the tangent vector at the given offset
 	 *
@@ -1787,7 +1791,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 	/**
 	 * Calculates the normal to the path at the given offset as a vector point.
 	 *
-	 * @param {Number} offset
+	 * @param {Number} offset the offset on the path, where {@code 0} is at
+	 * the beginning of the path and {@link Path#length} at the end.
 	 * @param {Boolean} [isParameter=false]
 	 * @return {Point} the normal vector at the given offset
 	 *
