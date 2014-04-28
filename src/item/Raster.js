@@ -367,7 +367,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 	// DOCS: document Raster#getElement
 	getElement: function() {
 		return this._canvas || this._image;
-	},
+	}
+}, /** @lends Raster# */{
+	// Explicitly deactivate the creation of beans, as we have functions here
+	// that look like bean getters but actually read arguments.
+	// See #getSubCanvas(), #getSubRaster(), #getSubRaster(), #getPixel(),
+	// #getImageData()
+	beans: false,
 
 	/**
 	 * Extracts a part of the Raster's content as a sub image, and returns it as
@@ -378,7 +384,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 *
 	 * @return {Canvas} the sub image as a Canvas object
 	 */
-	getSubCanvas: function(rect) { // TODO: Fix argument assignment!
+	getSubCanvas: function(/* rect */) {
 		var rect = Rectangle.read(arguments),
 			ctx = CanvasProvider.getContext(rect.getSize());
 		ctx.drawImage(this.getCanvas(), rect.x, rect.y,
@@ -395,7 +401,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 *
 	 * @return {Raster} the sub raster as a newly created raster item
 	 */
-	getSubRaster: function(rect) { // TODO: Fix argument assignment!
+	getSubRaster: function(/* rect */) {
 		var rect = Rectangle.read(arguments),
 			raster = new Raster(Item.NO_INSERT);
 		raster.setCanvas(this.getSubCanvas(rect));
@@ -532,7 +538,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param point the offset of the pixel as a point in pixel coordinates
 	 * @return {Color} the color of the pixel
 	 */
-	getPixel: function(point) { // TODO: Fix argument assignment!
+	getPixel: function(/* point */) {
 		var point = Point.read(arguments);
 		var data = this.getContext().getImageData(point.x, point.y, 1, 1).data;
 		// Alpha is separate now:
@@ -588,7 +594,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * @param {Rectangle} rect
 	 * @return {ImageData}
 	 */
-	getImageData: function(rect) { // TODO: Fix argument assignment!
+	getImageData: function(/* rect */) {
 		var rect = Rectangle.read(arguments);
 		if (rect.isEmpty())
 			rect = new Rectangle(this._size);

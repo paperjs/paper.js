@@ -798,6 +798,11 @@ statics: {
 		};
 	},
 /** @lends Curve# */{
+	// Explicitly deactivate the creation of beans, as we have functions here
+	// that look like bean getters but actually read arguments.
+	// See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...
+	beans: false,
+
 	/**
 	 * Calculates the curve time parameter of the specified offset on the path,
 	 * relative to the provided start parameter. If offset is a negative value,
@@ -819,7 +824,7 @@ statics: {
 	 * @param {Point} point the point on the curve.
 	 * @return {Number} the curve time parameter of the specified point.
 	 */
-	getParameterOf: function(point) { // TODO: Fix argument assignment!
+	getParameterOf: function(/* point */) {
 		var point = Point.read(arguments);
 		return Curve.getParameterOf(this.getValues(), point.x, point.y);
 	},
@@ -845,15 +850,13 @@ statics: {
 	 * @param {Point} point the point on the curve.
 	 * @return {CurveLocation} the curve location of the specified point.
 	 */
-	getLocationOf: function(point) { // TODO: Fix argument assignment!
-		// We need to use point to avoid minification issues and prevent method
-		// from turning into a bean (by removal of the point argument).
+	getLocationOf: function(/* point */) {
 		var point = Point.read(arguments),
 			t = this.getParameterOf(point);
 		return t != null ? new CurveLocation(this, t) : null;
 	},
 
-	getNearestLocation: function(point) { // TODO: Fix argument assignment!
+	getNearestLocation: function(/* point */) {
 		var point = Point.read(arguments),
 			values = this.getValues(),
 			count = 100,
@@ -886,11 +889,8 @@ statics: {
 				point.getDistance(pt));
 	},
 
-	getNearestPoint: function(point) {
-		// We need to use point to avoid minification issues and prevent method
-		// from turning into a bean (by removal of the point argument).
-		var point = Point.read(arguments);
-		return this.getNearestLocation(point).getPoint();
+	getNearestPoint: function(/* point */) {
+		return this.getNearestLocation.apply(this, arguments).getPoint();
 	}
 
 	/**

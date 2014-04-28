@@ -397,10 +397,8 @@ var View = Base.extend(Callback, /** @lends View# */{
 		return this.getBounds().getCenter();
 	},
 
-	setCenter: function(center) {
-		// We need to use center to avoid minification issues and prevent method
-		// from turning into a bean (by removal of the center argument).
-		center = Point.read(arguments);
+	setCenter: function(/* center */) {
+		var center = Point.read(arguments);
 		this.scrollBy(center.subtract(this.getCenter()));
 	},
 

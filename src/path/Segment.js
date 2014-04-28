@@ -223,8 +223,6 @@ var Segment = Base.extend(/** @lends Segment# */{
 	},
 
 	setHandleOut: function(/* point */) {
-		// We need to use point to avoid minification issues and prevent method
-		// from turning into a bean (by removal of the point argument).
 		var point = Point.read(arguments);
 		// See #setPoint:
 		this._handleOut.set(point.x, point.y);
@@ -244,9 +242,11 @@ var Segment = Base.extend(/** @lends Segment# */{
 		return this._handleIn.isZero() && this._handleOut.isZero();
 	},
 
-	setLinear: function() {
-		this._handleIn.set(0, 0);
-		this._handleOut.set(0, 0);
+	setLinear: function(linear) {
+		if (linear) {
+			this._handleIn.set(0, 0);
+			this._handleOut.set(0, 0);
+		}
 	},
 
 	// DOCS: #isColinear(segment), #isOrthogonal(), #isArc()

@@ -756,6 +756,37 @@ var Path = PathItem.extend(/** @lends Path# */{
 	clear: '#removeSegments',
 
 	/**
+	 * The approximate length of the path in points.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getLength: function() {
+		if (this._length == null) {
+			var curves = this.getCurves();
+			this._length = 0;
+			for (var i = 0, l = curves.length; i < l; i++)
+				this._length += curves[i].getLength();
+		}
+		return this._length;
+	},
+
+	/**
+	 * The area of the path in square points. Self-intersecting paths can
+	 * contain sub-areas that cancel each other out.
+	 *
+	 * @type Number
+	 * @bean
+	 */
+	getArea: function() {
+		var curves = this.getCurves();
+		var area = 0;
+		for (var i = 0, l = curves.length; i < l; i++)
+			area += curves[i].getArea();
+		return area;
+	},
+
+	/**
 	 * Specifies whether an path is selected and will also return {@code true}
 	 * if the path is partially selected, i.e. one or more of its segments is
 	 * selected.
@@ -1298,372 +1329,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 	},
 
-	/**
-	 * The approximate length of the path in points.
-	 *
-	 * @type Number
-	 * @bean
-	 */
-	getLength: function() {
-		if (this._length == null) {
-			var curves = this.getCurves();
-			this._length = 0;
-			for (var i = 0, l = curves.length; i < l; i++)
-				this._length += curves[i].getLength();
-		}
-		return this._length;
-	},
-
-	/**
-	 * The area of the path in square points. Self-intersecting paths can
-	 * contain sub-areas that cancel each other out.
-	 *
-	 * @type Number
-	 * @bean
-	 */
-	getArea: function() {
-		var curves = this.getCurves();
-		var area = 0;
-		for (var i = 0, l = curves.length; i < l; i++)
-			area += curves[i].getArea();
-		return area;
-	},
-
-	_getOffset: function(location) {
-		var index = location && location.getIndex();
-		if (index != null) {
-			var curves = this.getCurves(),
-				offset = 0;
-			for (var i = 0; i < index; i++)
-				offset += curves[i].getLength();
-			var curve = curves[index],
-				parameter = location.getParameter();
-			if (parameter > 0)
-				offset += curve.getPartLength(0, parameter);
-			return offset;
-		}
-		return null;
-	},
-
-	/**
-	 * Returns the curve location of the specified point if it lies on the
-	 * path, {@code null} otherwise.
-	 * @param {Point} point the point on the path.
-	 * @return {CurveLocation} the curve location of the specified point.
-	 */
-	getLocationOf: function(point) { // TODO: Fix argument assignment!
-		var point = Point.read(arguments),
-			curves = this.getCurves();
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getLocationOf(point);
-			if (loc)
-				return loc;
-		}
-		return null;
-	},
-
-	// DOCS: document Path#getLocationAt
-	/**
-	 * {@grouptitle Positions on Paths and Curves}
-	 *
-	 * @param {Number} offset
-	 * @param {Boolean} [isParameter=false]
-	 * @return {CurveLocation}
-	 */
-	getLocationAt: function(offset, isParameter) {
-		var curves = this.getCurves(),
-			length = 0;
-		if (isParameter) {
-			// offset consists of curve index and curve parameter, before and
-			// after the fractional digit.
-			var index = ~~offset; // = Math.floor()
-			return curves[index].getLocationAt(offset - index, true);
-		}
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var start = length,
-				curve = curves[i];
-			length += curve.getLength();
-			if (length > offset) {
-				// Found the segment within which the length lies
-				return curve.getLocationAt(offset - start);
-			}
-		}
-		// It may be that through imprecision of getLength, that the end of the
-		// last curve was missed:
-		if (offset <= this.getLength())
-			return new CurveLocation(curves[curves.length - 1], 1);
-		return null;
-	},
-
-	/**
-	 * Calculates the point on the path at the given offset.
-	 *
-	 * @param {Number} offset
-	 * @param {Boolean} [isParameter=false]
-	 * @return {Point} the point at the given offset
-	 *
-	 * @example {@paperscript height=150}
-	 * // Finding the point on a path at a given offset:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * // We're going to be working with a third of the length
-	 * // of the path as the offset:
-	 * var offset = path.length / 3;
-	 *
-	 * // Find the point on the path:
-	 * var point = path.getPointAt(offset);
-	 *
-	 * // Create a small circle shaped path at the point:
-	 * var circle = new Path.Circle({
-	 *     center: point,
-	 *     radius: 3,
-	 *     fillColor: 'red'
-	 * });
-	 *
-	 * @example {@paperscript height=150}
-	 * // Iterating over the length of a path:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * var amount = 5;
-	 * var length = path.length;
-	 * for (var i = 0; i < amount + 1; i++) {
-	 *     var offset = i / amount * length;
-	 *
-	 *     // Find the point on the path at the given offset:
-	 *     var point = path.getPointAt(offset);
-	 *
-	 *     // Create a small circle shaped path at the point:
-	 *     var circle = new Path.Circle({
-	 *         center: point,
-	 *         radius: 3,
-	 *         fillColor: 'red'
-	 *     });
-	 * }
-	 */
-	getPointAt: function(offset, isParameter) {
-		var loc = this.getLocationAt(offset, isParameter);
-		return loc && loc.getPoint();
-	},
-
-	/**
-	 * Calculates the tangent to the path at the given offset as a vector point.
-	 *
-	 * @param {Number} offset
-	 * @param {Boolean} [isParameter=false]
-	 * @return {Point} the tangent vector at the given offset
-	 *
-	 * @example {@paperscript height=150}
-	 * // Working with the tangent vector at a given offset:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * // We're going to be working with a third of the length
-	 * // of the path as the offset:
-	 * var offset = path.length / 3;
-	 *
-	 * // Find the point on the path:
-	 * var point = path.getPointAt(offset);
-	 *
-	 * // Find the tangent vector at the given offset:
-	 * var tangent = path.getTangentAt(offset);
-	 *
-	 * // Make the tangent vector 60pt long:
-	 * tangent.length = 60;
-	 *
-	 * var line = new Path({
-	 *     segments: [point, point + tangent],
-	 *     strokeColor: 'red'
-	 * })
-	 *
-	 * @example {@paperscript height=200}
-	 * // Iterating over the length of a path:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * var amount = 6;
-	 * var length = path.length;
-	 * for (var i = 0; i < amount + 1; i++) {
-	 *     var offset = i / amount * length;
-	 *
-	 *     // Find the point on the path at the given offset:
-	 *     var point = path.getPointAt(offset);
-	 *
-	 *     // Find the normal vector on the path at the given offset:
-	 *     var tangent = path.getTangentAt(offset);
-	 *
-	 *     // Make the tangent vector 60pt long:
-	 *     tangent.length = 60;
-	 *
-	 *     var line = new Path({
-	 *         segments: [point, point + tangent],
-	 *         strokeColor: 'red'
-	 *     })
-	 * }
-	 */
-	getTangentAt: function(offset, isParameter) {
-		var loc = this.getLocationAt(offset, isParameter);
-		return loc && loc.getTangent();
-	},
-
-	/**
-	 * Calculates the normal to the path at the given offset as a vector point.
-	 *
-	 * @param {Number} offset
-	 * @param {Boolean} [isParameter=false]
-	 * @return {Point} the normal vector at the given offset
-	 *
-	 * @example {@paperscript height=150}
-	 * // Working with the normal vector at a given offset:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * // We're going to be working with a third of the length
-	 * // of the path as the offset:
-	 * var offset = path.length / 3;
-	 *
-	 * // Find the point on the path:
-	 * var point = path.getPointAt(offset);
-	 *
-	 * // Find the normal vector at the given offset:
-	 * var normal = path.getNormalAt(offset);
-	 *
-	 * // Make the normal vector 30pt long:
-	 * normal.length = 30;
-	 *
-	 * var line = new Path({
-	 *     segments: [point, point + normal],
-	 *     strokeColor: 'red'
-	 * });
-	 *
-	 * @example {@paperscript height=200}
-	 * // Iterating over the length of a path:
-	 *
-	 * // Create an arc shaped path:
-	 * var path = new Path({
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * path.add(new Point(40, 100));
-	 * path.arcTo(new Point(150, 100));
-	 *
-	 * var amount = 10;
-	 * var length = path.length;
-	 * for (var i = 0; i < amount + 1; i++) {
-	 *     var offset = i / amount * length;
-	 *
-	 *     // Find the point on the path at the given offset:
-	 *     var point = path.getPointAt(offset);
-	 *
-	 *     // Find the normal vector on the path at the given offset:
-	 *     var normal = path.getNormalAt(offset);
-	 *
-	 *     // Make the normal vector 30pt long:
-	 *     normal.length = 30;
-	 *
-	 *     var line = new Path({
-	 *         segments: [point, point + normal],
-	 *         strokeColor: 'red'
-	 *     });
-	 * }
-	 */
-	getNormalAt: function(offset, isParameter) {
-		var loc = this.getLocationAt(offset, isParameter);
-		return loc && loc.getNormal();
-	},
-
-	/**
-	 * Returns the nearest location on the path to the specified point.
-	 *
-	 * @function
-	 * @param point {Point} the point for which we search the nearest location
-	 * @return {CurveLocation} the location on the path that's the closest to
-	 * the specified point
-	 */
-	getNearestLocation: function(point) { // TODO: Fix argument assignment!
-		var point = Point.read(arguments),
-			curves = this.getCurves(),
-			minDist = Infinity,
-			minLoc = null;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocation(point);
-			if (loc._distance < minDist) {
-				minDist = loc._distance;
-				minLoc = loc;
-			}
-		}
-		return minLoc;
-	},
-
-	/**
-	 * Returns the nearest point on the path to the specified point.
-	 *
-	 * @function
-	 * @param point {Point} the point for which we search the nearest point
-	 * @return {Point} the point on the path that's the closest to the specified
-	 * point
-	 *
-	 * @example {@paperscript height=200}
-	 * var star = new Path.Star({
-	 *     center: view.center,
-	 *     points: 10,
-	 *     radius1: 30,
-	 *     radius2: 60,
-	 *     strokeColor: 'black'
-	 * });
-	 *
-	 * var circle = new Path.Circle({
-	 *     center: view.center,
-	 *     radius: 3,
-	 *     fillColor: 'red'
-	 * });
-	 *
-	 * function onMouseMove(event) {
-	 *     // Get the nearest point from the mouse position
-	 *     // to the star shaped path:
-	 *     var nearestPoint = star.getNearestPoint(event.point);
-	 *
-	 *     // Move the red circle to the nearest point:
-	 *     circle.position = nearestPoint;
-	 * }
-	 */
-	getNearestPoint: function(point) { // TODO: Fix argument assignment!
-		// We need to use point to avoid minification issues and prevent method
-		// from turning into a bean (by removal of the point argument).
-		var point = Point.read(arguments);
-		return this.getNearestLocation(point).getPoint();
-	},
 
 	// DOCS: toShape
 
@@ -1913,6 +1578,345 @@ var Path = PathItem.extend(/** @lends Path# */{
 	// TODO: intersect(item)
 	// TODO: unite(item)
 	// TODO: exclude(item)
+}, /** @lends Path# */{
+	// Explicitly deactivate the creation of beans, as we have functions here
+	// that look like bean getters but actually read arguments.
+	// See #getLocationOf(), #getNearestLocation(), #getNearestPoint()
+	beans: false,
+
+	_getOffset: function(location) {
+		var index = location && location.getIndex();
+		if (index != null) {
+			var curves = this.getCurves(),
+				offset = 0;
+			for (var i = 0; i < index; i++)
+				offset += curves[i].getLength();
+			var curve = curves[index],
+				parameter = location.getParameter();
+			if (parameter > 0)
+				offset += curve.getPartLength(0, parameter);
+			return offset;
+		}
+		return null;
+	},
+
+	/**
+	 * {@grouptitle Positions on Paths and Curves}
+	 *
+	 * Returns the curve location of the specified point if it lies on the
+	 * path, {@code null} otherwise.
+	 * @param {Point} point the point on the path.
+	 * @return {CurveLocation} the curve location of the specified point.
+	 */
+	getLocationOf: function(/* point */) {
+		var point = Point.read(arguments),
+			curves = this.getCurves();
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i].getLocationOf(point);
+			if (loc)
+				return loc;
+		}
+		return null;
+	},
+
+	// DOCS: document Path#getLocationAt
+	/**
+	 *
+	 * @param {Number} offset
+	 * @param {Boolean} [isParameter=false]
+	 * @return {CurveLocation}
+	 */
+	getLocationAt: function(offset, isParameter) {
+		var curves = this.getCurves(),
+			length = 0;
+		if (isParameter) {
+			// offset consists of curve index and curve parameter, before and
+			// after the fractional digit.
+			var index = ~~offset; // = Math.floor()
+			return curves[index].getLocationAt(offset - index, true);
+		}
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var start = length,
+				curve = curves[i];
+			length += curve.getLength();
+			if (length > offset) {
+				// Found the segment within which the length lies
+				return curve.getLocationAt(offset - start);
+			}
+		}
+		// It may be that through imprecision of getLength, that the end of the
+		// last curve was missed:
+		if (offset <= this.getLength())
+			return new CurveLocation(curves[curves.length - 1], 1);
+		return null;
+	},
+
+	/**
+	 * Calculates the point on the path at the given offset.
+	 *
+	 * @param {Number} offset
+	 * @param {Boolean} [isParameter=false]
+	 * @return {Point} the point at the given offset
+	 *
+	 * @example {@paperscript height=150}
+	 * // Finding the point on a path at a given offset:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 *
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 *
+	 * // Create a small circle shaped path at the point:
+	 * var circle = new Path.Circle({
+	 *     center: point,
+	 *     radius: 3,
+	 *     fillColor: 'red'
+	 * });
+	 *
+	 * @example {@paperscript height=150}
+	 * // Iterating over the length of a path:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * var amount = 5;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 *     var offset = i / amount * length;
+	 *
+	 *     // Find the point on the path at the given offset:
+	 *     var point = path.getPointAt(offset);
+	 *
+	 *     // Create a small circle shaped path at the point:
+	 *     var circle = new Path.Circle({
+	 *         center: point,
+	 *         radius: 3,
+	 *         fillColor: 'red'
+	 *     });
+	 * }
+	 */
+	getPointAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
+		return loc && loc.getPoint();
+	},
+
+	/**
+	 * Calculates the tangent to the path at the given offset as a vector point.
+	 *
+	 * @param {Number} offset
+	 * @param {Boolean} [isParameter=false]
+	 * @return {Point} the tangent vector at the given offset
+	 *
+	 * @example {@paperscript height=150}
+	 * // Working with the tangent vector at a given offset:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 *
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 *
+	 * // Find the tangent vector at the given offset:
+	 * var tangent = path.getTangentAt(offset);
+	 *
+	 * // Make the tangent vector 60pt long:
+	 * tangent.length = 60;
+	 *
+	 * var line = new Path({
+	 *     segments: [point, point + tangent],
+	 *     strokeColor: 'red'
+	 * })
+	 *
+	 * @example {@paperscript height=200}
+	 * // Iterating over the length of a path:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * var amount = 6;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 *     var offset = i / amount * length;
+	 *
+	 *     // Find the point on the path at the given offset:
+	 *     var point = path.getPointAt(offset);
+	 *
+	 *     // Find the normal vector on the path at the given offset:
+	 *     var tangent = path.getTangentAt(offset);
+	 *
+	 *     // Make the tangent vector 60pt long:
+	 *     tangent.length = 60;
+	 *
+	 *     var line = new Path({
+	 *         segments: [point, point + tangent],
+	 *         strokeColor: 'red'
+	 *     })
+	 * }
+	 */
+	getTangentAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
+		return loc && loc.getTangent();
+	},
+
+	/**
+	 * Calculates the normal to the path at the given offset as a vector point.
+	 *
+	 * @param {Number} offset
+	 * @param {Boolean} [isParameter=false]
+	 * @return {Point} the normal vector at the given offset
+	 *
+	 * @example {@paperscript height=150}
+	 * // Working with the normal vector at a given offset:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * // We're going to be working with a third of the length
+	 * // of the path as the offset:
+	 * var offset = path.length / 3;
+	 *
+	 * // Find the point on the path:
+	 * var point = path.getPointAt(offset);
+	 *
+	 * // Find the normal vector at the given offset:
+	 * var normal = path.getNormalAt(offset);
+	 *
+	 * // Make the normal vector 30pt long:
+	 * normal.length = 30;
+	 *
+	 * var line = new Path({
+	 *     segments: [point, point + normal],
+	 *     strokeColor: 'red'
+	 * });
+	 *
+	 * @example {@paperscript height=200}
+	 * // Iterating over the length of a path:
+	 *
+	 * // Create an arc shaped path:
+	 * var path = new Path({
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * path.add(new Point(40, 100));
+	 * path.arcTo(new Point(150, 100));
+	 *
+	 * var amount = 10;
+	 * var length = path.length;
+	 * for (var i = 0; i < amount + 1; i++) {
+	 *     var offset = i / amount * length;
+	 *
+	 *     // Find the point on the path at the given offset:
+	 *     var point = path.getPointAt(offset);
+	 *
+	 *     // Find the normal vector on the path at the given offset:
+	 *     var normal = path.getNormalAt(offset);
+	 *
+	 *     // Make the normal vector 30pt long:
+	 *     normal.length = 30;
+	 *
+	 *     var line = new Path({
+	 *         segments: [point, point + normal],
+	 *         strokeColor: 'red'
+	 *     });
+	 * }
+	 */
+	getNormalAt: function(offset, isParameter) {
+		var loc = this.getLocationAt(offset, isParameter);
+		return loc && loc.getNormal();
+	},
+
+	/**
+	 * Returns the nearest location on the path to the specified point.
+	 *
+	 * @function
+	 * @param point {Point} the point for which we search the nearest location
+	 * @return {CurveLocation} the location on the path that's the closest to
+	 * the specified point
+	 */
+	getNearestLocation: function(/* point */) {
+		var point = Point.read(arguments),
+			curves = this.getCurves(),
+			minDist = Infinity,
+			minLoc = null;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i].getNearestLocation(point);
+			if (loc._distance < minDist) {
+				minDist = loc._distance;
+				minLoc = loc;
+			}
+		}
+		return minLoc;
+	},
+
+	/**
+	 * Returns the nearest point on the path to the specified point.
+	 *
+	 * @function
+	 * @param point {Point} the point for which we search the nearest point
+	 * @return {Point} the point on the path that's the closest to the specified
+	 * point
+	 *
+	 * @example {@paperscript height=200}
+	 * var star = new Path.Star({
+	 *     center: view.center,
+	 *     points: 10,
+	 *     radius1: 30,
+	 *     radius2: 60,
+	 *     strokeColor: 'black'
+	 * });
+	 *
+	 * var circle = new Path.Circle({
+	 *     center: view.center,
+	 *     radius: 3,
+	 *     fillColor: 'red'
+	 * });
+	 *
+	 * function onMouseMove(event) {
+	 *     // Get the nearest point from the mouse position
+	 *     // to the star shaped path:
+	 *     var nearestPoint = star.getNearestPoint(event.point);
+	 *
+	 *     // Move the red circle to the nearest point:
+	 *     circle.position = nearestPoint;
+	 * }
+	 */
+	getNearestPoint: function(/* point */) {
+		return this.getNearestLocation.apply(this, arguments).getPoint();
+	}
 }, new function() { // Scope for drawing
 
 	// Note that in the code below we're often accessing _x and _y on point
