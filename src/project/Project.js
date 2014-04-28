@@ -97,7 +97,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	},
 
 	/**
-	 * Specifies whether the project has any content or not. Note that since
+	 * Checks whether the project has any content or not. Note that since
 	 * projects by default are created with one empty layer, this returns also
 	 * {@code true} if that layer exists but is itself empty.
 	 *
