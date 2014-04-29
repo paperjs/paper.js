@@ -110,15 +110,15 @@ var Style = Base.extend(new function() {
 		justification: /*#=*/ Change.GEOMETRY
 	};
 
-	var item = {},
+	// Enforce creation of beans, as bean getters have hidden parameters,
+	// see _dontMerge argument below.
+	var item = { beans: true },
 		fields = {
 			_defaults: defaults,
 			// Override default fillColor for text items
 			_textDefaults: new Base(defaults, {
 				fillColor: new Color() // black
 			}),
-			// Enforce creation of beans, as bean getters have hidden parameters
-			// See _dontMerge argument below.
 			beans: true
 		};
 
@@ -134,7 +134,7 @@ var Style = Base.extend(new function() {
 		// - Style values are all stored in this._values
 		// - The style object starts with an empty _values object, with fallback
 		//   on _defaults through code in the getter below.
-		// - Only the styles that are explicitely set on the object get defined
+		// - Only the styles that are explicitly set on the object get defined
 		//   in _values.
 		// - Color values are not stored as converted colors immediately. The
 		//   raw value is stored, and conversion only happens in the getter.
@@ -211,8 +211,8 @@ var Style = Base.extend(new function() {
 
 		// Inject style getters and setters into the Item class, which redirect
 		// calls to the linked style object.
-		item[get] = function() {
-			return this._style[get]();
+		item[get] = function(_dontMerge) {
+			return this._style[get](_dontMerge);
 		};
 
 		item[set] = function(value) {

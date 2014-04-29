@@ -3697,7 +3697,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				&& (this._drawSelected || this._boundsSelected)) {
 			// Allow definition of selected color on a per item and per
 			// layer level, with a fallback to #009dec
-			var color = this.getSelectedColor()
+			var color = this.getSelectedColor(true)
 					|| this.getLayer().getSelectedColor(true),
 				mx = matrix.clone().concatenate(this.getGlobalMatrix(true));
 			ctx.strokeStyle = ctx.fillStyle = color
