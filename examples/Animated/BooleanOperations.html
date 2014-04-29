@@ -13,8 +13,7 @@
 			fontSize: 20
 		});
 
-		var originals = new Group();
-		originals.remove();
+		var originals = new Group({ insert: false }); // Don't insert in DOM.
 
 		var square = new Path.Rectangle({
 		    position: view.center,
@@ -23,7 +22,20 @@
 		    fillColor: 'white'
 		});
 
-		var ring = makeRing(view.center, 100, 140);
+		// Make a ring using subtraction of two circles:
+		var inner = new Path.Circle({
+		    center: view.center,
+		    radius: 100,
+		    insert: false
+		});
+
+		var outer = new Path.Circle({
+		    center: view.center,
+		    radius: 140,
+		    insert: false
+		});
+
+		var ring = outer.subtract(inner);
 		ring.parent = originals;
 		ring.fillColor = 'white';
 
@@ -37,22 +49,6 @@
 
 		// Set the initial mode:
 		setMode();
-
-		function makeRing(position, radius1, radius2) {
-			var inner = new Path.Circle({
-			    center: view.center,
-			    radius: radius1
-			});
-
-			var outer = new Path.Circle({
-			    center: view.center,
-			    radius: radius2
-			});
-
-			return new CompoundPath({
-				children: [inner, outer]
-			});
-		}
 
 		function setMode() {
 			curIndex++;
