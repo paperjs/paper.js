@@ -13,32 +13,24 @@
 			fontSize: 20
 		});
 
+		var originals = new Group();
+		originals.remove();
+
 		var square = new Path.Rectangle({
 		    position: view.center,
-		    size: 300
+		    size: 300,
+		    parent: originals,
+		    fillColor: 'white'
 		});
 
-		var circle = new Path.Circle({
-		    center: view.center,
-		    radius: 140
-		});
-
-		// Remove both items from the dom:
-		circle.remove();
-		square.remove();
+		var ring = makeRing(view.center, 100, 140);
+		ring.parent = originals;
+		ring.fillColor = 'white';
 
 		var operations = ['unite', 'intersect', 'subtract', 'exclude', 'divide'];
 		var colors = ['red', 'green', 'blue', 'black'];
 		var curIndex = -1;
-		var operation, result;
-
-		function setMode() {
-			curIndex++;
-			if (curIndex == operations.length)
-				curIndex = 0;
-			operation = operations[curIndex];
-			text.content = 'square.' + operation + '(circle)';
-		}
+		var operation, result, activeItem;
 
 		// Change the mode every 3 seconds:
 		setInterval(setMode, 3000);
@@ -46,19 +38,65 @@
 		// Set the initial mode:
 		setMode();
 
+		function makeRing(position, radius1, radius2) {
+			var inner = new Path.Circle({
+			    center: view.center,
+			    radius: radius1
+			});
+
+			var outer = new Path.Circle({
+			    center: view.center,
+			    radius: radius2
+			});
+
+			return new CompoundPath({
+				children: [inner, outer]
+			});
+		}
+
+		function setMode() {
+			curIndex++;
+			if (curIndex == operations.length * 2)
+				curIndex = 0;
+			operation = operations[curIndex % operations.length];
+		}
+
+		function onMouseDown(event) {
+			var hitResult = originals.hitTest(event.point);
+			activeItem = hitResult && hitResult.item;
+		}
+
+		function onMouseDrag(event) {
+			if (activeItem)
+				activeItem.position = event.point;
+		}
+
+		function onMouseUp() {
+			activeItem = null;
+			square.position = view.center;
+		}
+
 		function onFrame(event) {
-			// Move the circle around:
-			var offset = new Point(140, 80) * [Math.sin(event.count / 60), Math.sin(event.count / 40)];
-			circle.position = view.center + offset;
+			if (activeItem != ring) {
+				// Move the ring around:
+				var offset = new Point(140, 80) * [Math.sin(event.count / 60), Math.sin(event.count / 40)];
+				ring.position = view.center + offset;
+			}
 
 			// Remove the result of the last path operation:
 			if (result)
 				result.remove();
 
-			// Perform the path operation on the circle:
-			result = square[operation](circle);
+			// Perform the path operation on the ring:
+			if (curIndex < operations.length) {
+				result = square[operation](ring);
+				text.content = 'square.' + operation + '(ring)';
+			} else {
+				result = ring[operation](square);
+				text.content = 'ring.' + operation + '(square)';
+			}
 			result.selected = true;
-			result.fillColor = colors[curIndex];
+			result.fillColor = colors[curIndex % operations.length];
 			result.moveBelow(text);
 
 			// If the result is a group, color each of its children differently:
