@@ -863,48 +863,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 		if (this._selectedItemCount > 0) {
 			ctx.save();
 			ctx.strokeWidth = 1;
-			var size = this._scope.settings.handleSize,
-				half = size / 2;
-			for (var id in this._selectedItems) {
-				// Check the updateVersion of each item to see if it got drawn
-				// in the above draw loop. If the version is out of sync, the
-				// item is either not in the DOM anymore or is invisible.
-				var item = this._selectedItems[id],
-					parent = item._parent,
-					// For compound-paths, we need to use the updateVersion of
-					// the parent, because when using the ctx.currentPath
-					// optimization, the children don't have to get drawn on
-					// each frame and thus won't change their updateVersion.
-					versionItem = parent instanceof CompoundPath ? parent : item;
-				if (versionItem._updateVersion === this._updateVersion
-						&& (item._drawSelected || item._boundsSelected)) {
-					// Allow definition of selected color on a per item and per
-					// layer level, with a fallback to #009dec
-					var color = item.getSelectedColor()
-							|| item.getLayer().getSelectedColor(),
-						mx = matrix.clone().concatenate(
-								item.getGlobalMatrix(true));
-					ctx.strokeStyle = ctx.fillStyle = color
-							? color.toCanvasStyle(ctx) : '#009dec';
-					if (item._drawSelected)
-						item._drawSelected(ctx, mx);
-					if (item._boundsSelected) {
-						var coords = mx._transformCorners(
-								item.getInternalBounds());
-						// Now draw a rectangle that connects the transformed
-						// bounds corners, and draw the corners.
-						ctx.beginPath();
-						for (var i = 0; i < 8; i++)
-							ctx[i === 0 ? 'moveTo' : 'lineTo'](
-									coords[i], coords[++i]);
-						ctx.closePath();
-						ctx.stroke();
-						for (var i = 0; i < 8; i++)
-							ctx.fillRect(coords[i] - half, coords[++i] - half,
-									size, size);
-					}
-				}
-			}
+			var items = this._selectedItems,
+				size = this._scope.settings.handleSize,
+				updateVersion = this._updateVersion;
+			for (var id in items)
+				items[id]._drawSelection(ctx, matrix, size, updateVersion);
 			ctx.restore();
 		}
 	}
