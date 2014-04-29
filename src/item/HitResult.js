@@ -106,9 +106,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 		 * @private
 		 */
 		getOptions: function(options) {
-			// Use _merged property to not repeatetly merge using new Base in
-			// recursion.
-			return options && options._merged ? options : new Base({
+			return new Base({
 				// Type of item, for instanceof check: Group, Layer, Path,
 				// CompoundPath, Shape, Raster, PlacedSymbol, ...
 				type: null,
@@ -129,14 +127,12 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 				ends: false,
 				// Hit test the center of the bounds
 				center: false,
-				// Hit test the corners and side-centers of the boudning box
+				// Hit test the corners and side-centers of the bounding box
 				bounds: false,
 				//  Hit items that are marked as guides
 				guides: false,
 				// Only hit selected objects
-				selected: false,
-				// Mark as merged
-				_merged: true
+				selected: false
 			}, options);
 		}
 	}

@@ -115,8 +115,8 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 				cacheItem);
 	},
 
-	_hitTest: function(point, options) {
-		var res = this._symbol._definition.hitTest(point, options);
+	_hitTestSelf: function(point, options) {
+		var res = this._symbol._definition._hitTest(point, options);
 		// TODO: When the symbol's definition is a path, should hitResult
 		// contain information like HitResult#curve?
 		if (res)

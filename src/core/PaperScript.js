@@ -282,7 +282,7 @@ Base.exports.PaperScript = (function() {
 		// end of the code execution, so we can retrieve their values from the
 		// function call.
 		handlers = Base.each(handlers, function(key) {
-			// Check for each handler explicitely and only return them if they
+			// Check for each handler explicitly and only return them if they
 			// seem to exist.
 			if (new RegExp('\\s+' + key + '\\b').test(code)) {
 				params.push(key);

@@ -250,7 +250,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return matrix ? matrix._transformBounds(rect) : rect;
 	}
 },
-new function() { // Scope for _contains() and _hitTest() code.
+new function() { // Scope for _contains() and _hitTestSelf() code.
 
 	// Returns the center of the quarter corner ellipse for rounded rectangle,
 	// if the point lies within its bounding box.
@@ -296,7 +296,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 			}
 		},
 
-		_hitTest: function _hitTest(point, options) {
+		_hitTestSelf: function _hitTestSelf(point, options) {
 			var hit = false;
 			if (this.hasStroke()) {
 				var type = this._type,
@@ -326,7 +326,7 @@ new function() { // Scope for _contains() and _hitTest() code.
 			}
 			return hit
 					? new HitResult('stroke', this)
-					: _hitTest.base.apply(this, arguments);
+					: _hitTestSelf.base.apply(this, arguments);
 		}
 	};
 }, {

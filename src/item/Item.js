@@ -1671,9 +1671,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * information about what exactly was hit or {@code null} if nothing was
 	 * hit
 	 */
-	hitTest: function(point, options) {
-		point = Point.read(arguments);
-		options = HitResult.getOptions(Base.read(arguments));
+	hitTest: function(/* point, options */) {
+		return this._hitTest(
+				Point.read(arguments),
+				HitResult.getOptions(Base.read(arguments)));
+	},
+
+	_hitTest: function(point, options) {
 		if (this._locked || !this._visible || this._guide && !options.guides
 				|| this.isEmpty())
 			return null;
@@ -1747,10 +1751,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			var opts = this._getChildHitTestOptions(options);
 			// Loop backwards, so items that get drawn last are tested first
 			for (var i = children.length - 1; i >= 0 && !res; i--)
-				res = children[i].hitTest(point, opts);
+				res = children[i]._hitTest(point, opts);
 		}
 		if (!res && checkSelf)
-			res = this._hitTest(point, options);
+			res = this._hitTestSelf(point, options);
 		// Transform the point back to the outer coordinate system.
 		if (res && res.point)
 			res.point = matrix.transform(res.point);
@@ -1764,7 +1768,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return options;
 	},
 
-	_hitTest: function(point, options) {
+	_hitTestSelf: function(point, options) {
 		// The default implementation honly handles 'fill' through #_contains()
 		if (options.fill && this.hasFill() && this._contains(point))
 			return new HitResult('fill', this);

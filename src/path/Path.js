@@ -1409,7 +1409,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		return null;
 	},
 
-	_hitTest: function(point, options) {
+	_hitTestSelf: function(point, options) {
 		var that = this,
 			style = this.getStyle(),
 			segments = this._segments,
