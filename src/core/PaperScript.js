@@ -166,12 +166,26 @@ Base.exports.PaperScript = (function() {
 			code = code.substring(0, start) + str + code.substring(end);
 		}
 
+		var breakpoints = (options.breakpoints || []).slice();
+
 		// Recursively walks the AST and replaces the code of certain nodes
 		function walkAST(node, parent) {
 			if (!node)
 				return;
+			var type = node.type,
+				loc = node.loc;
+			// if (node.range) {
+			// 	var part = getCode(node);
+			// 	if (part && part.length > 20)
+			// 		part = part.substr(0, 10) + '...' + part.substr(-10);
+			// 	console.log(type, part);
+			// }
+
+			// The easiest way to walk through the whole AST is to simply loop
+			// over each property of the node and filter out fields we don't
+			// need to consider...
 			for (var key in node) {
-				if (key === 'range')
+				if (key === 'range' || key === 'loc')
 					continue;
 				var value = node[key];
 				if (Array.isArray(value)) {
@@ -183,7 +197,25 @@ Base.exports.PaperScript = (function() {
 					walkAST(value, node);
 				}
 			}
-			switch (node.type) {
+			// See if a breakpoint is to be placed in the range of this
+			// node, and if the node type supports it.
+			if (breakpoints.length > 0 && loc
+					// Filter the type of nodes that support setting breakpoints.
+					&& /^(ForStatement|VariableDeclaration|ExpressionStatement|ReturnStatement)$/.test(type)
+					// Filter out variable definitions inside ForStatement.
+					&& parent.type !== 'ForStatement') {
+				var start = loc.start.line - 1,
+					end = loc.end.line - 1;
+				for (var i = 0, l = breakpoints.length; i < l; i++) {
+					var line = breakpoints[i];
+					if (line >= start && line <= end) {
+						replaceCode(node, 'debugger; ' + getCode(node));
+						breakpoints.splice(i, 1);
+						break;
+					}
+				}
+			}
+			switch (type) {
 			case 'UnaryExpression': // -a
 				if (node.operator in unaryOperators
 						&& node.argument.type !== 'Literal') {
@@ -217,7 +249,7 @@ Base.exports.PaperScript = (function() {
 						// We can't replace that with array[_$_(i, "+", 1)].
 						|| parent.type === 'MemberExpression'
 							&& parent.computed))) {
-					if (node.type === 'UpdateExpression') {
+					if (type === 'UpdateExpression') {
 						if (!node.prefix) {
 							var arg = getCode(node.argument);
 							replaceCode(node, arg + ' = _$_(' + arg + ', "'
@@ -284,10 +316,25 @@ Base.exports.PaperScript = (function() {
 		}
 		// Now do the parsing magic
 /*#*/ if (__options.parser == 'acorn') {
-		walkAST(scope.acorn.parse(code, { ranges: true }));
+		walkAST(scope.acorn.parse(code, { ranges: true, locations: true }));
 /*#*/ } else if (__options.parser == 'esprima') {
-		walkAST(scope.esprima.parse(code, { range: true }));
+		walkAST(scope.esprima.parse(code, { range: true, loc: true }));
 /*#*/ }
+
+		if (breakpoints.length > 0) {
+			// Process the breakpoints left which were not set on statements
+			// represented by the AST, e.g. on empty lines.
+			var lines = code.split(lineBreaks);
+			for (var i = 0; i < breakpoints.length; i++) {
+				var line = breakpoints[i],
+					str = lines[line];
+				// Make sure we're not adding it twice to the same line.
+				if (!/\bdebugger;\b/.test(str))
+					lines[line] = 'debugger; ' + str;
+			}
+			code = lines.join('\n');
+		}
+
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
 			// This is part of a browser hack, see above.
