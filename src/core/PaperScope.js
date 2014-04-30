@@ -145,8 +145,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		return this;
 	},
 
-	execute: function(code) {
-		paper.PaperScript.execute(code, this);
+	execute: function(code, url, options) {
+		paper.PaperScript.execute(code, this, url, options);
 		View.updateFocus();
 	},
 

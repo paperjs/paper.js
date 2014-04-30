@@ -113,10 +113,12 @@ Base.exports.PaperScript = (function() {
 	 *
 	 * @name PaperScript.compile
 	 * @function
-	 * @param {String} code The PaperScript code
-	 * @return {String} the compiled PaperScript as JavaScript code
+	 * @param {String} code The PaperScript code.
+	 * @param {String} url The url of the source, for source-map debugging.
+	 * @return {String} The compiled PaperScript as JavaScript code.
 	 */
-	function compile(code, url, inlined) {
+	function compile(code, url, options) {
+		options = options || {};
 		// Use Acorn or Esprima to translate the code into an AST structure
 		// which is then walked and parsed for operators to overload. Instead of
 		// modifying the AST and translating it back to code, we directly change
@@ -181,7 +183,7 @@ Base.exports.PaperScript = (function() {
 					walkAST(value, node);
 				}
 			}
-			switch (node && node.type) {
+			switch (node.type) {
 			case 'UnaryExpression': // -a
 				if (node.operator in unaryOperators
 						&& node.argument.type !== 'Literal') {
@@ -236,20 +238,22 @@ Base.exports.PaperScript = (function() {
 		}
 		// Source-map support:
 		var sourceMap = null,
-			version = browser.version;
+			version = browser.version,
+			lineBreaks = /\r\n|\n|\r/mg;
 		// TODO: Verify these browser versions for source map support, and check
 		// other browsers.
 		if (browser.chrome && version >= 30
 				|| browser.safari && version >= 7
 				|| browser.firefox && version >= 23) {
 			var offset = 0;
-			if (inlined) {
-				// Determine the offset of inlined code.
+			if (url === window.location.href) {
+				// If the code stems from the actual html page, determine the
+				// offset of inlined code.
 				var html = document.getElementsByTagName('html')[0].innerHTML;
 				// Count the amount of line breaks in the html before this code
 				// to determine the offset.
 				offset = html.substr(0, html.indexOf(code) + 1).match(
-						/\r\n|\n|\r/mg).length + 1;
+						lineBreaks).length + 1;
 			}
 			// A hack required by all current browser versions: Instead of
 			// starting the mappings at the given offset, we have to shift the
@@ -260,7 +264,7 @@ Base.exports.PaperScript = (function() {
 			var mappings = ['AAAA'];
 			// Create empty entries by the amount of lines + 1, so join can be
 			// used below to produce the actual instructions that many times.
-			mappings.length = code.match(/\r\n|\n|\r/mg).length + 1 + offset;
+			mappings.length = code.match(lineBreaks).length + 1 + offset;
 			sourceMap = {
 				version: 3,
 				file: url,
@@ -275,7 +279,7 @@ Base.exports.PaperScript = (function() {
 			};
 			// Include the original code in the sourceMap if there is no linked
 			// source file so the debugger can still display it correctly.
-			if (!url)
+			if (!url || options.inline)
 				sourceMap.sourcesContent = [code];
 		}
 		// Now do the parsing magic
@@ -304,10 +308,11 @@ Base.exports.PaperScript = (function() {
 	 *
 	 * @name PaperScript.execute
 	 * @function
-	 * @param {String} code The PaperScript code
-	 * @param {PaperScript} scope The scope for which the code is executed
+	 * @param {String} code The PaperScript code.
+	 * @param {PaperScript} scope The scope for which the code is executed.
+	 * @param {String} url The url of the source, for source-map debugging.
 	 */
-	function execute(code, scope, url, inlined) {
+	function execute(code, scope, url, options) {
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.getView(),
@@ -330,7 +335,7 @@ Base.exports.PaperScript = (function() {
 			params = [],
 			args = [],
 			func;
-		code = compile(code, url, inlined);
+		code = compile(code, url, options);
 		function expose(scope, hidden) {
 			// Look through all enumerable properties on the scope and expose
 			// these too as pseudo-globals, but only if they seem to be in use.
@@ -439,7 +444,7 @@ Base.exports.PaperScript = (function() {
 					});
 				} else {
 					// We can simply get the code form the script tag.
-					execute(script.innerHTML, scope, script.baseURI, true);
+					execute(script.innerHTML, scope, script.baseURI);
 				}
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-ignore', true);
