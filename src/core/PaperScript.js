@@ -114,6 +114,8 @@ Base.exports.PaperScript = (function() {
 	 * @return {String} The compiled PaperScript as JavaScript code.
 	 */
 	function compile(code, url, options) {
+		if (!code)
+			return '';
 		options = options || {};
 		url = url || '';
 		// Use Acorn or Esprima to translate the code into an AST structure
@@ -268,14 +270,14 @@ Base.exports.PaperScript = (function() {
 			sourceMap = {
 				version: 3,
 				file: url,
-				sourceRoot: '',
-				sources: [url],
 				names:[],
 				// Since PaperScript doesn't actually change the offsets between
 				// the lines of the original code, all that is required is a
 				// mappings string that increments by one between each line.
 				// AACA is the instruction to increment the line by one.
-				mappings: mappings.join(';AACA')
+				mappings: mappings.join(';AACA'),
+				sourceRoot: '',
+				sources: [url]
 			};
 			// Include the original code in the sourceMap if there is no linked
 			// source file so the debugger can still display it correctly.
