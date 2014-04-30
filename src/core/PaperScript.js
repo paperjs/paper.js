@@ -119,6 +119,7 @@ Base.exports.PaperScript = (function() {
 	 */
 	function compile(code, url, options) {
 		options = options || {};
+		url = url || '';
 		// Use Acorn or Esprima to translate the code into an AST structure
 		// which is then walked and parsed for operators to overload. Instead of
 		// modifying the AST and translating it back to code, we directly change
@@ -166,21 +167,10 @@ Base.exports.PaperScript = (function() {
 			code = code.substring(0, start) + str + code.substring(end);
 		}
 
-		var breakpoints = (options.breakpoints || []).slice();
-
 		// Recursively walks the AST and replaces the code of certain nodes
 		function walkAST(node, parent) {
 			if (!node)
 				return;
-			var type = node.type,
-				loc = node.loc;
-			// if (node.range) {
-			// 	var part = getCode(node);
-			// 	if (part && part.length > 20)
-			// 		part = part.substr(0, 10) + '...' + part.substr(-10);
-			// 	console.log(type, part);
-			// }
-
 			// The easiest way to walk through the whole AST is to simply loop
 			// over each property of the node and filter out fields we don't
 			// need to consider...
@@ -197,25 +187,7 @@ Base.exports.PaperScript = (function() {
 					walkAST(value, node);
 				}
 			}
-			// See if a breakpoint is to be placed in the range of this
-			// node, and if the node type supports it.
-			if (breakpoints.length > 0 && loc
-					// Filter the type of nodes that support setting breakpoints.
-					&& /^(ForStatement|VariableDeclaration|ExpressionStatement|ReturnStatement)$/.test(type)
-					// Filter out variable definitions inside ForStatement.
-					&& parent.type !== 'ForStatement') {
-				var start = loc.start.line - 1,
-					end = loc.end.line - 1;
-				for (var i = 0, l = breakpoints.length; i < l; i++) {
-					var line = breakpoints[i];
-					if (line >= start && line <= end) {
-						replaceCode(node, 'debugger; ' + getCode(node));
-						breakpoints.splice(i, 1);
-						break;
-					}
-				}
-			}
-			switch (type) {
+			switch (node.type) {
 			case 'UnaryExpression': // -a
 				if (node.operator in unaryOperators
 						&& node.argument.type !== 'Literal') {
@@ -249,7 +221,7 @@ Base.exports.PaperScript = (function() {
 						// We can't replace that with array[_$_(i, "+", 1)].
 						|| parent.type === 'MemberExpression'
 							&& parent.computed))) {
-					if (type === 'UpdateExpression') {
+					if (node.type === 'UpdateExpression') {
 						if (!node.prefix) {
 							var arg = getCode(node.argument);
 							replaceCode(node, arg + ' = _$_(' + arg + ', "'
@@ -321,20 +293,6 @@ Base.exports.PaperScript = (function() {
 		walkAST(scope.esprima.parse(code, { range: true, loc: true }));
 /*#*/ }
 
-		if (breakpoints.length > 0) {
-			// Process the breakpoints left which were not set on statements
-			// represented by the AST, e.g. on empty lines.
-			var lines = code.split(lineBreaks);
-			for (var i = 0; i < breakpoints.length; i++) {
-				var line = breakpoints[i],
-					str = lines[line];
-				// Make sure we're not adding it twice to the same line.
-				if (!/\bdebugger;\b/.test(str))
-					lines[line] = 'debugger; ' + str;
-			}
-			code = lines.join('\n');
-		}
-
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
 			// This is part of a browser hack, see above.
@@ -342,7 +300,7 @@ Base.exports.PaperScript = (function() {
 					+ "\n//# sourceMappingURL=data:application/json;base64,"
 					+ (btoa(unescape(encodeURIComponent(
 						JSON.stringify(sourceMap)))))
-					+ "\n//# sourceURL=" + url;
+					+ "\n//# sourceURL=" + (url || 'paperscript');
 		}
 		return code;
 	}
@@ -511,8 +469,7 @@ Base.exports.PaperScript = (function() {
 	return {
 		compile: compile,
 		execute: execute,
-		load: load,
-		lineNumberBase: 0
+		load: load
 	};
 
 /*#*/ } else { // !__options.environment == 'browser'
