@@ -15,16 +15,12 @@
  * @namespace
  */
 Base.exports.PaperScript = (function() {
-	// Locally turn of exports and define for inlined acorn / esprima.
+	// Locally turn of exports and define for inlined acorn.
 	// Just declaring the local vars is enough, as they will be undefined.
 	var exports, define,
 		// The scope into which the library is loaded.
 		scope = this;
-/*#*/ if (__options.parser == 'acorn') {
 /*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
-/*#*/ } else if (__options.parser == 'esprima') {
-/*#*/ include('../../bower_components/esprima/esprima.min.js', { exports: false });
-/*#*/ }
 
 	// We need some browser info for dealing with source maps and code offsets
 	var ua = navigator.userAgent,
@@ -287,11 +283,7 @@ Base.exports.PaperScript = (function() {
 				sourceMap.sourcesContent = [code];
 		}
 		// Now do the parsing magic
-/*#*/ if (__options.parser == 'acorn') {
-		walkAST(scope.acorn.parse(code, { ranges: true, locations: true }));
-/*#*/ } else if (__options.parser == 'esprima') {
-		walkAST(scope.esprima.parse(code, { range: true, loc: true }));
-/*#*/ }
+		walkAST(scope.acorn.parse(code, { ranges: true }));
 
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
