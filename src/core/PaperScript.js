@@ -104,6 +104,10 @@ Base.exports.PaperScript = (function() {
 
 	// AST Helpers
 
+	function parse(code, options) {
+		return scope.acorn.parse(code, options);
+	}
+
 	/**
 	 * Compiles PaperScript code into JavaScript code.
 	 *
@@ -286,7 +290,7 @@ Base.exports.PaperScript = (function() {
 				sourceMap.sourcesContent = [source];
 		}
 		// Now do the parsing magic
-		walkAST(scope.acorn.parse(code, { ranges: true }));
+		walkAST(parse(code, { ranges: true }));
 
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
@@ -465,7 +469,7 @@ Base.exports.PaperScript = (function() {
 		compile: compile,
 		execute: execute,
 		load: load,
-		parse: scope.acorn.parse
+		parse: parse
 	};
 
 /*#*/ } else { // !__options.environment == 'browser'
@@ -498,7 +502,7 @@ Base.exports.PaperScript = (function() {
 	return {
 		compile: compile,
 		execute: execute,
-		parse: scope.acorn.parse
+		parse: parse
 	};
 
 /*#*/ } // !__options.environment == 'browser'
