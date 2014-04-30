@@ -279,8 +279,9 @@ Base.exports.PaperScript = (function() {
 			};
 			// Include the original code in the sourceMap if there is no linked
 			// source file so the debugger can still display it correctly.
-			if (!url || options.inline)
-				sourceMap.sourcesContent = [code];
+			var source = options.source || !url && code;
+			if (source)
+				sourceMap.sourcesContent = [source];
 		}
 		// Now do the parsing magic
 		walkAST(scope.acorn.parse(code, { ranges: true }));
@@ -462,7 +463,7 @@ Base.exports.PaperScript = (function() {
 		compile: compile,
 		execute: execute,
 		load: load,
-		acorn: scope.acorn
+		parse: scope.acorn.parse
 	};
 
 /*#*/ } else { // !__options.environment == 'browser'
@@ -495,7 +496,7 @@ Base.exports.PaperScript = (function() {
 	return {
 		compile: compile,
 		execute: execute,
-		acorn: scope.acorn
+		parse: scope.acorn.parse
 	};
 
 /*#*/ } // !__options.environment == 'browser'
