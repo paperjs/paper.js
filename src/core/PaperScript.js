@@ -26,6 +26,20 @@ Base.exports.PaperScript = (function() {
 /*#*/ include('../../bower_components/esprima/esprima.min.js', { exports: false });
 /*#*/ }
 
+	// We need some browser info for dealing with source maps and code offsets
+	var ua = navigator.userAgent,
+		match = ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*([.\d]+)(?:.*rv\:([.\d]+))?/i) || [],
+		name = match[1].toLowerCase(),
+		version = match[2];
+	if (name === 'trident') {
+		version = match[3]; // Use rv: and rename to msie
+		name = 'msie';
+	} else if (match = ua.match(/version\/([.\d]+)/i)) {
+		version = match[1];
+	}
+	var browser = { name: name, version: parseFloat(version) };
+	browser[name] = true;
+
 	// Operators to overload
 
 	var binaryOperators = {
@@ -102,7 +116,7 @@ Base.exports.PaperScript = (function() {
 	 * @param {String} code The PaperScript code
 	 * @return {String} the compiled PaperScript as JavaScript code
 	 */
-	function compile(code) {
+	function compile(code, url, inlined) {
 		// Use Acorn or Esprima to translate the code into an AST structure
 		// which is then walked and parsed for operators to overload. Instead of
 		// modifying the AST and translating it back to code, we directly change
@@ -220,12 +234,79 @@ Base.exports.PaperScript = (function() {
 				break;
 			}
 		}
+		// Source-map support:
+
+		function encodeVLQ(value) {
+			// NOTE: Simplified to only support positive values.
+			var res = '';
+			value <<= 1;
+			while (value || !res) {
+				var next = value & ((1 << 5) - 1);
+				value >>= 5;
+				if (value)
+					next |= (1 << 5);
+				res += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'[next];
+			}
+			return res;
+		}
+
+		var sourceMap = null,
+			version = browser.version,
+			offsetCode = false;
+		// TODO: Verify these browser versions for source map support, and check
+		// other browsers.
+		if (browser.chrome && version >= 30
+				|| browser.safari && version >= 7
+				|| browser.firefox && version >= 23) {
+			var offset = 0;
+			if (inlined) {
+				// Determine the offset of inlined code.
+				var html = document.getElementsByTagName('html')[0].innerHTML;
+				// Count the amount of line breaks in the html before this code
+				// to determine the offset.
+				offset = html.substr(0, html.indexOf(code) + 1).match(
+						/\r\n|\n|\r/mg).length + 1;
+			}
+			// A hack required by most versions of browsers except chrome 36+:
+			// Instead of starting the mappings at the given offset, we have to
+			// shift the actual code down to the place in the original file, as
+			// source-map support seems incomplete in these browsers.
+			// TODO: Report as bugs?
+			offsetCode = !browser.chrome || version < 36;
+			var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A'];
+			// Create empty entries by the amount of lines + 1, so join can be
+			// used below to produce the actual instructions that many times.
+			mappings.length = code.match(/\r\n|\n|\r/mg).length + 1
+					+ (offsetCode ? offset : 0);
+			sourceMap = {
+				version: 3,
+				file: url,
+				sourceRoot: '',
+				sources: [url],
+				names:[],
+				// Since PaperScript doesn't actually change the offsets between
+				// the lines of the original code, all that is required is a
+				// mappings string that increments by one between each line.
+				// AACA is the instruction to increment the line by one.
+				mappings: mappings.join(';AACA')
+			};
+			if (!url)
+				sourceMap.sourcesContent = [code];
+		}
 		// Now do the parsing magic
 /*#*/ if (__options.parser == 'acorn') {
 		walkAST(scope.acorn.parse(code, { ranges: true }));
 /*#*/ } else if (__options.parser == 'esprima') {
 		walkAST(scope.esprima.parse(code, { range: true }));
 /*#*/ }
+		if (sourceMap) {
+			if (offsetCode)
+				code = new Array(offset + 1).join('\n') + code;
+			code += "\n//# sourceMappingURL=data:application/json;base64,"
+					+ (btoa(/*unescape(encodeURIComponent(*/
+						JSON.stringify(sourceMap))/*))*/)
+					+ "\n//# sourceURL=" + url;
+		}
 		return code;
 	}
 
@@ -240,7 +321,7 @@ Base.exports.PaperScript = (function() {
 	 * @param {String} code The PaperScript code
 	 * @param {PaperScript} scope The scope for which the code is executed
 	 */
-	function execute(code, scope) {
+	function execute(code, scope, url, inlined) {
 		// Set currently active scope.
 		paper = scope;
 		var view = scope.getView(),
@@ -256,14 +337,14 @@ Base.exports.PaperScript = (function() {
 			// injecting a code line that defines them as variables.
 			// They are exported again at the end of the function.
 			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
-			// compile a list of paramter names for all variables that need to
+			// compile a list of parameter names for all variables that need to
 			// appear as globals inside the script. At the same time, also
 			// collect their values, so we can pass them on as arguments in the
 			// function call.
 			params = [],
 			args = [],
 			func;
-		code = compile(code);
+		code = compile(code, url, inlined);
 		function expose(scope, hidden) {
 			// Look through all enumerable properties on the scope and expose
 			// these too as pseudo-globals, but only if they seem to be in use.
@@ -293,8 +374,7 @@ Base.exports.PaperScript = (function() {
 		if (handlers)
 			code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
-		var firefox = window.InstallTrigger;
-		if (firefox || window.chrome) {
+		if (browser.chrome || browser.firefox) {
 			// On Firefox, all error numbers inside dynamically compiled code
 			// are relative to the line where the eval / compilation happened.
 			// To fix this issue, we're temporarily inserting a new script
@@ -304,8 +384,8 @@ Base.exports.PaperScript = (function() {
 			var script = document.createElement('script'),
 				head = document.head;
 			// Add a new-line before the code on Firefox since the error
-			// messages appeawr to be aligned to line number 0...
-			if (firefox)
+			// messages appear to be aligned to line number 0...
+			if (browser.firefox)
 				code = '\n' + code;
 			script.appendChild(document.createTextNode(
 				'paper._execute = function(' + params + ') {' + code + '\n}'
@@ -369,11 +449,11 @@ Base.exports.PaperScript = (function() {
 					// If we're loading from a source, request that first and
 					// then run later.
 					Http.request('get', src, function(code) {
-						execute(code, scope);
+						execute(code, scope, src);
 					});
 				} else {
 					// We can simply get the code form the script tag.
-					execute(script.innerHTML, scope);
+					execute(script.innerHTML, scope, script.baseURI, true);
 				}
 				// Mark script as loaded now.
 				script.setAttribute('data-paper-ignore', true);
