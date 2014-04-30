@@ -461,7 +461,8 @@ Base.exports.PaperScript = (function() {
 	return {
 		compile: compile,
 		execute: execute,
-		load: load
+		load: load,
+		acorn: scope.acorn
 	};
 
 /*#*/ } else { // !__options.environment == 'browser'
@@ -493,7 +494,8 @@ Base.exports.PaperScript = (function() {
 
 	return {
 		compile: compile,
-		execute: execute
+		execute: execute,
+		acorn: scope.acorn
 	};
 
 /*#*/ } // !__options.environment == 'browser'
