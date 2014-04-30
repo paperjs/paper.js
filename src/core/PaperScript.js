@@ -235,27 +235,8 @@ Base.exports.PaperScript = (function() {
 			}
 		}
 		// Source-map support:
-
-		// Encodes a Variable Length Quantity as a Base64 string.
-		// See: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps
-		function encodeVLQ(value) {
-			// NOTE: Simplified to only support positive values.
-			var res = '',
-				base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-			value <<= 1;
-			while (value || !res) {
-				var next = value & ((1 << 5) - 1);
-				value >>= 5;
-				if (value)
-					next |= (1 << 5);
-				res += base64[next];
-			}
-			return res;
-		}
-
 		var sourceMap = null,
-			version = browser.version,
-			offsetCode = false;
+			version = browser.version;
 		// TODO: Verify these browser versions for source map support, and check
 		// other browsers.
 		if (browser.chrome && version >= 30
@@ -270,17 +251,16 @@ Base.exports.PaperScript = (function() {
 				offset = html.substr(0, html.indexOf(code) + 1).match(
 						/\r\n|\n|\r/mg).length + 1;
 			}
-			// A hack required by most versions of browsers except chrome 36+:
-			// Instead of starting the mappings at the given offset, we have to
-			// shift the actual code down to the place in the original file, as
-			// source-map support seems incomplete in these browsers.
+			// A hack required by all current browser versions: Instead of
+			// starting the mappings at the given offset, we have to shift the
+			// actual code down to the place in the original file, as source-map
+			// support seems incomplete in these browsers. This has some
+			// advantages too: No code for VLQ encoding is required.
 			// TODO: Report as bugs?
-			offsetCode = !browser.chrome || version < 36;
-			var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A'];
+			var mappings = ['AAAA'];
 			// Create empty entries by the amount of lines + 1, so join can be
 			// used below to produce the actual instructions that many times.
-			mappings.length = code.match(/\r\n|\n|\r/mg).length + 1
-					+ (offsetCode ? offset : 0);
+			mappings.length = code.match(/\r\n|\n|\r/mg).length + 1 + offset;
 			sourceMap = {
 				version: 3,
 				file: url,
@@ -307,9 +287,8 @@ Base.exports.PaperScript = (function() {
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
 			// This is part of a browser hack, see above.
-			if (offsetCode)
-				code = new Array(offset + 1).join('\n') + code;
-			code += "\n//# sourceMappingURL=data:application/json;base64,"
+			code = new Array(offset + 1).join('\n') + code
+					+ "\n//# sourceMappingURL=data:application/json;base64,"
 					+ (btoa(unescape(encodeURIComponent(
 						JSON.stringify(sourceMap)))))
 					+ "\n//# sourceURL=" + url;
