@@ -236,16 +236,19 @@ Base.exports.PaperScript = (function() {
 		}
 		// Source-map support:
 
+		// Encodes a Variable Length Quantity as a Base64 string.
+		// See: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps
 		function encodeVLQ(value) {
 			// NOTE: Simplified to only support positive values.
-			var res = '';
+			var res = '',
+				base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 			value <<= 1;
 			while (value || !res) {
 				var next = value & ((1 << 5) - 1);
 				value >>= 5;
 				if (value)
 					next |= (1 << 5);
-				res += 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'[next];
+				res += base64[next];
 			}
 			return res;
 		}
@@ -290,6 +293,8 @@ Base.exports.PaperScript = (function() {
 				// AACA is the instruction to increment the line by one.
 				mappings: mappings.join(';AACA')
 			};
+			// Include the original code in the sourceMap if there is no linked
+			// source file so the debugger can still display it correctly.
 			if (!url)
 				sourceMap.sourcesContent = [code];
 		}
@@ -300,11 +305,13 @@ Base.exports.PaperScript = (function() {
 		walkAST(scope.esprima.parse(code, { range: true }));
 /*#*/ }
 		if (sourceMap) {
+			// Adjust the line offset of the resulting code if required.
+			// This is part of a browser hack, see above.
 			if (offsetCode)
 				code = new Array(offset + 1).join('\n') + code;
 			code += "\n//# sourceMappingURL=data:application/json;base64,"
-					+ (btoa(/*unescape(encodeURIComponent(*/
-						JSON.stringify(sourceMap))/*))*/)
+					+ (btoa(unescape(encodeURIComponent(
+						JSON.stringify(sourceMap)))))
 					+ "\n//# sourceURL=" + url;
 		}
 		return code;
