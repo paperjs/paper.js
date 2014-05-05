@@ -192,17 +192,16 @@ PathItem.inject(new function() {
      */
     function splitPath(intersections) {
         var tolerance = /*#=*/Numerical.TOLERANCE,
-            linearSegments;
+            linearHandles;
 
         function resetLinear() {
             // Reset linear segments if they were part of a linear curve
             // and if we are done with the entire curve.
-            for (var i = 0, l = linearSegments.length; i < l; i++) {
-                var segment = linearSegments[i];
+            for (var i = 0, l = linearHandles.length; i < l; i++) {
+                var handle = linearHandles[i];
                 // FIXME: Don't reset the appropriate handle if the intersection
                 // was on t == 0 && t == 1.
-                segment._handleOut.set(0, 0);
-                segment._handleIn.set(0, 0);
+                handle.set(0, 0);
             }
         }
 
@@ -216,10 +215,14 @@ PathItem.inject(new function() {
                 // Scale parameter after previous split.
                 t /= prevLoc._parameter;
             } else {
-                if (linearSegments)
+                if (linearHandles)
                     resetLinear();
                 curve = loc._curve;
-                linearSegments = curve.isLinear() && [];
+                linearHandles = curve.isLinear() && [];
+                if (linearHandles) {
+                    linearHandles.push(curve._segment1._handleOut);
+                    linearHandles.push(curve._segment2._handleIn);
+                }
             }
             var newCurve,
                 segment;
@@ -227,6 +230,10 @@ PathItem.inject(new function() {
             if (newCurve = curve.divide(t, true, true)) {
                 segment = newCurve._segment1;
                 curve = newCurve.getPrevious();
+                if (linearHandles) {
+                    linearHandles.push(segment._handleOut);
+                    linearHandles.push(segment._handleIn);
+                }
             } else {
                 segment = t < tolerance
                     ? curve._segment1
@@ -239,11 +246,9 @@ PathItem.inject(new function() {
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc.getIntersection();
             loc._segment = segment;
-            if (linearSegments)
-                linearSegments.push(segment);
             prevLoc = loc;
         }
-        if (linearSegments)
+        if (linearHandles)
             resetLinear();
     }
 
