@@ -593,6 +593,11 @@ new function() {
 			// See importGroup() for an explanation of this filtering:
 			if (!(item instanceof Group))
 				item = applyAttributes(item, node, isRoot);
+			// Support onImportItem callback, to provide mechanism to handle
+			// special attributes (e.g. inkscape:transform-center)
+			var onImport = options.onImport;
+			if (onImport)
+				item = onImport(node, item, options) || item;
 			if (options.expandShapes && item instanceof Shape) {
 				item.remove();
 				item = item.toPath();

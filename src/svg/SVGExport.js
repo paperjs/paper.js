@@ -381,9 +381,14 @@ new function() {
 	function exportSVG(item, options) {
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
-		if (node && item._data) {
+		if (node) {
+			// Support onExportItem callback, to provide mechanism to handle
+			// special attributes (e.g. inkscape:transform-center)
+			var onExport = options.onExport;
+			if (onExport)
+				node = onExport(item, node, options) || node;
 			var data = JSON.stringify(item._data);
-			if (data !== '{}')
+			if (data && data  !== '{}')
 				node.setAttribute('data-paper-data', data);
 		}
 		return node && applyStyle(item, node);
