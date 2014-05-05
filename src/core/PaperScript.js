@@ -22,6 +22,7 @@ Base.exports.PaperScript = (function() {
 		scope = this;
 /*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
 
+/*#*/ if (__options.environment == 'browser') {
 	// We need some browser info for dealing with source maps and code offsets
 	var ua = navigator.userAgent,
 		match = ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*([.\d]+)(?:.*rv\:([.\d]+))?/i) || [],
@@ -35,6 +36,7 @@ Base.exports.PaperScript = (function() {
 	}
 	var browser = { name: name, version: parseFloat(version) };
 	browser[name] = true;
+/*#*/ } // __options.environment == 'browser'
 
 	// Operators to overload
 
@@ -242,6 +244,7 @@ Base.exports.PaperScript = (function() {
 				break;
 			}
 		}
+/*#*/ if (__options.environment == 'browser') {
 		// Source-map support:
 		var sourceMap = null,
 			version = browser.version,
@@ -301,6 +304,10 @@ Base.exports.PaperScript = (function() {
 						JSON.stringify(sourceMap)))))
 					+ "\n//# sourceURL=" + (url || 'paperscript');
 		}
+/*#*/ } else { // !__options.environment == 'browser'
+		// Now do the parsing magic
+		walkAST(parse(code, { ranges: true }));
+/*#*/ } // !__options.environment == 'browser'
 		return code;
 	}
 
