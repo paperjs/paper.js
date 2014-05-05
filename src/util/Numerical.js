@@ -65,7 +65,7 @@ var Numerical = new function() {
 		isFinite = Number.isFinite,
 		TOLERANCE = 10e-6,
 		EPSILON = 1e-14,
-		MACHINE_EPSILON = 2.220446049250313e-16;
+		MACHINE_EPSILON = 1.12e-16;
 
 	// Sets up min and max values for roots and returns a add() function that
 	// handles bounds checks and itself returns the amount of added roots.
@@ -103,9 +103,10 @@ var Numerical = new function() {
 		 * Here the constant MACHINE_EPSILON refers to the constants 'δ' and 'ε'
 		 * such that, the error introduced by addition, multiplication
 		 * on a 64bit float (js Number) will be less than δ and ε. That is to
-		 * say, for all X and Y representable by a js Number object, S, D, and P
-		 * be their 'exact' sum, difference, and product respectively, then
-		 * |s - (x+y)| <= δ|s|, and |s - (x*y)| <= ε|s|
+		 * say, for all X and Y representable by a js Number object, S and P
+		 * be their 'exact' sum and product respectively, then
+		 * |S - (x+y)| <= δ|S|, and |P - (x*y)| <= ε|P|.
+		 * This amounts to about half of the actual MACHINE_EPSILON
 		 */
 		MACHINE_EPSILON: MACHINE_EPSILON,
 		// Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
