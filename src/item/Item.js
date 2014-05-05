@@ -2334,7 +2334,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	/**
 	 * {@grouptitle Style Tests}
-	 * 
+	 *
 	 * Checks whether the item has a fill.
 	 *
 	 * @return {Boolean} {@true if the item has a fill}
@@ -3574,12 +3574,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	draw: function(ctx, param) {
-		if (!this._visible || this._opacity === 0)
-			return;
 		// Each time the project gets drawn, it's _updateVersion is increased.
 		// Keep the _updateVersion of drawn items in sync, so we have an easy
 		// way to know for which selected items we need to draw selection info.
 		var updateVersion = this._updateVersion = this._project._updateVersion;
+		// Now bail out if no actual drawing is required.
+		if (!this._visible || this._opacity === 0)
+			return;
 		// Keep calculating the current global matrix, by keeping a history
 		// and pushing / popping as we go along.
 		var matrices = param.matrices,
