@@ -190,15 +190,43 @@ var Numerical = new function() {
 		 */
 		solveQuadratic: function(a, b, c, roots, min, max) {
 			var nRoots = 0,
-				x1, x2 = Infinity;
+				x1, x2 = Infinity,
+				B = b,
+				D;
+			b /= 2;
+			D = b * b - a * c;			// Discriminant
+			/*
+			 * If the discriminant is very small, we can try to pre-condition
+			 * the coefficients, so that we may get better accuracy
+			 */
+			if (abs(D) < MACHINE_EPSILON) {
+				// If the geometric mean of the coefficients is small enough
+				var pow = Math.pow,
+					gmC = pow(abs(a*b*c), 1/3);
+				if (gmC < 1e-8) {
+					/*
+					 * we multiply with a factor to normalize the
+					 * coefficients. The factor is just the nearest exponent
+					 * of 10, big enough to raise all the coefficients to
+					 * nearly [-1, +1] range.
+					 */
+					var mult = pow(10, abs(
+						Math.floor(Math.log(gmC) * Math.LOG10E)));
+					if (!isFinite(mult))
+						mult = 0;
+					a *= mult;
+					b *= mult;
+					c *= mult;
+					// Recalculate the discriminant
+					D = b * b - a * c;
+				}
+			}
 			if (abs(a) < MACHINE_EPSILON) {
 				// This could just be a linear equation
-				if (abs(b) < MACHINE_EPSILON)
+				if (abs(B) < MACHINE_EPSILON)
 					return abs(c) < MACHINE_EPSILON ? -1 : 0;
-				x1 = -c / b;
+				x1 = -c / B;
 			} else {
-				b /= 2;
-				var D = b * b - a * c; // Discriminant
 				// No real roots if D < 0
 				if (D >= -MACHINE_EPSILON) {
 					D = D < 0 ? 0 : D;
@@ -219,10 +247,10 @@ var Numerical = new function() {
 			var unbound = min == null,
 				minE = min - MACHINE_EPSILON,
 				maxE = max + MACHINE_EPSILON;
-			if (isFinite(x1) && (unbound || (x1 > minE && x1 < maxE)))
+			if (isFinite(x1) && (unbound || (x1 >= minE && x1 <= maxE)))
 				roots[nRoots++] = x1 < min ? min : x1 > max ? max : x1;
 			if (x2 !== x1 && isFinite(x2)
-					&& (unbound || (x2 > minE && x2 < maxE)))
+					&& (unbound || (x2 >= minE && x2 <= maxE)))
 				roots[nRoots++] = x2 < min ? min : x2 > max ? max : x2;
 			return nRoots;
 		},
@@ -317,8 +345,8 @@ var Numerical = new function() {
 			// The cubic has been deflated to a quadratic.
 			var nRoots = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
 			if (isFinite(x) && (nRoots === 0 || x !== roots[nRoots - 1])
-					&& (min == null || (x > min - MACHINE_EPSILON
-						&& x < max + MACHINE_EPSILON)))
+					&& (min == null || (x >= min - MACHINE_EPSILON
+						&& x <= max + MACHINE_EPSILON)))
 				roots[nRoots++] = x < min ? min : x > max ? max : x;
 			return nRoots;
 		},
