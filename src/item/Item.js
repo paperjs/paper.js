@@ -1430,6 +1430,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 
 	equals: function(item) {
 		// Note: We do not compare name and selected state.
+		// TODO: Consider not comparing locked and visible also?
 		return item === this || item && this._class === item._class
 				&& this._style.equals(item._style)
 				&& this._matrix.equals(item._matrix)
@@ -3688,18 +3689,34 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 	},
 
+	/**
+	 * Checks the _updateVersion of the item to see if it got drawn in the  draw
+	 * loop. If the version is out of sync, the item is either not in the DOM
+	 * anymore or is invisible.
+	 */
+	_isUpdated: function(updateVersion) {
+		var version = this._updateVersion,
+			parent = this._parent;
+		// For compound-paths, we need to use the _updateVersion of the parent,
+		// because when using the ctx.currentPath optimization, the children
+		// don't have to get drawn on each frame and thus won't change their
+		// _updateVersion.
+		if (parent instanceof CompoundPath)
+			return parent._isUpdated(updateVersion);
+		// In case a parent is visible but isn't drawn (e.g. opacity == 0), the
+		// _updateVersion of all its children will not be updated, the children
+		// should still be considered updated, and selections should be drawn
+		// for them. Excluded are only items with _visible == false.
+		// Address this here:
+		if (version !== updateVersion && parent && parent._visible
+				&& parent._isUpdated(updateVersion))
+			version = this._updateVersion = updateVersion;
+		return version === updateVersion;
+	},
+
 	_drawSelection: function(ctx, matrix, size, updateVersion) {
-		// Check the updateVersion of each item to see if it got drawn
-		// in the above draw loop. If the version is out of sync, the
-		// item is either not in the DOM anymore or is invisible.
-		var parent = this._parent,
-			// For compound-paths, we need to use the updateVersion of
-			// the parent, because when using the ctx.currentPath
-			// optimization, the children don't have to get drawn on
-			// each frame and thus won't change their updateVersion.
-			versionItem = parent instanceof CompoundPath ? parent : this;
-		if (versionItem._updateVersion === updateVersion
-				&& (this._drawSelected || this._boundsSelected)) {
+		if ((this._drawSelected || this._boundsSelected)
+				&& this._isUpdated(updateVersion)) {
 			// Allow definition of selected color on a per item and per
 			// layer level, with a fallback to #009dec
 			var color = this.getSelectedColor(true)
