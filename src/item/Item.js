@@ -3690,7 +3690,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	},
 
 	/**
-	 * Checks the _updateVersion of the item to see if it got drawn in the  draw
+	 * Checks the _updateVersion of the item to see if it got drawn in the draw
 	 * loop. If the version is out of sync, the item is either not in the DOM
 	 * anymore or is invisible.
 	 */
@@ -3704,10 +3704,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (parent instanceof CompoundPath)
 			return parent._isUpdated(updateVersion);
 		// In case a parent is visible but isn't drawn (e.g. opacity == 0), the
-		// _updateVersion of all its children will not be updated, the children
-		// should still be considered updated, and selections should be drawn
-		// for them. Excluded are only items with _visible == false.
-		// Address this here:
+		// _updateVersion of all its children will not be updated, but the
+		// children should still be considered updated, and selections should be
+		// drawn for them. Excluded are only items with _visible == false:
 		if (version !== updateVersion && parent && parent._visible
 				&& parent._isUpdated(updateVersion))
 			version = this._updateVersion = updateVersion;
