@@ -3695,8 +3695,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * anymore or is invisible.
 	 */
 	_isUpdated: function(updateVersion) {
-		var version = this._updateVersion,
-			parent = this._parent;
+		var parent = this._parent;
 		// For compound-paths, we need to use the _updateVersion of the parent,
 		// because when using the ctx.currentPath optimization, the children
 		// don't have to get drawn on each frame and thus won't change their
@@ -3707,10 +3706,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// _updateVersion of all its children will not be updated, but the
 		// children should still be considered updated, and selections should be
 		// drawn for them. Excluded are only items with _visible == false:
-		if (version !== updateVersion && parent && parent._visible
-				&& parent._isUpdated(updateVersion))
-			version = this._updateVersion = updateVersion;
-		return version === updateVersion;
+		var updated = this._updateVersion === updateVersion;
+		if (!updated && parent && parent._visible
+				&& parent._isUpdated(updateVersion)) {
+			this._updateVersion = updateVersion;
+			updated = true;
+		}
+		return updated;
 	},
 
 	_drawSelection: function(ctx, matrix, size, updateVersion) {
