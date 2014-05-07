@@ -6,7 +6,8 @@
 	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
 		// Import the tiger svg:
-		project.importSVG(document.getElementById('svg'));
+		var svg = project.importSVG(document.getElementById('svg'));
+		svg.visible = true; // Turn off display: none;
 
 		// Resize the tiger to fit within the window:
 		project.activeLayer.fitBounds(view.bounds);
