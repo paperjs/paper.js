@@ -323,7 +323,7 @@ new function() {
 		if (attrs.opacity === 1)
 			delete attrs.opacity;
 
-		if (item._visibility != null && !item._visibility)
+		if (!item._visible)
 			attrs.visibility = 'hidden';
 
 		return setAttributes(node, attrs);

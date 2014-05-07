@@ -28,7 +28,7 @@ new function() {
 			value = null;
 		// Interpret value as number. Never return NaN, but 0 instead.
 		// If the value is a sequence of numbers, parseFloat will
-		// return the first occuring number, which is enough for now.
+		// return the first occurring number, which is enough for now.
 		return value == null
 				? allowNull
 					? null
@@ -243,8 +243,8 @@ new function() {
 			// Note the namespaced xlink:href attribute is just called href
 			// as a property on node.
 			// TODO: Support overflow and width, height, in combination with
-			// overflow: hidden. Paper.js currently does not suport PlacedSymbol
-			// clipping, but perhaps it should?
+			// overflow: hidden. Paper.js currently does not support
+			// PlacedSymbol clipping, but perhaps it should?
 			var id = (getValue(node, 'href', true) || '').substring(1),
 				definition = definitions[id],
 				point = getPoint(node, 'x', 'y');
@@ -306,9 +306,9 @@ new function() {
 
 	// Attributes and Styles
 
-	// NOTE: Parmeter sequence for all apply*() functions is:
+	// NOTE: Parameter sequence for all apply*() functions is:
 	// (item, value, name, node) rather than (item, node, name, value),
-	// so we can ommit the less likely parameters from right to left.
+	// so we can omit the less likely parameters from right to left.
 
 	function applyTransform(item, value, name, node) {
 		// http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
@@ -409,6 +409,11 @@ new function() {
 
 		visibility: function(item, value) {
 			item.setVisible(value === 'visible');
+		},
+
+		display: function(item, value) {
+			// NOTE: 'none' gets translated to null in getAttribute()
+			item.setVisible(value !== null);
 		},
 
 		'stop-color': function(item, value) {
