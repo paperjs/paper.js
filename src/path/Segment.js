@@ -525,7 +525,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		// If no matrix was previded, this was just called to get the coords and
 		// we are done now.
 		if (matrix) {
-			matrix._transformCoordinates(coords, 0, coords, 0, i / 2);
+			matrix._transformCoordinates(coords, coords, i / 2);
 			x = coords[0];
 			y = coords[1];
 			if (change) {

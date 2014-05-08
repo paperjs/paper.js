@@ -435,19 +435,16 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @function
 	 * @param {Number[]} src the array containing the source points
 	 *        as x, y value pairs
-	 * @param {Number} srcOffset the offset to the first point to be transformed
 	 * @param {Number[]} dst the array into which to store the transformed
 	 *        point pairs
-	 * @param {Number} dstOffset the offset of the location of the first
-	 *        transformed point in the destination array
 	 * @param {Number} count the number of points to tranform
 	 * @return {Number[]} the dst array, containing the transformed coordinates.
 	 */
-	transform: function(/* point | */ src, srcOffset, dst, dstOffset, count) {
-		return arguments.length < 5
+	transform: function(/* point | */ src, dst, count) {
+		return arguments.length < 3
 			// TODO: Check for rectangle and use _tranformBounds?
 			? this._transformPoint(Point.read(arguments))
-			: this._transformCoordinates(src, srcOffset, dst, dstOffset, count);
+			: this._transformCoordinates(src, dst, count);
 	},
 
 	/**
@@ -466,10 +463,10 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 		);
 	},
 
-	_transformCoordinates: function(src, srcOffset, dst, dstOffset, count) {
-		var i = srcOffset,
-			j = dstOffset,
-			max = i + 2 * count;
+	_transformCoordinates: function(src, dst, count) {
+		var i = 0,
+			j = 0,
+			max = 2 * count;
 		while (i < max) {
 			var x = src[i++],
 				y = src[i++];
@@ -485,7 +482,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 			x2 = x1 + rect.width,
 			y2 = y1 + rect.height,
 			coords = [ x1, y1, x2, y1, x2, y2, x1, y2 ];
-		return this._transformCoordinates(coords, 0, coords, 0, 4);
+		return this._transformCoordinates(coords, coords, 4);
 	},
 
 	/**
