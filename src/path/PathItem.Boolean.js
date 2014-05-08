@@ -169,10 +169,8 @@ PathItem.inject(new function() {
 		function resetLinear() {
 			// Reset linear segments if they were part of a linear curve
 			// and if we are done with the entire curve.
-			for (var i = 0, l = linearHandles.length; i < l; i++) {
-				var handle = linearHandles[i];
-				handle.set(0, 0);
-			}
+			for (var i = 0, l = linearHandles.length; i < l; i++)
+				linearHandles[i].set(0, 0);
 		}
 
 		for (var i = intersections.length - 1, curve, prevLoc; i >= 0; i--) {
@@ -189,10 +187,9 @@ PathItem.inject(new function() {
 					resetLinear();
 				curve = loc._curve;
 				linearHandles = curve.isLinear() && [];
-				if (linearHandles) {
-					linearHandles.push(curve._segment1._handleOut);
-					linearHandles.push(curve._segment2._handleIn);
-				}
+				if (linearHandles)
+					linearHandles.push(curve._segment1._handleOut,
+							curve._segment2._handleIn);
 			}
 			var newCurve,
 				segment;
@@ -200,10 +197,8 @@ PathItem.inject(new function() {
 			if (newCurve = curve.divide(t, true, true)) {
 				segment = newCurve._segment1;
 				curve = newCurve.getPrevious();
-				if (linearHandles) {
-					linearHandles.push(segment._handleOut);
-					linearHandles.push(segment._handleIn);
-				}
+				if (linearHandles)
+					linearHandles.push(segment._handleOut, segment._handleIn);
 			} else {
 				segment = t < TOLERANCE
 					? curve._segment1
