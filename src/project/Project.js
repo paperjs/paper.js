@@ -865,9 +865,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 			ctx.strokeWidth = 1;
 			var items = this._selectedItems,
 				size = this._scope.settings.handleSize,
-				updateVersion = this._updateVersion;
+				version = this._updateVersion;
 			for (var id in items)
-				items[id]._drawSelection(ctx, matrix, size, updateVersion);
+				items[id]._drawSelection(ctx, matrix, size, items, version);
 			ctx.restore();
 		}
 	}

@@ -3715,7 +3715,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		return updated;
 	},
 
-	_drawSelection: function(ctx, matrix, size, updateVersion) {
+	_drawSelection: function(ctx, matrix, size, selectedItems, updateVersion) {
 		if ((this._drawSelected || this._boundsSelected)
 				&& this._isUpdated(updateVersion)) {
 			// Allow definition of selected color on a per item and per
@@ -3726,7 +3726,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			ctx.strokeStyle = ctx.fillStyle = color
 					? color.toCanvasStyle(ctx) : '#009dec';
 			if (this._drawSelected)
-				this._drawSelected(ctx, mx);
+				this._drawSelected(ctx, mx, selectedItems);
 			if (this._boundsSelected) {
 				var half = size / 2;
 					coords = mx._transformCorners(this.getInternalBounds());
