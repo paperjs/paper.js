@@ -225,12 +225,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 	// Enforce bean creation for getPathData(), as it has hidden parameters.
 	beans: true,
 
-	getPathData: function(_precision) {
+	getPathData: function(_matrix, _precision) {
 		// NOTE: #setPathData() is defined in PathItem.
 		var children = this._children,
 			paths = [];
-		for (var i = 0, l = children.length; i < l; i++)
-			paths.push(children[i].getPathData(_precision));
+		for (var i = 0, l = children.length; i < l; i++) {
+			var child = children[i],
+				mx = child._matrix;
+			paths.push(child.getPathData(_matrix ? _matrix.clone().concatenate(mx) : mx, _precision));
+		}
 		return paths.join(' ');
 	}
 }, /** @lends CompoundPath# */{

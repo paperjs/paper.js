@@ -296,41 +296,57 @@ var Path = PathItem.extend(/** @lends Path# */{
 	// Enforce bean creation for getPathData(), as it has hidden parameters.
 	beans: true,
 
-	getPathData: function(_precision) {
+	getPathData: function(_matrix, _precision) {
 		// NOTE: #setPathData() is defined in PathItem.
 		var segments = this._segments,
-			f = Formatter.instance,
+			length = segments.length,
+			f = new Formatter(_precision),
+			coords = new Array(6),
+			first = true,
+			curX, curY,
+			prevX, prevY,
+			inX, inY,
+			outX, outY,
 			parts = [];
 
-		// TODO: Add support for H/V and/or relative commands, where appropriate
-		// and resulting in shorter strings
-		function addCurve(seg1, seg2, skipLine) {
-			var point1 = seg1._point,
-				point2 = seg2._point,
-				handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn;
-			if (handle1.isZero() && handle2.isZero()) {
-				if (!skipLine) {
-					// L = absolute lineto: moving to a point with drawing
-					parts.push('L' + f.point(point2, _precision));
-				}
+		function addSegment(segment, skipLine) {
+			segment._transformCoordinates(_matrix, coords, false);
+			curX = coords[0];
+			curY = coords[1];
+			if (first) {
+				parts.push('M' + f.pair(curX, curY));
+				first = false;
 			} else {
-				// c = relative curveto: handle1, handle2 + end - start,
-				// end - start
-				var end = point2.subtract(point1);
-				parts.push('c' + f.point(handle1, _precision)
-						+ ' ' + f.point(end.add(handle2), _precision)
-						+ ' ' + f.point(end, _precision));
+				inX = coords[2];
+				inY = coords[3];
+				// TODO: Add support for H/V and/or relative commands, where
+				// appropriate and resulting in shorter strings.
+				if (inX === curX && inY === curY
+						&& outX === prevX && outY === prevY) {
+					// l = relative lineto:
+					if (!skipLine)
+						parts.push('l' + f.pair(curX - prevX, curY - prevY));
+				} else {
+					// c = relative curveto:
+					parts.push('c' + f.pair(outX - prevX, outY - prevY)
+							+ ' ' + f.pair(inX - prevX, inY - prevY)
+							+ ' ' + f.pair(curX - prevX, curY - prevY));
+				}
 			}
+			prevX = curX;
+			prevY = curY;
+			outX = coords[4];
+			outY = coords[5];
 		}
 
-		if (segments.length === 0)
+		if (length === 0)
 			return '';
-		parts.push('M' + f.point(segments[0]._point));
-		for (var i = 0, l = segments.length  - 1; i < l; i++)
-			addCurve(segments[i], segments[i + 1], false);
-		if (this._closed) {
-			addCurve(segments[segments.length - 1], segments[0], true);
+
+		for (var i = 0; i < length; i++)
+			addSegment(segments[i]);
+		// Close path by drawing first segment again
+		if (this._closed && length > 0) {
+			addSegment(segments[0], true);
 			parts.push('z');
 		}
 		return parts.join('');

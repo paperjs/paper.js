@@ -145,7 +145,7 @@ new function() {
 			}
 		} else {
 			type = 'path';
-			var data = item.getPathData();
+			var data = item.getPathData(null, options.precision);
 			attrs = data && { d: data };
 		}
 		return createElement(type, getTransform(item, attrs));
@@ -178,9 +178,9 @@ new function() {
 		return createElement(type, attrs);
 	}
 
-	function exportCompoundPath(item) {
-		var attrs = getTransform(item, {}, true);
-		var data = item.getPathData();
+	function exportCompoundPath(item, options) {
+		var attrs = getTransform(item, {});
+		var data = item.getPathData(null, options.precision);
 		if (data)
 			attrs.d = data;
 		return createElement('path', attrs);
