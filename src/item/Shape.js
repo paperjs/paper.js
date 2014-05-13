@@ -183,6 +183,8 @@ var Shape = Item.extend(/** @lends Shape# */{
 			var type = this._type,
 				radius = this._radius,
 				isCircle = type === 'circle';
+			if (!param.dontStart)
+				ctx.beginPath();
 			if (untransformed && isCircle) {
 				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
 			} else {
