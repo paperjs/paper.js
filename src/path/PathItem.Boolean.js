@@ -275,9 +275,9 @@ PathItem.inject(new function() {
 					// compare the endpoints of the curve to determine if the
 					// ray from query point along +-x direction will intersect
 					// the monotone curve. Results in quite significant speedup.
-				if ((winding === -1 || (winding === 1
-						&& ((y >= values[1] && y <= values[7])
-						|| (y >= values[7] && y <= values[1]))))
+				if (winding && (winding === 1
+						&& y >= values[1] && y <= values[7]
+						|| y >= values[7] && y <= values[1])
 					&& Curve.solveCubic(values, 1, y, roots, 0,
 						// If the next curve is horizontal, we have to include
 						// the end of this curve to make sure we won't miss an
