@@ -59,6 +59,15 @@ var ProxyContext = new function() {
 			return str;
 		}
 	};
+
+	function stringify(value) {
+		try {
+			return JSON.stringify(value);
+		} catch (e) {
+			return value + '';
+		}
+	}
+
 	Base.each(descriptions, function(description) {
 		var match = description.match(/^([^(]+)(\()*/),
 			name = match[1],
@@ -69,7 +78,7 @@ var ProxyContext = new function() {
 					this._indents--;
 				console.log(this.getIndentation() + 'ctx.' + name + '('
 						+ Array.prototype.slice.call(arguments, 0)
-							.map(JSON.stringify).join(', ')
+							.map(stringify).join(', ')
 						+ ');');
 				if (name === 'save')
 					this._indents++;
@@ -83,7 +92,7 @@ var ProxyContext = new function() {
 
 				set: function(value) {
 					console.log(this.getIndentation() + 'ctx.' + name + ' = '
-							+ JSON.stringify(value) + ';');
+							+ stringify(value) + ';');
 					return this._ctx[name] = value;
 				}
 			};
