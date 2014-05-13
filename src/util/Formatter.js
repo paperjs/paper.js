@@ -36,6 +36,10 @@ var Formatter = Base.extend(/** @lends Formatter# */{
 		return Math.round(val * this.multiplier) / this.multiplier;
 	},
 
+	pair: function(val1, val2, separator) {
+		return this.number(val1) + (separator || ',') + this.number(val2);
+	},
+
 	point: function(val, separator) {
 		return this.number(val.x) + (separator || ',') + this.number(val.y);
 	},
