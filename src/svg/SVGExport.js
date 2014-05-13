@@ -38,10 +38,9 @@ new function() {
 			document.createElementNS('http://www.w3.org/2000/svg', tag), attrs);
 	}
 
-	function getTransform(item, coordinates, center) {
+	function getTransform(item, attrs, coordinates, center) {
 		var matrix = item._matrix,
-			trans = matrix.getTranslation(),
-			attrs = {};
+			trans = matrix.getTranslation();
 		if (coordinates) {
 			// If the item suppports x- and y- coordinates, we're taking out the
 			// translation part of the matrix and move it to x, y attributes, to
@@ -79,7 +78,7 @@ new function() {
 	}
 
 	function exportGroup(item, options) {
-		var attrs = getTransform(item),
+		var attrs = getTransform(item, {}),
 			children = item._children;
 		var node = createElement('g', attrs);
 		for (var i = 0, l = children.length; i < l; i++) {
@@ -102,7 +101,7 @@ new function() {
 	}
 
 	function exportRaster(item) {
-		var attrs = getTransform(item, true),
+		var attrs = getTransform(item, {}, true),
 			size = item.getSize();
 		// Take into account that rasters are centered:
 		attrs.x -= size.width / 2;
@@ -149,13 +148,13 @@ new function() {
 			var data = item.getPathData();
 			attrs = data && { d: data };
 		}
-		return createElement(type, attrs);
+		return createElement(type, getTransform(item, attrs));
 	}
 
 	function exportShape(item) {
 		var type = item._type,
 			radius = item._radius,
-			attrs = getTransform(item, true, type !== 'rectangle');
+			attrs = getTransform(item, {}, true, type !== 'rectangle');
 		if (type === 'rectangle') {
 			type = 'rect'; // SVG
 			var size = item._size,
@@ -180,7 +179,7 @@ new function() {
 	}
 
 	function exportCompoundPath(item) {
-		var attrs = getTransform(item, true);
+		var attrs = getTransform(item, {}, true);
 		var data = item.getPathData();
 		if (data)
 			attrs.d = data;
@@ -188,7 +187,7 @@ new function() {
 	}
 
 	function exportPlacedSymbol(item, options) {
-		var attrs = getTransform(item, true),
+		var attrs = getTransform(item, {}, true),
 			symbol = item.getSymbol(),
 			symbolNode = getDefinition(symbol, 'symbol'),
 			definition = symbol.getDefinition(),
@@ -265,7 +264,7 @@ new function() {
 	}
 
 	function exportText(item) {
-		var node = createElement('text', getTransform(item, true));
+		var node = createElement('text', getTransform(item, {}, true));
 		node.textContent = item._content;
 		return node;
 	}
