@@ -206,7 +206,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 						cx = rx * kappa,
 						cy = ry * kappa,
 						// Build the coordinates list, so it can optionally be
-						// transformed by a matrix.
+						// transformed by the strokeMatrix.
 						c = [
 							-x, -y + ry,
 							-x, -y + cy,
@@ -227,8 +227,6 @@ var Shape = Item.extend(/** @lends Shape# */{
 						];
 					if (strokeMatrix)
 						strokeMatrix.transform(c, c, 32);
-					if (!param.dontStart)
-						ctx.beginPath();
 					ctx.moveTo(c[0], c[1]);
 					ctx.bezierCurveTo(c[2], c[3], c[4], c[5], c[6], c[7]);
 					if (x !== rx)

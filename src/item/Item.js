@@ -3645,7 +3645,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						&& this._canComposite(),
 			pixelRatio = param.pixelRatio,
 			mainCtx, itemOffset, prevOffset;
-
 		if (!direct) {
 			// Apply the parent's global matrix to the calculation of correct
 			// bounds.
