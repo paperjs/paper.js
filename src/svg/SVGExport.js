@@ -293,8 +293,10 @@ new function() {
 			var get = entry.get,
 				type = entry.type,
 				value = item[get]();
-			if (!parent || !Base.equals(parent[get](), value)) {
-				if (type === 'color' && value != null) {
+			if (entry.exportFilter
+					? entry.exportFilter(item, value)
+					: !parent || !Base.equals(parent[get](), value)) {
+				if (type === 'color' && value !== 'none') {
 					// Support for css-style rgba() values is not in SVG 1.1, so
 					// separate the alpha value of colors with alpha into the
 					// separate fill- / stroke-opacity attribute:

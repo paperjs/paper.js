@@ -18,6 +18,16 @@ var SVGStyles = Base.each({
 	strokeWidth: ['stroke-width', 'number'],
 	strokeCap: ['stroke-linecap', 'string'],
 	strokeJoin: ['stroke-linejoin', 'string'],
+	strokeScaling: ['vector-effect', 'lookup', {
+		true: 'none',
+		false: 'non-scaling-stroke'
+	}, function(item, value) {
+		// no inheritance, only applies to graphical elements
+		return !value // false, meaning non-scaling-stroke
+				&& (item instanceof PathItem
+					|| item instanceof Shape
+					|| item instanceof TextItem);
+	}],
 	miterLimit: ['stroke-miterlimit', 'number'],
 	dashArray: ['stroke-dasharray', 'array'],
 	dashOffset: ['stroke-dashoffset', 'number'],
@@ -44,6 +54,7 @@ var SVGStyles = Base.each({
 		fromSVG: lookup && Base.each(lookup, function(value, name) {
 			this[value] = name;
 		}, {}),
+		exportFilter: entry[3],
 		get: 'get' + part,
 		set: 'set' + part
 	};

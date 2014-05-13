@@ -173,55 +173,71 @@ var Shape = Item.extend(/** @lends Shape# */{
 		return path;
 	},
 
-	_draw: function(ctx, param) {
+	_draw: function(ctx, param, strokeMatrix) {
 		var style = this._style,
 			hasFill = style.hasFill(),
 			hasStroke = style.hasStroke(),
-			dontPaint = param.dontFinish || param.clip;
+			dontPaint = param.dontFinish || param.clip,
+			untransformed = !strokeMatrix;
 		if (hasFill || hasStroke || dontPaint) {
-			var radius = this._radius,
-				type = this._type;
-			if (!param.dontStart)
-				ctx.beginPath();
-			if (type === 'circle') {
+			var type = this._type,
+				radius = this._radius,
+				isCircle = type === 'circle';
+			if (untransformed && isCircle) {
 				ctx.arc(0, 0, radius, 0, Math.PI * 2, true);
 			} else {
-				var rx = radius.width,
-					ry = radius.height,
-					kappa = /*#=*/ Numerical.KAPPA;
-				if (type === 'ellipse') {
-					// Approximate ellipse with four bezier curves and KAPPA.
-					var	cx = rx * kappa,
-						cy = ry * kappa;
-					ctx.moveTo(-rx, 0);
-					ctx.bezierCurveTo(-rx, -cy, -cx, -ry, 0, -ry);
-					ctx.bezierCurveTo(cx, -ry, rx, -cy, rx, 0);
-					ctx.bezierCurveTo(rx, cy, cx, ry, 0, ry);
-					ctx.bezierCurveTo(-cx, ry, -rx, cy, -rx, 0);
-				} else { // rect
-					var size = this._size,
-						width = size.width,
-						height = size.height;
-					if (rx === 0 && ry === 0) {
-						// straight rect
-						ctx.rect(-width / 2, -height / 2, width, height);
-					} else {
-						// rounded rect. Use 1 - KAPPA to calculate position of
-						// control points from the corners inwards.
-						kappa = 1 - kappa;
-						var x = width / 2,
-							y = height / 2,
-							cx = rx * kappa,
-							cy = ry * kappa;
-						ctx.moveTo(-x, -y + ry);
-						ctx.bezierCurveTo(-x, -y + cy, -x + cx, -y, -x + rx, -y);
-						ctx.lineTo(x - rx, -y);
-						ctx.bezierCurveTo(x - cx, -y, x, -y + cy, x, -y + ry);
-						ctx.lineTo(x, y - ry);
-						ctx.bezierCurveTo(x, y - cy, x - cx, y, x - rx, y);
-						ctx.lineTo(-x + rx, y);
-						ctx.bezierCurveTo(-x + cx, y, -x, y - cy, -x, y - ry);
-					}
+				var rx = isCircle ? radius : radius.width,
+					ry = isCircle ? radius : radius.height,
+					size = this._size,
+					width = size.width,
+					height = size.height;
+				if (untransformed && type === 'rect' && rx === 0 && ry === 0) {
+					// Rectangles with no rounding
+					ctx.rect(-width / 2, -height / 2, width, height);
+				} else {
+					// Round rectangles, ellipses, transformed circles
+					var x = width / 2,
+						y = height / 2,
+						// Use 1 - KAPPA to calculate position of control points
+						// from the corners inwards.
+						kappa = 1 - /*#=*/ Numerical.KAPPA,
+						cx = rx * kappa,
+						cy = ry * kappa,
+						// Build the coordinates list, so it can optionally be
+						// transformed by a matrix.
+						c = [
+							-x, -y + ry,
+							-x, -y + cy,
+							-x + cx, -y,
+							-x + rx, -y,
+							x - rx, -y,
+							x - cx, -y,
+							x, -y + cy,
+							x, -y + ry,
+							x, y - ry,
+							x, y - cy,
+							x - cx, y,
+							x - rx, y,
+							-x + rx, y,
+							-x + cx, y,
+							-x, y - cy,
+							-x, y - ry
+						];
+					if (strokeMatrix)
+						strokeMatrix.transform(c, c, 32);
+					if (!param.dontStart)
+						ctx.beginPath();
+					ctx.moveTo(c[0], c[1]);
+					ctx.bezierCurveTo(c[2], c[3], c[4], c[5], c[6], c[7]);
+					if (x !== rx)
+						ctx.lineTo(c[8], c[9]);
+					ctx.bezierCurveTo(c[10], c[11], c[12], c[13], c[14], c[15]);
+					if (y !== ry)
+						ctx.lineTo(c[16], c[17]);
+					ctx.bezierCurveTo(c[18], c[19], c[20], c[21], c[22], c[23]);
+					if (x !== rx)
+						ctx.lineTo(c[24], c[25]);
+					ctx.bezierCurveTo(c[26], c[27], c[28], c[29], c[30], c[31]);
 				}
 			}
 			ctx.closePath();

@@ -437,7 +437,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 *        as x, y value pairs
 	 * @param {Number[]} dst the array into which to store the transformed
 	 *        point pairs
-	 * @param {Number} count the number of points to tranform
+	 * @param {Number} count the number of points to transform
 	 * @return {Number[]} the dst array, containing the transformed coordinates.
 	 */
 	transform: function(/* point | */ src, dst, count) {

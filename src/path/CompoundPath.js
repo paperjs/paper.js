@@ -247,7 +247,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 				: new Base(options, { fill: false });
 	},
 
-	_draw: function(ctx, param) {
+	_draw: function(ctx, param, strokeMatrix) {
 		var children = this._children;
 		// Return early if the compound path doesn't have any children:
 		if (children.length === 0)
@@ -259,7 +259,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 			param = param.extend({ dontStart: true, dontFinish: true });
 			ctx.beginPath();
 			for (var i = 0, l = children.length; i < l; i++)
-				children[i].draw(ctx, param);
+				children[i].draw(ctx, param, strokeMatrix);
 			this._currentPath = ctx.currentPath;
 		}
 

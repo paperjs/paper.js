@@ -1634,7 +1634,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	/**
 	 * Returns the curve location of the specified offset on the path.
-	 * 
+	 *
 	 * @param {Number} offset the offset on the path, where {@code 0} is at
 	 * the beginning of the path and {@link Path#length} at the end.
 	 * @param {Boolean} [isParameter=false]
@@ -1997,11 +1997,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 			inX, inY,
 			outX, outY;
 
-		function drawSegment(i) {
-			var segment = segments[i];
-			// Optimise code when no matrix is provided by accessing semgent
+		function drawSegment(segment) {
+			// Optimise code when no matrix is provided by accessing segment
 			// points hand handles directly, since this is the default when
-			// drawing paths. Matrix is only used for drawing selections.
+			// drawing paths. Matrix is only used for drawing selections and
+			// when #strokeScaling is false.
 			if (matrix) {
 				segment._transformCoordinates(matrix, coords, false);
 				curX = coords[0];
@@ -2023,7 +2023,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 					inX = curX + handle._x;
 					inY = curY + handle._y;
 				}
-				if (inX == curX && inY == curY && outX == prevX && outY == prevY) {
+				if (inX === curX && inY === curY
+						&& outX === prevX && outY === prevY) {
 					ctx.lineTo(curX, curY);
 				} else {
 					ctx.bezierCurveTo(outX, outY, inX, inY, curX, curY);
@@ -2042,20 +2043,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 
 		for (var i = 0; i < length; i++)
-			drawSegment(i);
+			drawSegment(segments[i]);
 		// Close path by drawing first segment again
 		if (path._closed && length > 0)
-			drawSegment(0);
+			drawSegment(segments[0]);
 	}
 
 	return {
-		_draw: function(ctx, param) {
+		_draw: function(ctx, param, strokeMatrix) {
 			var dontStart = param.dontStart,
-				dontPaint = param.dontFinish || param.clip;
-			if (!dontStart)
-				ctx.beginPath();
-
-			var style = this.getStyle(),
+				dontPaint = param.dontFinish || param.clip,
+				style = this.getStyle(),
 				hasFill = style.hasFill(),
 				hasStroke = style.hasStroke(),
 				dashArray = style.getDashArray(),
@@ -2063,23 +2061,26 @@ var Path = PathItem.extend(/** @lends Path# */{
 				dashLength = !paper.support.nativeDash && hasStroke
 						&& dashArray && dashArray.length;
 
-			function getOffset(i) {
-				// Negative modulo is necessary since we're stepping back
-				// in the dash sequence first.
-				return dashArray[((i % dashLength) + dashLength) % dashLength];
-			}
+			if (!dontStart)
+				ctx.beginPath();
 
 			if (!dontStart && this._currentPath) {
 				ctx.currentPath = this._currentPath;
 			} else if (hasFill || hasStroke && !dashLength || dontPaint) {
 				// Prepare the canvas path if we have any situation that
 				// requires it to be defined.
-				drawSegments(ctx, this);
+				drawSegments(ctx, this, strokeMatrix);
 				if (this._closed)
 					ctx.closePath();
 				// CompoundPath collects its own _currentPath
 				if (!dontStart)
 					this._currentPath = ctx.currentPath;
+			}
+
+			function getOffset(i) {
+				// Negative modulo is necessary since we're stepping back
+				// in the dash sequence first.
+				return dashArray[((i % dashLength) + dashLength) % dashLength];
 			}
 
 			if (!dontPaint && (hasFill || hasStroke)) {
@@ -2102,7 +2103,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 						// native dashes.
 						if (!dontStart)
 							ctx.beginPath();
-						var flattener = new PathFlattener(this),
+						var flattener = new PathFlattener(this, strokeMatrix),
 							length = flattener.length,
 							from = -style.getDashOffset(), to,
 							i = 0;

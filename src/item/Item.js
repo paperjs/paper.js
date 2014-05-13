@@ -2546,8 +2546,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	/**
-	 * The shape to be used at the end of open {@link Path} items, when they
-	 * have a stroke.
+	 * The shape to be used at the beginning and end of open {@link Path} items,
+	 * when they have a stroke.
 	 *
 	 * @name Item#strokeCap
 	 * @property
@@ -2579,7 +2579,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 */
 
 	/**
-	 * The shape to be used at the corners of paths when they have a stroke.
+	 * The shape to be used at the segments and corners of {@link Path} items
+	 * when they have a stroke.
 	 *
 	 * @name Item#strokeJoin
 	 * @property
@@ -2613,6 +2614,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * @property
 	 * @default 0
 	 * @type Number
+	 */
+
+	/**
+	 * Specifies whether the stroke is to be drawn taking the current affine
+	 * transformation into account (the default behavior), or whether it should
+	 * appear as a non-scaling stroke.
+	 *
+	 * @name Style#strokeScaling
+	 * @property
+	 * @default true
+	 * @type Boolean
 	 */
 
 	/**
@@ -3574,7 +3586,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		}
 	},
 
-	draw: function(ctx, param) {
+	draw: function(ctx, param, parentStrokeMatrix) {
 		// Each time the project gets drawn, it's _updateVersion is increased.
 		// Keep the _updateVersion of drawn items in sync, so we have an easy
 		// way to know for which selected items we need to draw selection info.
@@ -3631,7 +3643,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 					// If native blending is possible, see if the item allows it
 					|| (nativeBlend || normalBlend && opacity < 1)
 						&& this._canComposite(),
+			pixelRatio = param.pixelRatio,
 			mainCtx, itemOffset, prevOffset;
+
 		if (!direct) {
 			// Apply the parent's global matrix to the calculation of correct
 			// bounds.
@@ -3648,28 +3662,48 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// it, instead of the mainCtx.
 			mainCtx = ctx;
 			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)),
-					param.pixelRatio);
+					bounds.getSize().ceil().add(new Size(1, 1)), pixelRatio);
 		}
 		ctx.save();
+		// Get the transformation matrix for non-scaling strokes.
+		var strokeMatrix = parentStrokeMatrix
+				? parentStrokeMatrix.clone().concatenate(matrix)
+				: !this.getStrokeScaling() && getViewMatrix(globalMatrix),
+			// If we're drawing into a separate canvas and a clipItem is defined
+			// for the current rendering loop, we need to draw the clip item
+			// again.
+			clip = !direct && param.clipItem,
+			// If we're drawing with a strokeMatrix, the CTM is reset either way
+			// so we don't need to set it, except when we also have to draw a
+			// clipItem.
+			transform = !strokeMatrix || clip;
 		// If drawing directly, handle opacity and native blending now,
 		// otherwise we will do it later when the temporary canvas is composited.
 		if (direct) {
 			ctx.globalAlpha = opacity;
 			if (nativeBlend)
 				ctx.globalCompositeOperation = blendMode;
-		} else {
+		} else if (transform) {
 			// Translate the context so the topLeft of the item is at (0, 0)
 			// on the temporary canvas.
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
 		// Apply globalMatrix when drawing into temporary canvas.
-		(direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
-		// If we're drawing into a separate canvas and a clipItem is defined for
-		// the current rendering loop, we need to draw the clip item again.
-		if (!direct && param.clipItem)
+		if (transform)
+			(direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
+		if (clip)
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
-		this._draw(ctx, param);
+		if (strokeMatrix) {
+			// Reset the transformation but take HiDPI pixel ratio into account.
+			ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+			// Also offset again when drawing non-directly.
+			// NOTE: Don't use itemOffset since offset might be from the parent,
+			// e.g. CompoundPath
+			var offset = param.offset;
+			if (offset)
+				ctx.translate(-offset.x, -offset.y);
+		}
+		this._draw(ctx, param, strokeMatrix);
 		ctx.restore();
 		matrices.pop();
 		if (param.clip && !param.dontFinish)
@@ -3681,7 +3715,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					// Calculate the pixel offset of the temporary canvas to the
 					// main canvas. We also need to factor in the pixel-ratio.
-					itemOffset.subtract(prevOffset).multiply(param.pixelRatio));
+					itemOffset.subtract(prevOffset).multiply(pixelRatio));
 			// Return the temporary context, so it can be reused
 			CanvasProvider.release(ctx);
 			// Restore previous offset.
