@@ -77,8 +77,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 			length1 = curves1.length,
 			length2 = path ? curves2.length : length1,
 			values2 = [],
-			MIN = /*#=*/ Numerical.EPSILON,
-			MAX = 1 - /*#=*/ Numerical.EPSILON;
+			MIN = /*#=*/Numerical.EPSILON,
+			MAX = 1 - /*#=*/Numerical.EPSILON;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {

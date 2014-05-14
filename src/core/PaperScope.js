@@ -84,7 +84,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 	 *
 	 * @type String
 	 */
-	version: '/*#=*/ __options.version',
+	version: '/*#=*/__options.version',
 
 	// DOCS: PaperScope#settings
 	/**

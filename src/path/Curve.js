@@ -346,7 +346,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 	// TODO: Rename to divideAt()?
 	divide: function(offset, isParameter, ignoreLinear) {
 		var parameter = this._getParameter(offset, isParameter),
-			tolerance = /*#=*/ Numerical.TOLERANCE,
+			tolerance = /*#=*/Numerical.TOLERANCE,
 			res = null;
 		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
@@ -490,7 +490,7 @@ statics: {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
-			tolerance = /*#=*/ Numerical.TOLERANCE,
+			tolerance = /*#=*/Numerical.TOLERANCE,
 			x, y;
 
 		// Handle special case at beginning / end of curve
@@ -588,7 +588,7 @@ statics: {
 	getParameterOf: function(v, x, y) {
 		// Handle beginnings and end separately, as they are not detected
 		// sometimes.
-		var tolerance = /*#=*/ Numerical.TOLERANCE;
+		var tolerance = /*#=*/Numerical.TOLERANCE;
 		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
 			return 0;
 		if (Math.abs(v[6] - x) < tolerance && Math.abs(v[7] - y) < tolerance)
@@ -707,7 +707,7 @@ statics: {
 			// Add some tolerance for good roots, as t = 0 / 1 are added
 			// separately anyhow, and we don't want joins to be added with
 			// radiuses in getStrokeBounds()
-			tMin = /*#=*/ Numerical.TOLERANCE,
+			tMin = /*#=*/Numerical.TOLERANCE,
 			tMax = 1 - tMin;
 		// Only add strokeWidth to bounds for points which lie  within 0 < t < 1
 		// The corner cases for cap and join are handled in getStrokeBounds()
@@ -880,7 +880,7 @@ statics: {
 
 		// Now iteratively refine solution until we reach desired precision.
 		var step = 1 / (count * 2);
-		while (step > /*#=*/ Numerical.TOLERANCE) {
+		while (step > /*#=*/Numerical.TOLERANCE) {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
 		}
@@ -1033,7 +1033,7 @@ new function() { // Scope for methods that require numerical integration
 			}
 			return Numerical.findRoot(f, ds,
 					forward ? a + guess : b - guess, // Initial guess for x
-					a, b, 16, /*#=*/ Numerical.TOLERANCE);
+					a, b, 16, /*#=*/Numerical.TOLERANCE);
 		}
 	};
 }, new function() { // Scope for intersection using bezier fat-line clipping
@@ -1052,7 +1052,7 @@ new function() { // Scope for methods that require numerical integration
 			return;
 		// Let P be the first curve and Q be the second
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-			tolerance = /*#=*/ Numerical.TOLERANCE,
+			tolerance = /*#=*/Numerical.TOLERANCE,
 			hullEpsilon = 1e-9,
 			getSignedDistance = Line.getSignedDistance,
 			// Calculate the fat-line L for Q is the baseline l and two
@@ -1142,7 +1142,7 @@ new function() { // Scope for methods that require numerical integration
 		// Subdivision method
 		var bounds1 = Curve.getBounds(v1),
 			bounds2 = Curve.getBounds(v2),
-			tolerance = /*#=*/ Numerical.TOLERANCE;
+			tolerance = /*#=*/Numerical.TOLERANCE;
 		if (bounds1.touches(bounds2)) {
 			// See if both curves are flat enough to be treated as lines, either
 			// because they have no control points at all, or are "flat enough"

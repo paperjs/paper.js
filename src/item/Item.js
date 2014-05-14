@@ -236,28 +236,28 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var symbol = this._parentSymbol,
 			cacheParent = this._parent || symbol,
 			project = this._project;
-		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
+		if (flags & /*#=*/ChangeFlag.GEOMETRY) {
 			// Clear cached bounds, position and decomposed matrix whenever
 			// geometry changes. Also clear _currentPath since it can be used
 			// both on compound-paths and clipping groups.
 			this._bounds = this._position = this._decomposed =
 					this._globalMatrix = this._currentPath = undefined;
 		}
-		if (cacheParent && (flags
-				& (/*#=*/ ChangeFlag.GEOMETRY | /*#=*/ ChangeFlag.STROKE))) {
+		if (cacheParent
+				&& (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
 			// Clear cached bounds of all items that this item contributes to.
 			// We call this on the parent, since the information is cached on
 			// the parent, see getBounds().
 			Item._clearBoundsCache(cacheParent);
 		}
-		if (flags & /*#=*/ ChangeFlag.CHILDREN) {
+		if (flags & /*#=*/ChangeFlag.CHILDREN) {
 			// Clear cached bounds of all items that this item contributes to.
 			// Here we don't call this on the parent, since adding / removing a
 			// child triggers this notification on the parent.
 			Item._clearBoundsCache(this);
 		}
 		if (project) {
-			if (flags & /*#=*/ ChangeFlag.APPEARANCE) {
+			if (flags & /*#=*/ChangeFlag.APPEARANCE) {
 				project._needsUpdate = true;
 			}
 			// Have project keep track of changed items so they can be iterated.
@@ -380,7 +380,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			children[name] = this;
 		}
 		this._name = name || undefined;
-		this._changed(/*#=*/ ChangeFlag.ATTRIBUTE);
+		this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
 	},
 
 	/**
@@ -462,7 +462,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				this[name] = value;
 				// #locked does not change appearance, all others do:
 				this._changed(name === '_locked'
-						? /*#=*/ ChangeFlag.ATTRIBUTE : /*#=*/ Change.ATTRIBUTE);
+						? /*#=*/ChangeFlag.ATTRIBUTE : /*#=*/Change.ATTRIBUTE);
 			}
 		};
 }, {}), /** @lends Item# */{
@@ -632,7 +632,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if ((selected = !!selected) ^ this._selected) {
 			this._selected = selected;
 			this._project._updateSelection(this);
-			this._changed(/*#=*/ Change.ATTRIBUTE);
+			this._changed(/*#=*/Change.ATTRIBUTE);
 		}
 	},
 
@@ -681,10 +681,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				this.setFillColor(null);
 				this.setStrokeColor(null);
 			}
-			this._changed(/*#=*/ Change.ATTRIBUTE);
+			this._changed(/*#=*/Change.ATTRIBUTE);
 			// Tell the parent the clipping mask has changed
 			if (this._parent)
-				this._parent._changed(/*#=*/ ChangeFlag.CLIPPING);
+				this._parent._changed(/*#=*/ChangeFlag.CLIPPING);
 		}
 	},
 
@@ -1137,7 +1137,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// _changed() for us.
 			this.transform(null, true);
 		} else {
-			this._changed(/*#=*/ Change.GEOMETRY);
+			this._changed(/*#=*/Change.GEOMETRY);
 		}
 	},
 
@@ -1702,7 +1702,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			tolerancePadding = options._tolerancePadding = new Size(
 						Path._getPenPadding(1, totalMatrix.inverted())
 					).multiply(
-						Math.max(options.tolerance, /*#=*/ Numerical.TOLERANCE)
+						Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
 					);
 		// Transform point to local coordinates.
 		point = matrix._inverseTransform(point);
@@ -2060,9 +2060,9 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				if (item._name)
 					item.setName(item._name);
 				if (notifySelf)
-					this._changed(/*#=*/ Change.INSERTION);
+					this._changed(/*#=*/Change.INSERTION);
 			}
-			this._changed(/*#=*/ Change.CHILDREN);
+			this._changed(/*#=*/Change.CHILDREN);
 		} else {
 			items = null;
 		}
@@ -2220,11 +2220,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (notifySelf) {
 				var project = this._project;
 				if (project && project._changes)
-					this._changed(/*#=*/ Change.INSERTION);
+					this._changed(/*#=*/Change.INSERTION);
 			}
 			// Notify parent of changed children
 			if (notifyParent)
-				parent._changed(/*#=*/ Change.CHILDREN);
+				parent._changed(/*#=*/Change.CHILDREN);
 			this._parent = null;
 			return true;
 		}
@@ -2274,7 +2274,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			removed[i]._remove(true, false);
 		}
 		if (removed.length > 0)
-			this._changed(/*#=*/ Change.CHILDREN);
+			this._changed(/*#=*/Change.CHILDREN);
 		return removed;
 	},
 
@@ -2290,7 +2290,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Adjust indices
 			for (var i = 0, l = this._children.length; i < l; i++)
 				this._children[i]._index = i;
-			this._changed(/*#=*/ Change.CHILDREN);
+			this._changed(/*#=*/Change.CHILDREN);
 		}
 	},
 
@@ -2938,7 +2938,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			position = this._position;
 		// We always need to call _changed since we're caching bounds on all
 		// items, including Group.
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/Change.GEOMETRY);
 		// Detect matrices that contain only translations and scaling
 		// and transform the cached _bounds and _position without having to
 		// fully recalculate each time.

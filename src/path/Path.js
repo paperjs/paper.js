@@ -137,7 +137,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
-		if (flags & /*#=*/ ChangeFlag.GEOMETRY) {
+		if (flags & /*#=*/ChangeFlag.GEOMETRY) {
 			// The _currentPath is already cleared in Item, but clear it on the
 			// parent too, for children of CompoundPaths, and Groups (ab)used as
 			// clipping paths.
@@ -148,7 +148,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			this._length = this._clockwise = undefined;
 			// Only notify all curves if we're not told that only one Segment
 			// has changed and took already care of notifications.
-			if (this._curves && !(flags & /*#=*/ ChangeFlag.SEGMENTS)) {
+			if (this._curves && !(flags & /*#=*/ChangeFlag.SEGMENTS)) {
 				for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed();
 			}
@@ -156,7 +156,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			// calculation.
 			// NOTE: This is only needed with __options.booleanOperations
 			this._monoCurves = undefined;
-		} else if (flags & /*#=*/ ChangeFlag.STROKE) {
+		} else if (flags & /*#=*/ChangeFlag.STROKE) {
 			// TODO: We could preserve the purely geometric bounds that are not
 			// affected by stroke: _bounds.bounds and _bounds.handleBounds
 			this._bounds = undefined;
@@ -289,7 +289,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			}
 			// Use SEGMENTS notification instead of GEOMETRY since curves are
 			// up-to-date and don't need notification.
-			this._changed(/*#=*/ Change.SEGMENTS);
+			this._changed(/*#=*/Change.SEGMENTS);
 		}
 	}
 }, /** @lends Path# */{
@@ -438,7 +438,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 		// Use SEGMENTS notification instead of GEOMETRY since curves are kept
 		// up-to-date by _adjustCurves() and don't need notification.
-		this._changed(/*#=*/ Change.SEGMENTS);
+		this._changed(/*#=*/Change.SEGMENTS);
 		return segs;
 	},
 
@@ -764,7 +764,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		}
 		// Use SEGMENTS notification instead of GEOMETRY since curves are kept
 		// up-to-date by _adjustCurves() and don't need notification.
-		this._changed(/*#=*/ Change.SEGMENTS);
+		this._changed(/*#=*/Change.SEGMENTS);
 		return removed;
 	},
 
@@ -881,7 +881,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 	isFullySelected: function() {
 		var length = this._segments.length;
 		return this._selected && length > 0 && this._selectedSegmentState
-				=== length * /*#=*/ SelectionState.SEGMENT;
+				=== length * /*#=*/SelectionState.SEGMENT;
 	},
 
 	setFullySelected: function(selected) {
@@ -903,10 +903,10 @@ var Path = PathItem.extend(/** @lends Path# */{
 	_selectSegments: function(selected) {
 		var length = this._segments.length;
 		this._selectedSegmentState = selected
-				? length * /*#=*/ SelectionState.SEGMENT : 0;
+				? length * /*#=*/SelectionState.SEGMENT : 0;
 		for (var i = 0; i < length; i++)
 			this._segments[i]._selectionState = selected
-					? /*#=*/ SelectionState.SEGMENT : 0;
+					? /*#=*/SelectionState.SEGMENT : 0;
 	},
 
 	_updateSelection: function(segment, oldState, newState) {
@@ -1148,7 +1148,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 			index = arg.index;
 			parameter = arg.parameter;
 		}
-		var tolerance = /*#=*/ Numerical.TOLERANCE;
+		var tolerance = /*#=*/Numerical.TOLERANCE;
 		if (parameter >= 1 - tolerance) {
 			// t == 1 is the same as t == 0 and index ++
 			index++;
@@ -1232,7 +1232,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 		// Flip clockwise state if it's defined
 		if (this._clockwise !== undefined)
 			this._clockwise = !this._clockwise;
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/Change.GEOMETRY);
 	},
 
 	// DOCS: document Path#join(path) in more detail.
@@ -1970,15 +1970,15 @@ var Path = PathItem.extend(/** @lends Path# */{
 			var state = segment._selectionState,
 				pX = coords[0],
 				pY = coords[1];
-			if (state & /*#=*/ SelectionState.HANDLE_IN)
+			if (state & /*#=*/SelectionState.HANDLE_IN)
 				drawHandle(2);
-			if (state & /*#=*/ SelectionState.HANDLE_OUT)
+			if (state & /*#=*/SelectionState.HANDLE_OUT)
 				drawHandle(4);
 			// Draw a rectangle at segment.point:
 			ctx.fillRect(pX - half, pY - half, size, size);
 			// If the point is not selected, draw a white square that is 1 px
 			// smaller on all sides:
-			if (!(state & /*#=*/ SelectionState.POINT)) {
+			if (!(state & /*#=*/SelectionState.POINT)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
 				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
@@ -2383,7 +2383,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 					x = pt.x,
 					y = pt.y,
 					abs = Math.abs,
-					EPSILON = /*#=*/ Numerical.EPSILON,
+					EPSILON = /*#=*/Numerical.EPSILON,
 					rx = abs(radius.width),
 					ry = abs(radius.height),
 					rxSq = rx * rx,

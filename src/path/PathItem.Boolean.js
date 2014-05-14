@@ -163,7 +163,7 @@ PathItem.inject(new function() {
 	 * @param {CurveLocation[]} intersections Array of CurveLocation objects
 	 */
 	function splitPath(intersections) {
-		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
+		var TOLERANCE = /*#=*/Numerical.TOLERANCE,
 			linearSegments;
 
 		function resetLinear() {
@@ -224,7 +224,7 @@ PathItem.inject(new function() {
 	 * with respect to a given set of monotone curves.
 	 */
 	function getWinding(point, curves, horizontal, testContains) {
-		var TOLERANCE = /*#=*/ Numerical.TOLERANCE,
+		var TOLERANCE = /*#=*/Numerical.TOLERANCE,
 			x = point.x,
 			y = point.y,
 			windLeft = 0,
@@ -572,7 +572,7 @@ Path.inject(/** @lends Path# */{
 				var a = 3 * (y1 - y2) - y0 + y3,
 					b = 2 * (y0 + y2) - 4 * y1,
 					c = y1 - y0,
-					TOLERANCE = /*#=*/ Numerical.TOLERANCE,
+					TOLERANCE = /*#=*/Numerical.TOLERANCE,
 					roots = [];
 				// Keep then range to 0 .. 1 (excluding) in the search for y
 				// extrema.

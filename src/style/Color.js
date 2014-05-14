@@ -644,7 +644,7 @@ var Color = Base.extend(new function() {
 		_changed: function() {
 			this._canvasStyle = null;
 			if (this._owner)
-				this._owner._changed(/*#=*/ Change.STYLE);
+				this._owner._changed(/*#=*/Change.STYLE);
 		},
 
 		/**

@@ -106,7 +106,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 			if (owner._applyMatrix) {
 				owner.transform(null, true);
 			} else {
-				owner._changed(/*#=*/ Change.GEOMETRY);
+				owner._changed(/*#=*/Change.GEOMETRY);
 			}
 		}
 	},

@@ -99,18 +99,18 @@ var Style = Base.extend(new function() {
 	};
 
 	var flags = {
-		strokeWidth: /*#=*/ Change.STROKE,
-		strokeCap: /*#=*/ Change.STROKE,
-		strokeJoin: /*#=*/ Change.STROKE,
+		strokeWidth: /*#=*/Change.STROKE,
+		strokeCap: /*#=*/Change.STROKE,
+		strokeJoin: /*#=*/Change.STROKE,
 		// strokeScaling can change the coordinates of cached path items
-		strokeScaling: /*#=*/ Change.STROKE | Change.GEOMETRY,
-		miterLimit: /*#=*/ Change.STROKE,
-		fontFamily: /*#=*/ Change.GEOMETRY,
-		fontWeight: /*#=*/ Change.GEOMETRY,
-		fontSize: /*#=*/ Change.GEOMETRY,
-		font: /*#=*/ Change.GEOMETRY, // deprecated, links to fontFamily
-		leading: /*#=*/ Change.GEOMETRY,
-		justification: /*#=*/ Change.GEOMETRY
+		strokeScaling: /*#=*/(Change.STROKE | Change.GEOMETRY),
+		miterLimit: /*#=*/Change.STROKE,
+		fontFamily: /*#=*/Change.GEOMETRY,
+		fontWeight: /*#=*/Change.GEOMETRY,
+		fontSize: /*#=*/Change.GEOMETRY,
+		font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
+		leading: /*#=*/Change.GEOMETRY,
+		justification: /*#=*/Change.GEOMETRY
 	};
 
 	// Enforce creation of beans, as bean getters have hidden parameters,
@@ -170,7 +170,7 @@ var Style = Base.extend(new function() {
 					// Notify the owner of the style change STYLE is always set,
 					// additional flags come from flags, as used for STROKE:
 					if (owner)
-						owner._changed(flag || /*#=*/ Change.STYLE);
+						owner._changed(flag || /*#=*/Change.STYLE);
 				}
 			}
 		};

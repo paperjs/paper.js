@@ -96,7 +96,7 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
 
 	setSymbol: function(symbol) {
 		this._symbol = symbol;
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/Change.GEOMETRY);
 	},
 
 	clone: function(insert) {

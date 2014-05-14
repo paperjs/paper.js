@@ -172,7 +172,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 					&& (curveOut = curves[index]))
 				curveOut._changed();
 		}
-		path._changed(/*#=*/ Change.SEGMENTS);
+		path._changed(/*#=*/Change.SEGMENTS);
 	},
 
 	/**
@@ -285,7 +285,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 		var next = this.getNext(),
 			handle1 = this._handleOut,
 			handle2 = next._handleIn,
-			kappa = /*#=*/ Numerical.KAPPA;
+			kappa = /*#=*/Numerical.KAPPA;
 		if (handle1.isOrthogonal(handle2)) {
 			var from = this._point,
 				to = next._point,
@@ -318,10 +318,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 	 */
 	isSelected: function(_point) {
 		var state = this._selectionState;
-		return !_point ? !!(state & /*#=*/ SelectionState.SEGMENT)
-			: _point === this._point ? !!(state & /*#=*/ SelectionState.POINT)
-			: _point === this._handleIn ? !!(state & /*#=*/ SelectionState.HANDLE_IN)
-			: _point === this._handleOut ? !!(state & /*#=*/ SelectionState.HANDLE_OUT)
+		return !_point ? !!(state & /*#=*/SelectionState.SEGMENT)
+			: _point === this._point ? !!(state & /*#=*/SelectionState.POINT)
+			: _point === this._handleIn ? !!(state & /*#=*/SelectionState.HANDLE_IN)
+			: _point === this._handleOut ? !!(state & /*#=*/SelectionState.HANDLE_OUT)
 			: false;
 	},
 
@@ -330,10 +330,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 			selected = !!selected, // convert to boolean
 			state = this._selectionState,
 			oldState = state,
-			flag = !_point ? /*#=*/ SelectionState.SEGMENT
-					: _point === this._point ? /*#=*/ SelectionState.POINT
-					: _point === this._handleIn ? /*#=*/ SelectionState.HANDLE_IN
-					: _point === this._handleOut ? /*#=*/ SelectionState.HANDLE_OUT
+			flag = !_point ? /*#=*/SelectionState.SEGMENT
+					: _point === this._point ? /*#=*/SelectionState.POINT
+					: _point === this._handleIn ? /*#=*/SelectionState.HANDLE_IN
+					: _point === this._handleOut ? /*#=*/SelectionState.HANDLE_OUT
 					: 0;
 		if (selected) {
 			state |= flag;
@@ -351,7 +351,7 @@ var Segment = Base.extend(/** @lends Segment# */{
 			path._updateSelection(this, oldState, state);
 			// Let path know that we changed something and the view should be
 			// redrawn
-			path._changed(/*#=*/ Change.ATTRIBUTE);
+			path._changed(/*#=*/Change.ATTRIBUTE);
 		}
 	},
 

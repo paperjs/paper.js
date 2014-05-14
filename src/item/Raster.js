@@ -210,7 +210,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 				image ? image.naturalWidth || image.width : 0,
 				image ? image.naturalHeight || image.height : 0);
 		this._context = null;
-		this._changed(/*#=*/ Change.GEOMETRY | /*#=*/ Change.PIXELS);
+		this._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
 	},
 
 	/**
@@ -259,7 +259,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 			// for ChangeFlag.PIXELS, but since it's only happening in one place
 			// this is fine:
 			this._image = null;
-			this._changed(/*#=*/ Change.PIXELS);
+			this._changed(/*#=*/Change.PIXELS);
 		}
 		return this._context;
 	},

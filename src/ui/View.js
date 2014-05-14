@@ -280,7 +280,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 	 * @param {ChangeFlag} flags describes what exactly has changed.
 	 */
 	_changed: function(flags) {
-		if (flags & /*#=*/ ChangeFlag.APPEARANCE)
+		if (flags & /*#=*/ChangeFlag.APPEARANCE)
 			this._project._needsUpdate = true;
 	},
 

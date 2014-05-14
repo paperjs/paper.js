@@ -103,7 +103,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 				this._radius.set(width / 2, height / 2);
 			}
 			this._size.set(width, height);
-			this._changed(/*#=*/ Change.GEOMETRY);
+			this._changed(/*#=*/Change.GEOMETRY);
 		}
 	},
 
@@ -147,7 +147,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 				}
 			}
 		}
-		this._changed(/*#=*/ Change.GEOMETRY);
+		this._changed(/*#=*/Change.GEOMETRY);
 	},
 
 	isEmpty: function() {
@@ -202,7 +202,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 						y = height / 2,
 						// Use 1 - KAPPA to calculate position of control points
 						// from the corners inwards.
-						kappa = 1 - /*#=*/ Numerical.KAPPA,
+						kappa = 1 - /*#=*/Numerical.KAPPA,
 						cx = rx * kappa,
 						cy = ry * kappa,
 						// Build the coordinates list, so it can optionally be
