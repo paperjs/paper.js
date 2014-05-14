@@ -30,11 +30,10 @@
 		var path = new Path.Star(center, points, radius1, radius2);
 		path.fillColor = 'black';
 
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

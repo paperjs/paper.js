@@ -23,11 +23,10 @@
 		var path = new Path.Circle(new Point(50, 50), 25);
 		path.fillColor = 'red';
 
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

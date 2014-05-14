@@ -37,7 +37,7 @@
 			fillColor: 'yellow'
 		});
 		rect.rotate(-20);
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 
 		var prev = null;
 		function onMouseMove(event) {
@@ -54,6 +54,5 @@
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

@@ -43,11 +43,10 @@
 
 		rect.rotate(45).scale(0.7);
 
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="300" height="600"></canvas>
-	<svg id="svg" width="300" height="600"></svg>
 </body>
 </html>

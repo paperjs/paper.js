@@ -13,12 +13,11 @@
 	    project.importJSON(tiger);
 	    console.log('Load JSON', Date.now() - start);
 	    var start = Date.now();
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 		console.log('Export SVG', Date.now() - start);
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="600" height="600"></canvas>
-	<svg id="svg" width="600" height="600"></svg>
 </body>
 </html>

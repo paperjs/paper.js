@@ -6,8 +6,7 @@
 	<link rel="stylesheet" href="../css/style.css">
 	<script type="text/javascript" src="../../dist/paper-full.js"></script>
 	<script type="text/paperscript" canvas="canvas">
-		// view._context = new ProxyContext(view._context);
-		// view.zoom = 1.25;
+		view.zoom = 1.5;
 		settings.applyMatrix = false;
 		var path = new Path.Circle({
 			center: view.center - [0, 140],
@@ -56,11 +55,10 @@
 		hole.position += 15;
 		compound.scale(2, 1);
 
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="300" height="500"></canvas>
-	<svg id="svg" width="300" height="500"></svg>
 </body>
 </html>

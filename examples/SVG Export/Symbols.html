@@ -18,11 +18,10 @@
 		p1.rotate(45);
 		var p2 = symbol.place([300, 200]);
 		p2.rotate(-30);
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

@@ -71,11 +71,10 @@
 			fillColor: '#99c'
 		});
 
-		document.getElementById('svg').appendChild(project.exportSVG({ matchShapes: true }));
+		document.body.appendChild(project.exportSVG({ matchShapes: true }));
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

@@ -16,11 +16,10 @@
 		group.translate([100, 100]);
 		group.scale(0.5);
 		group.rotate(10);
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>

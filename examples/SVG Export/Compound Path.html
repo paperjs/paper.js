@@ -13,11 +13,10 @@
 		var path2 = new Path.Rectangle([50, 50], [200, 200]);
 		var path3 = new Path.Rectangle([0, 0], [400, 400]);
 		new CompoundPath(path1, path2, path3);
-		document.getElementById('svg').appendChild(project.exportSVG());
+		document.body.appendChild(project.exportSVG());
 	</script>
 </head>
 <body>
 	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
 </body>
 </html>
