@@ -422,14 +422,15 @@ new function() {
 					xmlns: 'http://www.w3.org/2000/svg',
 					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
 				}),
+				parent = node,
 				matrix = view._matrix;
 			// If the view has a transformation, wrap all layers in a group with
 			// that transformation applied to.
 			if (!matrix.isIdentity())
-				node = node.appendChild(
+				parent = node.appendChild(
 						createElement('g', getTransform(matrix)));
 			for (var i = 0, l = layers.length; i < l; i++)
-				node.appendChild(exportSVG(layers[i], options));
+				parent.appendChild(exportSVG(layers[i], options));
 			return exportDefinitions(node, options);
 		}
 	});
