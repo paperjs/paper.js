@@ -945,7 +945,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
 			cache = (!matrix || matrix.equals(_matrix)) && getter;
 		// Set up a boundsCache structure that keeps track of items that keep
-		// cached bounds that depend on this item. We store this in our parent,
+		// cached bounds that depend on this item. We store this in the parent,
 		// for multiple reasons:
 		// The parent receives CHILDREN change notifications for when its
 		// children are added or removed and can thus clear the cache, and we
@@ -1011,15 +1011,17 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			if (item._boundsCache) {
 				for (var i = 0, list = item._boundsCache.list, l = list.length;
 						i < l; i++) {
-					var child = list[i];
-					if (child !== item) {
-						child._bounds = child._position = undefined;
-						// We need to recursively call _clearBoundsCache,
-						// because when the cache for this child's children is
-						// not valid anymore, that propagates up the DOM tree.
-						if (child._boundsCache)
-							Item._clearBoundsCache(child);
+					var other = list[i];
+					if (other && other !== item) {
+						other._bounds = other._position = undefined;
+						// We need to recursively call _clearBoundsCache, as
+						// when the cache for the other item's children is not
+						// valid anymore, that propagates up the DOM tree.
+						if (other._boundsCache)
+							Item._clearBoundsCache(other);
 					}
+					// Erase entry now, to prevent circular recursion.
+					list[i] = null;
 				}
 				// Clear the item itself, as well as its bounds cache.
 				item._bounds = item._position = item._boundsCache = undefined;
