@@ -15,19 +15,12 @@
 var CanvasProvider = {
 	canvases: [],
 
-	getCanvas: function(width, height, pixelRatio) {
+	getCanvas: function(width, height) {
 		var canvas,
-			init = true;
+			clear = true;
 		if (typeof width === 'object') {
-			pixelRatio = height;
 			height = width.height;
 			width = width.width;
-		}
-		if (!pixelRatio) {
-			pixelRatio = 1;
-		} else if (pixelRatio !== 1) {
-			width *= pixelRatio;
-			height *= pixelRatio;
 		}
 		if (this.canvases.length) {
 			canvas = this.canvases.pop();
@@ -36,7 +29,7 @@ var CanvasProvider = {
 			canvas = document.createElement('canvas');
 /*#*/ } else { // __options.environment != 'browser'
 			canvas = new Canvas(width, height);
-			init = false; // It's already initialized through constructor.
+			clear = false; // It's already cleared through constructor.
 /*#*/ } // __options.environment != 'browser'
 		}
 		var ctx = canvas.getContext('2d');
@@ -44,7 +37,7 @@ var CanvasProvider = {
 		// using clearRect and visa versa.
 		if (canvas.width === width && canvas.height === height) {
 			// +1 is needed on some browsers to really clear the borders
-			if (init)
+			if (clear)
 				ctx.clearRect(0, 0, width + 1, height + 1);
 		} else {
 			canvas.width = width;
@@ -52,13 +45,11 @@ var CanvasProvider = {
 		}
 		// We save on retrieval and restore on release.
 		ctx.save();
-		if (pixelRatio !== 1)
-			ctx.scale(pixelRatio, pixelRatio);
 		return canvas;
 	},
 
-	getContext: function(width, height, pixelRatio) {
-		return this.getCanvas(width, height, pixelRatio).getContext('2d');
+	getContext: function(width, height) {
+		return this.getCanvas(width, height).getContext('2d');
 	},
 
 	 // release can receive either a canvas or a context.

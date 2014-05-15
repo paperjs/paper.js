@@ -3661,8 +3661,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Set ctx to the context of the temporary canvas, so we draw onto
 			// it, instead of the mainCtx.
 			mainCtx = ctx;
-			ctx = CanvasProvider.getContext(
-					bounds.getSize().ceil().add(new Size(1, 1)), pixelRatio);
+			ctx = CanvasProvider.getContext(bounds.getSize().ceil().add(1)
+					.multiply(pixelRatio));
+			if (pixelRatio !== 1)
+				ctx.scale(pixelRatio, pixelRatio);
 		}
 		ctx.save();
 		// Get the transformation matrix for non-scaling strokes.
