@@ -1008,13 +1008,13 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		_clearBoundsCache: function(item) {
 			// This is defined as a static method so Symbol can used it too.
 			// Clear the position as well, since it's depending on bounds.
-			if (item._boundsCache) {
-				for (var i = 0, list = item._boundsCache.list, l = list.length;
-						i < l; i++) {
+			var cache = item._boundsCache;
+			if (cache) {
+				// Erase cache before looping, to prevent circular recursion.
+				item._bounds = item._position = item._boundsCache = undefined;
+				for (var i = 0, list = cache.list, l = list.length; i < l; i++) {
 					var other = list[i];
-					// Erase entry now, to prevent circular recursion.
-					list[i] = null;
-					if (other && other !== item) {
+					if (other !== item) {
 						other._bounds = other._position = undefined;
 						// We need to recursively call _clearBoundsCache, as
 						// when the cache for the other item's children is not
@@ -1023,8 +1023,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 							Item._clearBoundsCache(other);
 					}
 				}
-				// Clear the item itself, as well as its bounds cache.
-				item._bounds = item._position = item._boundsCache = undefined;
 			}
 		}
 	}
