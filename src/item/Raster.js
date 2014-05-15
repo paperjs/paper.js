@@ -127,11 +127,12 @@ var Raster = Item.extend(/** @lends Raster# */{
 	setSize: function(/* size */) {
 		var size = Size.read(arguments);
 		if (!this._size.equals(size)) {
-			// Get reference to image before changing canvas
+			// Get reference to image before changing canvas.
 			var element = this.getElement();
-			// Setting canvas internally sets _size
+			// NOTE: Setting canvas internally sets _size.
+			// NOTE: No need to release the previous canvas as #setCanvas() does
 			this.setCanvas(CanvasProvider.getCanvas(size));
-			// Draw element back onto new canvas
+			// Draw element back onto new canvas.
 			if (element)
 				this.getContext(true).drawImage(element, 0, 0,
 						size.width, size.height);
@@ -163,12 +164,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 	},
 
 	/**
-	 * Pixels per inch of the raster at its current size.
+	 * The resolution of the raster at its current size, in PPI (pixels per
+	 * inch).
 	 *
 	 * @type Size
 	 * @bean
 	 */
-	getPpi: function() {
+	getResolution: function() {
 		var matrix = this._matrix,
 			orig = new Point(0, 0).transform(matrix),
 			u = new Point(1, 0).transform(matrix).subtract(orig),
@@ -178,6 +180,13 @@ var Raster = Item.extend(/** @lends Raster# */{
 			72 / v.getLength()
 		);
 	},
+
+	/**
+	 * @private
+	 * @bean
+	 * @deprecated use {@link #getResolution()} instead.
+	 */
+	getPpi: '#getResolution',
 
 	/**
 	 * The HTMLImageElement of the raster, if one is associated.
