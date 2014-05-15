@@ -3639,6 +3639,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Determine if we can draw directly, or if we need to draw into a
 			// separate canvas and then composite onto the main canvas.
 			direct = normalBlend && opacity === 1
+					|| param.dontStart // e.g. CompoundPath
 					|| param.clip
 					// If native blending is possible, see if the item allows it
 					|| (nativeBlend || normalBlend && opacity < 1)
