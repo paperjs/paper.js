@@ -1012,6 +1012,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 				for (var i = 0, list = item._boundsCache.list, l = list.length;
 						i < l; i++) {
 					var other = list[i];
+					// Erase entry now, to prevent circular recursion.
+					list[i] = null;
 					if (other && other !== item) {
 						other._bounds = other._position = undefined;
 						// We need to recursively call _clearBoundsCache, as
@@ -1020,8 +1022,6 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						if (other._boundsCache)
 							Item._clearBoundsCache(other);
 					}
-					// Erase entry now, to prevent circular recursion.
-					list[i] = null;
 				}
 				// Clear the item itself, as well as its bounds cache.
 				item._bounds = item._position = item._boundsCache = undefined;
