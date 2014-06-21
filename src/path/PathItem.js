@@ -163,7 +163,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 		if (last > 0) {
 			locations.sort(compare);
 			// Filter out duplicate locations
-			for (var i = last; i >= 0; i--) {
+			for (var i = last; i >= 1; i--) {
 				if (locations[i].equals(locations[i === 0 ? last : i - 1])) {
 					locations.splice(i, 1);
 					last--;
