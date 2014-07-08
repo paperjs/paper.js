@@ -2621,7 +2621,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	 * transformation into account (the default behavior), or whether it should
 	 * appear as a non-scaling stroke.
 	 *
-	 * @name Style#strokeScaling
+	 * @name Item#strokeScaling
 	 * @property
 	 * @default true
 	 * @type Boolean
