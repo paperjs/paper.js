@@ -350,16 +350,22 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} this affine transform
 	 */
 	concatenate: function(mx) {
-		var a = this._a,
-			b = this._b,
-			c = this._c,
-			d = this._d;
-		this._a = mx._a * a + mx._c * b;
-		this._b = mx._b * a + mx._d * b;
-		this._c = mx._a * c + mx._c * d;
-		this._d = mx._b * c + mx._d * d;
-		this._tx += mx._tx * a + mx._ty * b;
-		this._ty += mx._tx * c + mx._ty * d;
+		var a1 = this._a,
+			b1 = this._b,
+			c1 = this._c,
+			d1 = this._d,
+			a2 = mx._a,
+			b2 = mx._b,
+			c2 = mx._c,
+			d2 = mx._d,
+			tx2 = mx._tx,
+			ty2 = mx._ty;
+		this._a = a2 * a1 + c2 * b1;
+		this._b = b2 * a1 + d2 * b1;
+		this._c = a2 * c1 + c2 * d1;
+		this._d = b2 * c1 + d2 * d1;
+		this._tx += tx2 * a1 + ty2 * b1;
+		this._ty += tx2 * c1 + ty2 * d1;
 		this._changed();
 		return this;
 	},
@@ -371,20 +377,48 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 	 * @return {Matrix} this affine transform
 	 */
 	preConcatenate: function(mx) {
-		var a = this._a,
-			b = this._b,
-			c = this._c,
-			d = this._d,
-			tx = this._tx,
-			ty = this._ty;
-		this._a = mx._a * a + mx._b * c;
-		this._b = mx._a * b + mx._b * d;
-		this._c = mx._c * a + mx._d * c;
-		this._d = mx._c * b + mx._d * d;
-		this._tx = mx._a * tx + mx._b * ty + mx._tx;
-		this._ty = mx._c * tx + mx._d * ty + mx._ty;
+		var a1 = this._a,
+			b1 = this._b,
+			c1 = this._c,
+			d1 = this._d,
+			tx1 = this._tx,
+			ty1 = this._ty,
+			a2 = mx._a,
+			b2 = mx._b,
+			c2 = mx._c,
+			d2 = mx._d,
+			tx2 = mx._tx,
+			ty2 = mx._ty;
+		this._a = a2 * a1 + b2 * c1;
+		this._b = a2 * b1 + b2 * d1;
+		this._c = c2 * a1 + d2 * c1;
+		this._d = c2 * b1 + d2 * d1;
+		this._tx = a2 * tx1 + b2 * ty1 + tx2;
+		this._ty = c2 * tx1 + d2 * ty1 + ty2;
 		this._changed();
 		return this;
+	},
+
+	chain: function(mx) {
+		var a1 = this._a,
+			b1 = this._b,
+			c1 = this._c,
+			d1 = this._d,
+			tx1 = this._tx,
+			ty1 = this._ty,
+			a2 = mx._a,
+			b2 = mx._b,
+			c2 = mx._c,
+			d2 = mx._d,
+			tx2 = mx._tx,
+			ty2 = mx._ty;
+		return new Matrix(
+				a2 * a1 + c2 * b1,
+				a2 * c1 + c2 * d1,
+				b2 * a1 + d2 * b1,
+				b2 * c1 + d2 * d1,
+				tx1 + tx2 * a1 + ty2 * b1,
+				ty1 + tx2 * c1 + ty2 * d1);
 	},
 
 	/**

@@ -232,7 +232,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i],
 				mx = child._matrix;
-			paths.push(child.getPathData(_matrix ? _matrix.clone().concatenate(mx) : mx, _precision));
+			paths.push(child.getPathData(_matrix && !mx.isIdentity()
+					? _matrix.chain(mx) : mx, _precision));
 		}
 		return paths.join(' ');
 	}
@@ -282,7 +283,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 				mx = child._matrix;
 			if (!selectedItems[child._id])
 				child._drawSelected(ctx, mx.isIdentity() ? matrix
-						: matrix.clone().concatenate(mx));
+						: matrix.chain(mx));
 		}
 	}
 }, new function() { // Injection scope for PostScript-like drawing functions

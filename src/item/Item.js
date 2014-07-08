@@ -978,7 +978,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		matrix = !matrix
 				? _matrix
 				: _matrix
-					? matrix.clone().concatenate(_matrix)
+					? matrix.chain(_matrix)
 					: matrix;
 		// If we're caching bounds on this item, pass it on as cacheItem, so the
 		// children can setup the _boundsCache structures for it.
@@ -1692,7 +1692,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// Keep the accumulated matrices up to this item in options, so we
 			// can keep calculating the correct _tolerancePadding values.
 			totalMatrix = options._totalMatrix = parentTotalMatrix
-					? parentTotalMatrix.clone().concatenate(matrix)
+					? parentTotalMatrix.chain(matrix)
 					// If this is the first one in the recursion, factor in the
 					// zoom of the view and the globalMatrix of the item.
 					: this.getGlobalMatrix().preConcatenate(view._matrix),
@@ -3600,7 +3600,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			parentMatrix = matrices[matrices.length - 1],
 			viewMatrix = param.viewMatrix,
 			matrix = this._matrix,
-			globalMatrix = parentMatrix.clone().concatenate(matrix);
+			globalMatrix = parentMatrix.chain(matrix);
 		// If this item is not invertible, do not draw it, since it would cause
 		// empty ctx.currentPath and mess up caching. It appears to also be a
 		// good idea generally to not draw in such circumstances, e.g. SVG
@@ -3613,7 +3613,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// pre-concatenate the view's matrix.
 		// Note that it's only provided if it isn't the identity matrix.
 		function getViewMatrix(matrix) {
-			return viewMatrix ? viewMatrix.clone().concatenate(matrix) : matrix;
+			return viewMatrix ? viewMatrix.chain(matrix) : matrix;
 		}
 
 		// Only keep track of transformation if told so. See Project#draw()
@@ -3669,7 +3669,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		ctx.save();
 		// Get the transformation matrix for non-scaling strokes.
 		var strokeMatrix = parentStrokeMatrix
-				? parentStrokeMatrix.clone().concatenate(matrix)
+				? parentStrokeMatrix.chain(matrix)
 				: !this.getStrokeScaling() && getViewMatrix(globalMatrix),
 			// If we're drawing into a separate canvas and a clipItem is defined
 			// for the current rendering loop, we need to draw the clip item
@@ -3758,7 +3758,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 			// layer level, with a fallback to #009dec
 			var color = this.getSelectedColor(true)
 					|| this.getLayer().getSelectedColor(true),
-				mx = matrix.clone().concatenate(this.getGlobalMatrix(true));
+				mx = matrix.chain(this.getGlobalMatrix(true));
 			ctx.strokeStyle = ctx.fillStyle = color
 					? color.toCanvasStyle(ctx) : '#009dec';
 			if (this._drawSelected)
