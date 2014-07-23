@@ -351,8 +351,10 @@ Base.exports.PaperScript = (function() {
 			// Look through all enumerable properties on the scope and expose
 			// these too as pseudo-globals, but only if they seem to be in use.
 			for (var key in scope) {
-				if ((hidden || !/^_/.test(key)) && new RegExp(
-						'\\b' + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
+				// Next to \b well also need to match \s and \W in the beginning
+				// of $_, since $ is not part of \w.
+				if ((hidden || !/^_/.test(key)) && new RegExp('[\\b\\s\\W]'
+						+ key.replace(/\$/g, '\\$') + '\\b').test(code)) {
 					params.push(key);
 					args.push(scope[key]);
 				}
