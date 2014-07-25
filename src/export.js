@@ -26,14 +26,17 @@ paper = new (PaperScope.inject(Base.exports, {
 	Key: Key
 }))();
 
-// Support AMD (e.g. require.js)
-// Use named module AMD syntax since there are other unnamed calls to define()
-// inside the built library (from inlined Acorn / Esprima) that apparently
-// confuse the require.js optimizer.
-if (typeof define === 'function' && define.amd)
+if (typeof define === 'function' && define.amd) {
+	// Support AMD (e.g. require.js)
+	// Use named module AMD syntax since there are other unnamed calls to
+	// define() inside the built library (from inlined Acorn / Esprima) that
+	// apparently confuse the require.js optimizer.
 	define('paper', paper);
-else if (typeof module === 'object')
+} else if (typeof module === 'object' && module // could be `null`
+		&& typeof module.exports === 'object') {
+	// Support CommonJS module
 	module.exports = paper;
+}
 
 /*#*/ } else if (__options.environment == 'node') {
 
