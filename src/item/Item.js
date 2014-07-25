@@ -465,7 +465,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 						? /*#=*/ChangeFlag.ATTRIBUTE : /*#=*/Change.ATTRIBUTE);
 			}
 		};
-}, {}), /** @lends Item# */{
+	},
+{}), /** @lends Item# */{
 	// Enforce creation of beans, as bean getters have hidden parameters.
 	// See #getPosition() below.
 	beans: true,

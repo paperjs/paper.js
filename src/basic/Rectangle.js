@@ -792,44 +792,43 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 		return this.expand(this.width * hor - this.width,
 				this.height * (ver === undefined ? hor : ver) - this.height);
 	}
-}, new function() {
-	return Base.each([
-			['Top', 'Left'], ['Top', 'Right'],
-			['Bottom', 'Left'], ['Bottom', 'Right'],
-			['Left', 'Center'], ['Top', 'Center'],
-			['Right', 'Center'], ['Bottom', 'Center']
-		],
-		function(parts, index) {
-			var part = parts.join('');
-			// find out if the first of the pair is an x or y property,
-			// by checking the first character for [R]ight or [L]eft;
-			var xFirst = /^[RL]/.test(part);
-			// Rename Center to CenterX or CenterY:
-			if (index >= 4)
-				parts[1] += xFirst ? 'Y' : 'X';
-			var x = parts[xFirst ? 0 : 1],
-				y = parts[xFirst ? 1 : 0],
-				getX = 'get' + x,
-				getY = 'get' + y,
-				setX = 'set' + x,
-				setY = 'set' + y,
-				get = 'get' + part,
-				set = 'set' + part;
-			this[get] = function(_dontLink) {
-				var ctor = _dontLink ? Point : LinkedPoint;
-				return new ctor(this[getX](), this[getY](), this, set);
-			};
-			this[set] = function(/* point */) {
-				var point = Point.read(arguments);
-				this[setX](point.x);
-				this[setY](point.y);
-			};
-		}, {
-			// Enforce creation of beans, as bean getters have hidden parameters
-			// See _dontLink argument above.
-			beans: true
-		});
-});
+}, Base.each([
+		['Top', 'Left'], ['Top', 'Right'],
+		['Bottom', 'Left'], ['Bottom', 'Right'],
+		['Left', 'Center'], ['Top', 'Center'],
+		['Right', 'Center'], ['Bottom', 'Center']
+	],
+	function(parts, index) {
+		var part = parts.join('');
+		// find out if the first of the pair is an x or y property,
+		// by checking the first character for [R]ight or [L]eft;
+		var xFirst = /^[RL]/.test(part);
+		// Rename Center to CenterX or CenterY:
+		if (index >= 4)
+			parts[1] += xFirst ? 'Y' : 'X';
+		var x = parts[xFirst ? 0 : 1],
+			y = parts[xFirst ? 1 : 0],
+			getX = 'get' + x,
+			getY = 'get' + y,
+			setX = 'set' + x,
+			setY = 'set' + y,
+			get = 'get' + part,
+			set = 'set' + part;
+		this[get] = function(_dontLink) {
+			var ctor = _dontLink ? Point : LinkedPoint;
+			return new ctor(this[getX](), this[getY](), this, set);
+		};
+		this[set] = function(/* point */) {
+			var point = Point.read(arguments);
+			this[setX](point.x);
+			this[setY](point.y);
+		};
+	}, {
+		// Enforce creation of beans, as bean getters have hidden parameters
+		// See _dontLink argument above.
+		beans: true
+	}
+));
 
 /**
  * @name LinkedRectangle
