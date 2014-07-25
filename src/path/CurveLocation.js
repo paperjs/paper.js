@@ -209,26 +209,26 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 	/**
 	 * The tangential vector to the {@link #curve} at the given location.
 	 *
+	 * @name Item#getTangent
 	 * @type Point
 	 * @bean
 	 */
-	getTangent: function() {
-		var parameter = this.getParameter(),
-			curve = this.getCurve();
-		return parameter != null && curve && curve.getTangentAt(parameter, true);
-	},
 
 	/**
 	 * The normal vector to the {@link #curve} at the given location.
 	 *
+	 * @name Item#getNormal
 	 * @type Point
 	 * @bean
 	 */
-	getNormal: function() {
-		var parameter = this.getParameter(),
-			curve = this.getCurve();
-		return parameter != null && curve && curve.getNormalAt(parameter, true);
-	},
+
+	/**
+	 * The curvature of the {@link #curve} at the given location.
+	 *
+	 * @name Item#getCurvature
+	 * @type Number
+	 * @bean
+	 */
 
 	/**
 	 * The distance from the queried point to the returned location.
@@ -288,4 +288,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 			parts.push('distance: ' + f.number(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
 	}
-});
+}, Base.each(['Tangent', 'Normal', 'Curvature'],
+	// Produce getters for #getTangent() / #getNormal() / #getCurvature()
+	function(name) {
+		var get = 'get' + name + 'At';
+		this['get' + name] = function() {
+			var parameter = this.getParameter(),
+				curve = this.getCurve();
+			return parameter != null && curve && curve[get](parameter, true);
+		};
+	}, {}
+));
