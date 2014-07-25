@@ -32,6 +32,8 @@ paper = new (PaperScope.inject(Base.exports, {
 // confuse the require.js optimizer.
 if (typeof define === 'function' && define.amd)
 	define('paper', paper);
+else if (typeof module === 'object')
+	module.exports = paper;
 
 /*#*/ } else if (__options.environment == 'node') {
 
