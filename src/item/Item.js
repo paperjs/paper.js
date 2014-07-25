@@ -2183,25 +2183,28 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 	* Removes the item from its parent's named children list.
 	*/
 	_removeNamed: function() {
-		var children = this._parent._children,
-			namedChildren = this._parent._namedChildren,
-			name = this._name,
-			namedArray = namedChildren[name],
-			index = namedArray ? namedArray.indexOf(this) : -1;
-		if (index == -1)
-			return;
-		// Remove the named reference
-		if (children[name] == this)
-			delete children[name];
-		// Remove this entry
-		namedArray.splice(index, 1);
-		// If there are any items left in the named array, set
-		// the last of them to be this.parent.children[this.name]
-		if (namedArray.length) {
-			children[name] = namedArray[namedArray.length - 1];
-		} else {
-			// Otherwise delete the empty array
-			delete namedChildren[name];
+		var parent = this._parent;
+		if (parent) {
+			var children = parent._children,
+				namedChildren = parent._namedChildren,
+				name = this._name,
+				namedArray = namedChildren[name],
+				index = namedArray ? namedArray.indexOf(this) : -1;
+			if (index !== -1) {
+				// Remove the named reference
+				if (children[name] == this)
+					delete children[name];
+				// Remove this entry
+				namedArray.splice(index, 1);
+				// If there are any items left in the named array, set
+				// the last of them to be this.parent.children[this.name]
+				if (namedArray.length) {
+					children[name] = namedArray[namedArray.length - 1];
+				} else {
+					// Otherwise delete the empty array
+					delete namedChildren[name];
+				}
+			}
 		}
 	},
 
