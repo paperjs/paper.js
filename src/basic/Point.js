@@ -331,7 +331,8 @@ var Point = Base.extend(/** @lends Point# */{
 			if (Numerical.isZero(div)) {
 				return NaN;
 			} else {
-				return Math.acos(this.dot(point) / div);
+				var a = this.dot(point) / div;
+				return Math.acos(a < -1 ? -1 : a > 1 ? 1 : a);
 			}
 		}
 	},
