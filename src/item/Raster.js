@@ -38,8 +38,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 	 * element to get the image from (either a DOM Image or a Canvas).
 	 *
 	 * @param {HTMLImageElement|Canvas|String} [source] the source of the raster
-	 * @param {HTMLImageElement|Canvas|String} [position] the center position at
-	 * which the raster item is placed.
+	 * @param {Point} [position] the center position at which the raster item is
+	 * placed.
 	 *
 	 * @example {@paperscript height=300} // Creating a raster using a url
 	 * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
@@ -615,7 +615,6 @@ var Raster = Item.extend(/** @lends Raster# */{
 	/**
 	 * @param {ImageData} data
 	 * @param {Point} point
-	 * @return {ImageData}
 	 */
 	setImageData: function(data /*, point */) {
 		var point = Point.read(arguments, 1);
