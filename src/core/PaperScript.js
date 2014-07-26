@@ -71,12 +71,12 @@ Base.exports.PaperScript = (function() {
 	Size.inject(fields);
 	Color.inject(fields);
 
-	// Use very short name for the binary operator (_$_) as well as the
-	// unary operator ($_), as operations will be replaced with then.
+	// Use very short name for the binary operator (__$__) as well as the
+	// unary operator ($__), as operations will be replaced with then.
 	// The underscores stands for the values, and the $ for the operators.
 
 	// Binary Operator Handler
-	function _$_(left, operator, right) {
+	function __$__(left, operator, right) {
 		var handler = binaryOperators[operator];
 		if (left && left[handler]) {
 			var res = left[handler](right);
@@ -94,7 +94,7 @@ Base.exports.PaperScript = (function() {
 	}
 
 	// Unary Operator Handler
-	function $_(operator, value) {
+	function $__(operator, value) {
 		var handler = unaryOperators[operator];
 		if (handler && value && value[handler])
 			return value[handler]();
@@ -196,7 +196,7 @@ Base.exports.PaperScript = (function() {
 				if (node.operator in unaryOperators
 						&& node.argument.type !== 'Literal') {
 					var arg = getCode(node.argument);
-					replaceCode(node, '$_("' + node.operator + '", '
+					replaceCode(node, '$__("' + node.operator + '", '
 							+ arg + ')');
 				}
 				break;
@@ -205,7 +205,7 @@ Base.exports.PaperScript = (function() {
 						&& node.left.type !== 'Literal') {
 					var left = getCode(node.left),
 						right = getCode(node.right);
-					replaceCode(node, '_$_(' + left + ', "' + node.operator
+					replaceCode(node, '__$__(' + left + ', "' + node.operator
 							+ '", ' + right + ')');
 				}
 				break;
@@ -216,19 +216,20 @@ Base.exports.PaperScript = (function() {
 						// to perform well
 						parent.type === 'ForStatement'
 						// We need to filter out parents that are comparison
-						// operators, e.g. for situations like if (++i < 1),
-						// as we can't replace that with if (_$_(i, "+", 1) < 1)
+						// operators, e.g. for situations like `if (++i < 1)`,
+						// as we can't replace that with
+						// `if (__$__(i, "+", 1) < 1)`
 						// Match any operator beginning with =, !, < and >.
 						|| parent.type === 'BinaryExpression'
 							&& /^[=!<>]/.test(parent.operator)
 						// array[i++] is a MemberExpression with computed = true
-						// We can't replace that with array[_$_(i, "+", 1)].
+						// We can't replace that with array[__$__(i, "+", 1)].
 						|| parent.type === 'MemberExpression'
 							&& parent.computed))) {
 					if (node.type === 'UpdateExpression') {
 						if (!node.prefix) {
 							var arg = getCode(node.argument);
-							replaceCode(node, arg + ' = _$_(' + arg + ', "'
+							replaceCode(node, arg + ' = __$__(' + arg + ', "'
 									+ node.operator[0] + '", 1)');
 						}
 					} else { // AssignmentExpression
@@ -236,7 +237,7 @@ Base.exports.PaperScript = (function() {
 								&& node.left.type !== 'Literal') {
 							var left = getCode(node.left),
 								right = getCode(node.right);
-							replaceCode(node, left + ' = _$_(' + left + ', "'
+							replaceCode(node, left + ' = __$__(' + left + ', "'
 									+ node.operator[0] + '", ' + right + ')');
 						}
 					}
@@ -294,7 +295,7 @@ Base.exports.PaperScript = (function() {
 		}
 		// Now do the parsing magic
 		walkAST(parse(code, { ranges: true }));
-
+		console.log(code);
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
 			// This is part of a browser hack, see above.
@@ -352,7 +353,7 @@ Base.exports.PaperScript = (function() {
 			// these too as pseudo-globals, but only if they seem to be in use.
 			for (var key in scope) {
 				// Next to \b well also need to match \s and \W in the beginning
-				// of $_, since $ is not part of \w.
+				// of $__, since $ is not part of \w.
 				if ((hidden || !/^_/.test(key)) && new RegExp('[\\b\\s\\W]'
 						+ key.replace(/\$/g, '\\$') + '\\b').test(code)) {
 					params.push(key);
@@ -360,7 +361,8 @@ Base.exports.PaperScript = (function() {
 				}
 			}
 		}
-		expose({ _$_: _$_, $_: $_, paper: scope, view: view, tool: tool }, true);
+		expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
+				true);
 		expose(scope);
 		// Finally define the handler variable names as parameters and compose
 		// the string describing the properties for the returned object at the
