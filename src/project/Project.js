@@ -43,7 +43,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Note that when working with PaperScript, a project is automatically
 	 * created for us and the {@link PaperScope#project} variable points to it.
 	 *
-	 * @param {HTMLCanvasElement} element an HTML anvas element that should be
+	 * @param {HTMLCanvasElement} element the HTML canvas element that should be
 	 * used as the element for the view.
 	 */
 	initialize: function Project(element) {
@@ -317,9 +317,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 * Fetch items contained within the project whose properties match the
 	 * criteria in the specified object.
 	 * Extended matching is possible by providing a compare function or
-	 * regular expression. Matching points, colors only work as a comparison 
+	 * regular expression. Matching points, colors only work as a comparison
 	 * of the full object, not partial matching (e.g. only providing the x-
-	 * coordinate to match all points with that x-value). Partial matching 
+	 * coordinate to match all points with that x-value). Partial matching
 	 * does work for {@link Item#data}.
 	 *
 	 * @example {@paperscript} // Fetch all selected path items:
@@ -328,22 +328,22 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Select path2:
 	 * path2.selected = true;
-	 * 
+	 *
 	 * // Fetch all selected path items:
 	 * var items = project.getItems({
 	 *     selected: true,
 	 *     class: Path
 	 * });
-	 * 
+	 *
 	 * // Change the fill color of the selected path to red:
 	 * items[0].fillColor = 'red';
 	 *
@@ -353,51 +353,51 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'purple'
 	 * });
-	 * 
+	 *
 	 * // Fetch all items with a purple fill color:
 	 * var items = project.getItems({
 	 *     fillColor: 'purple'
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * items[0].selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Fetch items at a specific position:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Fetch all path items positioned at {x: 150, y: 150}:
 	 * var items = project.getItems({
 	 *     position: [150, 50]
 	 * });
-	 * 
+	 *
 	 * // Select the fetched path:
 	 * items[0].selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Fetch items using a comparing function:
-	 * 
+	 *
 	 * // Create a circle shaped path:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Create a circle shaped path with 50% opacity:
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -405,19 +405,19 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     opacity: 0.5
 	 * });
-	 * 
+	 *
 	 * // Fetch all items whose opacity is smaller than 1
 	 * var items = paper.project.getItems({
 	 *     opacity: function(value) {
 	 *         return value < 1;
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * items[0].selected = true;
 	 *
 	 * @example {@paperscript} // Fetch items using a comparing function (2):
-	 * 
+	 *
 	 * // Create a rectangle shaped path (4 segments):
 	 * var path1 = new Path.Rectangle({
 	 *     from: [25, 25],
@@ -425,7 +425,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     strokeColor: 'black',
 	 *     strokeWidth: 10
 	 * });
-	 * 
+	 *
 	 * // Create a line shaped path (2 segments):
 	 * var path2 = new Path.Line({
 	 *     from: [125, 50],
@@ -433,7 +433,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     strokeColor: 'black',
 	 *     strokeWidth: 10
 	 * });
-	 * 
+	 *
 	 * // Fetch all paths with 2 segments:
 	 * var items = project.getItems({
 	 *     class: Path,
@@ -441,12 +441,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         return segments.length == 2;
 	 * 	}
 	 * });
-	 * 
+	 *
 	 * // Select the fetched path:
 	 * items[0].selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Match (nested) properties of the data property:
-	 * 
+	 *
 	 * // Create a black circle shaped path:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
@@ -460,7 +460,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Create a red circle shaped path:
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -474,7 +474,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Fetch all items whose data object contains a person
 	 * // object whose name is john and length is 180:
 	 * var items = paper.project.getItems({
@@ -485,12 +485,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * items[0].selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Match strings using regular expressions:
-	 * 
+	 *
 	 * // Create a path named 'aardvark':
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
@@ -498,7 +498,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     name: 'aardvark'
 	 * });
-	 * 
+	 *
 	 * // Create a path named 'apple':
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -506,7 +506,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     name: 'apple'
 	 * });
-	 * 
+	 *
 	 * // Create a path named 'banana':
 	 * var path2 = new Path.Circle({
 	 *     center: [250, 50],
@@ -514,17 +514,17 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     name: 'banana'
 	 * });
-	 * 
+	 *
 	 * // Fetch all items that have a name starting with 'a':
 	 * var items = project.getItems({
 	 *     name: /^a/
 	 * });
-	 * 
+	 *
 	 * // Change the fill color of the matched items:
 	 * for (var i = 0; i < items.length; i++) {
 	 * 	items[i].fillColor = 'red';
 	 * }
-	 * 
+	 *
 	 * @param {Object} match The criteria to match against.
 	 * @return {Item[]}
 	 */
@@ -533,12 +533,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	},
 
 	/**
-	 * Fetch the first item contained within the project whose properties 
+	 * Fetch the first item contained within the project whose properties
 	 * match the criteria in the specified object.
 	 * Extended matching is possible by providing a compare function or
-	 * regular expression. Matching points, colors only work as a comparison 
+	 * regular expression. Matching points, colors only work as a comparison
 	 * of the full object, not partial matching (e.g. only providing the x-
-	 * coordinate to match all points with that x-value). Partial matching 
+	 * coordinate to match all points with that x-value). Partial matching
 	 * does work for {@link Item#data}.
 	 *
 	 * @example {@paperscript} // Fetch all selected path items:
@@ -547,22 +547,22 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Select path2:
 	 * path2.selected = true;
-	 * 
+	 *
 	 * // Fetch first select path items:
 	 * var item = project.getItem({
 	 *     selected: true,
 	 *     class: Path
 	 * });
-	 * 
+	 *
 	 * // Change the fill color of the selected path to red:
 	 * item.fillColor = 'red';
 	 *
@@ -572,51 +572,51 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'purple'
 	 * });
-	 * 
+	 *
 	 * // Fetch first item with a purple fill color:
 	 * var item = project.getItem({
 	 *     fillColor: 'purple'
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * item.selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Fetch item at a specific position:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Fetch path item positioned at {x: 150, y: 150}:
 	 * var item = project.getItem({
 	 *     position: [150, 50]
 	 * });
-	 * 
+	 *
 	 * // Select the fetched path:
 	 * item.selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Fetch item using a comparing function:
-	 * 
+	 *
 	 * // Create a circle shaped path:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
 	 *     radius: 25,
 	 *     fillColor: 'black'
 	 * });
-	 * 
+	 *
 	 * // Create a circle shaped path with 50% opacity:
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -624,19 +624,19 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     opacity: 0.5
 	 * });
-	 * 
+	 *
 	 * // Fetch first item whose opacity is smaller than 1
 	 * var item = paper.project.getItem({
 	 *     opacity: function(value) {
 	 *         return value < 1;
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * item.selected = true;
 	 *
 	 * @example {@paperscript} // Fetch item using a comparing function (2):
-	 * 
+	 *
 	 * // Create a rectangle shaped path (4 segments):
 	 * var path1 = new Path.Rectangle({
 	 *     from: [25, 25],
@@ -644,7 +644,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     strokeColor: 'black',
 	 *     strokeWidth: 10
 	 * });
-	 * 
+	 *
 	 * // Create a line shaped path (2 segments):
 	 * var path2 = new Path.Line({
 	 *     from: [125, 50],
@@ -652,7 +652,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     strokeColor: 'black',
 	 *     strokeWidth: 10
 	 * });
-	 * 
+	 *
 	 * // Fetch first path with 2 segments:
 	 * var item = project.getItem({
 	 *     class: Path,
@@ -660,12 +660,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         return segments.length == 2;
 	 * 	}
 	 * });
-	 * 
+	 *
 	 * // Select the fetched path:
 	 * item.selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Match (nested) properties of the data property:
-	 * 
+	 *
 	 * // Create a black circle shaped path:
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
@@ -679,7 +679,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Create a red circle shaped path:
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -693,7 +693,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Fetch item whose data object contains a person
 	 * // object whose name is john and length is 180:
 	 * var item = paper.project.getItem({
@@ -704,12 +704,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *         }
 	 *     }
 	 * });
-	 * 
+	 *
 	 * // Select the fetched item:
 	 * item.selected = true;
-	 * 
+	 *
 	 * @example {@paperscript} // Match strings using regular expressions:
-	 * 
+	 *
 	 * // Create a path named 'aardvark':
 	 * var path1 = new Path.Circle({
 	 *     center: [50, 50],
@@ -717,7 +717,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     name: 'aardvark'
 	 * });
-	 * 
+	 *
 	 * // Create a path named 'apple':
 	 * var path2 = new Path.Circle({
 	 *     center: [150, 50],
@@ -725,15 +725,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 	 *     fillColor: 'black',
 	 *     name: 'apple'
 	 * });
-	 * 
+	 *
 	 * // Fetch the first item that has a name starting with 'a':
 	 * var item = project.getItem({
 	 *     name: /^a/
 	 * });
-	 * 
+	 *
 	 * // Change the fill color of the matched item:
 	 * item.fillColor = 'red';
-	 * 
+	 *
 	 * @param {Object} match The criteria to match against.
 	 * @return {Item}
 	 */
