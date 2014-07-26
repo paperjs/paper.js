@@ -209,32 +209,35 @@ Base.exports.PaperScript = (function() {
 							+ '", ' + right + ')');
 				}
 				break;
-			case 'UpdateExpression': // a++, a--
+			case 'UpdateExpression': // a++, a--, ++a, --a
 			case 'AssignmentExpression': /// a += b, a -= b
-				if (!(parent && (
+				var parentType = parent && parent.type;
+				if (!(
 						// Filter out for statements to allow loop increments
 						// to perform well
-						parent.type === 'ForStatement'
+						parentType === 'ForStatement'
 						// We need to filter out parents that are comparison
 						// operators, e.g. for situations like `if (++i < 1)`,
 						// as we can't replace that with
 						// `if (__$__(i, "+", 1) < 1)`
 						// Match any operator beginning with =, !, < and >.
-						|| parent.type === 'BinaryExpression'
+						|| parentType === 'BinaryExpression'
 							&& /^[=!<>]/.test(parent.operator)
 						// array[i++] is a MemberExpression with computed = true
 						// We can't replace that with array[__$__(i, "+", 1)].
-						|| parent.type === 'MemberExpression'
-							&& parent.computed))) {
+						|| parentType === 'MemberExpression' && parent.computed
+				)) {
 					if (node.type === 'UpdateExpression') {
-						if (!node.prefix) {
-							var arg = getCode(node.argument);
-							var str = arg + ' = __$__(' + arg
-									+ ', "' + node.operator[0] + '", 1)';
-							if (parent.type === 'AssignmentExpression')
-								str = arg + '; ' + str;
-							replaceCode(node, str);
-						}
+						var arg = getCode(node.argument);
+						var str = arg + ' = __$__(' + arg
+								+ ', "' + node.operator[0] + '", 1)';
+						// If this is not a prefixed update expression
+						// (++a, --a), assign the old value before updating it.
+						if (!node.prefix
+								&& (parentType === 'AssignmentExpression'
+									|| parentType === 'VariableDeclarator'))
+							str = arg + '; ' + str;
+						replaceCode(node, str);
 					} else { // AssignmentExpression
 						if (/^.=$/.test(node.operator)
 								&& node.left.type !== 'Literal') {
@@ -298,7 +301,6 @@ Base.exports.PaperScript = (function() {
 		}
 		// Now do the parsing magic
 		walkAST(parse(code, { ranges: true }));
-		console.log(code);
 		if (sourceMap) {
 			// Adjust the line offset of the resulting code if required.
 			// This is part of a browser hack, see above.
