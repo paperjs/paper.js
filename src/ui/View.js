@@ -671,7 +671,7 @@ var View = Base.extend(Callback, /** @lends View# */{
 		create: function(project, element) {
 /*#*/ if (__options.environment == 'browser') {
 			if (typeof element === 'string')
-				element = document.getElementById(element);
+				element = document.getElementById(element) || element;
 /*#*/ } // __options.environment == 'browser'
 			// Factory to provide the right View subclass for a given element.
 			// Produces only CanvasViews for now:
