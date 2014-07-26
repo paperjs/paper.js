@@ -229,8 +229,11 @@ Base.exports.PaperScript = (function() {
 					if (node.type === 'UpdateExpression') {
 						if (!node.prefix) {
 							var arg = getCode(node.argument);
-							replaceCode(node, arg + ' = __$__(' + arg + ', "'
-									+ node.operator[0] + '", 1)');
+							var str = arg + ' = __$__(' + arg
+									+ ', "' + node.operator[0] + '", 1)';
+							if (parent.type === 'AssignmentExpression')
+								str = arg + '; ' + str;
+							replaceCode(node, str);
 						}
 					} else { // AssignmentExpression
 						if (/^.=$/.test(node.operator)
