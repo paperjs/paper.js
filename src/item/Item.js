@@ -3674,7 +3674,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		// Get the transformation matrix for non-scaling strokes.
 		var strokeMatrix = parentStrokeMatrix
 				? parentStrokeMatrix.chain(matrix)
-				: !this.getStrokeScaling() && getViewMatrix(globalMatrix),
+				: !this.getStrokeScaling(true) && getViewMatrix(globalMatrix),
 			// If we're drawing into a separate canvas and a clipItem is defined
 			// for the current rendering loop, we need to draw the clip item
 			// again.
