@@ -454,15 +454,20 @@ var Path = PathItem.extend(/** @lends Path# */{
 			curve._path = this;
 			curve._segment1 = segments[i];
 			curve._segment2 = segments[i + 1] || segments[0];
+			curve._changed();
 		}
 		// If it's the first segment, correct the last segment of closed
 		// paths too:
 		if (curve = curves[this._closed && from === 0 ? segments.length - 1
-				: from - 1])
+				: from - 1]) {
 			curve._segment2 = segments[from] || segments[0];
+			curve._changed();
+		}
 		// Fix the segment after the modified range, if it exists
-		if (curve = curves[to])
+		if (curve = curves[to]) {
 			curve._segment1 = segments[to];
+			curve._changed();
+		}
 	},
 
 	/**
