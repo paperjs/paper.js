@@ -152,14 +152,15 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
 	/**
 	 * The length of the path from its beginning up to the location described
-	 * by this object.
+	 * by this object. If the curve is not part of a path, then the length
+	 * within the curve is returned instead.
 	 *
 	 * @type Number
 	 * @bean
 	 */
 	getOffset: function() {
 		var path = this.getPath();
-		return path && path._getOffset(this);
+		return path ? path._getOffset(this) : this.getCurveOffset();
 	},
 
 	/**

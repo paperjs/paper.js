@@ -1638,6 +1638,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 	},
 
 	/**
+	 * Returns the length of the path from its beginning up to up to the
+	 * specified point if it lies on the path, {@code null} otherwise.
+	 * @param {Point} point the point on the path.
+	 * @return {Number} the length of the path up to the specified point.
+	 */
+	getOffsetOf: function(/* point */) {
+		var loc = this.getLocationOf.apply(this, arguments);
+		return loc ? loc.getOffset() : null;
+	},
+
+	/**
 	 * Returns the curve location of the specified offset on the path.
 	 *
 	 * @param {Number} offset the offset on the path, where {@code 0} is at
