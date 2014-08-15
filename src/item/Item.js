@@ -368,9 +368,10 @@ var Item = Base.extend(Callback, /** @lends Item# */{
 		if (name === (+name) + '')
 			throw new Error(
 					'Names consisting only of numbers are not supported.');
-		if (name && this._parent) {
-			var children = this._parent._children,
-				namedChildren = this._parent._namedChildren,
+		var parent = this._parent;
+		if (name && parent) {
+			var children = parent._children,
+				namedChildren = parent._namedChildren,
 				orig = name,
 				i = 1;
 			// If unique is true, make sure we're not overriding other names
