@@ -48,7 +48,7 @@ var DomElement = new function() {
 
 	// Handles both getting and setting of vendor prefix values
 	function handlePrefix(el, name, set, value) {
-		var prefixes = ['webkit', 'moz', 'Moz', 'ms', 'o', ''],
+		var prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o'],
 			suffix = name[0].toUpperCase() + name.substring(1);
 		for (var i = 0; i < 6; i++) {
 			var prefix = prefixes[i],
