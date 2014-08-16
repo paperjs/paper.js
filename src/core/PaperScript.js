@@ -280,7 +280,7 @@ Base.exports.PaperScript = (function() {
 			var mappings = ['AAAA'];
 			// Create empty entries by the amount of lines + 1, so join can be
 			// used below to produce the actual instructions that many times.
-			mappings.length = code.match(lineBreaks).length + 1 + offset;
+			mappings.length = (code.match(lineBreaks) || []).length + 1 + offset;
 			sourceMap = {
 				version: 3,
 				file: url,
