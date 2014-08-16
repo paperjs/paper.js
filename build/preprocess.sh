@@ -21,25 +21,25 @@
 # preprocess.sh MODE SOURCE ARGUMENTS DESTINATION
 #
 # MODE:
-#	commented		Preprocessed, still formated and commented
-#	stripped		Preprocessed, formated but without comments
+#   commented       Preprocessed, still formated and commented
+#   stripped        Preprocessed, formated but without comments
 
 # Get the date from the git log:
 DATE=$(git log -1 --pretty=format:%ad)
 # Load __options from options.js and convert it to escaped JSON, to be passed on
 # to prepro:
 OPTIONS=$(printf '%q' $(node -e "
-	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
-	process.stdout.write(JSON.stringify(__options));
+    eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+    process.stdout.write(JSON.stringify(__options));
 "))
 # Build the prepo.js command out of it, passing on version and date as defines:
 COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\" }' $3 $2"
 
 case $1 in
-	commented)
-		eval $COMMAND > $4
-		;;
-	stripped)
-		eval "$COMMAND -c" > $4
-		;;
+    commented)
+        eval $COMMAND > $4
+        ;;
+    stripped)
+        eval "$COMMAND -c" > $4
+        ;;
 esac

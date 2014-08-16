@@ -16,12 +16,12 @@
 
 if [ -f ../dist/paper-full.js ]
 then
-	rm ../dist/paper-full.js
+    rm ../dist/paper-full.js
 fi
 
 if [ -f ../dist/paper-node.js ]
 then
-	rm ../dist/paper-node.js
+    rm ../dist/paper-node.js
 fi
 
 ln -s ../src/load.js ../dist/paper-full.js

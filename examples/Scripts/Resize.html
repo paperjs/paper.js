@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Resize</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var redPath = new Path.Circle({
-			center: view.center,
-			radius: 5,
-			fillColor: 'red'
-		});
+    <meta charset="UTF-8">
+    <title>Resize</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var redPath = new Path.Circle({
+            center: view.center,
+            radius: 5,
+            fillColor: 'red'
+        });
 
-		var whitePath = new Path.Circle({
-			center: view.center,
-			radius: 5,
-			fillColor: 'white'
-		});
+        var whitePath = new Path.Circle({
+            center: view.center,
+            radius: 5,
+            fillColor: 'white'
+        });
 
-		var text = new PointText({
-			content: 'Resize your window',
-			justification: 'center',
-			point: view.center
-		});
+        var text = new PointText({
+            content: 'Resize your window',
+            justification: 'center',
+            point: view.center
+        });
 
-		function onResize(event) {
-			// Resize the red circle to fill the bounds of the view:
-			redPath.fitBounds(view.bounds, true);
+        function onResize(event) {
+            // Resize the red circle to fill the bounds of the view:
+            redPath.fitBounds(view.bounds, true);
 
-			// Resize the white circle to fit within the bounds of the view:
-			whitePath.fitBounds(view.bounds, false);
+            // Resize the white circle to fit within the bounds of the view:
+            whitePath.fitBounds(view.bounds, false);
 
-			// Move the text to the center of the view:
-			text.position = view.bounds.center;
-		}
-	</script>
+            // Move the text to the center of the view:
+            text.position = view.bounds.center;
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

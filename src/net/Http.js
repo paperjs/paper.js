@@ -11,24 +11,24 @@
  */
 
 var Http = {
-	request: function(method, url, callback) {
-		// Code borrowed from Coffee Script and extended:
-		var xhr = new (window.ActiveXObject || XMLHttpRequest)(
-					'Microsoft.XMLHTTP');
-		xhr.open(method.toUpperCase(), url, true);
-		if ('overrideMimeType' in xhr)
-			xhr.overrideMimeType('text/plain');
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4) {
-				var status = xhr.status;
-				if (status === 0 || status === 200) {
-					callback.call(xhr, xhr.responseText);
-				} else {
-					throw new Error('Could not load ' + url + ' (Error '
-							+ status + ')');
-				}
-			}
-		};
-		return xhr.send(null);
-	}
+    request: function(method, url, callback) {
+        // Code borrowed from Coffee Script and extended:
+        var xhr = new (window.ActiveXObject || XMLHttpRequest)(
+                    'Microsoft.XMLHTTP');
+        xhr.open(method.toUpperCase(), url, true);
+        if ('overrideMimeType' in xhr)
+            xhr.overrideMimeType('text/plain');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                var status = xhr.status;
+                if (status === 0 || status === 200) {
+                    callback.call(xhr, xhr.responseText);
+                } else {
+                    throw new Error('Could not load ' + url + ' (Error '
+                            + status + ')');
+                }
+            }
+        };
+        return xhr.send(null);
+    }
 };

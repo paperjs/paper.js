@@ -1,559 +1,559 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-	<title>Paperoids</title>
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Paperoids</title>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
 
-	//
-	//
-	// Paperoids - an Asteroids clone for paper.js
-	//
-	// Sorry nerds, no enemy ships or sound just yet.
-	//
-	// Version:	1.2.1
-	// Author:	David Hirmes (@hirmes)
-	// Date:	2011-08-09
-	//
-	// Revision History:
-	// 1.0 	- 2011-07-13 - Initial release
-	// 1.1 	- 2011-07-13 - Optimizations by Jonathan Puckey (@jonathanpuckey)
-	// 1.2 	- 2011-07-16 - Refactored with closures (@jonathanpuckey)
-	// 1.2.1- 2011-08-09 - bug fixes
-	//
+    //
+    //
+    // Paperoids - an Asteroids clone for paper.js
+    //
+    // Sorry nerds, no enemy ships or sound just yet.
+    //
+    // Version: 1.2.1
+    // Author:  David Hirmes (@hirmes)
+    // Date:    2011-08-09
+    //
+    // Revision History:
+    // 1.0  - 2011-07-13 - Initial release
+    // 1.1  - 2011-07-13 - Optimizations by Jonathan Puckey (@jonathanpuckey)
+    // 1.2  - 2011-07-16 - Refactored with closures (@jonathanpuckey)
+    // 1.2.1- 2011-08-09 - bug fixes
+    //
 
-	var presets = {
-		speed: 0.2,
-		maxRockSpeed: 4.5,
-		rockCount: 6,
-		lives: 3,
-		freeShipScore: 10000,
-		freeShipIncrement: 10000
-	};
+    var presets = {
+        speed: 0.2,
+        maxRockSpeed: 4.5,
+        rockCount: 6,
+        lives: 3,
+        freeShipScore: 10000,
+        freeShipIncrement: 10000
+    };
 
-	function initialize() {
-		Rocks.add(presets.rockCount);
-		Score.update();
-		Lives.initialize();
-	}
+    function initialize() {
+        Rocks.add(presets.rockCount);
+        Score.update();
+        Lives.initialize();
+    }
 
-	function onKeyUp(event) {
-		if (event.key == 'space') {
-			Ship.moveTo(Point.random() * view.size);
-			Ship.stop();
-		}
-		if (event.key == 'z') {
-			Ship.fire();
-		}
-		// Show stats:
-		if (event.key == 'f') {
-			var stats = document.getElementById('stats');
-			if (stats) {
-				stats.style.display = (stats.style.display == 'block')
-						? 'none' : 'block';
-			}
-		}
-	}
+    function onKeyUp(event) {
+        if (event.key == 'space') {
+            Ship.moveTo(Point.random() * view.size);
+            Ship.stop();
+        }
+        if (event.key == 'z') {
+            Ship.fire();
+        }
+        // Show stats:
+        if (event.key == 'f') {
+            var stats = document.getElementById('stats');
+            if (stats) {
+                stats.style.display = (stats.style.display == 'block')
+                        ? 'none' : 'block';
+            }
+        }
+    }
 
-	function onFrame() {
-		Bullets.move();
-		Rocks.iterateExplosions();
-		Ship.checkCollisions();
-		if (Key.isDown('left')) {
-			Ship.turnLeft();
-		}
-		if (Key.isDown('right')) {
-			Ship.turnRight();
-		}
-		if (Key.isDown('up')) {
-			Ship.thrust();
-		} else {
-			Ship.coast();
-		}
-		Ship.move();
-	}
+    function onFrame() {
+        Bullets.move();
+        Rocks.iterateExplosions();
+        Ship.checkCollisions();
+        if (Key.isDown('left')) {
+            Ship.turnLeft();
+        }
+        if (Key.isDown('right')) {
+            Ship.turnRight();
+        }
+        if (Key.isDown('up')) {
+            Ship.thrust();
+        } else {
+            Ship.coast();
+        }
+        Ship.move();
+    }
 
-	project.currentStyle.strokeColor = 'white';
+    project.currentStyle.strokeColor = 'white';
 
-	var Game = {
-		roundDelay: false,
-		over: function() {
-			document.getElementById('gameover').style.display = 'block';
-		},
-		newRound: function() {
-			Game.roundDelay = false;
-			Rocks.add(presets.rockCount);
-		},
-		// Stats.js by Mr. Doob - https://github.com/mrdoob/stats.js
-	};
+    var Game = {
+        roundDelay: false,
+        over: function() {
+            document.getElementById('gameover').style.display = 'block';
+        },
+        newRound: function() {
+            Game.roundDelay = false;
+            Rocks.add(presets.rockCount);
+        },
+        // Stats.js by Mr. Doob - https://github.com/mrdoob/stats.js
+    };
 
-	var assets = {
-		destroyedShip: new function() {
-			var group = new Group(
-				new Path([-10, -8], [10, 0]),
-				new Path([10, 0], [-10, 8]),
-				new Path([-8, 4], [-8, -4])
-			);
-			group.visible = false;
-			return group;
-		},
-		explosion: new function() {
-			var explosionPath = new Path.Circle(new Point(), 1);
-			explosionPath.fillColor = 'white';
-			explosionPath.strokeColor = null;
-			return new Symbol(explosionPath);
-		}
-	};
+    var assets = {
+        destroyedShip: new function() {
+            var group = new Group(
+                new Path([-10, -8], [10, 0]),
+                new Path([10, 0], [-10, 8]),
+                new Path([-8, 4], [-8, -4])
+            );
+            group.visible = false;
+            return group;
+        },
+        explosion: new function() {
+            var explosionPath = new Path.Circle(new Point(), 1);
+            explosionPath.fillColor = 'white';
+            explosionPath.strokeColor = null;
+            return new Symbol(explosionPath);
+        }
+    };
 
-	var Ship = new function() {
-		var path = new Path([-10, -8], [10, 0], [-10, 8], [-8, 4], [-8, -4]);
-		path.closed = true;
-		var thrust = new Path([-8, -4], [-14, 0], [-8, 4]);
-		var group = new Group(path, thrust);
-		group.position = view.bounds.center;
-		return {
-			item: group,
+    var Ship = new function() {
+        var path = new Path([-10, -8], [10, 0], [-10, 8], [-8, 4], [-8, -4]);
+        path.closed = true;
+        var thrust = new Path([-8, -4], [-14, 0], [-8, 4]);
+        var group = new Group(path, thrust);
+        group.position = view.bounds.center;
+        return {
+            item: group,
 
-			angle: 0,
+            angle: 0,
 
-			vector: new Point({
-				angle: 0.2,
-				length: 1
-			}),
+            vector: new Point({
+                angle: 0.2,
+                length: 1
+            }),
 
-			turnLeft: function() {
-				group.rotate(-3);
-				this.angle -= 3;
-			},
+            turnLeft: function() {
+                group.rotate(-3);
+                this.angle -= 3;
+            },
 
-			turnRight: function() {
-				group.rotate(3);
-				this.angle += 3;
-			},
+            turnRight: function() {
+                group.rotate(3);
+                this.angle += 3;
+            },
 
-			thrust: function() {
-				thrust.visible = true;
-				this.vector += new Point({
-					angle: this.angle,
-					length: presets.speed
-				});
-				if (this.vector.length > 8) {
-					this.vector.length = 8;
-				}
-			},
+            thrust: function() {
+                thrust.visible = true;
+                this.vector += new Point({
+                    angle: this.angle,
+                    length: presets.speed
+                });
+                if (this.vector.length > 8) {
+                    this.vector.length = 8;
+                }
+            },
 
-			stop: function() {
-				this.vector.length = 0;
-			},
+            stop: function() {
+                this.vector.length = 0;
+            },
 
-			fire: function() {
-				if (!this.dying)
-					Bullets.fire(this.item.position, this.angle);
-			},
+            fire: function() {
+                if (!this.dying)
+                    Bullets.fire(this.item.position, this.angle);
+            },
 
-			coast: function() {
-				thrust.visible = false;
-				this.vector *= .992;
-			},
+            coast: function() {
+                thrust.visible = false;
+                this.vector *= .992;
+            },
 
-			move: function() {
-				group.position += this.vector;
-				keepInView(group);
-			},
+            move: function() {
+                group.position += this.vector;
+                keepInView(group);
+            },
 
-			moveTo: function(position) {
-				group.position = position;
-				keepInView(group);
-			},
+            moveTo: function(position) {
+                group.position = position;
+                keepInView(group);
+            },
 
-			destroy: function() {
-				this.destroyedShip = assets.destroyedShip.clone();
-				this.destroyedShip.position = this.item.position;
-				this.destroyedShip.visible = true;
-				this.item.visible = false;
-				this.stop();
-				this.item.position = view.center;
-				this.dying = true;
-			},
+            destroy: function() {
+                this.destroyedShip = assets.destroyedShip.clone();
+                this.destroyedShip.position = this.item.position;
+                this.destroyedShip.visible = true;
+                this.item.visible = false;
+                this.stop();
+                this.item.position = view.center;
+                this.dying = true;
+            },
 
-			destroyed: function() {
-				this.item.visible = true;
-				this.stop();
-				this.item.position = view.center;
-				this.dying = false;
-				this.destroyedShip.visible = false;
-			},
+            destroyed: function() {
+                this.item.visible = true;
+                this.stop();
+                this.item.position = view.center;
+                this.dying = false;
+                this.destroyedShip.visible = false;
+            },
 
-			checkCollisions: function() {
-				var crashRock;
+            checkCollisions: function() {
+                var crashRock;
 
-				// move rocks and do a hit test
-				// between bounding rect of rocks and ship
-				for (var i = 0; i < Rocks.children.length; i++) {
-					var rock = Rocks.children[i];
-					rock.position += rock.vector;
-					if (rock.bounds.intersects(this.item.bounds))
-						crashRock = rock;
-					keepInView(rock);
-				}
+                // move rocks and do a hit test
+                // between bounding rect of rocks and ship
+                for (var i = 0; i < Rocks.children.length; i++) {
+                    var rock = Rocks.children[i];
+                    rock.position += rock.vector;
+                    if (rock.bounds.intersects(this.item.bounds))
+                        crashRock = rock;
+                    keepInView(rock);
+                }
 
-				if (this.dying) {
-					var children = this.destroyedShip.children;
-					children[0].position.x++;
-					children[1].position.x--;
-					children[2].position.x--;
-					children[2].position.y++;
-					children[0].rotate(1);
-					children[1].rotate(-1);
-					children[2].rotate(1);
-					this.destroyedShip.opacity *= 0.98;
+                if (this.dying) {
+                    var children = this.destroyedShip.children;
+                    children[0].position.x++;
+                    children[1].position.x--;
+                    children[2].position.x--;
+                    children[2].position.y++;
+                    children[0].rotate(1);
+                    children[1].rotate(-1);
+                    children[2].rotate(1);
+                    this.destroyedShip.opacity *= 0.98;
 
-					// don't update anything else if the ship is already dead.
-					return;
-				}
+                    // don't update anything else if the ship is already dead.
+                    return;
+                }
 
 
-				// if bounding rect collision, do a line intersection test
-				if (crashRock) {
-					var tempRock = crashRock.symbol.definition.clone();
-					tempRock.transform(crashRock.matrix);
-					tempRock.remove();
-					var intersections = this.item.firstChild.getIntersections(tempRock);
-					if (intersections.length > 0)
-						Lives.remove();
-				}
-			}
-		};
-	};
+                // if bounding rect collision, do a line intersection test
+                if (crashRock) {
+                    var tempRock = crashRock.symbol.definition.clone();
+                    tempRock.transform(crashRock.matrix);
+                    tempRock.remove();
+                    var intersections = this.item.firstChild.getIntersections(tempRock);
+                    if (intersections.length > 0)
+                        Lives.remove();
+                }
+            }
+        };
+    };
 
-	var Bullets = new function() {
-		var group = new Group();
-		var children = group.children;
+    var Bullets = new function() {
+        var group = new Group();
+        var children = group.children;
 
-		function checkHits(bullet) {
-			for (var r = 0; r < Rocks.children.length; r++) {
-				var rock = Rocks.children[r];
-				if (rock.bounds.contains(bullet.position) ) {
-					Score.update(rock.shapeType);
-					Rocks.explode(rock);
-					if (rock.shapeType < Rocks.TYPE_SMALL ) {
-						for (var j = 0; j < 2; j++) {
-							Rocks.add(1, rock.shapeType + 4, rock.position);
-						}
-					}
-					rock.remove();
-					bullet.remove();
-				}
-			}
-		}
+        function checkHits(bullet) {
+            for (var r = 0; r < Rocks.children.length; r++) {
+                var rock = Rocks.children[r];
+                if (rock.bounds.contains(bullet.position) ) {
+                    Score.update(rock.shapeType);
+                    Rocks.explode(rock);
+                    if (rock.shapeType < Rocks.TYPE_SMALL ) {
+                        for (var j = 0; j < 2; j++) {
+                            Rocks.add(1, rock.shapeType + 4, rock.position);
+                        }
+                    }
+                    rock.remove();
+                    bullet.remove();
+                }
+            }
+        }
 
-		return {
-			fire: function(position, angle) {
-				// We can only fire 5 bullets at a time:
-				if (children.length == 5)
-					return;
-				var vector = new Point({
-					angle: angle,
-					length: 10
-				});
-				var bullet = new Path.Circle({
-					center: position + vector,
-					radius: 0.5,
-					parent: group,
-					fillColor: 'white',
-					strokeWidth: 'white',
-					strokeWidth: 0,
-					data: {
-						vector: vector,
-						timeToDie: 58
-					}
-				});
-			},
-			move: function() {
-				for (var i = 0; i < children.length; i++) {
-					var bullet = children[i];
-					bullet.data.timeToDie--;
-					if (bullet.data.timeToDie < 1) {
-						bullet.remove();
-					} else {
-						bullet.position += bullet.data.vector;
-						checkHits(bullet);
-						keepInView(bullet);
-					}
-				}
-			}
-		};
-	};
+        return {
+            fire: function(position, angle) {
+                // We can only fire 5 bullets at a time:
+                if (children.length == 5)
+                    return;
+                var vector = new Point({
+                    angle: angle,
+                    length: 10
+                });
+                var bullet = new Path.Circle({
+                    center: position + vector,
+                    radius: 0.5,
+                    parent: group,
+                    fillColor: 'white',
+                    strokeWidth: 'white',
+                    strokeWidth: 0,
+                    data: {
+                        vector: vector,
+                        timeToDie: 58
+                    }
+                });
+            },
+            move: function() {
+                for (var i = 0; i < children.length; i++) {
+                    var bullet = children[i];
+                    bullet.data.timeToDie--;
+                    if (bullet.data.timeToDie < 1) {
+                        bullet.remove();
+                    } else {
+                        bullet.position += bullet.data.vector;
+                        checkHits(bullet);
+                        keepInView(bullet);
+                    }
+                }
+            }
+        };
+    };
 
-	var Rocks = new function() {
-		var group = new Group();
-		var shapes = [
-			new Path(
-				[-23, -40.5], [0, -30.5], [24, -40.5], [45, -21.5], [25, -12.5],
-				[46, 9.5], [22, 38.5], [-10, 30.5], [-22, 40.5], [-46, 18.5],
-				[-33, 0.5], [-44, -21.5], [-23, -40.5]),
-			new Path(
-				[-45, -9.5], [-12, -40.5], [24, -40.5], [46, -11.5], [45, 10.5],
-				[24, 40.5], [0, 40.5], [0, 10.5], [-23, 38.5], [-46, 9.5], [-25, 0.5],
-				[-45, -9.5]),
-			new Path([-21.5, -39.5], [11.5, -39.5], [45.5, -20.5],
-				[45.5, -8.5], [9.5, 0.5], [44.5, 21.5], [22.5, 39.5], [9.5, 31.5],
-				[-20.5, 39.5], [-45.5, 10.5], [-45.5, -20.5], [-11.5, -21.5],
-				[-21.5, -39.5]),
-			new Path(
-				[-22.5, -40.5], [-0.5, -19.5], [23.5, -39.5], [44.5, -21.5],
-				[33.5, 0.5], [46.5, 19.5], [13.5, 40.5], [-22.5, 39.5], [-46.5, 18.5],
-				[-46.5, -18.5], [-22.5, -40.5])
-		];
+    var Rocks = new function() {
+        var group = new Group();
+        var shapes = [
+            new Path(
+                [-23, -40.5], [0, -30.5], [24, -40.5], [45, -21.5], [25, -12.5],
+                [46, 9.5], [22, 38.5], [-10, 30.5], [-22, 40.5], [-46, 18.5],
+                [-33, 0.5], [-44, -21.5], [-23, -40.5]),
+            new Path(
+                [-45, -9.5], [-12, -40.5], [24, -40.5], [46, -11.5], [45, 10.5],
+                [24, 40.5], [0, 40.5], [0, 10.5], [-23, 38.5], [-46, 9.5], [-25, 0.5],
+                [-45, -9.5]),
+            new Path([-21.5, -39.5], [11.5, -39.5], [45.5, -20.5],
+                [45.5, -8.5], [9.5, 0.5], [44.5, 21.5], [22.5, 39.5], [9.5, 31.5],
+                [-20.5, 39.5], [-45.5, 10.5], [-45.5, -20.5], [-11.5, -21.5],
+                [-21.5, -39.5]),
+            new Path(
+                [-22.5, -40.5], [-0.5, -19.5], [23.5, -39.5], [44.5, -21.5],
+                [33.5, 0.5], [46.5, 19.5], [13.5, 40.5], [-22.5, 39.5], [-46.5, 18.5],
+                [-46.5, -18.5], [-22.5, -40.5])
+        ];
 
-		// medium rocks
-		for (var i = 4; i < 8; i++) {
-			shapes[i] = shapes[i - 4].clone();
-			shapes[i].scale(0.5);
-		}
+        // medium rocks
+        for (var i = 4; i < 8; i++) {
+            shapes[i] = shapes[i - 4].clone();
+            shapes[i].scale(0.5);
+        }
 
-		// small rocks
-		for (var i = 8; i < 12; i++) {
-			shapes[i] = shapes[i - 4].clone();
-			shapes[i].scale(0.4);
-		}
+        // small rocks
+        for (var i = 8; i < 12; i++) {
+            shapes[i] = shapes[i - 4].clone();
+            shapes[i].scale(0.4);
+        }
 
-		var rockSymbols = [];
-		for (var i = 0; i < shapes.length; i++) {
-			rockSymbols[i] = new Symbol(shapes[i]);
-		}
+        var rockSymbols = [];
+        for (var i = 0; i < shapes.length; i++) {
+            rockSymbols[i] = new Symbol(shapes[i]);
+        }
 
-		var explosions = new Group();
+        var explosions = new Group();
 
-		return {
-			shapes: shapes,
-			children: group.children,
-			make: function(type, pos) {
-				var randomRock = type + Math.floor(4 * Math.random());
-				var rock = rockSymbols[randomRock].place();
-				rock.position = pos ? pos : Point.random() * view.size;
-				rock.vector = new Point({
-					angle: 360 * Math.random(),
-					length: presets.maxRockSpeed * Math.random() + 0.1
-				});
-				rock.shapeType = type;
-				return rock;
-			},
-			add: function(amount, type, position) {
-				for (var i = 0; i < amount; i++) {
-					var rock = this.make(type || this.TYPE_BIG, position);
-					group.addChild(rock);
-				}
-			},
-			explode: function(rock) {
-				var boomRock = rock.symbol.definition.clone();
-				boomRock.position = rock.position;
-				for (var i = 0; i < boomRock.segments.length; i++) {
-					var segmentPoint = boomRock.segments[i].point;
-					var placed = assets.explosion.place(segmentPoint);
-					placed.vector = (placed.position - rock.position) * 0.1;
-					explosions.addChild(placed);
-				}
-				boomRock.remove();
-			},
-			iterateExplosions: function() {
-				for (var i = 0; i < explosions.children.length; i++) {
-					var explosion = explosions.children[i];
-					explosion.vector.length *= .7;
-					explosion.position += explosion.vector;
-					explosion.opacity = explosion.vector.length;
-					if (explosion.vector.length < 0.05 ) {
-						explosion.remove();
-						// if no more rocks, wait a second and start a new round
-						if (this.children.length < 1 && !Game.roundDelay) {
-							Game.roundDelay = true;
-							presets.rockCount += 2;
-							setTimeout(Game.newRound, 1000);
-						}
-					}
-				}
-			},
-			TYPE_BIG: 0,
-			TYPE_MEDIUM: 4,
-			TYPE_SMALL: 8
-		};
-	};
+        return {
+            shapes: shapes,
+            children: group.children,
+            make: function(type, pos) {
+                var randomRock = type + Math.floor(4 * Math.random());
+                var rock = rockSymbols[randomRock].place();
+                rock.position = pos ? pos : Point.random() * view.size;
+                rock.vector = new Point({
+                    angle: 360 * Math.random(),
+                    length: presets.maxRockSpeed * Math.random() + 0.1
+                });
+                rock.shapeType = type;
+                return rock;
+            },
+            add: function(amount, type, position) {
+                for (var i = 0; i < amount; i++) {
+                    var rock = this.make(type || this.TYPE_BIG, position);
+                    group.addChild(rock);
+                }
+            },
+            explode: function(rock) {
+                var boomRock = rock.symbol.definition.clone();
+                boomRock.position = rock.position;
+                for (var i = 0; i < boomRock.segments.length; i++) {
+                    var segmentPoint = boomRock.segments[i].point;
+                    var placed = assets.explosion.place(segmentPoint);
+                    placed.vector = (placed.position - rock.position) * 0.1;
+                    explosions.addChild(placed);
+                }
+                boomRock.remove();
+            },
+            iterateExplosions: function() {
+                for (var i = 0; i < explosions.children.length; i++) {
+                    var explosion = explosions.children[i];
+                    explosion.vector.length *= .7;
+                    explosion.position += explosion.vector;
+                    explosion.opacity = explosion.vector.length;
+                    if (explosion.vector.length < 0.05 ) {
+                        explosion.remove();
+                        // if no more rocks, wait a second and start a new round
+                        if (this.children.length < 1 && !Game.roundDelay) {
+                            Game.roundDelay = true;
+                            presets.rockCount += 2;
+                            setTimeout(Game.newRound, 1000);
+                        }
+                    }
+                }
+            },
+            TYPE_BIG: 0,
+            TYPE_MEDIUM: 4,
+            TYPE_SMALL: 8
+        };
+    };
 
-	var Score = new function() {
-		var numberGroup = new Group(
-			new Path([0, 0], [20, 0], [20, 27], [0, 27], [0, 0]),
-			new Path([10, 0], [10, 27]),
-			new Path([0, 0], [20, 0], [20, 14], [0, 14], [0, 27], [20, 27]),
-			new Path([0, 0], [20, 0], [20, 14], [0, 14], [20, 14], [20, 27], [0, 27]),
-			new Path([0, 0], [0, 14], [20, 14], [20, 0], [20, 27]),
-			new Path([20, 0], [0, 0], [0, 14], [20, 14], [20, 27], [0, 27]),
-			new Path([20, 0], [0, 0], [0, 27], [20, 27], [20, 14], [0, 14]),
-			new Path([0, 0], [20, 0], [0, 27]),
-			new Path([0, 0], [20, 0], [20, 27], [0, 27], [0, 0], [0, 14], [20, 14]),
-			new Path([20, 14], [0, 14], [0, 0], [20, 0], [20, 27])
-		);
-		numberGroup.visible = false;
-		var scoreDisplay = new Group();
-		var score = 0;
-		return {
-			update: function(type) {
-				if (type == Rocks.TYPE_BIG) score += 20;
-				if (type == Rocks.TYPE_MEDIUM) score += 50;
-				if (type == Rocks.TYPE_SMALL) score += 100;
-				if (score >= presets.freeShipScore) {
-					Lives.add(1);
-					presets.freeShipScore += presets.freeShipIncrement;
-				}
-				scoreDisplay.removeChildren();
+    var Score = new function() {
+        var numberGroup = new Group(
+            new Path([0, 0], [20, 0], [20, 27], [0, 27], [0, 0]),
+            new Path([10, 0], [10, 27]),
+            new Path([0, 0], [20, 0], [20, 14], [0, 14], [0, 27], [20, 27]),
+            new Path([0, 0], [20, 0], [20, 14], [0, 14], [20, 14], [20, 27], [0, 27]),
+            new Path([0, 0], [0, 14], [20, 14], [20, 0], [20, 27]),
+            new Path([20, 0], [0, 0], [0, 14], [20, 14], [20, 27], [0, 27]),
+            new Path([20, 0], [0, 0], [0, 27], [20, 27], [20, 14], [0, 14]),
+            new Path([0, 0], [20, 0], [0, 27]),
+            new Path([0, 0], [20, 0], [20, 27], [0, 27], [0, 0], [0, 14], [20, 14]),
+            new Path([20, 14], [0, 14], [0, 0], [20, 0], [20, 27])
+        );
+        numberGroup.visible = false;
+        var scoreDisplay = new Group();
+        var score = 0;
+        return {
+            update: function(type) {
+                if (type == Rocks.TYPE_BIG) score += 20;
+                if (type == Rocks.TYPE_MEDIUM) score += 50;
+                if (type == Rocks.TYPE_SMALL) score += 100;
+                if (score >= presets.freeShipScore) {
+                    Lives.add(1);
+                    presets.freeShipScore += presets.freeShipIncrement;
+                }
+                scoreDisplay.removeChildren();
 
-				var scoreString = score + '';
-				for (var i = 0; i < scoreString.length; i++) {
-					var n = parseInt(scoreString[i], 10);
-					scoreDisplay.addChild(numberGroup.children[n].clone());
-					scoreDisplay.lastChild.position = [22 + i * 24, 22];
-				}
-			}
-		};
-	};
+                var scoreString = score + '';
+                for (var i = 0; i < scoreString.length; i++) {
+                    var n = parseInt(scoreString[i], 10);
+                    scoreDisplay.addChild(numberGroup.children[n].clone());
+                    scoreDisplay.lastChild.position = [22 + i * 24, 22];
+                }
+            }
+        };
+    };
 
-	var Lives = new function() {
-		var currentLives;
-		var shipPath = Ship.item.firstChild.clone();
-		project.activeLayer.addChild(shipPath);
-		shipPath.visible = false;
-		Ship.visible = false;
-		var group = new Group();
-		return {
-			initialize: function() {
-				currentLives = presets.lives;
-				this.display();
-			},
-			add: function() {
-				currentLives++;
-				this.display();
-			},
-			remove: function() {
-				currentLives--;
-				this.display();
-				Ship.destroy();
-				setTimeout( function() {
-					if (currentLives == 0) {
-						Game.over();
-					} else {
-						Ship.destroyed();
-					}
-				}, 1200);
-			},
-			display: function() {
-				group.removeChildren();
-				for (var i=0;i<currentLives-1;i++) {
-					var copy = shipPath.clone();
-					copy.rotate(-90);
-					copy.visible = true;
-					group.addChild(copy);
-					copy.position = [22+ i * copy.bounds.width, 53];
-				}
-			}
-		};
-	};
+    var Lives = new function() {
+        var currentLives;
+        var shipPath = Ship.item.firstChild.clone();
+        project.activeLayer.addChild(shipPath);
+        shipPath.visible = false;
+        Ship.visible = false;
+        var group = new Group();
+        return {
+            initialize: function() {
+                currentLives = presets.lives;
+                this.display();
+            },
+            add: function() {
+                currentLives++;
+                this.display();
+            },
+            remove: function() {
+                currentLives--;
+                this.display();
+                Ship.destroy();
+                setTimeout( function() {
+                    if (currentLives == 0) {
+                        Game.over();
+                    } else {
+                        Ship.destroyed();
+                    }
+                }, 1200);
+            },
+            display: function() {
+                group.removeChildren();
+                for (var i=0;i<currentLives-1;i++) {
+                    var copy = shipPath.clone();
+                    copy.rotate(-90);
+                    copy.visible = true;
+                    group.addChild(copy);
+                    copy.position = [22+ i * copy.bounds.width, 53];
+                }
+            }
+        };
+    };
 
-	initialize();
+    initialize();
 
-	// Stop left and right keyboard events from propagating.
-	function onKeyDown(event) {
-		if (event.key == 'left' || event.key == 'right') {
-			return false;
-		}
-	}
+    // Stop left and right keyboard events from propagating.
+    function onKeyDown(event) {
+        if (event.key == 'left' || event.key == 'right') {
+            return false;
+        }
+    }
 
-	function keepInView(item) {
-		var position = item.position;
-		var itemBounds = item.bounds;
-		var bounds = view.bounds;
+    function keepInView(item) {
+        var position = item.position;
+        var itemBounds = item.bounds;
+        var bounds = view.bounds;
 
-		if (itemBounds.left > bounds.width) {
-			position.x = -item.bounds.width;
-		}
+        if (itemBounds.left > bounds.width) {
+            position.x = -item.bounds.width;
+        }
 
-		if (position.x < -itemBounds.width) {
-			position.x = bounds.width;
-		}
+        if (position.x < -itemBounds.width) {
+            position.x = bounds.width;
+        }
 
-		if (itemBounds.top > view.size.height) {
-			position.y = -itemBounds.height;
-		}
+        if (itemBounds.top > view.size.height) {
+            position.y = -itemBounds.height;
+        }
 
-		if (position.y < -itemBounds.height) {
-			position.y = bounds.height  + itemBounds.height / 2;
-		}
-	}
-	</script>
-	<style type="text/css">
-		body {
-			margin: 0;
-			overflow: hidden;
-			background-color: #000;
-			font-family:Helvetica,Arial;
-		}
+        if (position.y < -itemBounds.height) {
+            position.y = bounds.height  + itemBounds.height / 2;
+        }
+    }
+    </script>
+    <style type="text/css">
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family:Helvetica,Arial;
+        }
 
-		.footer {
-			position:absolute;
-			bottom:0;
-			color:#ff0000;
-			background-color: rgba(60,60,60,0.8);
-			font-size:0.75em;
-			padding:0.5em;
-			color:#ddd;
-			width: 100%
-		}
+        .footer {
+            position:absolute;
+            bottom:0;
+            color:#ff0000;
+            background-color: rgba(60,60,60,0.8);
+            font-size:0.75em;
+            padding:0.5em;
+            color:#ddd;
+            width: 100%
+        }
 
-		.footer a {
-			color: #fff;
-			font-weight:
-			bold; text-decoration: none;
-			border-bottom: 1px solid #555;
-		}
+        .footer a {
+            color: #fff;
+            font-weight:
+            bold; text-decoration: none;
+            border-bottom: 1px solid #555;
+        }
 
-		.footer b {
-			background-color: #660000;
-			padding-left: 0.25em;
-			padding-right: 0.25em;
-		}
+        .footer b {
+            background-color: #660000;
+            padding-left: 0.25em;
+            padding-right: 0.25em;
+        }
 
-		.gameover {
-			display: none;
-			position: absolute;
-			left: 40%;
-			top: 40%;
-			color: #fff;
-			background-color: rgba(60,60,60,0.8);
-			padding: 32px;
-			-moz-border-radius: 12px;
-			-webkit-border-radius: 12px;
-			border-radius: 12px;
-			-moz-background-clip: padding;
-			-webkit-background-clip: padding-box;
-			background-clip: padding-box;
-		}
+        .gameover {
+            display: none;
+            position: absolute;
+            left: 40%;
+            top: 40%;
+            color: #fff;
+            background-color: rgba(60,60,60,0.8);
+            padding: 32px;
+            -moz-border-radius: 12px;
+            -webkit-border-radius: 12px;
+            border-radius: 12px;
+            -moz-background-clip: padding;
+            -webkit-background-clip: padding-box;
+            background-clip: padding-box;
+        }
 
-		.gameover a {
-			color: #fff;
-			font-weight: bold;
-		}
+        .gameover a {
+            color: #fff;
+            font-weight: bold;
+        }
 
-		#stats {
-			position: absolute;
-			left: auto !important;
-			right: 0px;
-		}
-	</style>
+        #stats {
+            position: absolute;
+            left: auto !important;
+            right: 0px;
+        }
+    </style>
 </head>
 <body style="background:black">
-	<canvas style="position:absolute" id="canvas" resize stats></canvas>
-	<div id="footer" class="footer"><a href=#">Paperoids</a>.  To Play: <b>&#8592;</b> and <b>&#8594;</b> to rotate.  <b>&#8593;</b> for thrust.  <b>Z</b> to fire. <b>F</b> to show FPS. Follow @<a href="http://twitter.com/#/hirmes">hirmes</a> for updates. Made with the amazing <a href="http://paperjs.org">Paper.js</a></div>
+    <canvas style="position:absolute" id="canvas" resize stats></canvas>
+    <div id="footer" class="footer"><a href=#">Paperoids</a>.  To Play: <b>&#8592;</b> and <b>&#8594;</b> to rotate.  <b>&#8593;</b> for thrust.  <b>Z</b> to fire. <b>F</b> to show FPS. Follow @<a href="http://twitter.com/#/hirmes">hirmes</a> for updates. Made with the amazing <a href="http://paperjs.org">Paper.js</a></div>
 
-	<div id="gameover" class="gameover">Game Over.  <a href="Paperoids.html">Play again</a>?</div>
+    <div id="gameover" class="gameover">Game Over.  <a href="Paperoids.html">Play again</a>?</div>
 </body>
 </html>

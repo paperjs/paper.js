@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Rectangle Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Rectangle Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var path = new Path.Rectangle(new Point(50, 50), new Size(100, 50));
-		path.style = {
-			fillColor: 'white',
-			strokeColor: 'black'
-		};
-		var copy = path.clone();
-		copy.strokeColor = 'red';
-		copy.rotate(-45);
-		copy.scale(0.5);
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var path = new Path.Rectangle(new Point(50, 50), new Size(100, 50));
+        path.style = {
+            fillColor: 'white',
+            strokeColor: 'black'
+        };
+        var copy = path.clone();
+        copy.strokeColor = 'red';
+        copy.rotate(-45);
+        copy.scale(0.5);
 
-		document.body.appendChild(project.exportSVG());
-	</script>
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Compound Path</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		project.currentStyle.fillColor = 'black';
-		var path1 = new Path.Rectangle([200, 200], [100, 100]);
-		var path2 = new Path.Rectangle([50, 50], [200, 200]);
-		var path3 = new Path.Rectangle([0, 0], [400, 400]);
-		new CompoundPath(path1, path2, path3);
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+    <meta charset="UTF-8">
+    <title>Compound Path</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        project.currentStyle.fillColor = 'black';
+        var path1 = new Path.Rectangle([200, 200], [100, 100]);
+        var path2 = new Path.Rectangle([50, 50], [200, 200]);
+        var path3 = new Path.Rectangle([0, 0], [400, 400]);
+        new CompoundPath(path1, path2, path3);
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

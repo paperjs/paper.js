@@ -1,39 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Arcs</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var values = {
-			points: 20,
-			radius: 20,
-			initialRadius: 10
-		};
-		for (var i = 0; i < 30; i++) {
-			var path = new Path({
-				fillColor: i % 2 ? 'red' : 'black',
-				closed: true
-			});
+    <meta charset="UTF-8">
+    <title>Arcs</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var values = {
+            points: 20,
+            radius: 20,
+            initialRadius: 10
+        };
+        for (var i = 0; i < 30; i++) {
+            var path = new Path({
+                fillColor: i % 2 ? 'red' : 'black',
+                closed: true
+            });
 
-			var point = new Point({
-				length: values.initialRadius + values.radius * i,
-				angle: 0
-			});
-			for (var j = 0; j <= values.points; j++) {
-				point.angle += 360 / values.points;
-				if (j == 0) {
-					path.add(view.center + point);
-				} else {
-					path.arcTo(view.center + point);
-				}
-			}
-			project.activeLayer.insertChild(0, path);
-		}
-	</script>
+            var point = new Point({
+                length: values.initialRadius + values.radius * i,
+                angle: 0
+            });
+            for (var j = 0; j <= values.points; j++) {
+                point.angle += 360 / values.points;
+                if (j == 0) {
+                    path.add(view.center + point);
+                } else {
+                    path.arcTo(view.center + point);
+                }
+            }
+            project.activeLayer.insertChild(0, path);
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

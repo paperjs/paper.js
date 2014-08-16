@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Text Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		project.importSVG(document.getElementById('svg'));
-	</script>
+    <meta charset="UTF-8">
+    <title>Text Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        project.importSVG(document.getElementById('svg'));
+    </script>
 </head>
 <body>
-	<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="500" height="500" id="svg">
-		<text x="20" y="15" stroke="green" fill="green" style="font:15px arial;" id="text">Plain SVG Text</text>
-		<text x="20" y="50" fill="red" transform="rotate(30 20,40)" style="font:12px helvetica;">Rotated SVG Text</text>
-	</svg>
-	<canvas id="canvas" width="500" height="500"></canvas>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="500" height="500" id="svg">
+        <text x="20" y="15" stroke="green" fill="green" style="font:15px arial;" id="text">Plain SVG Text</text>
+        <text x="20" y="50" fill="red" transform="rotate(30 20,40)" style="font:12px helvetica;">Rotated SVG Text</text>
+    </svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

@@ -1,101 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Stroke Bounds</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var paths = [];
+    <meta charset="UTF-8">
+    <title>Stroke Bounds</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var paths = [];
 
-		function makePath() {
-			var path = new Path();
-			path.moveTo(200, 50);
-			path.lineTo(230, 100);
-			path.lineTo(250, 50);
-			path.lineTo(280, 110);
-			path.arcTo([250, 20], false);
-			path.rotate(-5);
-			path.strokeWidth = 30;
-			path.miterLimit = 3;
-			paths.push(path);
-			return path;
-		}
+        function makePath() {
+            var path = new Path();
+            path.moveTo(200, 50);
+            path.lineTo(230, 100);
+            path.lineTo(250, 50);
+            path.lineTo(280, 110);
+            path.arcTo([250, 20], false);
+            path.rotate(-5);
+            path.strokeWidth = 30;
+            path.miterLimit = 3;
+            paths.push(path);
+            return path;
+        }
 
-		var path = makePath();
-		path.strokeColor = 'black';
-		path.strokeCap = 'butt';
-		path.strokeJoin = 'round';
+        var path = makePath();
+        path.strokeColor = 'black';
+        path.strokeCap = 'butt';
+        path.strokeJoin = 'round';
 
-		var path = makePath().translate(150, 0);
-		path.strokeColor = 'black';
-		path.strokeCap = 'butt';
-		path.strokeJoin = 'bevel';
+        var path = makePath().translate(150, 0);
+        path.strokeColor = 'black';
+        path.strokeCap = 'butt';
+        path.strokeJoin = 'bevel';
 
-		var path = makePath().translate(300, 0);
-		path.strokeColor = 'black';
-		path.strokeCap = 'butt';
-		path.strokeJoin = 'miter';
+        var path = makePath().translate(300, 0);
+        path.strokeColor = 'black';
+        path.strokeCap = 'butt';
+        path.strokeJoin = 'miter';
 
-		var path = makePath().translate(0, 150);
-		path.strokeColor = 'black';
-		path.strokeCap = 'square';
-		path.strokeJoin = 'round';
+        var path = makePath().translate(0, 150);
+        path.strokeColor = 'black';
+        path.strokeCap = 'square';
+        path.strokeJoin = 'round';
 
-		var path = makePath().translate(150, 150);
-		path.strokeColor = 'black';
-		path.strokeCap = 'square';
-		path.strokeJoin = 'bevel';
+        var path = makePath().translate(150, 150);
+        path.strokeColor = 'black';
+        path.strokeCap = 'square';
+        path.strokeJoin = 'bevel';
 
-		var path = makePath().translate(300, 150);
-		path.strokeColor = 'black';
-		path.strokeCap = 'square';
-		path.strokeJoin = 'miter';
+        var path = makePath().translate(300, 150);
+        path.strokeColor = 'black';
+        path.strokeCap = 'square';
+        path.strokeJoin = 'miter';
 
-		var path = makePath().translate(0, 300);
-		path.strokeColor = 'black';
-		path.strokeCap = 'round';
-		path.strokeJoin = 'round';
+        var path = makePath().translate(0, 300);
+        path.strokeColor = 'black';
+        path.strokeCap = 'round';
+        path.strokeJoin = 'round';
 
-		var path = makePath().translate(150, 300);
-		path.strokeColor = 'black';
-		path.strokeCap = 'round';
-		path.strokeJoin = 'bevel';
+        var path = makePath().translate(150, 300);
+        path.strokeColor = 'black';
+        path.strokeCap = 'round';
+        path.strokeJoin = 'bevel';
 
-		var path = makePath().translate(300, 300);
-		path.strokeColor = 'black';
-		path.strokeCap = 'round';
-		path.strokeJoin = 'miter';
+        var path = makePath().translate(300, 300);
+        path.strokeColor = 'black';
+        path.strokeCap = 'round';
+        path.strokeJoin = 'miter';
 
-		for (var i = 0; i < paths.length; i++) {
-			var path = paths[i];
-			path.fullySelected = true;
-			path.scale(1.5, new Point(300, 0));
-			var rect = new Path.Rectangle(path.strokeBounds);
-			rect.strokeWidth = 0.25;
-			rect.strokeColor = 'black';
-			rect.fillColor = null;
-			var rect = new Path.Rectangle(path.bounds);
-			rect.strokeWidth = 0.25;
-			rect.strokeColor = 'red';
-			rect.fillColor = null;
-			var rect = new Path.Rectangle(path.controlBounds);
-			rect.strokeWidth = 0.25;
-			rect.strokeColor = 'green';
-			rect.fillColor = null;
+        for (var i = 0; i < paths.length; i++) {
+            var path = paths[i];
+            path.fullySelected = true;
+            path.scale(1.5, new Point(300, 0));
+            var rect = new Path.Rectangle(path.strokeBounds);
+            rect.strokeWidth = 0.25;
+            rect.strokeColor = 'black';
+            rect.fillColor = null;
+            var rect = new Path.Rectangle(path.bounds);
+            rect.strokeWidth = 0.25;
+            rect.strokeColor = 'red';
+            rect.fillColor = null;
+            var rect = new Path.Rectangle(path.controlBounds);
+            rect.strokeWidth = 0.25;
+            rect.strokeColor = 'green';
+            rect.fillColor = null;
 
-			path.onMouseEnter = function() {
-				this.strokeColor = 'red';
-			}
-			path.onMouseLeave = function() {
-				this.strokeColor = 'black';
-			}
-		}
+            path.onMouseEnter = function() {
+                this.strokeColor = 'red';
+            }
+            path.onMouseLeave = function() {
+                this.strokeColor = 'black';
+            }
+        }
 
-		project.activeLayer.position = view.center;
-	</script>
+        project.activeLayer.position = view.center;
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

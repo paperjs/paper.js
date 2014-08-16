@@ -18,11 +18,11 @@ For OSX see <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-
 
 For Linux see <http://nodejs.org/download/> to locate 32-bit and 64-bit nodejs binaries as well as sources. It is recommended that you download directly from the nodejs site; the version available via many OS-supplied package managers is out-of-date and doesn't work with many of the packages paper uses. NPM is now included with the nodejs distribution. Once nodejs (with npm) has been installed you can install bower using the following command:
 
-	npm install -g bower
+    npm install -g bower
 
 With Bower installed, simply type this command in your project folder:
 
-	bower install paper
+    bower install paper
 
 Upon execution, you will find a `paper` folder inside the project's `bower_components` folder. For more information on Bower and to learn about its features for dependence tracking, see <http://bower.io/>.
 
@@ -42,57 +42,57 @@ You can also use NPM to install Paper.js for Node.js. But before doing so, you n
 
 The easiest way to install Cairo is install Homebrew <http://mxcl.github.io/homebrew/> then issue the command:
 
-	brew install cairo
+    brew install cairo
 
 Note that currently there is an issue on OSX with Cairo. If the above causes errors, the following will most likely fix it:
 
-	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper
+    PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper
 
 Also, whenever you would like to update the modules, you will need to execute:
 
-	PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
+    PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
 
 **Installing Cairo on Debian/Ubuntu Linux:**
 
-	sudo apt-get install libcairo2-dev
+    sudo apt-get install libcairo2-dev
 
 You might also need these additional packages if you don't usually build from c++ sources:
 
-	sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev
+    sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev
 
 **After Cairo has been installed:**
 
 You should now be able to install the Paper.js module from NPM:
 
-	npm install paper
+    npm install paper
 
 ## Development
 
 **Get the source (for building):**
 
-	git clone --recursive git://github.com/paperjs/paper.js.git
+    git clone --recursive git://github.com/paperjs/paper.js.git
 
 **Get the source (for contributing):**
 
 If you want to contribute to the project you will have to [make a fork](http://help.github.com/forking/). Then do this:
 
-	git clone --recursive git@github.com:yourusername/paper.js.git
-	cd paper.js
-	git remote add upstream git://github.com/paperjs/paper.js.git
+    git clone --recursive git@github.com:yourusername/paper.js.git
+    cd paper.js
+    git remote add upstream git://github.com/paperjs/paper.js.git
 
 ### Refreshing Your Clone
 
 To fetch changes from origin (your fork), run
 
-	git fetch origin
+    git fetch origin
 
 If you are working with a fork and would like to fetch from upstream, run
 
-	git fetch upstream
+    git fetch upstream
 
 To update the `jsdoc-toolkit` submodule inside the `build` folder, used to generate the documentation, run
 
-	git submodule update --init
+    git submodule update --init
 
 ### Building the Library
 
@@ -100,41 +100,41 @@ Paper.js has a couple of dependencies as Bower and NPM modules. See <http://made
 
 In order to be able to build Paper.js, after checking out the repository, paper has dependencies that need to be installed. Install them by issuing the following commands from the paper.js directory:
 
-	npm install
-	bower install
+    npm install
+    bower install
 
 You might find that the npm command fails attempting to fetch packages needed for dependencies due to using https (the default protocol to access the npm registry). If that is the case you can switch to using http for registry access with the following command:
 
-	npm config set registry http://registry.npmjs.org/
+    npm config set registry http://registry.npmjs.org/
 
 Next you need to create minified versions of some of these dependencies. This is handled by the `minify-components.sh` script inside the `build` folder:
 
-	cd build
-	./minify-components.sh
+    cd build
+    ./minify-components.sh
 
 The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, you can run the `build.sh` script inside the `build` folder:
 
-	cd build
-	./build.sh
+    cd build
+    ./build.sh
 
 You will then find the built library inside the `dist` folder, named `paper.js`.
 
 `build.sh` offer two modes:
 
-	commented		Preprocessed but still formated and commented
-	stripped		Formated but without comments (default)
+    commented       Preprocessed but still formated and commented
+    stripped        Formated but without comments (default)
 
 In order to minify the resulting built versions, you can run the `minify.sh` script:
 
-	cd build
-	./minify.sh
+    cd build
+    ./minify.sh
 
 ### Building the Documentation
 
 Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
 
-	cd build
-	./docs.sh
+    cd build
+    ./docs.sh
 
 Your docs will then be located at `dist/docs`.
 
@@ -142,13 +142,13 @@ Your docs will then be located at `dist/docs`.
 
 As a handy alternative to building the library after each change to try it out in your scripts, there is a helper script `src/load.js` that loads the library directly from all the separate source files in the `src` folder. The shell script `load.sh` in the `build` folder produces a `paper.js` library in `dist` that does nothing else than loading the source files through `src/load.js`. This means you can switch between loading from sources and loading a built library simply by running `build.sh` or `load.sh` inside the `build` folder.
 
-	cd build
-	./load.sh
+    cd build
+    ./load.sh
 
 And to go back to a built library
 
-	cd build
-	./build.sh
+    cd build
+    ./build.sh
 
 Note that your PaperScripts examples do not need to change, they can keep loading `dist/paper-full.js`, which will always do the right thing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro JS preprocessing library <http://github.com/lehni/prepro.js>.
 

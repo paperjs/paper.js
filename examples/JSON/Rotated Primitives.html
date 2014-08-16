@@ -1,55 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Rotated Primitives</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		// This "arbitrary" shape triggered rectangles in the original code,
-		// since point2 is as far from point0 as point3 is from point1.
-		var path = new Path({
-			closed: true,
-			strokeColor: 'black'
-		});
-		path.moveTo(0, 0);
-		path.lineTo(50, 50);
-		path.lineTo(100, 100);
-		path.lineTo(-50, 150);
-		path.position += 100;
+    <meta charset="UTF-8">
+    <title>Rotated Primitives</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        // This "arbitrary" shape triggered rectangles in the original code,
+        // since point2 is as far from point0 as point3 is from point1.
+        var path = new Path({
+            closed: true,
+            strokeColor: 'black'
+        });
+        path.moveTo(0, 0);
+        path.lineTo(50, 50);
+        path.lineTo(100, 100);
+        path.lineTo(-50, 150);
+        path.position += 100;
 
-		var rect = new Path.Rectangle({
-			point: [200, 100],
-			size: [200, 300],
-			fillColor: 'red'
-		});
-		rect.rotate(40);
+        var rect = new Path.Rectangle({
+            point: [200, 100],
+            size: [200, 300],
+            fillColor: 'red'
+        });
+        rect.rotate(40);
 
-		var circle = new Path.Circle({
-			center: [200, 300],
-			radius: 100,
-			fillColor: 'green'
-		});
-		circle.scale(0.5, 1);
-		circle.rotate(40);
+        var circle = new Path.Circle({
+            center: [200, 300],
+            radius: 100,
+            fillColor: 'green'
+        });
+        circle.scale(0.5, 1);
+        circle.rotate(40);
 
-		var rect = new Path.Rectangle({
-			point: [250, 20],
-			size: [200, 300],
-			radius: [40, 20],
-			fillColor: 'yellow'
-		});
-		rect.rotate(-20);
+        var rect = new Path.Rectangle({
+            point: [250, 20],
+            size: [200, 300],
+            radius: [40, 20],
+            fillColor: 'yellow'
+        });
+        rect.rotate(-20);
 
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

@@ -23,53 +23,53 @@
  * @extends Event
  */
 var MouseEvent = Event.extend(/** @lends MouseEvent# */{
-	_class: 'MouseEvent',
+    _class: 'MouseEvent',
 
-	initialize: function MouseEvent(type, event, point, target, delta) {
-		Event.call(this, event);
-		this.type = type;
-		this.point = point;
-		this.target = target;
-		this.delta = delta;
-	},
+    initialize: function MouseEvent(type, event, point, target, delta) {
+        Event.call(this, event);
+        this.type = type;
+        this.point = point;
+        this.target = target;
+        this.delta = delta;
+    },
 
-	/**
-	 * The type of mouse event.
-	 *
-	 * @name MouseEvent#type
-	 * @type String('mousedown', 'mouseup', 'mousedrag', 'click',
-	 * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')
-	 */
+    /**
+     * The type of mouse event.
+     *
+     * @name MouseEvent#type
+     * @type String('mousedown', 'mouseup', 'mousedrag', 'click',
+     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')
+     */
 
-	/**
-	 * The position of the mouse in project coordinates when the event was
-	 * fired.
-	 *
-	 * @name MouseEvent#point
-	 * @type Point
-	 */
+    /**
+     * The position of the mouse in project coordinates when the event was
+     * fired.
+     *
+     * @name MouseEvent#point
+     * @type Point
+     */
 
-	// DOCS: document MouseEvent#target
-	/**
-	 * @name MouseEvent#target
-	 * @type Item
-	 */
+    // DOCS: document MouseEvent#target
+    /**
+     * @name MouseEvent#target
+     * @type Item
+     */
 
-	// DOCS: document MouseEvent#delta
-	/**
-	 * @name MouseEvent#delta
-	 * @type Point
-	 */
+    // DOCS: document MouseEvent#delta
+    /**
+     * @name MouseEvent#delta
+     * @type Point
+     */
 
-	/**
-	 * @return {String} a string representation of the mouse event
-	 */
-	toString: function() {
-		return "{ type: '" + this.type
-				+ "', point: " + this.point
-				+ ', target: ' + this.target
-				+ (this.delta ? ', delta: ' + this.delta : '')
-				+ ', modifiers: ' + this.getModifiers()
-				+ ' }';
-	}
+    /**
+     * @return {String} a string representation of the mouse event
+     */
+    toString: function() {
+        return "{ type: '" + this.type
+                + "', point: " + this.point
+                + ', target: ' + this.target
+                + (this.delta ? ', delta: ' + this.delta : '')
+                + ', modifiers: ' + this.getModifiers()
+                + ' }';
+    }
 });

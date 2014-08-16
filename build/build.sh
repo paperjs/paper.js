@@ -14,30 +14,30 @@
 # build.sh MODE
 #
 # MODE:
-#	commented		Preprocessed, still formated and commented
-#	stripped		Preprocessed, formated but without comments
+#   commented       Preprocessed, still formated and commented
+#   stripped        Preprocessed, formated but without comments
 
 if [ $# -eq 0 ]
 then
-	MODE="stripped"
+    MODE="stripped"
 else
-	MODE=$1
+    MODE=$1
 fi
 
 # Create the dist folder if it does not exist yet.
 if [ ! -d ../dist/ ]
 then
-	mkdir ../dist/
+    mkdir ../dist/
 fi
 
 if [ -f ../dist/paper-full.js ]
 then
-	rm ../dist/paper-full.js
+    rm ../dist/paper-full.js
 fi
 
 if [ -f ../dist/paper-node.js ]
 then
-	rm ../dist/paper-node.js
+    rm ../dist/paper-node.js
 fi
 
 ./preprocess.sh $MODE ../src/paper.js "-i '../src/constants.js'" ../dist/paper-full.js

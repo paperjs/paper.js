@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Symbols</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var circle = new Shape.Circle({
-			center: [100, 100],
-			radius: 50,
-			fillColor: 'red'
-		});
+    <meta charset="UTF-8">
+    <title>Symbols</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        var circle = new Shape.Circle({
+            center: [100, 100],
+            radius: 50,
+            fillColor: 'red'
+        });
 
-		var ellipse = new Shape.Ellipse({
-			center: [100, 200],
-			radius: [50, 25],
-			fillColor: 'blue',
-			strokeColor: 'black',
-			strokeWidth: 4,
-			rotation: 20
-		});
+        var ellipse = new Shape.Ellipse({
+            center: [100, 200],
+            radius: [50, 25],
+            fillColor: 'blue',
+            strokeColor: 'black',
+            strokeWidth: 4,
+            rotation: 20
+        });
 
-		var rect = new Shape.Rectangle({
-			center: [100, 300],
-			size: [100, 50],
-			fillColor: 'green',
-			strokeColor: 'black',
-			strokeWidth: 4,
-			rotation: -20
-		});
+        var rect = new Shape.Rectangle({
+            center: [100, 300],
+            size: [100, 50],
+            fillColor: 'green',
+            strokeColor: 'black',
+            strokeWidth: 4,
+            rotation: -20
+        });
 
-		var roundRect = new Shape.Rectangle({
-			center: [100, 400],
-			size: [50, 100],
-			radius: [15, 20],
-			fillColor: 'orange',
-			strokeColor: 'black',
-			strokeWidth: 4,
-			rotation: 20
-		});
+        var roundRect = new Shape.Rectangle({
+            center: [100, 400],
+            size: [50, 100],
+            radius: [15, 20],
+            fillColor: 'orange',
+            strokeColor: 'black',
+            strokeWidth: 4,
+            rotation: 20
+        });
 
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

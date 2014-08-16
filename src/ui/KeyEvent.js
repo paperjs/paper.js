@@ -21,44 +21,44 @@
  * @extends Event
  */
 var KeyEvent = Event.extend(/** @lends KeyEvent# */{
-	_class: 'KeyEvent',
+    _class: 'KeyEvent',
 
-	initialize: function KeyEvent(down, key, character, event) {
-		Event.call(this, event);
-		this.type = down ? 'keydown' : 'keyup';
-		this.key = key;
-		this.character = character;
-	},
+    initialize: function KeyEvent(down, key, character, event) {
+        Event.call(this, event);
+        this.type = down ? 'keydown' : 'keyup';
+        this.key = key;
+        this.character = character;
+    },
 
-	/**
-	 * The type of key event.
-	 *
-	 * @name KeyEvent#type
-	 * @type String('keydown', 'keyup')
-	 */
+    /**
+     * The type of key event.
+     *
+     * @name KeyEvent#type
+     * @type String('keydown', 'keyup')
+     */
 
-	/**
-	 * The string character of the key that caused this key event.
-	 *
-	 * @name KeyEvent#character
-	 * @type String
-	 */
+    /**
+     * The string character of the key that caused this key event.
+     *
+     * @name KeyEvent#character
+     * @type String
+     */
 
-	/**
-	 * The key that caused this key event.
-	 *
-	 * @name KeyEvent#key
-	 * @type String
-	 */
+    /**
+     * The key that caused this key event.
+     *
+     * @name KeyEvent#key
+     * @type String
+     */
 
-	/**
-	 * @return {String} a string representation of the key event
-	 */
-	toString: function() {
-		return "{ type: '" + this.type
-				+ "', key: '" + this.key
-				+ "', character: '" + this.character
-				+ "', modifiers: " + this.getModifiers()
-				+ " }";
-	}
+    /**
+     * @return {String} a string representation of the key event
+     */
+    toString: function() {
+        return "{ type: '" + this.type
+                + "', key: '" + this.key
+                + "', character: '" + this.character
+                + "', modifiers: " + this.getModifiers()
+                + " }";
+    }
 });

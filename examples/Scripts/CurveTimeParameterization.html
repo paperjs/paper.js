@@ -1,61 +1,61 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Curve Time Parameterization</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var path = new Path();
-		path.moveTo(200, 200);
-		path.curveTo([170, 50], [300, 200]);
-		path.strokeWidth = 1;
-		path.strokeColor = 'black';
-		var curve = path.curves[0];
+    <meta charset="UTF-8">
+    <title>Curve Time Parameterization</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var path = new Path();
+        path.moveTo(200, 200);
+        path.curveTo([170, 50], [300, 200]);
+        path.strokeWidth = 1;
+        path.strokeColor = 'black';
+        var curve = path.curves[0];
 
-		function onMouseMove(event) {
-			modifyCurve(event.point, true);
-		}
+        function onMouseMove(event) {
+            modifyCurve(event.point, true);
+        }
 
-		function modifyCurve(point, remove) {
-			curve.segment2.point = point;
-			var length = curve.length;
-			var step = 10;
-			var iteratively = false;
-			var flatten = true;
-			var num = Math.floor(length / step);
-			var prev = 0;
-			if (flatten) {
-				var clone = path.clone();
-				clone.flatten(step);
-				for (var i = 0; i < clone.segments.length; i++) {
-					var point = clone.segments[i].point;
-					var circle = new Path.Circle(point, step / 2);
-					circle.strokeColor = 'red';
-					if (remove)
-						circle.removeOnMove();
-				}
-				clone.remove();
-			} else {
-				for (var i = 0, pos = 0; i <= num; i++, pos += step) {
-					var t = iteratively
-							? curve.getParameterAt(step, prev)
-							: curve.getParameterAt(pos);
-					var point = curve.getPointAt(t, true);
-					var circle = new Path.Circle(point, step / 2);
-					circle.strokeColor = 'red';
-					if (remove)
-						circle.removeOnMove();
-					prev = t;
-				}
-			}
-		}
+        function modifyCurve(point, remove) {
+            curve.segment2.point = point;
+            var length = curve.length;
+            var step = 10;
+            var iteratively = false;
+            var flatten = true;
+            var num = Math.floor(length / step);
+            var prev = 0;
+            if (flatten) {
+                var clone = path.clone();
+                clone.flatten(step);
+                for (var i = 0; i < clone.segments.length; i++) {
+                    var point = clone.segments[i].point;
+                    var circle = new Path.Circle(point, step / 2);
+                    circle.strokeColor = 'red';
+                    if (remove)
+                        circle.removeOnMove();
+                }
+                clone.remove();
+            } else {
+                for (var i = 0, pos = 0; i <= num; i++, pos += step) {
+                    var t = iteratively
+                            ? curve.getParameterAt(step, prev)
+                            : curve.getParameterAt(pos);
+                    var point = curve.getPointAt(t, true);
+                    var circle = new Path.Circle(point, step / 2);
+                    circle.strokeColor = 'red';
+                    if (remove)
+                        circle.removeOnMove();
+                    prev = t;
+                }
+            }
+        }
 
-		// modifyCurve(new Point(400, 377), false);
+        // modifyCurve(new Point(400, 377), false);
 
-	</script>
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

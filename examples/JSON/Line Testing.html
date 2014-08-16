@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Line Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var x1 = 5,
-			x2 = 45,
-			y1 = 5,
-			y2 = 45;
-		var line1 = new Path.Line([x1, y1], [x2, y2]);
-		line1.strokeColor = "blue";
-		line1.strokeWidth = "10";
+    <meta charset="UTF-8">
+    <title>Line Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        var x1 = 5,
+            x2 = 45,
+            y1 = 5,
+            y2 = 45;
+        var line1 = new Path.Line([x1, y1], [x2, y2]);
+        line1.strokeColor = "blue";
+        line1.strokeWidth = "10";
 
-		var x3 = 20,
-			x4 = 99,
-			y3 = 20,
-			y4 = 77;
-		var line2 = new Path.Line([x3, y3], [x4, y4]);
-		line2.strokeColor = "red";
-		line2.strokeWidth = "2";
+        var x3 = 20,
+            x4 = 99,
+            y3 = 20,
+            y4 = 77;
+        var line2 = new Path.Line([x3, y3], [x4, y4]);
+        line2.strokeColor = "red";
+        line2.strokeWidth = "2";
 
-		var x5 = 50,
-			x6 = 200,
-			y5 = 55,
-			y6 = 300;
-		var line3 = new Path.Line([x5, y5], [x6, y6]);
-		line3.strokeColor = "yellow";
-		line3.strokeWidth = "5";
+        var x5 = 50,
+            x6 = 200,
+            y5 = 55,
+            y6 = 300;
+        var line3 = new Path.Line([x5, y5], [x6, y6]);
+        line3.strokeColor = "yellow";
+        line3.strokeWidth = "5";
 
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

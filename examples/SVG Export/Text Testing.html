@@ -1,45 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Text Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Text Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var text = new PointText(new Point(50, 100));
-		text.fillColor = 'black';
-		text.content = 'This is a test';
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var text = new PointText(new Point(50, 100));
+        text.fillColor = 'black';
+        text.content = 'This is a test';
 
-		var text = new PointText(new Point(100, 150));
-		text.fillColor = 'red';
-		text.strokeWidth = '4';
-		text.content = 'This is also a test';
-		/*
-		text.scale(5);
-		text.translate(15, 15);
-		text.rotate(20);
-		text.shear(20, 5);
-		*/
-		text.rotate(45);
-		text.shear(.85, .15);
-		text.scale(.85, 2);
+        var text = new PointText(new Point(100, 150));
+        text.fillColor = 'red';
+        text.strokeWidth = '4';
+        text.content = 'This is also a test';
+        /*
+        text.scale(5);
+        text.translate(15, 15);
+        text.rotate(20);
+        text.shear(20, 5);
+        */
+        text.rotate(45);
+        text.shear(.85, .15);
+        text.scale(.85, 2);
 
-		var path2 = new Path.Circle(new Point(100, 100), 50);
-		path2.strokeColor = 'black';
-		path2.shear(.5, .5);
-		colors = ['red', 'blue', 'green', 'orange'];
-		for (var i in path2.segments) {
-			var p = path2.segments[i].point;
-			var c = new Path.Circle(p, 2);
-			c.fillColor = colors[i];
-		}
+        var path2 = new Path.Circle(new Point(100, 100), 50);
+        path2.strokeColor = 'black';
+        path2.shear(.5, .5);
+        colors = ['red', 'blue', 'green', 'orange'];
+        for (var i in path2.segments) {
+            var p = path2.segments[i].point;
+            var c = new Path.Circle(p, 2);
+            c.fillColor = colors[i];
+        }
 
-		document.body.appendChild(project.exportSVG());
-	</script>
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

@@ -13,11 +13,11 @@
 // Support for legacy browsers (mainly FF 3.6). Remove 2nd half of 2014?
 
 if (!Array.isArray) {
-	Array.isArray = function(obj) {
-		return Object.prototype.toString.call(obj) === '[object Array]';
-	};
+    Array.isArray = function(obj) {
+        return Object.prototype.toString.call(obj) === '[object Array]';
+    };
 }
 
 if (!document.head) {
-	document.head = document.getElementsByTagName('head')[0];
+    document.head = document.getElementsByTagName('head')[0];
 }

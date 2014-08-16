@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Symbols</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Symbols</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var ellipse = new Path.Ellipse({
-			from: [0, 0],
-			to: [200, 100],
-			fillColor: 'red'
-		});
-		var symbol = new Symbol(ellipse);
-		var p1 = symbol.place([100, 100]);
-		p1.rotate(45);
-		var p2 = symbol.place([300, 200]);
-		p2.rotate(-30);
-		document.body.appendChild(project.exportSVG());
-	</script>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var ellipse = new Path.Ellipse({
+            from: [0, 0],
+            to: [200, 100],
+            fillColor: 'red'
+        });
+        var symbol = new Symbol(ellipse);
+        var p1 = symbol.place([100, 100]);
+        p1.rotate(45);
+        var p2 = symbol.place([300, 200]);
+        p2.rotate(-30);
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

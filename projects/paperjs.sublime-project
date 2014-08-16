@@ -1,31 +1,31 @@
 {
-	"folders":
-	[
-		{
-			"path": "../src"
-		},
-		{
-			"path": "../test"
-		},
-		{
-			"path": "../examples"
-		},
-		{
-			"path": "../build",
-            // jsdoc-toolkit will have its own project file
-			"folder_exclude_patterns": ["jsdoc-toolkit"]
-		},
-		{
-			"path": "..",
-			"name": "root",
-            "folder_exclude_patterns": ["*"]
-		}
-	],
-    "settings":
+  "folders":
+  [
     {
-        "tab_size": 4,
-        "translate_tabs_to_spaces": false,
-        "trim_trailing_white_space_on_save": true,
-        "ensure_newline_at_eof_on_save": true
+      "path": "../src"
+    },
+    {
+      "path": "../test"
+    },
+    {
+      "path": "../examples"
+    },
+    {
+      "path": "../build",
+      // jsdoc-toolkit will have its own project file
+      "folder_exclude_patterns": ["jsdoc-toolkit"]
+    },
+    {
+      "path": "..",
+      "name": "root",
+      "folder_exclude_patterns": ["*"]
     }
+  ],
+  "settings":
+  {
+    "tab_size": 4,
+    "translate_tabs_to_spaces": true,
+    "trim_trailing_white_space_on_save": true,
+    "ensure_newline_at_eof_on_save": true
+  }
 }

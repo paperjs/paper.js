@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Stars</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-			function onMouseDown(event) {
-				var hue = Math.random() * 360;
-				project.currentStyle.fillColor = {
-					hue: hue,
-					saturation: 1,
-					brightness: 1
-				};
-			}
+    <meta charset="UTF-8">
+    <title>Stars</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+            function onMouseDown(event) {
+                var hue = Math.random() * 360;
+                project.currentStyle.fillColor = {
+                    hue: hue,
+                    saturation: 1,
+                    brightness: 1
+                };
+            }
 
-			function onMouseDrag(event) {
-				var delta = event.point - event.downPoint;
-				var radius = delta.length;
-				var points = 5 + Math.round(radius / 50);
-				var path = new Path.Star({
-					center: event.downPoint,
-					points: points,
-					radius1: radius / 2,
-					radius2: radius
-				});
-				path.rotate(delta.angle);
-				// Remove the path automatically before the next mouse drag
-				// event:
-				path.removeOnDrag();
-			}
-	</script>
+            function onMouseDrag(event) {
+                var delta = event.point - event.downPoint;
+                var radius = delta.length;
+                var points = 5 + Math.round(radius / 50);
+                var path = new Path.Star({
+                    center: event.downPoint,
+                    points: points,
+                    radius1: radius / 2,
+                    radius2: radius
+                });
+                path.rotate(delta.angle);
+                // Remove the path automatically before the next mouse drag
+                // event:
+                path.removeOnDrag();
+            }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

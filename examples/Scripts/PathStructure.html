@@ -1,82 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Path Structure</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-	var y = view.size.height / 2;
-	var width = view.size.width;
-	var vector = new Point({
-		angle: 45,
-		length: width / 5
-	});
-	var offset = width / 30;
-	var handleTexts = [];
-	var path = new Path({
-		segments: [
-			[[offset, y], null, vector.rotate(-90)],
-			[[width / 2, y], vector.rotate(-180), vector],
-			[[width - offset, y], vector.rotate(90), null]
-		],
-		fullySelected: true
-	});
+    <meta charset="UTF-8">
+    <title>Path Structure</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+    var y = view.size.height / 2;
+    var width = view.size.width;
+    var vector = new Point({
+        angle: 45,
+        length: width / 5
+    });
+    var offset = width / 30;
+    var handleTexts = [];
+    var path = new Path({
+        segments: [
+            [[offset, y], null, vector.rotate(-90)],
+            [[width / 2, y], vector.rotate(-180), vector],
+            [[width - offset, y], vector.rotate(90), null]
+        ],
+        fullySelected: true
+    });
 
-	function onMouseMove(event) {
-		var point = event.point.clone();
-		// Constrain the event point, to not cut off the text:
-		if (point.y < 22)
-			point.y = 22;
-		if (point.y > view.size.height - 24)
-			point.y = view.size.height - 24;
-		var delta = point - view.center;
-		for (var i = 0; i < 2; i++) {
-			var curve = path.curves[i];
-			curve.handle1.y = curve.handle2.y = delta.y * (i % 2 ? 1 : -1);
-			var firstPoint = curve.point1 + curve.handle1;
-			var secondPoint = curve.point2 + curve.handle2;
-			handleTexts[i * 2].point = secondPoint -
-					(firstPoint.y < y ? [0, 10] : [0, -18]);
-			handleTexts[i * 2 + 1].point = firstPoint -
-					(firstPoint.y < y ? [0, 10] : [0, -18]);
-		}
-	}
+    function onMouseMove(event) {
+        var point = event.point.clone();
+        // Constrain the event point, to not cut off the text:
+        if (point.y < 22)
+            point.y = 22;
+        if (point.y > view.size.height - 24)
+            point.y = view.size.height - 24;
+        var delta = point - view.center;
+        for (var i = 0; i < 2; i++) {
+            var curve = path.curves[i];
+            curve.handle1.y = curve.handle2.y = delta.y * (i % 2 ? 1 : -1);
+            var firstPoint = curve.point1 + curve.handle1;
+            var secondPoint = curve.point2 + curve.handle2;
+            handleTexts[i * 2].point = secondPoint -
+                    (firstPoint.y < y ? [0, 10] : [0, -18]);
+            handleTexts[i * 2 + 1].point = firstPoint -
+                    (firstPoint.y < y ? [0, 10] : [0, -18]);
+        }
+    }
 
-	project.currentStyle.fillColor = 'black';
-	for (var i = 0; i < 3; i++) {
-		var segment = path.segments[i];
-		var text = new PointText({
-			point: segment.point - [0, 10],
-			content: i,
-			fontSize: 12,
-			justification: 'center'
-		});
-	}
+    project.currentStyle.fillColor = 'black';
+    for (var i = 0; i < 3; i++) {
+        var segment = path.segments[i];
+        var text = new PointText({
+            point: segment.point - [0, 10],
+            content: i,
+            fontSize: 12,
+            justification: 'center'
+        });
+    }
 
-	for (var i = 0; i < 2; i++) {
-		var handleInText = new PointText({
-			content: 'handleIn',
-			fontSize: 12,
-			justification: 'center'
-		});
-		handleTexts.push(handleInText);
+    for (var i = 0; i < 2; i++) {
+        var handleInText = new PointText({
+            content: 'handleIn',
+            fontSize: 12,
+            justification: 'center'
+        });
+        handleTexts.push(handleInText);
 
-		var handleOutText = new PointText({
-			content: 'handleOut',
-			fontSize: 12,
-			justification: 'center'
-		});
-		handleTexts.push(handleOutText);
-	}
+        var handleOutText = new PointText({
+            content: 'handleOut',
+            fontSize: 12,
+            justification: 'center'
+        });
+        handleTexts.push(handleOutText);
+    }
 
-	// Call onMouseMove once to correctly position the text items:
-	onMouseMove({
-		point: view.center + vector.rotate(-90)
-	});
-	</script>
+    // Call onMouseMove once to correctly position the text items:
+    onMouseMove({
+        point: view.center + vector.rotate(-90)
+    });
+    </script>
 </head>
 <body>
-	<canvas id='canvas' resize></canvas>
+    <canvas id='canvas' resize></canvas>
 </body>
 </html>

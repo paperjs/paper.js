@@ -12,18 +12,18 @@
 
 # Extract the paper.js version from options.js:
 VERSION=$(printf '%q' $(node -e "
-	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
-	process.stdout.write(__options.version);
+    eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+    process.stdout.write(__options.version);
 "))
 
 # Helper function that updates paper.js vesion in JSON files
 function update_version()
 {
 node -e "
-	var data = require('$1');
-	data.version = '$VERSION';
-	require('fs').writeFile('$1',
-			JSON.stringify(data, null, '  ') + require('os').EOL);
+    var data = require('$1');
+    data.version = '$VERSION';
+    require('fs').writeFile('$1',
+            JSON.stringify(data, null, '  ') + require('os').EOL);
 "
 }
 

@@ -12,68 +12,68 @@
 
 module('Matrix');
 test('Decomposition: rotate()', function() {
-	function testAngle(a, ea) {
-		var m = new Matrix().rotate(a),
-			s = 'new Matrix().rotate(' + a + ')';
-		equals(m.getRotation(), Base.pick(ea, a),
-			s + '.getRotation()',
-			Numerical.TOLERANCE);
-		comparePoints(m.getScaling(), new Point(1, 1),
-			s + '.getScaling()');
-	}
+    function testAngle(a, ea) {
+        var m = new Matrix().rotate(a),
+            s = 'new Matrix().rotate(' + a + ')';
+        equals(m.getRotation(), Base.pick(ea, a),
+            s + '.getRotation()',
+            Numerical.TOLERANCE);
+        comparePoints(m.getScaling(), new Point(1, 1),
+            s + '.getScaling()');
+    }
 
-	testAngle(0);
-	testAngle(1);
-	testAngle(45);
-	testAngle(90);
-	testAngle(135);
-	testAngle(180);
-	testAngle(270, -90);
-	testAngle(-1);
-	testAngle(-45);
-	testAngle(-90);
-	testAngle(-135);
-	testAngle(-180);
-	testAngle(-270, 90);
+    testAngle(0);
+    testAngle(1);
+    testAngle(45);
+    testAngle(90);
+    testAngle(135);
+    testAngle(180);
+    testAngle(270, -90);
+    testAngle(-1);
+    testAngle(-45);
+    testAngle(-90);
+    testAngle(-135);
+    testAngle(-180);
+    testAngle(-270, 90);
 });
 
 test('Decomposition: scale()', function() {
-	function testScale(sx, sy, ex, ey, ea) {
-		var m = new Matrix().scale(sx, sy),
-			s = 'new Matrix().scale(' + sx + ', ' + sy + ')';
-		equals(m.getRotation(), ea || 0,
-				s + '.getRotation()',
-				Numerical.TOLERANCE);
-		comparePoints(m.getScaling(), new Point(Base.pick(ex, sx),
-				Base.pick(ey, sy)),
-				s + '.getScaling()');
-	}
+    function testScale(sx, sy, ex, ey, ea) {
+        var m = new Matrix().scale(sx, sy),
+            s = 'new Matrix().scale(' + sx + ', ' + sy + ')';
+        equals(m.getRotation(), ea || 0,
+                s + '.getRotation()',
+                Numerical.TOLERANCE);
+        comparePoints(m.getScaling(), new Point(Base.pick(ex, sx),
+                Base.pick(ey, sy)),
+                s + '.getScaling()');
+    }
 
-	testScale(1, 1);
-	testScale(1, -1, -1, 1, -180); // Decomposing results in correct flipping
-	testScale(-1, 1);
-	testScale(-1, -1, 1, 1, 180); // Decomposing results in correct flipping
-	testScale(2, 4);
-	testScale(2, -4, -2, 4, -180); // Decomposing results in correct flipping
-	testScale(4, 2);
-	testScale(-4, 2);
-	testScale(-4, -4, 4, 4, 180); // Decomposing results in correct flipping
+    testScale(1, 1);
+    testScale(1, -1, -1, 1, -180); // Decomposing results in correct flipping
+    testScale(-1, 1);
+    testScale(-1, -1, 1, 1, 180); // Decomposing results in correct flipping
+    testScale(2, 4);
+    testScale(2, -4, -2, 4, -180); // Decomposing results in correct flipping
+    testScale(4, 2);
+    testScale(-4, 2);
+    testScale(-4, -4, 4, 4, 180); // Decomposing results in correct flipping
 });
 
 test('Decomposition: rotate() & scale()', function() {
-	function testAngleAndScale(sx, sy, a, ex, ey, ea) {
-		var m = new Matrix().scale(sx, sy).rotate(a),
-			s = 'new Matrix().scale(' + sx + ', ' + sy + ').rotate(' + a + ')';
-		equals(m.getRotation(), ea || a,
-				s + '.getRotation()',
-				Numerical.TOLERANCE);
-		comparePoints(m.getScaling(), new Point(Base.pick(ex, sx),
-				Base.pick(ey, sy)),
-				s + '.getScaling()');
-	}
+    function testAngleAndScale(sx, sy, a, ex, ey, ea) {
+        var m = new Matrix().scale(sx, sy).rotate(a),
+            s = 'new Matrix().scale(' + sx + ', ' + sy + ').rotate(' + a + ')';
+        equals(m.getRotation(), ea || a,
+                s + '.getRotation()',
+                Numerical.TOLERANCE);
+        comparePoints(m.getScaling(), new Point(Base.pick(ex, sx),
+                Base.pick(ey, sy)),
+                s + '.getScaling()');
+    }
 
-	testAngleAndScale(2, 4, 45);
-	testAngleAndScale(2, -4, 45, -2, 4, -135);
-	testAngleAndScale(-2, 4, 45);
-	testAngleAndScale(-2, -4, 45, 2, 4, -135);
+    testAngleAndScale(2, 4, 45);
+    testAngleAndScale(2, -4, 45, -2, 4, -135);
+    testAngleAndScale(-2, 4, 45);
+    testAngleAndScale(-2, -4, 45, 2, 4, -135);
 });

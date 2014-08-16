@@ -1,53 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Lines</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var amount = 45;
-		for (var i = 0; i < amount; i++) {
-			var path = new Path({
-				fillColor: {
-					hue: 1,
-					saturation: 1,
-					brightness: Math.random()
-				},
-				closed: true
-			});
-		}
+    <meta charset="UTF-8">
+    <title>Lines</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var amount = 45;
+        for (var i = 0; i < amount; i++) {
+            var path = new Path({
+                fillColor: {
+                    hue: 1,
+                    saturation: 1,
+                    brightness: Math.random()
+                },
+                closed: true
+            });
+        }
 
-		var position = view.center;
-		var mousePos = view.center;
-		var children = project.activeLayer.children;
+        var position = view.center;
+        var mousePos = view.center;
+        var children = project.activeLayer.children;
 
-		function iterate(count) {
-			var delta = mousePos - position;
-			position += delta / 10;
-			for (var i = 1; i < amount; i++) {
-				var path = children[i];
-				var length = Math.abs(Math.sin(i + count / 40) * 300);
-				path.segments = [
-					position + delta / 1.5,
-					position + { angle: i / amount * 360, length: length },
-					position + { angle: (i + 1) / amount * 360, length: length }
-				];
-				path.fillColor.hue = count - length;
-			}
-		}
+        function iterate(count) {
+            var delta = mousePos - position;
+            position += delta / 10;
+            for (var i = 1; i < amount; i++) {
+                var path = children[i];
+                var length = Math.abs(Math.sin(i + count / 40) * 300);
+                path.segments = [
+                    position + delta / 1.5,
+                    position + { angle: i / amount * 360, length: length },
+                    position + { angle: (i + 1) / amount * 360, length: length }
+                ];
+                path.fillColor.hue = count - length;
+            }
+        }
 
-		function onFrame(event) {
-			iterate(event.count);
-		}
+        function onFrame(event) {
+            iterate(event.count);
+        }
 
-		function onMouseMove(event) {
-			iterate();
-			mousePos = event.point;
-		}
-	</script>
+        function onMouseMove(event) {
+            iterate();
+            mousePos = event.point;
+        }
+    </script>
 </head>
 <body style="background:black">
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

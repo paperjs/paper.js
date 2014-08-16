@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Rounded Rectangle</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var path;
+    <meta charset="UTF-8">
+    <title>Rounded Rectangle</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var path;
 
-		function onFrame(event) {
-			if (path)
-				path.remove();
-			path = new Path.Rectangle({
-				radius: Math.abs(Math.sin(event.count / 40)) * 150 + 10,
-				rectangle: {
-					size: [300, 300]
-				},
-				fillColor: 'black'
-			});
-			path.position = view.center;
-		}
-	</script>
+        function onFrame(event) {
+            if (path)
+                path.remove();
+            path = new Path.Rectangle({
+                radius: Math.abs(Math.sin(event.count / 40)) * 150 + 10,
+                rectangle: {
+                    size: [300, 300]
+                },
+                fillColor: 'black'
+            });
+            path.position = view.center;
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

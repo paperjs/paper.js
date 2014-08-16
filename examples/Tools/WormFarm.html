@@ -1,88 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Worm Farm</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		/////////////////////////////////////////////////////////////////////
-		// Values
+    <meta charset="UTF-8">
+    <title>Worm Farm</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        /////////////////////////////////////////////////////////////////////
+        // Values
 
-		var values  = {
-			minDistance: 10,
-			maxDistance: 30,
-			varyThickness: true
-		};
+        var values  = {
+            minDistance: 10,
+            maxDistance: 30,
+            varyThickness: true
+        };
 
-		// All newly created items will inherit the following styles:
-		project.currentStyle = {
-			fillColor: 'white',
-			strokeColor: 'black'
-		};
+        // All newly created items will inherit the following styles:
+        project.currentStyle = {
+            fillColor: 'white',
+            strokeColor: 'black'
+        };
 
-		/////////////////////////////////////////////////////////////////////
-		// Mouse handling
+        /////////////////////////////////////////////////////////////////////
+        // Mouse handling
 
-		tool.minDistance = values.minDistance;
-		tool.maxDistance = values.maxDistance;
+        tool.minDistance = values.minDistance;
+        tool.maxDistance = values.maxDistance;
 
-		var worm;
+        var worm;
 
-		// Every time the user clicks the mouse to drag we create a path
-		// and when a user drags the mouse we add points to it
-		function onMouseDown(event) {
-			worm = new Path();
-			worm.add(event.point, event.point);
-			worm.closed = true;
-		}
+        // Every time the user clicks the mouse to drag we create a path
+        // and when a user drags the mouse we add points to it
+        function onMouseDown(event) {
+            worm = new Path();
+            worm.add(event.point, event.point);
+            worm.closed = true;
+        }
 
-		function onMouseDrag(event) {
-			// the vector in the direction that the mouse moved
-			var step = event.delta;
+        function onMouseDrag(event) {
+            // the vector in the direction that the mouse moved
+            var step = event.delta;
 
-			// if the vary thickness checkbox is marked
-			// divide the length of the step vector by two:
-			if (values.varyThickness) {
-				step.length = step.length / 2;
-			} else {
-				// otherwise set the length of the step vector to half of
-				// minDistance
-				step.length = values.minDistance / 2;
-			}
+            // if the vary thickness checkbox is marked
+            // divide the length of the step vector by two:
+            if (values.varyThickness) {
+                step.length = step.length / 2;
+            } else {
+                // otherwise set the length of the step vector to half of
+                // minDistance
+                step.length = values.minDistance / 2;
+            }
 
-			// the top point: the middle point + the step rotated by -90
-			// degrees
-			//   -----*
-			//   |
-			//   ------
-			var top = event.middlePoint + step.rotate(-90);
+            // the top point: the middle point + the step rotated by -90
+            // degrees
+            //   -----*
+            //   |
+            //   ------
+            var top = event.middlePoint + step.rotate(-90);
 
-			// the bottom point: the middle point + the step rotated by 90
-			// degrees
-			//   ------
-			//   |
-			//   -----*
-			var bottom = event.middlePoint + step.rotate(90);
+            // the bottom point: the middle point + the step rotated by 90
+            // degrees
+            //   ------
+            //   |
+            //   -----*
+            var bottom = event.middlePoint + step.rotate(90);
 
-			// add the top point to the end of the path
-			worm.add(top);
+            // add the top point to the end of the path
+            worm.add(top);
 
-			// insert the bottom point after the first segment of the path
-			worm.insert(1, bottom);
+            // insert the bottom point after the first segment of the path
+            worm.insert(1, bottom);
 
-			// make a new line path from top to bottom
-			new Path(top, bottom);
+            // make a new line path from top to bottom
+            new Path(top, bottom);
 
-			// This is the point at the front of the worm:
-			worm.firstSegment.point = event.point;
+            // This is the point at the front of the worm:
+            worm.firstSegment.point = event.point;
 
-			// smooth the segments of the path
-			worm.smooth();
-		}
-	</script>
+            // smooth the segments of the path
+            worm.smooth();
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

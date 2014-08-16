@@ -15,36 +15,36 @@
  * @class
  */
 var Event = Base.extend(/** @lends Event# */{
-	_class: 'Event',
+    _class: 'Event',
 
-	initialize: function Event(event) {
-		this.event = event;
-	},
+    initialize: function Event(event) {
+        this.event = event;
+    },
 
-	isPrevented: false,
-	isStopped: false,
+    isPrevented: false,
+    isStopped: false,
 
-	preventDefault: function() {
-		this.isPrevented = true;
-		this.event.preventDefault();
-	},
+    preventDefault: function() {
+        this.isPrevented = true;
+        this.event.preventDefault();
+    },
 
-	stopPropagation: function() {
-		this.isStopped = true;
-		this.event.stopPropagation();
-	},
+    stopPropagation: function() {
+        this.isStopped = true;
+        this.event.stopPropagation();
+    },
 
-	stop: function() {
-		this.stopPropagation();
-		this.preventDefault();
-	},
+    stop: function() {
+        this.stopPropagation();
+        this.preventDefault();
+    },
 
-	// DOCS: Document Event#modifiers
-	/**
-	 * @type object
-	 * @bean
-	 */
-	getModifiers: function() {
-		return Key.modifiers;
-	}
+    // DOCS: Document Event#modifiers
+    /**
+     * @type object
+     * @bean
+     */
+    getModifiers: function() {
+        return Key.modifiers;
+    }
 });

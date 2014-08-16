@@ -1,76 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Square Rounded</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		/////////////////////////////////////////////////////////////////////
-		// Values
+    <meta charset="UTF-8">
+    <title>Square Rounded</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        /////////////////////////////////////////////////////////////////////
+        // Values
 
-		var values = {
-			radius: 10,
-			tolerance: 5
-		};
+        var values = {
+            radius: 10,
+            tolerance: 5
+        };
 
-		checkValues();
+        checkValues();
 
-		/////////////////////////////////////////////////////////////////////
-		// Mouse handling
+        /////////////////////////////////////////////////////////////////////
+        // Mouse handling
 
-		var handle;
-		function checkValues() {
-			var min = values.radius * 2;
-			if (values.tolerance < min) values.tolerance = min;
-			handle = values.radius * Numerical.KAPPA;
-		}
+        var handle;
+        function checkValues() {
+            var min = values.radius * 2;
+            if (values.tolerance < min) values.tolerance = min;
+            handle = values.radius * Numerical.KAPPA;
+        }
 
-		var path;
-		function onMouseDown(event) {
-			path = new Path({
-				segments: [event.point, event.point],
-				strokeColor: 'black',
-				strokeWidth: 5,
-				strokeCap: 'round'
-			});
-			prevPoint = path.firstSegment.point;
-			curPoint = path.lastSegment.point;
-			curHandleSeg = null;
-		}
+        var path;
+        function onMouseDown(event) {
+            path = new Path({
+                segments: [event.point, event.point],
+                strokeColor: 'black',
+                strokeWidth: 5,
+                strokeCap: 'round'
+            });
+            prevPoint = path.firstSegment.point;
+            curPoint = path.lastSegment.point;
+            curHandleSeg = null;
+        }
 
-		var curPoint, prevPoint, curHandleSeg;
-		function onMouseDrag(event) {
-			var point = event.point;
-			var diff = (point - prevPoint).abs();
-			if (diff.x < diff.y) {
-				curPoint.x = prevPoint.x;
-				curPoint.y = point.y;
-			} else {
-				curPoint.x = point.x;
-				curPoint.y = prevPoint.y;
-			}
-			var normal = curPoint - prevPoint;
-			normal.length = 1;
-			if (curHandleSeg) {
-				curHandleSeg.point = prevPoint + (normal * values.radius);
-				curHandleSeg.handleIn = normal * -handle;
-			}
-			var minDiff = Math.min(diff.x, diff.y);
-			if (minDiff > values.tolerance) {
-				var point = curPoint - (normal * values.radius);
-				var segment = new Segment(point, null, normal * handle);
-				path.insert(path.segments.length - 1, segment);
-				curHandleSeg = path.lastSegment;
-				// clone as we want the unmodified one:
-				prevPoint = curHandleSeg.point.clone();
-				path.add(curHandleSeg);
-				curPoint = path.lastSegment.point;
-			}
-		}
-	</script>
+        var curPoint, prevPoint, curHandleSeg;
+        function onMouseDrag(event) {
+            var point = event.point;
+            var diff = (point - prevPoint).abs();
+            if (diff.x < diff.y) {
+                curPoint.x = prevPoint.x;
+                curPoint.y = point.y;
+            } else {
+                curPoint.x = point.x;
+                curPoint.y = prevPoint.y;
+            }
+            var normal = curPoint - prevPoint;
+            normal.length = 1;
+            if (curHandleSeg) {
+                curHandleSeg.point = prevPoint + (normal * values.radius);
+                curHandleSeg.handleIn = normal * -handle;
+            }
+            var minDiff = Math.min(diff.x, diff.y);
+            if (minDiff > values.tolerance) {
+                var point = curPoint - (normal * values.radius);
+                var segment = new Segment(point, null, normal * handle);
+                path.insert(path.segments.length - 1, segment);
+                curHandleSeg = path.lastSegment;
+                // clone as we want the unmodified one:
+                prevPoint = curHandleSeg.point.clone();
+                path.add(curHandleSeg);
+                curPoint = path.lastSegment.point;
+            }
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

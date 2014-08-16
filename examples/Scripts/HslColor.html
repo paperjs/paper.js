@@ -1,53 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>HslColor</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var steps = {
-			hue: 100,
-			saturation: 20,
-			lightness: 3
-		};
+    <meta charset="UTF-8">
+    <title>HslColor</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var steps = {
+            hue: 100,
+            saturation: 20,
+            lightness: 3
+        };
 
-		for (var i = 0; i < steps.lightness; i++) {
-			var radius = view.size.width / steps.lightness * 0.45;
-			var offset = new Point(view.size.width / steps.lightness, 0);
-			var position = view.bounds.leftCenter + offset * (i + 0.5);
-			var lightness = 1 - (i + 1) / (steps.lightness + 1);
-			createWheel(position, radius, steps, lightness);
-		};
+        for (var i = 0; i < steps.lightness; i++) {
+            var radius = view.size.width / steps.lightness * 0.45;
+            var offset = new Point(view.size.width / steps.lightness, 0);
+            var position = view.bounds.leftCenter + offset * (i + 0.5);
+            var lightness = 1 - (i + 1) / (steps.lightness + 1);
+            createWheel(position, radius, steps, lightness);
+        };
 
-		function createWheel(center, radius, steps, lightness) {
-			var hUnit =  360 / steps.hue;
-			for (var h = 0; h < steps.hue; h++) {
-				var hue = h * hUnit;
-				var vector = new Point({
-					angle: hue - 90,
-					length: radius
-				});
-				path = new Path(new Point(), vector.rotate(hUnit / 2));
-				path.closed = true;
-				path.arcTo(vector, vector.rotate(hUnit / -2));
-				path.position += center;
-				var colors = [];
-				for (var i = 0; i < steps.saturation; i++) {
-					var saturation = i / steps.saturation;
-					var color = { hue: hue, saturation: saturation, lightness: lightness };
-					colors.push(color);
-				}
-				var gradient = new Gradient(colors, true);
-				var from = center;
-				var to = center + vector;
-				var gradientColor = new Color(gradient, from, to);
-				path.fillColor = path.strokeColor = gradientColor;
-			}
-		}
-	</script>
+        function createWheel(center, radius, steps, lightness) {
+            var hUnit =  360 / steps.hue;
+            for (var h = 0; h < steps.hue; h++) {
+                var hue = h * hUnit;
+                var vector = new Point({
+                    angle: hue - 90,
+                    length: radius
+                });
+                path = new Path(new Point(), vector.rotate(hUnit / 2));
+                path.closed = true;
+                path.arcTo(vector, vector.rotate(hUnit / -2));
+                path.position += center;
+                var colors = [];
+                for (var i = 0; i < steps.saturation; i++) {
+                    var saturation = i / steps.saturation;
+                    var color = { hue: hue, saturation: saturation, lightness: lightness };
+                    colors.push(color);
+                }
+                var gradient = new Gradient(colors, true);
+                var from = center;
+                var to = center + vector;
+                var gradientColor = new Color(gradient, from, to);
+                path.fillColor = path.strokeColor = gradientColor;
+            }
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize style="background:black"></canvas>
+    <canvas id="canvas" resize style="background:black"></canvas>
 </body>
 </html>
