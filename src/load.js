@@ -44,7 +44,6 @@ if (typeof window === 'object') {
 	prepro.setOptions({
 		environment: 'node',
 		legacy: false,
-		stats: false,
 		version: 'dev'
 	});
 	// Load Paper.js library files.

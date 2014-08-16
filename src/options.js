@@ -19,11 +19,9 @@
 // publishes the various JSON package files automatically.
 var version = '0.9.19';
 
-var inBrowser = typeof window === 'object';
-
 var __options = {
 	// If this file is loaded in the browser, we're in dev mode through load.js
-	version: inBrowser ? 'dev' : version,
+	version: typeof window === 'object' ? 'dev' : version,
 	environment: 'browser',
 	parser: 'acorn',
 	legacy: true,
@@ -33,7 +31,5 @@ var __options = {
 	nativeContains: false,
 	paperScript: true,
 	palette: true,
-	// Only load stats when in dev mode
-	stats: inBrowser,
 	debug: false
 };

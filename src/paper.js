@@ -36,17 +36,17 @@ var paper = new function(undefined) {
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });
 
-/*#*/ if (__options.stats) {
+/*#*/ if (__options.version == 'dev' && __options.environment == 'browser') {
 /*#*/ include('../bower_components/stats.js/build/stats.min.js');
-/*#*/ } // __options.stats
+/*#*/ }
 
 /*#*/ if (__options.legacy) {
-	/*#*/ include('legacy.js');
-/*#*/ } // __options.legacy
+/*#*/ include('legacy.js');
+/*#*/ }
 
 /*#*/ if (__options.version == 'dev') {
 /*#*/ include('constants.js');
-/*#*/ } // __options.version == 'dev'
+/*#*/ }
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Callback.js');
@@ -87,7 +87,7 @@ var paper = new function(undefined) {
 /*#*/ include('path/CompoundPath.js');
 /*#*/ if (__options.booleanOperations) {
 /*#*/ include('path/PathItem.Boolean.js');
-/*#*/ } // __options.booleanOperations
+/*#*/ }
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
 
@@ -101,12 +101,12 @@ var paper = new function(undefined) {
 
 /*#*/ if (__options.environment == 'node') {
 /*#*/ include('dom/node.js');
-/*#*/ } // __options.environment == 'node'
+/*#*/ }
 /*#*/ include('dom/DomElement.js');
 /*#*/ if (__options.environment == 'browser') {
 // DomEvent doesn't make sense outside of the browser (yet)
 /*#*/ include('dom/DomEvent.js');
-/*#*/ } // __options.environment == 'browser'
+/*#*/ }
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
@@ -120,7 +120,7 @@ var paper = new function(undefined) {
 /*#*/ if (__options.palette) {
 /*#*/ include('ui/Palette.js');
 /*#*/ include('ui/Component.js');
-/*#*/ } // __options.palette
+/*#*/ }
 
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
@@ -128,25 +128,25 @@ var paper = new function(undefined) {
 // Http is used both for PaperScript and SVGImport
 /*#*/ if (__options.paperScript || __options.svg) {
 /*#*/ include('net/Http.js');
-/*#*/ } // __options.paperScript || __options.svg
+/*#*/ }
 /*#*/ } // __options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
 /*#*/ if (__options.version == 'dev') {
 /*#*/ include('canvas/ProxyContext.js');
-/*#*/ } // __options.environment == 'browser'
+/*#*/ }
 
 /*#*/ if (__options.svg) {
 /*#*/ include('svg/SVGStyles.js');
 /*#*/ include('svg/SVGNamespaces.js');
 /*#*/ include('svg/SVGExport.js');
 /*#*/ include('svg/SVGImport.js');
-/*#*/ } // __options.svg
+/*#*/ }
 
 /*#*/ if (__options.paperScript) {
 /*#*/ include('core/PaperScript.js');
-/*#*/ } // __options.paperScript
+/*#*/ }
 
 /*#*/ include('export.js');
 return paper;
