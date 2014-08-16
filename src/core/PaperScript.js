@@ -449,14 +449,21 @@ Base.exports.PaperScript = (function() {
 				// retrieved through PaperScope.get().
 				// If a canvas id is provided, pass it on to the PaperScope
 				// so a project is created for it now.
-				var canvas = PaperScope.getAttribute(script, 'canvas'),
-					src = script.src;
-				canvas = document.getElementById(canvas) || canvas;
+				var canvasId = PaperScope.getAttribute(script, 'canvas'),
+					canvas = document.getElementById(canvasId),
+					src = script.src,
+					scopeKey = 'data-paper-scope';
+				if (!canvas)
+					throw new Error('Unable to find canvas with id "'
+							+ canvasId + '"');
 				// See if there already is a scope for this canvas and reuse
 				// it, to support multiple scripts per canvas. Otherwise
 				// create a new one.
-				var scope = PaperScope.get(canvas)
+				var scope = PaperScope.get(canvas.getAttribute(scopeKey))
 							|| new PaperScope().setup(canvas);
+				// Link the element to this scope, so we can reuse the scope
+				// when compiling multiple scripts for the same element.
+				canvas.setAttribute(scopeKey, scope._id);
 				if (src) {
 					// If we're loading from a source, request that first and
 					// then run later.

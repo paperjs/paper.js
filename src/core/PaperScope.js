@@ -189,9 +189,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 		// Make sure this is the active scope, so the created project and view
 		// are automatically associated with it.
 		paper = this;
-		// Link the element to this scope, so we can reuse the scope when
-		// compiling multiple scripts for the same element.
-		element.setAttribute('data-paper-scope', this._id);
 		// Create an empty project for the scope.
 		this.project = new Project(element);
 		// This is needed in PaperScript.load().
@@ -237,15 +234,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 			_id: 0,
 
 			/**
-			 * Retrieves a PaperScope object with the given id or associated
-			 * with the passed canvas element.
+			 * Retrieves a PaperScope object with the given scope id.
 			 *
 			 * @param id
 			 */
 			get: function(id) {
-				// If an element is passed, get the id from it.
-				if (id && id.getAttribute)
-					id = id.getAttribute('data-paper-scope');
 				return this._scopes[id] || null;
 			},
 
