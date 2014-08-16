@@ -33,7 +33,7 @@ OPTIONS=$(printf '%q' $(node -e "
 	process.stdout.write(JSON.stringify(__options));
 "))
 # Build the prepo.js command out of it, passing on version and date as defines:
-COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\", \"stats\": false }' $3 $2"
+COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\" }' $3 $2"
 
 case $1 in
 	commented)
