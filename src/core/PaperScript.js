@@ -310,10 +310,10 @@ Base.exports.PaperScript = (function() {
                         JSON.stringify(sourceMap)))))
                     + "\n//# sourceURL=" + (url || 'paperscript');
         }
-/*#*/ } else { // !__options.environment == 'browser'
+/*#*/ } else { // __options.environment != 'browser'
         // Now do the parsing magic
         walkAST(parse(code, { ranges: true }));
-/*#*/ } // !__options.environment == 'browser'
+/*#*/ } // __options.environment != 'browser'
         return code;
     }
 
@@ -408,9 +408,9 @@ Base.exports.PaperScript = (function() {
         } else {
             func = Function(params, code);
         }
-/*#*/ } else { // !__options.environment == 'browser'
+/*#*/ } else { // __options.environment != 'browser'
         func = Function(params, code);
-/*#*/ } // !__options.environment == 'browser'
+/*#*/ } // __options.environment != 'browser'
         var res = func.apply(scope, args) || {};
         // Now install the 'global' tool and view handlers, and we're done!
         Base.each(toolHandlers, function(key) {
@@ -496,7 +496,7 @@ Base.exports.PaperScript = (function() {
         parse: parse
     };
 
-/*#*/ } else { // !__options.environment == 'browser'
+/*#*/ } else { // __options.environment != 'browser'
 /*#*/ if (__options.environment == 'node') {
 
     // Register the .pjs extension for automatic compilation as PaperScript
@@ -529,7 +529,7 @@ Base.exports.PaperScript = (function() {
         parse: parse
     };
 
-/*#*/ } // !__options.environment == 'browser'
+/*#*/ } // __options.environment != 'browser'
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
 }).call(this);
