@@ -34,12 +34,9 @@ OPTIONS=$(printf '%q' $(node -e "
 "))
 # Build the prepo.js command out of it, passing on version and date as defines:
 COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\" }' $3 $2"
+# Flags to pass to prepro
+if [ $1 = "stripped" ]; then FLAGS="-c"; else FLAGS=""; fi
 
-case $1 in
-    commented)
-        eval $COMMAND > $4
-        ;;
-    stripped)
-        eval "$COMMAND -c" > $4
-        ;;
-esac
+eval "$COMMAND $FLAGS" > $4
+# Now convert 4 spaces to tabs, to shave of some bytes (quite a few KB actually)
+unexpand -t 4 $4 > "$4-tabs" && mv "$4-tabs" $4
