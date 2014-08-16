@@ -595,8 +595,9 @@ new function() {
 		item = importer && importer(node, type, options, isRoot) || null;
 		settings.applyMatrix = prevApplyMatrix;
 		if (item) {
-			// See importGroup() for an explanation of this filtering:
-			if (!(item instanceof Group))
+			// Do not apply attributes if this is a #document node.
+			// See importGroup() for an explanation of filtering for Group:
+			if (type !== '#document' && !(item instanceof Group))
 				item = applyAttributes(item, node, isRoot);
 			// Support onImportItem callback, to provide mechanism to handle
 			// special attributes (e.g. inkscape:transform-center)
