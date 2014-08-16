@@ -71,7 +71,7 @@ new function() {
 
 	// Importer functions for various SVG node types
 
-	function importGroup(node, type, isRoot, options) {
+	function importGroup(node, type, options, isRoot) {
 		var nodes = node.childNodes,
 			isClip = type === 'clippath',
 			item = new Group(),
@@ -92,7 +92,7 @@ new function() {
 			var childNode = nodes[i],
 				child;
 			if (childNode.nodeType === 1
-					&& (child = importSVG(childNode, false, options))
+					&& (child = importSVG(childNode, options, false))
 					&& !(child instanceof Symbol))
 				children.push(child);
 		}
@@ -176,7 +176,7 @@ new function() {
 	// NOTE: All importers are lowercase, since jsdom is using uppercase
 	// nodeNames still.
 	var importers = {
-		'#document': function (node, type, isRoot, options) {
+		'#document': function (node, type, options, isRoot) {
 			var nodes = node.childNodes;
 			for (var i = 0, l = nodes.length; i < l; i++) {
 				var child = nodes[i];
@@ -185,7 +185,7 @@ new function() {
 					// document, so default styles apply!
 					var next = child.nextSibling;
 					document.body.appendChild(child);
-					var item = importSVG(child, isRoot, options);
+					var item = importSVG(child, options, isRoot);
 					//  After import, we move it back to where it was:
 					if (next) {
 						node.insertBefore(child, next);
@@ -230,9 +230,9 @@ new function() {
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#SymbolElement
-		symbol: function(node, type, isRoot, options) {
+		symbol: function(node, type, options, isRoot) {
 			// Pass true for dontCenter:
-			return new Symbol(importGroup(node, type, isRoot, options), true);
+			return new Symbol(importGroup(node, type, options, isRoot), true);
 		},
 
 		// http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -525,7 +525,7 @@ new function() {
 		return match && definitions[match[1]];
 	}
 
-	function importSVG(source, isRoot, options) {
+	function importSVG(source, options, isRoot) {
 		if (!source)
 			return null;
 		if (!options) {
@@ -540,7 +540,7 @@ new function() {
 
 		function onLoadCallback(svg) {
 			paper = scope;
-			var item = importSVG(svg, isRoot, options),
+			var item = importSVG(svg, options, isRoot),
 				onLoad = options.onLoad,
 				view = scope.project && scope.getView();
 			if (onLoad)
@@ -592,7 +592,7 @@ new function() {
 		// content and children, as this is how SVG works too, but preserve the
 		// current setting so we can restore it after.
 		settings.applyMatrix = false;
-		item = importer && importer(node, type, isRoot, options) || null;
+		item = importer && importer(node, type, options, isRoot) || null;
 		settings.applyMatrix = prevApplyMatrix;
 		if (item) {
 			// See importGroup() for an explanation of this filtering:
@@ -619,7 +619,7 @@ new function() {
 	// NOTE: Documentation is in Item.js
 	Item.inject({
 		importSVG: function(node, options) {
-			return this.addChild(importSVG(node, true, options));
+			return this.addChild(importSVG(node, options, true));
 		}
 	});
 
@@ -627,7 +627,7 @@ new function() {
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, true, options);
+			return importSVG(node, options, true);
 		}
 	});
 };
