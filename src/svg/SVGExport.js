@@ -278,9 +278,9 @@ new function() {
 		PointText: exportText
 	};
 
-	function applyStyle(item, node) {
+	function applyStyle(item, node, isRoot) {
 		var attrs = {},
-			parent = item.getParent();
+			parent = !isRoot && item.getParent();
 
 		if (item._name != null)
 			attrs.id = item._name;
@@ -377,7 +377,7 @@ new function() {
 				: svg;
 	}
 
-	function exportSVG(item, options) {
+	function exportSVG(item, options, isRoot) {
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
 		if (node) {
@@ -390,7 +390,7 @@ new function() {
 			if (data && data  !== '{}')
 				node.setAttribute('data-paper-data', data);
 		}
-		return node && applyStyle(item, node);
+		return node && applyStyle(item, node, isRoot);
 	}
 
 	function setOptions(options) {
@@ -403,7 +403,7 @@ new function() {
 	Item.inject({
 		exportSVG: function(options) {
 			options = setOptions(options);
-			return exportDefinitions(exportSVG(this, options), options);
+			return exportDefinitions(exportSVG(this, options, true), options);
 		}
 	});
 
@@ -430,7 +430,7 @@ new function() {
 				parent = node.appendChild(
 						createElement('g', getTransform(matrix)));
 			for (var i = 0, l = layers.length; i < l; i++)
-				parent.appendChild(exportSVG(layers[i], options));
+				parent.appendChild(exportSVG(layers[i], options, true));
 			return exportDefinitions(node, options);
 		}
 	});
