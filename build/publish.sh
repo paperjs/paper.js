@@ -59,7 +59,6 @@ npm publish
 
 # Copy paperjs.zip to the website's download folder
 cd $SITE_DIR
-echo `PWD`
 cp $PAPER_DIR/dist/paperjs.zip $DIST_FILE
 # Update the online version of paper.js
 cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
