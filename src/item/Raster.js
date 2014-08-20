@@ -37,9 +37,10 @@ var Raster = Item.extend(/** @lends Raster# */{
      * string describing the URL to load the image from, or the ID of a DOM
      * element to get the image from (either a DOM Image or a Canvas).
      *
-     * @param {HTMLImageElement|Canvas|String} [source] the source of the raster
+     * @param {HTMLImageElement|HTMLCanvasElement|String} [source] the source of
+     * the raster
      * @param {Point} [position] the center position at which the raster item is
-     * placed.
+     * placed
      *
      * @example {@paperscript height=300} // Creating a raster using a url
      * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
@@ -285,7 +286,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * a data-url.
      *
      * @bean
-     * @type HTMLImageElement|Canvas|String
+     * @type HTMLImageElement|HTMLCanvasElement|String
      *
      * @example {@paperscript}
      * var raster = new Raster();

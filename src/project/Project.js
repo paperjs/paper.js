@@ -43,8 +43,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that when working with PaperScript, a project is automatically
      * created for us and the {@link PaperScope#project} variable points to it.
      *
-     * @param {HTMLCanvasElement} element the HTML canvas element that should be
-     * used as the element for the view.
+     * @param {HTMLCanvasElement|String} element the HTML canvas element that
+     * should be used as the element for the view, or an ID string by which to
+     * find the element.
      */
     initialize: function Project(element) {
         // Activate straight away by passing true to PaperScopeItem constructor,

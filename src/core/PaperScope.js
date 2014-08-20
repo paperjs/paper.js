@@ -182,8 +182,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * Sets up an empty project for us. If a canvas is provided, it also creates
      * a {@link View} for it, both linked to this scope.
      *
-     * @param {HTMLCanvasElement} element the HTML canvas this scope should be
-     * associated with.
+     * @param {HTMLCanvasElement|String} element the HTML canvas element this
+     * scope should be associated with, or an ID string by which to find the
+     * element.
      */
     setup: function(element) {
         // Make sure this is the active scope, so the created project and view
