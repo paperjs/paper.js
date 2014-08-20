@@ -25,17 +25,27 @@ Base.exports.PaperScript = (function() {
 /*#*/ if (__options.environment == 'browser') {
     // We need some browser info for dealing with source maps and code offsets
     var ua = navigator.userAgent,
-        match = ua.match(/(opera|chrome|safari|firefox|msie|trident)\/?\s*([.\d]+)(?:.*rv\:([.\d]+))?/i) || [],
-        name = match[1].toLowerCase(),
-        version = match[2];
-    if (name === 'trident') {
-        version = match[3]; // Use rv: and rename to msie
-        name = 'msie';
-    } else if (match = ua.match(/version\/([.\d]+)/i)) {
-        version = match[1];
-    }
-    var browser = { name: name, version: parseFloat(version) };
-    browser[name] = true;
+        browser = {};
+    // Use replace() to get all matches, and deal with overlaps (e.g. Chrome)
+    ua.toLowerCase().replace(
+        /(opera|chrome|safari|webkit|firefox|msie|trident)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
+        function(all, n, v1, v2, rv) {
+            // Do not set additional browsers once chrome is detected.
+            if (!browser.chrome) {
+                var v = n === 'opera' ? v2 : v1;
+                if (n === 'trident') {
+                    // Use rv: and rename to msie
+                    v = rv;
+                    n = 'msie';
+                }
+                browser.version = parseFloat(v);
+                browser.name = n;
+                browser[n] = true;
+                if (browser.chrome)
+                    delete browser.webkit;
+            }
+        }
+    );
 /*#*/ } // __options.environment == 'browser'
 
     // Operators to overload
@@ -259,7 +269,7 @@ Base.exports.PaperScript = (function() {
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
         if (browser.chrome && version >= 30
-                || browser.safari && version >= 7
+                || browser.webkit && version >= 537.76 // >= Safari 7.0.4
                 || browser.firefox && version >= 23) {
             var offset = 0;
             if (url === window.location.href) {
