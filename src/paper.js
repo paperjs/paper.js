@@ -37,15 +37,15 @@ var paper = new function(undefined) {
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });
 
 /*#*/ if (__options.version == 'dev' && __options.environment == 'browser') {
-/*#*/ include('../bower_components/stats.js/build/stats.min.js');
+/*#*/     include('../bower_components/stats.js/build/stats.min.js');
 /*#*/ }
 
 /*#*/ if (__options.legacy) {
-/*#*/ include('legacy.js');
+/*#*/     include('legacy.js');
 /*#*/ }
 
 /*#*/ if (__options.version == 'dev') {
-/*#*/ include('constants.js');
+/*#*/     include('constants.js');
 /*#*/ }
 
 /*#*/ include('core/Base.js');
@@ -86,7 +86,7 @@ var paper = new function(undefined) {
 /*#*/ include('path/Path.Constructors.js');
 /*#*/ include('path/CompoundPath.js');
 /*#*/ if (__options.booleanOperations) {
-/*#*/ include('path/PathItem.Boolean.js');
+/*#*/     include('path/PathItem.Boolean.js');
 /*#*/ }
 /*#*/ include('path/PathFlattener.js');
 /*#*/ include('path/PathFitter.js');
@@ -100,52 +100,52 @@ var paper = new function(undefined) {
 /*#*/ include('style/Style.js');
 
 /*#*/ if (__options.environment == 'node') {
-/*#*/ include('dom/node.js');
+/*#*/     include('dom/node.js');
 /*#*/ }
 /*#*/ include('dom/DomElement.js');
 /*#*/ if (__options.environment == 'browser') {
 // DomEvent doesn't make sense outside of the browser (yet)
-/*#*/ include('dom/DomEvent.js');
+/*#*/     include('dom/DomEvent.js');
 /*#*/ }
 
 /*#*/ include('ui/View.js');
 /*#*/ include('ui/CanvasView.js');
 
 /*#*/ if (__options.environment == 'browser') {
-/*#*/ include('ui/Event.js');
-/*#*/ include('ui/KeyEvent.js');
-/*#*/ include('ui/Key.js');
-/*#*/ include('ui/MouseEvent.js');
+/*#*/     include('ui/Event.js');
+/*#*/     include('ui/KeyEvent.js');
+/*#*/     include('ui/Key.js');
+/*#*/     include('ui/MouseEvent.js');
 
-/*#*/ if (__options.palette) {
-/*#*/ include('ui/Palette.js');
-/*#*/ include('ui/Component.js');
-/*#*/ }
+/*#*/     if (__options.palette) {
+/*#*/         include('ui/Palette.js');
+/*#*/         include('ui/Component.js');
+/*#*/     }
 
-/*#*/ include('tool/ToolEvent.js');
-/*#*/ include('tool/Tool.js');
+/*#*/     include('tool/ToolEvent.js');
+/*#*/     include('tool/Tool.js');
 
 // Http is used both for PaperScript and SVGImport
-/*#*/ if (__options.paperScript || __options.svg) {
-/*#*/ include('net/Http.js');
+/*#*/     if (__options.paperScript || __options.svg) {
+/*#*/         include('net/Http.js');
+/*#*/     }
 /*#*/ }
-/*#*/ } // __options.environment == 'browser'
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
 /*#*/ if (__options.version == 'dev') {
-/*#*/ include('canvas/ProxyContext.js');
+/*#*/     include('canvas/ProxyContext.js');
 /*#*/ }
 
 /*#*/ if (__options.svg) {
-/*#*/ include('svg/SVGStyles.js');
-/*#*/ include('svg/SVGNamespaces.js');
-/*#*/ include('svg/SVGExport.js');
-/*#*/ include('svg/SVGImport.js');
+/*#*/     include('svg/SVGStyles.js');
+/*#*/     include('svg/SVGNamespaces.js');
+/*#*/     include('svg/SVGExport.js');
+/*#*/     include('svg/SVGImport.js');
 /*#*/ }
 
 /*#*/ if (__options.paperScript) {
-/*#*/ include('core/PaperScript.js');
+/*#*/     include('core/PaperScript.js');
 /*#*/ }
 
 /*#*/ include('export.js');
