@@ -502,7 +502,7 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.load
      * @function
-     * @param {HTMLScriptElement} script the script to load. If none is
+     * @param {HTMLScriptElement} [script=null] the script to load. If none is
      * provided, all scripts of the HTML document are iterated over and loaded.
      */
     function load(script) {
