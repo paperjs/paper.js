@@ -272,7 +272,7 @@ Base.exports.PaperScript = (function() {
                 || browser.webkit && version >= 537.76 // >= Safari 7.0.4
                 || browser.firefox && version >= 23) {
             var offset = 0;
-            if (url === window.location.href) {
+            if (window.location.href.indexOf(url) === 0) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML;
