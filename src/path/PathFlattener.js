@@ -102,7 +102,7 @@ var PathFlattener = Base.extend({
                 return {
                     // Interpolate
                     value: prevVal + (part.value - prevVal)
-                        * (offset - prevLen) /  (part.offset - prevLen),
+                        * (offset - prevLen) / (part.offset - prevLen),
                     index: part.index
                 };
             }

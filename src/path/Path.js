@@ -2481,7 +2481,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 }
             }
             var ext = Math.abs(extent),
-                count =  ext >= 360 ? 4 : Math.ceil(ext / 90),
+                count = ext >= 360 ? 4 : Math.ceil(ext / 90),
                 inc = extent / count,
                 half = inc * Math.PI / 360,
                 z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),

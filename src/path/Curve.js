@@ -1264,7 +1264,7 @@ new function() { // Scope for methods that require numerical integration
             } else if (qy <= dMax) {
                 px = hullBottom[i][0];
                 qx = hullBottom[i + 1][0];
-                tProxy = px + (dMax  - py) * (qx - px) / (qy - py);
+                tProxy = px + (dMax - py) * (qx - px) / (qy - py);
             } else {
                 // Try the next chain
                 continue;

@@ -37,7 +37,7 @@ var Key = new function() {
         46: 'delete',
         91: 'command',
         93: 'command', // WebKit right command button
-        224: 'command'  // Gecko command button
+        224: 'command' // Gecko command button
     },
 
     // Mark the special keys that still can be interpreted as chars too

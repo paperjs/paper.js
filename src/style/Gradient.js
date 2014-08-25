@@ -182,7 +182,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     equals: function(gradient) {
         if (gradient === this)
             return true;
-        if (gradient &&  this._class === gradient._class
+        if (gradient && this._class === gradient._class
                 && this._stops.length === gradient._stops.length) {
             for (var i = 0, l = this._stops.length; i < l; i++) {
                 if (!this._stops[i].equals(gradient._stops[i]))

@@ -273,8 +273,8 @@ var BlendMode = new function() {
                 return;
             var dstData = dstContext.getImageData(offset.x, offset.y,
                     srcCanvas.width, srcCanvas.height),
-                dst  = dstData.data,
-                src  = srcContext.getImageData(0, 0,
+                dst = dstData.data,
+                src = srcContext.getImageData(0, 0,
                     srcCanvas.width, srcCanvas.height).data;
             for (var i = 0, l = dst.length; i < l; i += 4) {
                 sr = src[i];

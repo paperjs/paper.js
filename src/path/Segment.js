@@ -503,7 +503,7 @@ var Segment = Base.extend(/** @lends Segment# */{
             // This saves some computation time. If change is false, always
             // use the real handles, as we just want to receive a filled
             // coords array for getBounds().
-            handleIn =  !change || !this._handleIn.isZero()
+            handleIn = !change || !this._handleIn.isZero()
                     ? this._handleIn : null,
             handleOut = !change || !this._handleOut.isZero()
                     ? this._handleOut : null,

@@ -676,7 +676,7 @@ CompoundPath.inject(/** @lends CompoundPath# */{
      * Used by getWinding().
      */
     _getMonoCurves: function() {
-        var children =  this._children,
+        var children = this._children,
             monoCurves = [];
         for (var i = 0, l = children.length; i < l; i++)
             monoCurves.push.apply(monoCurves, children[i]._getMonoCurves());
