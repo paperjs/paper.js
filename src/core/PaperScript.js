@@ -483,6 +483,7 @@ Base.exports.PaperScript = (function() {
             }
             // Mark script as loaded now.
             script.setAttribute('data-paper-ignore', 'true');
+            return scope;
         }
     }
 
@@ -504,13 +505,11 @@ Base.exports.PaperScript = (function() {
      * @function
      * @param {HTMLScriptElement} [script=null] the script to load. If none is
      * provided, all scripts of the HTML document are iterated over and loaded.
+     * @return {PaperScope} the scope produced for the passed {@code script}, or
+     * {@code undefined} of multiple scripts area loaded.
      */
     function load(script) {
-        if (script) {
-            loadScript(script);
-        } else {
-            loadAll();
-        }
+        return script ? loadScript(script) : loadAll();
     }
 
     // Catch cases where paper.js is loaded after the browser event has already
