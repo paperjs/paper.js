@@ -1561,7 +1561,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 if (parameter === 0 || parameter === 1 && numSegments > 1) {
                     if (!checkSegmentStroke(loc.getSegment()))
                         loc = null;
-                } else  if (!isCloseEnough(loc.getPoint(), strokePadding)) {
+                } else if (!isCloseEnough(loc.getPoint(), strokePadding)) {
                     loc = null;
                 }
             }
