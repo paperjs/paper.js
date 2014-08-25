@@ -447,7 +447,6 @@ Base.exports.PaperScript = (function() {
 /*#*/ if (__options.environment == 'browser') {
 
     function loadScript(script) {
-        debugger;
         // Only load this script if it not loaded already.
         // Support both text/paperscript and text/x-paperscript:
         if (/^text\/(?:x-|)paperscript$/.test(script.type)
