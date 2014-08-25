@@ -368,8 +368,9 @@ Base.exports.PaperScript = (function() {
             // these too as pseudo-globals, but only if they seem to be in use.
             for (var key in scope) {
                 // Next to \b well also need to match \s and \W in the beginning
-                // of $__, since $ is not part of \w.
-                if ((hidden || !/^_/.test(key)) && new RegExp('[\\b\\s\\W]'
+                // of $__, since $ is not part of \w. And that causes \b to not
+                // match ^ longer, so include that specifically too.
+                if ((hidden || !/^_/.test(key)) && new RegExp('([\\b\\s\\W]|^)'
                         + key.replace(/\$/g, '\\$') + '\\b').test(code)) {
                     params.push(key);
                     args.push(scope[key]);
