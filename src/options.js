@@ -17,7 +17,7 @@
 // The paper.js version.
 // NOTE: Adjust value here before calling publish.sh, which then updates and
 // publishes the various JSON package files automatically.
-var version = '0.9.19';
+var version = '0.9.20';
 
 var __options = {
     // If this file is loaded in the browser, we're in dev mode through load.js
