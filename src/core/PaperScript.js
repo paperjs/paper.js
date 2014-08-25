@@ -450,7 +450,7 @@ Base.exports.PaperScript = (function() {
         // Only load this script if it not loaded already.
         // Support both text/paperscript and text/x-paperscript:
         if (/^text\/(?:x-|)paperscript$/.test(script.type)
-                && !script.getAttribute('data-paper-ignore')) {
+                && PaperScope.getAttribute(script, 'ignore') !== 'true') {
             // Produce a new PaperScope for this script now. Scopes are cheap so
             // let's not worry about the initial one that was already created.
             // Define an id for each PaperScript, so its scope can be retrieved
@@ -460,17 +460,17 @@ Base.exports.PaperScript = (function() {
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
                 src = script.src,
-                scopeKey = 'data-paper-scope';
+                scopeAttribute = 'data-paper-scope';
             if (!canvas)
                 throw new Error('Unable to find canvas with id "'
                         + canvasId + '"');
             // See if there already is a scope for this canvas and reuse it, to
             // support multiple scripts per canvas. Otherwise create a new one.
-            var scope = PaperScope.get(canvas.getAttribute(scopeKey))
+            var scope = PaperScope.get(canvas.getAttribute(scopeAttribute))
                         || new PaperScope().setup(canvas);
             // Link the element to this scope, so we can reuse the scope when
             // compiling multiple scripts for the same element.
-            canvas.setAttribute(scopeKey, scope._id);
+            canvas.setAttribute(scopeAttribute, scope._id);
             if (src) {
                 // If we're loading from a source, request that first and then
                 // run later.
@@ -482,7 +482,7 @@ Base.exports.PaperScript = (function() {
                 execute(script.innerHTML, scope, script.baseURI);
             }
             // Mark script as loaded now.
-            script.setAttribute('data-paper-ignore', true);
+            script.setAttribute('data-paper-ignore', 'true');
         }
     }
 
@@ -495,7 +495,8 @@ Base.exports.PaperScript = (function() {
      * Note that this method is executed automatically for all scripts in the
      * document through a window load event. You can optionally call it earlier
      * (e.g. from a DOM ready event), or you can mark scripts to be ignored by
-     * setting their attribute {@code data-paper-ignore="true"}, and call the
+     * setting the attribute {@code ignore="true"} or
+     * {@code data-paper-ignore="true"}, and call the
      * {@code PaperScript.load(script)} method for each script separately when
      * needed.
      *
