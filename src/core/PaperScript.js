@@ -125,9 +125,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.compile
      * @function
-     * @param {String} code The PaperScript code.
-     * @param {String} url The url of the source, for source-map debugging.
-     * @return {String} The compiled PaperScript as JavaScript code.
+     * @param {String} code the PaperScript code.
+     * @param {String} url the url of the source, for source-map debugging.
+     * @return {String} the compiled PaperScript as JavaScript code.
      */
     function compile(code, url, options) {
         if (!code)
@@ -335,9 +335,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.execute
      * @function
-     * @param {String} code The PaperScript code.
-     * @param {PaperScript} scope The scope for which the code is executed.
-     * @param {String} url The url of the source, for source-map debugging.
+     * @param {String} code the PaperScript code.
+     * @param {PaperScript} scope the scope for which the code is executed.
+     * @param {String} url the url of the source, for source-map debugging.
      */
     function execute(code, scope, url, options) {
         // Set currently active scope.
@@ -446,57 +446,80 @@ Base.exports.PaperScript = (function() {
 
 /*#*/ if (__options.environment == 'browser') {
 
-    function load() {
-        Base.each(document.getElementsByTagName('script'), function(script) {
-            // Only load this script if it not loaded already.
-            // Support both text/paperscript and text/x-paperscript:
-            if (/^text\/(?:x-|)paperscript$/.test(script.type)
-                    && !script.getAttribute('data-paper-ignore')) {
-                // Produce a new PaperScope for this script now. Scopes are
-                // cheap so let's not worry about the initial one that was
-                // already created.
-                // Define an id for each PaperScript, so its scope can be
-                // retrieved through PaperScope.get().
-                // If a canvas id is provided, pass it on to the PaperScope
-                // so a project is created for it now.
-                var canvasId = PaperScope.getAttribute(script, 'canvas'),
-                    canvas = document.getElementById(canvasId),
-                    src = script.src,
-                    scopeKey = 'data-paper-scope';
-                if (!canvas)
-                    throw new Error('Unable to find canvas with id "'
-                            + canvasId + '"');
-                // See if there already is a scope for this canvas and reuse
-                // it, to support multiple scripts per canvas. Otherwise
-                // create a new one.
-                var scope = PaperScope.get(canvas.getAttribute(scopeKey))
-                            || new PaperScope().setup(canvas);
-                // Link the element to this scope, so we can reuse the scope
-                // when compiling multiple scripts for the same element.
-                canvas.setAttribute(scopeKey, scope._id);
-                if (src) {
-                    // If we're loading from a source, request that first and
-                    // then run later.
-                    Http.request('get', src, function(code) {
-                        execute(code, scope, src);
-                    });
-                } else {
-                    // We can simply get the code form the script tag.
-                    execute(script.innerHTML, scope, script.baseURI);
-                }
-                // Mark script as loaded now.
-                script.setAttribute('data-paper-ignore', true);
+    function loadScript(script) {
+        debugger;
+        // Only load this script if it not loaded already.
+        // Support both text/paperscript and text/x-paperscript:
+        if (/^text\/(?:x-|)paperscript$/.test(script.type)
+                && !script.getAttribute('data-paper-ignore')) {
+            // Produce a new PaperScope for this script now. Scopes are cheap so
+            // let's not worry about the initial one that was already created.
+            // Define an id for each PaperScript, so its scope can be retrieved
+            // through PaperScope.get().
+            // If a canvas id is provided, pass it on to the PaperScope so a
+            // project is created for it now.
+            var canvasId = PaperScope.getAttribute(script, 'canvas'),
+                canvas = document.getElementById(canvasId),
+                src = script.src,
+                scopeKey = 'data-paper-scope';
+            if (!canvas)
+                throw new Error('Unable to find canvas with id "'
+                        + canvasId + '"');
+            // See if there already is a scope for this canvas and reuse it, to
+            // support multiple scripts per canvas. Otherwise create a new one.
+            var scope = PaperScope.get(canvas.getAttribute(scopeKey))
+                        || new PaperScope().setup(canvas);
+            // Link the element to this scope, so we can reuse the scope when
+            // compiling multiple scripts for the same element.
+            canvas.setAttribute(scopeKey, scope._id);
+            if (src) {
+                // If we're loading from a source, request that first and then
+                // run later.
+                Http.request('get', src, function(code) {
+                    execute(code, scope, src);
+                });
+            } else {
+                // We can simply get the code form the script tag.
+                execute(script.innerHTML, scope, script.baseURI);
             }
-        }, this);
+            // Mark script as loaded now.
+            script.setAttribute('data-paper-ignore', true);
+        }
+    }
+
+    function loadAll() {
+        Base.each(document.getElementsByTagName('script'), loadScript);
+    }
+
+   /**
+     * Loads, compiles and executes PaperScript code in the HTML document.
+     * Note that this method is executed automatically for all scripts in the
+     * document through a window load event. You can optionally call it earlier
+     * (e.g. from a DOM ready event), or you can mark scripts to be ignored by
+     * setting their attribute {@code data-paper-ignore="true"}, and call the
+     * {@code PaperScript.load(script)} method for each script separately when
+     * needed.
+     *
+     * @name PaperScript.load
+     * @function
+     * @param {HTMLScriptElement} script the script to load. If none is
+     * provided, all scripts of the HTML document are iterated over and loaded.
+     */
+    function load(script) {
+        if (script) {
+            loadScript(script);
+        } else {
+            loadAll();
+        }
     }
 
     // Catch cases where paper.js is loaded after the browser event has already
     // occurred.
     if (document.readyState === 'complete') {
         // Handle it asynchronously
-        setTimeout(load);
+        setTimeout(loadAll);
     } else {
-        DomEvent.add(window, { load: load });
+        DomEvent.add(window, { load: loadAll });
     }
 
     return {
