@@ -50,10 +50,10 @@ git add -u component.json
 git add -u dist
 # Commit
 git commit -m "Bump version to v$VERSION"
-# Tag
+# Tag & Push
 git tag "v$VERSION"
-# Push
-git push --follow-tags
+git push
+git push --tags
 # Publish
 npm publish
 
@@ -66,7 +66,7 @@ cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
 git add -A $DIST_FILE
 git add -u assets/js/paper.js
 git commit -m "Release version v$VERSION"
-# Tag
+# Tag & Push
 git tag "v$VERSION"
 git push
 git push --tags
