@@ -1032,34 +1032,30 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     /**
      * The bounding rectangle of the item excluding stroke width.
      *
-     * @name Item#getBounds
+     * @name Item#bounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The bounding rectangle of the item including stroke width.
      *
-     * @name Item#getStrokeBounds
+     * @name Item#strokeBounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The bounding rectangle of the item including handles.
      *
-     * @name Item#getHandleBounds
+     * @name Item#handleBounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The rough bounding rectangle of the item that is sure to include all of
      * the drawing, including stroke width.
      *
-     * @name Item#getRoughBounds
+     * @name Item#roughBounds
      * @type Rectangle
-     * @bean
      * @ignore
      */
 }), /** @lends Item# */{

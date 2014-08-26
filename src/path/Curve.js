@@ -749,34 +749,30 @@ statics: {
     /**
      * The bounding rectangle of the curve excluding stroke width.
      *
-     * @name Curve#getBounds
+     * @name Curve#bounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The bounding rectangle of the curve including stroke width.
      *
-     * @name Curve#getStrokeBounds
+     * @name Curve#strokeBounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The bounding rectangle of the curve including handles.
      *
-     * @name Curve#getHandleBounds
+     * @name Curve#handleBounds
      * @type Rectangle
-     * @bean
      */
 
     /**
      * The rough bounding rectangle of the curve that is shure to include all of
      * the drawing, including stroke width.
      *
-     * @name Curve#getRoughBounds
+     * @name Curve#roughBounds
      * @type Rectangle
-     * @bean
      * @ignore
      */
 }), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],

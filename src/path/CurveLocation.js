@@ -210,25 +210,22 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     /**
      * The tangential vector to the {@link #curve} at the given location.
      *
-     * @name Item#getTangent
+     * @name Item#tangent
      * @type Point
-     * @bean
      */
 
     /**
      * The normal vector to the {@link #curve} at the given location.
      *
-     * @name Item#getNormal
+     * @name Item#normal
      * @type Point
-     * @bean
      */
 
     /**
      * The curvature of the {@link #curve} at the given location.
      *
-     * @name Item#getCurvature
+     * @name Item#curvature
      * @type Number
-     * @bean
      */
 
     /**
