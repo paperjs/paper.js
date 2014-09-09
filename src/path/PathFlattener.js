@@ -16,28 +16,66 @@
  * @private
  */
 var PathFlattener = Base.extend({
-    initialize: function(path, matrix) {
-        this.curves = []; // The curve values as returned by getValues()
-        this.parts = []; // The calculated, subdivided parts of the path
-        this.length = 0; // The total length of the path
-        // Keep a current index from the part where we last where in
-        // getParameterAt(), to optimise for iterator-like usage of flattener.
-        this.index = 0;
+    /**
+     * Creates a path flattener for the given path.
+     *
+     * @param {Path} path the path to iterate over.
+     * @param {Matrix} [matrix] the matrix by which to transform the path's
+     * coordinates without modifying the actual path.
+     * @param {Number} [maxRecursion=32] the maximum amount of recursion in
+     * curve subdivision when mapping offsets to curve parameters.
+     * @param {Number} [tolerance=0.25] the error tolerance at which the
+     * recursion is interrupted before the maximum number of iterations is
+     * reached.
+     * @return {PathFlattener} the newly created path flattener.
+     */
+    initialize: function(path, matrix, maxRecursion, tolerance) {
+        if (!tolerance)
+            tolerance = 0.25;
 
         // Instead of relying on path.curves, we only use segments here and
         // get the curve values from them.
-
-        // Now walk through all curves and compute the parts for each of them,
-        // by recursively calling _computeParts().
-        var segments = path._segments,
+        var curves = [], // The curve values as returned by getValues()
+            parts = [], // The calculated, subdivided parts of the path
+            length = 0, // The total length of the path
+            minDifference = 1 / (maxRecursion || 32),
+            segments = path._segments,
             segment1 = segments[0],
-            segment2,
-            that = this;
+            segment2;
 
+        // Iterate through all curves and compute the parts for each of them,
+        // by recursively calling computeParts().
         function addCurve(segment1, segment2) {
             var curve = Curve.getValues(segment1, segment2, matrix);
-            that.curves.push(curve);
-            that._computeParts(curve, segment1._index, 0, 1);
+            curves.push(curve);
+            computeParts(curve, segment1._index, 0, 1);
+        }
+
+        function computeParts(curve, index, minT, maxT) {
+            // Check if the t-span is big enough for subdivision.
+            // We're not subdividing more than 32 times...
+            // After quite a bit of testing, a tolerance of 0.25 appears to be a
+            // good trade-off between speed and precision.
+            if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve, 0.25)) {
+                var split = Curve.subdivide(curve),
+                    halfT = (minT + maxT) / 2;
+                // Recursively subdivide and compute parts again.
+                computeParts(split[0], index, minT, halfT);
+                computeParts(split[1], index, halfT, maxT);
+            } else {
+                // Calculate distance between p1 and p2
+                var x = curve[6] - curve[0],
+                    y = curve[7] - curve[1],
+                    dist = Math.sqrt(x * x + y * y);
+                if (dist > /*#=*/Numerical.TOLERANCE) {
+                    length += dist;
+                    parts.push({
+                        offset: length,
+                        value: maxT,
+                        index: index
+                    });
+                }
+            }
         }
 
         for (var i = 1, l = segments.length; i < l; i++) {
@@ -47,33 +85,13 @@ var PathFlattener = Base.extend({
         }
         if (path._closed)
             addCurve(segment2, segments[0]);
-    },
 
-    _computeParts: function(curve, index, minT, maxT) {
-        // Check if the t-span is big enough for subdivision.
-        // We're not subdividing more than 32 times...
-        // After quite a bit of testing, a tolerance of 0.25 appears to be a
-        // good trade-off between speed and precision.
-        if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve, 0.25)) {
-            var curves = Curve.subdivide(curve);
-            var halfT = (minT + maxT) / 2;
-            // Recursively subdive and compute parts again.
-            this._computeParts(curves[0], index, minT, halfT);
-            this._computeParts(curves[1], index, halfT, maxT);
-        } else {
-            // Calculate distance between p1 and p2
-            var x = curve[6] - curve[0],
-                y = curve[7] - curve[1],
-                dist = Math.sqrt(x * x + y * y);
-            if (dist > /*#=*/Numerical.TOLERANCE) {
-                this.length += dist;
-                this.parts.push({
-                    offset: this.length,
-                    value: maxT,
-                    index: index
-                });
-            }
-        }
+        this.curves = curves;
+        this.parts = parts;
+        this.length = length;
+        // Keep a current index from the part where we last where in
+        // getParameterAt(), to optimise for iterator-like usage of flattener.
+        this.index = 0;
     },
 
     getParameterAt: function(offset) {
