@@ -11,13 +11,15 @@
  */
 
 /**
- * @name PathFlattener
+ * @name PathIterator
  * @class
  * @private
  */
-var PathFlattener = Base.extend({
+var PathIterator = Base.extend({
+    _class: 'PathIterator',
+
     /**
-     * Creates a path flattener for the given path.
+     * Creates a path iterator for the given path.
      *
      * @param {Path} path the path to iterate over.
      * @param {Matrix} [matrix] the matrix by which to transform the path's
@@ -27,7 +29,7 @@ var PathFlattener = Base.extend({
      * @param {Number} [tolerance=0.25] the error tolerance at which the
      * recursion is interrupted before the maximum number of iterations is
      * reached.
-     * @return {PathFlattener} the newly created path flattener.
+     * @return {PathIterator} the newly created path iterator.
      */
     initialize: function(path, matrix, maxRecursion, tolerance) {
         if (!tolerance)
@@ -90,7 +92,7 @@ var PathFlattener = Base.extend({
         this.parts = parts;
         this.length = length;
         // Keep a current index from the part where we last where in
-        // getParameterAt(), to optimise for iterator-like usage of flattener.
+        // getParameterAt(), to optimise for iterator-like usage of iterator.
         this.index = 0;
     },
 

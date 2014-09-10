@@ -952,18 +952,18 @@ var Path = PathItem.extend(/** @lends Path# */{
      * copy.flatten(20);
      */
     flatten: function(maxDistance) {
-        var flattener = new PathFlattener(this),
+        var iterator = new PathIterator(this),
             pos = 0,
             // Adapt step = maxDistance so the points distribute evenly.
-            step = flattener.length / Math.ceil(flattener.length / maxDistance),
+            step = iterator.length / Math.ceil(iterator.length / maxDistance),
             // Add/remove half of step to end, so imprecisions are ok too.
             // For closed paths, remove it, because we don't want to add last
             // segment again
-            end = flattener.length + (this._closed ? -step : step) / 2;
+            end = iterator.length + (this._closed ? -step : step) / 2;
         // Iterate over path and evaluate and add points at given offsets
         var segments = [];
         while (pos <= end) {
-            segments.push(new Segment(flattener.evaluate(pos, 0)));
+            segments.push(new Segment(iterator.evaluate(pos, 0)));
             pos += step;
         }
         this.setSegments(segments);
@@ -2113,14 +2113,14 @@ var Path = PathItem.extend(/** @lends Path# */{
                 if (hasStroke) {
                     if (dashLength) {
                         // We cannot use the path created by drawSegments above
-                        // Use CurveFlatteners to draw dashed paths:
+                        // Use PathIterator to draw dashed paths:
                         // NOTE: We don't cache this path in another currentPath
                         // since browsers that support currentPath also support
                         // native dashes.
                         if (!dontStart)
                             ctx.beginPath();
-                        var flattener = new PathFlattener(this, strokeMatrix),
-                            length = flattener.length,
+                        var iterator = new PathIterator(this, strokeMatrix),
+                            length = iterator.length,
                             from = -style.getDashOffset(), to,
                             i = 0;
                         from = from % length;
@@ -2132,7 +2132,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                         while (from < length) {
                             to = from + getOffset(i++);
                             if (from > 0 || to > 0)
-                                flattener.drawPart(ctx,
+                                iterator.drawPart(ctx,
                                         Math.max(from, 0), Math.max(to, 0));
                             from = to + getOffset(i++);
                         }

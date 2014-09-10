@@ -88,7 +88,7 @@ var paper = new function(undefined) {
 /*#*/ if (__options.booleanOperations) {
 /*#*/     include('path/PathItem.Boolean.js');
 /*#*/ }
-/*#*/ include('path/PathFlattener.js');
+/*#*/ include('path/PathIterator.js');
 /*#*/ include('path/PathFitter.js');
 
 /*#*/ include('text/TextItem.js');
