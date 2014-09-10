@@ -414,7 +414,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             for (var i = index + amount, l = segments.length; i < l; i++)
                 segments[i]._index = i;
         }
-        // Keep the curves list in sync all the time in case it as requested
+        // Keep the curves list in sync all the time in case it was requested
         // already.
         if (curves || segs._curves) {
             if (!curves)
@@ -1596,7 +1596,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // TODO: intersects(item)
     // TODO: contains(item)
-}, /** @lends Path# */{
+}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
+    function(name, index) {
+        this[name + 'At'] = function(offset, isParameter) {
+            var loc = this.getLocationAt(offset, isParameter);
+            return loc && loc[name]();
+        };
+    },
+/** @lends Path# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getLocationOf(), #getNearestLocation(), #getNearestPoint()
@@ -1684,6 +1691,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Calculates the point on the path at the given offset.
      *
+     * @name Path#getPointAt
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1741,15 +1749,12 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     });
      * }
      */
-    getPointAt: function(offset, isParameter) {
-        var loc = this.getLocationAt(offset, isParameter);
-        return loc && loc.getPoint();
-    },
 
     /**
      * Calculates the tangent to the path at the given offset as a vector
      * point.
      *
+     * @name Path#getTangentAt
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1815,14 +1820,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     })
      * }
      */
-    getTangentAt: function(offset, isParameter) {
-        var loc = this.getLocationAt(offset, isParameter);
-        return loc && loc.getTangent();
-    },
 
     /**
      * Calculates the normal to the path at the given offset as a vector point.
      *
+     * @name Path#getNormalAt
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1888,10 +1890,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     });
      * }
      */
-    getNormalAt: function(offset, isParameter) {
-        var loc = this.getLocationAt(offset, isParameter);
-        return loc && loc.getNormal();
-    },
 
     /**
      * Returns the nearest location on the path to the specified point.
@@ -1951,7 +1949,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     getNearestPoint: function(/* point */) {
         return this.getNearestLocation.apply(this, arguments).getPoint();
     }
-}, new function() { // Scope for drawing
+}), new function() { // Scope for drawing
 
     // Note that in the code below we're often accessing _x and _y on point
     // objects that were read from segments. This is because the SegmentPoint
