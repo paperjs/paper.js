@@ -151,4 +151,11 @@ var PathIterator = Base.extend({
             ctx.bezierCurveTo.apply(ctx, curve.slice(2));
         }
     }
-});
+}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
+    function(name, index) {
+        this[name] = function(offset) {
+            return this.evaluate(offset, index);
+        };
+    }, {})
+);
+
