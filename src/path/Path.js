@@ -952,7 +952,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * copy.flatten(20);
      */
     flatten: function(maxDistance) {
-        var iterator = new PathIterator(this),
+        var iterator = new PathIterator(this, 64, 0.1),
             pos = 0,
             // Adapt step = maxDistance so the points distribute evenly.
             step = iterator.length / Math.ceil(iterator.length / maxDistance),
@@ -2117,7 +2117,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                         // native dashes.
                         if (!dontStart)
                             ctx.beginPath();
-                        var iterator = new PathIterator(this, strokeMatrix),
+                        var iterator = new PathIterator(this, 32, 0.25,
+                                strokeMatrix),
                             length = iterator.length,
                             from = -style.getDashOffset(), to,
                             i = 0;

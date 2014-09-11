@@ -22,24 +22,22 @@ var PathIterator = Base.extend({
      * Creates a path iterator for the given path.
      *
      * @param {Path} path the path to iterate over.
-     * @param {Matrix} [matrix] the matrix by which to transform the path's
-     * coordinates without modifying the actual path.
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
      * curve subdivision when mapping offsets to curve parameters.
      * @param {Number} [tolerance=0.25] the error tolerance at which the
      * recursion is interrupted before the maximum number of iterations is
      * reached.
+     * @param {Matrix} [matrix] the matrix by which to transform the path's
+     * coordinates without modifying the actual path.
      * @return {PathIterator} the newly created path iterator.
      */
-    initialize: function(path, matrix, maxRecursion, tolerance) {
-        if (!tolerance)
-            tolerance = 0.25;
-
+    initialize: function(path, maxRecursion, tolerance, matrix) {
         // Instead of relying on path.curves, we only use segments here and
         // get the curve values from them.
         var curves = [], // The curve values as returned by getValues()
             parts = [], // The calculated, subdivided parts of the path
             length = 0, // The total length of the path
+            // By default, we're not subdividing more than 32 times.
             minDifference = 1 / (maxRecursion || 32),
             segments = path._segments,
             segment1 = segments[0],
@@ -55,10 +53,11 @@ var PathIterator = Base.extend({
 
         function computeParts(curve, index, minT, maxT) {
             // Check if the t-span is big enough for subdivision.
-            // We're not subdividing more than 32 times...
-            // After quite a bit of testing, a tolerance of 0.25 appears to be a
-            // good trade-off between speed and precision.
-            if ((maxT - minT) > 1 / 32 && !Curve.isFlatEnough(curve, 0.25)) {
+            if ((maxT - minT) > minDifference
+                    // After quite a bit of testing, a default tolerance of 0.25
+                    // appears to offer a good trade-off between speed and
+                    // precision for display purposes.
+                    && !Curve.isFlatEnough(curve, tolerance || 0.25)) {
                 var split = Curve.subdivide(curve),
                     halfT = (minT + maxT) / 2;
                 // Recursively subdivide and compute parts again.
