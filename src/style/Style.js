@@ -127,6 +127,7 @@ var Style = Base.extend(new function() {
 
     Base.each(defaults, function(value, key) {
         var isColor = /Color$/.test(key),
+            isPoint = key === 'shadowOffset',
             part = Base.capitalize(key),
             flag = flags[key],
             set = 'set' + part,
@@ -190,12 +191,16 @@ var Style = Base.extend(new function() {
                     if (value && value.clone)
                         value = value.clone();
                     this._values[key] = value;
-                } else if (isColor && !(value && value.constructor === Color)) {
-                    // Convert to a Color and stored result of conversion.
-                    this._values[key] = value = Color.read([value], 0,
-                            { readNull: true, clone: true });
-                    if (value)
-                        value._owner = owner;
+                } else {
+                    var ctor = isColor ? Color : isPoint ? Point : null;
+                    if (ctor && !(value && value.constructor === ctor)) {
+                        // Convert to a Color / Point, and stored result of the
+                        // conversion.
+                        this._values[key] = value = ctor.read([value], 0,
+                                { readNull: true, clone: true });
+                        if (value && isColor)
+                            value._owner = owner;
+                    }
                 }
                 return value;
             }
