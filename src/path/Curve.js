@@ -481,7 +481,7 @@ statics: {
                 p2._x, p2._y
             ];
         if (matrix)
-            matrix._transformCoordinates(values, values, 6);
+            matrix._transformCoordinates(values, values, 4);
         return values;
     },
 
