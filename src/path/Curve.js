@@ -485,6 +485,7 @@ statics: {
         return values;
     },
 
+    // TODO: Instead of constants for type, use a "enum" and code substitution.
     evaluate: function(v, t, type) {
         var p1x = v[0], p1y = v[1],
             c1x = v[2], c1y = v[3],
@@ -595,8 +596,8 @@ statics: {
             return 1;
         var txs = [],
             tys = [],
-            sx = Curve.solveCubic(v, 0, x, txs),
-            sy = Curve.solveCubic(v, 1, y, tys),
+            sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
+            sy = Curve.solveCubic(v, 1, y, tys, 0, 1),
             tx, ty;
         // sx, sy == -1 means infinite solutions:
         // Loop through all solutions for x and match with solutions for y,
