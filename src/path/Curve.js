@@ -629,8 +629,7 @@ statics: {
     getPart: function(v, from, to) {
         if (from > 0)
             v = Curve.subdivide(v, from)[1]; // [1] right
-        // Interpolate the  parameter at 'to' in the new curve and
-        // cut there.
+        // Interpolate the parameter at 'to' in the new curve and cut there.
         if (to < 1)
             v = Curve.subdivide(v, (to - from) / (1 - from))[0]; // [0] left
         return v;
@@ -838,7 +837,7 @@ statics: {
     getLocationAt: function(offset, isParameter) {
         if (!isParameter)
             offset = this.getParameterAt(offset);
-        return new CurveLocation(this, offset);
+        return offset >= 0 && offset <= 1 && new CurveLocation(this, offset);
     },
 
     /**
@@ -848,9 +847,8 @@ statics: {
      * @return {CurveLocation} the curve location of the specified point.
      */
     getLocationOf: function(/* point */) {
-        var point = Point.read(arguments),
-            t = this.getParameterOf(point);
-        return t != null ? new CurveLocation(this, t) : null;
+        return this.getLocationAt(this.getParameterOf(Point.read(arguments)),
+                true);
     },
 
     /**
@@ -1014,13 +1012,13 @@ new function() { // Scope for methods that require numerical integration
             var forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
-                offset = Math.abs(offset),
                 // Use integrand to calculate both range length and part
                 // lengths in f(t) below.
                 ds = getLengthIntegrand(v),
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
+            offset = Math.abs(offset);
             if (offset >= rangeLength)
                 return forward ? b : a;
             // Use offset / rangeLength for an initial guess for t, to
