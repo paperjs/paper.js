@@ -133,7 +133,7 @@ new function() {
             param = { pathData: data };
         // If there are multiple moveTo commands or a closePath command followed
         // by other commands, we have a CompoundPath:
-        return data.match(/m/gi).length > 1 || /z\S+/i.test(data)
+        return (data.match(/m/gi) || []).length > 1 || /z\S+/i.test(data)
                 ? new CompoundPath(param)
                 : new Path(param);
     }
