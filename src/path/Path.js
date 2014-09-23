@@ -1597,7 +1597,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     // TODO: intersects(item)
     // TODO: contains(item)
 }, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
-    function(name, index) {
+    function(name) {
         this[name + 'At'] = function(offset, isParameter) {
             var loc = this.getLocationAt(offset, isParameter);
             return loc && loc[name]();
