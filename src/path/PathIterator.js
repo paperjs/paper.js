@@ -153,7 +153,7 @@ var PathIterator = Base.extend({
     }
 }, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
     function(name, index) {
-        this[name] = function(offset) {
+        this[name + 'At'] = function(offset) {
             return this.evaluate(offset, index);
         };
     }, {})
