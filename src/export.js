@@ -26,15 +26,17 @@ paper = new (PaperScope.inject(Base.exports, {
     Key: Key
 }))();
 
+// https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {
     // Support AMD (e.g. require.js)
     // Use named module AMD syntax since there are other unnamed calls to
     // define() inside the built library (from inlined Acorn / Esprima) that
     // apparently confuse the require.js optimizer.
     define('paper', paper);
-} else if (typeof module === 'object' && module // could be `null`
-        && typeof module.exports === 'object') {
+} else if (typeof module === 'object' && module) { // could be `null`
     // Support CommonJS module
+    // NOTE: Do not check typeof module.exports === 'object' since it will be
+    // the Base constructor function after straps.js is included.
     module.exports = paper;
 }
 
