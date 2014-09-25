@@ -2980,8 +2980,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-     * Converts the specified point from global project coordinates to local
-     * coordinates in relation to the the item's own coordinate space.
+     * Converts the specified point from global project coordinate space to the
+     * item's own local coordinate space.
      *
      * @param {Point} point the point to be transformed
      * @return {Point} the transformed point as a new instance
@@ -2992,8 +2992,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-     * Converts the specified point from local coordinates to global coordinates
-     * in relation to the the project coordinate space.
+     * Converts the specified point from the item's own local coordinate space
+     * to the global project coordinate space.
      *
      * @param {Point} point the point to be transformed
      * @return {Point} the transformed point as a new instance
@@ -3001,6 +3001,28 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     localToGlobal: function(/* point */) {
         return this.getGlobalMatrix(true)._transformPoint(
                 Point.read(arguments));
+    },
+
+    /**
+     * Converts the specified point from the parent's coordinate space to
+     * item's own local coordinate space.
+     *
+     * @param {Point} point the point to be transformed
+     * @return {Point} the transformed point as a new instance
+     */
+    parentToLocal: function(/* point */) {
+        return this._matrix._inverseTransform(Point.read(arguments));
+    },
+
+    /**
+     * Converts the specified point from the item's own local coordinate space
+     * to the parent's coordinate space.
+     *
+     * @param {Point} point the point to be transformed
+     * @return {Point} the transformed point as a new instance
+     */
+    localToParent: function(/* point */) {
+        return this._matrix._transformPoint(Point.read(arguments));
     },
 
     /**
