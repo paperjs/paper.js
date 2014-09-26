@@ -47,7 +47,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         this._eventCounters = {};
         this._pixelRatio = 1;
 /*#*/ if (__options.environment == 'browser') {
-        if (PaperScope.getAttribute(canvas, 'hidpi') !== 'off') {
+        if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,

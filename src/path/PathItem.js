@@ -536,7 +536,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * path2.add(new Point(180, 25));
      *
      * // To draw an arc in anticlockwise direction,
-     * // we pass 'false' as the second argument to arcTo:
+     * // we pass `false` as the second argument to arcTo:
      * path2.arcTo(new Point(280, 25), false);
      *
      * @example {@paperscript height=300}
