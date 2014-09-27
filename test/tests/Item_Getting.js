@@ -45,18 +45,20 @@ test('Item#matches()', function() {
 });
 
 test('Project#getItems()', function() {
+    var layer = new Layer();
+
     equals(function() {
         var matches = paper.project.getItems({
             type: 'layer'
         });
-        return matches.length == 1 && matches[0] == paper.project.activeLayer;
+        return matches.length == 1 && matches[0] == layer;
     }, true);
 
     equals(function() {
         var matches = paper.project.getItems({
-            'class': Item
+            class: Item
         });
-        return matches.length == 1 && matches[0] == paper.project.activeLayer;
+        return matches.length == 1 && matches[0] == layer;
     }, true);
 
     var path = new Path();
@@ -69,11 +71,10 @@ test('Project#getItems()', function() {
 
     equals(function() {
         var matches = paper.project.getItems({
-            'constructor': Path
+            constructor: Path
         });
         return matches.length == 1 && matches[0] === path;
     }, true);
-
 
     var group = new Group();
     equals(function() {

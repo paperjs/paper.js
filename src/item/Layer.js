@@ -86,8 +86,8 @@ var Layer = Group.extend(/** @lends Layer# */{
             return _remove.base.call(this, notify);
         if (this._index != null) {
             var project = this._project;
-            if (project.activeLayer === this)
-                project.activeLayer = this.getNextSibling()
+            if (project._activeLayer === this)
+                project._activeLayer = this.getNextSibling()
                         || this.getPreviousSibling();
             Base.splice(project.layers, null, this._index, 1);
             this._installEvents(false);
@@ -124,7 +124,7 @@ var Layer = Group.extend(/** @lends Layer# */{
      * console.log(project.activeLayer == firstLayer); // true
      */
     activate: function() {
-        this._project.activeLayer = this;
+        this._project._activeLayer = this;
     },
 
     // Private helper for #insertAbove() / #insertBelow()

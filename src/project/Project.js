@@ -53,9 +53,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // constructors.
         PaperScopeItem.call(this, true);
         this.layers = [];
+        this._activeLayer = null;
         this.symbols = [];
         this._currentStyle = new Style(null, null, this);
-        this.activeLayer = new Layer();
         // If no view is provided, we create a 1x1 px canvas view just so we
         // have something to do size calculations with.
         // (e.g. PointText#_getBounds)
@@ -98,15 +98,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
-     * Checks whether the project has any content or not. Note that since
-     * projects by default are created with one empty layer, this returns also
-     * {@code true} if that layer exists but is itself empty.
+     * Checks whether the project has any content or not.
      *
      * @return Boolean
      */
     isEmpty: function() {
-        return this.layers.length <= 1
-            && (!this.activeLayer || this.activeLayer.isEmpty());
+        return this.layers.length === 0;
     },
 
     /**
@@ -183,11 +180,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         if (child instanceof Layer) {
             Base.splice(this.layers, [child]);
             // Also activate this layer if there was none before
-            if (!this.activeLayer)
-                this.activeLayer = child;
+            if (!this._activeLayer)
+                this._activeLayer = child;
         } else if (child instanceof Item) {
             // Anything else than layers needs to be added to a layer first
-            (this.activeLayer
+            (this._activeLayer
                 // NOTE: If there is no layer and this project is not the active
                 // one, passing insert: false and calling addChild on the
                 // project will handle it correctly.
@@ -772,7 +769,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this.activate();
         // Provide the activeLayer as a possible target for layers, but only if
         // it's empty.
-        var layer = this.activeLayer;
+        var layer = this._activeLayer;
         return Base.importJSON(json, layer && layer.isEmpty() && layer);
     },
 
@@ -815,7 +812,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      */
 
     /**
-     * {@grouptitle Project Hierarchy}
+     * {@grouptitle Project Content}
      *
      * The layers contained within the project.
      *
@@ -827,9 +824,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The layer which is currently active. New items will be created on this
      * layer by default.
      *
-     * @name Project#activeLayer
      * @type Layer
+     * @bean
      */
+    getActiveLayer: function() {
+        return this._activeLayer || new Layer({ project: this });
+    },
 
     /**
      * The symbols contained within the project.
