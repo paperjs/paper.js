@@ -2245,6 +2245,19 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
+     * Replaces this item with the provided new item which will takes its place
+     * in the project hierarchy instead.
+     *
+     * @return {Boolean} {@true if the item was replaced}
+     */
+    replaceWith: function(item) {
+        var ok = item && item.insertBelow(this);
+        if (ok)
+            this.remove();
+        return ok;
+    },
+
+    /**
      * Removes all of the item's {@link #children} (if any).
      *
      * @name Item#removeChildren

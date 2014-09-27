@@ -183,6 +183,29 @@ test('item.nextSibling / item.previousSibling', function() {
     }, true);
 });
 
+test('item.replaceWith(other)', function() {
+    var project = paper.project;
+    var path = new Path();
+    var secondPath = new Path();
+    var thirdPath = new Path();
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 3);
+    path.replaceWith(secondPath);
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 2);
+    equals(function() {
+        return path.parent == null;
+    }, true);
+    equals(function() {
+        return secondPath.previousSibling == null;
+    }, true);
+    equals(function() {
+        return secondPath.nextSibling == thirdPath;
+    }, true);
+});
+
 test('item.insertChild(0, child)', function() {
     var project = paper.project;
     var path = new Path();
