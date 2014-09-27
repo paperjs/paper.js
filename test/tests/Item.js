@@ -134,6 +134,26 @@ test('item.parent / item.isChild / item.isParent / item.layer', function() {
     }, true);
 });
 
+test('item.remove()', function() {
+    var project = paper.project;
+    var path = new Path();
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 1);
+    path.remove();
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 0);
+    var group = new Group(path);
+    equals(function() {
+        return group.children.length;
+    }, 1);
+    path.remove();
+    equals(function() {
+        return group.children.length;
+    }, 0);
+});
+
 test('item.lastChild / item.firstChild', function() {
     var project = paper.project;
     var path = new Path();
