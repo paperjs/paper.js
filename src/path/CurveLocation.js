@@ -286,14 +286,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             parts.push('distance: ' + f.number(this._distance));
         return '{ ' + parts.join(', ') + ' }';
     }
-}, Base.each(['Tangent', 'Normal', 'Curvature'],
+}, Base.each(['getTangent', 'getNormal', 'getCurvature'], function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
-    function(name) {
-        var get = 'get' + name + 'At';
-        this['get' + name] = function() {
-            var parameter = this.getParameter(),
-                curve = this.getCurve();
-            return parameter != null && curve && curve[get](parameter, true);
-        };
-    }, {}
-));
+    var get = name + 'At';
+    this[name] = function() {
+        var parameter = this.getParameter(),
+            curve = this.getCurve();
+        return parameter != null && curve && curve[get](parameter, true);
+    };
+}, {}));
