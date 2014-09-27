@@ -172,28 +172,43 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         return this._index;
     },
 
-    // Helper function used in Item#copyTo and Layer#initialize
-    // It's called the same as Item#addChild so Item#copyTo does not need to
-    // make the distinction.
-    // TODO: Consider private function with alias in Item?
-    addChild: function(child) {
-        if (child instanceof Layer) {
-            Base.splice(this.layers, [child]);
-            // Also activate this layer if there was none before
-            if (!this._activeLayer)
-                this._activeLayer = child;
-        } else if (child instanceof Item) {
-            // Anything else than layers needs to be added to a layer first
-            (this._activeLayer
-                // NOTE: If there is no layer and this project is not the active
-                // one, passing insert: false and calling addChild on the
-                // project will handle it correctly.
-                || this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
-        } else {
-            child = null;
-        }
-        return child;
+    /**
+     * Gives access to the project's configurable options.
+     *
+     * @type Object
+     * @bean
+     * @deprecated use {@link PaperScope#settings} instead.
+     */
+    getOptions: function() {
+        return this._scope.settings;
     },
+
+    /**
+     * {@grouptitle Project Content}
+     *
+     * The layers contained within the project.
+     *
+     * @name Project#layers
+     * @type Layer[]
+     */
+
+    /**
+     * The layer which is currently active. New items will be created on this
+     * layer by default.
+     *
+     * @type Layer
+     * @bean
+     */
+    getActiveLayer: function() {
+        return this._activeLayer || new Layer({ project: this });
+    },
+
+    /**
+     * The symbols contained within the project.
+     *
+     * @name Project#symbols
+     * @type Symbol[]
+     */
 
     /**
      * The selected items contained within the project.
@@ -215,15 +230,27 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         return items;
     },
 
-    /**
-     * Gives access to the project's configurable options.
-     *
-     * @type Object
-     * @bean
-     * @deprecated use {@link PaperScope#settings} instead.
-     */
-    getOptions: function() {
-        return this._scope.settings;
+    // Helper function used in Item#copyTo and Layer#initialize
+    // It's called the same as Item#addChild so Item#copyTo does not need to
+    // make the distinction.
+    // TODO: Consider private function with alias in Item?
+    addChild: function(child) {
+        if (child instanceof Layer) {
+            Base.splice(this.layers, [child]);
+            // Also activate this layer if there was none before
+            if (!this._activeLayer)
+                this._activeLayer = child;
+        } else if (child instanceof Item) {
+            // Anything else than layers needs to be added to a layer first
+            (this._activeLayer
+                // NOTE: If there is no layer and this project is not the active
+                // one, passing insert: false and calling addChild on the
+                // project will handle it correctly.
+                || this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
+        } else {
+            child = null;
+        }
+        return child;
     },
 
     // TODO: Implement setSelectedItems?
@@ -809,33 +836,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @param {SVGElement|String} svg the SVG content to import
      * @param {Object} [options={ expandShapes: false }] the import options
      * @return {Item} the imported Paper.js parent item
-     */
-
-    /**
-     * {@grouptitle Project Content}
-     *
-     * The layers contained within the project.
-     *
-     * @name Project#layers
-     * @type Layer[]
-     */
-
-    /**
-     * The layer which is currently active. New items will be created on this
-     * layer by default.
-     *
-     * @type Layer
-     * @bean
-     */
-    getActiveLayer: function() {
-        return this._activeLayer || new Layer({ project: this });
-    },
-
-    /**
-     * The symbols contained within the project.
-     *
-     * @name Project#symbols
-     * @type Symbol[]
      */
 
     draw: function(ctx, matrix, pixelRatio) {
