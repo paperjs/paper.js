@@ -2178,8 +2178,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-    * Removes the item from its parent's named children list.
-    */
+     * Removes the item from its parent's named children list.
+     */
     _removeNamed: function() {
         var parent = this._parent;
         if (parent) {
@@ -2207,8 +2207,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-    * Removes the item from its parent's children list.
-    */
+     * Removes the item from its parent's children list.
+     */
     _remove: function(notifySelf, notifyParent) {
         var parent = this._parent;
         if (parent) {
@@ -2234,11 +2234,11 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-    * Removes the item from the project. If the item has children, they are also
-    * removed.
-    *
-    * @return {Boolean} {@true if the item was removed}
-    */
+     * Removes the item and all its children from the project. The item is not
+     * destroyed and can be inserted again after removal.
+     *
+     * @return {Boolean} {@true if the item was removed}
+     */
     remove: function() {
         // Notify self and parent of change:
         return this._remove(true, true);

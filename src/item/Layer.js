@@ -78,9 +78,9 @@ var Layer = Group.extend(/** @lends Layer# */{
     },
 
     /**
-    * Removes the layer from its project's layers list
-    * or its parent's children list.
-    */
+     * Removes the layer from its project's layers list
+     * or its parent's children list.
+     */
     _remove: function _remove(notify) {
         if (this._parent)
             return _remove.base.call(this, notify);
