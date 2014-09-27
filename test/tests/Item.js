@@ -166,7 +166,24 @@ test('item.lastChild / item.firstChild', function() {
     }, true);
 });
 
-test('insertChild(0, item)', function() {
+test('item.nextSibling / item.previousSibling', function() {
+    var firstPath = new Path();
+    var secondPath = new Path();
+    equals(function() {
+        return firstPath.previousSibling == null;
+    }, true);
+    equals(function() {
+        return firstPath.nextSibling == secondPath;
+    }, true);
+    equals(function() {
+        return secondPath.previousSibling == firstPath;
+    }, true);
+    equals(function() {
+        return secondPath.nextSibling == null;
+    }, true);
+});
+
+test('item.insertChild(0, child)', function() {
     var project = paper.project;
     var path = new Path();
     var secondPath = new Path();
@@ -176,7 +193,7 @@ test('insertChild(0, item)', function() {
     }, true);
 });
 
-test('insertAbove(item)', function() {
+test('item.insertAbove(other)', function() {
     var project = paper.project;
     var path = new Path();
     var secondPath = new Path();
@@ -186,7 +203,7 @@ test('insertAbove(item)', function() {
     }, true);
 });
 
-test('insertBelow(item)', function() {
+test('item.insertBelow(other)', function() {
     var project = paper.project;
     var firstPath = new Path();
     var secondPath = new Path();
@@ -199,7 +216,7 @@ test('insertBelow(item)', function() {
     }, true);
 });
 
-test('sendToBack()', function() {
+test('item.sendToBack()', function() {
     var project = paper.project;
     var firstPath = new Path();
     var secondPath = new Path();
@@ -209,7 +226,7 @@ test('sendToBack()', function() {
     }, true);
 });
 
-test('bringToFront()', function() {
+test('item.bringToFront()', function() {
     var project = paper.project;
     var firstPath = new Path();
     var secondPath = new Path();
@@ -219,7 +236,7 @@ test('bringToFront()', function() {
     }, true);
 });
 
-test('isDescendant(item) / isAncestor(item)', function() {
+test('item.isDescendant(other) / item.isAncestor(other)', function() {
     var project = paper.project;
     var path = new Path();
     equals(function() {
@@ -245,7 +262,7 @@ test('isDescendant(item) / isAncestor(item)', function() {
     }, false);
 });
 
-test('addChildren(items)', function() {
+test('item.addChildren(items)', function() {
     var project = paper.project;
     var path1 = new Path(),
         path2 = new Path(),
@@ -275,7 +292,7 @@ test('addChildren(items)', function() {
     check(0, 1, 2);
 });
 
-test('isGroupedWith', function() {
+test('item.isGroupedWith(other)', function() {
     var project = paper.project;
     var path = new Path();
     var secondPath = new Path();
@@ -312,20 +329,6 @@ test('isGroupedWith', function() {
     equals(function() {
         return path.isGroupedWith(secondPath);
     }, false);
-});
-
-test('getPreviousSibling() / getNextSibling()', function() {
-    var firstPath = new Path();
-    var secondPath = new Path();
-    equals(function() {
-        return firstPath.nextSibling == secondPath;
-    }, true);
-    equals(function() {
-        return secondPath.previousSibling == firstPath;
-    }, true);
-    equals(function() {
-        return secondPath.nextSibling == null;
-    }, true);
 });
 
 test('reverseChildren()', function() {
