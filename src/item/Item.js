@@ -88,7 +88,8 @@ var Item = Base.extend(Callback, /** @lends Item# */{
         var hasProps = props && Base.isPlainObject(props),
             internal = hasProps && props.internal === true,
             matrix = this._matrix = new Matrix(),
-            project = paper.project;
+            // Allow setting another project than the currently active one.
+            project = hasProps && props.project || paper.project;
         if (!internal)
             this._id = Item._id = (Item._id || 0) + 1;
         // Inherit the applyMatrix setting from paper.settings.applyMatrix
@@ -111,7 +112,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
             } else {
                 // Create a new layer if there is no active one. This will
                 // automatically make it the new activeLayer.
-                (project.activeLayer || new Layer()).addChild(this);
+                (project._activeLayer || new Layer()).addChild(this);
             }
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
