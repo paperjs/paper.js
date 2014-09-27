@@ -158,19 +158,21 @@ var Segment = Base.extend(/** @lends Segment# */{
         // Delegate changes to affected curves if they exist.
         var curves = path._curves,
             index = this._index,
-            curveIn, curveOut;
+            curve;
         if (curves) {
             // Updated the neighboring affected curves, depending on which point
             // is changing.
             // TODO: Consider exposing these curves too, through #curveIn,
             // and #curveOut, next to #curve?
             if ((!point || point === this._point || point === this._handleIn)
-                    && (curveIn = curves[index - 1]
-                        || path._closed && curves[curves.length - 1]))
-                curveIn._changed();
+                    && (curve = index > 0 ? curves[index - 1] : path._closed
+                        ? curves[curves.length - 1] : null))
+                curve._changed();
+            // No wrap around needed for outgoing curve, as only closed paths
+            // will have one for the last segment.
             if ((!point || point === this._point || point === this._handleOut)
-                    && (curveOut = curves[index]))
-                curveOut._changed();
+                    && (curve = curves[index]))
+                curve._changed();
         }
         path._changed(/*#=*/Change.SEGMENTS);
     },
