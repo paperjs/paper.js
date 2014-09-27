@@ -186,7 +186,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      */
     getParameter: function(_uncached) {
         if ((this._parameter == null || _uncached) && this._point) {
-            var curve = this.getCurve(_uncached && this._point);
+            var curve = this.getCurve(_uncached);
             this._parameter = curve && curve.getParameterOf(this._point);
         }
         return this._parameter;
@@ -201,7 +201,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      */
     getPoint: function(_uncached) {
         if ((!this._point || _uncached) && this._parameter != null) {
-            var curve = this.getCurve();
+            var curve = this.getCurve(_uncached);
             this._point = curve && curve.getPointAt(this._parameter, true);
         }
         return this._point;
