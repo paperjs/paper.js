@@ -101,7 +101,7 @@ var Numerical = new function() {
         integrate: function(f, a, b, n) {
             var x = abscissas[n - 2],
                 w = weights[n - 2],
-                A = 0.5 * (b - a),
+                A = (b - a) * 0.5,
                 B = A + a,
                 i = 0,
                 m = (n + 1) >> 1,
@@ -134,10 +134,10 @@ var Numerical = new function() {
                 // intercept is larger than lower / smaller than upper.
                 if (fx > 0) {
                     b = x;
-                    x = nx <= a ? 0.5 * (a + b) : nx;
+                    x = nx <= a ? (a + b) * 0.5 : nx;
                 } else {
                     a = x;
-                    x = nx >= b ? 0.5 * (a + b) : nx;
+                    x = nx >= b ? (a + b) * 0.5 : nx;
                 }
             }
             // Return the best result even though we haven't gotten close

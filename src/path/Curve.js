@@ -1036,11 +1036,10 @@ new function() { // Scope for methods that require numerical integration
                 start = t;
                 return length - offset;
             }
-            return Numerical.findRoot(f, ds,
-                    // Start with out initial guess for x.
-                    // NOTE: guess is a negative value when not looking forward.
-                    forward ? a + guess : b + guess,
-                    a, b, 16, /*#=*/Numerical.TOLERANCE);
+            // Start with out initial guess for x.
+            // NOTE: guess is a negative value when not looking forward.
+            return Numerical.findRoot(f, ds, start + guess, a, b, 16,
+                    /*#=*/Numerical.TOLERANCE);
         }
     };
 }, new function() { // Scope for intersection using bezier fat-line clipping
