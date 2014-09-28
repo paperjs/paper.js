@@ -810,8 +810,7 @@ statics: {
      * @return {Number} the curve time parameter at the specified offset.
      */
     getParameterAt: function(offset, start) {
-        return Curve.getParameterAt(this.getValues(), offset,
-                start !== undefined ? start : offset < 0 ? 1 : 0);
+        return Curve.getParameterAt(this.getValues(), offset, start);
     },
 
     /**
@@ -1005,6 +1004,8 @@ new function() { // Scope for methods that require numerical integration
         },
 
         getParameterAt: function(v, offset, start) {
+            if (start === undefined)
+                start = offset < 0 ? 1 : 0
             if (offset === 0)
                 return start;
             // See if we're going forward or backward, and handle cases
@@ -1018,8 +1019,7 @@ new function() { // Scope for methods that require numerical integration
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            offset = Math.abs(offset);
-            if (offset >= rangeLength)
+            if (Math.abs(offset) >= rangeLength)
                 return forward ? b : a;
             // Use offset / rangeLength for an initial guess for t, to
             // bring us closer:
@@ -1030,15 +1030,16 @@ new function() { // Scope for methods that require numerical integration
             // range. This is much faster and also more precise than not
             // modifying start and calculating total length each time.
             function f(t) {
-                var count = getIterations(start, t);
-                length += start < t
-                        ? Numerical.integrate(ds, start, t, count)
-                        : -Numerical.integrate(ds, t, start, count);
+                // When start > t, the integration returns a negative value.
+                length += Numerical.integrate(ds, start, t,
+                        getIterations(start, t));
                 start = t;
                 return length - offset;
             }
             return Numerical.findRoot(f, ds,
-                    forward ? a + guess : b - guess, // Initial guess for x
+                    // Start with out initial guess for x.
+                    // NOTE: guess is a negative value when not looking forward.
+                    forward ? a + guess : b + guess,
                     a, b, 16, /*#=*/Numerical.TOLERANCE);
         }
     };
