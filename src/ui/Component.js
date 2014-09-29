@@ -146,6 +146,18 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 'text', label + ':');
     },
 
+    getSuffix: function() {
+        return this._suffix;
+    },
+
+    setSuffix: function(suffix) {
+        this._suffix = suffix;
+        DomElement.set(this._suffixNode = this._suffixNode
+                || this._input.parentNode.appendChild(DomElement.create('label',
+                    { 'for': 'palettejs-input-' + this._name })),
+                'text', suffix);
+    },
+
     getOptions: function() {
         return this._options;
     },
