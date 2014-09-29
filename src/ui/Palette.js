@@ -26,26 +26,27 @@
     initialize: function Palette(title, components, values) {
         var parent = DomElement.find('.palettejs-panel')
             || DomElement.find('body').appendChild(
-                DomElement.create('div', { 'class': 'palettejs-panel' }));
+                DomElement.create('div', { class: 'palettejs-panel' }));
         this._element = parent.appendChild(
-            DomElement.create('table', { 'class': 'palettejs-pane' }));
+            DomElement.create('table', { class: 'palettejs-pane' }));
         this._title = title;
         if (!values)
             values = {};
         for (var name in (this.components = components)) {
             var component = components[name];
             if (!(component instanceof Component)) {
-                if (component.value == null)
-                    component.value = values[name];
-                component.name = name;
-                component = components[name] = new Component(component);
+                component = components[name] = new Component(
+                        new Base(component, {
+                            value: Base.pick(component.value, values[name]),
+                            name: name
+                        }));
             }
             this._element.appendChild(component._element);
             component._palette = this;
             // Make sure each component has an entry in values, so observers get
             // installed further down.
             if (values[name] === undefined)
-                values[name] = component.value;
+                values[name] = component._value;
         }
         // Now replace each entry in values with a getter / setters so we can
         // directly link the value to the component and  observe change.

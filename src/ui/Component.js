@@ -81,24 +81,23 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     initialize: function Component(obj) {
         this._id = Component._id = (Component._id || 0) + 1;
-        this._type = obj.type in this._types
+        var type = this._type = obj.type in this._types
             ? obj.type
             : 'options' in obj
                 ? 'list'
                 : 'onClick' in obj
                     ? 'button'
-                    : typeof obj.value;
-        this._meta = this._types[this._type] || { type: this._type };
-        var that = this,
-            id = 'component-' + this._id;
-        this._dontFire = true;
-        this._input = DomElement.create(this._meta.tag || 'input', {
-            id: id,
-            type: this._meta.type,
+                    : typeof obj.value,
+            meta = this._meta = this._types[type] || { type: type },
+            name = this._name = obj.name || 'component-' + this._id,
+            that = this;
+        this._input = DomElement.create(meta.tag || 'input', {
+            id: 'palettejs-input-' + name,
+            type: meta.type,
             events: {
                 change: function() {
                     that.setValue(
-                        DomElement.get(this, that._meta.value || 'value'));
+                        DomElement.get(this, meta.value || 'value'));
                 },
                 click: function() {
                     that.fire('click');
@@ -108,17 +107,22 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         // Attach default 'change' even that delegates to palette
         this.attach('change', function(value) {
             if (!this._dontFire)
-                this._palette.fire('change', this, this.name, value);
+                this._palette.fire('change', this, this._name, value);
         });
-        this._element = DomElement.create('tr', [
-            'td', [this._label = DomElement.create('label', { 'for': id })],
-            'td', [this._input]
-        ]);
-        Base.each(obj, function(value, key) {
-            this[key] = value;
-        }, this);
-        this._defaultValue = this._value;
-        // Start firing change events after we have initalized.
+        this._element = DomElement.create('tr',
+                { class: 'palettejs-row', id: 'palettejs-row-' + name }, [
+                    this._labelCell = DomElement.create('td',
+                        { class: 'palettejs-label' }),
+                    'td', { class: 'palettejs-input' }, [this._input]
+               ]);
+        this._dontFire = true;
+        // Now that everything is set up, copy over values fro obj.
+        // NOTE: This triggers setters, which is why we set _dontFire = true,
+        // and why we can only call this after everything else is set up (e.g.
+        // setLabel() requires this._labelCell).
+        Base.set(this, obj);
+        this._defaultValue = this._value; // after Base.set, through #setValue()
+        // Start firing change events after we have initialized.
         this._dontFire = false;
     },
 
@@ -126,14 +130,20 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         return this._type;
     },
 
+    getName: function() {
+        return this._name;
+    },
+
     getLabel: function() {
-        // Prefix wit '__' since _label is already the element.
-        return this.__label;
+        return this._label;
     },
 
     setLabel: function(label) {
-        this.__label = label;
-        DomElement.set(this._label, 'text', label + ':');
+        this._label = label;
+        DomElement.set(this._labelNode = this._labelNode
+                || this._labelCell.appendChild(DomElement.create('label',
+                    { 'for': 'palettejs-input-' + this._name })),
+                'text', label + ':');
     },
 
     getOptions: function() {
@@ -154,14 +164,16 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     setValue: function(value) {
-        var key = this._meta.value || 'value',
-            setValue = this._meta.setValue;
+        var meta = this._meta,
+            key = meta.value || 'value',
+            setValue = meta.setValue;
         if (setValue)
             value = setValue.call(this, value);
+        console.log('setValue', this.name, key, value);
         DomElement.set(this._input, key, value);
         // Read back and convert from input again, to make sure we're in sync
         value = DomElement.get(this._input, key);
-        if (this._meta.number)
+        if (meta.number)
             value = parseFloat(value, 10);
         if (this._value !== value) {
             this._value = value;
