@@ -122,8 +122,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         // NOTE: This triggers setters, which is why we set _dontFire = true,
         // and why we can only call this after everything else is set up (e.g.
         // setLabel() requires this._labelCell).
-        Base.set(this, obj);
-        this._defaultValue = this._value; // after Base.set, through #setValue()
+        // Exclude name because it's already set, and value since we want to set
+        // it after range.
+        Base.set(this, obj, { name: true, value: true });
+        this.setValue(obj.value);
+        this._defaultValue = this._value;
         // Start firing change events after we have initialized.
         this._dontFire = false;
     },
