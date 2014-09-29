@@ -143,7 +143,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         DomElement.set(this._labelNode = this._labelNode
                 || this._labelCell.appendChild(DomElement.create('label',
                     { 'for': 'palettejs-input-' + this._name })),
-                'text', label + ':');
+                'text', label);
     },
 
     getSuffix: function() {
