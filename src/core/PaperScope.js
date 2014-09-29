@@ -60,16 +60,49 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         // Assign a unique id to each scope .
         this._id = PaperScope._id++;
         PaperScope._scopes[this._id] = this;
+        var proto = PaperScope.prototype;
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.
             var ctx = CanvasProvider.getContext(1, 1);
-            PaperScope.prototype.support = {
+            proto.support = {
                 nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
                 nativeBlendModes: BlendMode.nativeModes
             };
             CanvasProvider.release(ctx);
         }
+
+/*#*/ if (__options.environment == 'browser') {
+        if (!this.browser) {
+            var browser = proto.browser = {};
+            // Use replace() to get all matches, and deal with Chrome/Webkit
+            // overlap:
+            // TODO: Do we need Mozilla next to Firefox? Other than the
+            // different treatment of the Chrome/Webkit overlap
+            // here: { chrome: true, webkit: false }, mozilla missing is the
+            // only difference to jQuery.browser
+            navigator.userAgent.toLowerCase().replace(
+                /(opera|chrome|safari|webkit|firefox|msie|trident)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
+                function(all, n, v1, v2, rv) {
+                    // Do not set additional browsers once chrome is detected.
+                    if (!browser.chrome) {
+                        var v = n === 'opera' ? v2 : v1;
+                        if (n === 'trident') {
+                            // Use rv: and rename to msie
+                            v = rv;
+                            n = 'msie';
+                        } 
+                        browser.version = v;
+                        browser.versionNumber = parseFloat(v);
+                        browser.name = n;
+                        browser[n] = true;
+                    }
+                }
+            );
+            if (browser.chrome)
+                delete browser.webkit;
+        }
+/*#*/ } // __options.environment == 'browser'
     },
 
     /**

@@ -22,32 +22,6 @@ Base.exports.PaperScript = (function() {
         scope = this;
 /*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
 
-/*#*/ if (__options.environment == 'browser') {
-    // We need some browser info for dealing with source maps and code offsets
-    var ua = navigator.userAgent,
-        browser = {};
-    // Use replace() to get all matches, and deal with overlaps (e.g. Chrome)
-    ua.toLowerCase().replace(
-        /(opera|chrome|safari|webkit|firefox|msie|trident)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
-        function(all, n, v1, v2, rv) {
-            // Do not set additional browsers once chrome is detected.
-            if (!browser.chrome) {
-                var v = n === 'opera' ? v2 : v1;
-                if (n === 'trident') {
-                    // Use rv: and rename to msie
-                    v = rv;
-                    n = 'msie';
-                }
-                browser.version = parseFloat(v);
-                browser.name = n;
-                browser[n] = true;
-                if (browser.chrome)
-                    delete browser.webkit;
-            }
-        }
-    );
-/*#*/ } // __options.environment == 'browser'
-
     // Operators to overload
 
     var binaryOperators = {
@@ -264,7 +238,8 @@ Base.exports.PaperScript = (function() {
 /*#*/ if (__options.environment == 'browser') {
         // Source-map support:
         var sourceMap = null,
-            version = browser.version,
+            browser = paper.browser,
+            version = browser.versionNumber,
             lineBreaks = /\r\n|\n|\r/mg;
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
@@ -396,6 +371,7 @@ Base.exports.PaperScript = (function() {
         if (handlers)
             code += '\nreturn { ' + handlers + ' };';
 /*#*/ if (__options.environment == 'browser') {
+        var browser = paper.browser;
         if (browser.chrome || browser.firefox) {
             // On Firefox, all error numbers inside dynamically compiled code
             // are relative to the line where the eval / compilation happened.
