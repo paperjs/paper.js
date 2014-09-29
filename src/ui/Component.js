@@ -18,6 +18,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     _class: 'Component',
     _events: [ 'onChange', 'onClick' ],
 
+    // DOCS: All!
+
     // Meta-information, by type. This is stored in _meta on the components.
     _types: {
         'boolean': {
@@ -181,7 +183,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             setValue = meta.setValue;
         if (setValue)
             value = setValue.call(this, value);
-        console.log('setValue', this.name, key, value);
         DomElement.set(this._input, key, value);
         // Read back and convert from input again, to make sure we're in sync
         value = DomElement.get(this._input, key);
