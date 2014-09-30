@@ -81,6 +81,9 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         }
     },
 
+    // Default values for internals
+    _enabled: true,
+
     initialize: function Component(obj) {
         this._id = Component._id = (Component._id || 0) + 1;
         var type = this._type = obj.type in this._types
@@ -204,6 +207,23 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     setVisible: function(visible) {
         DomElement.toggleClass(this._element, 'hidden', !visible);
+    },
+
+    getEnabled: function() {
+        return this._enabled;
+    },
+
+    setEnabled: function(enabled, _fromPalette) {
+        if (_fromPalette) {
+            // When called from Palette#setEnabled, we have to remember the
+            // component's previous enabled state when disabling the palette,
+            // so we can restore it when enabling the palette again.
+            var prev = Base.pick(this._previousEnabled, this._enabled);
+            this._previousEnabled = enabled ? undefined : prev; // clear
+            enabled = enabled && prev;
+        }
+        DomElement.set(this._input, 'disabled', !enabled);
+        this._enabled = enabled;
     },
 
     getRange: function() {

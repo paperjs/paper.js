@@ -17,6 +17,8 @@
 /* var Palette = */ Base.extend(Callback, /** @lends Palette# */{
     _class: 'Palette',
     _events: [ 'onChange' ],
+    // Defaults for internals
+    _enabled: true,
 
     // DOCS: Palette#initialize
     // DOCS: Palette#components
@@ -67,6 +69,16 @@
         });
         if (window.paper)
             paper.palettes.push(this);
+    },
+
+    getEnabled: function() {
+        return this._enabled;
+    },
+
+    setEnabled: function(enabled) {
+        this._enabled = enabled;
+        for (var i in this.components)
+            this.components[i].setEnabled(enabled, true);
     },
 
     /**
