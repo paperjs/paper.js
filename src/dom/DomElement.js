@@ -149,6 +149,11 @@ var DomElement = new function() {
                 new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
         },
 
+        toggleClass: function(el, cls, state) {
+            this[state === undefined ? !this.hasClass(el, cls) : state
+                    ? 'addClass' : 'removeClass'](el, cls);
+        },
+
         remove: function(el) {
             if (el.parentNode)
                 el.parentNode.removeChild(el);

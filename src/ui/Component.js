@@ -198,6 +198,14 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         }
     },
 
+    getVisible: function() {
+        return !DomElement.hasClass(this._element, 'hidden');
+    },
+
+    setVisible: function(visible) {
+        DomElement.toggleClass(this._element, 'hidden', !visible);
+    },
+
     getRange: function() {
         return [parseFloat(DomElement.get(this._input, 'min')),
                 parseFloat(DomElement.get(this._input, 'max'))];
