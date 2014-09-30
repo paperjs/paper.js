@@ -20,12 +20,20 @@
     // Defaults for internals
     _enabled: true,
 
-    // DOCS: Palette#initialize
+    // DOCS: Palette#initialize(props)
+    // DOCS: Palette#initialize(title, components, values)
     // DOCS: Palette#components
     // DOCS: Palette#values
     // DOCS: Palette#remove()
 
     initialize: function Palette(title, components, values) {
+        // Support object literal constructor
+        var props = Base.isPlainObject(title) && title;
+        if (props) {
+            title = props.title;
+            components = props.components;
+            values = props.values;
+        }
         var parent = DomElement.find('.palettejs-panel')
             || DomElement.find('body').appendChild(
                 DomElement.create('div', { class: 'palettejs-panel' }));
@@ -67,6 +75,10 @@
                 });
             }
         });
+        if (props) {
+            Base.set(this, props,
+                    { title: true, components: true, values: true });
+        }
         if (window.paper)
             paper.palettes.push(this);
     },
