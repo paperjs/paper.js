@@ -14,7 +14,7 @@
  * @name Size
  *
  * @class The Size object is used to describe the size or dimensions of
- * somethign, through its {@link #width} and {@link #height} properties.
+ * something, through its {@link #width} and {@link #height} properties.
  *
  * @classexample
  * // Create a size that is 10pt wide and 5pt high,
