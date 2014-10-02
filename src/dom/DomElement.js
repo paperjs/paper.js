@@ -159,6 +159,11 @@ var DomElement = new function() {
                 el.parentNode.removeChild(el);
         },
 
+        addChildren: function(el, children) {
+            // We can use the create() function for this too!
+            return create(children, el);
+        },
+
         removeChildren: function(el) {
             while (el.firstChild)
                 el.removeChild(el.firstChild);

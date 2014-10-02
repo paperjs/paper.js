@@ -836,7 +836,6 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
  * @class An internal version of Rectangle that notifies its owner of each
  * change through setting itself again on the setter that corresponds to the
  * getter that produced this LinkedRectangle.
- * See uses of LinkedRectangle.create()
  * Note: This prototype is not exported.
  *
  * @private

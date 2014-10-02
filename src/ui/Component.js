@@ -78,60 +78,91 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 return new Color(value).toCSS(
                         DomElement.get(this._input, 'type') === 'color');
             }
-        }
+        },
+
+        row: {}
     },
 
     // Default values for internals
+    _visible: true,
     _enabled: true,
 
-    initialize: function Component(obj) {
+    initialize: function Component(pane, name, props, value, row, parent) {
+        if (value === undefined)
+            value = props.value;
+        if (!name)
+            name = 'component-' + this._id,
         this._id = Component._id = (Component._id || 0) + 1;
-        var type = this._type = obj.type in this._types
-            ? obj.type
-            : 'options' in obj
-                ? 'list'
-                : 'onClick' in obj
-                    ? 'button'
-                    : typeof obj.value,
+        this._pane = pane;
+        this._name = name;
+        this._row = row;
+        this._parent = parent; // The parent component, if any.
+        var type = this._type = props.type in this._types
+                ? props.type
+                : 'options' in props
+                    ? 'list'
+                    : 'onClick' in props
+                        ? 'button'
+                        : typeof value,
             meta = this._meta = this._types[type] || { type: type },
-            name = this._name = obj.name || 'component-' + this._id,
-            that = this;
-        this._input = DomElement.create(meta.tag || 'input', {
-            id: 'palettejs-input-' + name,
-            type: meta.type,
-            events: {
-                change: function() {
-                    that.setValue(
-                        DomElement.get(this, meta.value || 'value'));
-                },
-                click: function() {
-                    that.fire('click');
-                }
+            that = this,
+            create = DomElement.create;
+        if (type === 'row') {
+            var components = this._components = [];
+            for (var key in props) {
+                var entry = props[key];
+                if (Base.isPlainObject(entry))
+                    components.push(new Component(pane, key, entry,
+                            pane._values[key], row, this));
             }
-        });
+            pane._maxComponents = Math.max(components.length,
+                    pane._maxComponents || 0);
+        } else {
+            DomElement.addChildren(row, [
+                this._labelCell = create('td', {
+                    class: 'palettejs-label',
+                    id: 'palettejs-label-' + name
+                }),
+                this._inputCell = create('td', {
+                    class: 'palettejs-input',
+                    id: 'palettejs-input-' + name
+                }, [
+                    this._input = create(meta.tag || 'input', {
+                        type: meta.type,
+                        events: {
+                            change: function() {
+                                that.setValue(DomElement.get(this,
+                                        meta.value || 'value'));
+                            },
+                            click: function() {
+                                that.fire('click');
+                            }
+                        }
+                    })
+                ])
+            ]);
+        }
         // Attach default 'change' even that delegates to palette
         this.attach('change', function(value) {
             if (!this._dontFire)
-                this._palette.fire('change', this, this._name, value);
+                pane.fire('change', this, this._name, value);
         });
-        this._element = DomElement.create('tr',
-                { class: 'palettejs-row', id: 'palettejs-row-' + name }, [
-                    this._labelCell = DomElement.create('td',
-                        { class: 'palettejs-label' }),
-                    'td', { class: 'palettejs-input' }, [this._input]
-               ]);
         this._dontFire = true;
-        // Now that everything is set up, copy over values fro obj.
+        // Now that everything is set up, copy over values fro, props.
         // NOTE: This triggers setters, which is why we set _dontFire = true,
         // and why we can only call this after everything else is set up (e.g.
         // setLabel() requires this._labelCell).
         // Exclude name because it's already set, and value since we want to set
         // it after range.
-        Base.set(this, obj, { name: true, value: true });
-        this.setValue(obj.value);
-        this._defaultValue = this._value;
+        Base.set(this, props, { name: true, value: true });
+        this.setValue(value);
         // Start firing change events after we have initialized.
         this._dontFire = false;
+        //  Store link to component in the pane's components object.
+        pane._components[name] = this;
+        // Make sure each component has an entry in values also, so observers
+        // get installed correctly in the Pane constructor.
+        pane._values[name] = this._defaultValue = this._value;
     },
 
     getType: function() {
@@ -161,7 +192,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     setSuffix: function(suffix) {
         this._suffix = suffix;
         DomElement.set(this._suffixNode = this._suffixNode
-                || this._input.parentNode.appendChild(DomElement.create('label',
+                || this._inputCell.appendChild(DomElement.create('label',
                     { 'for': 'palettejs-input-' + this._name })),
                 'text', suffix);
     },
@@ -202,11 +233,15 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     getVisible: function() {
-        return !DomElement.hasClass(this._element, 'hidden');
+        return this._visible;
     },
 
     setVisible: function(visible) {
-        DomElement.toggleClass(this._element, 'hidden', !visible);
+        // NOTE: Only set the visibility of the whole row if this is a row item,
+        // in which case this._input is not defined.
+        DomElement.toggleClass(this._inputCell || this._row, 'hidden', !visible);
+        DomElement.toggleClass(this._labelCell, 'hidden', !visible);
+        this._visible = !!visible;
     },
 
     getEnabled: function() {
@@ -223,7 +258,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             enabled = enabled && prev;
         }
         DomElement.set(this._input, 'disabled', !enabled);
-        this._enabled = enabled;
+        this._enabled = !!enabled;
     },
 
     getRange: function() {

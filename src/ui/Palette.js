@@ -25,11 +25,13 @@
     // DOCS: Palette#remove()
 
     initialize: function Palette(title, components, values) {
-        Pane.call(this, title, components, values, 'palettejs-palette');
+        Pane.call(this, title, components, values);
         var parent = DomElement.find('.palettejs-panel')
             || DomElement.find('body').appendChild(
                 DomElement.create('div', { class: 'palettejs-panel' }));
-        parent.appendChild(this._element);
+        this._element = parent.appendChild(
+                DomElement.create('div', { class: 'palettejs-palette' },
+                    [this._table]));
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
