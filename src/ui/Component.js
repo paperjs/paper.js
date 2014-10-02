@@ -205,7 +205,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     setSuffix: function(suffix) {
         this._suffix = suffix;
-        this._setLabel(label, '_suffixNode', this._cell);
+        this._setLabel(suffix, '_suffixNode', this._cell);
     },
 
     getOptions: function() {
