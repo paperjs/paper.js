@@ -20,18 +20,10 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
     // Defaults for internals
     _enabled: true,
 
-    initialize: function Pane(title, components, values) {
-        // Support object literal constructor
-        var props = Base.isPlainObject(title) && title;
-        if (props) {
-            title = props.title;
-            components = props.components;
-            values = props.values;
-        }
+    initialize: function Pane(components, values) {
         if (!values)
             values = {};
         this._table = DomElement.create('table', { class: 'palettejs-pane' });
-        this._title = title;
         // NOTE: We modify the actual passed components and values objects so
         // the newly created components and their values can easily be
         // referenced from outside.
@@ -43,7 +35,7 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
             if (Base.isPlainObject(component)) {
                 var row = DomElement.addChildren(this._table,
                         ['tr', { class: 'palettejs-row' }])[0];
-                new Component(this, name, components[name], values[name], row);
+                new Component(this, name, component, values, row);
             } else {
                 delete components[name];
             }
@@ -76,10 +68,6 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
                 });
             }
         });
-        if (props) {
-            Base.set(this, props,
-                    { title: true, components: true, values: true });
-        }
     },
 
     getComponents: function() {

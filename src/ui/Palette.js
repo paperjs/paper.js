@@ -25,13 +25,25 @@
     // DOCS: Palette#remove()
 
     initialize: function Palette(title, components, values) {
-        Pane.call(this, title, components, values);
+        // Support object literal constructor
+        var props = Base.isPlainObject(title) && title;
+        if (props) {
+            title = props.title;
+            components = props.components;
+            values = props.values;
+        }
+        this._title = title;
+        Pane.call(this, components, values);
         var parent = DomElement.find('.palettejs-panel')
             || DomElement.find('body').appendChild(
                 DomElement.create('div', { class: 'palettejs-panel' }));
         this._element = parent.appendChild(
                 DomElement.create('div', { class: 'palettejs-palette' },
                     [this._table]));
+        if (props) {
+            Base.set(this, props,
+                    { title: true, components: true, values: true });
+        }
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
