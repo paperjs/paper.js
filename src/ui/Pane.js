@@ -38,13 +38,19 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
             if (Base.isPlainObject(component)) {
                 var row = parentRow || DomElement.addChildren(this._table,
                         ['tr', { class: 'palettejs-row' }])[0];
-                comps[name] = new Component(this, name, component,
-                        values, row, parent);
+                new Component(this, name, component, values, row, parent);
                 numCells = Math.max(numCells, this._numCells);
                 // Do not reset cell counter if all components go to the same
                 // parent row.
                 if (!parentRow)
                     this._numCells = 0;
+                if (parent) {
+                    // If this is a child pane, remove the entry now from the
+                    // object that was provided to create it, since the left
+                    // overs will be injected into the parent component through
+                    // #_set()
+                    delete components[name];
+                }
             }
         }
         this._numCells = numCells;
