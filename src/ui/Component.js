@@ -164,7 +164,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         // setLabel() requires this._labelCell).
         // Exclude name because it's already set, and value since we want to set
         // it after range.
-        Base.set(this, props, { name: true, value: true });
+        this._set(props, { name: true, value: true });
         this.setValue(value);
         // Start firing change events after we have initialized.
         this._dontFire = false;

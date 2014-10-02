@@ -40,10 +40,8 @@
         this._element = parent.appendChild(
                 DomElement.create('div', { class: 'palettejs-palette' },
                     [this._table]));
-        if (props) {
-            Base.set(this, props,
-                    { title: true, components: true, values: true });
-        }
+        if (props)
+            this._set(props, { title: true, components: true, values: true });
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
