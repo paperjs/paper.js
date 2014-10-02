@@ -29,7 +29,7 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
         // NOTE: We modify the actual passed components in the root pane, and
         // also the values objects, so the newly created components and their
         // values can easily be referenced from outside.
-        this._components = parent ? {} : components;
+        var comps = this._components = parent ? {} : components;
         this._values = values;
         var numCells = 0;
         this._numCells = 0;
@@ -38,17 +38,17 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
             if (Base.isPlainObject(component)) {
                 var row = parentRow || DomElement.addChildren(this._table,
                         ['tr', { class: 'palettejs-row' }])[0];
-                this._components[name] = new Component(this, name, component,
+                comps[name] = new Component(this, name, component,
                         values, row, parent);
                 numCells = Math.max(numCells, this._numCells);
+                // Do not reset cell counter if all components go to the same
+                // parent row.
                 if (!parentRow)
                     this._numCells = 0;
             }
         }
         this._numCells = numCells;
-        // Override in case we made a copy, see above.
-        components = this._components;
-        Base.each(components, function(component, name) {
+        Base.each(comps, function(component, name) {
             // Update colspan in all components that are not nested in another
             // component.
             if (numCells > 2 && component._cell && !component._nested) {
