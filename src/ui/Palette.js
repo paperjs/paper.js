@@ -13,12 +13,10 @@
  /**
   * @name Palette
   * @class
+  * @extends Pane
   */
-/* var Palette = */ Base.extend(Callback, /** @lends Palette# */{
+/* var Palette = */ Pane.extend(/** @lends Palette# */{
     _class: 'Palette',
-    _events: [ 'onChange' ],
-    // Defaults for internals
-    _enabled: true,
 
     // DOCS: Palette#initialize(props)
     // DOCS: Palette#initialize(title, components, values)
@@ -27,82 +25,24 @@
     // DOCS: Palette#remove()
 
     initialize: function Palette(title, components, values) {
-        // Support object literal constructor
-        var props = Base.isPlainObject(title) && title;
-        if (props) {
-            title = props.title;
-            components = props.components;
-            values = props.values;
-        }
+        Pane.call(this, title, components, values, 'palettejs-palette');
         var parent = DomElement.find('.palettejs-panel')
             || DomElement.find('body').appendChild(
                 DomElement.create('div', { class: 'palettejs-panel' }));
-        this._element = parent.appendChild(
-            DomElement.create('table', { class: 'palettejs-pane' }));
-        this._title = title;
-        if (!values)
-            values = {};
-        for (var name in (this.components = components)) {
-            var component = components[name];
-            if (!(component instanceof Component)) {
-                component = components[name] = new Component(
-                        new Base(component, {
-                            value: Base.pick(component.value, values[name]),
-                            name: name
-                        }));
-            }
-            this._element.appendChild(component._element);
-            component._palette = this;
-            // Make sure each component has an entry in values, so observers get
-            // installed further down.
-            if (values[name] === undefined)
-                values[name] = component._value;
-        }
-        // Now replace each entry in values with a getter / setters so we can
-        // directly link the value to the component and  observe change.
-        this.values = Base.each(values, function(value, name) {
-            var component = components[name];
-            if (component) {
-                Base.define(values, name, {
-                    enumerable: true,
-                    configurable: true,
-                    get: function() {
-                        return component._value;
-                    },
-                    set: function(val) {
-                        component.setValue(val);
-                    }
-                });
-            }
-        });
-        if (props) {
-            Base.set(this, props,
-                    { title: true, components: true, values: true });
-        }
-        if (window.paper)
-            paper.palettes.push(this);
-    },
-
-    getEnabled: function() {
-        return this._enabled;
-    },
-
-    setEnabled: function(enabled) {
-        this._enabled = enabled;
-        for (var i in this.components)
-            this.components[i].setEnabled(enabled, true);
-    },
-
-    /**
-     * Resets the values of the components to their
-     * {@link Component#defaultValue}.
-     */
-    reset: function() {
-        for (var i in this.components)
-            this.components[i].reset();
+        parent.appendChild(this._element);
+        // Link to the current scope's palettes list.
+        // TODO: This is the only paper dependency in Palette.js
+        // Find a way to make it independent.
+        (this._palettes = paper.palettes).push(this);
     },
 
     remove: function() {
         DomElement.remove(this._element);
+        var palettes = this._palettes;
+        var index = palettes.indexOf(this);
+        var remove = index !== -1;
+        if (remove)
+            palettes.splice(index, 1);
+        return remove;
     }
 });
