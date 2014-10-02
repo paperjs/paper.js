@@ -97,6 +97,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._name = name;
         this._row = row;
         this._parent = parent; // The parent component, if any.
+        this._nested = !!parent;
         var type = this._type = props.type in this._types
                 ? props.type
                 : 'options' in props
@@ -115,19 +116,20 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     components.push(new Component(pane, key, entry,
                             pane._values[key], row, this));
             }
-            pane._maxComponents = Math.max(components.length,
-                    pane._maxComponents || 0);
+            pane._numCells = Math.max(components.length * 2, pane._numCells || 0);
         } else {
             DomElement.addChildren(row, [
                 this._labelCell = create('td', {
                     class: 'palettejs-label',
                     id: 'palettejs-label-' + name
                 }),
-                this._inputCell = create('td', {
-                    class: 'palettejs-input',
-                    id: 'palettejs-input-' + name
+                this._cell = create('td', {
+                    class: 'palettejs-component',
+                    id: 'palettejs-component-' + name
                 }, [
                     this._input = create(meta.tag || 'input', {
+                        class: 'palettejs-input',
+                        id: 'palettejs-input-' + name,
                         type: meta.type,
                         events: {
                             change: function() {
@@ -173,16 +175,20 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         return this._name;
     },
 
+    _setLabel: function(label, nodeName, parent) {
+        this[nodeName] = DomElement.set(this[nodeName]
+                || parent.appendChild(DomElement.create('label',
+                    { 'for': 'palettejs-input-' + this._name })),
+                'text', label);
+    },
+
     getLabel: function() {
         return this._label;
     },
 
     setLabel: function(label) {
         this._label = label;
-        DomElement.set(this._labelNode = this._labelNode
-                || this._labelCell.appendChild(DomElement.create('label',
-                    { 'for': 'palettejs-input-' + this._name })),
-                'text', label);
+        this._setLabel(label, '_labelNode', this._labelCell);
     },
 
     getSuffix: function() {
@@ -191,10 +197,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     setSuffix: function(suffix) {
         this._suffix = suffix;
-        DomElement.set(this._suffixNode = this._suffixNode
-                || this._inputCell.appendChild(DomElement.create('label',
-                    { 'for': 'palettejs-input-' + this._name })),
-                'text', suffix);
+        this._setLabel(label, '_suffixNode', this._cell);
     },
 
     getOptions: function() {
@@ -239,7 +242,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     setVisible: function(visible) {
         // NOTE: Only set the visibility of the whole row if this is a row item,
         // in which case this._input is not defined.
-        DomElement.toggleClass(this._inputCell || this._row, 'hidden', !visible);
+        DomElement.toggleClass(this._cell || this._row, 'hidden', !visible);
         DomElement.toggleClass(this._labelCell, 'hidden', !visible);
         this._visible = !!visible;
     },

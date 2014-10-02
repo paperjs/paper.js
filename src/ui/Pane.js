@@ -37,7 +37,7 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
         // referenced from outside.
         this._components = components;
         this._values = values;
-        this._maxComponents = 1; // 1 component per row is the default.
+        this._numCells = 2; // 2 cells per row is the default (label / item).
         for (var name in components) {
             var row = DomElement.create('tr', { class: 'palettejs-row' }),
                 component = new Component(this, name, components[name],
@@ -45,12 +45,14 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
             DomElement.set(row, 'id', 'palettejs-row-' + component._name);
             this._table.appendChild(row);
         }
-        if (this._maxComponents > 1) {
+        if (this._numCells > 2) {
+            // Update colspan in all components that are not nested in another
+            // component.
             for (name in components) {
                 var component = components[name];
-                if (component._inputCell && !component._parent) {
-                    DomElement.set(component._inputCell, 'colspan',
-                            this._maxComponents * 2 - 1);
+                if (component._cell && !component._nested) {
+                    DomElement.set(component._cell, 'colspan',
+                            this._numCells - 1); // Remove first label.
                 }
             }
         }
