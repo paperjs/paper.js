@@ -121,6 +121,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             } else { // isPane
                 element = childPane._table;
             }
+            // Add child components directly to this component, so we can access
+            // it through the same path as in the components object literal that
+            // was passed.
+            Base.set(this, childPane._components);
         } else {
             element = this._input = create(meta.tag || 'input', {
                 class: 'palettejs-input',
