@@ -98,6 +98,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._row = row;
         this._parent = parent; // The parent component, if any.
         this._nested = !!parent;
+        if (!parent)
+            DomElement.set(row, 'id', 'palettejs-row-' + name);
         var type = this._type = props.type in this._types
                 ? props.type
                 : 'options' in props
@@ -260,7 +262,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             this._previousEnabled = enabled ? undefined : prev; // clear
             enabled = enabled && prev;
         }
-        DomElement.set(this._input, 'disabled', !enabled);
+        if (this._input) {
+            DomElement.set(this._input, 'disabled', !enabled);
+        } else if (this._components) {
+            for (var i = 0; i < this._components.length; i++) {
+                this._components[i].setEnabled(enabled, _fromPalette);
+            }
+        }
         this._enabled = !!enabled;
     },
 

@@ -39,11 +39,14 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
         this._values = values;
         this._numCells = 2; // 2 cells per row is the default (label / item).
         for (var name in components) {
-            var row = DomElement.create('tr', { class: 'palettejs-row' }),
-                component = new Component(this, name, components[name],
-                        values[name], row);
-            DomElement.set(row, 'id', 'palettejs-row-' + component._name);
-            this._table.appendChild(row);
+            var component = components[name];
+            if (Base.isPlainObject(component)) {
+                var row = DomElement.addChildren(this._table,
+                        ['tr', { class: 'palettejs-row' }])[0];
+                new Component(this, name, components[name], values[name], row);
+            } else {
+                delete components[name];
+            }
         }
         if (this._numCells > 2) {
             // Update colspan in all components that are not nested in another
