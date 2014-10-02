@@ -95,7 +95,7 @@ var DomElement = new function() {
             if (typeof key !== 'string') {
                 for (var name in key)
                     if (key.hasOwnProperty(name))
-                        this.set(el, name, key[name]);
+                        DomElement.set(el, name, key[name]);
             } else if (!el || value === undefined) {
                 return el;
             } else if (special.test(key)) {
@@ -103,7 +103,7 @@ var DomElement = new function() {
             } else if (key in translated) {
                 el[translated[key]] = value;
             } else if (key === 'style') {
-                this.setStyle(el, value);
+                DomElement.setStyle(el, value);
             } else if (key === 'events') {
                 DomEvent.add(el, value);
             } else {
@@ -120,14 +120,14 @@ var DomElement = new function() {
         },
 
         getStyle: function(el, key) {
-            return el && el.style[key] || this.getStyles(el)[key] || null;
+            return el && el.style[key] || DomElement.getStyles(el)[key] || null;
         },
 
         setStyle: function(el, key, value) {
             if (typeof key !== 'string') {
                 for (var name in key)
                     if (key.hasOwnProperty(name))
-                        this.setStyle(el, name, key[name]);
+                        DomElement.setStyle(el, name, key[name]);
             } else {
                 if (/^-?[\d\.]+$/.test(value) && !(key in unitless))
                     value += 'px';
@@ -137,21 +137,25 @@ var DomElement = new function() {
         },
 
         hasClass: function(el, cls) {
-            return new RegExp('\\s*' + cls + '\\s*').test(el.className);
+            return el && new RegExp('\\s*' + cls + '\\s*').test(el.className);
         },
 
         addClass: function(el, cls) {
-            el.className = (el.className + ' ' + cls).trim();
+            if (el) {
+                el.className = (el.className + ' ' + cls).trim();
+            }
         },
 
         removeClass: function(el, cls) {
-            el.className = el.className.replace(
-                new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
+            if (el) {
+                el.className = el.className.replace(
+                    new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
+            }
         },
 
         toggleClass: function(el, cls, state) {
-            this[state === undefined ? !this.hasClass(el, cls) : state
-                    ? 'addClass' : 'removeClass'](el, cls);
+            DomElement[(state === undefined ? !DomElement.hasClass(el, cls)
+                    : state) ? 'addClass' : 'removeClass'](el, cls);
         },
 
         remove: function(el) {
@@ -203,18 +207,18 @@ var DomElement = new function() {
         },
 
         getOffset: function(el, viewport) {
-            return this.getBounds(el, viewport).getPoint();
+            return DomElement.getBounds(el, viewport).getPoint();
         },
 
         getSize: function(el) {
-            return this.getBounds(el, true).getSize();
+            return DomElement.getBounds(el, true).getSize();
         },
 
         /**
          * Checks if element is invisibile (display: none, ...)
          */
         isInvisible: function(el) {
-            return this.getSize(el).equals(new Size(0, 0));
+            return DomElement.getSize(el).equals(new Size(0, 0));
         },
 
         /**
@@ -223,8 +227,9 @@ var DomElement = new function() {
         isInView: function(el) {
             // See if the viewport bounds intersect with the windows rectangle
             // which always starts at 0, 0
-            return !this.isInvisible(el) && this.getViewportBounds(el).intersects(
-                    this.getBounds(el, true));
+            return !DomElement.isInvisible(el)
+                    && DomElement.getViewportBounds(el).intersects(
+                        DomElement.getBounds(el, true));
         },
 
         /**
