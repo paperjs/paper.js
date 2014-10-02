@@ -87,11 +87,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     _visible: true,
     _enabled: true,
 
-    initialize: function Component(pane, name, props, value, row, parent) {
-        if (value === undefined)
-            value = props.value;
+    initialize: function Component(pane, name, props, values, row, parent) {
         if (!name)
-            name = 'component-' + this._id,
+            name = 'component-' + this._id;
+        var value = Base.pick(values[name], props.value);
         this._id = Component._id = (Component._id || 0) + 1;
         this._pane = pane;
         this._name = name;
@@ -115,8 +114,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             for (var key in props) {
                 var entry = props[key];
                 if (Base.isPlainObject(entry))
-                    components.push(new Component(pane, key, entry,
-                            pane._values[key], row, this));
+                    components.push(new Component(pane, key, entry, values, row,
+                            this));
             }
             pane._numCells = Math.max(components.length * 2, pane._numCells || 0);
         } else {
@@ -166,7 +165,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         pane._components[name] = this;
         // Make sure each component has an entry in values also, so observers
         // get installed correctly in the Pane constructor.
-        pane._values[name] = this._defaultValue = this._value;
+        values[name] = this._defaultValue = this._value;
     },
 
     getType: function() {
