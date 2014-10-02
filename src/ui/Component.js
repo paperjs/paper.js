@@ -81,7 +81,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         },
 
         row: {},
-        pane: {}
+        column: {}
     },
 
     // Default values for internals
@@ -97,7 +97,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._name = name;
         this._row = row;
         this._parent = parent; // The parent component, if any.
-        this._nested = !!parent;
         if (!parent || parent._type !== 'row')
             DomElement.set(row, 'id', 'palettejs-row-' + name);
         var type = this._type = props.type in this._types
@@ -112,13 +111,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             create = DomElement.create,
             element = null,
             isRow = type === 'row',
-            isPane = type === 'pane';
-        if (isRow || isPane) {
+            isColumn = type === 'column';
+        if (isRow || isColumn) {
             var childPane = this._childPane = new Pane(props, values, this,
                     isRow && row);
             if (isRow) {
                 pane._numCells = childPane._numCells;
-            } else { // isPane
+            } else { // isColumn
                 element = childPane._table;
             }
             // Add child components directly to this component, so we can access

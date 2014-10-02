@@ -57,7 +57,8 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
         Base.each(comps, function(component, name) {
             // Update colspan in all components that are not nested in another
             // component.
-            if (numCells > 2 && component._cell && !component._nested) {
+            if (numCells > 2 && component._cell
+                    && (!parent || parent._type === 'column')) {
                 DomElement.set(component._cell, 'colspan', numCells - 1);
             }
             // Now replace each entry in values with a getter / setters so we
