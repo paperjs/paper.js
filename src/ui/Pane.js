@@ -20,53 +20,52 @@ var Pane = Base.extend(Callback, /** @lends Pane# */{
     // Defaults for internals
     _enabled: true,
 
-    initialize: function Pane(components, values) {
+    initialize: function Pane(components, values, parent, parentRow) {
         if (!values)
             values = {};
-        this._table = DomElement.create('table', { class: 'palettejs-pane' });
-        // NOTE: We modify the actual passed components and values objects so
-        // the newly created components and their values can easily be
-        // referenced from outside.
-        this._components = components;
+        this._table = !parentRow && DomElement.create('table', {
+            class: 'palettejs-pane'
+        });
+        // NOTE: We modify the actual passed components in the root pane, and
+        // also the values objects, so the newly created components and their
+        // values can easily be referenced from outside.
+        this._components = parent ? {} : components;
         this._values = values;
-        this._numCells = 2; // 2 cells per row is the default (label / item).
+        var numCells = 0;
+        this._numCells = 0;
         for (var name in components) {
             var component = components[name];
             if (Base.isPlainObject(component)) {
-                var row = DomElement.addChildren(this._table,
+                var row = parentRow || DomElement.addChildren(this._table,
                         ['tr', { class: 'palettejs-row' }])[0];
-                new Component(this, name, component, values, row);
-            } else {
-                delete components[name];
+                this._components[name] = new Component(this, name, component,
+                        values, row, parent);
+                numCells = Math.max(numCells, this._numCells);
+                if (!parentRow)
+                    this._numCells = 0;
             }
         }
-        if (this._numCells > 2) {
+        this._numCells = numCells;
+        // Override in case we made a copy, see above.
+        components = this._components;
+        Base.each(components, function(component, name) {
             // Update colspan in all components that are not nested in another
             // component.
-            for (name in components) {
-                var component = components[name];
-                if (component._cell && !component._nested) {
-                    DomElement.set(component._cell, 'colspan',
-                            this._numCells - 1); // Remove first label.
+            if (numCells > 2 && component._cell && !component._nested) {
+                DomElement.set(component._cell, 'colspan', numCells - 1);
+            }
+            // Now replace each entry in values with a getter / setters so we
+            // can directly link the value to the component and  observe change.
+            Base.define(values, name, {
+                enumerable: true,
+                configurable: true,
+                get: function() {
+                    return component.getValue();
+                },
+                set: function(val) {
+                    component.setValue(val);
                 }
-            }
-        }
-        // Now replace each entry in values with a getter / setters so we can
-        // directly link the value to the component and  observe change.
-        Base.each(values, function(value, name) {
-            var component = components && components[name];
-            if (component) {
-                Base.define(values, name, {
-                    enumerable: true,
-                    configurable: true,
-                    get: function() {
-                        return component.getValue();
-                    },
-                    set: function(val) {
-                        component.setValue(val);
-                    }
-                });
-            }
+            });
         });
     },
 

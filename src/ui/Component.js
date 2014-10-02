@@ -80,7 +80,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             }
         },
 
-        row: {}
+        row: {},
+        pane: {}
     },
 
     // Default values for internals
@@ -97,7 +98,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._row = row;
         this._parent = parent; // The parent component, if any.
         this._nested = !!parent;
-        if (!parent)
+        if (!parent || parent._type !== 'row')
             DomElement.set(row, 'id', 'palettejs-row-' + name);
         var type = this._type = props.type in this._types
                 ? props.type
@@ -108,43 +109,49 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                         : typeof value,
             meta = this._meta = this._types[type] || { type: type },
             that = this,
-            create = DomElement.create;
-        if (type === 'row') {
-            var components = this._components = [];
-            for (var key in props) {
-                var entry = props[key];
-                if (Base.isPlainObject(entry))
-                    components.push(new Component(pane, key, entry, values, row,
-                            this));
+            create = DomElement.create,
+            element = null,
+            isRow = type === 'row',
+            isPane = type === 'pane';
+        if (isRow || isPane) {
+            var childPane = this._childPane = new Pane(props, values, this,
+                    isRow && row);
+            if (isRow) {
+                pane._numCells = childPane._numCells;
+            } else { // isPane
+                element = childPane._table;
             }
-            pane._numCells = Math.max(components.length * 2, pane._numCells || 0);
         } else {
+            element = this._input = create(meta.tag || 'input', {
+                class: 'palettejs-input',
+                id: 'palettejs-input-' + name,
+                type: meta.type,
+                events: {
+                    change: function() {
+                        that.setValue(DomElement.get(this,
+                                meta.value || 'value'));
+                    },
+                    click: function() {
+                        that.fire('click');
+                    }
+                }
+            });
+        }
+        if (element) {
             DomElement.addChildren(row, [
                 this._labelCell = create('td', {
                     class: 'palettejs-label',
                     id: 'palettejs-label-' + name
                 }),
                 this._cell = create('td', {
-                    class: 'palettejs-component',
+                    class: 'palettejs-component palettejs-type-' + type,
                     id: 'palettejs-component-' + name
-                }, [
-                    this._input = create(meta.tag || 'input', {
-                        class: 'palettejs-input',
-                        id: 'palettejs-input-' + name,
-                        type: meta.type,
-                        events: {
-                            change: function() {
-                                that.setValue(DomElement.get(this,
-                                        meta.value || 'value'));
-                            },
-                            click: function() {
-                                that.fire('click');
-                            }
-                        }
-                    })
-                ])
+                }, [ element ])
             ]);
+            // We just added two cells to the row:
+            pane._numCells += 2;
         }
+
         // Attach default 'change' even that delegates to palette
         this.attach('change', function(value) {
             if (!this._dontFire)
@@ -163,8 +170,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._dontFire = false;
         //  Store link to component in the pane's components object.
         pane._components[name] = this;
-        // Make sure each component has an entry in values also, so observers
-        // get installed correctly in the Pane constructor.
         values[name] = this._defaultValue = this._value;
     },
 
@@ -177,10 +182,12 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     _setLabel: function(label, nodeName, parent) {
-        this[nodeName] = DomElement.set(this[nodeName]
-                || parent.appendChild(DomElement.create('label',
-                    { 'for': 'palettejs-input-' + this._name })),
-                'text', label);
+        if (parent) {
+            this[nodeName] = DomElement.set(this[nodeName]
+                    || parent.appendChild(DomElement.create('label',
+                        { 'for': 'palettejs-input-' + this._name })),
+                    'text', label);
+        }
     },
 
     getLabel: function() {
@@ -219,6 +226,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     setValue: function(value) {
+        if (this._childPane)
+            return;
         var meta = this._meta,
             key = meta.value || 'value',
             setValue = meta.setValue;
@@ -263,10 +272,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         }
         if (this._input) {
             DomElement.set(this._input, 'disabled', !enabled);
-        } else if (this._components) {
-            for (var i = 0; i < this._components.length; i++) {
-                this._components[i].setEnabled(enabled, _fromPalette);
-            }
+        } else if (this._childPane) {
+            this._childPane.setEnabled(enabled);
         }
         this._enabled = !!enabled;
     },
@@ -306,6 +313,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     reset: function() {
-        this.setValue(this._defaultValue);
+        if (this._childPane) {
+            this._childPane.reset();
+        } else {
+            this.setValue(this._defaultValue);
+        }
     }
 });
