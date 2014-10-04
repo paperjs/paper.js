@@ -107,6 +107,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             element,
             className;
         if (!type) {
+            // No type defined, so we're dealing with a layout component that
+            // contains nested child components.
             var columns = props.columns,
                 // On the root element, we need to create the table and row even
                 // if it's a columns layout.
