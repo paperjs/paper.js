@@ -117,10 +117,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 // On the root element, we need to create the table and row even
                 // if it's a columns layout.
                 table = this._table = !(columns && row) && DomElement.create(
-                    'table', { class: 'palettejs-pane' }),
+                    'table', { class: 'palettejs-pane' }, [ 'tbody' ]),
+                tbody = this._tbody = table && table.firstChild,
                 components = this._components = {},
                 currentRow = row,
                 numCells = 0;
+            element = row && table;
+            className = 'layout-' + (columns ? 'columns' : 'rows');
             this._numCells = 0;
             for (var key in props) {
                 var component = props[key];
@@ -128,7 +131,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     // Create the rows for vertical elements, as well as
                     // columns root elements.
                     if (table && !(columns && currentRow)) {
-                        currentRow = DomElement.addChildren(table, ['tr', {
+                        currentRow = DomElement.addChildren(tbody, ['tr', {
                             class: 'palettejs-row',
                             id: 'palettejs-row-' + key
                         }])[0];
@@ -178,8 +181,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             // it through the same path as in the components object literal that
             // was passed.
             Base.set(this, components);
-            element = row && table;
-            className = 'layout-' + (columns ? 'columns' : 'rows');
         } else {
             var that = this;
             element = this._input = create(meta.tag || 'input', {
@@ -240,6 +241,28 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     getName: function() {
         return this._name;
+    },
+
+    getTitle: function() {
+        return this._title;
+    },
+
+    setTitle: function(title) {
+        this._title = title;
+        if (this._tbody) {
+            var node = this._titleNode;
+            if (!node && title) {
+                // Create a caption tag, and nest the title in a span inside,
+                // so we can offer some more flexibility with CSS on it.
+                node = this._titleNode = DomElement.insertBefore(
+                    this._tbody, [
+                        'caption', [ 'span' ],
+                    ]).firstChild;
+            } else if (node && !title) {
+                DomElement.remove(node);
+            }
+            DomElement.set(node, 'text', title);
+        }
     },
 
     getPalette: function() {

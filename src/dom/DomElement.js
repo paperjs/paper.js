@@ -67,8 +67,9 @@ var DomElement = new function() {
     return /** @lends DomElement */{
         create: function(nodes, parent) {
             var isArray = Array.isArray(nodes),
-                res = create(isArray ? nodes : arguments, isArray ? parent : null);
-            return res.length == 1 ? res[0] : res;
+                res = create(isArray ? nodes : arguments,
+                        isArray ? parent : null);
+            return res.length === 1 ? res[0] : res;
         },
 
         find: function(selector, root) {
@@ -172,6 +173,22 @@ var DomElement = new function() {
             while (el.firstChild)
                 el.removeChild(el.firstChild);
         },
+
+        insertBefore: function(ref, el) {
+            return ref.parentNode.insertBefore(create(el)[0], ref);
+        },
+
+//      insertAfter: function(ref, el) {
+//          var parent = ref.parentNode,
+//              next = ref.nextSibling,
+//              el = create(el)[0];
+//          if (next) {
+//              parent.insertBefore(el, next);
+//          } else {
+//              parent.appendChild(el);
+//          }
+//          return el;
+//      },
 
         getBounds: function(el, viewport) {
             var doc = el.ownerDocument,

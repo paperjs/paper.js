@@ -26,29 +26,37 @@
 
     initialize: function Palette(title, components, values) {
         // Support object literal constructor
-        var props = Base.isPlainObject(title) && title;
+        var props = Base.isPlainObject(title) && title,
+            name;
         if (props) {
             title = props.title;
             components = props.components;
             values = props.values;
+            name = props.name;
         }
+        this._id = Palette._id = (Palette._id || 0) + 1;
         this._title = title;
-        this._values = values;
+        this._name = name || title
+                ? Base.hyphenate(title).replace(/\W/g, '_')
+                : 'palette-' + this._id;
+        this._values = values || {};
         this._components = components;
         // Create one root component that handles the layout and contains all
         // the components.
         var root = this._root = new Component(this, null, 'root', components,
-                values);
+                this._values);
         // Write the created components back into the passed components object,
         // so they are exposed and can easily be accessed from the outside.
         Base.set(components, root._components);
-        var parent = DomElement.find('.palettejs-panel')
+        var parent = DomElement.find('.palettejs-root')
             || DomElement.find('body').appendChild(DomElement.create('div', {
-                    class: 'palettejs-panel'
+                    class: 'palettejs-root'
                 }));
         this._element = parent.appendChild(DomElement.create('div', {
-                    class: 'palettejs-palette palettejs-' + root._className
+                    class: 'palettejs-palette palettejs-' + root._className,
+                    id: 'palettejs-palette-' + this._name
                 }, [root._table]));
+        this.setTitle(title);
         if (props)
             this._set(props, { title: true, components: true, values: true });
         // Link to the current scope's palettes list.
@@ -63,6 +71,14 @@
 
     getValues: function() {
         return this._values;
+    },
+
+    getTitle: function() {
+        return this._root.getTitle();
+    },
+
+    setTitle: function(title) {
+        return this._root.setTitle(title);
     },
 
     getEnabled: function() {
