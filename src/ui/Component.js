@@ -92,6 +92,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._id = Component._id = (Component._id || 0) + 1;
         this._parent = parent;
         this._name = name;
+        // The row within which this component is contained. This can be a
+        // shared row, e.g. when the parent component has a columns layout.
         this._row = row;
         var type = this._type = props.type in this._types
                 ? props.type
@@ -108,7 +110,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             className;
         if (!type) {
             // No type defined, so we're dealing with a layout component that
-            // contains nested child components.
+            // contains nested child components. See if they are to be aligned
+            // as columns or rows, and lay things out accordingly.
             var columns = props.columns,
                 // On the root element, we need to create the table and row even
                 // if it's a columns layout.
@@ -134,6 +137,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     }
                     components[key] = new Component(this, key, component,
                             values, currentRow);
+                    // Keep track of the maximum amount of cells per row, so we
+                    // can adjust colspan after.
                     numCells = Math.max(numCells, this._numCells);
                     // Do not reset cell counter if all components go to the
                     // same parent row.
@@ -146,9 +151,13 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 }
             }
             this._numCells = numCells;
+            // If aligning things horizontally, we need to tell the parent how
+            // many cells there are all together.
             if (columns && parent)
                 parent._numCells = numCells;
             Base.each(components, function(component, key) {
+                // NOTE: Components with columns layout won't have their _cell
+                // set.
                 if (numCells > 2 && component._cell && !columns)
                     DomElement.set(component._cell, 'colspan', numCells - 1);
                 // Replace each entry in values with getters/setters so we can
