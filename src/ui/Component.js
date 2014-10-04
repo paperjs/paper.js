@@ -104,15 +104,14 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                             : undefined,
             meta = this._meta = this._types[type] || { type: type },
             create = DomElement.create,
-            element = null;
+            element,
+            className;
         if (!type) {
             var columns = props.columns,
                 // On the root element, we need to create the table and row even
                 // if it's a columns layout.
                 table = this._table = !(columns && row) && DomElement.create(
-                    'table', {
-                        class: 'palettejs-pane' // XXX
-                    }),
+                    'table', { class: 'palettejs-pane' }),
                 components = this._components = {},
                 currentRow = row,
                 numCells = 0;
@@ -125,7 +124,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     if (table && !(columns && currentRow)) {
                         currentRow = DomElement.addChildren(table, ['tr', {
                             class: 'palettejs-row',
-                            id: columns ? null : 'palettejs-row-' + key
+                            id: 'palettejs-row-' + key
                         }])[0];
                         // Set _row for the columns root element.
                         if (columns)
@@ -168,6 +167,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             // was passed.
             Base.set(this, components);
             element = row && table;
+            className = 'layout-' + (columns ? 'columns' : 'rows');
         } else {
             var that = this;
             element = this._input = create(meta.tag || 'input', {
@@ -184,6 +184,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     }
                 }
             });
+            className = 'type-' + type;
         }
         if (element) {
             DomElement.addChildren(row, [
@@ -192,7 +193,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     id: 'palettejs-label-' + name
                 }),
                 this._cell = create('td', {
-                    class: 'palettejs-component palettejs-type-' + type,
+                    class: 'palettejs-component palettejs-' + className,
                     id: 'palettejs-component-' + name
                 }, [ element ])
             ]);
@@ -200,6 +201,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             if (parent)
                 parent._numCells += 2;
         }
+        this._className = className;
 
         // Attach default 'change' even that delegates to parent component.
         this.attach('change', function(value) {

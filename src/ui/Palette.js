@@ -45,11 +45,12 @@
         // so they are exposed and can easily be accessed from the outside.
         Base.set(components, root._components);
         var parent = DomElement.find('.palettejs-panel')
-            || DomElement.find('body').appendChild(
-                DomElement.create('div', { class: 'palettejs-panel' }));
-        this._element = parent.appendChild(
-                DomElement.create('div', { class: 'palettejs-palette' },
-                    [root._table]));
+            || DomElement.find('body').appendChild(DomElement.create('div', {
+                    class: 'palettejs-panel'
+                }));
+        this._element = parent.appendChild(DomElement.create('div', {
+                    class: 'palettejs-palette palettejs-' + root._className
+                }, [root._table]));
         if (props)
             this._set(props, { title: true, components: true, values: true });
         // Link to the current scope's palettes list.
