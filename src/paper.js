@@ -108,8 +108,8 @@ var paper = new function(undefined) {
 /*#*/     include('dom/DomEvent.js');
 /*#*/ }
 
-/*#*/ include('ui/View.js');
-/*#*/ include('ui/CanvasView.js');
+/*#*/ include('view/View.js');
+/*#*/ include('view/CanvasView.js');
 
 /*#*/ if (__options.environment == 'browser') {
 /*#*/     include('ui/Event.js');
