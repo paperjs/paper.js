@@ -73,29 +73,13 @@
         return this._values;
     },
 
-    getTitle: function() {
-        return this._root.getTitle();
-    },
-
-    setTitle: function(title) {
-        return this._root.setTitle(title);
-    },
-
-    getEnabled: function() {
-        return this._root.getEnabled();
-    },
-
-    setEnabled: function(enabled) {
-        return this._root.setEnabled(enabled);
-    },
-
     /**
+     * @name Palette#reset()
+     * @function
+     *
      * Resets the values of the components to their
      * {@link Component#defaultValue}.
      */
-    reset: function() {
-        this._root.reset();
-    },
 
     remove: function() {
         DomElement.remove(this._element);
@@ -106,4 +90,11 @@
             palettes.splice(index, 1);
         return remove;
     }
-});
+}, Base.each(['getTitle', 'setTitle', 'getEnabled', 'setEnabled', 'reset'],
+    function(name) {
+        this[name] = function() {
+            var root = this._root;
+            return root[name].apply(root, arguments);
+        }
+    }, {})
+);
