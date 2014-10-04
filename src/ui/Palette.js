@@ -14,8 +14,9 @@
   * @name Palette
   * @class
   */
-/* var Palette = */ Base.extend(/** @lends Palette# */{
+/* var Palette = */ Base.extend(Callback, /** @lends Palette# */{
     _class: 'Palette',
+    _events: [ 'onChange' ],
 
     // DOCS: Palette#initialize(props)
     // DOCS: Palette#initialize(title, components, values)
@@ -36,11 +37,8 @@
         this._components = components;
         // Create one root component that handles the layout and contains all
         // the components.
-        var root = this._root = new Component(null, 'root', components, values),
-            that = this;
-        root.attach('change', function(value) {
-            that.fire('change', this, this._name, value);
-        });
+        var root = this._root = new Component(this, null, 'root', components,
+                values);
         // Write the created components back into the passed components object,
         // so they are exposed and can easily be accessed from the outside.
         Base.set(components, root._components);

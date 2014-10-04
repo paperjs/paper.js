@@ -85,11 +85,12 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     _visible: true,
     _enabled: true,
 
-    initialize: function Component(parent, name, props, values, row) {
+    initialize: function Component(palette, parent, name, props, values, row) {
         if (!name)
             name = 'component-' + this._id;
         var value = Base.pick(values[name], props.value);
         this._id = Component._id = (Component._id || 0) + 1;
+        this._palette = palette;
         this._parent = parent;
         this._name = name;
         // The row within which this component is contained. This can be a
@@ -135,8 +136,8 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                         if (columns)
                             this._row = currentRow;
                     }
-                    components[key] = new Component(this, key, component,
-                            values, currentRow);
+                    components[key] = new Component(palette, this, key,
+                            component, values, currentRow);
                     // Keep track of the maximum amount of cells per row, so we
                     // can adjust colspan after.
                     numCells = Math.max(numCells, this._numCells);
@@ -214,10 +215,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         }
         this._className = className;
 
-        // Attach default 'change' even that delegates to parent component.
+        // Attach default 'change' even that delegates to the palette.
         this.attach('change', function(value) {
-            if (!this._dontFire && parent)
-                parent.fire('change', this, this._name, value);
+            if (!this._dontFire)
+                palette.fire('change', this, this._name, value);
         });
         this._dontFire = true;
         // Now that everything is set up, copy over values fro, props.
@@ -239,6 +240,14 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     getName: function() {
         return this._name;
+    },
+
+    getPalette: function() {
+        return this._palette;
+    },
+
+    getParent: function() {
+        return this._parent;
     },
 
     _setLabel: function(label, nodeName, parent) {
