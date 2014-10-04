@@ -96,7 +96,7 @@ var DomElement = new function() {
                 for (var name in key)
                     if (key.hasOwnProperty(name))
                         DomElement.set(el, name, key[name]);
-            } else if (!el || value === undefined) {
+            } else if (!el || value == null) {
                 return el;
             } else if (special.test(key)) {
                 el[key] = value;

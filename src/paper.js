@@ -118,9 +118,8 @@ var paper = new function(undefined) {
 /*#*/     include('ui/MouseEvent.js');
 
 /*#*/     if (__options.palette) {
-/*#*/         include('ui/Pane.js');
-/*#*/         include('ui/Palette.js');
 /*#*/         include('ui/Component.js');
+/*#*/         include('ui/Palette.js');
 /*#*/     }
 
 /*#*/     include('tool/ToolEvent.js');

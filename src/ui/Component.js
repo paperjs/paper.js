@@ -78,53 +78,98 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 return new Color(value).toCSS(
                         DomElement.get(this._input, 'type') === 'color');
             }
-        },
-
-        row: {},
-        column: {}
+        }
     },
 
     // Default values for internals
     _visible: true,
     _enabled: true,
 
-    initialize: function Component(pane, name, props, values, row, parent) {
+    initialize: function Component(parent, name, props, values, row) {
         if (!name)
             name = 'component-' + this._id;
         var value = Base.pick(values[name], props.value);
         this._id = Component._id = (Component._id || 0) + 1;
-        this._pane = pane;
+        this._parent = parent;
         this._name = name;
         this._row = row;
-        this._parent = parent; // The parent component, if any.
-        if (!parent || parent._type !== 'row')
-            DomElement.set(row, 'id', 'palettejs-row-' + name);
         var type = this._type = props.type in this._types
                 ? props.type
                 : 'options' in props
                     ? 'list'
                     : 'onClick' in props
                         ? 'button'
-                        : typeof value,
+                        : value !== undefined
+                            ? typeof value
+                            : undefined,
             meta = this._meta = this._types[type] || { type: type },
-            that = this,
             create = DomElement.create,
-            element = null,
-            isRow = type === 'row',
-            isColumn = type === 'column';
-        if (isRow || isColumn) {
-            var childPane = this._childPane = new Pane(props, values, this,
-                    isRow && row);
-            if (isRow) {
-                pane._numCells = childPane._numCells;
-            } else { // isColumn
-                element = childPane._table;
+            element = null;
+        if (!type) {
+            var horizontal = props.horizontal,
+                // On the root element, we need to create the table and row even
+                // if it's a horizontal layout.
+                table = this._table = !(horizontal && row) && DomElement.create(
+                    'table', {
+                        class: 'palettejs-pane' // XXX
+                    }),
+                components = this._components = {},
+                currentRow = row,
+                numCells = 0;
+            this._numCells = 0;
+            for (var key in props) {
+                var component = props[key];
+                if (Base.isPlainObject(component)) {
+                    // Create the rows for vertical elements, as well as
+                    // horizontal root elements.
+                    if (table && !(horizontal && currentRow)) {
+                        currentRow = DomElement.addChildren(table, ['tr', {
+                            class: 'palettejs-row',
+                            id: horizontal ? null : 'palettejs-row-' + key
+                        }])[0];
+                        // Set _row for the horizontal root element.
+                        if (horizontal)
+                            this._row = currentRow;
+                    }
+                    components[key] = new Component(this, key, component,
+                            values, currentRow);
+                    numCells = Math.max(numCells, this._numCells);
+                    // Do not reset cell counter if all components go to the
+                    // same parent row.
+                    if (!horizontal)
+                        this._numCells = 0;
+                    // Remove the entry now from the object that was provided to
+                    // create the component since the leftovers will be injected
+                    // into the created component through #_set() below.
+                    delete props[key];
+                }
             }
+            this._numCells = numCells;
+            if (horizontal && parent)
+                parent._numCells = numCells;
+            Base.each(components, function(component, key) {
+                if (numCells > 2 && component._cell && !horizontal)
+                    DomElement.set(component._cell, 'colspan', numCells - 1);
+                // Replace each entry in values with getters/setters so we can
+                // directly link the value to the component and observe change.
+                Base.define(values, key, {
+                    enumerable: true,
+                    configurable: true,
+                    get: function() {
+                        return component.getValue();
+                    },
+                    set: function(val) {
+                        component.setValue(val);
+                    }
+                });
+            });
             // Add child components directly to this component, so we can access
             // it through the same path as in the components object literal that
             // was passed.
-            Base.set(this, childPane._components);
+            Base.set(this, components);
+            element = row && table;
         } else {
+            var that = this;
             element = this._input = create(meta.tag || 'input', {
                 class: 'palettejs-input',
                 id: 'palettejs-input-' + name,
@@ -152,13 +197,14 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 }, [ element ])
             ]);
             // We just added two cells to the row:
-            pane._numCells += 2;
+            if (parent)
+                parent._numCells += 2;
         }
 
-        // Attach default 'change' even that delegates to palette
+        // Attach default 'change' even that delegates to parent component.
         this.attach('change', function(value) {
-            if (!this._dontFire)
-                pane.fire('change', this, this._name, value);
+            if (!this._dontFire && parent)
+                parent.fire('change', this, this._name, value);
         });
         this._dontFire = true;
         // Now that everything is set up, copy over values fro, props.
@@ -171,8 +217,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this.setValue(value);
         // Start firing change events after we have initialized.
         this._dontFire = false;
-        //  Store link to component in the pane's components object.
-        pane._components[name] = this;
         values[name] = this._defaultValue = this._value;
     },
 
@@ -229,7 +273,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     setValue: function(value) {
-        if (this._childPane)
+        if (this._components)
             return;
         var meta = this._meta,
             key = meta.value || 'value',
@@ -264,19 +308,20 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         return this._enabled;
     },
 
-    setEnabled: function(enabled, _fromPalette) {
-        if (_fromPalette) {
-            // When called from Palette#setEnabled, we have to remember the
+    setEnabled: function(enabled, _fromParent) {
+        if (_fromParent) {
+            // When called from the parent component, we have to remember the
             // component's previous enabled state when disabling the palette,
             // so we can restore it when enabling the palette again.
             var prev = Base.pick(this._previousEnabled, this._enabled);
             this._previousEnabled = enabled ? undefined : prev; // clear
             enabled = enabled && prev;
         }
-        if (this._input) {
+        if (this._components) {
+            for (var i in this._components)
+                this._components[i].setEnabled(enabled, true);
+        } else {
             DomElement.set(this._input, 'disabled', !enabled);
-        } else if (this._childPane) {
-            this._childPane.setEnabled(enabled);
         }
         this._enabled = !!enabled;
     },
@@ -316,8 +361,9 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     reset: function() {
-        if (this._childPane) {
-            this._childPane.reset();
+        if (this._components) {
+            for (var i in this._components)
+                this._components[i].reset();
         } else {
             this.setValue(this._defaultValue);
         }
