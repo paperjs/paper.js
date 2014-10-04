@@ -106,10 +106,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             create = DomElement.create,
             element = null;
         if (!type) {
-            var horizontal = props.horizontal,
+            var columns = props.columns,
                 // On the root element, we need to create the table and row even
-                // if it's a horizontal layout.
-                table = this._table = !(horizontal && row) && DomElement.create(
+                // if it's a columns layout.
+                table = this._table = !(columns && row) && DomElement.create(
                     'table', {
                         class: 'palettejs-pane' // XXX
                     }),
@@ -121,14 +121,14 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 var component = props[key];
                 if (Base.isPlainObject(component)) {
                     // Create the rows for vertical elements, as well as
-                    // horizontal root elements.
-                    if (table && !(horizontal && currentRow)) {
+                    // columns root elements.
+                    if (table && !(columns && currentRow)) {
                         currentRow = DomElement.addChildren(table, ['tr', {
                             class: 'palettejs-row',
-                            id: horizontal ? null : 'palettejs-row-' + key
+                            id: columns ? null : 'palettejs-row-' + key
                         }])[0];
-                        // Set _row for the horizontal root element.
-                        if (horizontal)
+                        // Set _row for the columns root element.
+                        if (columns)
                             this._row = currentRow;
                     }
                     components[key] = new Component(this, key, component,
@@ -136,7 +136,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     numCells = Math.max(numCells, this._numCells);
                     // Do not reset cell counter if all components go to the
                     // same parent row.
-                    if (!horizontal)
+                    if (!columns)
                         this._numCells = 0;
                     // Remove the entry now from the object that was provided to
                     // create the component since the leftovers will be injected
@@ -145,10 +145,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 }
             }
             this._numCells = numCells;
-            if (horizontal && parent)
+            if (columns && parent)
                 parent._numCells = numCells;
             Base.each(components, function(component, key) {
-                if (numCells > 2 && component._cell && !horizontal)
+                if (numCells > 2 && component._cell && !columns)
                     DomElement.set(component._cell, 'colspan', numCells - 1);
                 // Replace each entry in values with getters/setters so we can
                 // directly link the value to the component and observe change.
