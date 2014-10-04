@@ -174,21 +174,25 @@ var DomElement = new function() {
                 el.removeChild(el.firstChild);
         },
 
+        addChild: function(el, child) {
+            return create(child, el)[0];
+        },
+
         insertBefore: function(ref, el) {
             return ref.parentNode.insertBefore(create(el)[0], ref);
         },
 
-//      insertAfter: function(ref, el) {
-//          var parent = ref.parentNode,
-//              next = ref.nextSibling,
-//              el = create(el)[0];
-//          if (next) {
-//              parent.insertBefore(el, next);
-//          } else {
-//              parent.appendChild(el);
-//          }
-//          return el;
-//      },
+        insertAfter: function(ref, el) {
+            var parent = ref.parentNode,
+                next = ref.nextSibling,
+                el = create(el)[0];
+            if (next) {
+                parent.insertBefore(el, next);
+            } else {
+                parent.appendChild(el);
+            }
+            return el;
+        },
 
         getBounds: function(el, viewport) {
             var doc = el.ownerDocument,

@@ -254,8 +254,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             if (!node && title) {
                 // Create a caption tag, and nest the title in a span inside,
                 // so we can offer some more flexibility with CSS on it.
-                node = this._titleNode = DomElement.insertBefore(
-                    this._tbody, [
+                node = this._titleNode = DomElement.insertBefore(this._tbody, [
                         'caption', [ 'span' ],
                     ]).firstChild;
             } else if (node && !title) {
@@ -275,9 +274,9 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     _setLabel: function(label, nodeName, parent) {
         if (parent) {
-            this[nodeName] = DomElement.set(this[nodeName]
-                    || parent.appendChild(DomElement.create('label',
-                        { 'for': 'palettejs-input-' + this._name })),
+            this[nodeName] = DomElement.set(
+                    this[nodeName] || DomElement.addChild(parent,
+                        ['label', { 'for': 'palettejs-input-' + this._name }]),
                     'text', label);
         }
     },
