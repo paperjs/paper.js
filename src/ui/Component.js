@@ -37,11 +37,9 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         },
 
         button: {
-            tag: 'button',
             type: 'button',
-            setValue: function(value) {
-                DomElement.set(this._input, 'text', value);
-            }
+            tag: 'button',
+            value: 'text'
         },
 
         text: {
@@ -59,10 +57,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             tag: 'select',
 
             setOptions: function() {
-                DomElement.removeChildren(this._input);
+                DomElement.removeChildren(this._element);
                 DomElement.create(Base.each(this._options, function(option) {
                     this.push('option', { value: option, text: option });
-                }, []), this._input);
+                }, []), this._element);
             }
         },
 
@@ -80,7 +78,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                 // color type. This allows sketch.paperjs.org to plug in
                 // the Spectrum.js library with alpha support.
                 return new Color(value).toCSS(
-                        DomElement.get(this._input, 'type') === 'color');
+                        DomElement.get(this._element, 'type') === 'color');
             }
         }
     },
@@ -187,7 +185,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             Base.set(this, components);
         } else {
             var that = this;
-            element = this._input = create(meta.tag || 'input', {
+            element = this._element = create(meta.tag || 'input', {
                 class: 'palettejs-input',
                 id: 'palettejs-input-' + name,
                 type: meta.type,
@@ -290,10 +288,12 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             setValue = meta.setValue;
         if (setValue)
             value = setValue.call(this, value);
+        // If setValue doesn't return a value, then we assume it took care of
+        // the setting by itself.
         if (value !== undefined) {
-            DomElement.set(this._input, key, value);
+            DomElement.set(this._element, key, value);
             // Read back and convert from input again to make sure we're in sync
-            value = DomElement.get(this._input, key);
+            value = DomElement.get(this._element, key);
         }
         if (meta.number)
             value = parseFloat(value, 10);
@@ -353,7 +353,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
 
     setVisible: function(visible) {
         // NOTE: Only set the visibility of the whole row if this is a row item,
-        // in which case this._input is not defined.
+        // in which case this._cell is not defined.
         DomElement.toggleClass(this._cell || this._row, 'hidden', !visible);
         DomElement.toggleClass(this._labelCell, 'hidden', !visible);
         this._visible = !!visible;
@@ -376,19 +376,19 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             for (var i in this._components)
                 this._components[i].setEnabled(enabled, true);
         } else {
-            DomElement.set(this._input, 'disabled', !enabled);
+            DomElement.set(this._element, 'disabled', !enabled);
         }
         this._enabled = !!enabled;
     },
 
     getRange: function() {
-        return [parseFloat(DomElement.get(this._input, 'min')),
-                parseFloat(DomElement.get(this._input, 'max'))];
+        return [parseFloat(DomElement.get(this._element, 'min')),
+                parseFloat(DomElement.get(this._element, 'max'))];
     },
 
     setRange: function(min, max) {
         var range = Array.isArray(min) ? min : [min, max];
-        DomElement.set(this._input, { min: range[0], max: range[1] });
+        DomElement.set(this._element, { min: range[0], max: range[1] });
     },
 
     getMin: function() {
@@ -408,11 +408,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     },
 
     getStep: function() {
-        return parseFloat(DomElement.get(this._input, 'step'));
+        return parseFloat(DomElement.get(this._element, 'step'));
     },
 
     setStep: function(step) {
-        DomElement.set(this._input, 'step', step);
+        DomElement.set(this._element, 'step', step);
     },
 
     reset: function() {
