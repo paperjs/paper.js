@@ -24,23 +24,19 @@
     // DOCS: Palette#values
     // DOCS: Palette#remove()
 
-    initialize: function Palette(title, components, values) {
-        // Support object literal constructor
-        var props = Base.isPlainObject(title) && title,
-            name;
-        if (props) {
-            title = props.title;
-            components = props.components;
-            values = props.values;
-            name = props.name;
+    initialize: function Palette(props) {
+        // Support legacy constructor(title, components, values)
+        if (!Base.isPlainObject(props)) {
+            var args = arguments;
+            props = { title: args[0], components: args[1], values: args[2] };
         }
+        var components = this._components = props.components,
+            title = props.title;
         this._id = Palette._id = (Palette._id || 0) + 1;
-        this._title = title;
-        this._name = name || title
+        this._name = props.name || title
                 ? Base.hyphenate(title).replace(/\W/g, '_')
                 : 'palette-' + this._id;
-        this._values = values || {};
-        this._components = components;
+        this._values = props.values || {};
         // Create one root component that handles the layout and contains all
         // the components.
         var root = this._root = new Component(this, null, 'root', components,
@@ -48,17 +44,15 @@
         // Write the created components back into the passed components object,
         // so they are exposed and can easily be accessed from the outside.
         Base.set(components, root._components);
-        var parent = DomElement.find('.palettejs-root')
-            || DomElement.find('body').appendChild(DomElement.create('div', {
-                    class: 'palettejs-root'
-                }));
+        var parent = props.parent
+                || DomElement.find('.palettejs-root')
+                || DomElement.find('body').appendChild(
+                    DomElement.create('div', { class: 'palettejs-root' }));
         this._element = parent.appendChild(DomElement.create('div', {
                     class: 'palettejs-palette palettejs-' + root._className,
                     id: 'palettejs-palette-' + this._name
                 }, [root._table]));
-        this.setTitle(title);
-        if (props)
-            this._set(props, { title: true, components: true, values: true });
+        this._set(props, { components: true, values: true });
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
