@@ -43,7 +43,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         },
 
         text: {
-            tag: 'div',
+            tag: 'span',
             // This will return the native textContent through DomElement.get():
             value: 'text'
         },
