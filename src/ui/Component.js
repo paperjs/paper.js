@@ -37,7 +37,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         },
 
         button: {
-            type: 'button'
+            tag: 'button',
+            type: 'button',
+            setValue: function(value) {
+                DomElement.set(this._input, 'text', value);
+            }
         },
 
         text: {
@@ -272,6 +276,39 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         return this._parent;
     },
 
+    getValue: function() {
+        var value = this._value,
+            getValue = this._meta.getValue;
+        return getValue ? getValue.call(this, value) : value;
+    },
+
+    setValue: function(value) {
+        if (this._components)
+            return;
+        var meta = this._meta,
+            key = meta.value || 'value',
+            setValue = meta.setValue;
+        if (setValue)
+            value = setValue.call(this, value);
+        if (value !== undefined) {
+            DomElement.set(this._input, key, value);
+            // Read back and convert from input again to make sure we're in sync
+            value = DomElement.get(this._input, key);
+        }
+        if (meta.number)
+            value = parseFloat(value, 10);
+        if (this._value !== value) {
+            this._value = value;
+            if (!this._dontFire)
+                this.fire('change', this.getValue());
+        }
+    },
+
+    // Setup #text as an alias to #value, for better semantics when creating
+    // buttons.
+    getText: '#getValue',
+    setText: '#setValue',
+
     _setLabel: function(label, nodeName, parent) {
         if (parent) {
             this[nodeName] = DomElement.set(
@@ -308,32 +345,6 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         var setOptions = this._meta.setOptions;
         if (setOptions)
             setOptions.call(this);
-    },
-
-    getValue: function() {
-        var value = this._value,
-            getValue = this._meta.getValue;
-        return getValue ? getValue.call(this, value) : value;
-    },
-
-    setValue: function(value) {
-        if (this._components)
-            return;
-        var meta = this._meta,
-            key = meta.value || 'value',
-            setValue = meta.setValue;
-        if (setValue)
-            value = setValue.call(this, value);
-        DomElement.set(this._input, key, value);
-        // Read back and convert from input again, to make sure we're in sync
-        value = DomElement.get(this._input, key);
-        if (meta.number)
-            value = parseFloat(value, 10);
-        if (this._value !== value) {
-            this._value = value;
-            if (!this._dontFire)
-                this.fire('change', this.getValue());
-        }
     },
 
     getVisible: function() {

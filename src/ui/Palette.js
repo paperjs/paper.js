@@ -65,6 +65,10 @@
         (this._palettes = paper.palettes).push(this);
     },
 
+    getName: function() {
+        return this._name;
+    },
+
     getComponents: function() {
         return this._components;
     },
