@@ -52,7 +52,7 @@
                     class: 'palettejs-palette palettejs-' + root._className,
                     id: 'palettejs-palette-' + this._name
                 }, [root._table]));
-        this._set(props, { components: true, values: true });
+        this._set(props, { components: true, values: true, parent: true });
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
@@ -61,6 +61,10 @@
 
     getName: function() {
         return this._name;
+    },
+
+    getElement: function() {
+        return this._element;
     },
 
     getComponents: function() {

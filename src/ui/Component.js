@@ -245,6 +245,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         return this._name;
     },
 
+    getElement: function() {
+        return this._element;
+    },
+
     getTitle: function() {
         return this._title;
     },
