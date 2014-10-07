@@ -376,6 +376,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             this._previousEnabled = enabled ? undefined : prev; // clear
             enabled = enabled && prev;
         }
+        DomElement.toggleClass(this._cell || this._row, 'disabled', !enabled);
         if (this._components) {
             for (var i in this._components)
                 this._components[i].setEnabled(enabled, true);
