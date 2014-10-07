@@ -53,6 +53,10 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             number: true
         },
 
+        ruler: {
+            tag: 'hr'
+        },
+
         list: {
             tag: 'select',
 
@@ -188,8 +192,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         } else {
             var that = this;
             element = this._element = create(meta.tag || 'input', {
-                class: 'palettejs-input',
-                id: 'palettejs-input-' + name,
+                id: !meta.tag ? 'palettejs-input-' + name : null,
                 type: meta.type,
                 events: {
                     change: function() {
@@ -318,9 +321,11 @@ var Component = Base.extend(Callback, /** @lends Component# */{
     _setLabel: function(label, nodeName, parent) {
         if (parent) {
             this[nodeName] = DomElement.set(
-                    this[nodeName] || DomElement.addChild(parent,
-                        ['label', { 'for': 'palettejs-input-' + this._name }]),
-                    'text', label);
+                    this[nodeName] || DomElement.addChild(parent, ['label', {
+                        'for': !this._meta.tag
+                            ? 'palettejs-input-' + this._name
+                            : null
+                    }]), 'text', label);
         }
     },
 
