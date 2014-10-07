@@ -168,16 +168,18 @@ var Component = Base.extend(Callback, /** @lends Component# */{
                     DomElement.set(component._cell, 'colspan', numCells - 1);
                 // Replace each entry in values with getters/setters so we can
                 // directly link the value to the component and observe change.
-                Base.define(values, key, {
-                    enumerable: true,
-                    configurable: true,
-                    get: function() {
-                        return component.getValue();
-                    },
-                    set: function(val) {
-                        component.setValue(val);
-                    }
-                });
+                if (key in values) {
+                    Base.define(values, key, {
+                        enumerable: true,
+                        configurable: true,
+                        get: function() {
+                            return component.getValue();
+                        },
+                        set: function(val) {
+                            component.setValue(val);
+                        }
+                    });
+                }
             });
             // Add child components directly to this component, so we can access
             // it through the same path as in the components object literal that
@@ -234,7 +236,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this.setValue(value);
         // Start firing change events after we have initialized.
         this._dontFire = false;
-        values[name] = this._defaultValue = this._value;
+        this._defaultValue = this._value;
     },
 
     getType: function() {
