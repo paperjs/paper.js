@@ -92,7 +92,7 @@
             palettes.splice(index, 1);
         return remove;
     }
-}, Base.each(['getTitle', 'setTitle', 'getEnabled', 'setEnabled', 'reset'],
+}, Base.each(['getTitle', 'setTitle', 'isEnabled', 'setEnabled', 'reset'],
     function(name) {
         this[name] = function() {
             var root = this._root;

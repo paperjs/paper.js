@@ -351,7 +351,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
             setOptions.call(this);
     },
 
-    getVisible: function() {
+    isVisible: function() {
         return this._visible;
     },
 
@@ -363,7 +363,7 @@ var Component = Base.extend(Callback, /** @lends Component# */{
         this._visible = !!visible;
     },
 
-    getEnabled: function() {
+    isEnabled: function() {
         return this._enabled;
     },
 
