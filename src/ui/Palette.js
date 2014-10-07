@@ -14,7 +14,7 @@
   * @name Palette
   * @class
   */
-/* var Palette = */ Base.extend(Callback, /** @lends Palette# */{
+var Palette = Base.extend(Callback, /** @lends Palette# */{
     _class: 'Palette',
     _events: [ 'onChange' ],
 
@@ -31,11 +31,11 @@
             props = { title: args[0], components: args[1], values: args[2] };
         }
         var components = this._components = props.components,
-            title = props.title;
-        this._id = Palette._id = (Palette._id || 0) + 1;
-        this._name = props.name || title
-                ? Base.hyphenate(title).replace(/\W/g, '_')
-                : 'palette-' + this._id;
+            id = this._id = Palette._id = (Palette._id || 0) + 1,
+            title = props.title,
+            name = this._name = props.name || (title
+                    ? Base.hyphenate(title).replace(/\W/g, '_')
+                    : 'palette-' + this._id);
         this._values = props.values || {};
         // Create one root component that handles the layout and contains all
         // the components.
@@ -50,13 +50,15 @@
                     DomElement.create('div', { class: 'palettejs-root' }));
         this._element = parent.appendChild(DomElement.create('div', {
                     class: 'palettejs-palette palettejs-' + root._className,
-                    id: 'palettejs-palette-' + this._name
+                    id: 'palettejs-palette-' + name,
+                    'data-id': id
                 }, [root._table]));
         this._set(props, { components: true, values: true, parent: true });
         // Link to the current scope's palettes list.
         // TODO: This is the only paper dependency in Palette.js
         // Find a way to make it independent.
         (this._palettes = paper.palettes).push(this);
+        Palette._palettes[id] = this;
     },
 
     getName: function() {
@@ -91,6 +93,22 @@
         if (remove)
             palettes.splice(index, 1);
         return remove;
+    },
+
+    statics: {
+        _palettes: {},
+
+        get: function(idOrElement) {
+            if (typeof idOrElement === 'object') {
+                // Support child elements by walking up the parents of the
+                // element until the palette element is found.
+                while (idOrElement && !DomElement.hasClass(idOrElement,
+                        'palettejs-palette'))
+                    idOrElement = idOrElement.parentNode;
+                idOrElement = DomElement.get(idOrElement, 'data-id');
+            }
+            return Palette._palettes[idOrElement];
+        }
     }
 }, Base.each(['getTitle', 'setTitle', 'isEnabled', 'setEnabled', 'reset'],
     function(name) {
