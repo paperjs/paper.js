@@ -49,7 +49,7 @@ var paper = new function(undefined) {
 /*#*/ }
 
 /*#*/ include('core/Base.js');
-/*#*/ include('core/Callback.js');
+/*#*/ include('core/Emitter.js');
 /*#*/ include('core/PaperScope.js');
 /*#*/ include('core/PaperScopeItem.js');
 

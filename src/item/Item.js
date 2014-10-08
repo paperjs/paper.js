@@ -20,7 +20,7 @@
  * is unique to their type, but share the underlying properties and functions
  * that they inherit from Item.
  */
-var Item = Base.extend(Callback, /** @lends Item# */{
+var Item = Base.extend(Emitter, /** @lends Item# */{
     statics: {
         /**
          * Override Item.extend() to merge the subclass' _serializeFields with
@@ -1230,7 +1230,7 @@ var Item = Base.extend(Callback, /** @lends Item# */{
     },
 
     /**
-     * Overrides Callback#_installEvents to also call _installEvents on all
+     * Overrides Emitter#_installEvents to also call _installEvents on all
      * children.
      */
     _installEvents: function _installEvents(install) {

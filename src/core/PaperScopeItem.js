@@ -19,7 +19,7 @@
  *
  * @private
  */
-var PaperScopeItem = Base.extend(Callback, /** @lends PaperScopeItem# */{
+var PaperScopeItem = Base.extend(Emitter, /** @lends PaperScopeItem# */{
 
     /**
      * Creates a PaperScopeItem object.

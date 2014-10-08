@@ -11,11 +11,11 @@
  */
 
 /**
- * @name Callback
+ * @name Emitter
  * @namespace
  * @private
  */
-var Callback = {
+var Emitter = {
     attach: function(type, func) {
         // If an object literal is passed, attach all callbacks defined in it
         if (typeof type !== 'string') {

@@ -19,7 +19,7 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-var View = Base.extend(Callback, /** @lends View# */{
+var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
     initialize: function View(project, element) {
