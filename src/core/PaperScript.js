@@ -408,7 +408,7 @@ Base.exports.PaperScript = (function() {
         if (view) {
             if (res.onResize)
                 view.setOnResize(res.onResize);
-            // Fire resize event directly, so any user
+            // Emit resize event directly, so any user
             // defined resize handlers are called.
             view.emit('resize', {
                 size: view.size,

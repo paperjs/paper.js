@@ -324,8 +324,8 @@ var Raster = Item.extend(/** @lends Raster# */{
         // IE has naturalWidth / Height defined, but width / height set to 0
         // when the image is invisible in the document.
         if (image.naturalWidth && image.naturalHeight) {
-            // Fire load event delayed, so behavior is the same as when it's
-            // actually loaded and we give the code time to install event
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
         } else {
             // Trigger the onLoad event on the image once it's loaded
@@ -345,8 +345,8 @@ var Raster = Item.extend(/** @lends Raster# */{
             // Preserve the data in this._data since canvas-node eats it.
             // TODO: Fix canvas-node instead
             image.src = this._data = src;
-            // Fire load event delayed, so behavior is the same as when it's
-            // actually loaded and we give the code time to install event
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
         } else if (/^https?:\/\//.test(src)) {
             // Load it from remote location:

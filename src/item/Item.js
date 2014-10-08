@@ -3524,8 +3524,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Detach an event handler from the item.
      *
-     * @name Item#detach
-     * @alias Item#off
+     * @name Item#off
      * @function
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
      * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
@@ -3535,8 +3534,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Detach one or more event handlers to the item.
      *
-     * @name Item#detach
-     * @alias Item#off
+     * @name Item#off
      * @function
      * @param {Object} object an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, click,
@@ -3544,10 +3542,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * Fire an event on the item.
+     * Emit an event on the item.
      *
-     * @name Item#fire
-     * @alias Item#trigger
+     * @name Item#emit
      * @function
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
      * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event

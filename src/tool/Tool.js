@@ -411,8 +411,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * Attach an event handler to the tool.
      *
-     * @name Tool#attach
-     * @alias Tool#on
+     * @name Tool#on
      * @function
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
      * 'keydown', 'keyup')} type the event type
@@ -422,8 +421,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * Attach one or more event handlers to the tool.
      *
-     * @name Tool#attach
-     * @alias Tool#on
+     * @name Tool#on
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
@@ -433,8 +431,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * Detach an event handler from the tool.
      *
-     * @name Tool#detach
-     * @alias Tool#off
+     * @name Tool#off
      * @function
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
      * 'keydown', 'keyup')} type the event type
@@ -443,8 +440,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * Detach one or more event handlers from the tool.
      *
-     * @name Tool#detach
-     * @alias Tool#off
+     * @name Tool#off
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
@@ -452,10 +448,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      */
 
     /**
-     * Fire an event on the tool.
+     * Emit an event on the tool.
      *
-     * @name Tool#fire
-     * @alias Tool#trigger
+     * @name Tool#emit
      * @function
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
      * 'keydown', 'keyup')} type the event type

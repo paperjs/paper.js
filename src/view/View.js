@@ -605,8 +605,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * Detach an event handler from the view.
      *
-     * @name View#detach
-     * @alias View#off
+     * @name View#off
      * @function
      * @param {String('frame', 'resize')} type the event type
      * @param {Function} function The function to be detached
@@ -635,18 +634,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * Detach one or more event handlers from the view.
      *
-     * @name View#detach
-     * @alias View#off
+     * @name View#off
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code frame, resize}
      */
 
     /**
-     * Fire an event on the view.
+     * Emit an event on the view.
      *
-     * @name View#fire
-     * @alias View#trigger
+     * @name View#emit
      * @function
      * @param {String('frame', 'resize')} type the event type
      * @param {Object} event an object literal containing properties describing
