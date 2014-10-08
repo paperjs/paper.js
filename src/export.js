@@ -23,8 +23,6 @@ paper = new (PaperScope.inject(Base.exports, {
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
-    DomElement: DomElement,
-    DomEvent: DomEvent,
     Http: Http,
     Key: Key
 }))();
@@ -50,7 +48,6 @@ paper = new (PaperScope.inject(Base.exports, {
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
-    DomElement: DomElement,
     // Export dom/node.js stuff too
     XMLSerializer: XMLSerializer,
     DOMParser: DOMParser,
