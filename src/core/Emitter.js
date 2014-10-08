@@ -76,12 +76,11 @@ var Emitter = {
         var handlers = this._callbacks && this._callbacks[type];
         if (!handlers)
             return false;
-        var args = [].slice.call(arguments, 1),
-            that = this;
+        var args = [].slice.call(arguments, 1);
         for (var i = 0, l = handlers.length; i < l; i++) {
             // When the handler function returns false, prevent the default
             // behaviour and stop propagation of the event by calling stop()
-            if (handlers[i].apply(that, args) === false
+            if (handlers[i].apply(this, args) === false
                     && event && event.stop) {
                 event.stop();
                 break;

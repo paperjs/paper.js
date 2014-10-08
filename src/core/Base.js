@@ -69,7 +69,7 @@ Base.inject(/** @lends Base# */{
             var orig = props._filtering || props;
             for (var key in orig) {
                 if (key in this && orig.hasOwnProperty(key)
-                        && (!exclude || !exclude[key])) {
+                        && !(exclude && exclude[key])) {
                     var value = props[key];
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
