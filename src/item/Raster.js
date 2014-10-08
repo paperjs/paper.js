@@ -312,7 +312,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             if (view) {
                 paper = view._scope;
                 that.setImage(image);
-                that.fire('load');
+                that.emit('load');
                 view.update();
             }
         }

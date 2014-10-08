@@ -149,7 +149,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
                             // Calculate delta if lastPoint was passed
                             lastPoint ? point.subtract(lastPoint) : null);
                 }
-                if (obj.fire(type, mouseEvent) && mouseEvent.isStopped) {
+                if (obj.emit(type, mouseEvent) && mouseEvent.isStopped) {
                     // Call preventDefault() on native event if mouse event was
                     // handled here.
                     event.preventDefault();
@@ -327,7 +327,7 @@ CanvasView.inject(new function() {
                     }
                 });
                 // Use new Base() to convert into a Base object, for #toString()
-                view.fire('frame', new Base({
+                view.emit('frame', new Base({
                     delta: frameDuration,
                     time: frameDuration * count,
                     count: count

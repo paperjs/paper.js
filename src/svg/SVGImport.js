@@ -215,7 +215,7 @@ new function() {
         // http://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node) {
             var raster = new Raster(getValue(node, 'href', true));
-            raster.attach('load', function() {
+            raster.on('load', function() {
                 var size = getSize(node, 'width', 'height');
                 this.setSize(size);
                 // Since x and y start from the top left of an image, add

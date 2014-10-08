@@ -16,19 +16,19 @@
  * @private
  */
 var Emitter = {
-    attach: function(type, func) {
+    on: function(type, func) {
         // If an object literal is passed, attach all callbacks defined in it
         if (typeof type !== 'string') {
             Base.each(type, function(value, key) {
-                this.attach(key, value);
+                this.on(key, value);
             }, this);
             return;
         }
         var entry = this._eventTypes[type];
         if (entry) {
-            var handlers = this._handlers = this._handlers || {};
+            var handlers = this._callbacks = this._callbacks || {};
             handlers = handlers[type] = handlers[type] || [];
-            if (handlers.indexOf(func) == -1) { // Not added yet, add it now
+            if (handlers.indexOf(func) === -1) { // Not added yet, add it now
                 handlers.push(func);
                 // See if this is the first handler that we're attaching, and
                 // call install if defined.
@@ -38,26 +38,26 @@ var Emitter = {
         }
     },
 
-    detach: function(type, func) {
+    off: function(type, func) {
         // If an object literal is passed, detach all callbacks defined in it
         if (typeof type !== 'string') {
             Base.each(type, function(value, key) {
-                this.detach(key, value);
+                this.off(key, value);
             }, this);
             return;
         }
         var entry = this._eventTypes[type],
-            handlers = this._handlers && this._handlers[type],
+            handlers = this._callbacks && this._callbacks[type],
             index;
         if (entry && handlers) {
             // See if this is the last handler that we're detaching (or if we
             // are detaching all handlers), and call uninstall if defined.
-            if (!func || (index = handlers.indexOf(func)) != -1
-                    && handlers.length == 1) {
+            if (!func || (index = handlers.indexOf(func)) !== -1
+                    && handlers.length === 1) {
                 if (entry.uninstall)
                     entry.uninstall.call(this, type);
-                delete this._handlers[type];
-            } else if (index != -1) {
+                delete this._callbacks[type];
+            } else if (index !== -1) {
                 // Just remove this one handler
                 handlers.splice(index, 1);
             }
@@ -65,15 +65,15 @@ var Emitter = {
     },
 
     once: function(type, func) {
-        this.attach(type, function() {
+        this.on(type, function() {
             func.apply(this, arguments);
-            this.detach(type, func);
+            this.off(type, func);
         });
     },
 
-    fire: function(type, event) {
+    emit: function(type, event) {
         // Returns true if fired, false otherwise
-        var handlers = this._handlers && this._handlers[type];
+        var handlers = this._callbacks && this._callbacks[type];
         if (!handlers)
             return false;
         var args = [].slice.call(arguments, 1),
@@ -91,16 +91,16 @@ var Emitter = {
     },
 
     responds: function(type) {
-        return !!(this._handlers && this._handlers[type]);
+        return !!(this._callbacks && this._callbacks[type]);
     },
 
-    // Install jQuery-style aliases to our event handler methods
-    on: '#attach',
-    off: '#detach',
-    trigger: '#fire',
+    // Keep deprecated methods around from previous Callback interface.
+    attach: '#on',
+    detach: '#off',
+    fire: '#emit',
 
     _installEvents: function(install) {
-        var handlers = this._handlers,
+        var handlers = this._callbacks,
             key = install ? 'install' : 'uninstall';
         for (var type in handlers) {
             if (handlers[type].length > 0) {
@@ -142,9 +142,9 @@ var Emitter = {
                             // Detach the previous event, if there was one.
                             var prev = this[name];
                             if (prev)
-                                this.detach(type, prev);
+                                this.off(type, prev);
                             if (func)
-                                this.attach(type, func);
+                                this.on(type, func);
                             this[name] = func;
                         };
                     });

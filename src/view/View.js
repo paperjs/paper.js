@@ -153,7 +153,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._element = this._project = null;
         // Remove all onFrame handlers.
         // TODO: Shouldn't we remove all handlers, automatically
-        this.detach('frame');
+        this.off('frame');
         this._animate = false;
         this._frameItems = {};
         return true;
@@ -212,7 +212,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._before = now;
         this._handlingFrame = true;
         // Use new Base() to convert into a Base object, for #toString()
-        this.fire('frame', new Base({
+        this.emit('frame', new Base({
             // Time elapsed since last redraw in seconds:
             delta: delta,
             // Time since first call of frame() in seconds:
@@ -237,12 +237,12 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 count: 0
             };
             if (++this._frameItemCount === 1)
-                this.attach('frame', this._handleFrameItems);
+                this.on('frame', this._handleFrameItems);
         } else {
             delete items[item._id];
             if (--this._frameItemCount === 0) {
                 // If this is the last one, just stop animating straight away.
-                this.detach('frame', this._handleFrameItems);
+                this.off('frame', this._handleFrameItems);
             }
         }
     },
@@ -251,7 +251,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _handleFrameItems: function(event) {
         for (var i in this._frameItems) {
             var entry = this._frameItems[i];
-            entry.item.fire('frame', new Base(event, {
+            entry.item.emit('frame', new Base(event, {
                 // Time since first call of frame() in seconds:
                 time: entry.time += event.delta,
                 count: entry.count++
@@ -348,7 +348,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._setViewSize(size);
         this._bounds = null; // Force recalculation
         // Call onResize handler on any size change
-        this.fire('resize', {
+        this.emit('resize', {
             size: size,
             delta: delta
         });
@@ -629,7 +629,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * // When the user presses the mouse,
      * // detach the frame handler from the view:
      * function onMouseDown(event) {
-     *     view.detach('frame');
+     *     view.off('frame');
      * }
      */
     /**

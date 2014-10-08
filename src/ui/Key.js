@@ -95,7 +95,7 @@ var Key = new function() {
             // Update global reference to this scope.
             paper = scope;
             // Call the onKeyDown or onKeyUp handler if present
-            tool.fire(type, new KeyEvent(down, key, character, event));
+            tool.emit(type, new KeyEvent(down, key, character, event));
             if (view)
                 view.update();
         }

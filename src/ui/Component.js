@@ -200,7 +200,7 @@ var Component = Base.extend(Emitter, /** @lends Component# */{
                                 meta.value || 'value'));
                     },
                     click: function() {
-                        that.fire('click');
+                        that.emit('click');
                     }
                 }
             });
@@ -224,9 +224,9 @@ var Component = Base.extend(Emitter, /** @lends Component# */{
         this._className = className;
 
         // Attach default 'change' even that delegates to the palette.
-        this.attach('change', function(value) {
+        this.on('change', function(value) {
             if (!this._dontFire)
-                palette.fire('change', this, this._name, value);
+                palette.emit('change', this, this._name, value);
         });
         this._dontFire = true;
         // Now that everything is set up, copy over values fro, props.
@@ -309,7 +309,7 @@ var Component = Base.extend(Emitter, /** @lends Component# */{
         if (this._value !== value) {
             this._value = value;
             if (!this._dontFire)
-                this.fire('change', this.getValue());
+                this.emit('change', this.getValue());
         }
     },
 

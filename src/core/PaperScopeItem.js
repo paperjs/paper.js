@@ -39,9 +39,9 @@ var PaperScopeItem = Base.extend(Emitter, /** @lends PaperScopeItem# */{
             return false;
         var prev = this._scope[this._reference];
         if (prev && prev !== this)
-            prev.fire('deactivate');
+            prev.emit('deactivate');
         this._scope[this._reference] = this;
-        this.fire('activate', prev);
+        this.emit('activate', prev);
         return true;
     },
 

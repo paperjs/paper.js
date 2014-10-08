@@ -347,7 +347,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             }
         }
         return this.responds(type)
-                && this.fire(type, new ToolEvent(this, type, event));
+                && this.emit(type, new ToolEvent(this, type, event));
     },
 
     _handleEvent: function(type, point, event) {
