@@ -112,10 +112,10 @@ var paper = new function(undefined) {
 /*#*/ include('view/CanvasView.js');
 
 /*#*/ if (__options.environment == 'browser') {
-/*#*/     include('ui/Event.js');
-/*#*/     include('ui/KeyEvent.js');
-/*#*/     include('ui/Key.js');
-/*#*/     include('ui/MouseEvent.js');
+/*#*/     include('event/Event.js');
+/*#*/     include('event/KeyEvent.js');
+/*#*/     include('event/Key.js');
+/*#*/     include('event/MouseEvent.js');
 
 /*#*/     include('tool/ToolEvent.js');
 /*#*/     include('tool/Tool.js');

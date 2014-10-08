@@ -139,7 +139,7 @@ var Key = new function() {
 
     DomEvent.add(window, {
         blur: function(event) {
-            // Fire key-up events for all currently pressed keys.
+            // Emit key-up events for all currently pressed keys.
             for (var code in charCodeMap)
                 handleKey(false, code, charCodeMap[code], event);
         }
