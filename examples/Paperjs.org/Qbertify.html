@@ -130,11 +130,9 @@
             reader.readAsDataURL(file);
         }
 
-        DomEvent.add(document, {
-            drop: onDocumentDrop,
-            dragover: onDocumentDrag,
-            dragleave: onDocumentDrag
-        });
+        document.addEventListener('drop', onDocumentDrop, false);
+        document.addEventListener('dragover', onDocumentDrag, false);
+        document.addEventListener('dragleave', onDocumentDrag, false);
     </script>
 </head>
 <body>
