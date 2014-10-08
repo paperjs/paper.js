@@ -15,6 +15,9 @@
 // PaperScope, and create the initial paper object, all in one statement:
 /*#*/ if (__options.environment == 'browser') {
 
+// NOTE: Do not create local variable `var paper` since it would shield the
+// global one in the whole scope.
+
 paper = new (PaperScope.inject(Base.exports, {
     // Mark fields as enumerable so PaperScope.inject can pick them up
     enumerable: true,

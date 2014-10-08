@@ -10,18 +10,18 @@
  * All rights reserved.
  */
 
- /**
-  * @name _global_
-  * @namespace
-  *
-  * When code is executed as PaperScript, the script's scope is populated with
-  * all fields of the currently active {@link PaperScope} object, which within
-  * the script appear to be global.
-  *
-  * In a JavaScript context, only the {@link paper} variable is added to the
-  * global scope, referencing the currently active {@link PaperScope} object,
-  * through which all properties and Paper.js classes can be accessed.
-  */
+/**
+ * @name _global_
+ * @namespace
+ *
+ * When code is executed as PaperScript, the script's scope is populated with
+ * all fields of the currently active {@link PaperScope} object, which within
+ * the script appear to be global.
+ *
+ * In a JavaScript context, only the {@link paper} variable is added to the
+ * global scope, referencing the currently active {@link PaperScope} object,
+ * through which all properties and Paper.js classes can be accessed.
+ */
 /** @scope _global_ */{
 
 /**

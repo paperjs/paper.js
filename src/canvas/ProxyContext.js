@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
- /**
+/**
  * @name ProxyContext
  *
  * @class The ProxyContext is a helper class that helps Canvas debugging

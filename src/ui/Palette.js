@@ -10,10 +10,10 @@
  * All rights reserved.
  */
 
- /**
-  * @name Palette
-  * @class
-  */
+/**
+ * @name Palette
+ * @class
+ */
 var Palette = Base.extend(Emitter, /** @lends Palette# */{
     _class: 'Palette',
     _events: [ 'onChange' ],

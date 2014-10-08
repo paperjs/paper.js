@@ -10,10 +10,10 @@
  * All rights reserved.
  */
 
- /**
-  * @name Component
-  * @class
-  */
+/**
+ * @name Component
+ * @class
+ */
 var Component = Base.extend(Emitter, /** @lends Component# */{
     _class: 'Component',
     _events: [ 'onChange', 'onClick' ],
