@@ -55,6 +55,7 @@ var Color = Base.extend(new function() {
         colorCache = {},
         colorCtx;
 
+    // TODO: Implement hsv, etc. CSS parsing!
     function fromCSS(string) {
         var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
             components;

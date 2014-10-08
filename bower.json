@@ -25,7 +25,7 @@
   ],
   "devDependencies": {
     "straps": "~1.6.0",
-    "acorn": "git://github.com/paperjs/acorn#0.3.2",
+    "acorn": "~0.4.0",
     "stats.js": "r11"
   },
   "keywords": [
