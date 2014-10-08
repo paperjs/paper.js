@@ -23,7 +23,6 @@ paper = new (PaperScope.inject(Base.exports, {
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
-    Http: Http,
     Key: Key
 }))();
 
