@@ -16,36 +16,6 @@
  * @private
  */
 var DomElement = new function() {
-    // We use a mix of Bootstrap.js legacy and Bonzo.js magic, ported over and
-    // furhter simplified to a subset actually required by Paper.js
-
-    var special = /^(checked|value|selected|disabled)$/i,
-        translated = { text: 'textContent', html: 'innerHTML' },
-        unitless = { lineHeight: 1, zoom: 1, zIndex: 1, opacity: 1 };
-
-    function create(nodes, parent) {
-        var res = [];
-        for (var i =  0, l = nodes && nodes.length; i < l;) {
-            var el = nodes[i++];
-            if (typeof el === 'string') {
-                el = document.createElement(el);
-            } else if (!el || !el.nodeType) {
-                continue;
-            }
-            // Do we have attributes?
-            if (Base.isPlainObject(nodes[i]))
-                DomElement.set(el, nodes[i++]);
-            // Do we have children?
-            if (Array.isArray(nodes[i]))
-                create(nodes[i++], el);
-            // Are we adding to a parent?
-            if (parent)
-                parent.appendChild(el);
-            res.push(el);
-        }
-        return res;
-    }
-
     // Handles both getting and setting of vendor prefix values
     function handlePrefix(el, name, set, value) {
         var prefixes = ['', 'webkit', 'moz', 'Moz', 'ms', 'o'],
@@ -65,133 +35,11 @@ var DomElement = new function() {
     }
 
     return /** @lends DomElement */{
-        create: function(nodes, parent) {
-            var isArray = Array.isArray(nodes),
-                res = create(isArray ? nodes : arguments,
-                        isArray ? parent : null);
-            return res.length === 1 ? res[0] : res;
-        },
-
-        find: function(selector, root) {
-            return (root || document).querySelector(selector);
-        },
-
-        findAll: function(selector, root) {
-            return (root || document).querySelectorAll(selector);
-        },
-
-        get: function(el, key) {
-            return el
-                ? special.test(key)
-                    ? key === 'value' || typeof el[key] !== 'string'
-                        ? el[key]
-                        : true
-                    : key in translated
-                        ? el[translated[key]]
-                        : el.getAttribute(key)
-                : null;
-        },
-
-        set: function(el, key, value) {
-            if (typeof key !== 'string') {
-                for (var name in key)
-                    if (key.hasOwnProperty(name))
-                        DomElement.set(el, name, key[name]);
-            } else if (!el || value == null) {
-                return el;
-            } else if (special.test(key)) {
-                el[key] = value;
-            } else if (key in translated) {
-                el[translated[key]] = value;
-            } else if (key === 'style') {
-                DomElement.setStyle(el, value);
-            } else if (key === 'events') {
-                DomEvent.add(el, value);
-            } else {
-                el.setAttribute(key, value);
-            }
-            return el;
-        },
-
         getStyles: function(el) {
             // If el is a document (nodeType == 9), use it directly
             var doc = el && el.nodeType !== 9 ? el.ownerDocument : el,
                 view = doc && doc.defaultView;
             return view && view.getComputedStyle(el, '');
-        },
-
-        getStyle: function(el, key) {
-            return el && el.style[key] || DomElement.getStyles(el)[key] || null;
-        },
-
-        setStyle: function(el, key, value) {
-            if (typeof key !== 'string') {
-                for (var name in key)
-                    if (key.hasOwnProperty(name))
-                        DomElement.setStyle(el, name, key[name]);
-            } else {
-                if (/^-?[\d\.]+$/.test(value) && !(key in unitless))
-                    value += 'px';
-                el.style[key] = value;
-            }
-            return el;
-        },
-
-        hasClass: function(el, cls) {
-            return el && new RegExp('\\s*' + cls + '\\s*').test(el.className);
-        },
-
-        addClass: function(el, cls) {
-            if (el) {
-                el.className = (el.className + ' ' + cls).trim();
-            }
-        },
-
-        removeClass: function(el, cls) {
-            if (el) {
-                el.className = el.className.replace(
-                    new RegExp('\\s*' + cls + '\\s*'), ' ').trim();
-            }
-        },
-
-        toggleClass: function(el, cls, state) {
-            DomElement[(state === undefined ? !DomElement.hasClass(el, cls)
-                    : state) ? 'addClass' : 'removeClass'](el, cls);
-        },
-
-        remove: function(el) {
-            if (el.parentNode)
-                el.parentNode.removeChild(el);
-        },
-
-        addChildren: function(el, children) {
-            // We can use the create() function for this too!
-            return create(children, el);
-        },
-
-        removeChildren: function(el) {
-            while (el.firstChild)
-                el.removeChild(el.firstChild);
-        },
-
-        addChild: function(el, child) {
-            return create(child, el)[0];
-        },
-
-        insertBefore: function(ref, el) {
-            return ref.parentNode.insertBefore(create(el)[0], ref);
-        },
-
-        insertAfter: function(ref, el) {
-            var parent = ref.parentNode,
-                next = ref.nextSibling,
-                el = create(el)[0];
-            if (next) {
-                parent.insertBefore(el, next);
-            } else {
-                parent.appendChild(el);
-            }
-            return el;
         },
 
         getBounds: function(el, viewport) {
