@@ -1751,8 +1751,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
 
     /**
-     * Calculates the tangent to the path at the given offset as a vector
-     * point.
+     * Calculates the tangent vector of the path at the given offset.
      *
      * @name Path#getTangentAt
      * @param {Number} offset the offset on the path, where {@code 0} is at
@@ -1822,7 +1821,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
 
     /**
-     * Calculates the normal to the path at the given offset as a vector point.
+     * Calculates the normal vector of the path at the given offset.
      *
      * @name Path#getNormalAt
      * @param {Number} offset the offset on the path, where {@code 0} is at
@@ -1890,6 +1889,19 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     });
      * }
      */
+
+    /**
+     * Calculates the curvature of the path at the given offset. Curvatures
+     * indicate how sharply a path changes direction. A straight line has zero
+     * curvature, where as a circle has a constant curvature. The path's radius
+     * at the given offset is the reciprocal value of its curvature.
+     *
+     * @name Path#getCurvatureAt
+     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * the beginning of the path and {@link Path#length} at the end.
+     * @param {Boolean} [isParameter=false]
+     * @return {Point} the normal vector at the given offset
+     *
 
     /**
      * Returns the nearest location on the path to the specified point.

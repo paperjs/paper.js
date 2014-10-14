@@ -899,7 +899,7 @@ statics: {
     }
 
     /**
-     * Returns the point on the curve at the specified offset.
+     * Calculates the point on the curve at the given offset.
      *
      * @name Curve#getPointAt
      * @function
@@ -911,7 +911,7 @@ statics: {
      */
 
     /**
-     * Returns the tangent vector of the curve at the specified position.
+     * Calculates the tangent vector of the curve at the given offset.
      *
      * @name Curve#getTangentAt
      * @function
@@ -923,7 +923,7 @@ statics: {
      */
 
     /**
-     * Returns the normal vector of the curve at the specified position.
+     * Calculates the normal vector of the curve at the given offset.
      *
      * @name Curve#getNormalAt
      * @function
@@ -935,9 +935,10 @@ statics: {
      */
 
     /**
-     * Returns the curvature vector of the curve at the specified position.
-     * Curvatures indicate how sharply a curve changes direction. A straight
-     * line has zero curvature where as a circle has a constant curvature.
+     * Calculates the curvature of the curve at the given offset. Curvatures
+     * indicate how sharply a curve changes direction. A straight line has zero
+     * curvature, where as a circle has a constant curvature. The curve's radius
+     * at the given offset is the reciprocal value of its curvature.
      *
      * @name Curve#getCurvatureAt
      * @function
