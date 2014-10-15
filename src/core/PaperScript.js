@@ -138,6 +138,12 @@ Base.exports.PaperScript = (function() {
                     getOffset(node.range[1]));
         }
 
+        // Returns the code between two nodes, e.g. an operator and white-space.
+        function getBetween(left, right) {
+            return code.substring(getOffset(left.range[1]),
+                    getOffset(right.range[0]));
+        }
+
         // Replaces the node's code with a new version and keeps insertions
         // information up-to-date.
         function replaceCode(node, str) {
@@ -188,9 +194,16 @@ Base.exports.PaperScript = (function() {
                 if (node.operator in binaryOperators
                         && node.left.type !== 'Literal') {
                     var left = getCode(node.left),
-                        right = getCode(node.right);
-                    replaceCode(node, '__$__(' + left + ', "' + node.operator
-                            + '", ' + right + ')');
+                        right = getCode(node.right),
+                        between = getBetween(node.left, node.right),
+                        operator = node.operator;
+                    replaceCode(node, '__$__(' + left + ','
+                            // To preserve line-breaks, get the code in between
+                            // left & right, and replace the occurrence of the
+                            // operator with its string counterpart:
+                            + between.replace(new RegExp('\\' + operator),
+                                '"' + operator + '"')
+                            + ', ' + right + ')');
                 }
                 break;
             case 'UpdateExpression': // a++, a--, ++a, --a
