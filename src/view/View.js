@@ -559,8 +559,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * Attach an event handler to the view.
      *
-     * @name View#attach
-     * @alias View#on
+     * @name View#on
      * @function
      * @param {String('frame', 'resize')} type the event type
      * @param {Function} function The function to be called when the event
@@ -582,8 +581,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * Attach one or more event handlers to the view.
      *
-     * @name View#attach
-     * @alias View#on
+     * @name View#on
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code frame, resize}.
