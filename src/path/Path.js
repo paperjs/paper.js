@@ -1692,6 +1692,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Calculates the point on the path at the given offset.
      *
      * @name Path#getPointAt
+     * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1754,6 +1755,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Calculates the tangent vector of the path at the given offset.
      *
      * @name Path#getTangentAt
+     * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1824,6 +1826,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Calculates the normal vector of the path at the given offset.
      *
      * @name Path#getNormalAt
+     * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
@@ -1897,6 +1900,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * at the given offset is the reciprocal value of its curvature.
      *
      * @name Path#getCurvatureAt
+     * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
