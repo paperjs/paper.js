@@ -1775,20 +1775,37 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
+     * @name Item#matches
+     *
      * {@grouptitle Fetching and matching items}
      *
-     * Check whether the item matches the properties in the specified object.
-     * Extended matching is possible by providing a compare function or
-     * regular expression. Matching points, colors only work as a comparison
-     * of the full object, not partial matching (e.g. only providing the x-
-     * coordinate to match all points with that x-value). Partial matching
-     * does work for {@link Item#data}.
+     * Checks whether the item matches the criteria described by the given
+     * object, by iterating over all of its properties and matching against
+     * their values through {@link #matches(name, compare)}.
      *
      * @see Project#getItems(match)
-     * @param {Object} match The criteria to match against.
-     * @return {@true if the item matches the criteria}
+     * @param {Object} match the criteria to match against.
+     * @return {@true if the item matches all the criteria}
      */
-    matches: function(match) {
+    /**
+     * @name Item#matches
+     *
+     * {@grouptitle Fetching and matching items}
+     *
+     * Checks whether the item matches the given criteria. Extended matching is
+     * possible by providing a compare function or a regular expression.
+     * Matching points, colors only work as a comparison of the full object, not
+     * partial matching (e.g. only providing the x-coordinate to match all
+     * points with that x-value). Partial matching does work for
+     * {@link Item#data}.
+     *
+     * @see Project#getItems(match)
+     * @param {String} name the name of the state to match against.
+     * @param {Object} compare the value, function or regular expression to
+     * compare against.
+     * @return {@true if the item matches the state}
+     */
+    matches: function(name, compare) {
         // matchObject() is used to match against objects in a nested manner.
         // This is useful for matching against Item#data.
         function matchObject(obj1, obj2) {
@@ -1806,29 +1823,35 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
             return true;
         }
-        for (var key in match) {
-            if (match.hasOwnProperty(key)) {
-                var value = this[key],
-                    compare = match[key];
-                // Support legacy Item#type property to match hyphenated
-                // class-names.
-                if (value === undefined && key === 'type')
-                    value = Base.hyphenate(this._class);
-                if (/^(constructor|class)$/.test(key)) {
-                    if (!(this instanceof compare))
-                        return false;
-                } else if (compare instanceof RegExp) {
-                    if (!compare.test(value))
-                        return false;
-                } else if (typeof compare === 'function') {
-                    if (!compare(value))
-                        return false;
-                } else if (Base.isPlainObject(compare)) {
-                    if (!matchObject(compare, value))
-                        return false;
-                } else if (!Base.equals(value, compare)) {
+        if (arguments.length === 1) {
+            // `name` is the match object, not a string
+            for (var key in name) {
+                if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
-                }
+            }
+        } else {
+            var value = this[name];
+            // Support legacy Item#type property to match hyphenated
+            // class-names.
+            if (value === undefined && name === 'type')
+                value = Base.hyphenate(this._class);
+            if (/^(constructor|class)$/.test(name)) {
+                if (!(this instanceof compare))
+                    return false;
+            } else if (compare instanceof RegExp) {
+                if (!compare.test(value))
+                    return false;
+            } else if (typeof compare === 'function') {
+                if (!compare(value))
+                    return false;
+            } else if (typeof value === 'function') {
+                if (!value.call(this, compare))
+                    return false;
+            } else if (Base.isPlainObject(compare)) {
+                if (!matchObject(compare, value))
+                    return false;
+            } else if (!Base.equals(value, compare)) {
+                return false;
             }
         }
         return true;
