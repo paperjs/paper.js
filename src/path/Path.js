@@ -1900,7 +1900,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end.
      * @param {Boolean} [isParameter=false]
-     * @return {Point} the normal vector at the given offset
+     * @return {Number} the normal vector at the given offset
      *
 
     /**

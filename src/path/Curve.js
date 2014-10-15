@@ -946,7 +946,7 @@ statics: {
      *        parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      *        is a curve time parameter.
-     * @return {Point} the curvature of the curve at the specified offset.
+     * @return {Number} the curvature of the curve at the specified offset.
      */
 }),
 new function() { // Scope for methods that require numerical integration
