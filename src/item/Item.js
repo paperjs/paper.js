@@ -1775,29 +1775,29 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * @name Item#matches
-     *
      * {@grouptitle Fetching and matching items}
      *
      * Checks whether the item matches the criteria described by the given
      * object, by iterating over all of its properties and matching against
      * their values through {@link #matches(name, compare)}.
      *
+     * @name #matches
+     * @function
+     *
      * @see Project#getItems(match)
      * @param {Object} match the criteria to match against.
      * @return {@true if the item matches all the criteria}
      */
     /**
-     * @name Item#matches
-     *
-     * {@grouptitle Fetching and matching items}
-     *
      * Checks whether the item matches the given criteria. Extended matching is
      * possible by providing a compare function or a regular expression.
      * Matching points, colors only work as a comparison of the full object, not
      * partial matching (e.g. only providing the x-coordinate to match all
      * points with that x-value). Partial matching does work for
      * {@link Item#data}.
+     *
+     * @name #matches
+     * @function
      *
      * @see Project#getItems(match)
      * @param {String} name the name of the state to match against.
