@@ -554,7 +554,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return {Item[]}
      */
     getItems: function(match) {
-        return Item._getItems(this.layers, match, true);
+        return Item._getItems(this.layers, match);
     },
 
     /**
@@ -763,7 +763,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return {Item}
      */
     getItem: function(match) {
-        return Item._getItems(this.layers, match, false);
+        return Item._getItems(this.layers, match, true)[0] || null;
     },
 
     /**

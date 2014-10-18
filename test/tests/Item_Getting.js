@@ -15,18 +15,16 @@ module('Getting and Matching Items');
 test('Item#getItems()', function() {
     var group = new Group([new Path({ selected: true }), new Raster()]);
     equals(function() {
-        var items = group.getItems({
+        return group.getItems({
             type: 'path'
-        });
-        return items.length == 1;
-    }, true);
+        }).length;
+    }, 1);
 
     equals(function() {
-        var items = group.getItems({
+        return group.getItems({
             selected: true
-        });
-        return items.length == 1;
-    }, true);
+        }).length;
+    }, 1);
 });
 
 test('Item#matches()', function() {
@@ -47,48 +45,48 @@ test('Item#matches()', function() {
 test('Project#getItems()', function() {
     var layer = new Layer();
 
+    var matches = paper.project.getItems({
+        type: 'layer'
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            type: 'layer'
-        });
         return matches.length == 1 && matches[0] == layer;
     }, true);
 
+    var matches = paper.project.getItems({
+        class: Item
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            class: Item
-        });
         return matches.length == 1 && matches[0] == layer;
     }, true);
 
     var path = new Path();
+    var matches = paper.project.getItems({
+        type: 'path'
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            type: 'path'
-        });
         return matches.length == 1 && matches[0] == path;
     }, true);
 
+    var matches = paper.project.getItems({
+        constructor: Path
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            constructor: Path
-        });
         return matches.length == 1 && matches[0] === path;
     }, true);
 
     var group = new Group();
+    var matches = paper.project.getItems({
+        type: 'group'
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            type: 'group'
-        });
         return matches.length == 1 && matches[0] === group
     }, true);
 
     var raster = new Raster();
+    var matches = paper.project.getItems({
+        type: 'raster'
+    });
     equals(function() {
-        var matches = paper.project.getItems({
-            type: 'raster'
-        });
         return matches.length == 1 && matches[0] === raster
     }, true);
 
@@ -98,15 +96,15 @@ test('Project#getItems()', function() {
         }).length;
     }, 0);
 
+    raster.selected = true;
     equals(function() {
-        raster.selected = true;
         return paper.project.getItems({
             selected: true
         }).length;
     }, 2);
 
+    raster.selected = true;
     equals(function() {
-        raster.selected = true;
         return paper.project.getItems({
             selected: true,
             type: 'raster'
@@ -120,12 +118,12 @@ test('Project#getItems() with compare function', function() {
         opacity: 0.5
     });
 
+    var items = paper.project.getItems({
+        opacity: function(value) {
+            return value < 1
+        }
+    });
     equals(function() {
-        var items = paper.project.getItems({
-            opacity: function(value) {
-                return value < 1
-            }
-        });
         return items.length == 1 && items[0] == path;
     }, true);
 });
@@ -136,11 +134,11 @@ test('Project#getItems() with specific property value', function() {
         opacity: 0.5
     });
 
+    var items = paper.project.getItems({
+        opacity: 1,
+        type: 'path'
+    });
     equals(function() {
-        var items = paper.project.getItems({
-            opacity: 1,
-            type: 'path'
-        });
         return items.length == 1 && items[0] == path;
     }, true);
 });
@@ -154,11 +152,11 @@ test('Project#getItems() with color', function() {
         fillColor: 'black'
     });
 
+    var items = paper.project.getItems({
+        fillColor: 'red',
+        type: 'path'
+    });
     equals(function() {
-        var items = paper.project.getItems({
-            fillColor: 'red',
-            type: 'path'
-        });
         return items.length == 1 && items[0] == path;
     }, true);
 });
@@ -176,10 +174,10 @@ test('Project#getItems() with regex function', function() {
         name: 'starting'
     });
 
+    var items = paper.project.getItems({
+        name: /^start/g
+    });
     equals(function() {
-        var items = paper.project.getItems({
-            name: /^start/g
-        });
         return items.length == 1 && items[0] == path;
     }, true);
 

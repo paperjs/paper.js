@@ -1823,18 +1823,22 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
             return true;
         }
-        if (arguments.length === 1) {
+        if (typeof name === 'object') {
             // `name` is the match object, not a string
             for (var key in name) {
                 if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
             }
         } else {
-            var value = this[name];
-            // Support legacy Item#type property to match hyphenated
-            // class-names.
-            if (value === undefined && name === 'type')
-                value = Base.hyphenate(this._class);
+            var value = /^(empty|editable)$/.test(name)
+                    // Handle boolean test functions separately, by calling them
+                    // to get the value.
+                    ? this['is' + Base.capitalize(name)]()
+                    // Support legacy Item#type property to match hyphenated
+                    // class-names.
+                    : name === 'type'
+                        ? Base.hyphenate(this._class)
+                        : this[name];
             if (/^(constructor|class)$/.test(name)) {
                 if (!(this instanceof compare))
                     return false;
@@ -1843,9 +1847,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     return false;
             } else if (typeof compare === 'function') {
                 if (!compare(value))
-                    return false;
-            } else if (typeof value === 'function') {
-                if (!value.call(this, compare))
                     return false;
             } else if (Base.isPlainObject(compare)) {
                 if (!matchObject(compare, value))
@@ -1872,7 +1873,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item[]}
      */
     getItems: function(match) {
-        return Item._getItems(this._children, match, true);
+        return Item._getItems(this._children, match);
     },
 
     /**
@@ -1889,31 +1890,27 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item}
      */
     getItem: function(match) {
-        return Item._getItems(this._children, match, false);
+        return Item._getItems(this._children, match, true)[0] || null;
     },
 
     statics: {
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
-        _getItems: function _getItems(children, match, list) {
-            var items = list && [];
+        _getItems: function _getItems(children, match, firstOnly) {
+            var items = [];
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i];
                 if (child.matches(match)) {
-                    if (list) {
-                        items.push(child);
-                    } else {
-                        return child;
-                    }
+                    items.push(child);
+                    if (firstOnly)
+                        return items;
                 }
-                var res = _getItems(child._children, match, list);
-                if (list) {
-                    items.push.apply(items, res);
-                } else if (res) {
-                    return res;
-                }
+                var res = _getItems(child._children, match, firstOnly);
+                items.push.apply(items, res);
+                if (firstOnly && items.length > 0)
+                    return items;
             }
-            return list ? items : null;
+            return items;
         }
     }
 }, /** @lends Item# */{
