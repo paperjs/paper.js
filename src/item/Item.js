@@ -902,7 +902,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
             if (child._visible && !child.isEmpty()) {
-                var rect = child._getCachedBounds(getter, matrix, cacheItem);
+                var rect = child._getCachedBounds(getter,
+                        matrix && matrix.chain(child._matrix), cacheItem);
                 x1 = Math.min(rect.x, x1);
                 y1 = Math.min(rect.y, y1);
                 x2 = Math.max(rect.x + rect.width, x2);
@@ -975,21 +976,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         if (cache && this._bounds && this._bounds[cache])
             return this._bounds[cache].clone();
-        // If the result of concatenating the passed matrix with our internal
-        // one is an identity transformation, set it to null for faster
-        // processing
-        matrix = !matrix
-                ? _matrix
-                : _matrix
-                    ? matrix.chain(_matrix)
-                    : matrix;
         // If we're caching bounds on this item, pass it on as cacheItem, so the
         // children can setup the _boundsCache structures for it.
         // getInternalBounds is getBounds untransformed. Do not replace earlier,
         // so we can cache both separately, since they're not in the same
         // transformation space!
-        var bounds = this._getBounds(internalGetter || getter, matrix,
-                cacheItem);
+        var bounds = this._getBounds(internalGetter || getter,
+                matrix || _matrix, cacheItem);
         // If we can cache the result, update the _bounds cache structure
         // before returning
         if (cache) {
@@ -3649,10 +3642,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Keep calculating the current global matrix, by keeping a history
         // and pushing / popping as we go along.
         var matrices = param.matrices,
-            parentMatrix = matrices[matrices.length - 1],
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = parentMatrix.chain(matrix);
+            globalMatrix = matrices[matrices.length - 1].chain(matrix);
         // If this item is not invertible, do not draw it, since it would cause
         // empty ctx.currentPath and mess up caching. It appears to also be a
         // good idea generally to not draw in such circumstances, e.g. SVG
@@ -3701,7 +3693,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
-            var bounds = this.getStrokeBounds(getViewMatrix(parentMatrix));
+            var bounds = this.getStrokeBounds(getViewMatrix(globalMatrix));
             if (!bounds.width || !bounds.height)
                 return;
             // Store previous offset and save the main context, so we can
