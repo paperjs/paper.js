@@ -593,15 +593,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Exports (serializes) the project with all its layers and child items to
      * a JSON data string.
      *
-     * The options object offers control over some aspects of the JSON export:
+     * @name Project#exportJSON
+     * @function
      *
      * @option options.asString {Boolean} whether the JSON is returned as a
      * {@code Object} or a {@code String}.
      * @option options.precision {Number} the amount of fractional digits in
      * numbers used in JSON data.
      *
-     * @name Project#exportJSON
-     * @function
      * @param {Object} [options={ asString: true, precision: 5 }] the
      * serialization options
      * @return {String} the exported JSON data
@@ -626,7 +625,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Exports the project with all its layers and child items as an SVG DOM,
      * all contained in one top level SVG group node.
      *
-     * The options object offers control over some aspects of the SVG export:
+     * @name Project#exportSVG
+     * @function
      *
      * @option options.asString {Boolean} whether a SVG node or a {@code String}
      * is to be returned.
@@ -635,8 +635,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option options.matchShapes {Boolean} whether path items should tried to
      * be converted to shape items, if their geometries can be made to match.
      *
-     * @name Project#exportSVG
-     * @function
      * @param {Object} [options={ asString: false, precision: 5,
      * matchShapes: false }] the export options.
      * @return {SVGElement} the project converted to an SVG node
@@ -649,13 +647,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
      *
-     * The options object offers control over some aspects of the SVG import:
+     * @name Project#importSVG
+     * @function
      *
      * @option options.expandShapes {Boolean} whether imported shape items
      * should be expanded to path items.
      *
-     * @name Project#importSVG
-     * @function
      * @param {SVGElement|String} svg the SVG content to import
      * @param {Object} [options={ expandShapes: false }] the import options
      * @return {Item} the imported Paper.js parent item

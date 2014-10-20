@@ -116,12 +116,12 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     /**
      * Gives access to paper's configurable settings.
      *
+     * @name PaperScope#settings
+     * @type Object
+     *
      * @option settings.applyMatrix {Boolean}
      * @option settings.handleSize {Number}
      * @option settings.hitTolerance {Number}
-     *
-     * @name PaperScope#settings
-     * @type Object
      */
 
     /**

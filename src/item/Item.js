@@ -2014,15 +2014,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Exports (serializes) the item with its content and child items to a JSON
      * data string.
      *
-     * The options object offers control over some aspects of the JSON export:
+     * @name Item#exportJSON
+     * @function
      *
      * @option options.asString {Boolean} whether the JSON is returned as a
      * {@code Object} or a {@code String}.
      * @option options.precision {Number} the amount of fractional digits in
      * numbers used in JSON data.
      *
-     * @name Item#exportJSON
-     * @function
      * @param {Object} [options={ asString: true, precision: 5 }] the
      * serialization options
      * @return {String} the exported JSON data
@@ -2050,7 +2049,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Exports the item with its content and child items as an SVG DOM.
      *
-     * The options object offers control over some aspects of the SVG export:
+     * @name Item#exportSVG
+     * @function
      *
      * @option options.asString {Boolean} whether a SVG node or a {@code String}
      * is to be returned.
@@ -2059,8 +2059,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option options.matchShapes {Boolean} whether path items should tried to
      * be converted to shape items, if their geometries can be made to match.
      *
-     * @name Item#exportSVG
-     * @function
      * @param {Object} [options={ asString: false, precision: 5,
      * matchShapes: false }] the export options.
      * @return {SVGElement} the item converted to an SVG node
@@ -2073,13 +2071,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Note that the item is not cleared first. You can call
      * {@link Item#removeChildren()} to do so.
      *
-     * The options object offers control over some aspects of the SVG import:
+     * @name Item#importSVG
+     * @function
      *
      * @option options.expandShapes {Boolean} whether imported shape items
      * should be expanded to path items.
      *
-     * @name Item#importSVG
-     * @function
      * @param {SVGElement|String} svg the SVG content to import
      * @param {Object} [options={ expandShapes: false }] the import options
      * @return {Item} the imported Paper.js parent item
