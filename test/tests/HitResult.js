@@ -46,7 +46,7 @@ test('the item on top should be returned', function() {
 test('hitting a stroked path', function() {
     var path = new Path([0, 0], [50, 0]);
 
-    // We are hit testing with an offset of 5pt on a path with a stroke width
+    // We are hit-testing with an offset of 5pt on a path with a stroke width
     // of 10:
 
     var hitResult = paper.project.hitTest([25, 5]);
@@ -260,7 +260,7 @@ test('hitting path handles (2)', function() {
     }
 });
 
-test('hit testing stroke on segment point of a path', function() {
+test('hit-testing stroke on segment point of a path', function() {
     var path = new Path([0, 0], [50, 50], [100, 0]);
     path.strokeColor = 'black';
     path.closed = true;
@@ -273,7 +273,7 @@ test('hit testing stroke on segment point of a path', function() {
     } catch (e) {
         error = e;
     }
-    var description = 'This hit test should not throw an error';
+    var description = 'This hit-test should not throw an error';
     if (error)
         description += ': ' + error;
     equals(error == null, true, description);
@@ -291,7 +291,7 @@ test('Hit testing a point that is extremely close to a curve', function() {
     } catch(e) {
         error = e;
     }
-    var description = 'This hit test should not throw an error';
+    var description = 'This hit-test should not throw an error';
     if (error)
         description += ': ' + error;
     equals(error == null, true, description);
@@ -475,7 +475,7 @@ test('hitting path with a text item in the project', function() {
 
 });
 
-test('Check hit testing of items that come after a transformed group.', function() {
+test('Check hit-testing of items that come after a transformed group.', function() {
     paper.project.currentStyle.fillColor = 'black';
     var point1 = new Point(100, 100);
     var point2 = new Point(140, 100);
@@ -509,37 +509,37 @@ test('Check hit testing of items that come after a transformed group.', function
     hitResult = paper.project.hitTest(point1);
     equals(function() {
         return hitResult && hitResult.item;
-    }, path1, 'After translating group, hit testing project for point1 should give us path1.');
+    }, path1, 'After translating group, hit-testing project for point1 should give us path1.');
 
     hitResult = paper.project.hitTest(point2.add(delta));
     equals(function() {
         return hitResult && hitResult.item;
-    }, path2, 'After translating group, hit testing project for point2 + delta should give us path2.');
+    }, path2, 'After translating group, hit-testing project for point2 + delta should give us path2.');
 
     hitResult = path1.hitTest(point1);
     equals(function() {
         return hitResult && hitResult.item;
-    }, path1, 'After translating group, hit testing path1 for point1 should give us path1.');
+    }, path1, 'After translating group, hit-testing path1 for point1 should give us path1.');
 
     group.moveBelow(path1);
 
     hitResult = paper.project.hitTest(point1);
     equals(function() {
         return hitResult && hitResult.item;
-    }, path1, 'After moving group before path1, hit testing project for point1 should give us path1.');
+    }, path1, 'After moving group before path1, hit-testing project for point1 should give us path1.');
 
     hitResult = paper.project.hitTest(point2.add(delta));
     equals(function() {
         return hitResult && hitResult.item;
-    }, path2, 'After moving group before path1, hit testing project for point2 + delta should give us path2.');
+    }, path2, 'After moving group before path1, hit-testing project for point2 + delta should give us path2.');
 
     hitResult = path1.hitTest(point1);
     equals(function() {
         return hitResult && hitResult.item;
-    }, path1, 'After moving group before path1, hit testing path1 for point1 should give us path1.');
+    }, path1, 'After moving group before path1, hit-testing path1 for point1 should give us path1.');
 });
 
-test('Check hit testing of placed symbols.', function() {
+test('Check hit-testing of placed symbols.', function() {
     var point = new Point(100, 100);
 
     var path = new Path.Circle([0, 0], 20);

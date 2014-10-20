@@ -510,11 +510,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * The function receives an event object which contains information about
      * the frame event:
      *
-     * <b>{@code event.count}</b>: the number of times the frame event was
+     * @option event.count {Number} the number of times the frame event was
      * fired.
-     * <b>{@code event.time}</b>: the total amount of time passed since the
+     * @option event.time {Number} the total amount of time passed since the
      * first frame event in seconds.
-     * <b>{@code event.delta}</b>: the time passed in seconds since the last
+     * @code event.delta {Number} the time passed in seconds since the last
      * frame event.
      *
      * @example {@paperscript}

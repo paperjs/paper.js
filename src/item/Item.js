@@ -1665,38 +1665,38 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Perform a hit test on the item (and its children, if it is a
+     * Perform a hit-test on the item (and its children, if it is a
      * {@link Group} or {@link Layer}) at the location of the specified point.
      *
-     * The options object allows you to control the specifics of the hit test
+     * The options object allows you to control the specifics of the hit-test
      * and may contain a combination of the following values:
      *
-     * {@option options.tolerance:Number the tolerance of the hit test in
+     * @option options.tolerance {Number} the tolerance of the hit-test in
      * points. Can also be controlled through
-     * {@link Project#options}{@code .hitTolerance}.}
-     * {@option options.class:{Function} Only hit test again a certain item
-     * class and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc.}
-     * {@option options.fill:{Boolean} hit test the fill of items.}
-     * {@option options.stroke:{Boolean} hit test the stroke of path.}
-     * items, taking into account the setting of stroke color and width.}
-     * {@option options.segments:{Boolean} hit test for {@link Segment#point} of
-     * {@link Path} items.}
-     * {@option options.curves:{Boolean} hit test the curves of path items,
-     * without taking the stroke color or width into account.}
-     * {@option options.handles:{Boolean} hit test for the handles.}
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.}
-     * {@option options.ends:{Boolean} only hit test for the first or
-     * last segment points of open path items.}
-     * {@option options.bounds:{Boolean} hit test the corners and
-     * side-centers of the bounding rectangle of items ({@link Item#bounds}).}
-     * {@option options.center:{Boolean} hit test the {@link Rectangle#center}
-     * of the bounding rectangle of items ({@link Item#bounds}).}
-     * {@option options.guides:{Boolean} hit test items that have
-     * {@link Item#guide} set to {@code true}.}
-     * {@option options.selected:{Boolean} only hit selected items.}
+     * {@link PaperScope#settings}{@code .hitTolerance}.
+     * @option options.class {Function} only hit-test again a certain item class
+     * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
+     * Shape, Raster, PlacedSymbol, PointText}, etc.
+     * @option options.fill {Boolean} hit-test the fill of items.
+     * @option options.stroke {Boolean} hit-test the stroke of path items,
+     * taking into account the setting of stroke color and width.
+     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
+     * {@link Path} items.
+     * @option options.curves {Boolean} hit-test the curves of path items,
+     * without taking the stroke color or width into account.
+     * @option options.handles {Boolean} hit-test for the handles.
+     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+     * @option options.ends {Boolean} only hit-test for the first or last
+     * segment points of open path items.
+     * @option options.bounds {Boolean} hit-test the corners and side-centers of
+     * the bounding rectangle of items ({@link Item#bounds}).
+     * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
+     * the bounding rectangle of items ({@link Item#bounds}).
+     * @option options.guides {Boolean} hit-test items that have
+     * {@link Item#guide} set to {@code true}.
+     * @option options.selected {Boolean} only hit selected items.
      *
-     * @param {Point} point The point where the hit test should be performed
+     * @param {Point} point The point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      * tolerance: 2 }]
      * @return {HitResult} a hit result object that contains more
@@ -1812,6 +1812,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks whether the item matches the criteria described by the given
      * object, by iterating over all of its properties and matching against
      * their values through {@link #matches(name, compare)}.
+     *
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
@@ -1829,6 +1830,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * partial matching (e.g. only providing the x-coordinate to match all
      * points with that x-value). Partial matching does work for
      * {@link Item#data}.
+     *
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
@@ -1960,11 +1962,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Exports (serializes) the item with its content and child items to a JSON
      * data string.
      *
-     * The options object offers control over some aspects of the SVG export:
-     * {@option options.asString:{Boolean} whether the JSON is returned
-     * as a {@code Object} or a {@code String}.}
-     * {@option options.precision:{Number} the amount of fractional
-     * digits in numbers used in JSON data.}
+     * The options object offers control over some aspects of the JSON export:
+     *
+     * @option options.asString {Boolean} whether the JSON is returned as a
+     * {@code Object} or a {@code String}.
+     * @option options.precision {Number} the amount of fractional digits in
+     * numbers used in JSON data.
      *
      * @name Item#exportJSON
      * @function
@@ -1997,12 +2000,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * The options object offers control over some aspects of the SVG export:
      *
-     * {@option options.asString:{Boolean} whether a SVG node or a
-     * {@code String} is to be returned.}
-     * {@option options.precision:{Number} the amount of fractional digits in
-     * numbers used in SVG data.}
-     * {@option options.matchShapes:{Boolean} whether path items should tried to
-     * be converted to shape items, if their geometries can be made to match.}
+     * @option options.asString {Boolean} whether a SVG node or a {@code String}
+     * is to be returned.
+     * @option options.precision {Number} the amount of fractional digits in
+     * numbers used in SVG data.
+     * @option options.matchShapes {Boolean} whether path items should tried to
+     * be converted to shape items, if their geometries can be made to match.
      *
      * @name Item#exportSVG
      * @function
@@ -2020,8 +2023,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * The options object offers control over some aspects of the SVG import:
      *
-     * {@option options.expandShapes:{Boolean} whether imported shape
-     * items should be expanded to path items.}
+     * @option options.expandShapes {Boolean} whether imported shape items
+     * should be expanded to path items.
      *
      * @name Item#importSVG
      * @function
@@ -3188,12 +3191,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function receives an event object which contains information about
      * the frame event:
      *
-     * {@option event.count:{Number} the number of times the frame event was
-     * fired.}
-     * {@option event.time:{Number} the total amount of time passed since the
-     * first frame event in seconds.}
-     * {@option event.delta:{Number} the time passed in seconds since the last
-     * frame event.}
+     * @option event.count {Number} the number of times the frame event was
+     * fired.
+     * @option event.time {Number} the total amount of time passed since the
+     * first frame event in seconds.
+     * @option event.delta {Number} the time passed in seconds since the last
+     * frame event.
      *
      * @see View#onFrame
      * @example {@paperscript}
