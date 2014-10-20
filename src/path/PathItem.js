@@ -59,26 +59,29 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     }
      * }
      */
-    getIntersections: function(path, _expand) {
+    getIntersections: function(path, _matrix, _expand) {
         // NOTE: For self-intersection, path is null. This means you can also
         // just call path.getIntersections() without an argument to get self
         // intersections.
+        // NOTE: The hidden argument _matrix is used internally to override the
+        // passed path's transformation matrix.
         if (this === path)
             path = null;
-        // First check the bounds of the two paths. If they don't intersect,
-        // we don't need to iterate through their curves.
-        if (path && !this.getBounds().touches(path.getBounds()))
-            return [];
         var locations = [],
             curves1 = this.getCurves(),
             curves2 = path ? path.getCurves() : curves1,
             matrix1 = this._matrix.orNullIfIdentity(),
-            matrix2 = path ? path._matrix.orNullIfIdentity() : matrix1,
+            matrix2 = path ? (_matrix || path._matrix).orNullIfIdentity()
+                : matrix1,
             length1 = curves1.length,
             length2 = path ? curves2.length : length1,
             values2 = [],
             MIN = /*#=*/Numerical.EPSILON,
             MAX = 1 - /*#=*/Numerical.EPSILON;
+        // First check the bounds of the two paths. If they don't intersect,
+        // we don't need to iterate through their curves.
+        if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
+            return [];
         for (var i = 0; i < length2; i++)
             values2[i] = curves2[i].getValues(matrix2);
         for (var i = 0; i < length1; i++) {

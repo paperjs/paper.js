@@ -59,7 +59,7 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
-        splitPath(_path1.getIntersections(_path2, true));
+        splitPath(_path1.getIntersections(_path2, null, true));
 
         var chain = [],
             windings = [],
