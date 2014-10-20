@@ -1625,6 +1625,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return point.isInside(this.getInternalBounds());
     },
 
+    // DOCS:
+    /**
+     * @param {Rectangle} rect the rectangle to check against
+     * @returns {Boolean}
+     */
+    isInside: function(/* rect */) {
+        return Rectangle.read(arguments).contains(this.getBounds());
+    },
+
     /**
      * Perform a hit test on the item (and its children, if it is a
      * {@link Group} or {@link Layer}) at the location of the specified point.

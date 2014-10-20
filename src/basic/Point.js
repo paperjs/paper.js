@@ -679,8 +679,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Rectangle} rect the rectangle to check against
      * @returns {Boolean} {@true if the point is inside the rectangle}
      */
-    isInside: function(rect) {
-        return rect.contains(this);
+    isInside: function(/* rect */) {
+        return Rectangle.read(arguments).contains(this);
     },
 
     /**
