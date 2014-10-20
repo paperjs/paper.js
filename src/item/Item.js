@@ -1626,6 +1626,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     // DOCS:
+    // TEST:
     /**
      * @param {Rectangle} rect the rectangle to check against
      * @returns {Boolean}
@@ -1634,6 +1635,23 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return Rectangle.read(arguments).contains(this.getBounds());
     },
 
+    // DOCS:
+    // TEST:
+    /**
+     * @param {Item} item the item to check against
+     * @returns {Boolean}
+     */
+    intersects: function(item, _matrix) {
+        if (!(item instanceof Item))
+            return false;
+        // Create a temporary rectangular path item with this item's bounds, and
+        // delegate the call to it.
+        return new Path.Rectangle({
+            rectangle: this.getInternalBounds(),
+            matrix: this._matrix,
+            insert: false,
+        }).intersects(item, _matrix);
+    },
     /**
      * Perform a hit test on the item (and its children, if it is a
      * {@link Group} or {@link Layer}) at the location of the specified point.
