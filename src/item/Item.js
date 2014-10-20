@@ -1635,6 +1635,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return Rectangle.read(arguments).contains(this.getBounds());
     },
 
+    // Internal helper function, used at the moment for intersects check only.
+    // TODO: Move #getIntersections() to Item, make it handle all type of items
+    // through _asPathItem(), and support Group items as well, taking nested
+    // matrices into account properly!
+    _asPathItem: function() {
+        // Creates a temporary rectangular path item with this item's bounds.
+        return new Path.Rectangle({
+            rectangle: this.getInternalBounds(),
+            matrix: this._matrix,
+            insert: false,
+        });
+    },
+
     // DOCS:
     // TEST:
     /**
@@ -1644,14 +1657,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
-        // Create a temporary rectangular path item with this item's bounds, and
-        // delegate the call to it.
-        return new Path.Rectangle({
-            rectangle: this.getInternalBounds(),
-            matrix: this._matrix,
-            insert: false,
-        }).intersects(item, _matrix);
+        // TODO: Optimize getIntersections(): We don't need all intersections
+        // when we're just curious about whether they intersect or not. Pass on
+        // an argument that let's it bail out after the first intersection.
+        return this._asPathItem().getIntersections(item._asPathItem(),
+                _matrix || item._matrix).length > 0;
     },
+
     /**
      * Perform a hit test on the item (and its children, if it is a
      * {@link Group} or {@link Layer}) at the location of the specified point.

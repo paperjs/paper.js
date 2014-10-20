@@ -181,20 +181,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         return locations;
     },
 
-    intersects: function(item, _matrix) {
-        if (!(item instanceof Item))
-            return false;
-        var other = item instanceof PathItem
-                ? item
-                // Create a temporary rectangular path item to check against.
-                : new Path.Rectangle({
-                    rectangle: item.getInternalBounds(),
-                    insert: false
-                });
-        // TODO: Optimize getIntersections(): We don't need all intersections
-        // when we're just curious about whether they intersect or not. Pass on
-        // an argument that let's it bail out after the first intersection.
-        return this.getIntersections(other, _matrix || item._matrix).length > 0;
+    _asPathItem: function() {
+        // See Item#_asPathItem()
+        return this;
     },
 
     /**
