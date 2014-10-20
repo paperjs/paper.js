@@ -1916,8 +1916,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @option match.inside {Rectangle} the rectangle in which the items need to
      * be fully contained.
-     * @option match.overlapping {Rectangle} the rectangle with which the need
-     * to be at least partly overlap.
+     * @option match.overlapping {Rectangle} the rectangle with which the items
+     * need to at least partly overlap.
      *
      * @see #matches(match)
      * @param {Object} match the criteria to match against.

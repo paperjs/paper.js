@@ -355,8 +355,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option match.inside {Rectangle} the rectangle in which the items need to
      * be fully contained.
-     * @option match.overlapping {Rectangle} the rectangle with which the need
-     * to be at least partly overlap.
+     * @option match.overlapping {Rectangle} the rectangle with which the items
+     * need to at least partly overlap.
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({
