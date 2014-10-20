@@ -1812,11 +1812,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks whether the item matches the criteria described by the given
      * object, by iterating over all of its properties and matching against
      * their values through {@link #matches(name, compare)}.
+     * See {@link Project#getItems(match)} for a selection of illustrated
+     * examples.
      *
-     * @name #matches
+     * @name Item#matches
      * @function
      *
-     * @see Project#getItems(match)
+     * @see #getItems(match)
      * @param {Object} match the criteria to match against.
      * @return {@true if the item matches all the criteria}
      */
@@ -1827,11 +1829,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * partial matching (e.g. only providing the x-coordinate to match all
      * points with that x-value). Partial matching does work for
      * {@link Item#data}.
+     * See {@link Project#getItems(match)} for a selection of illustrated
+     * examples.
      *
-     * @name #matches
+     * @name Item#matches
      * @function
      *
-     * @see Project#getItems(match)
+     * @see #getItems(match)
      * @param {String} name the name of the state to match against.
      * @param {Object} compare the value, function or regular expression to
      * compare against.
@@ -1899,10 +1903,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * of the full object, not partial matching (e.g. only providing the x-
      * coordinate to match all points with that x-value). Partial matching
      * does work for {@link Item#data}.
+     * See {@link Project#getItems(match)} for a selection of illustrated
+     * examples.
      *
-     * @see Project#getItems(match)
-     * @param {Object} match The criteria to match against.
-     * @return {Item[]}
+     * @see #matches(match)
+     * @param {Object} match the criteria to match against.
+     * @return {Item[]} the list of matching descendant items.
      */
     getItems: function(match) {
         return Item._getItems(this._children, match);
@@ -1916,10 +1922,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * of the full object, not partial matching (e.g. only providing the x-
      * coordinate to match all points with that x-value). Partial matching
      * does work for {@link Item#data}.
+     * See {@link Project#getItems(match)} for a selection of illustrated
+     * examples.
      *
-     * @see Project#getItem(match)
-     * @param {Object} match The criteria to match against.
-     * @return {Item}
+     * @see #getItems(match)
+     * @param {Object} match the criteria to match against.
+     * @return {Item} the first descendant item  matching the given criteria.
      */
     getItem: function(match) {
         return Item._getItems(this._children, match, true)[0] || null;
