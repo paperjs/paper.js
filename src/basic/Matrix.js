@@ -344,7 +344,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Concatenates an affine transform to this transform.
+     * Concatenates the given affine transform to this transform.
      *
      * @param {Matrix} mx the transform to concatenate
      * @return {Matrix} this affine transform
@@ -371,7 +371,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Pre-concatenates an affine transform to this transform.
+     * Pre-concatenates the given affine transform to this transform.
      *
      * @param {Matrix} mx the transform to preconcatenate
      * @return {Matrix} this affine transform
@@ -399,6 +399,13 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this;
     },
 
+    /**
+     * Returns a new instance of the result of the concatenation of the given
+     * affine transform with this transform.
+     *
+     * @param {Matrix} mx the transform to concatenate
+     * @return {Matrix} the newly created affine transform
+     */
     chain: function(mx) {
         var a1 = this._a,
             b1 = this._b,
@@ -468,9 +475,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @name Matrix#transform
      * @function
      * @param {Number[]} src the array containing the source points
-     *        as x, y value pairs
+     * as x, y value pairs
      * @param {Number[]} dst the array into which to store the transformed
-     *        point pairs
+     * point pairs
      * @param {Number} count the number of points to transform
      * @return {Number[]} the dst array, containing the transformed coordinates.
      */
@@ -717,12 +724,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Inverts the transformation of the matrix. If the matrix is not invertible
-     * (in which case {@link #isSingular()} returns true), {@code null } is
-     * returned.
+     * Creates the inversion of the transformation of the matrix and returns it
+     * as a new insteance. If the matrix is not invertible (in which case
+     * {@link #isSingular()} returns true), {@code null } is returned.
      *
      * @return {Matrix} the inverted matrix, or {@code null }, if the matrix is
-     *         singular
+     * singular
      */
     inverted: function() {
         var det = this._getDeterminant();
