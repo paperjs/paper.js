@@ -348,6 +348,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * of the full object, not partial matching (e.g. only providing the x-
      * coordinate to match all points with that x-value). Partial matching
      * does work for {@link Item#data}.
+     * Matching items against a rectangular area is also possible, by setting
+     * either {@code match.inside} or {@code match.overlapping} to a rectangle
+     * describing the area in which the items either have to be fully or partly
+     * contained.
+     *
+     * @option match.inside {Rectangle} the rectangle in which the items need to
+     * be fully contained.
+     * @option match.overlapping {Rectangle} the rectangle with which the need
+     * to be at least partly overlap.
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({

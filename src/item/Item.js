@@ -1905,15 +1905,26 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * of the full object, not partial matching (e.g. only providing the x-
      * coordinate to match all points with that x-value). Partial matching
      * does work for {@link Item#data}.
+     *
+     * Matching items against a rectangular area is also possible, by setting
+     * either {@code match.inside} or {@code match.overlapping} to a rectangle
+     * describing the area in which the items either have to be fully or partly
+     * contained.
+     *
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
+     *
+     * @option match.inside {Rectangle} the rectangle in which the items need to
+     * be fully contained.
+     * @option match.overlapping {Rectangle} the rectangle with which the need
+     * to be at least partly overlap.
      *
      * @see #matches(match)
      * @param {Object} match the criteria to match against.
      * @return {Item[]} the list of matching descendant items.
      */
     getItems: function(match) {
-        return Item._getItems(this._children, match);
+        return Item._getItems(this._children, match, this._matrix);
     },
 
     /**
@@ -1932,25 +1943,66 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the first descendant item  matching the given criteria.
      */
     getItem: function(match) {
-        return Item._getItems(this._children, match, true)[0] || null;
+        return Item._getItems(this._children, match, this._matrix, null, true)
+                [0] || null;
     },
 
     statics: {
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
-        _getItems: function _getItems(children, match, firstOnly) {
-            var items = [];
+        _getItems: function _getItems(children, match, matrix, param,
+                firstOnly) {
+            if (!param) {
+                // Set up a couple of "side-car" values for the recursive calls
+                // of _getItems below, mainly related to the handling of
+                // inside // overlapping:
+                var overlapping = match.overlapping,
+                    inside = match.inside,
+                    // If overlapping is set, we also perform the inside check:
+                    bounds = overlapping || inside,
+                    rect =  bounds && Rectangle.read([bounds]);
+                param = {
+                    items: [], // The list to contain the results.
+                    inside: rect,
+                    overlapping: overlapping && new Path.Rectangle({
+                        rectangle: rect,
+                        insert: false
+                    })
+                };
+                // Create a copy of the match object that doesn't contain the
+                // `inside` and `overlapping` properties.
+                if (bounds)
+                    match = Base.set({}, match,
+                            { inside: true, overlapping: true });
+            }
+            var items = param.items,
+                inside = param.inside,
+                overlapping = param.overlapping;
+            matrix = inside && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
-                var child = children[i];
-                if (child.matches(match)) {
+                var child = children[i],
+                    childMatrix = matrix && matrix.chain(child._matrix),
+                    add = true;
+                if (inside) {
+                    var bounds = child.getBounds(childMatrix);
+                    // Regardless of the setting of inside / overlapping, if the
+                    // bounds don't even overlap, we can skip this child.
+                    if (!inside.intersects(bounds))
+                        continue;
+                    if (!(inside && inside.contains(bounds)) && !(overlapping
+                            && overlapping.intersects(child, childMatrix)))
+                        add = false;
+                }
+                if (add && child.matches(match)) {
                     items.push(child);
                     if (firstOnly)
-                        return items;
+                        break;
                 }
-                var res = _getItems(child._children, match, firstOnly);
-                items.push.apply(items, res);
+                _getItems(child._children, match,
+                        childMatrix, param,
+                        firstOnly);
                 if (firstOnly && items.length > 0)
-                    return items;
+                    break;
             }
             return items;
         }
