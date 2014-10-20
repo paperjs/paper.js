@@ -188,3 +188,19 @@ test('Project#getItems() with regex function', function() {
         return items.length == 2;
     }, true);
 });
+
+test('Project#getItems() empty: true', function() {
+    var layer = new Layer();
+    var empty1 = new Path();
+    var empty2 = new Path();
+
+    equals(function() {
+        return layer.children.length;
+    }, 2);
+
+    equals(function() {
+        return paper.project.getItems({
+            empty: true
+        }).length;
+    }, 2);
+});
