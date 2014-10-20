@@ -292,33 +292,33 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * The options object allows you to control the specifics of the hit test
      * and may contain a combination of the following values:
-     * <b>options.tolerance:</b> {@code Number} – the tolerance of the hit test
-     * in points, can also be controlled through
-     * {@link Project#options}{@code .hitTolerance}.
-     * <b>options.class:</b> Only hit test again a certain item class and its
-     * sub-classes: {@code Group, Layer, Path, CompoundPath, Shape, Raster,
-     * PlacedSymbol, PointText}, etc.
-     * <b>options.fill:</b> {@code Boolean} – hit test the fill of items.
-     * <b>options.stroke:</b> {@code Boolean} – hit test the stroke of path
-     * items, taking into account the setting of stroke color and width.
-     * <b>options.segments:</b> {@code Boolean} – hit test for
-     * {@link Segment#point} of {@link Path} items.
-     * <b>options.curves:</b> {@code Boolean} – hit test the curves of path
-     * items, without taking the stroke color or width into account.
-     * <b>options.handles:</b> {@code Boolean} – hit test for the handles
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
-     * <b>options.ends:</b> {@code Boolean} – only hit test for the first or
-     * last segment points of open path items.
-     * <b>options.bounds:</b> {@code Boolean} – hit test the corners and
-     * side-centers of the bounding rectangle of items ({@link Item#bounds}).
-     * <b>options.center:</b> {@code Boolean} – hit test the
-     * {@link Rectangle#center} of the bounding rectangle of items
-     * ({@link Item#bounds}).
-     * <b>options.guides:</b> {@code Boolean} – hit test items that have
-     * {@link Item#guide} set to {@code true}.
-     * <b>options.selected:</b> {@code Boolean} – only hit selected items.
      *
-     * @param {Point} point The point where the hit test should be performed
+     * {@option options.tolerance:Number the tolerance of the hit test in
+     * points. Can also be controlled through
+     * {@link Project#options}{@code .hitTolerance}.}
+     * {@option options.class:{Function} Only hit test again a certain item
+     * class and its sub-classes: {@code Group, Layer, Path, CompoundPath,
+     * Shape, Raster, PlacedSymbol, PointText}, etc.}
+     * {@option options.fill:{Boolean} hit test the fill of items.}
+     * {@option options.stroke:{Boolean} hit test the stroke of path.}
+     * items, taking into account the setting of stroke color and width.}
+     * {@option options.segments:{Boolean} hit test for {@link Segment#point} of
+     * {@link Path} items.}
+     * {@option options.curves:{Boolean} hit test the curves of path items,
+     * without taking the stroke color or width into account.}
+     * {@option options.handles:{Boolean} hit test for the handles.}
+     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.}
+     * {@option options.ends:{Boolean} only hit test for the first or
+     * last segment points of open path items.}
+     * {@option options.bounds:{Boolean} hit test the corners and
+     * side-centers of the bounding rectangle of items ({@link Item#bounds}).}
+     * {@option options.center:{Boolean} hit test the {@link Rectangle#center}
+     * of the bounding rectangle of items ({@link Item#bounds}).}
+     * {@option options.guides:{Boolean} hit test items that have
+     * {@link Item#guide} set to {@code true}.}
+     * {@option options.selected:{Boolean} only hit selected items.}
+     *
+     * @param {Point} point the point where the hit test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      * tolerance: true }]
      * @return {HitResult} a hit result object that contains more
@@ -773,10 +773,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * a JSON data string.
      *
      * The options object offers control over some aspects of the SVG export:
-     * <b>options.asString:</b> {@code Boolean} – whether the JSON is returned
-     * as a {@code Object} or a {@code String}.
-     * <b>options.precision:</b> {@code Number} – the amount of fractional
-     * digits in numbers used in JSON data.
+     *
+     * {@option options.asString:{Boolean} whether a SVG node or a {@code String}
+     * is to be returned.}
+     * {@option options.precision:{Number} the amount of fractional digits in
+     * numbers used in SVG data.}
+     * {@option options.matchShapes:{Boolean} whether imported path items should
+     * tried to be converted to shape items, if their geometries match.}
      *
      * @name Project#exportJSON
      * @function
@@ -805,13 +808,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * all contained in one top level SVG group node.
      *
      * The options object offers control over some aspects of the SVG export:
-     * <b>options.asString:</b> {@code Boolean} – whether a SVG node or a
-     * {@code String} is to be returned.
-     * <b>options.precision:</b> {@code Number} – the amount of fractional
-     * digits in numbers used in SVG data.
-     * <b>options.matchShapes:</b> {@code Boolean} – whether imported path
-     * items should tried to be converted to shape items, if their geometries
-     * match.
+     *
+     * {@option options.asString:{Boolean} whether a SVG node or a
+     * {@code String} is to be returned.}
+     * {@option options.precision:{Number} the amount of fractional digits in
+     * numbers used in SVG data.}
+     * {@option options.matchShapes:{Boolean} whether path items should tried to
+     * be converted to shape items, if their geometries can be made to match.}
      *
      * @name Project#exportSVG
      * @function
@@ -828,8 +831,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * {@link Project#clear()} to do so.
      *
      * The options object offers control over some aspects of the SVG import:
-     * <b>options.expandShapes:</b> {@code Boolean} – whether imported shape
-     * items should be expanded to path items.
+     *
+     * {@option options.expandShapes:{Boolean} whether imported shape
+     * items should be expanded to path items.}
      *
      * @name Project#importSVG
      * @function
