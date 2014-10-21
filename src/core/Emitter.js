@@ -114,44 +114,42 @@ var Emitter = {
     statics: {
         // Override inject() so that sub-classes automatically add the accessors
         // for the event handler functions (e.g. #onMouseDown) for each property
-        inject: function inject(/* src, ... */) {
-            for (var i = 0, l = arguments.length; i < l; i++) {
-                var src = arguments[i],
-                    events = src._events;
-                if (events) {
-                    // events can either be an object literal or an array of
-                    // strings describing the on*-names.
-                    // We need to map lowercased event types to the event
-                    // entries represented by these on*-names in _events.
-                    var types = {};
-                    Base.each(events, function(entry, key) {
-                        var isString = typeof entry === 'string',
-                            name = isString ? entry : key,
-                            part = Base.capitalize(name),
-                            type = name.substring(2).toLowerCase();
-                        // Map the event type name to the event entry.
-                        types[type] = isString ? {} : entry;
-                        // Create getters and setters for the property
-                        // with the on*-name name:
-                        name = '_' + name;
-                        src['get' + part] = function() {
-                            return this[name];
-                        };
-                        src['set' + part] = function(func) {
-                            // Detach the previous event, if there was one.
-                            var prev = this[name];
-                            if (prev)
-                                this.off(type, prev);
-                            if (func)
-                                this.on(type, func);
-                            this[name] = func;
-                        };
-                    });
-                    src._eventTypes = types;
-                }
-                inject.base.call(this, src);
+        // NOTE: This needs to be defined in the first injection scope, as for
+        // simplicity, we don't loop through all of them here.
+        inject: function inject(src) {
+            var events = src._events;
+            if (events) {
+                // events can either be an object literal or an array of
+                // strings describing the on*-names.
+                // We need to map lowercased event types to the event
+                // entries represented by these on*-names in _events.
+                var types = {};
+                Base.each(events, function(entry, key) {
+                    var isString = typeof entry === 'string',
+                        name = isString ? entry : key,
+                        part = Base.capitalize(name),
+                        type = name.substring(2).toLowerCase();
+                    // Map the event type name to the event entry.
+                    types[type] = isString ? {} : entry;
+                    // Create getters and setters for the property
+                    // with the on*-name name:
+                    name = '_' + name;
+                    src['get' + part] = function() {
+                        return this[name];
+                    };
+                    src['set' + part] = function(func) {
+                        // Detach the previous event, if there was one.
+                        var prev = this[name];
+                        if (prev)
+                            this.off(type, prev);
+                        if (func)
+                            this.on(type, func);
+                        this[name] = func;
+                    };
+                });
+                src._eventTypes = types;
             }
-            return this;
+            return inject.base.apply(this, arguments);
         }
     }
 };
