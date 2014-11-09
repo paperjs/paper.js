@@ -1092,14 +1092,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @type Point
      * @bean
      */
-    getScaling: function() {
-        var decomposed = this._decomposed || this._decompose();
-        return decomposed && decomposed.scaling;
+    getScaling: function(_dontLink) {
+        var decomposed = this._decomposed || this._decompose(),
+            scaling = decomposed && decomposed.scaling,
+            ctor = _dontLink ? Point : LinkedPoint;
+        return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
     },
 
     setScaling: function(/* scaling */) {
         var current = this.getScaling();
-        if (current != null) {
+        if (current) {
             // Clone existing points since we're caching internally.
             var scaling = Point.read(arguments, 0, { clone: true }),
                 // See #setRotation() for preservation of _decomposed.
