@@ -166,7 +166,8 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            // Cache these values since they're used heavily in fatline code
+            if (Numerical.isZero(vx))
+                return x - px;
             var m = vy / vx, // slope
                 b = py - m * px; // y offset
             // Distance to the linear equation
