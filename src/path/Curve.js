@@ -520,8 +520,8 @@ statics: {
                 // http://stackoverflow.com/questions/10506868/
                 if (t < tolerance && c1x === p1x && c1y === p1y
                         || t > 1 - tolerance && c2x === p2x && c2y === p2y) {
-                    x = p2x - p1x;
-                    y = p2y - p1y;
+                    x = c2x - c1x;
+                    y = c2y - c1y;
                 } else if (t < tolerance) {
                     x = cx;
                     y = cy;
