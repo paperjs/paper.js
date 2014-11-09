@@ -122,7 +122,7 @@ var Line = Base.extend(/** @lends Line# */{
                 bvx -= bpx;
                 bvy -= bpy;
             }
-            var cross = bvy * avx - bvx * avy;
+            var cross = avx * bvy - avy * bvx;
             // Avoid divisions by 0, and errors when getting too close to 0
             if (!Numerical.isZero(cross)) {
                 var dx = apx - bpx,
@@ -131,8 +131,7 @@ var Line = Base.extend(/** @lends Line# */{
                     tb = (avx * dy - avy * dx) / cross;
                 // Check the ranges of t parameters if the line is not allowed
                 // to extend beyond the definition points.
-                if ((isInfinite || 0 <= ta && ta <= 1)
-                        && (isInfinite || 0 <= tb && tb <= 1))
+                if (isInfinite || 0 <= ta && ta <= 1 && 0 <= tb && tb <= 1)
                     return new Point(
                                 apx + ta * avx,
                                 apy + ta * avy);
