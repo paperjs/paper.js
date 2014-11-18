@@ -22,18 +22,18 @@ var Emitter = {
             Base.each(type, function(value, key) {
                 this.on(key, value);
             }, this);
-            return;
-        }
-        var entry = this._eventTypes[type];
-        if (entry) {
-            var handlers = this._callbacks = this._callbacks || {};
-            handlers = handlers[type] = handlers[type] || [];
-            if (handlers.indexOf(func) === -1) { // Not added yet, add it now
-                handlers.push(func);
-                // See if this is the first handler that we're attaching, and
-                // call install if defined.
-                if (entry.install && handlers.length == 1)
-                    entry.install.call(this, type);
+        } else {
+            var entry = this._eventTypes[type];
+            if (entry) {
+                var handlers = this._callbacks = this._callbacks || {};
+                handlers = handlers[type] = handlers[type] || [];
+                if (handlers.indexOf(func) === -1) { // Not added yet, add now.
+                    handlers.push(func);
+                    // See if this is the first handler that we're attaching,
+                    // and call install if defined.
+                    if (entry.install && handlers.length == 1)
+                        entry.install.call(this, type);
+                }
             }
         }
         return this;
