@@ -36,6 +36,7 @@ var Emitter = {
                     entry.install.call(this, type);
             }
         }
+        return this;
     },
 
     off: function(type, func) {
@@ -62,10 +63,11 @@ var Emitter = {
                 handlers.splice(index, 1);
             }
         }
+        return this;
     },
 
     once: function(type, func) {
-        this.on(type, function() {
+        return this.on(type, function() {
             func.apply(this, arguments);
             this.off(type, func);
         });

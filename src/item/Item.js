@@ -3555,6 +3555,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * type
      * @param {Function} function The function to be called when the event
      * occurs
+     * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -3584,7 +3585,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Object} object an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, click,
-     * doubleclick, mousemove, mouseenter, mouseleave}.
+     * doubleclick, mousemove, mouseenter, mouseleave}
+     * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -3643,6 +3645,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
      * type
      * @param {Function} function The function to be detached
+     * @return {Item} this item itself, so calls can be chained
      */
     /**
      * Detach one or more event handlers to the item.
@@ -3652,6 +3655,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Object} object an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, click,
      * doubleclick, mousemove, mouseenter, mouseleave}
+     * @return {Item} this item itself, so calls can be chained
      */
 
     /**
@@ -3663,7 +3667,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
      * type
      * @param {Object} event an object literal containing properties describing
-     * the event.
+     * the event
+     * @return {Boolean} {@true if the event had listeners}
      */
 
     /**

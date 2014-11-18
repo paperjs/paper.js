@@ -489,7 +489,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     // DOCS: projectToView(point), viewToProject(point)
     /**
-     * @param {Point}
+     * @param {Point} point
      * @return {Point}
      */
     projectToView: function(/* point */) {
@@ -497,7 +497,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
-     * @param {Point}
+     * @param {Point} point
      * @return {Point}
      */
     viewToProject: function(/* point */) {
@@ -564,6 +564,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {String('frame', 'resize')} type the event type
      * @param {Function} function The function to be called when the event
      * occurs
+     * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
      * // Create a rectangle shaped path with its top left point at:
@@ -585,6 +586,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code frame, resize}.
+     * @return {View} this view itself, so calls can be chained
+     *
+     * @example {@paperscript}
      * // Create a rectangle shaped path with its top left point at:
      * // {x: 50, y: 25} and a size of {width: 50, height: 50}
      * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
@@ -607,6 +611,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {String('frame', 'resize')} type the event type
      * @param {Function} function The function to be detached
+     * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
      * // Create a rectangle shaped path with its top left point at:
@@ -636,6 +641,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code frame, resize}
+     * @return {View} this view itself, so calls can be chained
      */
 
     /**
@@ -646,6 +652,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {String('frame', 'resize')} type the event type
      * @param {Object} event an object literal containing properties describing
      * the event.
+     * @return {Boolean} {@true if the event had listeners}
      */
 
     /**

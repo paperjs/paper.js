@@ -417,6 +417,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * 'keydown', 'keyup')} type the event type
      * @param {Function} function The function to be called when the event
      * occurs
+     * @return {Tool} this tool itself, so calls can be chained
      */
     /**
      * Attach one or more event handlers to the tool.
@@ -425,7 +426,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @function
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
-     * keydown, keyup}.
+     * keydown, keyup}
+     * @return {Tool} this tool itself, so calls can be chained
      */
 
     /**
@@ -436,6 +438,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
      * 'keydown', 'keyup')} type the event type
      * @param {Function} function The function to be detached
+     * @return {Tool} this tool itself, so calls can be chained
      */
     /**
      * Detach one or more event handlers from the tool.
@@ -445,6 +448,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @param {Object} param an object literal containing one or more of the
      * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
      * keydown, keyup}
+     * @return {Tool} this tool itself, so calls can be chained
      */
 
     /**
@@ -455,7 +459,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
      * 'keydown', 'keyup')} type the event type
      * @param {Object} event an object literal containing properties describing
-     * the event.
+     * the event
+     * @return {Boolean} {@true if the event had listeners}
      */
 
     /**
