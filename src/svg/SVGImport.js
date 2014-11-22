@@ -321,7 +321,7 @@ new function() {
             if (!transform)
                 break;
             // Command come before the '(', values after
-            var parts = transform.split('('),
+            var parts = transform.split(/\(\s*/),
                 command = parts[0],
                 v = parts[1].split(/[\s,]+/g);
             // Convert values to floats
