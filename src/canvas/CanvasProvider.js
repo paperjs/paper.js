@@ -27,10 +27,12 @@ var CanvasProvider = {
         } else {
 /*#*/ if (__options.environment == 'browser') {
             canvas = document.createElement('canvas');
-/*#*/ } else { // __options.environment != 'browser'
+/*#*/ } else if (__options.environment == 'node') {
             canvas = new Canvas(width, height);
             clear = false; // It's already cleared through constructor.
-/*#*/ } // __options.environment != 'browser'
+/*#*/ } else {
+            return { getContext: function() {} };
+/*#*/ } // __options.environment == 'worker'
         }
         var ctx = canvas.getContext('2d');
         // If they are not the same size, we don't need to clear them

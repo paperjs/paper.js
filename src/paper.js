@@ -127,7 +127,9 @@ var paper = new function(undefined) {
 /*#*/ }
 
 /*#*/ include('canvas/CanvasProvider.js');
-/*#*/ include('canvas/BlendMode.js');
+/*#*/ if (__options.environment != 'worker') {
+/*#*/     include('canvas/BlendMode.js');
+/*#*/ }
 /*#*/ if (__options.version == 'dev') {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }

@@ -107,14 +107,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
             style.top = offset.y + 'px';
             document.body.appendChild(stats);
         }
-/*#*/ } else if (__options.environment == 'node') {
+/*#*/ } else { // __options.environment != 'browser'
         // Sub-classes may set _pixelRatio first
         if (!this._pixelRatio)
             this._pixelRatio = 1;
         // Generate an id for this view
         this._id = 'view-' + View._id++;
         size = new Size(element.width, element.height);
-/*#*/ } // __options.environment == 'node'
+/*#*/ } // __options.environment != 'browser'
         // Keep track of views internally
         View._views.push(this);
         // Link this id to our view

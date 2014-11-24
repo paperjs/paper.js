@@ -33,6 +33,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      */
     initialize: function CanvasView(project, canvas) {
         // Handle canvas argument
+/*#*/ if (__options.environment != 'worker') {
         if (!(canvas instanceof HTMLCanvasElement)) {
             // See if the arguments describe the view size:
             var size = Size.read(arguments);
@@ -43,6 +44,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             canvas = CanvasProvider.getCanvas(size);
         }
         this._context = canvas.getContext('2d');
+/*#*/ } // __options.environment != 'worker'
         // Have Item count installed mouse events.
         this._eventCounters = {};
         this._pixelRatio = 1;

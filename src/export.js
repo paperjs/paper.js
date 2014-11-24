@@ -13,11 +13,12 @@
 // First add Base and a couple of other objects that are not automatically
 // exported to exports (Numerical, Key, etc), then inject all exports into
 // PaperScope, and create the initial paper object, all in one statement:
-/*#*/ if (__options.environment == 'browser') {
+/*#*/ if (__options.environment != 'node') {
 
 // NOTE: Do not create local variable `var paper` since it would shield the
 // global one in the whole scope.
 
+/*#*/ if (__options.environment == 'browser') {
 paper = new (PaperScope.inject(Base.exports, {
     // Mark fields as enumerable so PaperScope.inject can pick them up
     enumerable: true,
@@ -25,6 +26,14 @@ paper = new (PaperScope.inject(Base.exports, {
     Numerical: Numerical,
     Key: Key
 }))();
+/*#*/ } else if (__options.environment == 'worker') {
+paper = new (PaperScope.inject(Base.exports, {
+    // Mark fields as enumerable so PaperScope.inject can pick them up
+    enumerable: true,
+    Base: Base,
+    Numerical: Numerical
+}))();
+/*#*/ } // __options.environment == 'worker'
 
 // https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {
@@ -40,7 +49,7 @@ if (typeof define === 'function' && define.amd) {
     module.exports = paper;
 }
 
-/*#*/ } else if (__options.environment == 'node') {
+/*#*/ } else { // __options.environment == 'node'
 
 paper = new (PaperScope.inject(Base.exports, {
     // Mark fields as enumerable so PaperScope.inject can pick them up
