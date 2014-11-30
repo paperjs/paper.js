@@ -320,13 +320,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * The class name of the item as a string.
      *
+     * @name Item#className
      * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Shape',
      * 'Raster', 'PlacedSymbol', 'PointText')
-     * @bean
      */
-    getClassName: function() {
-        return this._class;
-    },
 
     /**
      * The name of the item. If the item has a name, it can be accessed by name

@@ -37,6 +37,16 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
+     * The class name of the object as a string, if the prototype defines a
+     * `_class` value.
+     *
+     * @beans
+     */
+    getClassName: function() {
+        return this._class || '';
+    },
+
+    /**
      * Serializes this object to a JSON string.
      *
      * @param {Object} [options={ asString: true, precision: 5 }]
