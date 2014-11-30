@@ -36,6 +36,8 @@ function getFunctionBody(func) {
 
 // Override equals to convert functions to message and execute them as tests()
 function equals(actual, expected, message, tolerance) {
+    // Allow the use of functions for actual, which will get called and their
+    // source content extracted for readable reports.
     if (typeof actual === 'function') {
         if (!message) {
             message = getFunctionBody(actual);
@@ -47,9 +49,10 @@ function equals(actual, expected, message, tolerance) {
         }
         actual = actual();
     }
-    // See if we need to compare with a tolerance, and if so, assume a number.
-    if (tolerance !== undefined) {
-        var ok = Math.abs(actual - expected) <= tolerance;
+    if (typeof expected === 'number') {
+        // Compare with a default tolerance of Numerical.TOLERANCE:
+        var ok = Math.abs(actual - expected)
+                <= Base.pick(tolerance, Numerical.TOLERANCE);
         return QUnit.push(ok, ok ? expected : actual, expected, message);
     } else if (actual && actual.equals) {
         // Support calling of #equals() on the actual or expected value, and
@@ -80,43 +83,38 @@ function asyncTest(testName, expected) {
     });
 }
 
-function compareNumbers(number1, number2, message, precision) {
-    var formatter = new Formatter(precision);
-    equals(formatter.number(number1),
-            formatter.number(number2), message);
-}
-
-function compareArrays(array1, array2, message, precision) {
-    var formatter = new Formatter(precision);
-    function format(array) {
-        return Base.each(array, function(value, index) {
-            this[index] = formatter.number(value);
-        }, []).toString();
+function compareArrays(array1, array2, message, tolerance) {
+    equals(array1.length, array2.length, (message || '') + ' length');
+    for (var i = 0, l = array1.length; i < l; i++) {
+        equals(array1[i], array2[i], (message || '') + ' [' + i + ']',
+            tolerance);
     }
-    equals(format(array1), format(array2), message);
 }
 
-function comparePoints(point1, point2, message) {
-    compareNumbers(point1.x, point2.x, (message || '') + ' x');
-    compareNumbers(point1.y, point2.y, (message || '') + ' y');
+function comparePoints(point1, point2, message, tolerance) {
+    equals(point1.x, point2.x, (message || '') + ' x', tolerance);
+    equals(point1.y, point2.y, (message || '') + ' y', tolerance);
 }
 
-function compareRectangles(rect1, rect2, message) {
-    compareNumbers(rect1.x, rect2.x, (message || '') + ' x');
-    compareNumbers(rect1.y, rect2.y, (message || '') + ' y');
-    compareNumbers(rect1.width, rect2.width, (message || '') + ' width');
-    compareNumbers(rect1.height, rect2.height, (message || '') + ' height');
+function compareSize(size1, size2, message, tolerance) {
+    equals(size1.width, size2.width, (message || '') + ' width', tolerance);
+    equals(size1.height, size2.height, (message || '') + ' height', tolerance);
 }
 
-function compareColors(color1, color2, message, precision) {
+function compareRectangles(rect1, rect2, message, tolerance) {
+    comparePoints(rect1, rect2, message, tolerance);
+    compareSize(rect1, rect2, message, tolerance);
+}
+
+function compareColors(color1, color2, message, tolerance) {
     color1 = color1 && new Color(color1);
     color2 = color2 && new Color(color2);
     if (color1 && color2) {
         equals(color1.type, color2.type, (message || '') + ' type');
         compareArrays(color1.components, color2.components,
-                (message || '') + ' components', precision);
+                (message || '') + ' components', tolerance);
     } else {
-        equals(color1, color2, message);
+        equals(color1, color2, message, tolerance);
     }
 }
 
@@ -168,7 +166,7 @@ function compareObjects(name, keys, obj, obj2, checkIdentity) {
         var val = obj[key], val2 = obj2[key],
             message = 'Compare ' + name + '#' + key;
         if (typeof val === 'number') {
-            compareNumbers(val, val2, message);
+            equals(val, val2, message);
         } else if (Array.isArray(val)) {
             compareArrays(val, val2, message);
         } else {
@@ -280,7 +278,7 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
             var key = keys[i];
             equals(item[key], item2[key], 'Compare Path#' + key);
         }
-        compareNumbers(item.length, item2.length, 'Compare Path#length');
+        equals(item.length, item2.length, 'Compare Path#length');
         compareSegmentLists(item.segments, item2.segments, checkIdentity);
     }
 
@@ -326,8 +324,8 @@ function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
     if (item instanceof Raster) {
         equals(item.size.toString(), item2.size.toString(),
                 'Compare Raster#size');
-        compareNumbers(item.width, item2.width, 'Compare Raster#width');
-        compareNumbers(item.height, item2.height, 'Compare Raster#height');
+        equals(item.width, item2.width, 'Compare Raster#width');
+        equals(item.height, item2.height, 'Compare Raster#height');
 
         equals(item.ppi.toString(), item2.ppi.toString(),
                 'Compare Raster#ppi');

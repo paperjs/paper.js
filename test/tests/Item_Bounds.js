@@ -71,5 +71,5 @@ test('text.bounds', function() {
     var text = new PointText(new Point(50, 100));
     text.fillColor = 'black';
     text.content = 'This is a test';
-    compareRectangles(text.bounds, { x: 50, y: 89.2, width: 67, height: 14.4 } , 'text.bounds');
+    compareRectangles(text.bounds, { x: 50, y: 89.2, width: 67, height: 14.4 } , 'text.bounds', 0.5);
 });

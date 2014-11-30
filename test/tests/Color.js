@@ -108,49 +108,49 @@ test('Deprecated Colors Constructors', function() {
 
 test('Get gray from RGB Color', function() {
     var color = new Color(1, 0.5, 0.2);
-    compareNumbers(color.gray, 0.6152);
+    equals(color.gray, 0.6152);
 
     var color = new Color(0.5, 0.2, 0.1);
-    compareNumbers(color.gray, 0.27825);
+    equals(color.gray, 0.27825);
 });
 
 test('Get gray from HSB Color', function() {
     var color = new Color({hue: 0, saturation: 0, brightness: 0.2 });
-    compareNumbers(color.gray, 0.19998);
+    equals(color.gray, 0.19998);
 });
 
 test('Get red from HSB Color', function() {
     var color = new Color({hue: 0, saturation: 1, brightness: 1 });
-    compareNumbers(color.red, 1);
+    equals(color.red, 1);
 });
 
 test('Get hue from RGB Color', function() {
     var color = new Color(1, 0, 0);
-    compareNumbers(color.hue, 0);
-    compareNumbers(color.saturation, 1);
+    equals(color.hue, 0);
+    equals(color.saturation, 1);
 });
 
 test('Gray Color', function() {
     var color = new Color(1);
-    compareNumbers(color.gray, 1, 'color.gray');
-    compareNumbers(color.red, 1, 'color.red');
-    compareNumbers(color.blue, 1, 'color.blue');
+    equals(color.gray, 1, 'color.gray');
+    equals(color.red, 1, 'color.red');
+    equals(color.blue, 1, 'color.blue');
 
     color.red = 0.5;
-    compareNumbers(color.gray, 0.85045, 'color.gray');
+    equals(color.gray, 0.85045, 'color.gray');
 
     color.green = 0.2;
 
-    compareNumbers(color.red, 0.5, 'color.red');
-    compareNumbers(color.green, 0.2, 'color.green');
-    compareNumbers(color.blue, 1, 'color.blue');
+    equals(color.red, 0.5, 'color.red');
+    equals(color.green, 0.2, 'color.green');
+    equals(color.blue, 1, 'color.blue');
 
-    compareNumbers(color.gray, 0.38085, 'color.gray');
+    equals(color.gray, 0.38085, 'color.gray');
 });
 
 test('Converting Colors', function() {
     var rgbColor = new Color(1, 0.5, 0.2);
-    compareNumbers(rgbColor.gray, 0.6152);
+    equals(rgbColor.gray, 0.6152);
     var grayColor = new Color(0.2);
     compareColors(grayColor.convert('rgb'), new Color(0.2, 0.2, 0.2));
     compareColors(grayColor.convert('hsb'), { hue: 0, saturation: 0, brightness: 0.2 });

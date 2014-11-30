@@ -91,7 +91,7 @@ test('Curve#getCurvatureAt()', function() {
 
     for (var i = 0; i < curvatures.length; i++) {
         var entry = curvatures[i];
-        compareNumbers(curve.getCurvatureAt(entry[0], true), entry[1],
+        equals(curve.getCurvatureAt(entry[0], true), entry[1],
                 'curve.getCurvatureAt(' + entry[0] + ', true);');
     }
 });
@@ -112,7 +112,7 @@ test('Curve#getCurvatureAt()', function() {
 
     for (var i = 0; i < curvatures.length; i++) {
         var entry = curvatures[i];
-        compareNumbers(curve.getCurvatureAt(entry[0], true), entry[1],
+        equals(curve.getCurvatureAt(entry[0], true), entry[1],
                 'curve.getCurvatureAt(' + entry[0] + ', true);');
     }
 });
