@@ -40,6 +40,12 @@ then
     rm ../dist/paper-node.js
 fi
 
+if [ -f ../dist/paper-worker.js ]
+then
+    rm ../dist/paper-worker.js
+fi
+
 ./preprocess.sh $MODE ../src/paper.js "-i '../src/constants.js'" ../dist/paper-full.js
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"paperScript\": false, \"palette\": false }' -i '../src/constants.js'" ../dist/paper-core.js
 ./preprocess.sh $MODE ../src/paper.js "-o '{ \"environment\": \"node\", \"legacy\": false }' -i '../src/constants.js'" ../dist/paper-node.js
+./preprocess.sh $MODE ../src/paper.js "-o '{ \"environment\": \"worker\", \"legacy\": false, \"paperScript\": false, \"palette\": false }' -i '../src/constants.js'" ../dist/paper-worker.js

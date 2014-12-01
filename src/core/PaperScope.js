@@ -61,6 +61,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         this._id = PaperScope._id++;
         PaperScope._scopes[this._id] = this;
         var proto = PaperScope.prototype;
+/*#*/ if (__options.environment != 'worker') {
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.
@@ -71,6 +72,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             };
             CanvasProvider.release(ctx);
         }
+/*#*/ } // __options.environment != 'worker'
 
 /*#*/ if (__options.environment == 'browser') {
         if (!this.browser) {
