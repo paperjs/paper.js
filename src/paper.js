@@ -33,6 +33,8 @@
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
 var paper = new function(undefined) {
+    var inWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });
 

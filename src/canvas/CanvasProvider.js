@@ -22,6 +22,9 @@ var CanvasProvider = {
             height = width.height;
             width = width.width;
         }
+        if ( inWorker ) {
+            return { getContext: function() {} };
+        }
         if (this.canvases.length) {
             canvas = this.canvases.pop();
         } else {

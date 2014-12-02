@@ -15,6 +15,10 @@
  * @namespace
  */
 var Key = new function() {
+    if ( inWorker ) {
+        return;
+    }
+
     // TODO: cancel, clear, page-down, page-up, comma, minus, period, slash, ...
 
     var specialKeys = {

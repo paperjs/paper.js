@@ -61,6 +61,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         this._id = PaperScope._id++;
         PaperScope._scopes[this._id] = this;
         var proto = PaperScope.prototype;
+        if ( inWorker ) {
+            return;
+        }
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.

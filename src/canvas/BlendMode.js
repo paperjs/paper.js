@@ -11,6 +11,10 @@
  */
 
 var BlendMode = new function() {
+    if ( inWorker ) {
+        return;
+    }
+
     var min = Math.min,
         max = Math.max,
         abs = Math.abs,
