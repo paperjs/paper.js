@@ -15,7 +15,7 @@
  * @namespace
  */
 var Key = new function() {
-    if ( inWorker ) {
+    if ( noCanvas ) {
         return;
     }
 

@@ -22,7 +22,7 @@ var CanvasProvider = {
             height = width.height;
             width = width.width;
         }
-        if ( inWorker ) {
+        if ( noCanvas ) {
             return { getContext: function() {} };
         }
         if (this.canvases.length) {

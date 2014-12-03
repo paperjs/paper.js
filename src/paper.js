@@ -33,7 +33,17 @@
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
 var paper = new function(undefined) {
-    var inWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+// Allow scripts to run without canvas
+/*#*/ if (__options.environment == 'node') {
+          var noCanvas = false;
+/*#*/ } else {
+          // don't use canvas:
+          var noCanvas =
+              // - when the browser version of paper is used in node
+              typeof process === 'object' ||
+              // - when paper is used in a WebWorker
+              ( typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope );
+/*#*/ }
 
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });

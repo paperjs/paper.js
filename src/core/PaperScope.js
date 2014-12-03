@@ -61,7 +61,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         this._id = PaperScope._id++;
         PaperScope._scopes[this._id] = this;
         var proto = PaperScope.prototype;
-        if ( inWorker ) {
+        if ( noCanvas ) {
             return;
         }
         if (!this.support) {

@@ -32,7 +32,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * @param {Size} size the size of the canvas to be created
      */
     initialize: function CanvasView(project, canvas) {
-        if ( !inWorker ) {
+        if ( !noCanvas ) {
             // Handle canvas argument
             if (!(canvas instanceof HTMLCanvasElement)) {
                 // See if the arguments describe the view size:
@@ -49,7 +49,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         this._eventCounters = {};
         this._pixelRatio = 1;
 /*#*/ if (__options.environment == 'browser') {
-        if (!inWorker && !/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
+        if (!noCanvas && !/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,

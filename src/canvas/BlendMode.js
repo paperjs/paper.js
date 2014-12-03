@@ -11,7 +11,7 @@
  */
 
 var BlendMode = new function() {
-    if ( inWorker ) {
+    if ( noCanvas ) {
         return;
     }
 
