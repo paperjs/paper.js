@@ -68,13 +68,17 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         // Upscale the canvas if the two ratios don't match.
         element.width = width * pixelRatio;
         element.height = height * pixelRatio;
-        if (pixelRatio !== 1) {
-            style.width = width + 'px';
-            style.height = height + 'px';
-            // Now scale the context to counter the fact that we've manually
-            // scaled our canvas element.
-            this._context.scale(pixelRatio, pixelRatio);
-        }
+    		if (pixelRatio !== 1) {
+          // If the canvas is resizable then don't override it otherwise
+          // give it fixed dimensions so it doesn't get resized.
+    			if (this._resizable === false) {
+    				style.width = width + 'px';
+    				style.height = height + 'px';
+    			}
+          // Now scale the context to counter the fact that we've manually
+          // scaled our canvas element.
+    			this._context.scale(pixelRatio, pixelRatio);
+    		}
     },
 
     /**
