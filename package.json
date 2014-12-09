@@ -13,9 +13,11 @@
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
   ],
   "main": "dist/paper-node.js",
+  "browser": "dist/paper-full.js",
   "files": [
     "AUTHORS.md",
     "dist/paper-node.js",
+    "dist/paper-full.js",
     "examples/Node.js",
     "LICENSE.txt",
     "README.md"
