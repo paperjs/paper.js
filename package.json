@@ -18,6 +18,7 @@
     "AUTHORS.md",
     "dist/paper-node.js",
     "dist/paper-full.js",
+    "dist/paper-core.js",
     "examples/Node.js",
     "LICENSE.txt",
     "README.md"
