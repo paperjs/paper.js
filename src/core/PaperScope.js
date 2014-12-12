@@ -82,7 +82,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // here: { chrome: true, webkit: false }, mozilla missing is the
             // only difference to jQuery.browser
             navigator.userAgent.toLowerCase().replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
                 function(all, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
                     if (!browser.chrome) {
@@ -101,6 +101,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             );
             if (browser.chrome)
                 delete browser.webkit;
+            if (browser.atom)
+                delete browser.chrome;
         }
 /*#*/ } // __options.environment == 'browser'
     },
