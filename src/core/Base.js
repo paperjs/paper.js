@@ -369,10 +369,10 @@ Base.inject(/** @lends Base# */{
                     res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
-                for (var i in obj)
-                    if (obj.hasOwnProperty(i))
-                        res[i] = Base.serialize(obj[i], options, compact,
-                                dictionary);
+                for (var keys = Object.keys(obj), i = 0; i < keys.length; i++) {
+                    var key = keys[i];
+                    res[key] = Base.serialize(obj[key], options, compact, dictionary);
+                }
             } else if (typeof obj === 'number') {
                 res = options.formatter.number(obj, options.precision);
             } else {
