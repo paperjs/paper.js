@@ -354,29 +354,11 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         // Update global reference to this scope.
         paper = this._scope;
         // Now handle event callbacks
-        var called = false;
+        var called = false, drag = false;
         switch (type) {
         case 'mousedown':
             this._updateEvent(type, point, null, null, true, false, false);
             called = this._fireEvent(type, event);
-            break;
-        case 'mousedrag':
-            // In order for idleInterval drag events to work, we need to not
-            // check the first call for a change of position. Subsequent calls
-            // required by min/maxDistance functionality will require it,
-            // otherwise this might loop endlessly.
-            var needsChange = false,
-            // If the mouse is moving faster than maxDistance, do not produce
-            // events for what is left after the first event is generated in
-            // case it is shorter than maxDistance, as this would produce weird
-            // results. matchMaxDistance controls this.
-                matchMaxDistance = false;
-            while (this._updateEvent(type, point, this.minDistance,
-                    this.maxDistance, false, needsChange, matchMaxDistance)) {
-                called = this._fireEvent(type, event) || called;
-                needsChange = true;
-                matchMaxDistance = true;
-            }
             break;
         case 'mouseup':
             // If the last mouse drag happened in a different place, call mouse
@@ -393,11 +375,31 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             this._updateEvent(type, point, null, null, true, false, false);
             this._firstMove = true;
             break;
+
+        case 'mousedrag':
+            drag = true;
+        // Fall through to share event handling
         case 'mousemove':
-            while (this._updateEvent(type, point, this.minDistance,
-                    this.maxDistance, this._firstMove, true, false)) {
+            var source = !drag && this._firstMove;
+            // In order for idleInterval drag events to work, we need to not
+            // check the first call for a change of position. Subsequent calls
+            // required by min/maxDistance functionality will require it,
+            // otherwise this might loop endlessly.
+            var needsChange = !drag;
+            // If the mouse is moving faster than maxDistance, do not produce
+            // events for what is left after the first event is generated in
+            // case it is shorter than maxDistance, as this would produce weird
+            // results. matchMaxDistance controls this.
+            var matchMaxDistance = false;
+            while (this._updateEvent(type, point, this.minDistance, this.maxDistance,
+                        source, needsChange, matchMaxDistance)) {
                 called = this._fireEvent(type, event) || called;
-                this._firstMove = false;
+                if (drag) {
+                    needsChange = true;
+                    matchMaxDistance = true;
+                } else {
+                    this._firstMove = false;
+                }
             }
             break;
         }
