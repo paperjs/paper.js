@@ -33,6 +33,15 @@ var PathFitter = Base.extend({
                 prev = point;
             }
         }
+
+        // we need to duplicate first and last segments when simplifying a
+        // closed path
+        if ( path._closed ) {
+            this._closed = true;
+            this.points.unshift( segments[l - 1].point.clone() );
+            this.points.push( segments[0].point.clone() );
+        }
+
         this.error = error;
     },
 
@@ -46,6 +55,13 @@ var PathFitter = Base.extend({
                 points[1].subtract(points[0]).normalize(),
                 // Right Tangent
                 points[length - 2].subtract(points[length - 1]).normalize());
+
+        // remove the duplicated segments
+        if ( this._closed ) {
+            this.segments.shift();
+            this.segments.pop();
+        }
+
         return this.segments;
     },
 
