@@ -91,7 +91,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                             // Use rv: and rename to msie
                             v = rv;
                             n = 'msie';
-                        } 
+                        }
                         browser.version = v;
                         browser.versionNumber = parseFloat(v);
                         browser.name = n;
