@@ -22,24 +22,24 @@
  */
 var PathFitter = Base.extend({
     initialize: function(path, error) {
-        this.points = [];
-        var segments = path._segments,
+        var points = this.points = [],
+            segments = path._segments,
             prev;
         // Copy over points from path and filter out adjacent duplicates.
         for (var i = 0, l = segments.length; i < l; i++) {
             var point = segments[i].point.clone();
             if (!prev || !prev.equals(point)) {
-                this.points.push(point);
+                points.push(point);
                 prev = point;
             }
         }
 
-        // we need to duplicate first and last segments when simplifying a
-        // closed path
-        if ( path._closed ) {
-            this._closed = true;
-            this.points.unshift( segments[l - 1].point.clone() );
-            this.points.push( segments[0].point.clone() );
+        // We need to duplicate the first and last segment when simplifying a
+        // closed path.
+        if (path._closed) {
+            this.closed = true;
+            points.unshift(points[points.length - 1]);
+            points.push(points[1]); // The point previously at index 0 is now 1.
         }
 
         this.error = error;
@@ -47,8 +47,9 @@ var PathFitter = Base.extend({
 
     fit: function() {
         var points = this.points,
-            length = points.length;
-        this.segments = length > 0 ? [new Segment(points[0])] : [];
+            length = points.length,
+            segments = this.segments = length > 0
+                    ? [new Segment(points[0])] : [];
         if (length > 1)
             this.fitCubic(0, length - 1,
                 // Left Tangent
@@ -56,13 +57,13 @@ var PathFitter = Base.extend({
                 // Right Tangent
                 points[length - 2].subtract(points[length - 1]).normalize());
 
-        // remove the duplicated segments
-        if ( this._closed ) {
-            this.segments.shift();
-            this.segments.pop();
+        // Remove the duplicated segments for closed paths again.
+        if (this.closed) {
+            segments.shift();
+            segments.pop();
         }
 
-        return this.segments;
+        return segments;
     },
 
     // Fit a Bezier curve to a (sub)set of digitized points
