@@ -40,10 +40,6 @@ var paper = new function(undefined) {
 /*#*/     include('../bower_components/stats.js/build/stats.min.js');
 /*#*/ }
 
-/*#*/ if (__options.legacy) {
-/*#*/     include('legacy.js');
-/*#*/ }
-
 /*#*/ if (__options.version == 'dev') {
 /*#*/     include('constants.js');
 /*#*/ }
