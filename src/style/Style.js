@@ -152,7 +152,7 @@ var Style = Base.extend(new function() {
                     children[i]._style[set](value);
             } else {
                 var old = this._values[key];
-                if (old != value) {
+                if (old !== value) {
                     if (isColor) {
                         if (old)
                             old._owner = undefined;
@@ -190,7 +190,6 @@ var Style = Base.extend(new function() {
                     value = this._defaults[key];
                     if (value && value.clone)
                         value = value.clone();
-                    this._values[key] = value;
                 } else {
                     var ctor = isColor ? Color : isPoint ? Point : null;
                     if (ctor && !(value && value.constructor === ctor)) {
