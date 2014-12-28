@@ -24,7 +24,7 @@ function cloneAndCompare(item) {
             return copy.parent.children[copy.name] == copy;
         }, true);
     }
-    compareItems(item, copy, { cloned: true });
+    equals(item, copy, 'item.clone()', { cloned: true });
     // Remove the cloned item to restore the document:
     copy.remove();
 }
@@ -134,7 +134,7 @@ test('Symbol#clone()', function() {
     path.selected = true;
     var symbol = new Symbol(path);
     var copy = symbol.clone();
-    compareItems(symbol.definition, copy.definition);
+    equals(symbol.definition, copy.definition, 'symbol.definition');
     equals(function() {
         return symbol.project == copy.project;
     }, true);

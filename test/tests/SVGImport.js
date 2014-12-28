@@ -15,7 +15,7 @@ module('SVGImport');
 test('Import complex CompoundPath and clone', function() {
     var svg = createSVG('<path id="path" fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/>;');
     var item = paper.project.importSVG(svg.getElementById('path'));
-    compareItems(item, item.clone(), { cloned: true });
+    equals(item, item.clone(), null, { cloned: true });
 });
 
 test('make an svg line', function() {
@@ -34,7 +34,7 @@ test('make an svg line', function() {
 
     var line = new Path.Line([x1, y1], [x2, y2]);
 
-    compareItems(importedLine, line);
+    equals(importedLine, line);
 });
 
 test('make an svg line with invalid values', function() {
@@ -49,7 +49,7 @@ test('make an svg line with invalid values', function() {
 
     var line = new Path.Line([0, 0], [0, 0]);
 
-    compareItems(importedLine, line);
+    equals(importedLine, line);
 });
 
 test('compare rectangle values', function() {
@@ -71,7 +71,7 @@ test('compare rectangle values', function() {
     var rectangle = new Rectangle(topLeft, size);
     var realRectangle = new Shape.Rectangle(rectangle);
 
-    compareItems(importedRectangle, realRectangle);
+    equals(importedRectangle, realRectangle);
 });
 
 
@@ -93,7 +93,7 @@ test('compare negative rectangle values', function() {
         var rectangle = new Rectangle(topLeft, size);
         var realRectangle = new Shape.Rectangle(rectangle);
 
-    compareItems(importedRectangle, realRectangle);
+    equals(importedRectangle, realRectangle);
 });
 
 
@@ -113,7 +113,7 @@ test('compare invalid rectangle values', function() {
     var rectangle = new Rectangle(topLeft, size);
     var realRectangle = new Shape.Rectangle(rectangle);
 
-    compareItems(importedRectangle, realRectangle);
+    equals(importedRectangle, realRectangle);
 });
 
 test('compare round rectangle values', function() {
@@ -140,7 +140,7 @@ test('compare round rectangle values', function() {
     var rectangle = new Rectangle(topLeft, size);
     var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-    compareItems(importedRectangle, roundRect);
+    equals(importedRectangle, roundRect);
 });
 
 test('compare negative round rectangle values', function() {
@@ -167,7 +167,7 @@ test('compare negative round rectangle values', function() {
     var rectangle = new Rectangle(topLeft, size);
     var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-    compareItems(importedRectangle, roundRect);
+    equals(importedRectangle, roundRect);
 });
 
 test('compare invalid round rectangle values', function() {
@@ -194,7 +194,7 @@ test('compare invalid round rectangle values', function() {
     var rectangle = new Rectangle(topLeft, size);
     var roundRect = new Shape.Rectangle(rectangle, cornerSize);
 
-    compareItems(importedRectangle, roundRect);
+    equals(importedRectangle, roundRect);
 });
 
 test('compare ellipse values', function() {
@@ -216,7 +216,7 @@ test('compare ellipse values', function() {
         radius: new Point(rx, ry)
     });
 
-    compareItems(importedEllipse, ellipse);
+    equals(importedEllipse, ellipse);
 });
 
 test('compare negative ellipse values', function() {
@@ -238,7 +238,7 @@ test('compare negative ellipse values', function() {
         radius: new Point(rx, ry)
     });
 
-    compareItems(importedEllipse, ellipse);
+    equals(importedEllipse, ellipse);
 });
 
 test('compare invalid ellipse values', function() {
@@ -256,7 +256,7 @@ test('compare invalid ellipse values', function() {
         radius: new Point(0, 0)
     });
 
-    compareItems(importedEllipse, ellipse);
+    equals(importedEllipse, ellipse);
 });
 
 test('compare circle values', function() {
@@ -274,7 +274,7 @@ test('compare circle values', function() {
     var center = new Point(cx, cy);
     var circle = new Shape.Circle(center, r);
 
-    compareItems(importedCircle, circle);
+    equals(importedCircle, circle);
 });
 
 test('compare negative circle values', function() {
@@ -292,7 +292,7 @@ test('compare negative circle values', function() {
     var center = new Point(cx, cy);
     var circle = new Shape.Circle(center, r);
 
-    compareItems(importedCircle, circle);
+    equals(importedCircle, circle);
 });
 
 
@@ -308,7 +308,7 @@ test('compare invalid circle values', function() {
     var center = new Point(0, 0);
     var circle = new Shape.Circle(center, 0);
 
-    compareItems(importedCircle, circle);
+    equals(importedCircle, circle);
 
 });
 
@@ -330,7 +330,7 @@ test('compare polygon values', function() {
         poly.closePath();
     }
 
-    compareItems(importedPolygon, poly);
+    equals(importedPolygon, poly);
 });
 
 test('compare negative polygon values', function() {
@@ -351,7 +351,7 @@ test('compare negative polygon values', function() {
         poly.closePath();
     }
 
-    compareItems(importedPolygon, poly);
+    equals(importedPolygon, poly);
 });
 
 test('compare polyline values', function() {
@@ -372,7 +372,7 @@ test('compare polyline values', function() {
         poly.closePath();
     }
 
-    compareItems(importedPolyline, poly);
+    equals(importedPolyline, poly);
 });
 
 test('compare negative polyline values', function() {
@@ -393,5 +393,5 @@ test('compare negative polyline values', function() {
         poly.closePath();
     }
 
-    compareItems(importedPolyline, poly);
+    equals(importedPolyline, poly);
 });

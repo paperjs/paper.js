@@ -17,7 +17,7 @@ function testExportImportJSON(project) {
     var json = project.exportJSON({ precision: 8 });
     var project2 = new Project();
     project2.importJSON(json);
-    compareProjects(project2, project);
+    equals(project, project2, null, { dontShareProject: true });
 }
 
 test('Circles', function() {

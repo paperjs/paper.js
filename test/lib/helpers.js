@@ -27,6 +27,34 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
             : objectParser).call(this, obj, stack);
 });
 
+function compareProperties(actual, expected, properties, message, options) {
+    Base.each(properties, function(key) {
+        equals(actual[key], expected[key], message + '.' + key, options);
+    });
+}
+
+function compareItem(actual, expected, message, options, properties) {
+    if (options && options.cloned)
+        QUnit.notStrictEqual(actual.id, 'not ' + expected.id, message + '.id');
+    QUnit.strictEqual(actual.constructor, expected.constructor,
+            message + '.constructor');
+    // When item was cloned and had a name, the name will be versioned
+    equals(options && options.cloned && actual.name ? actual.name + ' 1'
+            : actual.name, expected.name,
+            message + '.name');
+    compareProperties(actual, expected, ['children', 'bounds', 'position',
+            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+            'selected', 'fullySelected', 'clipMask', 'guide'],
+            message, options);
+    if (properties)
+        compareProperties(actual, expected, properties, message, options);
+    // Style
+    compareProperties(actual.style, expected.style, ['fillColor', 'strokeColor',
+            'strokeCap', 'strokeJoin', 'dashArray', 'dashOffset', 'miterLimit',
+            'fontSize', 'font', 'leading', 'justification'],
+            message + '.style', options);
+}
+
 var comparators = {
     Null: QUnit.strictEqual,
     Undefined: QUnit.strictEqual,
@@ -48,26 +76,23 @@ var comparators = {
     },
 
     Array: function(actual, expected, message, options) {
-        QUnit.strictEqual(actual.length, expected.length,
-            (message || '') + ' length');
+        QUnit.strictEqual(actual.length, expected.length, message + '.length');
         for (var i = 0, l = actual.length; i < l; i++) {
-            equals(actual[i], expected[i], (message || '') + ' [' + i + ']',
+            equals(actual[i], expected[i], (message || '') + '[' + i + ']',
                 options);
         }
     },
 
     Point: function(actual, expected, message, options) {
-        comparators.Number(actual.x, expected.x, (message || '') + ' x',
-            options);
-        comparators.Number(actual.y, expected.y, (message || '') + ' y',
-            options);
+        comparators.Number(actual.x, expected.x, message + '.x', options);
+        comparators.Number(actual.y, expected.y, message + '.y', options);
     },
 
     Size: function(actual, expected, message, options) {
-        comparators.Number(actual.width, expected.width,
-                (message || '') + ' width', options);
-        comparators.Number(actual.height, expected.height,
-                (message || '') + ' height', options);
+        comparators.Number(actual.width, expected.width, message + '.width',
+                options);
+        comparators.Number(actual.height, expected.height, message + '.height',
+                options);
     },
 
     Rectangle: function(actual, expected, message, options) {
@@ -81,20 +106,24 @@ var comparators = {
 
     Color: function(actual, expected, message, options) {
         if (actual && expected) {
-            equals(actual.type, expected.type,
-                    (message || '') + ' type', options);
+            equals(actual.type, expected.type, message + '.type', options);
             // NOTE: This also compares gradients, with identity checks and all.
             equals(actual.components, expected.components,
-                    (message || '') + ' components', options);
+                    message + '.components', options);
         } else {
-            equals(actual, expected, message, options);
+            QUnit.strictEqual(actual, expected, message);
         }
+    },
+
+    Symbol: function(actual, expected, message, options) {
+        equals(actual.definition, expected.definition, message + '.definition',
+                options);
     },
 
     Segment: function(actual, expected, message, options) {
         Base.each(['handleIn', 'handleOut', 'point', 'selected'],
             function(key) {
-                equals(actual[key], expected[key], (message || '') + ' ' + key);
+                equals(actual[key], expected[key], message + '.' + key);
             }
         );
     },
@@ -102,11 +131,67 @@ var comparators = {
     SegmentPoint: function(actual, expected, message, options) {
         comparators.Point(actual, expected, message, options);
         comparators.Boolean(actual.selected, expected.selected,
-                (message || '') + ' selected', options);
+                message + '.selected', options);
+    },
+
+    Item: compareItem,
+
+    Group: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['clipped']);
+    },
+
+    Layer: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options);
+        equals(function() {
+            return options && options.dontShareProject
+                    ? actual.project !== expected.project
+                    : actual.project === expected.project;
+        }, true);
+    },
+
+    Path: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['segments', 'closed', 'clockwise', 'length']);
+    },
+
+    CompoundPath: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options);
+    },
+
+    Raster: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['size', 'width', 'height', 'ppi', 'source', 'image']);
+        equals(actual.toDataURL(), expected.toDataURL(),
+                message + '.toDataUrl()');
+    },
+
+    Shape: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['shape', 'size', 'radius']);
+    },
+
+    PlacedSymbol: function(actual, expected, message, options) {
+        compareItem(actual, expected, message,
+                // Cloning PlacedSymbols does not result in cloned Symbols
+                options && options.cloned
+                        ? new Base(options, { cloned: false })
+                        : options,
+                ['symbol']);
+    },
+
+    PointText: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['content', 'point']);
+    },
+
+    Project: function(actual, expected, message, options) {
+        compareProperties(actual, expected, ['symbols', 'layers'],
+                message, options);
     }
 };
 
-var identicalAfterClone = {
+var strictIdenticalAfterCloning = {
     Gradient: true,
     Symbol: true
 };
@@ -145,6 +230,11 @@ function equals(actual, expected, message, options) {
             || (cls = expected && expected._class)
             || type === 'object' && 'Object';
     var comparator = type && comparators[type];
+    if (!message) {
+        message = type
+                ? type.charAt(0).toLowerCase() + type.substring(1)
+                : 'value';
+    }
     if (comparator) {
         comparator(actual, expected, message, options);
     } else if (expected && expected.equals) {
@@ -155,10 +245,10 @@ function equals(actual, expected, message, options) {
         QUnit.push(actual === expected, actual, expected, message);
     }
     if (options && options.cloned && cls) {
-        var identical = identicalAfterClone[cls];
+        var identical = strictIdenticalAfterCloning[cls];
         QUnit.push(identical ? actual === expected : actual !== expected,
                 actual, identical ? expected : 'not ' + expected,
-                (message || '') + ' identity');
+                message + ': identical after cloning');
     }
 }
 
@@ -178,132 +268,6 @@ function asyncTest(testName, expected) {
             start();
         });
     });
-}
-
-function compareItems(item, item2, options) {
-    if (options && options.cloned)
-        QUnit.notStrictEqual(item.id, item2.id, 'Compare Item#id');
-
-    QUnit.strictEqual(item.constructor, item2.constructor,
-            'Compare Item#constructor');
-    // When item was cloned and had a name, the name will be versioned
-    equals(options && options.cloned && item.name ? item.name + ' 1'
-            : item.name, item2.name, 'Compare Item#name');
-    Base.each(['bounds', 'position', 'data', 'matrix', 'opacity', 'locked',
-            'visible', 'blendMode', 'selected', 'fullySelected', 'clipMask',
-            'guide'],
-        function(key) {
-            equals(item[key], item2[key],  'Compare Item#' + key, options);
-        }
-    );
-
-    // Style
-    Base.each(['fillColor', 'strokeColor', 'strokeCap', 'strokeJoin',
-            'dashArray', 'dashOffset', 'miterLimit',
-            'fontSize', 'font', 'leading', 'justification'],
-        function(key) {
-            equals(item.style[key], item2.style[key], 'Compare Style#' + key,
-                options);
-        }
-    );
-
-    // Path specific
-    if (item instanceof Path) {
-        Base.each(['segments', 'closed', 'clockwise', 'length'],
-            function(key) {
-                equals(item[key], item2[key], 'Compare Path#' + key, options);
-            }
-        );
-    }
-
-    // Shape specific
-    if (item instanceof Shape) {
-        Base.each(['shape', 'size', 'radius'],
-            function(key) {
-                equals(item[key], item2[key], 'Compare Shape#' + key, options);
-            }
-        );
-    }
-
-    // Group specific
-    if (item instanceof Group) {
-        equals(item.clipped, item2.clipped, 'Compare Group#clipped', options);
-    }
-
-    // Layer specific
-    if (item instanceof Layer) {
-        equals(function() {
-            return options && options.dontShareProject
-                    ? item.project != item2.project
-                    : item.project == item2.project;
-        }, true);
-    }
-
-    // PlacedSymbol specific
-    if (item instanceof PlacedSymbol) {
-        if (options.dontShareProject) {
-            compareItems(item.symbol.definition, item2.symbol.definition,
-                    options,
-                    'Compare Symbol#definition');
-        } else {
-            equals(item.symbol, item2.symbol, 'Compare PlacedSymbol#symbol',
-                options);
-        }
-    }
-
-    // Raster specific
-    if (item instanceof Raster) {
-        equals(item.size, item2.size, 'Compare Raster#size');
-        equals(item.width, item2.width, 'Compare Raster#width');
-        equals(item.height, item2.height, 'Compare Raster#height');
-        equals(item.ppi, item2.ppi, 'Compare Raster#ppi');
-        equals(item.source, item2.source, 'Compare Raster#source');
-        equals(item.image, item2.image, 'Compare Raster#image');
-        equals(item.toDataURL(), item2.toDataURL(),
-                'Compare Raster#toDataUrl()');
-    }
-
-    // TextItem specific:
-    if (item instanceof TextItem) {
-        equals(item.content, item2.content, 'Compare Item#content');
-    }
-
-    // PointText specific:
-    if (item instanceof PointText) {
-        equals(item.point, item2.point, 'Compare Item#point');
-    }
-
-    // Check length of children and recursively compare them:
-    if (item.children) {
-        equals(function() {
-            return item.children.length == item2.children.length;
-        }, true);
-        for (var i = 0, l = item.children.length; i < l; i++) {
-            compareItems(item.children[i], item2.children[i], options);
-        }
-    }
-}
-
-function compareProjects(project, project2) {
-    // Compare Project#symbols:
-    equals(function() {
-        return project.symbols.length == project2.symbols.length;
-    }, true);
-    for (var i = 0, l = project.symbols.length; i < l; i++) {
-        var definition1 = project.symbols[i].definition;
-        var definition2 = project2.symbols[i].definition;
-        compareItems(definition1, definition2, { dontShareProject: true },
-                'Compare Symbol#definition');
-    }
-
-    // Compare Project#layers:
-    equals(function() {
-        return project.layers.length == project2.layers.length;
-    }, true);
-    for (var i = 0, l = project.layers.length; i < l; i++) {
-        compareItems(project.layers[i], project2.layers[i],
-                { dontShareProject: true });
-    }
 }
 
 // SVG
