@@ -28,9 +28,10 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
 });
 
 function compareProperties(actual, expected, properties, message, options) {
-    Base.each(properties, function(key) {
+    for (var i = 0, l = properties.length; i < l; i++) {
+        var key = properties[i];
         equals(actual[key], expected[key], message + '.' + key, options);
-    });
+    }
 }
 
 function compareItem(actual, expected, message, options, properties) {
@@ -55,6 +56,8 @@ function compareItem(actual, expected, message, options, properties) {
             message + '.style', options);
 }
 
+// A list of comparator functions, based on `expected` type. See equals() for
+// an explanation of how the type is determined.
 var comparators = {
     Null: QUnit.strictEqual,
     Undefined: QUnit.strictEqual,
@@ -121,11 +124,8 @@ var comparators = {
     },
 
     Segment: function(actual, expected, message, options) {
-        Base.each(['handleIn', 'handleOut', 'point', 'selected'],
-            function(key) {
-                equals(actual[key], expected[key], message + '.' + key);
-            }
-        );
+        compareProperties(actual, expected, ['handleIn', 'handleOut', 'point',
+                'selected'], message, options);
     },
 
     SegmentPoint: function(actual, expected, message, options) {
@@ -137,17 +137,17 @@ var comparators = {
     Item: compareItem,
 
     Group: function(actual, expected, message, options) {
-        compareItem(actual, expected, message, options,
-                ['clipped']);
+        compareItem(actual, expected, message, options, ['clipped']);
     },
 
     Layer: function(actual, expected, message, options) {
         compareItem(actual, expected, message, options);
-        equals(function() {
-            return options && options.dontShareProject
-                    ? actual.project !== expected.project
-                    : actual.project === expected.project;
-        }, true);
+        var sameProject = actual.project === expected.project;
+        var sharedProject = !(options && options.dontShareProject);
+        QUnit.push(sharedProject ? sameProject : !sameProject,
+                actual.project,
+                sharedProject ? expected.project : 'not ' + expected.project,
+                message + '.project');
     },
 
     Path: function(actual, expected, message, options) {
@@ -191,7 +191,8 @@ var comparators = {
     }
 };
 
-var strictIdenticalAfterCloning = {
+// A list of classes that should be identical after their owners were cloned.
+var identicalAfterCloning = {
     Gradient: true,
     Symbol: true
 };
@@ -245,7 +246,7 @@ function equals(actual, expected, message, options) {
         QUnit.push(actual === expected, actual, expected, message);
     }
     if (options && options.cloned && cls) {
-        var identical = strictIdenticalAfterCloning[cls];
+        var identical = identicalAfterCloning[cls];
         QUnit.push(identical ? actual === expected : actual !== expected,
                 actual, identical ? expected : 'not ' + expected,
                 message + ': identical after cloning');
