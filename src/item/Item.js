@@ -2106,7 +2106,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * possible.
      */
     insertChild: function(index, item, _preserve) {
-        var res = this.insertChildren(index, [item], _preserve);
+        var res = item ? this.insertChildren(index, [item], _preserve) : null;
         return res && res[0];
     },
 
