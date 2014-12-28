@@ -24,7 +24,7 @@ function cloneAndCompare(item) {
             return copy.parent.children[copy.name] == copy;
         }, true);
     }
-    compareItems(item, copy, { cloned: true, checkIdentity: true });
+    compareItems(item, copy, { cloned: true });
     // Remove the cloned item to restore the document:
     copy.remove();
 }

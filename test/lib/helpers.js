@@ -30,6 +30,15 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
 var comparators = {
     Null: QUnit.strictEqual,
     Undefined: QUnit.strictEqual,
+    Boolean: QUnit.strictEqual,
+
+    Object: function(actual, expected, message, options) {
+        QUnit.push(Base.equals(actual, expected), actual, expected, message);
+    },
+
+    Base: function(actual, expected, message, options) {
+        comparators.Object(actual, expected, message, options);
+    },
 
     Number: function(actual, expected, message, options) {
         // Compare with a default tolerance of Numerical.TOLERANCE:
@@ -66,16 +75,40 @@ var comparators = {
         comparators.Size(actual, expected, message, options);
     },
 
+    Matrix: function(actual, expected, message, options) {
+        comparators.Array(actual.values, expected.values, message, options);
+    },
+
     Color: function(actual, expected, message, options) {
         if (actual && expected) {
             equals(actual.type, expected.type,
                     (message || '') + ' type', options);
+            // NOTE: This also compares gradients, with identity checks and all.
             equals(actual.components, expected.components,
                     (message || '') + ' components', options);
         } else {
             equals(actual, expected, message, options);
         }
+    },
+
+    Segment: function(actual, expected, message, options) {
+        Base.each(['handleIn', 'handleOut', 'point', 'selected'],
+            function(key) {
+                equals(actual[key], expected[key], (message || '') + ' ' + key);
+            }
+        );
+    },
+
+    SegmentPoint: function(actual, expected, message, options) {
+        comparators.Point(actual, expected, message, options);
+        comparators.Boolean(actual.selected, expected.selected,
+                (message || '') + ' selected', options);
     }
+};
+
+var identicalAfterClone = {
+    Gradient: true,
+    Symbol: true
 };
 
 function getFunctionMessage(func) {
@@ -102,13 +135,16 @@ function equals(actual, expected, message, options) {
     }
     // Get the comparator based on the expected value's type only and ignore the
     // actual value's type.
-    var type = typeof expected;
-    var comparator = comparators[
-            type === 'number' && 'Number'
+    var type = typeof expected,
+        cls;
+    type = expected === null && 'Null'
+            || type === 'number' && 'Number'
+            || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
-            || expected === null && 'Null'
             || Array.isArray(expected) && 'Array'
-            || expected && expected._class];
+            || (cls = expected && expected._class)
+            || type === 'object' && 'Object';
+    var comparator = type && comparators[type];
     if (comparator) {
         comparator(actual, expected, message, options);
     } else if (expected && expected.equals) {
@@ -117,6 +153,12 @@ function equals(actual, expected, message, options) {
     } else {
         // Finally perform a strict compare
         QUnit.push(actual === expected, actual, expected, message);
+    }
+    if (options && options.cloned && cls) {
+        var identical = identicalAfterClone[cls];
+        QUnit.push(identical ? actual === expected : actual !== expected,
+                actual, identical ? expected : 'not ' + expected,
+                (message || '') + ' identity');
     }
 }
 
@@ -138,174 +180,54 @@ function asyncTest(testName, expected) {
     });
 }
 
-function compareStyles(style, style2, options) {
-    var checkIdentity = options && options.checkIdentity;
-    if (checkIdentity) {
-        equals(function() {
-            return style !== style2;
-        }, true);
-    }
-    Base.each(['fillColor', 'strokeColor'], function(key) {
-        if (style[key]) {
-            // The color should not point to the same color object:
-            if (checkIdentity) {
-                equals(function() {
-                    return style[key] !== style2[key];
-                }, true, 'The ' + key
-                        + ' should not point to the same color object:');
-            }
-            if (style[key] instanceof Color) {
-                if (style[key].type === 'gradient' && checkIdentity) {
-                    equals(function() {
-                        return style[key].gradient === style2[key].gradient;
-                    }, true, 'The ' + key
-                            + '.gradient should point to the same object:');
-                }
-            }
-            equals(style[key], style2[key], 'Compare Style#' + key);
-        }
-    });
-
-    compareObjects(['strokeCap', 'strokeJoin', 'dashArray', 'dashOffset',
-            'miterLimit', 'strokeOverprint', 'fillOverprint',
-            'fontSize', 'font', 'leading', 'justification'],
-            style, style2, 'Compare Style', options);
-}
-
-function compareObjects(keys, obj, obj2, message, options) {
-    if (options && options.checkIdentity) {
-        equals(function() {
-            return obj !== obj2;
-        }, true);
-    }
-    Base.each(keys, function(key) {
-        equals(obj[key], obj2[key], message + '#' + key, options);
-    });
-}
-
-function compareSegmentPoints(segmentPoint, segmentPoint2, options) {
-    compareObjects(['x', 'y', 'selected'], segmentPoint, segmentPoint2,
-            'Compare SegmentPoint', options);
-}
-
-function compareSegments(segment, segment2, options) {
-    if (options.checkIdentity) {
-        equals(function() {
-            return segment !== segment2;
-        }, true);
-    }
-    equals(function() {
-        return segment.selected == segment2.selected;
-    }, true);
-    Base.each(['handleIn', 'handleOut', 'point'], function(key) {
-        compareSegmentPoints(segment[key], segment2[key]);
-    });
-}
-
-function compareSegmentLists(segmentList, segmentList2, options) {
-    var checkIdentity = options && options.checkIdentity;
-    if (checkIdentity) {
-        equals(function() {
-            return segmentList !== segmentList2;
-        }, true);
-    }
-    equals(segmentList.toString(), segmentList2.toString(),
-            'Compare Item#segments');
-    if (checkIdentity) {
-        for (var i = 0, l = segmentList.length; i < l; i++) {
-            var segment = segmentList[i],
-                segment2 = segmentList2[i];
-            compareSegments(segment, segment2, options);
-        }
-    }
-}
-
 function compareItems(item, item2, options) {
-    var checkIdentity = options && options.checkIdentity;
-    if (checkIdentity) {
-        equals(function() {
-            return item !== item2;
-        }, true);
+    if (options && options.cloned)
+        QUnit.notStrictEqual(item.id, item2.id, 'Compare Item#id');
 
-        equals(function() {
-            return item.id !== item2.id;
-        }, true);
-    }
-
-    equals(function() {
-        return item.constructor == item2.constructor;
-    }, true);
-
-    var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
-            'selected', 'clipMask', 'guide'];
-    Base.each(itemProperties, function(key) {
-        var value = item[key];
-        // When item was cloned and had a name, the name will be versioned
-        equals(
-            key == 'name' && options && options.cloned && value
-                ? value + ' 1'
-                : value,
-            item2[key],
-            'compare Item#' + key);
-    });
-
-    if (checkIdentity) {
-        equals(function() {
-            return item.bounds !== item2.bounds;
-        }, true);
-    }
-
-    equals(item.bounds.toString(), item2.bounds.toString(),
-            'Compare Item#bounds');
-
-    if (checkIdentity) {
-        equals(function() {
-            return item.position !== item2.position;
-        }, true);
-    }
-
-    equals(item.position.toString(), item2.position.toString(),
-            'Compare Item#position');
-
-    equals(function() {
-        return Base.equals(item.data, item2.data);
-    }, true);
-
-    if (item.matrix) {
-        if (checkIdentity) {
-            equals(function() {
-                return item.matrix !== item2.matrix;
-            }, true);
+    QUnit.strictEqual(item.constructor, item2.constructor,
+            'Compare Item#constructor');
+    // When item was cloned and had a name, the name will be versioned
+    equals(options && options.cloned && item.name ? item.name + ' 1'
+            : item.name, item2.name, 'Compare Item#name');
+    Base.each(['bounds', 'position', 'data', 'matrix', 'opacity', 'locked',
+            'visible', 'blendMode', 'selected', 'fullySelected', 'clipMask',
+            'guide'],
+        function(key) {
+            equals(item[key], item2[key],  'Compare Item#' + key, options);
         }
-        equals(item.matrix.toString(), item2.matrix.toString(),
-                'Compare Item#matrix');
-    }
+    );
+
+    // Style
+    Base.each(['fillColor', 'strokeColor', 'strokeCap', 'strokeJoin',
+            'dashArray', 'dashOffset', 'miterLimit',
+            'fontSize', 'font', 'leading', 'justification'],
+        function(key) {
+            equals(item.style[key], item2.style[key], 'Compare Style#' + key,
+                options);
+        }
+    );
 
     // Path specific
     if (item instanceof Path) {
-        var keys = ['closed', 'fullySelected', 'clockwise'];
-        for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i];
-            equals(item[key], item2[key], 'Compare Path#' + key);
-        }
-        equals(item.length, item2.length, 'Compare Path#length');
-        compareSegmentLists(item.segments, item2.segments, options);
+        Base.each(['segments', 'closed', 'clockwise', 'length'],
+            function(key) {
+                equals(item[key], item2[key], 'Compare Path#' + key, options);
+            }
+        );
     }
 
     // Shape specific
     if (item instanceof Shape) {
-        var keys = ['shape', 'size', 'radius'];
-        for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i];
-            equals(item[key], item2[key], 'Compare Shape#' + key);
-        }
+        Base.each(['shape', 'size', 'radius'],
+            function(key) {
+                equals(item[key], item2[key], 'Compare Shape#' + key, options);
+            }
+        );
     }
 
     // Group specific
     if (item instanceof Group) {
-        equals(function() {
-            return item.clipped == item2.clipped;
-        }, true);
+        equals(item.clipped, item2.clipped, 'Compare Group#clipped', options);
     }
 
     // Layer specific
@@ -324,29 +246,20 @@ function compareItems(item, item2, options) {
                     options,
                     'Compare Symbol#definition');
         } else {
-            equals(function() {
-                return item.symbol == item2.symbol;
-            }, true);
+            equals(item.symbol, item2.symbol, 'Compare PlacedSymbol#symbol',
+                options);
         }
     }
 
     // Raster specific
     if (item instanceof Raster) {
-        equals(item.size.toString(), item2.size.toString(),
-                'Compare Raster#size');
+        equals(item.size, item2.size, 'Compare Raster#size');
         equals(item.width, item2.width, 'Compare Raster#width');
         equals(item.height, item2.height, 'Compare Raster#height');
-
-        equals(item.ppi.toString(), item2.ppi.toString(),
-                'Compare Raster#ppi');
-
+        equals(item.ppi, item2.ppi, 'Compare Raster#ppi');
         equals(item.source, item2.source, 'Compare Raster#source');
-        if (options.checkIdentity) {
-            equals(item.image, item2.image, 'Compare Raster#image');
-        }
-        equals(item.size.toString(), item2.size.toString(),
-                'Compare Raster#size');
-        equals(item.toDataURL() == item2.toDataURL(), true,
+        equals(item.image, item2.image, 'Compare Raster#image');
+        equals(item.toDataURL(), item2.toDataURL(),
                 'Compare Raster#toDataUrl()');
     }
 
@@ -357,18 +270,7 @@ function compareItems(item, item2, options) {
 
     // PointText specific:
     if (item instanceof PointText) {
-        if (options.checkIdentity) {
-            equals(function() {
-                return item.point !== item2.point;
-            }, true);
-        }
-        equals(item.point.toString(), item2.point.toString(),
-                'Compare Item#point');
-    }
-
-    if (item.style) {
-        // Style
-        compareStyles(item.style, item2.style, options);
+        equals(item.point, item2.point, 'Compare Item#point');
     }
 
     // Check length of children and recursively compare them:
