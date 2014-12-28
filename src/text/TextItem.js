@@ -50,9 +50,9 @@ var TextItem = Item.extend(/** @lends TextItem# */{
         return this._content === item._content;
     },
 
-    _clone: function _clone(copy) {
+    _clone: function _clone(copy, insert) {
         copy.setContent(this._content);
-        return _clone.base.call(this, copy);
+        return _clone.base.call(this, copy, insert);
     },
 
     /**
