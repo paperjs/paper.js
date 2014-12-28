@@ -15,94 +15,94 @@ module('Color');
 test('Set named color', function() {
     var path = new Path();
     path.fillColor = 'red';
-    compareColors(path.fillColor, new Color(1, 0, 0));
+    equals(path.fillColor, new Color(1, 0, 0));
     equals(path.fillColor.toCSS(), 'rgb(255,0,0)');
 });
 
 test('Set color to hex', function() {
     var path = new Path();
     path.fillColor = '#ff0000';
-    compareColors(path.fillColor, new Color(1, 0, 0));
+    equals(path.fillColor, new Color(1, 0, 0));
     equals(path.fillColor.toCSS(), 'rgb(255,0,0)');
 
     var path = new Path();
     path.fillColor = '#f00';
-    compareColors(path.fillColor, new Color(1, 0, 0));
+    equals(path.fillColor, new Color(1, 0, 0));
     equals(path.fillColor.toCSS(), 'rgb(255,0,0)');
 });
 
 test('Set color to object', function() {
     var path = new Path();
     path.fillColor = { red: 1, green: 0, blue: 1};
-    compareColors(path.fillColor, new Color(1, 0, 1));
+    equals(path.fillColor, new Color(1, 0, 1));
     equals(path.fillColor.toCSS(), 'rgb(255,0,255)');
 
     var path = new Path();
     path.fillColor = { gray: 0.2 };
-    compareColors(path.fillColor, new Color(0.2));
+    equals(path.fillColor, new Color(0.2));
     equals(path.fillColor.toCSS(), 'rgb(51,51,51)');
 });
 
 test('Set color to array', function() {
     var path = new Path();
     path.fillColor = [1, 0, 0];
-    compareColors(path.fillColor, new Color(1, 0, 0));
+    equals(path.fillColor, new Color(1, 0, 0));
     equals(path.fillColor.toCSS(), 'rgb(255,0,0)');
 });
 
 test('Creating Colors', function() {
-    compareColors(new Color(), new Color(0, 0, 0),
+    equals(new Color(), new Color(0, 0, 0),
             'Color with no arguments should be black');
 
-    compareColors(new Color('black'), new Color(0, 0, 0),
+    equals(new Color('black'), new Color(0, 0, 0),
             'Color from name (black)');
 
-    compareColors(new Color('red'), new Color(1, 0, 0),
+    equals(new Color('red'), new Color(1, 0, 0),
             'Color from name (red)');
 
-    compareColors(new Color('#ff0000'), new Color(1, 0, 0),
+    equals(new Color('#ff0000'), new Color(1, 0, 0),
             'Color from hex code');
 
-    compareColors(new Color('rgb(255, 0, 0)'), new Color(1, 0, 0),
+    equals(new Color('rgb(255, 0, 0)'), new Color(1, 0, 0),
             'Color from RGB code');
 
-    compareColors(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
+    equals(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
             'Color from RGBA code');
 
-    compareColors(new Color({ red: 1, green: 0, blue: 1}),
+    equals(new Color({ red: 1, green: 0, blue: 1}),
             new Color(1, 0, 1), 'Color from rgb object literal');
 
-    compareColors(new Color({ gray: 0.2 }),
+    equals(new Color({ gray: 0.2 }),
             new Color(0.2), 'Color from gray object literal');
 
-    compareColors(new Color({ hue: 0, saturation: 1, brightness: 1}),
+    equals(new Color({ hue: 0, saturation: 1, brightness: 1}),
             new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
 
-    compareColors(new Color([1, 0, 0]), new Color(1, 0, 0),
+    equals(new Color([1, 0, 0]), new Color(1, 0, 0),
             'RGB Color from array');
 
-    compareColors(new Color([1]), new Color(1),
+    equals(new Color([1]), new Color(1),
             'Gray Color from array');
 });
 
 test('Deprecated Colors Constructors', function() {
 
-    compareColors(new paper.RgbColor('#ff0000'), new Color(1, 0, 0),
+    equals(new paper.RgbColor('#ff0000'), new Color(1, 0, 0),
             'Color from hex code');
 
-    compareColors(new paper.RgbColor(1, 0, 1),
+    equals(new paper.RgbColor(1, 0, 1),
             new Color(1, 0, 1), 'Color from rgb object literal');
 
-    compareColors(new paper.GrayColor(0.2),
+    equals(new paper.GrayColor(0.2),
             new Color(0.2), 'Color from gray object literal');
 
-    compareColors(new paper.HsbColor(0, 1, 1),
+    equals(new paper.HsbColor(0, 1, 1),
             new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
 
-    compareColors(new paper.RgbColor([1, 0, 0]), new Color(1, 0, 0),
+    equals(new paper.RgbColor([1, 0, 0]), new Color(1, 0, 0),
             'Rgb Color from array');
 
-    compareColors(new paper.GrayColor([1]), new Color(1),
+    equals(new paper.GrayColor([1]), new Color(1),
             'Gray Color from array');
 });
 
@@ -152,32 +152,34 @@ test('Converting Colors', function() {
     var rgbColor = new Color(1, 0.5, 0.2);
     equals(rgbColor.gray, 0.6152);
     var grayColor = new Color(0.2);
-    compareColors(grayColor.convert('rgb'), new Color(0.2, 0.2, 0.2));
-    compareColors(grayColor.convert('hsb'), { hue: 0, saturation: 0, brightness: 0.2 });
-    compareColors(new Color(1, 0, 0).convert('hsb'), { hue: 0, saturation: 1, brightness: 1 });
+    equals(grayColor.convert('rgb'), new Color(0.2, 0.2, 0.2));
+    equals(grayColor.convert('hsb'),
+            new Color({ hue: 0, saturation: 0, brightness: 0.2 }));
+    equals(new Color(1, 0, 0).convert('hsb'),
+            new Color({ hue: 0, saturation: 1, brightness: 1 }));
 });
 
 test('Setting Color#gray', function() {
     var color = new Color(1, 0.5, 0.2);
     color.gray = 0.1;
-    compareColors(color, new Color(0.1));
+    equals(color, new Color(0.1));
 });
 
 test('Setting Color#red', function() {
     var color = new Color({ hue: 180, saturation: 0, brightness: 0 });
     color.red = 1;
-    compareColors(color, new Color(1, 0, 0));
+    equals(color, new Color(1, 0, 0));
 });
 
 test('Setting Color#gray', function() {
     var color = new Color({ hue: 180, saturation: 0, brightness: 0 });
     color.gray = 0.5;
-    compareColors(color, new Color(0.5));
+    equals(color, new Color(0.5));
 });
 
 test('Color.read(channels)', function() {
     var color = Color.read([0, 0, 1]);
-    compareColors(color, new Color(0, 0, 1));
+    equals(color, new Color(0, 0, 1));
 });
 
 test('Cloning colors', function() {
@@ -210,36 +212,36 @@ test('Saturation from black rgb', function() {
 
 test('Color#add', function() {
     var color = new Color(0, 1, 1);
-    compareColors(color.add([1, 0, 0]), [1, 1, 1]);
-    compareColors(color.add([1, 0.5, 0]), [1, 1.5, 1]);
+    equals(color.add([1, 0, 0]), new Color([1, 1, 1]));
+    equals(color.add([1, 0.5, 0]), new Color([1, 1.5, 1]));
     var color = new Color(0, 0.5, 0);
-    compareColors(color.add(0.5), [0.5, 1, 0.5]);
+    equals(color.add(0.5), new Color([0.5, 1, 0.5]));
 });
 
 test('Color#subtract', function() {
     var color = new Color(0, 1, 1);
-    compareColors(color.subtract([0, 1, 1]), [0, 0, 0]);
-    compareColors(color.subtract([0, 0.5, 1]), [0, 0.5, 0]);
+    equals(color.subtract([0, 1, 1]), new Color([0, 0, 0]));
+    equals(color.subtract([0, 0.5, 1]), new Color([0, 0.5, 0]));
     var color = new Color(1, 1, 1);
-    compareColors(color.subtract(0.5), [0.5, 0.5, 0.5]);
+    equals(color.subtract(0.5), new Color([0.5, 0.5, 0.5]));
 });
 
 test('Color#multiply', function() {
     var color = new Color(1, 0.5, 0.25);
-    compareColors(color.multiply([0.25, 0.5, 1]), [0.25, 0.25, 0.25]);
+    equals(color.multiply([0.25, 0.5, 1]), new Color([0.25, 0.25, 0.25]));
     var color = new Color(1, 1, 1);
-    compareColors(color.multiply(0.5), [0.5, 0.5, 0.5]);
+    equals(color.multiply(0.5), new Color([0.5, 0.5, 0.5]));
     var color = new Color(0.5, 0.5, 0.5);
-    compareColors(color.multiply(2), [1, 1, 1]);
+    equals(color.multiply(2), new Color([1, 1, 1]));
 });
 
 test('Color#divide', function() {
     var color = new Color(1, 1, 1);
-    compareColors(color.divide([1, 2, 4]), [1, 0.5, 0.25]);
+    equals(color.divide([1, 2, 4]), new Color([1, 0.5, 0.25]));
     var color = new Color(1, 0.5, 0.25);
-    compareColors(color.divide(0.25), [4, 2, 1]);
+    equals(color.divide(0.25), new Color([4, 2, 1]));
     var color = new Color(1, 1, 1);
-    compareColors(color.divide(4), [0.25, 0.25, 0.25]);
+    equals(color.divide(4), new Color([0.25, 0.25, 0.25]));
 });
 
 

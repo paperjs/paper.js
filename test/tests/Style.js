@@ -37,12 +37,12 @@ test('style defaults', function() {
 test('currentStyle', function() {
     paper.project.currentStyle.fillColor = 'black';
     var path = new Path();
-    compareColors(path.fillColor, 'black', 'path.fillColor');
+    equals(path.fillColor, new Color('black'), 'path.fillColor');
 
     // When changing the current style of the project, the style of
     // paths created using project.currentStyle should not change.
     paper.project.currentStyle.fillColor = 'red';
-    compareColors(path.fillColor, 'black', 'path.fillColor');
+    equals(path.fillColor, new Color('black'), 'path.fillColor');
 });
 
 test('setting currentStyle to an object', function() {
@@ -51,8 +51,8 @@ test('setting currentStyle to an object', function() {
         strokeColor: 'green'
     };
     var path = new Path();
-    compareColors(path.fillColor, 'red', 'path.fillColor');
-    compareColors(path.strokeColor, 'green', 'path.strokeColor');
+    equals(path.fillColor, new Color('red'), 'path.fillColor');
+    equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
 test('setting path styles to an object', function() {
@@ -61,8 +61,8 @@ test('setting path styles to an object', function() {
         fillColor: 'red',
         strokeColor: 'green'
     };
-    compareColors(path.fillColor, 'red', 'path.fillColor');
-    compareColors(path.strokeColor, 'green', 'path.strokeColor');
+    equals(path.fillColor, new Color('red'), 'path.fillColor');
+    equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
 test('setting group styles to an object', function() {
@@ -73,8 +73,8 @@ test('setting group styles to an object', function() {
         fillColor: 'red',
         strokeColor: 'green'
     };
-    compareColors(path.fillColor, 'red', 'path.fillColor');
-    compareColors(path.strokeColor, 'green', 'path.strokeColor');
+    equals(path.fillColor, new Color('red'), 'path.fillColor');
+    equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
 test('getting group styles', function() {
@@ -83,7 +83,7 @@ test('getting group styles', function() {
     path.fillColor = 'red';
     group.addChild(path);
 
-    compareColors(group.fillColor, 'red', 'group.fillColor');
+    equals(group.fillColor, new Color('red'), 'group.fillColor');
 
     var secondPath = new Path();
     secondPath.fillColor = 'black';
@@ -97,7 +97,7 @@ test('getting group styles', function() {
 
     //If we remove the first path, it should now return 'black':
     group.children[0].remove();
-    compareColors(group.fillColor, 'black', 'group.fillColor');
+    equals(group.fillColor, new Color('black'), 'group.fillColor');
 });
 
 test('getting group styles 2', function() {
@@ -136,11 +136,11 @@ test('setting group styles', function() {
 
     // the paths contained in the group should now both have their fillColor
     // set to black:
-    compareColors(path.fillColor, 'black', 'path.fillColor');
-    compareColors(secondPath.fillColor, 'black', 'secondPath.fillColor');
+    equals(path.fillColor, new Color('black'), 'path.fillColor');
+    equals(secondPath.fillColor, new Color('black'), 'secondPath.fillColor');
 
     // The second path still has its strokeColor set to red:
-    compareColors(secondPath.strokeColor, 'red', 'secondPath.strokeColor');
+    equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });
 
 test('setting group styles 2', function() {
@@ -150,31 +150,31 @@ test('setting group styles 2', function() {
     path.fillColor = 'red';
     group.addChild(path);
 
-    compareColors(group.fillColor, 'red', 'group.fillColor');
+    equals(group.fillColor, new Color('red'), 'group.fillColor');
 
     var secondPath = new Path();
     secondPath.fillColor = 'blue';
     secondPath.strokeColor = 'red';
     group.addChild(secondPath);
 
-    compareColors(secondPath.fillColor, 'blue', 'secondPath.fillColor');
-    compareColors(secondPath.strokeColor, 'red', 'secondPath.strokeColor');
+    equals(secondPath.fillColor, new Color('blue'), 'secondPath.fillColor');
+    equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 
     // By appending a path with a different fillcolor,
     // the group's fillColor should return undefined:
     equals(group.fillColor, undefined, 'group.fillColor');
 
     // But, both paths have a red strokeColor, so:
-    compareColors(group.strokeColor, 'red', 'group.strokeColor');
+    equals(group.strokeColor, new Color('red'), 'group.strokeColor');
 
     // Change the fill color of the group's style:
     group.style.fillColor = 'black';
 
     // the paths contained in the group should now both have their fillColor
     // set to black:
-    compareColors(path.fillColor, 'black', 'path.fillColor');
-    compareColors(secondPath.fillColor, 'black', 'secondPath.fillColor');
+    equals(path.fillColor, new Color('black'), 'path.fillColor');
+    equals(secondPath.fillColor, new Color('black'), 'secondPath.fillColor');
 
     // The second path still has its strokeColor set to red:
-    compareColors(secondPath.strokeColor, 'red', 'secondPath.strokeColor');
+    equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });

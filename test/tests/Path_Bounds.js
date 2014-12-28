@@ -88,7 +88,7 @@ test('path.strokeBounds on closed path with single segment and stroke color', fu
     ]);
     path.strokeColor = 'black';
     path.closed = true;
-    equals(path.strokeBounds, { x: 120.44098, y: 312.88324 , width: 19.97544, height: 30.53977 });
+    equals(path.strokeBounds, new Rectangle(120.44098, 312.88324 , 19.97544, 30.53977));
 });
 
 test('path.strokeBounds with corners and miter limit', function() {

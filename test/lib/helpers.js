@@ -28,6 +28,9 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
 });
 
 var comparators = {
+    Null: QUnit.strictEqual,
+    Undefined: QUnit.strictEqual,
+
     Number: function(actual, expected, message, options) {
         // Compare with a default tolerance of Numerical.TOLERANCE:
         var ok = Math.abs(actual - expected)
@@ -36,8 +39,8 @@ var comparators = {
     },
 
     Array: function(actual, expected, message, options) {
-        equals(actual.length, expected.length, (message || '') + ' length',
-                options);
+        QUnit.strictEqual(actual.length, expected.length,
+            (message || '') + ' length');
         for (var i = 0, l = actual.length; i < l; i++) {
             equals(actual[i], expected[i], (message || '') + ' [' + i + ']',
                 options);
@@ -45,28 +48,35 @@ var comparators = {
     },
 
     Point: function(actual, expected, message, options) {
-        equals(actual.x, expected.x, (message || '') + ' x', options);
-        equals(actual.y, expected.y, (message || '') + ' y', options);
+        comparators.Number(actual.x, expected.x, (message || '') + ' x',
+            options);
+        comparators.Number(actual.y, expected.y, (message || '') + ' y',
+            options);
     },
 
     Size: function(actual, expected, message, options) {
-        equals(actual.width, expected.width, (message || '') + ' width',
-                options);
-        equals(actual.height, expected.height, (message || '') + ' height',
-                options);
+        comparators.Number(actual.width, expected.width,
+                (message || '') + ' width', options);
+        comparators.Number(actual.height, expected.height,
+                (message || '') + ' height', options);
     },
 
     Rectangle: function(actual, expected, message, options) {
         comparators.Point(actual, expected, message, options);
         comparators.Size(actual, expected, message, options);
+    },
+
+    Color: function(actual, expected, message, options) {
+        if (actual && expected) {
+            equals(actual.type, expected.type,
+                    (message || '') + ' type', options);
+            equals(actual.components, expected.components,
+                    (message || '') + ' components', options);
+        } else {
+            equals(actual, expected, message, options);
+        }
     }
 };
-
-function getClass(object) {
-    return typeof object === 'number' && 'Number'
-        || Array.isArray(object) && 'Array'
-        || object && object._class;
-}
 
 function getFunctionMessage(func) {
     var message = func.toString().match(
@@ -90,24 +100,24 @@ function equals(actual, expected, message, options) {
             message = getFunctionMessage(actual);
         actual = actual();
     }
-    if (expected != null) {
-        var comparator = comparators[getClass(expected)];
-        if (comparator)
-            return comparator(actual, expected, message, options);
-        if (expected.equals)
-            return QUnit.push(expected.equals(actual),
-                    actual, expected, message);
+    // Get the comparator based on the expected value's type only and ignore the
+    // actual value's type.
+    var type = typeof expected;
+    var comparator = comparators[
+            type === 'number' && 'Number'
+            || type === 'undefined' && 'Undefined'
+            || expected === null && 'Null'
+            || Array.isArray(expected) && 'Array'
+            || expected && expected._class];
+    if (comparator) {
+        comparator(actual, expected, message, options);
+    } else if (expected && expected.equals) {
+        // Fall back to equals
+        QUnit.push(expected.equals(actual), actual, expected, message);
+    } else {
+        // Finally perform a strict compare
+        QUnit.push(actual === expected, actual, expected, message);
     }
-    if (actual != null) {
-        var comparator = comparators[getClass(actual)];
-        if (comparator)
-            return comparator(actual, expected, message, options);
-        // Support calling of #equals() on the actual or expected value.
-        if (actual.equals)
-            return QUnit.push(actual.equals(expected),
-                    actual, expected, message);
-    }
-    QUnit.push(actual === expected, actual, expected, message);
 }
 
 function test(testName, expected) {
@@ -126,19 +136,6 @@ function asyncTest(testName, expected) {
             start();
         });
     });
-}
-
-function compareColors(color1, color2, message, options) {
-    color1 = color1 && new Color(color1);
-    color2 = color2 && new Color(color2);
-    if (color1 && color2) {
-        equals(color1.type, color2.type,
-                (message || '') + ' type', options);
-        equals(color1.components, color2.components,
-                (message || '') + ' components', options);
-    } else {
-        equals(color1, color2, message, options);
-    }
 }
 
 function compareStyles(style, style2, options) {
@@ -164,13 +161,8 @@ function compareStyles(style, style2, options) {
                     }, true, 'The ' + key
                             + '.gradient should point to the same object:');
                 }
-                compareColors(style[key], style2[key],
-                        'Compare Style#' + key);
-            } else {
-                equals(style[key] && style[key].toString(),
-                        style2[key] && style2[key].toString(),
-                        'Compare Style#' + key);
             }
+            equals(style[key], style2[key], 'Compare Style#' + key);
         }
     });
 

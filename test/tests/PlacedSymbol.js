@@ -19,7 +19,7 @@ test('placedSymbol bounds', function() {
     path.strokeCap = 'round';
     path.strokeJoin = 'round';
     equals(path.strokeBounds,
-        { x: -0.5, y: -0.5, width: 101, height: 101 },
+        new Rectangle(-0.5, -0.5, 101, 101),
         'Path initial bounds');
     var symbol = new Symbol(path);
     var placedSymbol = new PlacedSymbol(symbol);
@@ -30,12 +30,12 @@ test('placedSymbol bounds', function() {
 
     placedSymbol.scale(1, 0.5);
     equals(placedSymbol.bounds,
-        { x: -50.5, y: -25.25, width: 101, height: 50.5 },
+        new Rectangle(-50.5, -25.25, 101, 50.5),
         'Bounds after scale');
 
     placedSymbol.rotate(40);
     equals(placedSymbol.bounds,
-        { x: -41.96283, y: -37.79252, width: 83.92567, height: 75.58503 },
+        new Rectangle(-41.96283, -37.79252, 83.92567, 75.58503),
         'Bounds after rotation');
 });
 
@@ -49,7 +49,7 @@ test('bounds of group of symbol instances', function() {
     }
     var group = new Group(instances);
     equals(group.bounds,
-        { x: -10, y: 10, width: 200, height: 20 },
+        new Rectangle(-10, 10, 200, 20),
         'Group bounds');
 });
 
@@ -58,19 +58,19 @@ test('bounds of a symbol that contains a group of items', function() {
     var path2 = path.clone();
     path2.position.x += 20;
     equals(path.bounds,
-        { x: -10, y: -10, width: 20, height: 20 },
+        new Rectangle(-10, -10, 20, 20),
         'path bounds');
     equals(path2.bounds,
-        { x: 10, y: -10, width: 20, height: 20 },
+        new Rectangle(10, -10, 20, 20),
         'path2 bounds');
     var group = new Group(path, path2);
     equals(group.bounds,
-        { x: -10, y: -10, width: 40, height: 20 },
+        new Rectangle(-10, -10, 40, 20),
         'Group bounds');
     var symbol = new Symbol(group);
     var instance = symbol.place(new Point(50, 50));
     equals(instance.bounds,
-        { x: 30, y: 40, width: 40, height: 20 },
+        new Rectangle(30, 40, 40, 20),
         'Instance bounds');
 });
 
@@ -80,15 +80,15 @@ test('Changing the definition of a symbol should change the bounds of all instan
     var symbol = new Symbol(path);
     var instance = symbol.place(new Point(0, 0));
     equals(instance.bounds,
-        { x: -10, y: -10, width: 20, height: 20 },
+        new Rectangle(-10, -10, 20, 20),
         'Initial bounds');
     symbol.definition = path2;
     equals(instance.bounds,
-        { x: -20, y: -20, width: 40, height: 40 },
+        new Rectangle(-20, -20, 40, 40),
         'Bounds after changing symbol definition');
     symbol.definition.scale(0.5, 0.5);
     equals(instance.bounds,
-        { x: -10, y: -10, width: 20, height: 20 },
+        new Rectangle(-10, -10, 20, 20),
         'Bounds after modifying symbol definition');
 });
 

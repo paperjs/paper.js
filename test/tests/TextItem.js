@@ -19,7 +19,7 @@ test('PointText', function() {
         point: [100, 100],
         content: 'Hello World!'
     });
-    compareColors(text.fillColor, new Color(0, 0, 0), 'text.fillColor should be black by default');
+    equals(text.fillColor, new Color(0, 0, 0), 'text.fillColor should be black by default');
     equals(text.point, new Point(100, 100), 'text.point');
     equals(text.bounds.point, new Point(100, 87.4), 'text.bounds.point');
     equals(text.bounds.size, new Size(77, 16.8), 'text.bounds.size', { tolerance: 1.0 });
