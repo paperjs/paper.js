@@ -123,7 +123,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     _equals: function(item) {
-        return Base.equals(this._segments, item._segments);
+        return this._closed === item._closed
+                && Base.equals(this._segments, item._segments);
     },
 
     clone: function(insert) {
