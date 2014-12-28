@@ -3020,16 +3020,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // @param {String[]} flags Array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix) {
+    transform: function(matrix, _applyMatrix, _applyRecursively) {
         // If no matrix is provided, or the matrix is the identity, we might
         // still have some work to do in case _applyMatrix is true
         if (matrix && matrix.isIdentity())
             matrix = null;
         var _matrix = this._matrix,
             applyMatrix = (_applyMatrix || this._applyMatrix)
-                // Don't apply _matrix if the result of concatenating with
-                // matrix would be identity.
-                && (!_matrix.isIdentity() || matrix);
+                    // Don't apply _matrix if the result of concatenating with
+                    // matrix would be identity.
+                    && ((!_matrix.isIdentity() || matrix)
+                        // Even if it's an identity matrix, we still need to
+                        // recursively apply the matrix to children.
+                        || _applyMatrix && _applyRecursively && this._children);
         // Bail out if there is nothing to do.
         if (!matrix && !applyMatrix)
             return this;
@@ -3040,7 +3043,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, PlacedSymbol, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix = applyMatrix && this._transformContent(_matrix)) {
+        if (applyMatrix = applyMatrix
+                && this._transformContent(_matrix, _applyRecursively)) {
             // When the _matrix could be applied, we also need to transform
             // color styles (only gradients so far) and pivot point:
             var pivot = this._pivot,
@@ -3096,11 +3100,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this;
     },
 
-    _transformContent: function(matrix) {
+    _transformContent: function(matrix, applyRecursively) {
         var children = this._children;
         if (children) {
             for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true);
+                children[i].transform(matrix, true, applyRecursively);
             return true;
         }
     },
