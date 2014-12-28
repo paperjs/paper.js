@@ -42,6 +42,23 @@ var comparators = {
             equals(actual[i], expected[i], (message || '') + ' [' + i + ']',
                 options);
         }
+    },
+
+    Point: function(actual, expected, message, options) {
+        equals(actual.x, expected.x, (message || '') + ' x', options);
+        equals(actual.y, expected.y, (message || '') + ' y', options);
+    },
+
+    Size: function(actual, expected, message, options) {
+        equals(actual.width, expected.width, (message || '') + ' width',
+                options);
+        equals(actual.height, expected.height, (message || '') + ' height',
+                options);
+    },
+
+    Rectangle: function(actual, expected, message, options) {
+        comparators.Point(actual, expected, message, options);
+        comparators.Size(actual, expected, message, options);
     }
 };
 
@@ -109,21 +126,6 @@ function asyncTest(testName, expected) {
             start();
         });
     });
-}
-
-function comparePoints(point1, point2, message, options) {
-    equals(point1.x, point2.x, (message || '') + ' x', options);
-    equals(point1.y, point2.y, (message || '') + ' y', options);
-}
-
-function compareSize(size1, size2, message, options) {
-    equals(size1.width, size2.width, (message || '') + ' width', options);
-    equals(size1.height, size2.height, (message || '') + ' height', options);
-}
-
-function compareRectangles(rect1, rect2, message, options) {
-    comparePoints(rect1, rect2, message, options);
-    compareSize(rect1, rect2, message, options);
 }
 
 function compareColors(color1, color2, message, options) {

@@ -728,11 +728,11 @@ test('Item#pivot', function() {
     var pivot1 = path1.bounds.topLeft.clone();
     path1.pivot = pivot1;
     path1.position = [200, 200];
-    comparePoints(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
+    equals(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
 
     var pivot2 = path2.bounds.topLeft.clone();
     path2.pivot = pivot2;
     path2.position = [200, 200];
-    comparePoints(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
+    equals(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
 
 });

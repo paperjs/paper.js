@@ -28,7 +28,7 @@ test('Curve#getPointAt()', function() {
 
     for (var i = 0; i < points.length; i++) {
         var entry = points[i];
-        comparePoints(curve.getPointAt(entry[0], true), entry[1],
+        equals(curve.getPointAt(entry[0], true), entry[1],
                 'curve.getPointAt(' + entry[0] + ', true);');
     }
 });
@@ -49,7 +49,7 @@ test('Curve#getTangentAt()', function() {
 
     for (var i = 0; i < tangents.length; i++) {
         var entry = tangents[i];
-        comparePoints(curve.getTangentAt(entry[0], true), entry[1],
+        equals(curve.getTangentAt(entry[0], true), entry[1],
                 'curve.getTangentAt(' + entry[0] + ', true);');
     }
 });
@@ -70,7 +70,7 @@ test('Curve#getNormalAt()', function() {
 
     for (var i = 0; i < normals.length; i++) {
         var entry = normals[i];
-        comparePoints(curve.getNormalAt(entry[0], true), entry[1],
+        equals(curve.getNormalAt(entry[0], true), entry[1],
                 'curve.getNormalAt(' + entry[0] + ', true);');
     }
 });
