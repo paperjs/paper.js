@@ -147,5 +147,17 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      */
     clone: function() {
         return new Symbol(this._definition.clone(false));
+    },
+
+    /**
+     * Checks whether the symbol's definition is equal to the supplied symbol.
+     *
+     * @param {Symbol} symbol
+     * @return {Boolean} {@true if they are equal}
+     */
+    equals: function(symbol) {
+        return symbol === this
+                || symbol && this.definition.equals(symbol.definition)
+                || false;
     }
 });
