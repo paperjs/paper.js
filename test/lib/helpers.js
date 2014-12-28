@@ -73,6 +73,14 @@ function equals(actual, expected, message, options) {
             message = getFunctionMessage(actual);
         actual = actual();
     }
+    if (expected != null) {
+        var comparator = comparators[getClass(expected)];
+        if (comparator)
+            return comparator(actual, expected, message, options);
+        if (expected.equals)
+            return QUnit.push(expected.equals(actual),
+                    actual, expected, message);
+    }
     if (actual != null) {
         var comparator = comparators[getClass(actual)];
         if (comparator)
@@ -80,14 +88,6 @@ function equals(actual, expected, message, options) {
         // Support calling of #equals() on the actual or expected value.
         if (actual.equals)
             return QUnit.push(actual.equals(expected),
-                    actual, expected, message);
-    }
-    if (expected != null) {
-        var comparator = comparators[getClass(expected)];
-        if (comparator)
-            return comparator(actual, expected, message, options);
-        if (expected.equals)
-            return QUnit.push(expected.equals(actual),
                     actual, expected, message);
     }
     QUnit.push(actual === expected, actual, expected, message);
