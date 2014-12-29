@@ -52,48 +52,43 @@ var View = Base.extend(Emitter, /** @lends View# */{
             userDrag: none,
             tapHighlightColor: 'rgba(0,0,0,0)'
         });
-        // If the element has the resize attribute, resize the it to fill the
-        // window and resize it again whenever the user resizes the window.
-        if (PaperScope.hasAttribute(element, 'resize')) {
-            // Subtract element' viewport offset from the total size, to
-            // stretch it in
-            var offset = DomElement.getOffset(element, true),
-                that = this;
-            size = DomElement.getViewportBounds(element)
-                    .getSize().subtract(offset);
-            this._windowEvents = {
-                resize: function() {
-                    // Only update element offset if it's not invisible, as
-                    // otherwise the offset would be wrong.
-                    if (!DomElement.isInvisible(element))
-                        offset = DomElement.getOffset(element, true);
-                    // Set the size now, which internally calls onResize
-                    // and redraws the view
-                    that.setViewSize(DomElement.getViewportBounds(element)
-                            .getSize().subtract(offset));
-                }
-            };
-            DomEvent.add(window, this._windowEvents);
-        } else {
-            // Try visible size first, since that will help handling previously
-            // scaled canvases (e.g. when dealing with pixel-ratio)
-            size = DomElement.getSize(element);
-            if (size.isNaN() || size.isZero()) {
-                // If the element is invisible, we cannot directly access
-                // element.width / height, because they would appear 0.
-                // Reading the attributes should still work.
-                var getSize = function(name) {
-                    return element[name]
-                            || parseInt(element.getAttribute(name), 10);
-                };
-                size = new Size(getSize('width'), getSize('height'));
-            }
-        }
+
+    		var getCanvasSize = function() {
+          // Try visible size first, since that will help handling previously
+          // scaled canvases (e.g. when dealing with pixel-ratio)
+    			size = DomElement.getSize(element);
+    			if (size.isNaN() || size.isZero()) {
+            // If the element is invisible, we cannot directly access
+            // element.width / height, because they would appear 0.
+            // Reading the attributes should still work.
+    				var getSize = function(name) {
+    					return element[name]
+    							|| parseInt(element.getAttribute(name), 10);
+    				};
+    				size = new Size(getSize('width'), getSize('height'));
+    			}
+    			return size;
+    		};
+
+        // If the element has the resize attribute, listen to resize events and
+        // update its coordinate space accordingly
+    		this._resizable = PaperScope.hasAttribute(element, 'resize');
+    		if (this._resizable) {
+    			var that = this;
+    			this._windowEvents = {
+    				resize: function() {
+              // setViewSize is aware of a resizable canvas and only updates the
+              // coordinate space based on the physical dimensions and pixel ratio
+    					that.setViewSize(getCanvasSize());
+    				}
+    			};
+    			DomEvent.add(window, this._windowEvents);
+    		}
         // Set canvas size even if we just deterined the size from it, since
         // it might have been set to a % size, in which case it would use some
         // default internal size (300x150 on WebKit) and scale up the pixels.
         // We also need this call here for HiDPI support.
-        this._setViewSize(size);
+    		this._setViewSize(getCanvasSize());
         // TODO: Test this on IE:
         if (PaperScope.hasAttribute(element, 'stats')
                 && typeof Stats !== 'undefined') {
