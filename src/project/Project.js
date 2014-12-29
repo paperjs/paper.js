@@ -230,27 +230,37 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         return items;
     },
 
-    // Helper function used in Item#copyTo and Layer#initialize
-    // It's called the same as Item#addChild so Item#copyTo does not need to
-    // make the distinction.
-    // TODO: Consider private function with alias in Item?
-    addChild: function(child) {
-        if (child instanceof Layer) {
-            Base.splice(this.layers, [child]);
+    // Project#insertChild() and #addChild() are helper functions called in
+    // Item#copyTo(), Layer#initialize(), Layer#_insertSibling()
+    // They are called the same as the functions on Item so duck-typing works.
+    insertChild: function(index, item, _preserve) {
+        if (item instanceof Layer) {
+            item._remove(false, true);
+            Base.splice(this.layers, [item], index, 0);
+            item._setProject(this, true);
+            // See Item#_remove() for an explanation of this:
+            if (this._changes)
+                item._changed(/*#=*/Change.INSERTION);
+            // TODO: this._changed(/*#=*/Change.LAYERS);
             // Also activate this layer if there was none before
             if (!this._activeLayer)
-                this._activeLayer = child;
-        } else if (child instanceof Item) {
+                this._activeLayer = item;
+        } else if (item instanceof Item) {
             // Anything else than layers needs to be added to a layer first
             (this._activeLayer
                 // NOTE: If there is no layer and this project is not the active
                 // one, passing insert: false and calling addChild on the
                 // project will handle it correctly.
-                || this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
+                || this.insertChild(index, new Layer(Item.NO_INSERT)))
+                    .insertChild(index, item, _preserve);
         } else {
-            child = null;
+            item = null;
         }
-        return child;
+        return item;
+    },
+
+    addChild: function(item, _preserve) {
+        return this.insertChild(undefined, item, _preserve);
     },
 
     // TODO: Implement setSelectedItems?

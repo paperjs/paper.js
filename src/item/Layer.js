@@ -81,9 +81,9 @@ var Layer = Group.extend(/** @lends Layer# */{
      * Removes the layer from its project's layers list
      * or its parent's children list.
      */
-    _remove: function _remove(notify) {
+    _remove: function _remove(notifySelf, notifyParent) {
         if (this._parent)
-            return _remove.base.call(this, notify);
+            return _remove.base.call(this, notifySelf, notifyParent);
         if (this._index != null) {
             var project = this._project;
             if (project._activeLayer === this)
@@ -91,9 +91,17 @@ var Layer = Group.extend(/** @lends Layer# */{
                         || this.getPreviousSibling();
             Base.splice(project.layers, null, this._index, 1);
             this._installEvents(false);
-            // Tell project we need a redraw. This is similar to _changed()
-            // mechanism.
-            project._needsUpdate = true;
+            // Notify self of the insertion change. We only need this
+            // notification if we're tracking changes for now.
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
+            // Notify parent of changed children
+            if (notifyParent) {
+                // TODO: project._changed(/*#=*/Change.LAYERS);
+                // Tell project we need a redraw. This is similar to _changed()
+                // mechanism.
+                project._needsUpdate = true;
+            }
             return true;
         }
         return false;
@@ -128,16 +136,11 @@ var Layer = Group.extend(/** @lends Layer# */{
     },
 
     // Private helper for #insertAbove() / #insertBelow()
-    _insert: function _insert(above, item, _preserve) {
+    _insertSibling: function _insertSibling(index, item, _preserve) {
         // If the item is a layer and contained within Project#layers, use
         // our own version of move().
-        if (item instanceof Layer && !item._parent) {
-            this._remove(true, true);
-            Base.splice(item._project.layers, [this],
-                    item._index + (above ? 1 : 0), 0);
-            this._setProject(item._project, true);
-            return this;
-        }
-        return _insert.base.call(this, above, item, _preserve);
+        return !this._parent
+                ? this._project.insertChild(index, item, _preserve)
+                : _insertSibling.base.call(this, index, item, _preserve);
     }
 });
