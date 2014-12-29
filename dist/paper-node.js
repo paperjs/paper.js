@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Dec 2 22:31:20 2014 -0800
+ * Date: Sat Nov 22 09:01:01 2014 -0800
  *
  ***
  *
@@ -219,8 +219,10 @@ var Base = new function() {
 						|| ctor.name === 'Object');
 			},
 
-			pick: function(a, b) {
-				return a !== undefined ? a : b;
+			pick: function() {
+				for (var i = 0, l = arguments.length; i < l; i++)
+					if (arguments[i] !== undefined)
+						return arguments[i];
 			}
 		}
 	});
@@ -243,10 +245,6 @@ Base.inject({
 							: type === 'string' ? "'" + value + "'" : value));
 				}
 			}, []).join(', ') + ' }';
-	},
-
-	getClassName: function() {
-		return this._class || '';
 	},
 
 	exportJSON: function(options) {
@@ -2804,6 +2802,10 @@ var Item = Base.extend(Emitter, {
 		return this._id;
 	},
 
+	getClassName: function() {
+		return this._class;
+	},
+
 	getName: function() {
 		return this._name;
 	},
@@ -5343,7 +5345,6 @@ var SegmentPoint = Point.extend({
 
 var Curve = Base.extend({
 	_class: 'Curve',
-
 	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count === 3) {
@@ -10479,13 +10480,11 @@ var CanvasView = View.extend({
 			style = element.style;
 		element.width = width * pixelRatio;
 		element.height = height * pixelRatio;
-			if (pixelRatio !== 1) {
-				if (this._resizable === false) {
-					style.width = width + 'px';
-					style.height = height + 'px';
-				}
-				this._context.scale(pixelRatio, pixelRatio);
-			}
+		if (pixelRatio !== 1) {
+			style.width = width + 'px';
+			style.height = height + 'px';
+			this._context.scale(pixelRatio, pixelRatio);
+		}
 	},
 
 	getPixelSize: function(size) {
@@ -11076,11 +11075,11 @@ new function() {
 					scale = decomposed.scaling;
 				if (trans && !trans.isZero())
 					parts.push('translate(' + formatter.point(trans) + ')');
+				if (angle)
+					parts.push('rotate(' + formatter.number(angle) + ')');
 				if (!Numerical.isZero(scale.x - 1)
 						|| !Numerical.isZero(scale.y - 1))
 					parts.push('scale(' + formatter.point(scale) +')');
-				if (angle)
-					parts.push('rotate(' + formatter.number(angle) + ')');
 				attrs.transform = parts.join(' ');
 			} else {
 				attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
