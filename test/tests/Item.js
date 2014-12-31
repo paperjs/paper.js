@@ -691,9 +691,9 @@ test('Item#blendMode in a transformed Group', function() {
     });
 
     var raster = layer.rasterize(72);
-    compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
             'Top left pixel should be red:');
-    compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
+    equals(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
             'Middle center pixel should be yellow:');
 
     raster.remove();
@@ -703,9 +703,9 @@ test('Item#blendMode in a transformed Group', function() {
     group.position = [50, 50];
 
     var raster = layer.rasterize(72);
-    compareColors(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
+    equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
             'Top left pixel should be red:');
-    compareColors(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
+    equals(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
             'Middle center pixel should be yellow:');
 });
 
@@ -728,11 +728,11 @@ test('Item#pivot', function() {
     var pivot1 = path1.bounds.topLeft.clone();
     path1.pivot = pivot1;
     path1.position = [200, 200];
-    comparePoints(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
+    equals(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
 
     var pivot2 = path2.bounds.topLeft.clone();
     path2.pivot = pivot2;
     path2.position = [200, 200];
-    comparePoints(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
+    equals(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
 
 });

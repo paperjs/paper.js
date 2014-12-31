@@ -109,7 +109,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             // one and draw this raster's canvas on it.
             var copyCanvas = CanvasProvider.getCanvas(this._size);
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            copy.setCanvas(copyCanvas);
+            copy.setImage(copyCanvas);
         }
         return this._clone(copy, insert);
     },
@@ -122,21 +122,30 @@ var Raster = Item.extend(/** @lends Raster# */{
      */
     getSize: function() {
         var size = this._size;
-        return new LinkedSize(size.width, size.height, this, 'setSize');
+        return new LinkedSize(size ? size.width : 0, size ? size.height : 0,
+                this, 'setSize');
     },
 
     setSize: function(/* size */) {
         var size = Size.read(arguments);
-        if (!this._size.equals(size)) {
-            // Get reference to image before changing canvas.
-            var element = this.getElement();
-            // NOTE: Setting canvas internally sets _size.
-            // NOTE: No need to release the previous canvas as #setCanvas() does
-            this.setCanvas(CanvasProvider.getCanvas(size));
-            // Draw element back onto new canvas.
-            if (element)
-                this.getContext(true).drawImage(element, 0, 0,
-                        size.width, size.height);
+        if (!size.equals(this._size)) { // NOTE: this._size could be null
+            if (size.width > 0 && size.height > 0) {
+                // Get reference to image before changing canvas.
+                var element = this.getElement();
+                // NOTE: Setting canvas internally sets _size.
+                // NOTE: No need to release previous canvas as #setImage() does.
+                this.setImage(CanvasProvider.getCanvas(size));
+                // Draw element back onto new canvas.
+                if (element)
+                    this.getContext(true).drawImage(element, 0, 0,
+                            size.width, size.height);
+            } else {
+                // 0-width / height dimensions do not require the creation of
+                // an internal canvas. Just reflect the size for now.
+                if (this._canvas)
+                    CanvasProvider.release(this._canvas);
+                this._size = size.clone();
+            }
         }
     },
 
@@ -147,7 +156,11 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @bean
      */
     getWidth: function() {
-        return this._size.width;
+        return this._size ? this._size.width : 0;
+    },
+
+    setWidth: function(width) {
+        this.setSize(width, this.getHeight());
     },
 
     /**
@@ -157,11 +170,16 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @bean
      */
     getHeight: function() {
-        return this._size.height;
+        return this._size ? this._size.height : 0;
+    },
+
+    setHeight: function(height) {
+        this.setSize(this.getWidth(), height);
     },
 
     isEmpty: function() {
-        return this._size.width === 0 && this._size.height === 0;
+        var size = this._size;
+        return !size || size.width === 0 && size.height === 0;
     },
 
     /**
@@ -414,7 +432,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     getSubRaster: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             raster = new Raster(Item.NO_INSERT);
-        raster.setCanvas(this.getSubCanvas(rect));
+        raster.setImage(this.getSubCanvas(rect));
         raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
         raster._matrix.preConcatenate(this._matrix);
         raster.insertAbove(this);

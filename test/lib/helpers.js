@@ -27,42 +27,230 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
             : objectParser).call(this, obj, stack);
 });
 
-function getFunctionBody(func) {
-    return func.toString().match(
+function compareProperties(actual, expected, properties, message, options) {
+    for (var i = 0, l = properties.length; i < l; i++) {
+        var key = properties[i];
+        equals(actual[key], expected[key], message + '.' + key, options);
+    }
+}
+
+function compareItem(actual, expected, message, options, properties) {
+    if (options && options.cloned)
+        QUnit.notStrictEqual(actual.id, 'not ' + expected.id, message + '.id');
+    QUnit.strictEqual(actual.constructor, expected.constructor,
+            message + '.constructor');
+    // When item was cloned and had a name, the name will be versioned
+    equals(options && options.cloned && actual.name ? actual.name + ' 1'
+            : actual.name, expected.name,
+            message + '.name');
+    compareProperties(actual, expected, ['children', 'bounds', 'position',
+            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+            'selected', 'fullySelected', 'clipMask', 'guide'],
+            message, options);
+    if (properties)
+        compareProperties(actual, expected, properties, message, options);
+    // Style
+    compareProperties(actual.style, expected.style, ['fillColor', 'strokeColor',
+            'strokeCap', 'strokeJoin', 'dashArray', 'dashOffset', 'miterLimit',
+            'fontSize', 'font', 'leading', 'justification'],
+            message + '.style', options);
+}
+
+// A list of comparator functions, based on `expected` type. See equals() for
+// an explanation of how the type is determined.
+var comparators = {
+    Null: QUnit.strictEqual,
+    Undefined: QUnit.strictEqual,
+    Boolean: QUnit.strictEqual,
+
+    Object: function(actual, expected, message, options) {
+        QUnit.push(Base.equals(actual, expected), actual, expected, message);
+    },
+
+    Base: function(actual, expected, message, options) {
+        comparators.Object(actual, expected, message, options);
+    },
+
+    Number: function(actual, expected, message, options) {
+        // Compare with a default tolerance of Numerical.TOLERANCE:
+        var ok = Math.abs(actual - expected)
+                <= Base.pick(options && options.tolerance, Numerical.TOLERANCE);
+        QUnit.push(ok, ok ? expected : actual, expected, message);
+    },
+
+    Array: function(actual, expected, message, options) {
+        QUnit.strictEqual(actual.length, expected.length, message + '.length');
+        for (var i = 0, l = actual.length; i < l; i++) {
+            equals(actual[i], expected[i], (message || '') + '[' + i + ']',
+                options);
+        }
+    },
+
+    Point: function(actual, expected, message, options) {
+        comparators.Number(actual.x, expected.x, message + '.x', options);
+        comparators.Number(actual.y, expected.y, message + '.y', options);
+    },
+
+    Size: function(actual, expected, message, options) {
+        comparators.Number(actual.width, expected.width, message + '.width',
+                options);
+        comparators.Number(actual.height, expected.height, message + '.height',
+                options);
+    },
+
+    Rectangle: function(actual, expected, message, options) {
+        comparators.Point(actual, expected, message, options);
+        comparators.Size(actual, expected, message, options);
+    },
+
+    Matrix: function(actual, expected, message, options) {
+        comparators.Array(actual.values, expected.values, message, options);
+    },
+
+    Color: function(actual, expected, message, options) {
+        if (actual && expected) {
+            equals(actual.type, expected.type, message + '.type', options);
+            // NOTE: This also compares gradients, with identity checks and all.
+            equals(actual.components, expected.components,
+                    message + '.components', options);
+        } else {
+            QUnit.strictEqual(actual, expected, message);
+        }
+    },
+
+    Symbol: function(actual, expected, message, options) {
+        equals(actual.definition, expected.definition, message + '.definition',
+                options);
+    },
+
+    Segment: function(actual, expected, message, options) {
+        compareProperties(actual, expected, ['handleIn', 'handleOut', 'point',
+                'selected'], message, options);
+    },
+
+    SegmentPoint: function(actual, expected, message, options) {
+        comparators.Point(actual, expected, message, options);
+        comparators.Boolean(actual.selected, expected.selected,
+                message + '.selected', options);
+    },
+
+    Item: compareItem,
+
+    Group: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options, ['clipped']);
+    },
+
+    Layer: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options);
+        var sameProject = actual.project === expected.project;
+        var sharedProject = !(options && options.dontShareProject);
+        QUnit.push(sharedProject ? sameProject : !sameProject,
+                actual.project,
+                sharedProject ? expected.project : 'not ' + expected.project,
+                message + '.project');
+    },
+
+    Path: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['segments', 'closed', 'clockwise', 'length']);
+    },
+
+    CompoundPath: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options);
+    },
+
+    Raster: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['size', 'width', 'height', 'ppi', 'source', 'image']);
+        equals(actual.toDataURL(), expected.toDataURL(),
+                message + '.toDataUrl()');
+    },
+
+    Shape: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['shape', 'size', 'radius']);
+    },
+
+    PlacedSymbol: function(actual, expected, message, options) {
+        compareItem(actual, expected, message,
+                // Cloning PlacedSymbols does not result in cloned Symbols
+                options && options.cloned
+                        ? new Base(options, { cloned: false })
+                        : options,
+                ['symbol']);
+    },
+
+    PointText: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['content', 'point']);
+    },
+
+    Project: function(actual, expected, message, options) {
+        compareProperties(actual, expected, ['symbols', 'layers'],
+                message, options);
+    }
+};
+
+// A list of classes that should be identical after their owners were cloned.
+var identicalAfterCloning = {
+    Gradient: true,
+    Symbol: true
+};
+
+function getFunctionMessage(func) {
+    var message = func.toString().match(
         /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
             .replace(/    /g, '')
             .replace(/^\s+|\s+$/g, '');
+    if (/^return /.test(message)) {
+        message = message
+            .replace(/^return /, '')
+            .replace(/;$/, '');
+    }
+    return message;
 }
 
 // Override equals to convert functions to message and execute them as tests()
-function equals(actual, expected, message, tolerance) {
+function equals(actual, expected, message, options) {
     // Allow the use of functions for actual, which will get called and their
     // source content extracted for readable reports.
     if (typeof actual === 'function') {
-        if (!message) {
-            message = getFunctionBody(actual);
-            if (/^return /.test(message)) {
-                message = message
-                    .replace(/^return /, '')
-                    .replace(/;$/, '');
-            }
-        }
+        if (!message)
+            message = getFunctionMessage(actual);
         actual = actual();
     }
-    if (typeof expected === 'number') {
-        // Compare with a default tolerance of Numerical.TOLERANCE:
-        var ok = Math.abs(actual - expected)
-                <= Base.pick(tolerance, Numerical.TOLERANCE);
-        return QUnit.push(ok, ok ? expected : actual, expected, message);
-    } else if (actual && actual.equals) {
-        // Support calling of #equals() on the actual or expected value, and
-        // automatically convert displayed values to strings.
-        return QUnit.push(actual.equals(expected), actual, expected, message);
-    } else if (expected && expected.equals) {
-        return QUnit.push(expected.equals(actual), actual, expected, message);
+    // Get the comparator based on the expected value's type only and ignore the
+    // actual value's type.
+    var type = typeof expected,
+        cls;
+    type = expected === null && 'Null'
+            || type === 'number' && 'Number'
+            || type === 'boolean' && 'Boolean'
+            || type === 'undefined' && 'Undefined'
+            || Array.isArray(expected) && 'Array'
+            || (cls = expected && expected._class)
+            || type === 'object' && 'Object';
+    var comparator = type && comparators[type];
+    if (!message) {
+        message = type
+                ? type.charAt(0).toLowerCase() + type.substring(1)
+                : 'value';
     }
-    // Let's be strict
-    return strictEqual(actual, expected, message);
+    if (comparator) {
+        comparator(actual, expected, message, options);
+    } else if (expected && expected.equals) {
+        // Fall back to equals
+        QUnit.push(expected.equals(actual), actual, expected, message);
+    } else {
+        // Finally perform a strict compare
+        QUnit.push(actual === expected, actual, expected, message);
+    }
+    if (options && options.cloned && cls) {
+        var identical = identicalAfterCloning[cls];
+        QUnit.push(identical ? actual === expected : actual !== expected,
+                actual, identical ? expected : 'not ' + expected,
+                message + ': identical after cloning');
+    }
 }
 
 function test(testName, expected) {
@@ -81,317 +269,6 @@ function asyncTest(testName, expected) {
             start();
         });
     });
-}
-
-function compareArrays(array1, array2, message, tolerance) {
-    equals(array1.length, array2.length, (message || '') + ' length');
-    for (var i = 0, l = array1.length; i < l; i++) {
-        equals(array1[i], array2[i], (message || '') + ' [' + i + ']',
-            tolerance);
-    }
-}
-
-function comparePoints(point1, point2, message, tolerance) {
-    equals(point1.x, point2.x, (message || '') + ' x', tolerance);
-    equals(point1.y, point2.y, (message || '') + ' y', tolerance);
-}
-
-function compareSize(size1, size2, message, tolerance) {
-    equals(size1.width, size2.width, (message || '') + ' width', tolerance);
-    equals(size1.height, size2.height, (message || '') + ' height', tolerance);
-}
-
-function compareRectangles(rect1, rect2, message, tolerance) {
-    comparePoints(rect1, rect2, message, tolerance);
-    compareSize(rect1, rect2, message, tolerance);
-}
-
-function compareColors(color1, color2, message, tolerance) {
-    color1 = color1 && new Color(color1);
-    color2 = color2 && new Color(color2);
-    if (color1 && color2) {
-        equals(color1.type, color2.type, (message || '') + ' type');
-        compareArrays(color1.components, color2.components,
-                (message || '') + ' components', tolerance);
-    } else {
-        equals(color1, color2, message, tolerance);
-    }
-}
-
-function compareStyles(style, style2, checkIdentity) {
-    if (checkIdentity) {
-        equals(function() {
-            return style !== style2;
-        }, true);
-    }
-    Base.each(['fillColor', 'strokeColor'], function(key) {
-        if (style[key]) {
-            // The color should not point to the same color object:
-            if (checkIdentity) {
-                equals(function() {
-                    return style[key] !== style2[key];
-                }, true, 'The ' + key
-                        + ' should not point to the same color object:');
-            }
-            if (style[key] instanceof Color) {
-                if (style[key].type === 'gradient' && checkIdentity) {
-                    equals(function() {
-                        return style[key].gradient === style2[key].gradient;
-                    }, true, 'The ' + key
-                            + '.gradient should point to the same object:');
-                }
-                compareColors(style[key], style2[key],
-                        'Compare Style#' + key);
-            } else {
-                equals(style[key] && style[key].toString(),
-                        style2[key] && style2[key].toString(),
-                        'Compare Style#' + key);
-            }
-        }
-    });
-
-    compareObjects('Style', ['strokeCap', 'strokeJoin', 'dashArray',
-            'dashOffset', 'miterLimit', 'strokeOverprint', 'fillOverprint',
-            'fontSize', 'font', 'leading', 'justification'],
-            style, style2, checkIdentity);
-}
-
-function compareObjects(name, keys, obj, obj2, checkIdentity) {
-    if (checkIdentity) {
-        equals(function() {
-            return obj !== obj2;
-        }, true);
-    }
-    Base.each(keys, function(key) {
-        var val = obj[key], val2 = obj2[key],
-            message = 'Compare ' + name + '#' + key;
-        if (typeof val === 'number') {
-            equals(val, val2, message);
-        } else if (Array.isArray(val)) {
-            compareArrays(val, val2, message);
-        } else {
-            equals(val, val2, message);
-        }
-    });
-}
-
-function compareSegmentPoints(segmentPoint, segmentPoint2, checkIdentity) {
-    compareObjects('SegmentPoint', ['x', 'y', 'selected'],
-            segmentPoint, segmentPoint2, checkIdentity);
-}
-
-function compareSegments(segment, segment2, checkIdentity) {
-    if (checkIdentity) {
-        equals(function() {
-            return segment !== segment2;
-        }, true);
-    }
-    equals(function() {
-        return segment.selected == segment2.selected;
-    }, true);
-    Base.each(['handleIn', 'handleOut', 'point'], function(key) {
-        compareSegmentPoints(segment[key], segment2[key]);
-    });
-}
-
-function compareSegmentLists(segmentList, segmentList2, checkIdentity) {
-    if (checkIdentity) {
-        equals(function() {
-            return segmentList !== segmentList2;
-        }, true);
-    }
-    equals(segmentList.toString(), segmentList2.toString(),
-            'Compare Item#segments');
-    if (checkIdentity) {
-        for (var i = 0, l = segmentList.length; i < l; i++) {
-            var segment = segmentList[i],
-                segment2 = segmentList2[i];
-            compareSegments(segment, segment2, checkIdentity);
-        }
-    }
-}
-
-function compareItems(item, item2, cloned, checkIdentity, dontShareProject) {
-    if (checkIdentity) {
-        equals(function() {
-            return item !== item2;
-        }, true);
-
-        equals(function() {
-            return item.id !== item2.id;
-        }, true);
-    }
-
-    equals(function() {
-        return item.constructor == item2.constructor;
-    }, true);
-
-    var itemProperties = ['opacity', 'locked', 'visible', 'blendMode', 'name',
-            'selected', 'clipMask', 'guide'];
-    Base.each(itemProperties, function(key) {
-        var value = item[key];
-        // When item was cloned and had a name, the name will be versioned
-        equals(
-            key == 'name' && cloned && value
-                ? value + ' 1'
-                : value,
-            item2[key],
-            'compare Item#' + key);
-    });
-
-    if (checkIdentity) {
-        equals(function() {
-            return item.bounds !== item2.bounds;
-        }, true);
-    }
-
-    equals(item.bounds.toString(), item2.bounds.toString(),
-            'Compare Item#bounds');
-
-    if (checkIdentity) {
-        equals(function() {
-            return item.position !== item2.position;
-        }, true);
-    }
-
-    equals(item.position.toString(), item2.position.toString(),
-            'Compare Item#position');
-
-    equals(function() {
-        return Base.equals(item.data, item2.data);
-    }, true);
-
-    if (item.matrix) {
-        if (checkIdentity) {
-            equals(function() {
-                return item.matrix !== item2.matrix;
-            }, true);
-        }
-        equals(item.matrix.toString(), item2.matrix.toString(),
-                'Compare Item#matrix');
-    }
-
-    // Path specific
-    if (item instanceof Path) {
-        var keys = ['closed', 'fullySelected', 'clockwise'];
-        for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i];
-            equals(item[key], item2[key], 'Compare Path#' + key);
-        }
-        equals(item.length, item2.length, 'Compare Path#length');
-        compareSegmentLists(item.segments, item2.segments, checkIdentity);
-    }
-
-    // Shape specific
-    if (item instanceof Shape) {
-        var keys = ['shape', 'size', 'radius'];
-        for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i];
-            equals(item[key], item2[key], 'Compare Shape#' + key);
-        }
-    }
-
-    // Group specific
-    if (item instanceof Group) {
-        equals(function() {
-            return item.clipped == item2.clipped;
-        }, true);
-    }
-
-    // Layer specific
-    if (item instanceof Layer) {
-        equals(function() {
-            return dontShareProject
-                    ? item.project != item2.project
-                    : item.project == item2.project;
-        }, true);
-    }
-
-    // PlacedSymbol specific
-    if (item instanceof PlacedSymbol) {
-        if (dontShareProject) {
-            compareItems(item.symbol.definition, item2.symbol.definition,
-                    cloned, checkIdentity, dontShareProject,
-                    'Compare Symbol#definition');
-        } else {
-            equals(function() {
-                return item.symbol == item2.symbol;
-            }, true);
-        }
-    }
-
-    // Raster specific
-    if (item instanceof Raster) {
-        equals(item.size.toString(), item2.size.toString(),
-                'Compare Raster#size');
-        equals(item.width, item2.width, 'Compare Raster#width');
-        equals(item.height, item2.height, 'Compare Raster#height');
-
-        equals(item.ppi.toString(), item2.ppi.toString(),
-                'Compare Raster#ppi');
-
-        equals(item.source, item2.source, 'Compare Raster#source');
-        if (checkIdentity) {
-            equals(item.image, item2.image, 'Compare Raster#image');
-        }
-        equals(item.size.toString(), item2.size.toString(),
-                'Compare Raster#size');
-        equals(item.toDataURL() == item2.toDataURL(), true,
-                'Compare Raster#toDataUrl()');
-    }
-
-    // TextItem specific:
-    if (item instanceof TextItem) {
-        equals(item.content, item2.content, 'Compare Item#content');
-    }
-
-    // PointText specific:
-    if (item instanceof PointText) {
-        if (checkIdentity) {
-            equals(function() {
-                return item.point !== item2.point;
-            }, true);
-        }
-        equals(item.point.toString(), item2.point.toString(),
-                'Compare Item#point');
-    }
-
-    if (item.style) {
-        // Style
-        compareStyles(item.style, item2.style, checkIdentity);
-    }
-
-    // Check length of children and recursively compare them:
-    if (item.children) {
-        equals(function() {
-            return item.children.length == item2.children.length;
-        }, true);
-        for (var i = 0, l = item.children.length; i < l; i++) {
-            compareItems(item.children[i], item2.children[i], cloned,
-                    checkIdentity, dontShareProject);
-        }
-    }
-}
-
-function compareProjects(project, project2) {
-    // Compare Project#symbols:
-    equals(function() {
-        return project.symbols.length == project2.symbols.length;
-    }, true);
-    for (var i = 0, l = project.symbols.length; i < l; i++) {
-        var definition1 = project.symbols[i].definition;
-        var definition2 = project2.symbols[i].definition;
-        compareItems(definition1, definition2, false, false, true,
-                'Compare Symbol#definition');
-    }
-
-    // Compare Project#layers:
-    equals(function() {
-        return project.layers.length == project2.layers.length;
-    }, true);
-    for (var i = 0, l = project.layers.length; i < l; i++) {
-        compareItems(project.layers[i], project2.layers[i], false, false, true);
-    }
 }
 
 // SVG

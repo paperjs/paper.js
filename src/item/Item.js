@@ -2106,7 +2106,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * possible.
      */
     insertChild: function(index, item, _preserve) {
-        var res = this.insertChildren(index, [item], _preserve);
+        var res = item ? this.insertChildren(index, [item], _preserve) : null;
         return res && res[0];
     },
 
@@ -2153,9 +2153,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 if (_proto && !(item instanceof _proto)) {
                     items.splice(i, 1);
                 } else {
+                    // If the item is removed and inserted it again further
+                    /// above, the index needs to be adjusted accordingly.
+                    var shift = item._parent === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
                     // as we're doing so when adding it to the new parent below.
-                    item._remove(false, true);
+                    if (item._remove(false, true) && shift)
+                        index--;
                 }
             }
             Base.splice(children, items, index, 0);
@@ -2181,15 +2185,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     // Private helper for #insertAbove() / #insertBelow()
-    _insert: function(above, item, _preserve) {
-        if (!item._parent)
-            return null;
-        var index = item._index + (above ? 1 : 0);
-        // If the item is removed and inserted it again further above,
-        // the index needs to be adjusted accordingly.
-        if (item._parent === this._parent && index > this._index)
-            index--;
-        return item._parent.insertChild(index, this, _preserve);
+    _insertSibling: function(index, item, _preserve) {
+        return this._parent
+                ? this._parent.insertChild(index, item, _preserve)
+                : null;
     },
 
     /**
@@ -2200,7 +2199,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * possible.
      */
     insertAbove: function(item, _preserve) {
-        return this._insert(true, item, _preserve);
+        return item._insertSibling(item._index + 1, this, _preserve);
     },
 
     /**
@@ -2211,21 +2210,27 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * possible.
      */
     insertBelow: function(item, _preserve) {
-        return this._insert(false, item, _preserve);
+        return item._insertSibling(item._index, this, _preserve);
     },
 
     /**
      * Sends this item to the back of all other items within the same parent.
      */
     sendToBack: function() {
-        return this._parent.insertChild(0, this);
+        // If there is no parent and the item is a layer, delegate to project
+        // instead.
+        return (this._parent || this instanceof Layer && this._project)
+                .insertChild(0, this);
     },
 
     /**
      * Brings this item to the front of all other items within the same parent.
      */
     bringToFront: function() {
-        return this._parent.addChild(this);
+        // If there is no parent and the item is a layer, delegate to project
+        // instead.
+        return (this._parent || this instanceof Layer && this._project)
+                .addChild(this);
     },
 
     /**
@@ -3020,16 +3025,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // @param {String[]} flags Array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix) {
+    transform: function(matrix, _applyMatrix, _applyRecursively) {
         // If no matrix is provided, or the matrix is the identity, we might
         // still have some work to do in case _applyMatrix is true
         if (matrix && matrix.isIdentity())
             matrix = null;
         var _matrix = this._matrix,
             applyMatrix = (_applyMatrix || this._applyMatrix)
-                // Don't apply _matrix if the result of concatenating with
-                // matrix would be identity.
-                && (!_matrix.isIdentity() || matrix);
+                    // Don't apply _matrix if the result of concatenating with
+                    // matrix would be identity.
+                    && ((!_matrix.isIdentity() || matrix)
+                        // Even if it's an identity matrix, we still need to
+                        // recursively apply the matrix to children.
+                        || _applyMatrix && _applyRecursively && this._children);
         // Bail out if there is nothing to do.
         if (!matrix && !applyMatrix)
             return this;
@@ -3040,7 +3048,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, PlacedSymbol, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix = applyMatrix && this._transformContent(_matrix)) {
+        if (applyMatrix = applyMatrix
+                && this._transformContent(_matrix, _applyRecursively)) {
             // When the _matrix could be applied, we also need to transform
             // color styles (only gradients so far) and pivot point:
             var pivot = this._pivot,
@@ -3096,11 +3105,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this;
     },
 
-    _transformContent: function(matrix) {
+    _transformContent: function(matrix, applyRecursively) {
         var children = this._children;
         if (children) {
             for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true);
+                children[i].transform(matrix, true, applyRecursively);
             return true;
         }
     },

@@ -393,7 +393,7 @@ Base.exports.PaperScript = (function() {
             // functions:
             // https://code.google.com/p/chromium/issues/detail?id=331655
             var script = document.createElement('script'),
-                head = document.head;
+                head = document.head || document.getElementsByTagName('head')[0];
             // Add a new-line before the code on Firefox since the error
             // messages appear to be aligned to line number 0...
             if (browser.firefox)
