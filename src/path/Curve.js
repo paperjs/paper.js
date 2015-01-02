@@ -1065,7 +1065,8 @@ new function() { // Scope for methods that require numerical integration
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-            hullEpsilon = 1e-9,
+            tolerance = /*#=*/Numerical.TOLERANCE,
+            epsilon = 1e-10, // /*#=*/Numerical.EPSILON,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
             d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
@@ -1081,7 +1082,9 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 4) {
+        // NOTE: the recursion threshold of 4 is needed to prevent issue #571
+        // from occurring: https://github.com/paperjs/paper.js/issues/571
+        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 4) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
@@ -1100,7 +1103,7 @@ new function() { // Scope for methods that require numerical integration
             tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
             // No intersections if one of the tvalues are null or 'undefined'
             if (tMinClip == null || tMaxClip == null)
-                return false;
+                return;
             // Clip P with the fatline for Q
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             tDiff = tMaxClip - tMinClip;
@@ -1131,7 +1134,10 @@ new function() { // Scope for methods that require numerical integration
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < hullEpsilon) {
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance / 2) {
+            // NOTE: Not sure why we compare with half the tolerance here, but
+            // it appears to be needed to fix issue #568 (intersection is found
+            // twice): https://github.com/paperjs/paper.js/issues/568
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
@@ -1258,48 +1264,36 @@ new function() { // Scope for methods that require numerical integration
     }
 
     /**
-     * Clips the convex-hull and returns [tMin, tMax] for the curve contained
+     * Clips the convex-hull and returns [tMin, tMax] for the curve contained.
      */
     function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
-        var tProxy,
-            tVal = null,
-            px, py,
-            qx, qy;
-        for (var i = 0, l = hullBottom.length - 1; i < l; i++) {
-            py = hullBottom[i][1];
-            qy = hullBottom[i + 1][1];
-            if (py < qy) {
-                tProxy = null;
-            } else if (qy <= dMax) {
-                px = hullBottom[i][0];
-                qx = hullBottom[i + 1][0];
-                tProxy = px + (dMax - py) * (qx - px) / (qy - py);
-            } else {
-                // Try the next chain
-                continue;
-            }
-            // We got a proxy-t;
-            break;
+        if (hullTop[0][1] < dMin) {
+            // Left of hull is below dMin, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullTop, true, dMin);
+        } else if (hullBottom[0][1] > dMax) {
+            // Left of hull is above dMax, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullBottom, false, dMax);
+        } else {
+            // Left of hull is between dMin and dMax, no clipping possible
+            return hullTop[0][0];
         }
-        if (hullTop[0][1] <= dMax)
-            tProxy = hullTop[0][0];
-        for (var i = 0, l = hullTop.length - 1; i < l; i++) {
-            py = hullTop[i][1];
-            qy = hullTop[i + 1][1];
-            if (py >= dMin) {
-                tVal = tProxy;
-            } else if (py > qy) {
-                tVal = null;
-            } else if (qy >= dMin) {
-                px = hullTop[i][0];
-                qx = hullTop[i + 1][0];
-                tVal = px + (dMin  - py) * (qx - px) / (qy - py);
-            } else {
-                continue;
-            }
-            break;
+    }
+
+    function clipConvexHullPart(part, top, threshold) {
+        var px = part[0][0],
+            py = part[0][1];
+        for (var i = 1, l = part.length; i < l; i++) {
+            var qx = part[i][0],
+                qy = part[i][1];
+            if (top ? qy >= threshold : qy <= threshold)
+                return px + (threshold - py) * (qx - px) / (qy - py);
+            px = qx;
+            py = qy;
         }
-        return tVal;
+        // All points of hull are above / below the threshold
+        return null;
     }
 /*#*/ } // __options.fatlineClipping
 
