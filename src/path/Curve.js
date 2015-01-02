@@ -705,9 +705,9 @@ statics: {
             b = 2 * (v0 + v2) - 4 * v1,
             c = v1 - v0,
             count = Numerical.solveQuadratic(a, b, c, roots),
-            // Add some tolerance for good roots, as t = 0 / 1 are added
-            // separately anyhow, and we don't want joins to be added with
-            // radiuses in getStrokeBounds()
+            // Add some tolerance for good roots, as t = 0, 1 are added
+            // separately anyhow, and we don't want joins to be added with radii
+            // in getStrokeBounds()
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         // Only add strokeWidth to bounds for points which lie  within 0 < t < 1
@@ -1134,10 +1134,7 @@ new function() { // Scope for methods that require numerical integration
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance / 2) {
-            // NOTE: Not sure why we compare with half the tolerance here, but
-            // it appears to be needed to fix issue #568 (intersection is found
-            // twice): https://github.com/paperjs/paper.js/issues/568
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;

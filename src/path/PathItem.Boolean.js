@@ -224,8 +224,16 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        var tolerance = /*#=*/Numerical.TOLERANCE,
-            tMax = 1 - tolerance,
+        // We need to use a smaller tolerance here than in the rest of the
+        // library when dealing with curve time parameters and coordinates, in
+        // order to get really precise values for winding tests. 1e-7 was
+        // determined through a lot of trial and error, and boolean-test suites.
+        // Further decreasing it produces new errors.
+        // The value of 1e-7 also solves issue #559:
+        // https://github.com/paperjs/paper.js/issues/559
+        var tolerance = 1e-7,
+            tMin = tolerance,
+            tMax = 1 - tMin,
             x = point.x,
             y = point.y,
             windLeft = 0,
@@ -293,8 +301,8 @@ PathItem.inject(new function() {
                     // curve merely touches the ray towards +-x direction, but
                     // proceeds to the same side of the ray. This essentially is
                     // not a crossing.
-                    if (abs(slope) < tolerance && !Curve.isLinear(values)
-                            || t < tolerance && slope * Curve.evaluate(
+                    if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                            || t < tMin && slope * Curve.evaluate(
                                 curve.previous.values, t, 1).y < 0) {
                         if (testContains && x0 >= xBefore && x0 <= xAfter) {
                             ++windLeft;
