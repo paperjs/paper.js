@@ -165,12 +165,12 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            if (Numerical.isZero(vx))
-                return x - px;
-            var m = vy / vx, // slope
-                b = py - m * px; // y offset
-            // Distance to the linear equation
-            return (y - (m * x) - b) / Math.sqrt(m * m + 1);
+            return Numerical.isZero(vx)
+                    ? vy >= 0 ? py - x : x - px
+                    : Numerical.isZero(vy)
+                        ? vx >= 0 ? y - py : py - y
+                        : -(vy * x - vx * y - px * (py + vy) + py * (px + vx)) /
+                            Math.sqrt(vx * vx + vy * vy);
         }
     }
 });
