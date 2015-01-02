@@ -587,13 +587,13 @@ new function() {
             item,
             data = node.getAttribute && node.getAttribute('data-paper-data'),
             settings = scope.settings,
-            prevApplyMatrix = settings.applyMatrix;
+            applyMatrix = settings.applyMatrix;
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
         // current setting so we can restore it after.
         settings.applyMatrix = false;
         item = importer && importer(node, type, options, isRoot) || null;
-        settings.applyMatrix = prevApplyMatrix;
+        settings.applyMatrix = applyMatrix;
         if (item) {
             // Do not apply attributes if this is a #document node.
             // See importGroup() for an explanation of filtering for Group:
@@ -612,8 +612,13 @@ new function() {
                 item._data = JSON.parse(data);
         }
         // Clear definitions at the end of import?
-        if (isRoot)
+        if (isRoot) {
             definitions = {};
+            // Now if settings.applyMatrix was set, apply recursively and set
+            // #applyMatrix = true on the item and all children.
+            if (applyMatrix && item)
+                item.matrix.apply(true, true);
+        }
         return item;
     }
 
