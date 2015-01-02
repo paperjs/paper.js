@@ -139,7 +139,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this.remove();
             return path;
         } else {
-            return reduce.call(this);
+            return reduce.base.call(this);
         }
     },
 
