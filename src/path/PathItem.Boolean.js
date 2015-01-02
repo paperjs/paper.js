@@ -63,7 +63,6 @@ PathItem.inject(new function() {
 
         var chain = [],
             windings = [],
-            lengths = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
             monoCurves = [];
@@ -96,12 +95,13 @@ PathItem.inject(new function() {
             // contribution for this curve-chain. Once we have enough confidence
             // in the winding contribution, we can propagate it until the
             // intersection or end of a curve chain.
-            chain.length = windings.length = lengths.length = 0;
-            var totalLength = 0,
-                startSeg = segment;
+            chain.length = 0;
+            var startSeg = segment,
+                totalLength = 0;
             do {
-                chain.push(segment);
-                lengths.push(totalLength += segment.getCurve().getLength());
+                var length = segment.getCurve().getLength();
+                chain.push({ segment: segment, length: length });
+                totalLength += length;
                 segment = segment.getNext();
             } while (segment && !segment._intersection && segment !== startSeg);
             // Select the median winding of three random points along this curve
@@ -109,36 +109,34 @@ PathItem.inject(new function() {
             // gives a better chance of returning a correct winding than equally
             // dividing the curve chain, with the same (amortised) time.
             for (var j = 0; j < 3; j++) {
-                var length = totalLength * Math.random(),
-                    amount = lengths.length,
-                    k = 0;
-                do {
-                    if (lengths[k] >= length) {
-                        if (k > 0)
-                            length -= lengths[k - 1];
+                var length = totalLength * Math.random();
+                for (k = 0, m = chain.length; k < m; k++) {
+                    var entry = chain[k];
+                    if (length <= entry.length) {
+                        var curve = entry.segment.getCurve(),
+                            pt = curve.getPointAt(length),
+                            hor = curve.isHorizontal(),
+                            path = curve._path;
+                        if (path._parent instanceof CompoundPath)
+                            path = path._parent;
+                        // While subtracting, we need to omit this curve if this
+                        // curve is contributing to the second operand and is
+                        // outside the first operand.
+                        windings[j] = subtract && _path2
+                            && (path === _path1 && _path2._getWinding(pt, hor)
+                            || path === _path2 && !_path1._getWinding(pt, hor))
+                            ? 0
+                            : getWinding(pt, monoCurves, hor);
                         break;
                     }
-                } while (++k < amount);
-                var curve = chain[k].getCurve(),
-                    point = curve.getPointAt(length),
-                    hor = curve.isHorizontal(),
-                    path = curve._path;
-                if (path._parent instanceof CompoundPath)
-                    path = path._parent;
-                // While subtracting, we need to omit this curve if this
-                // curve is contributing to the second operand and is outside
-                // the first operand.
-                windings[j] = subtract && _path2
-                        && (path === _path1 && _path2._getWinding(point, hor)
-                        || path === _path2 && !_path1._getWinding(point, hor))
-                        ? 0
-                        : getWinding(point, monoCurves, hor);
+                    length -= entry.length;
+                }
             }
             windings.sort();
             // Assign the median winding to the entire curve chain.
             var winding = windings[1];
             for (var j = chain.length - 1; j >= 0; j--)
-                chain[j]._winding = winding;
+                chain[j].segment._winding = winding;
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath();
