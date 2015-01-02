@@ -104,12 +104,14 @@ PathItem.inject(new function() {
                 totalLength += length;
                 segment = segment.getNext();
             } while (segment && !segment._intersection && segment !== startSeg);
-            // Select the median winding of three random points along this curve
-            // chain, as a representative winding number. The random selection
-            // gives a better chance of returning a correct winding than equally
-            // dividing the curve chain, with the same (amortised) time.
+            // Select the median winding of three evenly distributed points
+            // along this curve chain, as a representative winding number.
+            // This selection gives a better chance of returning a correct
+            // winding than equally dividing the curve chain, with the same
+            // (amortised) time.
             for (var j = 0; j < 3; j++) {
-                var length = totalLength * Math.random();
+                // Try the points at 1/4, 2/4 and 3/4 of the total length:
+                var length = totalLength * (j + 1) / 4;
                 for (k = 0, m = chain.length; k < m; k++) {
                     var entry = chain[k];
                     if (length <= entry.length) {
