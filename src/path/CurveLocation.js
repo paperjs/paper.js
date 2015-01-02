@@ -257,13 +257,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @return {Boolean} {@true if the locations are equal}
      */
     equals: function(loc) {
-        var isZero = Numerical.isZero;
+        var abs = Math.abs,
+            // Use the same tolerance for curve time parameter comparisons as
+            // in Curve.js when considering two locations the same.
+            tolerance = /*#=*/Numerical.TOLERANCE;
         return this === loc
                 || loc
                     && this._curve === loc._curve
                     && this._curve2 === loc._curve2
-                    && isZero(this._parameter - loc._parameter)
-                    && isZero(this._parameter2 - loc._parameter2)
+                    && abs(this._parameter - loc._parameter) <= tolerance
+                    && abs(this._parameter2 - loc._parameter2) <= tolerance
                 || false;
     },
 
