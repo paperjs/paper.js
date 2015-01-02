@@ -132,53 +132,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 );
             }
         }
-        // Now filter the locations and process _expand:
-        var last = locations.length - 1;
-        // Merge intersections very close to the end of a curve to the beginning
-        // of the next curve.
-        for (var i = last; i >= 0; i--) {
-            var loc = locations[i],
-                next = loc._curve.getNext(),
-                next2 = loc._curve2.getNext();
-            if (next && loc._parameter >= MAX) {
-                loc._parameter = 0;
-                loc._curve = next;
-            }
-            if (next2 && loc._parameter2 >= MAX) {
-                loc._parameter2 = 0;
-                loc._curve2 = next2;
-            }
-        }
-
-        // Compare helper to filter locations
-        function compare(loc1, loc2) {
-            var path1 = loc1.getPath(),
-                path2 = loc2.getPath();
-            return path1 === path2
-                    // We can add parameter (0 <= t <= 1) to index
-                    // (a integer) to compare both at the same time
-                    ? (loc1.getIndex() + loc1.getParameter())
-                            - (loc2.getIndex() + loc2.getParameter())
-                    // Sort by path id to group all locations on the same path.
-                    : path1._id - path2._id;
-        }
-
-        if (last > 0) {
-            locations.sort(compare);
-            // Filter out duplicate locations
-            for (var i = last; i >= 1; i--) {
-                if (locations[i].equals(locations[i === 0 ? last : i - 1])) {
-                    locations.splice(i, 1);
-                    last--;
-                }
-            }
-        }
-        if (_expand) {
-            for (var i = last; i >= 0; i--)
-                locations.push(locations[i].getIntersection());
-            locations.sort(compare);
-        }
-        return locations;
+        return Curve.filterIntersections(locations, _expand);
     },
 
     _asPathItem: function() {

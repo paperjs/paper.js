@@ -308,8 +308,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // DOCS: Curve#getIntersections()
     getIntersections: function(curve) {
-        return Curve.getIntersections(this.getValues(), curve.getValues(),
-                this, curve, []);
+        return Curve.filterIntersections(Curve.getIntersections(
+                this.getValues(), curve.getValues(), this, curve, []));
     },
 
     // TODO: adjustThroughPoint
@@ -1410,6 +1410,55 @@ new function() { // Scope for methods that require numerical integration
                 addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
             if (c1p2.isClose(c2p2, tolerance))
                 addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
+            return locations;
+        },
+
+        filterIntersections: function(locations, _expand) {
+            var max = locations.length - 1;
+            // Merge intersections very close to the end of a curve to the
+            // beginning of the next curve.
+            for (var i = max; i >= 0; i--) {
+                var loc = locations[i],
+                    next = loc._curve.getNext(),
+                    next2 = loc._curve2.getNext();
+                if (next && loc._parameter >= MAX) {
+                    loc._parameter = 0;
+                    loc._curve = next;
+                }
+                if (next2 && loc._parameter2 >= MAX) {
+                    loc._parameter2 = 0;
+                    loc._curve2 = next2;
+                }
+            }
+
+            // Compare helper to filter locations
+            function compare(loc1, loc2) {
+                var path1 = loc1.getPath(),
+                    path2 = loc2.getPath();
+                return path1 === path2
+                        // We can add parameter (0 <= t <= 1) to index
+                        // (a integer) to compare both at the same time
+                        ? (loc1.getIndex() + loc1.getParameter())
+                                - (loc2.getIndex() + loc2.getParameter())
+                        // Sort by path id to group all locations on the same path.
+                        : path1._id - path2._id;
+            }
+
+            if (max > 0) {
+                locations.sort(compare);
+                // Filter out duplicate locations
+                for (var i = max; i >= 1; i--) {
+                    if (locations[i].equals(locations[i === 0 ? max : i - 1])) {
+                        locations.splice(i, 1);
+                        max--;
+                    }
+                }
+            }
+            if (_expand) {
+                for (var i = max; i >= 0; i--)
+                    locations.push(locations[i].getIntersection());
+                locations.sort(compare);
+            }
             return locations;
         }
     }};
