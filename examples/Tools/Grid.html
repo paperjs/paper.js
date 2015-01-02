@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Grid</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		/////////////////////////////////////////////////////////////////////
-		// Values
+    <meta charset="UTF-8">
+    <title>Grid</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        /////////////////////////////////////////////////////////////////////
+        // Values
 
-		tool.fixedDistance = 10;
+        tool.fixedDistance = 10;
 
-		var values = { size: tool.fixedDistance };
+        var values = { size: tool.fixedDistance };
 
-		/////////////////////////////////////////////////////////////////////
-		// Mouse handling
+        /////////////////////////////////////////////////////////////////////
+        // Mouse handling
 
-		var point, path;
+        var point, path;
 
-		function getPos(pt) {
-			return (pt / values.size).round() * values.size;
-		}
+        function getPos(pt) {
+            return (pt / values.size).round() * values.size;
+        }
 
-		function onMouseDown(event) {
-			point = getPos(event.point);
-			path = new Path();
-			path.strokeColor = 'black';
-			path.add(point);
-		}
+        function onMouseDown(event) {
+            point = getPos(event.point);
+            path = new Path();
+            path.strokeColor = 'black';
+            path.add(point);
+        }
 
-		function onMouseDrag(event) {
-			var p = getPos(event.point);
-			if (point != p) {
-				path.add(p);
-				point = p;
-			}
-		}
-	</script>
+        function onMouseDrag(event) {
+            var p = getPos(event.point);
+            if (point != p) {
+                path.add(p);
+                point = p;
+            }
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

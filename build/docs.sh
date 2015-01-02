@@ -13,14 +13,14 @@
 # Generate documentation
 #
 # MODE:
-#	docs			Generates the JS API docs - Default
-#	serverdocs		Generates the website templates for the online JS API docs
+#   docs            Generates the JS API docs - Default
+#   serverdocs      Generates the website templates for the online JS API docs
 
 if [ $# -eq 0 ]
 then
-	MODE="docs"
+    MODE="docs"
 else
-	MODE=$1
+    MODE=$1
 fi
 
 cd jsdoc-toolkit
@@ -29,6 +29,6 @@ cd ..
 
 if [ $MODE = "docs" ]
 then
-	# Build paper.js library for documentation
-	./preprocess.sh stripped ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/docs/assets/js/paper.js
+    # Build paper.js library for documentation
+    ./preprocess.sh stripped ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/docs/assets/js/paper.js
 fi

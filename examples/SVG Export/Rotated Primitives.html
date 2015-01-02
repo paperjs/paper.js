@@ -1,81 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Rotated Primitives</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Rotated Primitives</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		// This "arbitrary" shape triggered rectangles in the original code,
-		// since point2 is as far from point0 as point3 is from point1.
-		var path = new Path({
-			closed: true,
-			strokeColor: 'black'
-		});
-		path.moveTo(0, 0);
-		path.lineTo(50, 50);
-		path.lineTo(100, 100);
-		path.lineTo(-50, 150);
-		path.position += 100;
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // This "arbitrary" shape triggered rectangles in the original code,
+        // since point2 is as far from point0 as point3 is from point1.
+        var path = new Path({
+            closed: true,
+            strokeColor: 'black'
+        });
+        path.moveTo(0, 0);
+        path.lineTo(50, 50);
+        path.lineTo(100, 100);
+        path.lineTo(-50, 150);
+        path.position += 100;
 
-		var rect = new Path.Rectangle({
-			point: [200, 100],
-			size: [200, 300],
-			fillColor: 'red'
-		});
-		rect.rotate(40);
+        var rect = new Path.Rectangle({
+            point: [200, 100],
+            size: [200, 300],
+            fillColor: 'red'
+        });
+        rect.rotate(40);
 
-		var circle = new Path.Circle({
-			center: [200, 300],
-			radius: 100,
-			fillColor: 'green'
-		});
-		circle.scale(0.5, 1);
-		circle.rotate(40);
+        var circle = new Path.Circle({
+            center: [200, 300],
+            radius: 100,
+            fillColor: 'green'
+        });
+        circle.scale(0.5, 1);
+        circle.rotate(40);
 
-		var ellipse = new Path.Ellipse({
-			point: [300, 300],
-			size: [100, 200],
-			fillColor: 'blue'
-		});
-		ellipse.rotate(-40);
+        var ellipse = new Path.Ellipse({
+            point: [300, 300],
+            size: [100, 200],
+            fillColor: 'blue'
+        });
+        ellipse.rotate(-40);
 
-		var rect = new Path.Rectangle({
-			point: [250, 20],
-			size: [200, 300],
-			radius: [40, 20],
-			fillColor: 'yellow'
-		});
-		rect.rotate(-20);
-		rect.data = {
-			string: '----',
-			number: 1234,
-			array: ['a ray', 'some rays'],
-			bool: true,
-			nil: null,
-			point: new Point(12, 34),
-			size: new Size(12, 34),
-			rectangle: new Rectangle([12, 34], [56, 78]),
-			deep: {
-				deeper: {
-					deepest: true
-				}
-			}
-		};
+        var rect = new Path.Rectangle({
+            point: [250, 20],
+            size: [200, 300],
+            radius: [40, 20],
+            fillColor: 'yellow'
+        });
+        rect.rotate(-20);
+        rect.data = {
+            string: '----',
+            number: 1234,
+            array: ['a ray', 'some rays'],
+            bool: true,
+            nil: null,
+            point: new Point(12, 34),
+            size: new Size(12, 34),
+            rectangle: new Rectangle([12, 34], [56, 78]),
+            deep: {
+                deeper: {
+                    deepest: true
+                }
+            }
+        };
 
-		var parallelogram = new Path({
-			closed: true,
-			segments: [[50, 0], [50, 100], [90, 120], [90, 20]],
-			fillColor: '#99c'
-		});
+        var parallelogram = new Path({
+            closed: true,
+            segments: [[50, 0], [50, 100], [90, 120], [90, 20]],
+            fillColor: '#99c'
+        });
 
-		document.getElementById('svg').appendChild(project.exportSVG({ matchShapes: true }));
-	</script>
+        document.body.appendChild(project.exportSVG({ matchShapes: true }));
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

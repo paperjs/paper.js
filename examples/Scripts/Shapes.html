@@ -1,63 +1,54 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Shapes</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var path = new Path.Circle({
-			center: [100, 100],
-			radius: 50,
-			fillColor: 'red'
-		});
-		var shape = path.toShape();
-		shape.position += [200, 0];
-		var path = shape.toPath();
-		path.position += [200, 0];
+    <meta charset="UTF-8">
+    <title>Shapes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var circle = new Shape.Circle({
+            center: [100, 100],
+            radius: 50,
+            fillColor: 'red'
+        });
 
-		var path = new Path.Ellipse({
-			center: [100, 200],
-			radius: [50, 25],
-			fillColor: 'blue',
-			strokeColor: 'black',
-			strokeWidth: 10
-		});
-		path.rotate(20);
-		var shape = path.toShape();
-		shape.position += [200, 0];
-		var path = shape.toPath();
-		path.position += [200, 0];
+        var ellipse = new Shape.Ellipse({
+            center: [100, 200],
+            radius: [50, 25],
+            fillColor: 'blue',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            rotation: 20
+        });
 
-		var path = new Path.Rectangle({
-			center: [100, 300],
-			size: [100, 50],
-			fillColor: 'green',
-			strokeColor: 'black',
-			strokeWidth: 10
-		});
-		path.rotate(-20);
-		var shape = path.toShape();
-		shape.position += [200, 0];
-		var path = shape.toPath();
-		path.position += [200, 0];
+        var rect = new Shape.Rectangle({
+            center: [100, 300],
+            size: [100, 50],
+            fillColor: 'green',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            rotation: -20
+        });
 
-		var path = new Path.Rectangle({
-			center: [100, 400],
-			size: [50, 100],
-			radius: [5, 10],
-			fillColor: 'orange',
-			strokeColor: 'black',
-			strokeWidth: 10
-		});
-		path.rotate(20);
-		var shape = path.toShape();
-		shape.position += [200, 0];
-		var path = shape.toPath();
-		path.position += [200, 0];
-	</script>
+        var roundRect = new Shape.Rectangle({
+            center: [100, 400],
+            size: [50, 100],
+            radius: [15, 20],
+            fillColor: 'orange',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            rotation: 20
+        });
+
+        [circle, ellipse, rect, roundRect].forEach(function(shape) {
+            var path = shape.toPath();
+            path.position += [200, 0];
+            var shape2 = path.toShape();
+            shape2.position += [200, 0];
+        })
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

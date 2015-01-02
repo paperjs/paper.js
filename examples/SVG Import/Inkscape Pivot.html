@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Transform Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        // Import Inkscape-style SVG, preserving pivots
+        var svg = project.importSVG(document.getElementById('svg'), {
+            onImport: function(node, item) {
+                var prefix = 'inkscape:transform-center-';
+                var x = node.getAttribute(prefix + 'x');
+                var y = node.getAttribute(prefix + 'y');
+                if (x != null && y != null) {
+                    item.pivot = new Point(+x, +y);
+                }
+            }
+        });
+
+        // Illustrate pivot using a simple animation
+        var rect = svg.children.rectangle;
+        // Show the pivot
+        new Path.Circle({
+            center: rect.localToGlobal(rect.pivot),
+            radius: 4,
+            strokeColor: 'black'
+        });
+
+        rect.onFrame = function() {
+            rect.rotate(1);
+        }
+
+        // And export again, preserving Inkscape pivots
+        console.log(rect.exportSVG({
+            onExport: function(item, node) {
+                var prefix = 'inkscape:transform-center-';
+                if (item.pivot) {
+                    node.setAttribute(prefix + 'x', item.pivot.x);
+                    node.setAttribute(prefix + 'y', item.pivot.y);
+                }
+            }
+        }))
+    </script>
+</head>
+<body>
+    <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="500" height="500" id="svg">
+        <rect id="rectangle" x="50" y="200" width="200" height="100" fill="red" inkscape:transform-center-x="100" inkscape:transform-center-y="0" />
+    </svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>

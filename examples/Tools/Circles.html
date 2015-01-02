@@ -1,28 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Circles</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-			function onMouseDrag(event) {
-				// The radius is the distance between the position
-				// where the user clicked and the current position
-				// of the mouse.
-				var path = new Path.Circle({
-					center: event.downPoint,
-					radius: (event.downPoint - event.point).length,
-					fillColor: 'white',
-					strokeColor: 'black'
-				});
+    <meta charset="UTF-8">
+    <title>Circles</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+            function onMouseDrag(event) {
+                // The radius is the distance between the position
+                // where the user clicked and the current position
+                // of the mouse.
+                var path = new Path.Circle({
+                    center: event.downPoint,
+                    radius: (event.downPoint - event.point).length,
+                    fillColor: 'white',
+                    strokeColor: 'black'
+                });
 
-				// Remove this path on the next drag event:
-				path.removeOnDrag();
-			};
-	</script>
+                // Remove this path on the next drag event:
+                path.removeOnDrag();
+            };
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

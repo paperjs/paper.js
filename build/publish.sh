@@ -12,18 +12,18 @@
 
 # Extract the paper.js version from options.js:
 VERSION=$(printf '%q' $(node -e "
-	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
-	process.stdout.write(__options.version);
+    eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+    process.stdout.write(__options.version);
 "))
 
 # Helper function that updates paper.js vesion in JSON files
 function update_version()
 {
 node -e "
-	var data = require('$1');
-	data.version = '$VERSION';
-	require('fs').writeFile('$1',
-			JSON.stringify(data, null, '  ') + require('os').EOL);
+    var data = require('$1');
+    data.version = '$VERSION';
+    require('fs').writeFile('$1',
+            JSON.stringify(data, null, '  ') + require('os').EOL);
 "
 }
 
@@ -50,16 +50,15 @@ git add -u component.json
 git add -u dist
 # Commit
 git commit -m "Bump version to v$VERSION"
-# Tag
+# Tag & Push
 git tag "v$VERSION"
-# Push
-git push --follow-tags
+git push
+git push --tags
 # Publish
 npm publish
 
 # Copy paperjs.zip to the website's download folder
 cd $SITE_DIR
-echo `PWD`
 cp $PAPER_DIR/dist/paperjs.zip $DIST_FILE
 # Update the online version of paper.js
 cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
@@ -67,7 +66,7 @@ cp $PAPER_DIR/dist/paper-full.js assets/js/paper.js
 git add -A $DIST_FILE
 git add -u assets/js/paper.js
 git commit -m "Release version v$VERSION"
-# Tag
+# Tag & Push
 git tag "v$VERSION"
 git push
 git push --tags

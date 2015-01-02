@@ -20,106 +20,106 @@
  * @extends TextItem
  */
 var PointText = TextItem.extend(/** @lends PointText# */{
-	_class: 'PointText',
+    _class: 'PointText',
 
-	/**
-	 * Creates a point text item
-	 *
-	 * @name PointText#initialize
-	 * @param {Point} point the position where the text will start
-	 * @return {PointText} the newly created point text
-	 *
-	 * @example {@paperscript}
-	 * var text = new PointText(new Point(200, 50));
-	 * text.justification = 'center';
-	 * text.fillColor = 'black';
-	 * text.content = 'The contents of the point text';
-	 */
-	/**
-	 * Creates a point text item from the properties described by an object
-	 * literal.
-	 *
-	 * @name PointText#initialize
-	 * @param {Object} object an object literal containing properties
-	 * describing the path's attributes
-	 * @return {PointText} the newly created point text
-	 *
-	 * @example {@paperscript}
-	 * var text = new PointText({
-	 *     point: [50, 50],
-	 *     content: 'The contents of the point text',
-	 *     fillColor: 'black',
-	 *     fontFamily: 'Courier New',
-	 *     fontWeight: 'bold',
-	 *     fontSize: 25
-	 * });
-	 */
-	initialize: function PointText() {
-		TextItem.apply(this, arguments);
-	},
+    /**
+     * Creates a point text item
+     *
+     * @name PointText#initialize
+     * @param {Point} point the position where the text will start
+     * @return {PointText} the newly created point text
+     *
+     * @example {@paperscript}
+     * var text = new PointText(new Point(200, 50));
+     * text.justification = 'center';
+     * text.fillColor = 'black';
+     * text.content = 'The contents of the point text';
+     */
+    /**
+     * Creates a point text item from the properties described by an object
+     * literal.
+     *
+     * @name PointText#initialize
+     * @param {Object} object an object literal containing properties
+     * describing the path's attributes
+     * @return {PointText} the newly created point text
+     *
+     * @example {@paperscript}
+     * var text = new PointText({
+     *     point: [50, 50],
+     *     content: 'The contents of the point text',
+     *     fillColor: 'black',
+     *     fontFamily: 'Courier New',
+     *     fontWeight: 'bold',
+     *     fontSize: 25
+     * });
+     */
+    initialize: function PointText() {
+        TextItem.apply(this, arguments);
+    },
 
-	clone: function(insert) {
-		return this._clone(new PointText(Item.NO_INSERT), insert);
-	},
+    clone: function(insert) {
+        return this._clone(new PointText(Item.NO_INSERT), insert);
+    },
 
-	/**
-	 * The PointText's anchor point
-	 *
-	 * @type Point
-	 * @bean
-	 */
-	getPoint: function() {
-		// Se Item#getPosition for an explanation why we create new LinkedPoint
-		// objects each time.
-		var point = this._matrix.getTranslation();
-		return new LinkedPoint(point.x, point.y, this, 'setPoint');
-	},
+    /**
+     * The PointText's anchor point
+     *
+     * @type Point
+     * @bean
+     */
+    getPoint: function() {
+        // Se Item#getPosition for an explanation why we create new LinkedPoint
+        // objects each time.
+        var point = this._matrix.getTranslation();
+        return new LinkedPoint(point.x, point.y, this, 'setPoint');
+    },
 
-	setPoint: function(/* point */) {
-		var point = Point.read(arguments);
-		this.translate(point.subtract(this._matrix.getTranslation()));
-	},
+    setPoint: function(/* point */) {
+        var point = Point.read(arguments);
+        this.translate(point.subtract(this._matrix.getTranslation()));
+    },
 
-	_draw: function(ctx) {
-		if (!this._content)
-			return;
-		this._setStyles(ctx);
-		var style = this._style,
-			lines = this._lines,
-			leading = style.getLeading(),
-			shadowColor = ctx.shadowColor;
-		ctx.font = style.getFontStyle();
-		ctx.textAlign = style.getJustification();
-		for (var i = 0, l = lines.length; i < l; i++) {
-			// See Path._draw() for explanation about ctx.shadowColor
-			ctx.shadowColor = shadowColor;
-			var line = lines[i];
-			if (style.hasFill()) {
-				ctx.fillText(line, 0, 0);
-				ctx.shadowColor = 'rgba(0,0,0,0)';
-			}
-			if (style.hasStroke())
-				ctx.strokeText(line, 0, 0);
-			ctx.translate(0, leading);
-		}
-	},
+    _draw: function(ctx) {
+        if (!this._content)
+            return;
+        this._setStyles(ctx);
+        var style = this._style,
+            lines = this._lines,
+            leading = style.getLeading(),
+            shadowColor = ctx.shadowColor;
+        ctx.font = style.getFontStyle();
+        ctx.textAlign = style.getJustification();
+        for (var i = 0, l = lines.length; i < l; i++) {
+            // See Path._draw() for explanation about ctx.shadowColor
+            ctx.shadowColor = shadowColor;
+            var line = lines[i];
+            if (style.hasFill()) {
+                ctx.fillText(line, 0, 0);
+                ctx.shadowColor = 'rgba(0,0,0,0)';
+            }
+            if (style.hasStroke())
+                ctx.strokeText(line, 0, 0);
+            ctx.translate(0, leading);
+        }
+    },
 
-	_getBounds: function(getter, matrix) {
-		var style = this._style,
-			lines = this._lines,
-			numLines = lines.length,
-			justification = style.getJustification(),
-			leading = style.getLeading(),
-			width = this.getView().getTextWidth(style.getFontStyle(), lines),
-			x = 0;
-		// Adjust for different justifications.
-		if (justification !== 'left')
-			x -= width / (justification === 'center' ? 2: 1);
-		// Until we don't have baseline measuring, assume 1 / 4 leading as a
-		// rough guess:
-		var bounds = new Rectangle(x,
-					numLines ? - 0.75 * leading : 0,
-					width, numLines * leading);
-		return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
-	}
+    _getBounds: function(getter, matrix) {
+        var style = this._style,
+            lines = this._lines,
+            numLines = lines.length,
+            justification = style.getJustification(),
+            leading = style.getLeading(),
+            width = this.getView().getTextWidth(style.getFontStyle(), lines),
+            x = 0;
+        // Adjust for different justifications.
+        if (justification !== 'left')
+            x -= width / (justification === 'center' ? 2: 1);
+        // Until we don't have baseline measuring, assume 1 / 4 leading as a
+        // rough guess:
+        var bounds = new Rectangle(x,
+                    numLines ? - 0.75 * leading : 0,
+                    width, numLines * leading);
+        return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
+    }
 });

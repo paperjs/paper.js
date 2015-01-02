@@ -1,34 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Circle Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var topLeft = new Point(200, 200);
-		var size = new Size(150, 100);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = 'black';
+    <meta charset="UTF-8">
+    <title>Circle Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        var topLeft = new Point(200, 200);
+        var size = new Size(150, 100);
+        var rectangle = new Rectangle(topLeft, size);
+        var path = new Path.Ellipse(rectangle);
+        path.fillColor = 'black';
 
-		var topLeft = new Point(5, 400);
-		var size = new Size(100, 50);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = 'yellow';
+        var topLeft = new Point(5, 400);
+        var size = new Size(100, 50);
+        var rectangle = new Rectangle(topLeft, size);
+        var path = new Path.Ellipse(rectangle);
+        path.fillColor = 'yellow';
 
-		var path = new Path.Circle(new Point(50, 50), 25);
-		path.fillColor = 'red';
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+        var path = new Path.Circle(new Point(50, 50), 25);
+        path.fillColor = 'red';
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

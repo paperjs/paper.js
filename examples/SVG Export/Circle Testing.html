@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Circle Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Circle Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var topLeft = new Point(200, 200);
-		var size = new Size(150, 100);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = 'black';
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var topLeft = new Point(200, 200);
+        var size = new Size(150, 100);
+        var rectangle = new Rectangle(topLeft, size);
+        var path = new Path.Ellipse(rectangle);
+        path.fillColor = 'black';
 
-		var topLeft = new Point(5, 400);
-		var size = new Size(100, 50);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = 'yellow';
+        var topLeft = new Point(5, 400);
+        var size = new Size(100, 50);
+        var rectangle = new Rectangle(topLeft, size);
+        var path = new Path.Ellipse(rectangle);
+        path.fillColor = 'yellow';
 
-		var path = new Path.Circle(new Point(50, 50), 25);
-		path.fillColor = 'red';
+        var path = new Path.Circle(new Point(50, 50), 25);
+        path.fillColor = 'red';
 
-		document.getElementById('svg').appendChild(project.exportSVG());
-	</script>
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

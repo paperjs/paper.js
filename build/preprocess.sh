@@ -21,25 +21,24 @@
 # preprocess.sh MODE SOURCE ARGUMENTS DESTINATION
 #
 # MODE:
-#	commented		Preprocessed, still formated and commented
-#	stripped		Preprocessed, formated but without comments
+#   commented       Preprocessed, still formated and commented
+#   stripped        Preprocessed, formated but without comments
 
 # Get the date from the git log:
 DATE=$(git log -1 --pretty=format:%ad)
 # Load __options from options.js and convert it to escaped JSON, to be passed on
 # to prepro:
 OPTIONS=$(printf '%q' $(node -e "
-	eval(require('fs').readFileSync('../src/options.js', 'utf8'));
-	process.stdout.write(JSON.stringify(__options));
+    eval(require('fs').readFileSync('../src/options.js', 'utf8'));
+    process.stdout.write(JSON.stringify(__options));
 "))
 # Build the prepo.js command out of it, passing on version and date as defines:
-COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\", \"stats\": false }' $3 $2"
+COMMAND="../node_modules/.bin/prepro -o $OPTIONS -o '{ \"date\": \"$DATE\" }' $3 $2"
+# Flags to pass to prepro
+if [ $1 = "stripped" ]; then FLAGS="-c"; else FLAGS=""; fi
 
-case $1 in
-	commented)
-		eval $COMMAND > $4
-		;;
-	stripped)
-		eval "$COMMAND -c" > $4
-		;;
-esac
+eval "$COMMAND $FLAGS" > $4
+# Now convert 4 spaces to tabs, to shave of some bytes (quite a few KB actually)
+unexpand -t 4 -a $4 > "$4-tabs" && mv "$4-tabs" $4
+# Remove trailing white-space on each line
+perl -p -i -e "s/[ \t]*$//g" $4

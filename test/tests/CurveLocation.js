@@ -13,13 +13,13 @@
 module('CurveLocation');
 
 test('CurveLocation#offset', function() {
-	var path = new Path();
-	path.add(new Point(100, 100));
-	path.add(new Point(200, 100));
-	path.add(new Point(300, 100));
-	path.add(new Point(400, 100));
+    var path = new Path();
+    path.add(new Point(100, 100));
+    path.add(new Point(200, 100));
+    path.add(new Point(300, 100));
+    path.add(new Point(400, 100));
 
-	for (var i = 0; i < 4; i++) {
-		equals(path.segments[i].location.offset, i * 100);
-	}
+    for (var i = 0; i < 4; i++) {
+        equals(path.segments[i].location.offset, i * 100);
+    }
 });

@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Random Path Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Random Path Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var center = new Point(100, 100);
-		var sides = 3;
-		var radius = 50;
-		var triangle = new Path.RegularPolygon(center, sides, radius);
-		triangle.fillColor = 'black';
-		copy = triangle.clone();
-		copy.strokeColor = 'blue';
-		copy.rotate(45);
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var center = new Point(100, 100);
+        var sides = 3;
+        var radius = 50;
+        var triangle = new Path.RegularPolygon(center, sides, radius);
+        triangle.fillColor = 'black';
+        copy = triangle.clone();
+        copy.strokeColor = 'blue';
+        copy.rotate(45);
 
-		var center = new Point(100, 300);
-		var sides = 10;
-		var radius = 50;
-		var decahedron = new Path.RegularPolygon(center, sides, radius);
-		decahedron.fillColor = 'black';
+        var center = new Point(100, 300);
+        var sides = 10;
+        var radius = 50;
+        var decahedron = new Path.RegularPolygon(center, sides, radius);
+        decahedron.fillColor = 'black';
 
-		var center = new Point(100, 400);
-		var points = 6;
-		var radius1 = 20;
-		var radius2 = 50;
-		var path = new Path.Star(center, points, radius1, radius2);
-		path.fillColor = 'black';
+        var center = new Point(100, 400);
+        var points = 6;
+        var radius1 = 20;
+        var radius2 = 50;
+        var path = new Path.Star(center, points, radius1, radius2);
+        path.fillColor = 'black';
 
-		document.getElementById('svg').appendChild(project.exportSVG());
-	</script>
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>

@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.18",
+  "version": "0.9.21",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -24,9 +24,8 @@
     "test"
   ],
   "devDependencies": {
-    "straps": "~1.5.2",
-    "acorn": "git://github.com/paperjs/acorn#0.3.2",
-    "esprima": "~1.0.3",
+    "straps": "~1.7.0",
+    "acorn": "~0.4.0",
     "stats.js": "r11"
   },
   "keywords": [

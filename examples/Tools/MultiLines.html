@@ -1,44 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Multi Lines</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		tool.fixedDistance = 30;
+    <meta charset="UTF-8">
+    <title>Multi Lines</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        tool.fixedDistance = 30;
 
-		var values = {
-			lines: 5,
-			size: 40,
-			smooth: true
-		};
+        var values = {
+            lines: 5,
+            size: 40,
+            smooth: true
+        };
 
-		var paths;
+        var paths;
 
-		function onMouseDown(event) {
-			paths = [];
-			for (var i = 0; i < values.lines; i++) {
-				var path = new Path();
-				path.strokeColor = '#000000';
-				paths.push(path);
-			}
-		}
+        function onMouseDown(event) {
+            paths = [];
+            for (var i = 0; i < values.lines; i++) {
+                var path = new Path();
+                path.strokeColor = '#000000';
+                paths.push(path);
+            }
+        }
 
-		function onMouseDrag(event) {
-			var offset = event.delta;
-			offset.angle = offset.angle + 90;
-			var lineSize = values.size / values.lines;
-			for (var i = 0; i < values.lines; i++) {
-				var path = paths[values.lines - 1 - i];
-				offset.length = lineSize * i + lineSize / 2;
-				path.add(event.middlePoint + offset);
-				path.smooth();
-			}
-		}
-	</script>
+        function onMouseDrag(event) {
+            var offset = event.delta;
+            offset.angle = offset.angle + 90;
+            var lineSize = values.size / values.lines;
+            for (var i = 0; i < values.lines; i++) {
+                var path = paths[values.lines - 1 - i];
+                offset.length = lineSize * i + lineSize / 2;
+                path.add(event.middlePoint + offset);
+                path.smooth();
+            }
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

@@ -1,53 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Gradients</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Gradients</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
 
-		var radius = view.bounds.width * 0.4,
-			from = new Point(view.center.x),
-			to = from + [radius, 0];
+        var radius = view.bounds.width * 0.4,
+            from = new Point(view.center.x),
+            to = from + [radius, 0];
 
-		var circle = new Path.Circle({
-			center: from,
-			radius: radius,
-			fillColor: {
-				stops: stops,
-				radial: true,
-				origin: from,
-				destination: to
-			},
-			strokeColor: 'black'
-		});
+        var circle = new Path.Circle({
+            center: from,
+            radius: radius,
+            fillColor: {
+                stops: stops,
+                radial: true,
+                origin: from,
+                destination: to
+            },
+            strokeColor: 'black'
+        });
 
-		var from = view.bounds.leftCenter,
-			to = view.bounds.bottomRight;
+        var from = view.bounds.leftCenter,
+            to = view.bounds.bottomRight;
 
-		var rect = new Path.Rectangle({
-			from: from,
-			to: to,
-			fillColor: {
-				stops: stops,
-				radial: false,
-				origin: from,
-				destination: to
-			},
-			strokeColor: 'black'
-		});
+        var rect = new Path.Rectangle({
+            from: from,
+            to: to,
+            fillColor: {
+                stops: stops,
+                radial: false,
+                origin: from,
+                destination: to
+            },
+            strokeColor: 'black'
+        });
 
-		rect.rotate(45).scale(0.7);
+        rect.rotate(45).scale(0.7);
 
-		document.getElementById('svg').appendChild(project.exportSVG());
-	</script>
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="300" height="600"></canvas>
-	<svg id="svg" width="300" height="600"></svg>
+    <canvas id="canvas" width="300" height="600"></canvas>
 </body>
 </html>

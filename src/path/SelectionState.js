@@ -14,8 +14,8 @@
  // compared with SelectionState.SEGMENT, the combination of all SelectionStates
  // to see if all segments are fully selected.
 var SelectionState = {
-	HANDLE_IN: 1,
-	HANDLE_OUT: 2,
-	POINT: 4,
-	SEGMENT: 7 // HANDLE_IN | HANDLE_OUT | POINT
+    HANDLE_IN: 1,
+    HANDLE_OUT: 2,
+    POINT: 4,
+    SEGMENT: 7 // HANDLE_IN | HANDLE_OUT | POINT
 };

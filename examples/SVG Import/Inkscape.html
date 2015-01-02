@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Inkscape</title>
+    <meta charset="UTF-8">
+    <title>Inkscape</title>
   <link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
     var start = Date.now();
-		project.importSVG(document.getElementById('svg2'));
+        project.importSVG(document.getElementById('svg2'));
     console.log(Date.now() - start);
     // console.log(project.exportJSON());
-	</script>
+    </script>
 </head>
 <body>
   <svg
@@ -83,6 +83,6 @@
     </g>
   </svg>
 
-	<canvas id="canvas" width="400" height="400"></canvas>
+    <canvas id="canvas" width="400" height="400"></canvas>
 </body>
 </html>

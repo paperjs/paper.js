@@ -1,25 +1,27 @@
 {
-	"folders":
-	[
-        {
-            "path": "../build/jsdoc-toolkit/app"
-        },
-        {
-            "path": "../build/jsdoc-toolkit/templates"
-        },
-        {
-            "path": "../build/jsdoc-toolkit/conf"
-        },
-        {
-            "path": "../build/jsdoc-toolkit",
-            "name": "root",
-            "folder_exclude_patterns": ["*"],
-            "file_exclude_patterns": [ "*.jar" ]
-        }
-    ],
-    "settings":
+  "folders":
+  [
     {
-        "tab_size": 4,
-        "translate_tabs_to_spaces": false
+      "path": "../build/jsdoc-toolkit/app"
+    },
+    {
+      "path": "../build/jsdoc-toolkit/templates"
+    },
+    {
+      "path": "../build/jsdoc-toolkit/conf"
+    },
+    {
+      "path": "../build/jsdoc-toolkit",
+      "name": "root",
+      "folder_exclude_patterns": ["*"],
+      "file_exclude_patterns": [ "*.jar" ]
     }
+  ],
+  "settings":
+  {
+    "tab_size": 4,
+    "translate_tabs_to_spaces": false,
+    "trim_trailing_white_space_on_save": true,
+    "ensure_newline_at_eof_on_save": true
+  }
 }

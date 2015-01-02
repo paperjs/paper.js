@@ -31,7 +31,7 @@ cp -r $BASE/dist/docs .
 # Erase the old Zip file
 if [ -f $BASE/dist/paperjs.zip ]
 then
-	rm $BASE/dist/paperjs.zip
+    rm $BASE/dist/paperjs.zip
 fi
 # Zip the whole thing
 zip -9 -r $BASE/dist/paperjs.zip * LICENSE.txt -x "*/.DS_Store"

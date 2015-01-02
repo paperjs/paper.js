@@ -1,50 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Wave</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		//////////////////////////////////////////////////////////////////////
-		// Values
+    <meta charset="UTF-8">
+    <title>Wave</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        //////////////////////////////////////////////////////////////////////
+        // Values
 
-		tool.minDistance = 10;
+        tool.minDistance = 10;
 
-		var values = {
-			curviness: 0.5,
-			distance: tool.minDistance,
-			offset: 10,
-			mouseOffset: true
-		};
+        var values = {
+            curviness: 0.5,
+            distance: tool.minDistance,
+            offset: 10,
+            mouseOffset: true
+        };
 
-		//////////////////////////////////////////////////////////////////////
-		// Mouse handling
+        //////////////////////////////////////////////////////////////////////
+        // Mouse handling
 
-		var path;
-		function onMouseDown(event) {
-			path = new Path({
-				strokeColor: '#000000'
-			});
-		}
+        var path;
+        function onMouseDown(event) {
+            path = new Path({
+                strokeColor: '#000000'
+            });
+        }
 
-		var mul = 1;
-		function onMouseDrag(event) {
-			var step = event.delta.rotate(90 * mul);
+        var mul = 1;
+        function onMouseDrag(event) {
+            var step = event.delta.rotate(90 * mul);
 
-			if (!values.mouseOffset)
-				step.length = values.offset;
+            if (!values.mouseOffset)
+                step.length = values.offset;
 
-			path.add({
-				point: event.point + step,
-				handleIn: -event.delta * values.curviness,
-				handleOut: event.delta * values.curviness
-			});
-			mul *= -1;
-		}
-	</script>
+            path.add({
+                point: event.point + step,
+                handleIn: -event.delta * values.curviness,
+                handleOut: event.delta * values.curviness
+            });
+            mul *= -1;
+        }
+    </script>
 </head>
 <body>
-	<canvas id="canvas" resize></canvas>
+    <canvas id="canvas" resize></canvas>
 </body>
 </html>

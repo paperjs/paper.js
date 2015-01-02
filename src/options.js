@@ -10,25 +10,26 @@
  * All rights reserved.
  */
 
-// Define default options for browser based compile-time preprocessing.
-// These are also used for building, but some values are overridden
-// (e.g. version, stats).
+// Define __options for code preprocessing when building the library, as well as
+// browser based compile-time preprocessing when loading the separate source
+// files directly through load.js / prepro.js during development.
+
+// The paper.js version.
+// NOTE: Adjust value here before calling publish.sh, which then updates and
+// publishes the various JSON package files automatically.
+var version = '0.9.21';
 
 var __options = {
-	parser: 'acorn',
-	version: '0.9.18',
-	environment: 'browser',
-	legacy: true,
-	stats: true,
-	svg: true,
-	fatlineClipping: true,
-	booleanOperations: true,
-	nativeContains: false,
-	paperScript: true,
-	palette: true,
-	debug: false
+    // If this file is loaded in the browser, we're in dev mode through load.js
+    version: typeof window === 'object' ? 'dev' : version,
+    environment: 'browser',
+    parser: 'acorn',
+    legacy: true,
+    svg: true,
+    fatlineClipping: true,
+    booleanOperations: true,
+    nativeContains: false,
+    paperScript: true,
+    palette: true,
+    debug: false
 };
-
-// If this file is loaded in the browser, we're in dev mode through load.js
-if (typeof window === 'object')
-	__options.version = 'dev';

@@ -1,42 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Random Path Testing</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var center = new Point(100, 100);
-		var sides = 3;
-		var radius = 50;
-		var triangle = new Path.RegularPolygon(center, sides, radius);
-		triangle.fillColor = 'black';
-		copy = triangle.clone();
-		copy.strokeColor = 'blue';
-		copy.rotate(45);
+    <meta charset="UTF-8">
+    <title>Random Path Testing</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        var center = new Point(100, 100);
+        var sides = 3;
+        var radius = 50;
+        var triangle = new Path.RegularPolygon(center, sides, radius);
+        triangle.fillColor = 'black';
+        copy = triangle.clone();
+        copy.strokeColor = 'blue';
+        copy.rotate(45);
 
-		var center = new Point(100, 300);
-		var sides = 10;
-		var radius = 50;
-		var decahedron = new Path.RegularPolygon(center, sides, radius);
-		decahedron.fillColor = 'black';
+        var center = new Point(100, 300);
+        var sides = 10;
+        var radius = 50;
+        var decahedron = new Path.RegularPolygon(center, sides, radius);
+        decahedron.fillColor = 'black';
 
-		var center = new Point(100, 400);
-		var points = 6;
-		var radius1 = 20;
-		var radius2 = 50;
-		var path = new Path.Star(center, points, radius1, radius2);
-		path.fillColor = 'black';
+        var center = new Point(100, 400);
+        var points = 6;
+        var radius1 = 20;
+        var radius2 = 50;
+        var path = new Path.Star(center, points, radius1, radius2);
+        path.fillColor = 'black';
 
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

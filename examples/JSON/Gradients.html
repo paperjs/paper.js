@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Gradients</title>
-	<link rel="stylesheet" href="../css/style.css">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var path = new Path.Circle(view.center, view.bounds.height * 0.4);
-		path.fillColor = {
-			// gradient: [['yellow', 'red', 'black'], true],
-			stops: ['yellow', 'red', 'black'],
-			radial: true,
-			origin: path.position,
-			destination: path.bounds.rightCenter
-		}
-		path.strokeColor = 'black';
-		window._json = project.exportJSON();
-		console.log(window._json);
-	</script>
-	<script type="text/paperscript" canvas="canvas2">
-		project.importJSON(window._json);
-	</script>
+    <meta charset="UTF-8">
+    <title>Gradients</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas1">
+        var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+        path.fillColor = {
+            // gradient: [['yellow', 'red', 'black'], true],
+            stops: ['yellow', 'red', 'black'],
+            radial: true,
+            origin: path.position,
+            destination: path.bounds.rightCenter
+        }
+        path.strokeColor = 'black';
+        window._json = project.exportJSON();
+        console.log(window._json);
+    </script>
+    <script type="text/paperscript" canvas="canvas2">
+        project.importJSON(window._json);
+    </script>
 </head>
 <body>
-	<canvas id="canvas1" width="500" height="500"></canvas>
-	<canvas id="canvas2" width="500" height="500"></canvas>
+    <canvas id="canvas1" width="500" height="500"></canvas>
+    <canvas id="canvas2" width="500" height="500"></canvas>
 </body>
 </html>

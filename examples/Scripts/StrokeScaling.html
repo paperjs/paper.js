@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Shapes</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        view.zoom = 1.5;
+        settings.applyMatrix = false;
+        var strokeScaling = false;
+        var path = new Path.Circle({
+            center: view.center - [0, 140],
+            radius: 50,
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeScaling: strokeScaling,
+            opacity: 0.5,
+            selected: true
+        });
+        path.scale(2, 1);
+
+        var shape = new Shape.Circle({
+            center: view.center,
+            radius: 50,
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeScaling: strokeScaling,
+            opacity: 0.5,
+            selected: true
+        });
+        shape.scale(2, 1);
+
+        var hole;
+        var compound = new CompoundPath({
+            children: [
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [100, 100]
+                }),
+                hole = new Path.Circle({
+                    center: [50, 50],
+                    radius: 25
+                })
+            ],
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            position: view.center + [0, 140],
+            strokeScaling: strokeScaling,
+            opacity: 0.5,
+            selected: true
+        });
+        hole.position += 15;
+        compound.scale(2, 1);
+
+        document.body.appendChild(project.exportSVG());
+    </script>
+</head>
+<body>
+    <canvas id="canvas" width="300" height="500"></canvas>
+</body>
+</html>

@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>Group Transform</title>
-	<link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Group Transform</title>
+    <link rel="stylesheet" href="../css/style.css">
     <!-- IE 9: display inline SVG -->
     <meta http-equiv="X-UA-Compatible" content="IE=9">
-	<script type="text/javascript" src="../../dist/paper-full.js"></script>
-	<script type="text/paperscript" canvas="canvas">
-		var circle1 = new Path.Circle(new Point(100, 100), 50);
-		circle1.fillColor = 'red';
-		var circle2 = new Path.Circle(new Point(200, 100), 50);
-		circle2.fillColor = 'blue';
-		var group = new Group(circle1, circle2);
-		group.translate([100, 100]);
-		group.scale(0.5);
-		group.rotate(10);
-		document.getElementById('svg').appendChild(project.exportSVG());
-	</script>
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+        var circle1 = new Path.Circle(new Point(100, 100), 50);
+        circle1.fillColor = 'red';
+        var circle2 = new Path.Circle(new Point(200, 100), 50);
+        circle2.fillColor = 'blue';
+        var group = new Group(circle1, circle2);
+        group.translate([100, 100]);
+        group.scale(0.5);
+        group.rotate(10);
+        document.body.appendChild(project.exportSVG());
+    </script>
 </head>
 <body>
-	<canvas id="canvas" width="500" height="500"></canvas>
-	<svg id="svg" width="500" height="500"></svg>
+    <canvas id="canvas" width="500" height="500"></canvas>
 </body>
 </html>
