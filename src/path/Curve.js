@@ -308,8 +308,8 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // DOCS: Curve#getIntersections()
     getIntersections: function(curve) {
-        return Curve.getIntersections(this.getValues(), curve.getValues(),
-                this, curve, []);
+        return Curve.filterIntersections(Curve.getIntersections(
+                this.getValues(), curve.getValues(), this, curve, []));
     },
 
     // TODO: adjustThroughPoint
@@ -1101,12 +1101,11 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 3) {
+        if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 4) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
-            tMinNew = (tMax + tMin) / 2;
-            tMaxNew = tMinNew;
+            tMaxNew = tMinNew = (tMax + tMin) / 2;
             tDiff = 0;
         } else {
             // Get the top and bottom parts of the convex-hull
@@ -1397,19 +1396,89 @@ new function() { // Scope for methods that require numerical integration
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
-        getIntersections: function(v1, v2, curve1, curve2, locations, include) {
+        getIntersections: function(v1, v2, c1, c2, locations, include) {
             var linear1 = Curve.isLinear(v1),
-                linear2 = Curve.isLinear(v2);
+                linear2 = Curve.isLinear(v2),
+                c1p1 = c1.getPoint1(),
+                c1p2 = c1.getPoint2(),
+                c2p1 = c2.getPoint1(),
+                c2p2 = c2.getPoint2(),
+                tolerance = /*#=*/Numerical.TOLERANCE;
+            // Handle a special case where if both curves start or end at the
+            // same point, the same end-point case will be handled after we
+            // calculate other intersections within the curve.
+            if (c1p1.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 0, c1p1);
+            if (c1p1.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
+            // Determine the correct intersection method based on values of
+            // linear1 & 2:
             (linear1 && linear2
                 ? addLineIntersection
                 : linear1 || linear2
                     ? addCurveLineIntersections
                     : addCurveIntersections)(
-                        v1, v2, curve1, curve2, locations, include,
+                        v1, v2, c1, c2, locations, include,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
+            // Handle the special case where c1's end-point overlap with
+            // c2's points.
+            if (c1p2.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
+            if (c1p2.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
+            return locations;
+        },
+
+        filterIntersections: function(locations, _expand) {
+            var max = locations.length - 1,
+                tMax = 1 - /*#=*/Numerical.TOLERANCE;
+            // Merge intersections very close to the end of a curve to the
+            // beginning of the next curve.
+            for (var i = max; i >= 0; i--) {
+                var loc = locations[i],
+                    next = loc._curve.getNext(),
+                    next2 = loc._curve2.getNext();
+                if (next && loc._parameter >= tMax) {
+                    loc._parameter = 0;
+                    loc._curve = next;
+                }
+                if (next2 && loc._parameter2 >= tMax) {
+                    loc._parameter2 = 0;
+                    loc._curve2 = next2;
+                }
+            }
+
+            // Compare helper to filter locations
+            function compare(loc1, loc2) {
+                var path1 = loc1.getPath(),
+                    path2 = loc2.getPath();
+                return path1 === path2
+                        // We can add parameter (0 <= t <= 1) to index
+                        // (a integer) to compare both at the same time
+                        ? (loc1.getIndex() + loc1.getParameter())
+                                - (loc2.getIndex() + loc2.getParameter())
+                        // Sort by path id to group all locations on the same path.
+                        : path1._id - path2._id;
+            }
+
+            if (max > 0) {
+                locations.sort(compare);
+                // Filter out duplicate locations
+                for (var i = max; i >= 1; i--) {
+                    if (locations[i].equals(locations[i === 0 ? max : i - 1])) {
+                        locations.splice(i, 1);
+                        max--;
+                    }
+                }
+            }
+            if (_expand) {
+                for (var i = max; i >= 0; i--)
+                    locations.push(locations[i].getIntersection());
+                locations.sort(compare);
+            }
             return locations;
         }
     }};

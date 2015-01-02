@@ -163,7 +163,7 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
-        var TOLERANCE = /*#=*/Numerical.TOLERANCE,
+        var tolerance = /*#=*/Numerical.TOLERANCE,
             linearHandles;
 
         function resetLinear() {
@@ -200,9 +200,9 @@ PathItem.inject(new function() {
                 if (linearHandles)
                     linearHandles.push(segment._handleOut, segment._handleIn);
             } else {
-                segment = t < TOLERANCE
+                segment = t < tolerance
                     ? curve._segment1
-                    : t > 1 - TOLERANCE
+                    : t > 1 - tolerance
                         ? curve._segment2
                         : curve.getPartLength(0, t) < curve.getPartLength(t, 1)
                             ? curve._segment1
@@ -222,23 +222,23 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        var TOLERANCE = /*#=*/Numerical.TOLERANCE,
+        var tolerance = /*#=*/Numerical.TOLERANCE,
+            tMin = tolerance,
+            tMax = 1 - tolerance,
             x = point.x,
             y = point.y,
             windLeft = 0,
             windRight = 0,
             roots = [],
-            abs = Math.abs,
-            tMin = TOLERANCE,
-            tMax = 1 - TOLERANCE;
+            abs = Math.abs;
         // Absolutely horizontal curves may return wrong results, since
         // the curves are monotonic in y direction and this is an
         // indeterminate state.
         if (horizontal) {
             var yTop = -Infinity,
                 yBottom = Infinity,
-                yBefore = y - TOLERANCE,
-                yAfter = y + TOLERANCE;
+                yBefore = y - tolerance,
+                yAfter = y + tolerance;
             // Find the closest top and bottom intercepts for the same vertical
             // line.
             for (var i = 0, l = curves.length; i < l; i++) {
@@ -263,8 +263,8 @@ PathItem.inject(new function() {
             if (yBottom < Infinity)
                 windRight = getWinding(new Point(x, yBottom), curves);
         } else {
-            var xBefore = x - TOLERANCE,
-                xAfter = x + TOLERANCE;
+            var xBefore = x - tolerance,
+                xAfter = x + tolerance;
             // Find the winding number for right side of the curve, inclusive of
             // the curve itself, while tracing along its +-x direction.
             for (var i = 0, l = curves.length; i < l; i++) {
@@ -287,15 +287,15 @@ PathItem.inject(new function() {
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
                     // almost equal to one of the endpoints of the curves.
-                    if (!(lastT && abs(lastX0 - x0) < TOLERANCE
+                    if (!(lastT && abs(lastX0 - x0) < tolerance
                             && ((lastT <= tMin && t >= tMax)
                             || (t <= tMin && lastT >= tMax)))) {
                     // Take care of cases where the curve and the preceding
                     // curve merely touches the ray towards +-x direction, but
                     // proceeds to the same side of the ray. This essentially is
                     // not a crossing.
-                    if (abs(slope) < TOLERANCE && !Curve.isLinear(values)
-                            || t < TOLERANCE && slope * Curve.evaluate(
+                    if (abs(slope) < tolerance && !Curve.isLinear(values)
+                            || t < tolerance && slope * Curve.evaluate(
                                 curve.previous.values, t, 1).y < 0) {
                         if (testContains && x0 >= xBefore && x0 <= xAfter) {
                             ++windLeft;
@@ -577,12 +577,12 @@ Path.inject(/** @lends Path# */{
                 var a = 3 * (y1 - y2) - y0 + y3,
                     b = 2 * (y0 + y2) - 4 * y1,
                     c = y1 - y0,
-                    TOLERANCE = /*#=*/Numerical.TOLERANCE,
+                    tolerance = /*#=*/Numerical.TOLERANCE,
                     roots = [];
                 // Keep then range to 0 .. 1 (excluding) in the search for y
                 // extrema.
-                var count = Numerical.solveQuadratic(a, b, c, roots, TOLERANCE,
-                        1 - TOLERANCE);
+                var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
+                        1 - tolerance);
                 if (count === 0) {
                     insertCurve(v);
                 } else {
