@@ -1066,7 +1066,7 @@ new function() { // Scope for methods that require numerical integration
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             tolerance = /*#=*/Numerical.TOLERANCE,
-            hullEpsilon = 1e-9,
+            epsilon = 1e-10, // /*#=*/Numerical.EPSILON,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
             d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
@@ -1082,7 +1082,9 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 4) {
+        // NOTE: the recursion threshold of 4 is needed to prevent issue #571
+        // from occurring: https://github.com/paperjs/paper.js/issues/571
+        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 4) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
@@ -1101,7 +1103,7 @@ new function() { // Scope for methods that require numerical integration
             tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
             // No intersections if one of the tvalues are null or 'undefined'
             if (tMinClip == null || tMaxClip == null)
-                return false;
+                return;
             // Clip P with the fatline for Q
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             tDiff = tMaxClip - tMinClip;
@@ -1132,7 +1134,10 @@ new function() { // Scope for methods that require numerical integration
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance / 2) {
+            // NOTE: Not sure why we compare with half the tolerance here, but
+            // it appears to be needed to fix issue #568 (intersection is found
+            // twice): https://github.com/paperjs/paper.js/issues/568
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
