@@ -63,24 +63,9 @@ var Numerical = new function() {
         cos = Math.cos,
         PI = Math.PI,
         isFinite = Number.isFinite,
-        TOLERANCE = 10e-6,
+        TOLERANCE = 1e-5,
         EPSILON = 1e-14,
         MACHINE_EPSILON = 1.12e-16;
-
-    // Sets up min and max values for roots and returns a add() function that
-    // handles bounds checks and itself returns the amount of added roots.
-    function setupRoots(roots, min, max) {
-        var unbound = min === undefined,
-            minE = min - EPSILON,
-            maxE = max + EPSILON,
-            count = 0;
-        // Returns a function that adds roots with checks
-        return function(root) {
-            if (unbound || root > minE && root < maxE)
-                roots[count++] = root < min ? min : root > max ? max : root;
-            return count;
-        };
-    }
 
     return /** @lends Numerical */{
         TOLERANCE: TOLERANCE,
@@ -349,85 +334,6 @@ var Numerical = new function() {
                         && x <= max + MACHINE_EPSILON)))
                 roots[nRoots++] = x < min ? min : x > max ? max : x;
             return nRoots;
-        },
-
-        /**
-         * Solves the quadratic polynomial with coefficients a, b, c for roots
-         * (zero crossings) and and returns the solutions in an array.
-         *
-         * a*x^2 + b*x + c = 0
-         */
-        _solveQuadratic: function(a, b, c, roots, min, max) {
-            var add = setupRoots(roots, min, max);
-
-            // Code ported over and adapted from Uintah library (MIT license).
-            // If a is 0, equation is actually linear, return 0 or 1 easy roots.
-            if (abs(a) < EPSILON) {
-                if (abs(b) >= EPSILON)
-                    return add(-c / b);
-                // If all the coefficients are 0, we have infinite solutions!
-                return abs(c) < EPSILON ? -1 : 0; // Infinite or 0 solutions
-            }
-            // Convert to normal form: x^2 + px + q = 0
-            var p = b / (2 * a);
-            var q = c / a;
-            var p2 = p * p;
-            if (p2 < q - EPSILON)
-                return 0;
-            var s = p2 > q ? sqrt(p2 - q) : 0,
-                count = add(s - p);
-            if (s > 0)
-                count = add(-s - p);
-            return count;
-        },
-
-        /**
-         * Solves the cubic polynomial with coefficients a, b, c, d for roots
-         * (zero crossings) and and returns the solutions in an array.
-         *
-         * a*x^3 + b*x^2 + c*x + d = 0
-         */
-        _solveCubic: function(a, b, c, d, roots, min, max) {
-            // If a is 0, equation is actually quadratic.
-            if (abs(a) < EPSILON)
-                return Numerical._solveQuadratic(b, c, d, roots, min, max);
-
-            // Code ported over and adapted from Uintah library (MIT license).
-            // Normalize to form: x^3 + b x^2 + c x + d = 0:
-            b /= a;
-            c /= a;
-            d /= a;
-            var add = setupRoots(roots, min, max),
-                // Compute discriminants
-                bb = b * b,
-                p = (bb - 3 * c) / 9,
-                q = (2 * bb * b - 9 * b * c + 27 * d) / 54,
-                // Use Cardano's formula
-                ppp = p * p * p,
-                D = q * q - ppp;
-            // Substitute x = y - b/3 to eliminate quadric term: x^3 +px + q = 0
-            b /= 3;
-            if (abs(D) < EPSILON) {
-                if (abs(q) < EPSILON) // One triple solution.
-                    return add(-b);
-                // One single and one double solution.
-                var sqp = sqrt(p),
-                    snq = q > 0 ? 1 : -1;
-                add(-snq * 2 * sqp - b);
-                return add(snq * sqp - b);
-            }
-            if (D < 0) { // Casus irreducibilis: three real solutions
-                var sqp = sqrt(p),
-                    phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
-                    t = -2 * sqp,
-                    o = 2 * PI / 3;
-                add(t * cos(phi) - b);
-                add(t * cos(phi + o) - b);
-                return add(t * cos(phi - o) - b);
-            }
-            // One real solution
-            var A = (q > 0 ? -1 : 1) * pow(abs(q) + sqrt(D), 1 / 3);
-            return add(A + p / A - b);
         }
     };
 };

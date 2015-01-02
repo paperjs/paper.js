@@ -584,27 +584,7 @@ statics: {
             c = 3 * (c1 - p1),
             b = 3 * (c2 - c1) - c,
             a = p2 - p1 - c - b;
-        var roots2 = [];
-        var res1 = Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
-//      var res2 = Numerical._solveCubic(a, b, c, p1 - val, roots2, min, max);
-//      var ok = true;
-//      if (res1 == res2) {
-//          for (var i = 0; i < res1 && ok; i++) {
-//              if (Math.abs(roots[i] - roots2[i]) > 0.01)
-//                  ok = false;
-//          }
-//      } else {
-//          ok = false;
-//      }
-//      function f(val) {
-//          return (val + '').replace(/e/, '*10^');
-//      }
-//      if (!ok) {
-//          console.log('a = ' + f(a) + '; b = ' + f(b) + '; c = ' + f(c) + '; d = ' + f(p1 - val)
-//              + '; // old:', roots2, 'new:', roots);
-//      }
-
-        return res1; //Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
+        return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
     getParameterOf: function(v, x, y) {
