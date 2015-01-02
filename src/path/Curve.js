@@ -1264,48 +1264,36 @@ new function() { // Scope for methods that require numerical integration
     }
 
     /**
-     * Clips the convex-hull and returns [tMin, tMax] for the curve contained
+     * Clips the convex-hull and returns [tMin, tMax] for the curve contained.
      */
     function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
-        var tProxy,
-            tVal = null,
-            px, py,
-            qx, qy;
-        for (var i = 0, l = hullBottom.length - 1; i < l; i++) {
-            py = hullBottom[i][1];
-            qy = hullBottom[i + 1][1];
-            if (py < qy) {
-                tProxy = null;
-            } else if (qy <= dMax) {
-                px = hullBottom[i][0];
-                qx = hullBottom[i + 1][0];
-                tProxy = px + (dMax - py) * (qx - px) / (qy - py);
-            } else {
-                // Try the next chain
-                continue;
-            }
-            // We got a proxy-t;
-            break;
+        if (hullTop[0][1] < dMin) {
+            // Left of hull is below dMin, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullTop, true, dMin);
+        } else if (hullBottom[0][1] > dMax) {
+            // Left of hull is above dMax, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullBottom, false, dMax);
+        } else {
+            // Left of hull is between dMin and dMax, no clipping possible
+            return hullTop[0][0];
         }
-        if (hullTop[0][1] <= dMax)
-            tProxy = hullTop[0][0];
-        for (var i = 0, l = hullTop.length - 1; i < l; i++) {
-            py = hullTop[i][1];
-            qy = hullTop[i + 1][1];
-            if (py >= dMin) {
-                tVal = tProxy;
-            } else if (py > qy) {
-                tVal = null;
-            } else if (qy >= dMin) {
-                px = hullTop[i][0];
-                qx = hullTop[i + 1][0];
-                tVal = px + (dMin  - py) * (qx - px) / (qy - py);
-            } else {
-                continue;
-            }
-            break;
+    }
+
+    function clipConvexHullPart(part, top, threshold) {
+        var px = part[0][0],
+            py = part[0][1];
+        for (var i = 1, l = part.length; i < l; i++) {
+            var qx = part[i][0],
+                qy = part[i][1];
+            if (top ? qy >= threshold : qy <= threshold)
+                return px + (threshold - py) * (qx - px) / (qy - py);
+            px = qx;
+            py = qy;
         }
-        return tVal;
+        // All points of hull are above / below the threshold
+        return null;
     }
 /*#*/ } // __options.fatlineClipping
 
