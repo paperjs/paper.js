@@ -1378,19 +1378,39 @@ new function() { // Scope for methods that require numerical integration
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
-        getIntersections: function(v1, v2, curve1, curve2, locations, include) {
+        getIntersections: function(v1, v2, c1, c2, locations, include) {
             var linear1 = Curve.isLinear(v1),
-                linear2 = Curve.isLinear(v2);
+                linear2 = Curve.isLinear(v2),
+                c1p1 = c1.getPoint1(),
+                c1p2 = c1.getPoint2(),
+                c2p1 = c2.getPoint1(),
+                c2p2 = c2.getPoint2(),
+                tolerance = /*#=*/Numerical.TOLERANCE;
+            // Handle a special case where if both curves start or end at the
+            // same point, the same end-point case will be handled after we
+            // calculate other intersections within the curve.
+            if (c1p1.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 0, c1p1);
+            if (c1p1.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
+            // Determine the correct intersection method based on values of
+            // linear1 & 2:
             (linear1 && linear2
                 ? addLineIntersection
                 : linear1 || linear2
                     ? addCurveLineIntersections
                     : addCurveIntersections)(
-                        v1, v2, curve1, curve2, locations, include,
+                        v1, v2, c1, c2, locations, include,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
+            // Handle the special case where c1's end-point overlap with
+            // c2's points.
+            if (c1p2.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
+            if (c1p2.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
             return locations;
         }
     }};
