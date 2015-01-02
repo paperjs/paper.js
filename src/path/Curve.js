@@ -1062,7 +1062,6 @@ new function() { // Scope for methods that require numerical integration
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             tolerance = /*#=*/Numerical.TOLERANCE,
             hullEpsilon = 1e-9,
-            getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
             d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
@@ -1176,6 +1175,17 @@ new function() { // Scope for methods that require numerical integration
     }
 
 /*#*/ if (__options.fatlineClipping) {
+    function getSignedDistance(l1x, l1y, l2x, l2y, x, y) {
+        var vx = l2x - l1x,
+            vy = l2y - l1y;
+        if (Numerical.isZero(vx))
+           return vy >= 0 ? l1y - x : x - l1x;
+        var m = vy / vx, // slope
+            b = l1y - m * l1x; // y offset
+        // Distance to the linear equation
+        return (y - (m * x) - b) / Math.sqrt(m * m + 1);
+    }
+
     /**
      * Calculate the convex hull for the non-parametric bezier curve D(ti, di(t))
      * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
@@ -1196,7 +1206,6 @@ new function() { // Scope for methods that require numerical integration
             p2 = [ 2 / 3, dq2 ],
             p3 = [ 1, dq3 ],
             // Find signed distance of p1 and p2 from line [ p0, p3 ]
-            getSignedDistance = Line.getSignedDistance,
             dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
             dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
             flip = false,
