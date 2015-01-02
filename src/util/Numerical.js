@@ -229,13 +229,10 @@ var Numerical = new function() {
                     // nRoots = D > MACHINE_EPSILON ? 2 : 1;
                 }
             }
-            var unbound = min == null,
-                minE = min - MACHINE_EPSILON,
-                maxE = max + MACHINE_EPSILON;
-            if (isFinite(x1) && (unbound || (x1 >= minE && x1 <= maxE)))
+            if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
                 roots[nRoots++] = x1 < min ? min : x1 > max ? max : x1;
-            if (x2 !== x1 && isFinite(x2)
-                    && (unbound || (x2 >= minE && x2 <= maxE)))
+            if (x2 !== x1
+                    && isFinite(x2) && (min == null || x2 >= min && x2 <= max))
                 roots[nRoots++] = x2 < min ? min : x2 > max ? max : x2;
             return nRoots;
         },
@@ -330,8 +327,7 @@ var Numerical = new function() {
             // The cubic has been deflated to a quadratic.
             var nRoots = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
             if (isFinite(x) && (nRoots === 0 || x !== roots[nRoots - 1])
-                    && (min == null || (x >= min - MACHINE_EPSILON
-                        && x <= max + MACHINE_EPSILON)))
+                    && (min == null || x >= min && x <= max))
                 roots[nRoots++] = x < min ? min : x > max ? max : x;
             return nRoots;
         }
