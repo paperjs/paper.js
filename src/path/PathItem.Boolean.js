@@ -706,16 +706,19 @@ CompoundPath.inject(/** @lends CompoundPath# */{
         var children = this.removeChildren().sort(function(a, b) {
             return b.getBounds().getArea() - a.getBounds().getArea();
         });
-        this.addChildren(children);
-        var clockwise = children[0].isClockwise();
-        for (var i = 1, l = children.length; i < l; i++) { // Skip first child
-            var point = children[i].getInteriorPoint(),
-                counters = 0;
-            for (var j = i - 1; j >= 0; j--) {
-                if (children[j].contains(point))
-                    counters++;
+        if (children.length > 0) {
+            this.addChildren(children);
+            var clockwise = children[0].isClockwise();
+            // Skip the first child
+            for (var i = 1, l = children.length; i < l; i++) {
+                var point = children[i].getInteriorPoint(),
+                    counters = 0;
+                for (var j = i - 1; j >= 0; j--) {
+                    if (children[j].contains(point))
+                        counters++;
+                }
+                children[i].setClockwise(counters % 2 === 0 && clockwise);
             }
-            children[i].setClockwise(counters % 2 === 0 && clockwise);
         }
         return this;
     }
