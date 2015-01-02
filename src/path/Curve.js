@@ -1056,6 +1056,11 @@ new function() { // Scope for methods that require numerical integration
             tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
 /*#*/ if (__options.fatlineClipping) {
         // Avoid deeper recursion.
+        // NOTE: @iconexperience determined that more than 20 recursions are
+        // needed sometimes, depending on the tDiff threshold values further
+        // below when determining which curve converges the least. He also
+        // recommended a threshold of 0.5 instead of the initial 0.8
+        // See: https://github.com/paperjs/paper.js/issues/565
         if (recursion > 32)
             return;
         // Let P be the first curve and Q be the second
