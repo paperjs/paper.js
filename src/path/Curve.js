@@ -1085,7 +1085,6 @@ new function() { // Scope for methods that require numerical integration
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-            tolerance = /*#=*/Numerical.TOLERANCE,
             hullEpsilon = 1e-9,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
@@ -1153,7 +1152,7 @@ new function() { // Scope for methods that require numerical integration
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < hullEpsilon) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
