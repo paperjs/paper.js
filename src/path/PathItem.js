@@ -76,8 +76,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             length1 = curves1.length,
             length2 = path ? curves2.length : length1,
             values2 = [],
-            MIN = /*#=*/Numerical.EPSILON,
-            MAX = 1 - /*#=*/Numerical.EPSILON;
+            tMin = /*#=*/Numerical.EPSILON,
+            tMax = 1 - tMin;
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.
         if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
@@ -106,7 +106,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     Curve.getIntersections(
                         parts[0], parts[1], curve1, curve1, locations,
                         function(loc) {
-                            if (loc._parameter <= MAX) {
+                            if (loc._parameter <= tMax) {
                                 // Since the curve was split above, we need to
                                 // adjust the parameters for both locations.
                                 loc._parameter /= 2;
@@ -127,7 +127,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     !path && (j === i + 1 || j === length2 - 1 && i === 0)
                         && function(loc) {
                             var t = loc._parameter;
-                            return t >= MIN && t <= MAX;
+                            return t >= tMin && t <= tMax;
                         }
                 );
             }

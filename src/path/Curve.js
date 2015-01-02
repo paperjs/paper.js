@@ -1414,18 +1414,19 @@ new function() { // Scope for methods that require numerical integration
         },
 
         filterIntersections: function(locations, _expand) {
-            var max = locations.length - 1;
+            var max = locations.length - 1,
+                tMax = 1 - /*#=*/Numerical.TOLERANCE;
             // Merge intersections very close to the end of a curve to the
             // beginning of the next curve.
             for (var i = max; i >= 0; i--) {
                 var loc = locations[i],
                     next = loc._curve.getNext(),
                     next2 = loc._curve2.getNext();
-                if (next && loc._parameter >= MAX) {
+                if (next && loc._parameter >= tMax) {
                     loc._parameter = 0;
                     loc._curve = next;
                 }
-                if (next2 && loc._parameter2 >= MAX) {
+                if (next2 && loc._parameter2 >= tMax) {
                     loc._parameter2 = 0;
                     loc._curve2 = next2;
                 }
