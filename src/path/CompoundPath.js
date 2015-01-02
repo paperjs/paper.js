@@ -131,6 +131,18 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this._children[i].smooth();
     },
 
+    reduce: function reduce() {
+        if (this._children.length === 0) { // Replace with a simple empty Path
+            var path = new Path(Item.NO_INSERT);
+            path.insertAbove(this);
+            path.setStyle(this._style);
+            this.remove();
+            return path;
+        } else {
+            return reduce.call(this);
+        }
+    },
+
     /**
      * Specifies whether the compound path is oriented clock-wise.
      *
