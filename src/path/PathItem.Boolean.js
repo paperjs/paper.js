@@ -344,8 +344,8 @@ PathItem.inject(new function() {
         var paths = [],
             // Values for getTangentAt() that are almost 0 and 1.
             // TODO: Correctly support getTangentAt(0) / (1)?
-            ZERO = 1e-3,
-            ONE = 1 - 1e-3;
+            tMin = /*#=*/Numerical.TOLERANCE,
+            tMax = 1 - tMin;
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
             if (seg._visited || !operator(seg._winding))
@@ -376,14 +376,14 @@ PathItem.inject(new function() {
                         var c1 = seg.getCurve();
                         if (dir > 0)
                             c1 = c1.getPrevious();
-                        var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+                        var t1 = c1.getTangentAt(dir < 1 ? tMin : tMax, true),
                             // Get both curves at the intersection (except the
                             // entry curves).
                             c4 = interSeg.getCurve(),
                             c3 = c4.getPrevious(),
                             // Calculate their winding values and tangents.
-                            t3 = c3.getTangentAt(ONE, true),
-                            t4 = c4.getTangentAt(ZERO, true),
+                            t3 = c3.getTangentAt(tMax, true),
+                            t4 = c4.getTangentAt(tMin, true),
                             // Cross product of the entry and exit tangent
                             // vectors at the intersection, will let us select
                             // the correct contour to traverse next.
