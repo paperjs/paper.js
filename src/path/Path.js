@@ -2417,7 +2417,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                     x = pt.x,
                     y = pt.y,
                     abs = Math.abs,
-                    EPSILON = /*#=*/Numerical.EPSILON,
+                    epsilon = /*#=*/Numerical.EPSILON,
                     rx = abs(radius.width),
                     ry = abs(radius.height),
                     rxSq = rx * rx,
@@ -2434,7 +2434,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 }
                 factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
                         (rxSq * ySq + rySq * xSq);
-                if (abs(factor) < EPSILON)
+                if (abs(factor) < epsilon)
                     factor = 0;
                 if (factor < 0)
                     throw new Error(

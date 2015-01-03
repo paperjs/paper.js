@@ -244,8 +244,7 @@ PathItem.inject(new function() {
             y = point.y,
             windLeft = 0,
             windRight = 0,
-            roots = [],
-            abs = Math.abs;
+            roots = [];
         // Absolutely horizontal curves may return wrong results, since
         // the curves are monotonic in y direction and this is an
         // indeterminate state.
@@ -322,7 +321,7 @@ PathItem.inject(new function() {
                 }
             }
         }
-        return Math.max(abs(windLeft), abs(windRight));
+        return Math.max(Math.abs(windLeft), Math.abs(windRight));
     }
 
     /**
