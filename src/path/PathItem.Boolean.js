@@ -65,7 +65,8 @@ PathItem.inject(new function() {
             windings = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
-            monoCurves = [];
+            monoCurves = [],
+            tolerance = /*#=*/Numerical.TOLERANCE;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -111,12 +112,17 @@ PathItem.inject(new function() {
             // (amortised) time.
             for (var j = 0; j < 3; j++) {
                 // Try the points at 1/4, 2/4 and 3/4 of the total length:
-                var length = totalLength * (j + 1) /
-                        /*#=*/(4 - 2 * Numerical.TOLERANCE);
+                var length = totalLength * (j + 1) / 4;
                 for (k = 0, m = chain.length; k < m; k++) {
-                    var entry = chain[k];
-                    if (length <= entry.length) {
-                        var curve = entry.segment.getCurve(),
+                    var node = chain[k],
+                        curveLength = node.length;
+                    if (length <= curveLength) {
+                        // If the selected location on the curve falls onto its
+                        // beginning or end, use the curve's center instead.
+                        if (length <= 2 * tolerance
+                                || curveLength - length <= 2 * tolerance)
+                            length = curveLength / 2;
+                        var curve = node.segment.getCurve(),
                             pt = curve.getPointAt(length),
                             hor = curve.isHorizontal(),
                             path = curve._path;
@@ -132,7 +138,7 @@ PathItem.inject(new function() {
                             : getWinding(pt, monoCurves, hor);
                         break;
                     }
-                    length -= entry.length;
+                    length -= curveLength;
                 }
             }
             windings.sort();
