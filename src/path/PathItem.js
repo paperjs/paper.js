@@ -76,7 +76,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             length1 = curves1.length,
             length2 = path ? curves2.length : length1,
             values2 = [],
-            tMin = /*#=*/Numerical.EPSILON,
+            tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.

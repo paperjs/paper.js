@@ -1,4 +1,4 @@
-/*
+ /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
@@ -299,11 +299,6 @@ var Curve = Base.extend(/** @lends Curve# */{
     isLinear: function() {
         return this._segment1._handleOut.isZero()
                 && this._segment2._handleIn.isZero();
-    },
-
-    isHorizontal: function() {
-        return this.isLinear() && Numerical.isZero(
-                this._segment1._point._y - this._segment2._point._y);
     },
 
     // DOCS: Curve#getIntersections()
@@ -671,6 +666,18 @@ statics: {
                 + 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
     },
 
+    getEdgeSum: function(v) {
+        // Method derived from:
+        // http://stackoverflow.com/questions/1165647
+        // We treat the curve points and handles as the outline of a polygon of
+        // which we determine the orientation using the method of calculating
+        // the sum over the edges. This will work even with non-convex polygons,
+        // telling you whether it's mostly clockwise
+        return    (v[0] - v[2]) * (v[3] + v[1])
+                + (v[2] - v[4]) * (v[5] + v[3])
+                + (v[4] - v[6]) * (v[7] + v[5]);
+    },
+
     getBounds: function(v) {
         var min = v.slice(0, 2), // Start with values of point1
             max = min.slice(), // clone
@@ -705,9 +712,9 @@ statics: {
             b = 2 * (v0 + v2) - 4 * v1,
             c = v1 - v0,
             count = Numerical.solveQuadratic(a, b, c, roots),
-            // Add some tolerance for good roots, as t = 0 / 1 are added
-            // separately anyhow, and we don't want joins to be added with
-            // radiuses in getStrokeBounds()
+            // Add some tolerance for good roots, as t = 0, 1 are added
+            // separately anyhow, and we don't want joins to be added with radii
+            // in getStrokeBounds()
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         // Only add strokeWidth to bounds for points which lie  within 0 < t < 1
@@ -1134,10 +1141,7 @@ new function() { // Scope for methods that require numerical integration
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance / 2) {
-            // NOTE: Not sure why we compare with half the tolerance here, but
-            // it appears to be needed to fix issue #568 (intersection is found
-            // twice): https://github.com/paperjs/paper.js/issues/568
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;

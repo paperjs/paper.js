@@ -62,11 +62,10 @@ PathItem.inject(new function() {
         splitPath(_path1.getIntersections(_path2, null, true));
 
         var chain = [],
-            windings = [],
-            lengths = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
-            monoCurves = [];
+            monoCurves = [],
+            tolerance = /*#=*/Numerical.TOLERANCE;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -96,49 +95,59 @@ PathItem.inject(new function() {
             // contribution for this curve-chain. Once we have enough confidence
             // in the winding contribution, we can propagate it until the
             // intersection or end of a curve chain.
-            chain.length = windings.length = lengths.length = 0;
-            var totalLength = 0,
-                startSeg = segment;
+            chain.length = 0;
+            var startSeg = segment,
+                totalLength = 0,
+                windingSum = 0;
             do {
-                chain.push(segment);
-                lengths.push(totalLength += segment.getCurve().getLength());
+                var length = segment.getCurve().getLength();
+                chain.push({ segment: segment, length: length });
+                totalLength += length;
                 segment = segment.getNext();
             } while (segment && !segment._intersection && segment !== startSeg);
-            // Select the median winding of three random points along this curve
-            // chain, as a representative winding number. The random selection
-            // gives a better chance of returning a correct winding than equally
-            // dividing the curve chain, with the same (amortised) time.
+            // Calculate the average winding among three evenly distributed
+            // points along this curve chain as a representative winding number.
+            // This selection gives a better chance of returning a correct
+            // winding than equally dividing the curve chain, with the same
+            // (amortised) time.
             for (var j = 0; j < 3; j++) {
-                var length = totalLength * Math.random(),
-                    amount = lengths.length,
-                    k = 0;
-                do {
-                    if (lengths[k] >= length) {
-                        if (k > 0)
-                            length -= lengths[k - 1];
+                // Try the points at 1/4, 2/4 and 3/4 of the total length:
+                var length = totalLength * (j + 1) / 4;
+                for (k = 0, m = chain.length; k < m; k++) {
+                    var node = chain[k],
+                        curveLength = node.length;
+                    if (length <= curveLength) {
+                        // If the selected location on the curve falls onto its
+                        // beginning or end, use the curve's center instead.
+                        if (length <= tolerance
+                                || curveLength - length <= tolerance)
+                            length = curveLength / 2;
+                        var curve = node.segment.getCurve(),
+                            pt = curve.getPointAt(length),
+                            // Determine if the curve is a horizontal linear
+                            // curve by checking the slope of it's tangent.
+                            hor = curve.isLinear() && Math.abs(curve
+                                    .getTangentAt(0.5, true).y) <= tolerance,
+                            path = curve._path;
+                        if (path._parent instanceof CompoundPath)
+                            path = path._parent;
+                        // While subtracting, we need to omit this curve if this
+                        // curve is contributing to the second operand and is
+                        // outside the first operand.
+                        windingSum += subtract && _path2
+                            && (path === _path1 && _path2._getWinding(pt, hor)
+                            || path === _path2 && !_path1._getWinding(pt, hor))
+                            ? 0
+                            : getWinding(pt, monoCurves, hor);
                         break;
                     }
-                } while (++k < amount);
-                var curve = chain[k].getCurve(),
-                    point = curve.getPointAt(length),
-                    hor = curve.isHorizontal(),
-                    path = curve._path;
-                if (path._parent instanceof CompoundPath)
-                    path = path._parent;
-                // While subtracting, we need to omit this curve if this
-                // curve is contributing to the second operand and is outside
-                // the first operand.
-                windings[j] = subtract && _path2
-                        && (path === _path1 && _path2._getWinding(point, hor)
-                        || path === _path2 && !_path1._getWinding(point, hor))
-                        ? 0
-                        : getWinding(point, monoCurves, hor);
+                    length -= curveLength;
+                }
             }
-            windings.sort();
-            // Assign the median winding to the entire curve chain.
-            var winding = windings[1];
+            // Assign the average winding to the entire curve chain.
+            var winding = Math.round(windingSum / 3);
             for (var j = chain.length - 1; j >= 0; j--)
-                chain[j]._winding = winding;
+                chain[j].segment._winding = winding;
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath();
@@ -222,9 +231,16 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        var tolerance = /*#=*/Numerical.TOLERANCE,
+        // We need to use a smaller tolerance here than in the rest of the
+        // library when dealing with curve time parameters and coordinates, in
+        // order to get really precise values for winding tests. 1e-7 was
+        // determined through a lot of trial and error, and boolean-test suites.
+        // Further decreasing it produces new errors.
+        // The value of 1e-7 also solves issue #559:
+        // https://github.com/paperjs/paper.js/issues/559
+        var tolerance = 1e-7,
             tMin = tolerance,
-            tMax = 1 - tolerance,
+            tMax = 1 - tMin,
             x = point.x,
             y = point.y,
             windLeft = 0,
@@ -294,8 +310,8 @@ PathItem.inject(new function() {
                     // curve merely touches the ray towards +-x direction, but
                     // proceeds to the same side of the ray. This essentially is
                     // not a crossing.
-                    if (abs(slope) < tolerance && !Curve.isLinear(values)
-                            || t < tolerance && slope * Curve.evaluate(
+                    if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                            || t < tMin && slope * Curve.evaluate(
                                 curve.previous.values, t, 1).y < 0) {
                         if (testContains && x0 >= xBefore && x0 <= xAfter) {
                             ++windLeft;
@@ -335,8 +351,8 @@ PathItem.inject(new function() {
         var paths = [],
             // Values for getTangentAt() that are almost 0 and 1.
             // TODO: Correctly support getTangentAt(0) / (1)?
-            ZERO = 1e-3,
-            ONE = 1 - 1e-3;
+            tMin = /*#=*/Numerical.TOLERANCE,
+            tMax = 1 - tMin;
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
             if (seg._visited || !operator(seg._winding))
@@ -367,14 +383,14 @@ PathItem.inject(new function() {
                         var c1 = seg.getCurve();
                         if (dir > 0)
                             c1 = c1.getPrevious();
-                        var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+                        var t1 = c1.getTangentAt(dir < 1 ? tMin : tMax, true),
                             // Get both curves at the intersection (except the
                             // entry curves).
                             c4 = interSeg.getCurve(),
                             c3 = c4.getPrevious(),
                             // Calculate their winding values and tangents.
-                            t3 = c3.getTangentAt(ONE, true),
-                            t4 = c4.getTangentAt(ZERO, true),
+                            t3 = c3.getTangentAt(tMax, true),
+                            t4 = c4.getTangentAt(tMin, true),
                             // Cross product of the entry and exit tangent
                             // vectors at the intersection, will let us select
                             // the correct contour to traverse next.
@@ -702,16 +718,19 @@ CompoundPath.inject(/** @lends CompoundPath# */{
         var children = this.removeChildren().sort(function(a, b) {
             return b.getBounds().getArea() - a.getBounds().getArea();
         });
-        this.addChildren(children);
-        var clockwise = children[0].isClockwise();
-        for (var i = 1, l = children.length; i < l; i++) { // Skip first child
-            var point = children[i].getInteriorPoint(),
-                counters = 0;
-            for (var j = i - 1; j >= 0; j--) {
-                if (children[j].contains(point))
-                    counters++;
+        if (children.length > 0) {
+            this.addChildren(children);
+            var clockwise = children[0].isClockwise();
+            // Skip the first child
+            for (var i = 1, l = children.length; i < l; i++) {
+                var point = children[i].getInteriorPoint(),
+                    counters = 0;
+                for (var j = i - 1; j >= 0; j--) {
+                    if (children[j].contains(point))
+                        counters++;
+                }
+                children[i].setClockwise(counters % 2 === 0 && clockwise);
             }
-            children[i].setClockwise(counters % 2 === 0 && clockwise);
         }
         return this;
     }
