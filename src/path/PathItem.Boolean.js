@@ -111,7 +111,8 @@ PathItem.inject(new function() {
             // (amortised) time.
             for (var j = 0; j < 3; j++) {
                 // Try the points at 1/4, 2/4 and 3/4 of the total length:
-                var length = totalLength * (j + 1) / 4;
+                var length = totalLength * (j + 1) /
+                        /*#=*/(4 - 2 * Numerical.TOLERANCE);
                 for (k = 0, m = chain.length; k < m; k++) {
                     var entry = chain[k];
                     if (length <= entry.length) {
