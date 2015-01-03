@@ -62,7 +62,6 @@ PathItem.inject(new function() {
         splitPath(_path1.getIntersections(_path2, null, true));
 
         var chain = [],
-            windings = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
             monoCurves = [],
@@ -98,15 +97,16 @@ PathItem.inject(new function() {
             // intersection or end of a curve chain.
             chain.length = 0;
             var startSeg = segment,
-                totalLength = 0;
+                totalLength = 0,
+                windingSum = 0;
             do {
                 var length = segment.getCurve().getLength();
                 chain.push({ segment: segment, length: length });
                 totalLength += length;
                 segment = segment.getNext();
             } while (segment && !segment._intersection && segment !== startSeg);
-            // Select the median winding of three evenly distributed points
-            // along this curve chain, as a representative winding number.
+            // Calculate the average winding among three evenly distributed
+            // points along this curve chain as a representative winding number.
             // This selection gives a better chance of returning a correct
             // winding than equally dividing the curve chain, with the same
             // (amortised) time.
@@ -131,7 +131,7 @@ PathItem.inject(new function() {
                         // While subtracting, we need to omit this curve if this
                         // curve is contributing to the second operand and is
                         // outside the first operand.
-                        windings[j] = subtract && _path2
+                        windingSum += subtract && _path2
                             && (path === _path1 && _path2._getWinding(pt, hor)
                             || path === _path2 && !_path1._getWinding(pt, hor))
                             ? 0
@@ -141,9 +141,8 @@ PathItem.inject(new function() {
                     length -= curveLength;
                 }
             }
-            windings.sort();
-            // Assign the median winding to the entire curve chain.
-            var winding = windings[1];
+            // Assign the average winding to the entire curve chain.
+            var winding = Math.round(windingSum / 3);
             for (var j = chain.length - 1; j >= 0; j--)
                 chain[j].segment._winding = winding;
         }
