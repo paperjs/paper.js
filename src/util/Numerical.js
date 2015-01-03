@@ -64,7 +64,7 @@ var Numerical = new function() {
         PI = Math.PI,
         isFinite = Number.isFinite,
         TOLERANCE = 1e-5,
-        EPSILON = 1e-12,
+        EPSILON = 1e-13,
         MACHINE_EPSILON = 1.12e-16;
 
     return /** @lends Numerical */{
