@@ -124,7 +124,10 @@ PathItem.inject(new function() {
                             length = curveLength / 2;
                         var curve = node.segment.getCurve(),
                             pt = curve.getPointAt(length),
-                            hor = curve.isHorizontal(),
+                            // Determine if the curve is a horizontal linear
+                            // curve by checking the slope of it's tangent.
+                            hor = curve.isLinear() && Math.abs(curve
+                                    .getTangentAt(0.5, true).y) <= tolerance,
                             path = curve._path;
                         if (path._parent instanceof CompoundPath)
                             path = path._parent;

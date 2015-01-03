@@ -301,11 +301,6 @@ var Curve = Base.extend(/** @lends Curve# */{
                 && this._segment2._handleIn.isZero();
     },
 
-    isHorizontal: function() {
-        return this.isLinear() && Numerical.isZero(
-                this._segment1._point._y - this._segment2._point._y);
-    },
-
     // DOCS: Curve#getIntersections()
     getIntersections: function(curve) {
         return Curve.filterIntersections(Curve.getIntersections(
