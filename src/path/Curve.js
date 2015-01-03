@@ -1,4 +1,4 @@
-/*
+ /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
@@ -669,6 +669,18 @@ statics: {
                 + 1.5 * c2y * p1x + 1.5 * c2y * c1x
                 - 3.0 * c2y * p2x + 0.5 * p2y * p1x
                 + 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
+    },
+
+    getEdgeSum: function(v) {
+        // Method derived from:
+        // http://stackoverflow.com/questions/1165647
+        // We treat the curve points and handles as the outline of a polygon of
+        // which we determine the orientation using the method of calculating
+        // the sum over the edges. This will work even with non-convex polygons,
+        // telling you whether it's mostly clockwise
+        return    (v[0] - v[2]) * (v[3] + v[1])
+                + (v[2] - v[4]) * (v[5] + v[3])
+                + (v[4] - v[6]) * (v[7] + v[5]);
     },
 
     getBounds: function(v) {
