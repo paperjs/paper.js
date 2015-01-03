@@ -1144,12 +1144,14 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     split: function(index, parameter) {
         if (parameter === null)
-            return;
+            return null;
         if (arguments.length === 1) {
             var arg = index;
             // split(offset), convert offset to location
             if (typeof arg === 'number')
                 arg = this.getLocationAt(arg);
+            if (!arg)
+                return null
             // split(location)
             index = arg.index;
             parameter = arg.parameter;
@@ -1182,7 +1184,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Just have path point to this. The moving around of segments
                 // will happen below.
                 path = this;
-            } else if (index > 0) {
+            } else {
                 // Pass true for _preserve, in case of CompoundPath, to avoid
                 // reversing of path direction, which would mess with segs!
                 // Use _clone to copy over all other attributes, including style
