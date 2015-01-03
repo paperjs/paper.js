@@ -1192,7 +1192,7 @@ new function() { // Scope for methods that require numerical integration
         var vx = l2x - l1x,
             vy = l2y - l1y;
         if (Numerical.isZero(vx))
-           return vy >= 0 ? l1y - x : x - l1x;
+           return vy >= 0 ? l1x - x : x - l1x;
         var m = vy / vx, // slope
             b = l1y - m * l1x; // y offset
         // Distance to the linear equation
