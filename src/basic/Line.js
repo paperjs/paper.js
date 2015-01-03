@@ -166,7 +166,7 @@ var Line = Base.extend(/** @lends Line# */{
                 vy -= py;
             }
             return Numerical.isZero(vx)
-                    ? vy >= 0 ? py - x : x - px
+                    ? vy >= 0 ? px - x : x - px
                     : Numerical.isZero(vy)
                         ? vx >= 0 ? y - py : py - y
                         : -(vy * x - vx * y - px * (py + vy) + py * (px + vx)) /
