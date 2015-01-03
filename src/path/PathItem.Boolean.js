@@ -119,8 +119,8 @@ PathItem.inject(new function() {
                     if (length <= curveLength) {
                         // If the selected location on the curve falls onto its
                         // beginning or end, use the curve's center instead.
-                        if (length <= 2 * tolerance
-                                || curveLength - length <= 2 * tolerance)
+                        if (length <= tolerance
+                                || curveLength - length <= tolerance)
                             length = curveLength / 2;
                         var curve = node.segment.getCurve(),
                             pt = curve.getPointAt(length),
