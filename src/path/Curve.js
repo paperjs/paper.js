@@ -1152,7 +1152,7 @@ new function() { // Scope for methods that require numerical integration
                         curve1, t1, Curve.evaluate(v1, t1, 0),
                         curve2, t2, Curve.evaluate(v2, t2, 0));
             }
-        } else { // Iterate
+        } else if (tDiff > 0) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
@@ -1190,7 +1190,7 @@ new function() { // Scope for methods that require numerical integration
         var vx = l2x - l1x,
             vy = l2y - l1y;
         if (Numerical.isZero(vx))
-           return vy >= 0 ? l1x - x : x - l1x;
+            return vy >= 0 ? l1x - x : x - l1x;
         var m = vy / vx, // slope
             b = l1y - m * l1x; // y offset
         // Distance to the linear equation
