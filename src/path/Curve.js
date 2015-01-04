@@ -1073,7 +1073,6 @@ new function() { // Scope for methods that require numerical integration
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             tolerance = /*#=*/Numerical.TOLERANCE,
-            epsilon = 1e-10, // /*#=*/Numerical.EPSILON,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
             d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
@@ -1089,9 +1088,7 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        // NOTE: the recursion threshold of 4 is needed to prevent issue #571
-        // from occurring: https://github.com/paperjs/paper.js/issues/571
-        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 4) {
+        if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
@@ -1154,7 +1151,7 @@ new function() { // Scope for methods that require numerical integration
                         curve1, t1, Curve.evaluate(v1, t1, 0),
                         curve2, t2, Curve.evaluate(v2, t2, 0));
             }
-        } else { // Iterate
+        } else if (tDiff > 0) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
@@ -1192,7 +1189,7 @@ new function() { // Scope for methods that require numerical integration
         var vx = l2x - l1x,
             vy = l2y - l1y;
         if (Numerical.isZero(vx))
-           return vy >= 0 ? l1y - x : x - l1x;
+            return vy >= 0 ? l1x - x : x - l1x;
         var m = vy / vx, // slope
             b = l1y - m * l1x; // y offset
         // Distance to the linear equation
@@ -1411,11 +1408,11 @@ new function() { // Scope for methods that require numerical integration
         },
 
         filterIntersections: function(locations, _expand) {
-            var max = locations.length - 1,
+            var last = locations.length - 1,
                 tMax = 1 - /*#=*/Numerical.TOLERANCE;
             // Merge intersections very close to the end of a curve to the
             // beginning of the next curve.
-            for (var i = max; i >= 0; i--) {
+            for (var i = last; i >= 0; i--) {
                 var loc = locations[i],
                     next = loc._curve.getNext(),
                     next2 = loc._curve2.getNext();
@@ -1442,18 +1439,18 @@ new function() { // Scope for methods that require numerical integration
                         : path1._id - path2._id;
             }
 
-            if (max > 0) {
+            if (last > 0) {
                 locations.sort(compare);
-                // Filter out duplicate locations
-                for (var i = max; i >= 1; i--) {
-                    if (locations[i].equals(locations[i === 0 ? max : i - 1])) {
+                // Filter out duplicate locations.
+                for (var i = last; i > 0; i--) {
+                    if (locations[i].equals(locations[i - 1])) {
                         locations.splice(i, 1);
-                        max--;
+                        last--;
                     }
                 }
             }
             if (_expand) {
-                for (var i = max; i >= 0; i--)
+                for (var i = last; i >= 0; i--)
                     locations.push(locations[i].getIntersection());
                 locations.sort(compare);
             }

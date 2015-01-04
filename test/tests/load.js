@@ -35,6 +35,8 @@
 /*#*/ include('Path_Curves.js');
 /*#*/ include('Path_Bounds.js');
 /*#*/ include('Path_Length.js');
+/*#*/ include('Path_Intersections.js');
+/*#*/ include('Path_Boolean.js');
 
 /*#*/ include('Curve.js');
 /*#*/ include('CurveLocation.js');
