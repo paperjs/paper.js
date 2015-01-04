@@ -71,12 +71,10 @@ PathItem.inject(new function() {
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1),
             _path2 = path2 && path1 !== path2 && preparePath(path2);
-        // Give both paths clockwise orientation except for subtraction
+        // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
-        if (!_path1.isClockwise())
-            _path1.reverse();
-        if (_path2 && !(/^(subtract|exclude)$/.test(operation)
-                ^ _path2.isClockwise()))
+        if (_path2 && /^(subtract|exclude)$/.test(operation)
+                ^ (_path2.isClockwise() !== _path1.isClockwise()))
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
