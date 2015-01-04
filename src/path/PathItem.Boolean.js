@@ -307,22 +307,25 @@ PathItem.inject(new function() {
                         && y >= values[1] && y <= values[7]
                         || y >= values[7] && y <= values[1])
                     && Curve.solveCubic(values, 1, y, roots, 0, 1) === 1) {
-                        var t = roots[0],
-                            x0 = Curve.evaluate(values, t, 0).x,
-                            slope = Curve.evaluate(values, t, 1).y;
+                    var t = roots[0],
+                        x0 = Curve.evaluate(values, t, 0).x,
+                        slope = Curve.evaluate(values, t, 1).y;
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
                     // almost equal to one of the endpoints of the curves.
-                    if (!(lastT !== null && abs(lastX0 - x0) < tolerance
-                            && (lastT <= tMin && t >= tMax
-                            || t <= tMin && lastT >= tMax))) {
+                    if (!(lastT != null && abs(lastX0 - x0) < tolerance
+                            && lastT > tMax && t < tMin)) {
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
                         // but proceeds to the same side of the ray.
                         // This essentially is not a crossing.
                         if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                                // Does the slope over curve beginning change?
                                 || t < tMin && slope * Curve.evaluate(
-                                    curve.previous.values, t, 1).y < 0) {
+                                    curve.previous.values, 1, 1).y < 0
+                                // Does the slope over curve end change?
+                                || t > tMax && slope * Curve.evaluate(
+                                    curve.next.values, 0, 1).y < 0) {
                             if (testContains && x0 >= xBefore && x0 <= xAfter) {
                                 ++windLeft;
                                 ++windRight;
