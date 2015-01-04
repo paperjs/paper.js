@@ -297,9 +297,8 @@ PathItem.inject(new function() {
                     values = curve.values,
                     winding = curve.winding,
                     next = curve.next,
-                    lastCurve,
-                    lastT,
-                    lastX0;
+                    prevT,
+                    prevX0;
                 // Since the curves are monotone in y direction, we can just
                 // compare the endpoints of the curve to determine if the
                 // ray from query point along +-x direction will intersect
@@ -324,9 +323,9 @@ PathItem.inject(new function() {
                                 - x0) <= tolerance
                         // Detect 2nd case of a consecutive intercept, but make
                         // sure we're still on the same loop
-                        || lastCurve === curve.previous
-                            && abs(lastX0 - x0) < tolerance
-                            && lastT > tMax && t < tMin)) {
+                        || i > 0 && curve.previous === curves[i - 1]
+                            && abs(prevX0 - x0) < tolerance
+                            && prevT > tMax && t < tMin)) {
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
                         // but proceeds to the same side of the ray.
@@ -348,9 +347,8 @@ PathItem.inject(new function() {
                             windRight += winding;
                         }
                     }
-                    lastCurve = curve;
-                    lastT = t;
-                    lastX0 = x0;
+                    prevT = t;
+                    prevX0 = x0;
                 }
             }
         }
