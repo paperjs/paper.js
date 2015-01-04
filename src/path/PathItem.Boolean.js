@@ -297,12 +297,13 @@ PathItem.inject(new function() {
                     values = curve.values,
                     winding = curve.winding,
                     next = curve.next,
+                    lastCurve,
                     lastT,
                     lastX0;
-                    // Since the curves are monotone in y direction, we can just
-                    // compare the endpoints of the curve to determine if the
-                    // ray from query point along +-x direction will intersect
-                    // the monotone curve. Results in quite significant speedup.
+                // Since the curves are monotone in y direction, we can just
+                // compare the endpoints of the curve to determine if the
+                // ray from query point along +-x direction will intersect
+                // the monotone curve. Results in quite significant speedup.
                 if (winding && (winding === 1
                         && y >= values[1] && y <= values[7]
                         || y >= values[7] && y <= values[1])
@@ -313,7 +314,18 @@ PathItem.inject(new function() {
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
                     // almost equal to one of the endpoints of the curves.
-                    if (!(lastT != null && abs(lastX0 - x0) < tolerance
+                    // But since curves may contain more than one loop of curves
+                    // and the end point on the last curve of a loop would not
+                    // be registered as a double, we need to filter these cases:
+                    if (!(t > tMax
+                            // Detect and exclude intercepts at 'end' of loops:
+                            && (i === l - 1 || curve.next !== curves[i + 1])
+                            && abs(Curve.evaluate(curve.next.values, 0, 0).x
+                                - x0) <= tolerance
+                        // Detect 2nd case of a consecutive intercept, but make
+                        // sure we're still on the same loop
+                        || lastCurve === curve.previous
+                            && abs(lastX0 - x0) < tolerance
                             && lastT > tMax && t < tMin)) {
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
@@ -336,6 +348,7 @@ PathItem.inject(new function() {
                             windRight += winding;
                         }
                     }
+                    lastCurve = curve;
                     lastT = t;
                     lastX0 = x0;
                 }
