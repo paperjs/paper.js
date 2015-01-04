@@ -1250,7 +1250,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Joins the path with the specified path, which will be removed in the
      * process.
      *
-     * @param {Path} path
+     * @param {Path} path the path to join this path with
+     * @return {Path} the joined path
      *
      * @example {@paperscript}
      * // Joining two paths:
@@ -1316,19 +1317,20 @@ var Path = PathItem.extend(/** @lends Path# */{
             var segments = path._segments,
                 last1 = this.getLastSegment(),
                 last2 = path.getLastSegment();
-            if (last1._point.equals(last2._point))
+            if (!last2) // an empty path?
+                return this;
+            if (last1 && last1._point.equals(last2._point))
                 path.reverse();
-            var first1,
-                first2 = path.getFirstSegment();
-            if (last1._point.equals(first2._point)) {
+            var first2 = path.getFirstSegment();
+            if (last1 && last1._point.equals(first2._point)) {
                 last1.setHandleOut(first2._handleOut);
                 this._add(segments.slice(1));
             } else {
-                first1 = this.getFirstSegment();
-                if (first1._point.equals(first2._point))
+                var first1 = this.getFirstSegment();
+                if (first1 && first1._point.equals(first2._point))
                     path.reverse();
                 last2 = path.getLastSegment();
-                if (first1._point.equals(last2._point)) {
+                if (first1 && first1._point.equals(last2._point)) {
                     first1.setHandleIn(last2._handleIn);
                     // Prepend all segments from path except the last one
                     this._add(segments.slice(0, segments.length - 1), 0);
@@ -1351,6 +1353,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             last.remove();
             this.setClosed(true);
         }
+        return this;
     },
 
 
