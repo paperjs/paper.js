@@ -1089,9 +1089,7 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        // NOTE: the recursion threshold of 4 is needed to prevent issue #571
-        // from occurring: https://github.com/paperjs/paper.js/issues/571
-        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 4) {
+        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
