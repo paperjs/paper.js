@@ -191,38 +191,33 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
-        var tolerance = /*#=*/Numerical.TOLERANCE,
+        var tMin = /*#=*/Numerical.TOLERANCE,
+            tMax = 1 - tMin,
             linearHandles;
 
         function resetLinear() {
             // Reset linear segments if they were part of a linear curve
             // and if we are done with the entire curve.
-            for (var i = 0, l = linearHandles.length; i < l; i++) {
-                var handle = linearHandles[i];
-                // FIXME: Don't reset the appropriate handle if the intersection
-                // was on t == 0 && t == 1.
-                handle.set(0, 0);
-            }
+            for (var i = 0, l = linearHandles.length; i < l; i++)
+                linearHandles[i].set(0, 0);
         }
 
-        for (var i = intersections.length - 1, curve, prevLoc; i >= 0; i--) {
+        for (var i = intersections.length - 1, prevLoc; i >= 0; i--) {
             var loc = intersections[i],
+                curve = loc._curve,
                 t = loc._parameter;
-            // Check if we are splitting same curve multiple times
-            if (prevLoc && prevLoc._curve === loc._curve
-                    // Avoid dividing with zero
-                    && prevLoc._parameter > 0) {
+            // Check if we are splitting same curve multiple times, but avoid
+            // dividing with zero.
+            if (prevLoc && prevLoc._curve === curve && prevLoc._parameter > 0) {
                 // Scale parameter after previous split.
                 t /= prevLoc._parameter;
             } else {
                 if (linearHandles)
                     resetLinear();
-                curve = loc._curve;
-                linearHandles = curve.isLinear() && [];
-                if (linearHandles) {
-                    linearHandles.push(curve._segment1._handleOut);
-                    linearHandles.push(curve._segment2._handleIn);
-                }
+                linearHandles = curve.isLinear() ? [
+                        curve._segment1._handleOut,
+                        curve._segment2._handleIn
+                    ] : null;
             }
             var newCurve,
                 segment;
@@ -230,14 +225,12 @@ PathItem.inject(new function() {
             if (newCurve = curve.divide(t, true, true)) {
                 segment = newCurve._segment1;
                 curve = newCurve.getPrevious();
-                if (linearHandles) {
-                    linearHandles.push(segment._handleOut);
-                    linearHandles.push(segment._handleIn);
-                }
+                if (linearHandles)
+                    linearHandles.push(segment._handleOut, segment._handleIn);
             } else {
-                segment = t < tolerance
+                segment = t < tMin
                     ? curve._segment1
-                    : t > 1 - tolerance
+                    : t > tMax
                         ? curve._segment2
                         : curve.getPartLength(0, t) < curve.getPartLength(t, 1)
                             ? curve._segment1
