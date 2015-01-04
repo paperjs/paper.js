@@ -318,7 +318,7 @@ PathItem.inject(new function() {
                     // not a crossing.
                     if (Numerical.isZero(slope) && !Curve.isLinear(values)
                             || t < tMin && slope * Curve.evaluate(
-                                curve.previous.values, t, 1).y < 0) {
+                                curve.previous.values, 1, 1).y < 0) {
                         if (testContains && x0 >= xBefore && x0 <= xAfter) {
                             ++windLeft;
                             ++windRight;
