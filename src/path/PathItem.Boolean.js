@@ -32,30 +32,51 @@
  */
 
 PathItem.inject(new function() {
+    var operators = {
+        unite: function(w) {
+            return w === 1 || w === 0;
+        },
+
+        intersect: function(w) {
+            return w === 2;
+        },
+
+        subtract: function(w) {
+            return w === 1;
+        },
+
+        exclude: function(w) {
+            return w === 1;
+        }
+    };
+
     // Boolean operators return true if a curve with the given winding
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
     // split at intersections.
-    function computeBoolean(path1, path2, operator, subtract) {
+    function computeBoolean(path1, path2, operation) {
+        var operator = operators[operation];
         // Creates a cloned version of the path that we can modify freely, with
         // its matrix applied to its geometry. Calls #reduce() to simplify
         // compound paths and remove empty curves, and #reorient() to make sure
         // all paths have correct winding direction.
         function preparePath(path) {
-            return path.clone(false).reduce().reorient().transform(null, true);
+            return path.clone(false).reduce().reorient().transform(null, true,
+                    true);
         }
 
-        // We do not modify the operands themselves
-        // The result might not belong to the same type
+        // We do not modify the operands themselves, but create copies instead,
+        // fas produced by the calls to preparePath().
+        // Note that the result paths might not belong to the same type
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1),
             _path2 = path2 && path1 !== path2 && preparePath(path2);
-        // Do operator specific calculations before we begin
-        // Make both paths at clockwise orientation, except when subtract = true
-        // We need both paths at opposite orientation for subtraction.
+        // Give both paths clockwise orientation except for subtraction
+        // and exclusion, where we need them at opposite orientation.
         if (!_path1.isClockwise())
             _path1.reverse();
-        if (_path2 && !(subtract ^ _path2.isClockwise()))
+        if (_path2 && !(/^(subtract|exclude)$/.test(operation)
+                ^ _path2.isClockwise()))
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
@@ -134,7 +155,7 @@ PathItem.inject(new function() {
                         // While subtracting, we need to omit this curve if this
                         // curve is contributing to the second operand and is
                         // outside the first operand.
-                        windingSum += subtract && _path2
+                        windingSum += operation === 'subtract' && _path2
                             && (path === _path1 && _path2._getWinding(pt, hor)
                             || path === _path2 && !_path1._getWinding(pt, hor))
                             ? 0
@@ -340,10 +361,6 @@ PathItem.inject(new function() {
      * @return {Path[]} the contours traced
      */
     function tracePaths(segments, operator, selfOp) {
-        // Choose a default operator which will return all contours
-        operator = operator || function() {
-            return true;
-        };
         var paths = [],
             // Values for getTangentAt() that are almost 0 and 1.
             // TODO: Correctly support getTangentAt(0) / (1)?
@@ -481,9 +498,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         unite: function(path) {
-            return computeBoolean(this, path, function(w) {
-                return w === 1 || w === 0;
-            }, false);
+            return computeBoolean(this, path, 'unite');
         },
 
         /**
@@ -494,9 +509,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         intersect: function(path) {
-            return computeBoolean(this, path, function(w) {
-                return w === 2;
-            }, false);
+            return computeBoolean(this, path, 'intersect');
         },
 
         /**
@@ -507,9 +520,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         subtract: function(path) {
-            return computeBoolean(this, path, function(w) {
-                return w === 1;
-            }, true);
+            return computeBoolean(this, path, 'subtract');
         },
 
         // Compound boolean operators combine the basic boolean operations such
@@ -522,7 +533,7 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         exclude: function(path) {
-            return new Group([this.subtract(path), path.subtract(this)]);
+            return computeBoolean(this, path, 'exclude');
         },
 
         /**
