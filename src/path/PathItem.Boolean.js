@@ -202,16 +202,16 @@ PathItem.inject(new function() {
                 linearHandles[i].set(0, 0);
         }
 
-        for (var i = intersections.length - 1, prevLoc; i >= 0; i--) {
+        for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
             var loc = intersections[i],
-                curve = loc._curve,
                 t = loc._parameter;
             // Check if we are splitting same curve multiple times, but avoid
             // dividing with zero.
-            if (prevLoc && prevLoc._curve === curve && prevLoc._parameter > 0) {
+            if (prev && prev._curve === loc._curve && prev._parameter > 0) {
                 // Scale parameter after previous split.
-                t /= prevLoc._parameter;
+                t /= prev._parameter;
             } else {
+                curve = loc._curve;
                 if (linearHandles)
                     resetLinear();
                 linearHandles = curve.isLinear() ? [
@@ -239,7 +239,7 @@ PathItem.inject(new function() {
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc.getIntersection();
             loc._segment = segment;
-            prevLoc = loc;
+            prev = loc;
         }
         if (linearHandles)
             resetLinear();
