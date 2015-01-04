@@ -297,7 +297,8 @@ PathItem.inject(new function() {
                     values = curve.values,
                     winding = curve.winding,
                     next = curve.next,
-                    lastT, lastX0;
+                    lastT,
+                    lastX0;
                     // Since the curves are monotone in y direction, we can just
                     // compare the endpoints of the curve to determine if the
                     // ray from query point along +-x direction will intersect
@@ -305,33 +306,33 @@ PathItem.inject(new function() {
                 if (winding && (winding === 1
                         && y >= values[1] && y <= values[7]
                         || y >= values[7] && y <= values[1])
-                    && Curve.solveCubic(values, 1, y, roots, 0, 1) === 1){
-                    var t = roots[0],
-                        x0 = Curve.evaluate(values, t, 0).x,
-                        slope = Curve.evaluate(values, t, 1).y;
+                    && Curve.solveCubic(values, 1, y, roots, 0, 1) === 1) {
+                        var t = roots[0],
+                            x0 = Curve.evaluate(values, t, 0).x,
+                            slope = Curve.evaluate(values, t, 1).y;
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
                     // almost equal to one of the endpoints of the curves.
-                    if (!(lastT && abs(lastX0 - x0) < tolerance
-                            && ((lastT <= tMin && t >= tMax)
-                            || (t <= tMin && lastT >= tMax)))) {
-                    // Take care of cases where the curve and the preceding
-                    // curve merely touches the ray towards +-x direction, but
-                    // proceeds to the same side of the ray. This essentially is
-                    // not a crossing.
-                    if (Numerical.isZero(slope) && !Curve.isLinear(values)
-                            || t < tMin && slope * Curve.evaluate(
-                                curve.previous.values, t, 1).y < 0) {
-                        if (testContains && x0 >= xBefore && x0 <= xAfter) {
-                            ++windLeft;
-                            ++windRight;
+                    if (!(lastT !== null && abs(lastX0 - x0) < tolerance
+                            && (lastT <= tMin && t >= tMax
+                            || t <= tMin && lastT >= tMax))) {
+                        // Take care of cases where the curve and the preceding
+                        // curve merely touches the ray towards +-x direction,
+                        // but proceeds to the same side of the ray.
+                        // This essentially is not a crossing.
+                        if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                                || t < tMin && slope * Curve.evaluate(
+                                    curve.previous.values, t, 1).y < 0) {
+                            if (testContains && x0 >= xBefore && x0 <= xAfter) {
+                                ++windLeft;
+                                ++windRight;
+                            }
+                        } else if (x0 <= xBefore) {
+                            windLeft += winding;
+                        } else if (x0 >= xAfter) {
+                            windRight += winding;
                         }
-                    } else if (x0 <= xBefore) {
-                        windLeft += winding;
-                    } else if (x0 >= xAfter) {
-                        windRight += winding;
                     }
-                }
                     lastT = t;
                     lastX0 = x0;
                 }
