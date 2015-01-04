@@ -1073,7 +1073,6 @@ new function() { // Scope for methods that require numerical integration
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             tolerance = /*#=*/Numerical.TOLERANCE,
-            epsilon = 1e-10, // /*#=*/Numerical.EPSILON,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
             d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
@@ -1089,7 +1088,7 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= epsilon && recursion > 3) {
+        if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.

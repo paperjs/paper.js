@@ -252,14 +252,7 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        // We need to use a smaller tolerance here than in the rest of the
-        // library when dealing with curve time parameters and coordinates, in
-        // order to get really precise values for winding tests. 1e-7 was
-        // determined through a lot of trial and error, and boolean-test suites.
-        // Further decreasing it produces new errors.
-        // The value of 1e-7 also solves issue #559:
-        // https://github.com/paperjs/paper.js/issues/559
-        var tolerance = 1e-7,
+        var tolerance = /*#=*/Numerical.TOLERANCE,
             tMin = tolerance,
             tMax = 1 - tMin,
             x = point.x,
