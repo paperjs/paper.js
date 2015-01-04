@@ -72,9 +72,9 @@ var comparators = {
     },
 
     Number: function(actual, expected, message, options) {
-        // Compare with a default tolerance of Numerical.TOLERANCE:
+        // Compare with a default tolerance of 1e-5:
         var ok = Math.abs(actual - expected)
-                <= Base.pick(options && options.tolerance, Numerical.TOLERANCE);
+                <= Base.pick(options && options.tolerance, 1e-5);
         QUnit.push(ok, ok ? expected : actual, expected, message);
     },
 
