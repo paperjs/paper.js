@@ -254,7 +254,8 @@ PathItem.inject(new function() {
             y = point.y,
             windLeft = 0,
             windRight = 0,
-            roots = [];
+            roots = [],
+            abs = Math.abs;
         // Absolutely horizontal curves may return wrong results, since
         // the curves are monotonic in y direction and this is an
         // indeterminate state.
@@ -295,43 +296,65 @@ PathItem.inject(new function() {
                 var curve = curves[i],
                     values = curve.values,
                     winding = curve.winding,
-                    next = curve.next;
-                    // Since the curves are monotone in y direction, we can just
-                    // compare the endpoints of the curve to determine if the
-                    // ray from query point along +-x direction will intersect
-                    // the monotone curve. Results in quite significant speedup.
+                    next = curve.next,
+                    lastCurve,
+                    lastT,
+                    lastX0;
+                // Since the curves are monotone in y direction, we can just
+                // compare the endpoints of the curve to determine if the
+                // ray from query point along +-x direction will intersect
+                // the monotone curve. Results in quite significant speedup.
                 if (winding && (winding === 1
                         && y >= values[1] && y <= values[7]
                         || y >= values[7] && y <= values[1])
-                    && Curve.solveCubic(values, 1, y, roots, 0,
-                        // If the next curve is horizontal, we have to include
-                        // the end of this curve to make sure we won't miss an
-                        // intercept.
-                        !next.winding
-                            && next.values[1] === y ? 1 : tMax) === 1) {
+                    && Curve.solveCubic(values, 1, y, roots, 0, 1) === 1) {
                     var t = roots[0],
                         x0 = Curve.evaluate(values, t, 0).x,
                         slope = Curve.evaluate(values, t, 1).y;
-                    // Take care of cases where the curve and the preceding
-                    // curve merely touches the ray towards +-x direction, but
-                    // proceeds to the same side of the ray. This essentially is
-                    // not a crossing.
-                    if (Numerical.isZero(slope) && !Curve.isLinear(values)
-                            || t < tMin && slope * Curve.evaluate(
-                                curve.previous.values, 1, 1).y < 0) {
-                        if (testContains && x0 >= xBefore && x0 <= xAfter) {
-                            ++windLeft;
-                            ++windRight;
+                    // Due to numerical precision issues, two consecutive curves
+                    // may register an intercept twice, at t = 1 and 0, if y is
+                    // almost equal to one of the endpoints of the curves.
+                    // But since curves may contain more than one loop of curves
+                    // and the end point on the last curve of a loop would not
+                    // be registered as a double, we need to filter these cases:
+                    if (!(t > tMax
+                            // Detect and exclude intercepts at 'end' of loops:
+                            && (i === l - 1 || curve.next !== curves[i + 1])
+                            && abs(Curve.evaluate(curve.next.values, 0, 0).x
+                                - x0) <= tolerance
+                        // Detect 2nd case of a consecutive intercept, but make
+                        // sure we're still on the same loop
+                        || lastCurve === curve.previous
+                            && abs(lastX0 - x0) < tolerance
+                            && lastT > tMax && t < tMin)) {
+                        // Take care of cases where the curve and the preceding
+                        // curve merely touches the ray towards +-x direction,
+                        // but proceeds to the same side of the ray.
+                        // This essentially is not a crossing.
+                        if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                                // Does the slope over curve beginning change?
+                                || t < tMin && slope * Curve.evaluate(
+                                    curve.previous.values, 1, 1).y < 0
+                                // Does the slope over curve end change?
+                                || t > tMax && slope * Curve.evaluate(
+                                    curve.next.values, 0, 1).y < 0) {
+                            if (testContains && x0 >= xBefore && x0 <= xAfter) {
+                                ++windLeft;
+                                ++windRight;
+                            }
+                        } else if (x0 <= xBefore) {
+                            windLeft += winding;
+                        } else if (x0 >= xAfter) {
+                            windRight += winding;
                         }
-                    } else if (x0 <= xBefore) {
-                        windLeft += winding;
-                    } else if (x0 >= xAfter) {
-                        windRight += winding;
                     }
+                    lastCurve = curve;
+                    lastT = t;
+                    lastX0 = x0;
                 }
             }
         }
-        return Math.max(Math.abs(windLeft), Math.abs(windRight));
+        return Math.max(abs(windLeft), abs(windRight));
     }
 
     /**
