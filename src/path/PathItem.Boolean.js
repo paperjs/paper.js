@@ -169,12 +169,9 @@ PathItem.inject(new function() {
                 chain[j].segment._winding = winding;
         }
         // Trace closed contours and insert them into the result.
-        var result = new CompoundPath();
+        var result = new CompoundPath(Item.NO_INSERT);
+        result.insertAbove(path1);
         result.addChildren(tracePaths(segments, operator), true);
-        // Delete the proxies
-        _path1.remove();
-        if (_path2)
-            _path2.remove();
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
         // Copy over the left-hand item's style and we're done.
