@@ -1408,11 +1408,11 @@ new function() { // Scope for methods that require numerical integration
         },
 
         filterIntersections: function(locations, _expand) {
-            var max = locations.length - 1,
+            var last = locations.length - 1,
                 tMax = 1 - /*#=*/Numerical.TOLERANCE;
             // Merge intersections very close to the end of a curve to the
             // beginning of the next curve.
-            for (var i = max; i >= 0; i--) {
+            for (var i = last; i >= 0; i--) {
                 var loc = locations[i],
                     next = loc._curve.getNext(),
                     next2 = loc._curve2.getNext();
@@ -1439,18 +1439,18 @@ new function() { // Scope for methods that require numerical integration
                         : path1._id - path2._id;
             }
 
-            if (max > 0) {
+            if (last > 0) {
                 locations.sort(compare);
-                // Filter out duplicate locations
-                for (var i = max; i >= 1; i--) {
-                    if (locations[i].equals(locations[i === 0 ? max : i - 1])) {
+                // Filter out duplicate locations.
+                for (var i = last; i > 0; i--) {
+                    if (locations[i].equals(locations[i - 1])) {
                         locations.splice(i, 1);
-                        max--;
+                        last--;
                     }
                 }
             }
             if (_expand) {
-                for (var i = max; i >= 0; i--)
+                for (var i = last; i >= 0; i--)
                     locations.push(locations[i].getIntersection());
                 locations.sort(compare);
             }
