@@ -250,8 +250,8 @@ PathItem.inject(new function() {
         var tolerance = /*#=*/Numerical.TOLERANCE,
             tMin = tolerance,
             tMax = 1 - tMin,
-            x = point.x,
-            y = point.y,
+            px = point.x,
+            py = point.y,
             windLeft = 0,
             windRight = 0,
             roots = [],
@@ -262,34 +262,34 @@ PathItem.inject(new function() {
         if (horizontal) {
             var yTop = -Infinity,
                 yBottom = Infinity,
-                yBefore = y - tolerance,
-                yAfter = y + tolerance;
+                yBefore = py - tolerance,
+                yAfter = py + tolerance;
             // Find the closest top and bottom intercepts for the same vertical
             // line.
             for (var i = 0, l = curves.length; i < l; i++) {
                 var values = curves[i].values;
-                if (Curve.solveCubic(values, 0, x, roots, 0, 1) > 0) {
+                if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
                     for (var j = roots.length - 1; j >= 0; j--) {
-                        var y0 = Curve.evaluate(values, roots[j], 0).y;
-                        if (y0 < yBefore && y0 > yTop) {
-                            yTop = y0;
-                        } else if (y0 > yAfter && y0 < yBottom) {
-                            yBottom = y0;
+                        var y = Curve.evaluate(values, roots[j], 0).y;
+                        if (y < yBefore && y > yTop) {
+                            yTop = y;
+                        } else if (y > yAfter && y < yBottom) {
+                            yBottom = y;
                         }
                     }
                 }
             }
             // Shift the point lying on the horizontal curves by
             // half of closest top and bottom intercepts.
-            yTop = (yTop + y) / 2;
-            yBottom = (yBottom + y) / 2;
+            yTop = (yTop + py) / 2;
+            yBottom = (yBottom + py) / 2;
             if (yTop > -Infinity)
-                windLeft = getWinding(new Point(x, yTop), curves);
+                windLeft = getWinding(new Point(px, yTop), curves);
             if (yBottom < Infinity)
-                windRight = getWinding(new Point(x, yBottom), curves);
+                windRight = getWinding(new Point(px, yBottom), curves);
         } else {
-            var xBefore = x - tolerance,
-                xAfter = x + tolerance;
+            var xBefore = px - tolerance,
+                xAfter = px + tolerance;
             // Find the winding number for right side of the curve, inclusive of
             // the curve itself, while tracing along its +-x direction.
             for (var i = 0, l = curves.length; i < l; i++) {
@@ -298,17 +298,17 @@ PathItem.inject(new function() {
                     winding = curve.winding,
                     next = curve.next,
                     prevT,
-                    prevX0;
+                    prevX;
                 // Since the curves are monotone in y direction, we can just
                 // compare the endpoints of the curve to determine if the
                 // ray from query point along +-x direction will intersect
                 // the monotone curve. Results in quite significant speedup.
                 if (winding && (winding === 1
-                        && y >= values[1] && y <= values[7]
-                        || y >= values[7] && y <= values[1])
-                    && Curve.solveCubic(values, 1, y, roots, 0, 1) === 1) {
+                        && py >= values[1] && py <= values[7]
+                        || py >= values[7] && py <= values[1])
+                    && Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
                     var t = roots[0],
-                        x0 = Curve.evaluate(values, t, 0).x,
+                        x = Curve.evaluate(values, t, 0).x,
                         slope = Curve.evaluate(values, t, 1).y;
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
@@ -319,12 +319,12 @@ PathItem.inject(new function() {
                     if (!(t > tMax
                             // Detect and exclude intercepts at 'end' of loops:
                             && (i === l - 1 || curve.next !== curves[i + 1])
-                            && abs(Curve.evaluate(curve.next.values, 0, 0).x
-                                - x0) <= tolerance
+                            && abs(Curve.evaluate(curve.next.values, 0, 0).x -x)
+                                <= tolerance
                         // Detect 2nd case of a consecutive intercept, but make
                         // sure we're still on the same loop
                         || i > 0 && curve.previous === curves[i - 1]
-                            && abs(prevX0 - x0) < tolerance
+                            && abs(prevX - x) < tolerance
                             && prevT > tMax && t < tMin)) {
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
@@ -337,18 +337,18 @@ PathItem.inject(new function() {
                                 // Does the slope over curve end change?
                                 || t > tMax && slope * Curve.evaluate(
                                     curve.next.values, 0, 1).y < 0) {
-                            if (testContains && x0 >= xBefore && x0 <= xAfter) {
+                            if (testContains && x >= xBefore && x <= xAfter) {
                                 ++windLeft;
                                 ++windRight;
                             }
-                        } else if (x0 <= xBefore) {
+                        } else if (x <= xBefore) {
                             windLeft += winding;
-                        } else if (x0 >= xAfter) {
+                        } else if (x >= xAfter) {
                             windRight += winding;
                         }
                     }
                     prevT = t;
-                    prevX0 = x0;
+                    prevX = x;
                 }
             }
         }
