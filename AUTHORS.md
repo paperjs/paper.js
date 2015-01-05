@@ -12,4 +12,4 @@
 - Justin Ridgewell <justinridgewell@gmail.com>
 - Andrew Wagenheim <abwagenheim@gmail.com>
 - Scott Kieronski <baroes0239@gmail.com>
-- Jan Bösenberg, <development@iconexperience.com>
+- Jan Bösenberg <development@iconexperience.com>
