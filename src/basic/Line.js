@@ -169,8 +169,7 @@ var Line = Base.extend(/** @lends Line# */{
                     ? vy >= 0 ? px - x : x - px
                     : Numerical.isZero(vy)
                         ? vx >= 0 ? y - py : py - y
-                        : -(vy * x - vx * y - px * (py + vy) + py * (px + vx)) /
-                            Math.sqrt(vx * vx + vy * vy);
+                        : (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
         }
     }
 });
