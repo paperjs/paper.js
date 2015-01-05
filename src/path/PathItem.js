@@ -253,8 +253,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             case 'a':
                 for (var j = 0; j < length; j += 7) {
                     this.arcTo(current = getPoint(j + 5),
-                            new Size(+coords[0], +coords[1]),
-                            +coords[2], +coords[4], +coords[3]);
+                            new Size(+coords[j + 0], +coords[j + 1]),
+                            +coords[j + 2], +coords[j + 4], +coords[j + 3]);
                 }
                 break;
             case 'z':
