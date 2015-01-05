@@ -229,10 +229,10 @@ var Numerical = new function() {
                 }
             }
             if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
-                roots[nRoots++] = x1 < min ? min : x1 > max ? max : x1;
+                roots[nRoots++] = x1;
             if (x2 !== x1
                     && isFinite(x2) && (min == null || x2 >= min && x2 <= max))
-                roots[nRoots++] = x2 < min ? min : x2 > max ? max : x2;
+                roots[nRoots++] = x2;
             return nRoots;
         },
 
@@ -327,7 +327,7 @@ var Numerical = new function() {
             var nRoots = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
             if (isFinite(x) && (nRoots === 0 || x !== roots[nRoots - 1])
                     && (min == null || x >= min && x <= max))
-                roots[nRoots++] = x < min ? min : x > max ? max : x;
+                roots[nRoots++] = x;
             return nRoots;
         }
     };
