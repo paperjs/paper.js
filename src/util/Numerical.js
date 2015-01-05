@@ -62,7 +62,6 @@ var Numerical = new function() {
         pow = Math.pow,
         cos = Math.cos,
         PI = Math.PI,
-        isFinite = Number.isFinite,
         TOLERANCE = 1e-6,
         EPSILON = 1e-13,
         MACHINE_EPSILON = 1.12e-16;
