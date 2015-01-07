@@ -106,6 +106,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          * @private
          */
         getOptions: function(options) {
+            options = options || {};
             return new Base({
                 // Type of item, for instanceof check: Group, Layer, Path,
                 // CompoundPath, Shape, Raster, PlacedSymbol, ...
@@ -113,26 +114,26 @@ var HitResult = Base.extend(/** @lends HitResult# */{
                 // Tolerance
                 tolerance: paper.settings.hitTolerance,
                 // Hit the fill of items
-                fill: !options,
+                fill: !options.fill,
                 // Hit the curves of path items, taking into account the stroke
                 // width.
-                stroke: !options,
+                stroke: !options.stroke,
                 // Hit the part of segments that curves pass through, excluding
                 // its segments (Segment#point)
-                segments: !options,
+                segments: !options.segments,
                 // Hit the parts of segments that define the curvature
-                handles: false,
+                handles: !!options.handles,
                 // Only first or last segment hits on path (mutually exclusive
                 // with segments: true)
-                ends: false,
+                ends: !!options.ends,
                 // Hit test the center of the bounds
-                center: false,
+                center: !!options.center,
                 // Hit test the corners and side-centers of the bounding box
-                bounds: false,
+                bounds: !!options.bounds,
                 //  Hit items that are marked as guides
-                guides: false,
+                guides: !!options.guides,
                 // Only hit selected objects
-                selected: false
+                selected: !!options.selected
             }, options);
         }
     }
