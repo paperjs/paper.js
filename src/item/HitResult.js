@@ -122,18 +122,18 @@ var HitResult = Base.extend(/** @lends HitResult# */{
                 // its segments (Segment#point)
                 segments: !options.segments,
                 // Hit the parts of segments that define the curvature
-                handles: !!options.handles,
+                handles: false,
                 // Only first or last segment hits on path (mutually exclusive
                 // with segments: true)
-                ends: !!options.ends,
+                ends: false,
                 // Hit test the center of the bounds
-                center: !!options.center,
+                center: false,
                 // Hit test the corners and side-centers of the bounding box
-                bounds: !!options.bounds,
+                bounds: false,
                 //  Hit items that are marked as guides
-                guides: !!options.guides,
+                guides: false,
                 // Only hit selected objects
-                selected: !!options.selected
+                selected: false
             }, options);
         }
     }
