@@ -63,7 +63,7 @@ var Numerical = new function() {
         cos = Math.cos,
         PI = Math.PI,
         TOLERANCE = 1e-6,
-        EPSILON = 1e-13,
+        EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
     return /** @lends Numerical */{
