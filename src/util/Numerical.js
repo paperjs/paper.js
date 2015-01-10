@@ -265,19 +265,17 @@ var Numerical = new function() {
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
             var x, b1, c2, nRoots = 0;
-            if (a === 0 || d ===0) {
-                // We only need to solve a quadratic.
-                // So we set the coefficients appropriately.
-                if (a === 0) {
-                    a = b;
-                    b1 = c;
-                    c2 = d;
-                    x = Infinity;
-                } else {
-                    b1 = b;
-                    c2 = c;
-                    x = 0;
-                }
+            // If a or d is zero, we only need to solve a quadratic, so we set
+            // the coefficients appropriately.
+            if (a === 0) {
+                a = b;
+                b1 = c;
+                c2 = d;
+                x = Infinity;
+            } else if (d === 0) {
+                b1 = b;
+                c2 = c;
+                x = 0;
             } else {
                 var ec = 1 + MACHINE_EPSILON, // 1.000...002
                     x0, q, qd, t, r, s, tmp;
