@@ -173,7 +173,7 @@ var Numerical = new function() {
          * @author Harikrishnan Gopalakrishnan
          */
         solveQuadratic: function(a, b, c, roots, min, max) {
-            var nRoots = 0,
+            var count = 0,
                 x1, x2 = Infinity,
                 B = b,
                 D;
@@ -225,15 +225,15 @@ var Numerical = new function() {
                         x2 = c / q;
                     }
                     // Do we actually have two real roots?
-                    // nRoots = D > MACHINE_EPSILON ? 2 : 1;
+                    // count = D > MACHINE_EPSILON ? 2 : 1;
                 }
             }
             if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
-                roots[nRoots++] = x1;
+                roots[count++] = x1;
             if (x2 !== x1
                     && isFinite(x2) && (min == null || x2 >= min && x2 <= max))
-                roots[nRoots++] = x2;
-            return nRoots;
+                roots[count++] = x2;
+            return count;
         },
 
         /**
@@ -264,7 +264,7 @@ var Numerical = new function() {
          * @author Harikrishnan Gopalakrishnan
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
-            var x, b1, c2, nRoots = 0;
+            var x, b1, c2, count = 0;
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
             if (a === 0) {
@@ -322,11 +322,11 @@ var Numerical = new function() {
                 }
             }
             // The cubic has been deflated to a quadratic.
-            var nRoots = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
-            if (isFinite(x) && (nRoots === 0 || x !== roots[nRoots - 1])
+            var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
+            if (isFinite(x) && (count === 0 || x !== roots[count - 1])
                     && (min == null || x >= min && x <= max))
-                roots[nRoots++] = x;
-            return nRoots;
+                roots[count++] = x;
+            return count;
         }
     };
 };
