@@ -40,7 +40,7 @@ var paper = new function(undefined) {
           // don't use canvas:
           var noCanvas =
               // - when the browser version of paper is used in node
-              typeof process === 'object' ||
+              ( typeof process === 'object' && process.browser !== true ) ||
               // - when paper is used in a WebWorker
               ( typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope );
 /*#*/ }
