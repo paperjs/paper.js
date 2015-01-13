@@ -26,18 +26,18 @@
         var inner = new Path.Circle({
             center: view.center,
             radius: 100,
-            insert: false
+            parent: originals,
+            fillColor: 'white'
         });
 
         var outer = new Path.Circle({
             center: view.center,
             radius: 140,
-            insert: false
+            parent: originals,
+            fillColor: 'white'
         });
 
         var ring = outer.subtract(inner);
-        ring.parent = originals;
-        ring.fillColor = 'white';
 
         var operations = ['unite', 'intersect', 'subtract', 'exclude', 'divide'];
         var colors = ['red', 'green', 'blue', 'black'];

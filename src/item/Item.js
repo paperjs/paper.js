@@ -3021,11 +3021,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Matrix} matrix the matrix by which the item shall be transformed.
      */
-    // Remove this for now:
+    // TODO: Implement flags:
     // @param {String[]} flags Array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix, _applyRecursively) {
+    transform: function(matrix, _applyMatrix, _applyRecursively,
+            _setApplyMatrix) {
         // If no matrix is provided, or the matrix is the identity, we might
         // still have some work to do in case _applyMatrix is true
         if (matrix && matrix.isIdentity())
@@ -3048,8 +3049,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, PlacedSymbol, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix = applyMatrix
-                && this._transformContent(_matrix, _applyRecursively)) {
+        if (applyMatrix = applyMatrix && this._transformContent(_matrix,
+                    _applyRecursively, _setApplyMatrix)) {
             // When the _matrix could be applied, we also need to transform
             // color styles (only gradients so far) and pivot point:
             var pivot = this._pivot,
@@ -3067,6 +3068,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Reset the internal matrix to the identity transformation if it
             // was possible to apply it.
             _matrix.reset(true);
+            // Set the internal _applyMatrix flag to true if we're told to do so
+            if (_setApplyMatrix && this._canApplyMatrix)
+                this._applyMatrix = true;
         }
         // Calling _changed will clear _bounds and _position, but depending
         // on matrix we can calculate and set them again, so preserve them.
@@ -3105,11 +3109,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this;
     },
 
-    _transformContent: function(matrix, applyRecursively) {
+    _transformContent: function(matrix, applyRecursively, setApplyMatrix) {
         var children = this._children;
         if (children) {
             for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true, applyRecursively);
+                children[i].transform(matrix, true, applyRecursively,
+                        setApplyMatrix);
             return true;
         }
     },

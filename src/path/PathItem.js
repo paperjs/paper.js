@@ -76,8 +76,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             length1 = curves1.length,
             length2 = path ? curves2.length : length1,
             values2 = [],
-            MIN = /*#=*/Numerical.EPSILON,
-            MAX = 1 - /*#=*/Numerical.EPSILON;
+            tMin = /*#=*/Numerical.TOLERANCE,
+            tMax = 1 - tMin;
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.
         if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
@@ -106,7 +106,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     Curve.getIntersections(
                         parts[0], parts[1], curve1, curve1, locations,
                         function(loc) {
-                            if (loc._parameter <= MAX) {
+                            if (loc._parameter <= tMax) {
                                 // Since the curve was split above, we need to
                                 // adjust the parameters for both locations.
                                 loc._parameter /= 2;
@@ -127,58 +127,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     !path && (j === i + 1 || j === length2 - 1 && i === 0)
                         && function(loc) {
                             var t = loc._parameter;
-                            return t >= MIN && t <= MAX;
+                            return t >= tMin && t <= tMax;
                         }
                 );
             }
         }
-        // Now filter the locations and process _expand:
-        var last = locations.length - 1;
-        // Merge intersections very close to the end of a curve to the beginning
-        // of the next curve.
-        for (var i = last; i >= 0; i--) {
-            var loc = locations[i],
-                next = loc._curve.getNext(),
-                next2 = loc._curve2.getNext();
-            if (next && loc._parameter >= MAX) {
-                loc._parameter = 0;
-                loc._curve = next;
-            }
-            if (next2 && loc._parameter2 >= MAX) {
-                loc._parameter2 = 0;
-                loc._curve2 = next2;
-            }
-        }
-
-        // Compare helper to filter locations
-        function compare(loc1, loc2) {
-            var path1 = loc1.getPath(),
-                path2 = loc2.getPath();
-            return path1 === path2
-                    // We can add parameter (0 <= t <= 1) to index
-                    // (a integer) to compare both at the same time
-                    ? (loc1.getIndex() + loc1.getParameter())
-                            - (loc2.getIndex() + loc2.getParameter())
-                    // Sort by path id to group all locations on the same path.
-                    : path1._id - path2._id;
-        }
-
-        if (last > 0) {
-            locations.sort(compare);
-            // Filter out duplicate locations
-            for (var i = last; i >= 1; i--) {
-                if (locations[i].equals(locations[i === 0 ? last : i - 1])) {
-                    locations.splice(i, 1);
-                    last--;
-                }
-            }
-        }
-        if (_expand) {
-            for (var i = last; i >= 0; i--)
-                locations.push(locations[i].getIntersection());
-            locations.sort(compare);
-        }
-        return locations;
+        return Curve.filterIntersections(locations, _expand);
     },
 
     _asPathItem: function() {
@@ -299,8 +253,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             case 'a':
                 for (var j = 0; j < length; j += 7) {
                     this.arcTo(current = getPoint(j + 5),
-                            new Size(+coords[0], +coords[1]),
-                            +coords[2], +coords[4], +coords[3]);
+                            new Size(+coords[j], +coords[j + 1]),
+                            +coords[j + 2], +coords[j + 4], +coords[j + 3]);
                 }
                 break;
             case 'z':

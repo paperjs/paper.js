@@ -6,22 +6,19 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas">
+        // Imported SVG Groups have their applyMatrix flag turned off by
+        // default. This is required for SVG importing to work correctly. Turn
+        // it on now, so we don't have to deal with nested coordinate spaces.
         var words = project.importSVG(document.getElementById('svg'));
         words.visible = true; // Turn off the effect of display:none;
         words.fillColor = null;
         words.strokeColor = 'black';
-
         var yesGroup = words.children.yes;
-        var noGroup = words.children.no;
-        // Imported SVG Groups have their applyMatrix flag turned off by
-        // default. This is required for SVG importing to work correctly. Turn
-        // it on now, so we don't have to deal with nested coordinate spaces.
-        yesGroup.applyMatrix = true;
-        noGroup.applyMatrix = true;
 
+        var noGroup = words.children.no;
         // Resize the words to fit snugly inside the view:
-        project.activeLayer.fitBounds(view.bounds);
-        project.activeLayer.scale(0.8);
+        words.fitBounds(view.bounds);
+        words.scale(0.8);
 
         yesGroup.position = view.center;
         noGroup.position = [-900, -900];

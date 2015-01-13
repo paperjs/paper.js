@@ -1,4 +1,4 @@
-/*
+ /*
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
@@ -301,15 +301,10 @@ var Curve = Base.extend(/** @lends Curve# */{
                 && this._segment2._handleIn.isZero();
     },
 
-    isHorizontal: function() {
-        return this.isLinear() && Numerical.isZero(
-                this._segment1._point._y - this._segment2._point._y);
-    },
-
     // DOCS: Curve#getIntersections()
     getIntersections: function(curve) {
-        return Curve.getIntersections(this.getValues(), curve.getValues(),
-                this, curve, []);
+        return Curve.filterIntersections(Curve.getIntersections(
+                this.getValues(), curve.getValues(), this, curve, []));
     },
 
     // TODO: adjustThroughPoint
@@ -583,7 +578,13 @@ statics: {
             p2 = v[coord + 6],
             c = 3 * (c1 - p1),
             b = 3 * (c2 - c1) - c,
-            a = p2 - p1 - c - b;
+            a = p2 - p1 - c - b,
+            isZero = Numerical.isZero;
+        // If both a and b are near zero, we should treat the curve as a line in
+        // order to find the right solutions in some edge-cases in
+        // Curve.getParameterOf()
+        if (isZero(a) && isZero(b))
+            a = b = 0;
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
@@ -671,6 +672,18 @@ statics: {
                 + 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
     },
 
+    getEdgeSum: function(v) {
+        // Method derived from:
+        // http://stackoverflow.com/questions/1165647
+        // We treat the curve points and handles as the outline of a polygon of
+        // which we determine the orientation using the method of calculating
+        // the sum over the edges. This will work even with non-convex polygons,
+        // telling you whether it's mostly clockwise
+        return    (v[0] - v[2]) * (v[3] + v[1])
+                + (v[2] - v[4]) * (v[5] + v[3])
+                + (v[4] - v[6]) * (v[7] + v[5]);
+    },
+
     getBounds: function(v) {
         var min = v.slice(0, 2), // Start with values of point1
             max = min.slice(), // clone
@@ -705,9 +718,9 @@ statics: {
             b = 2 * (v0 + v2) - 4 * v1,
             c = v1 - v0,
             count = Numerical.solveQuadratic(a, b, c, roots),
-            // Add some tolerance for good roots, as t = 0 / 1 are added
-            // separately anyhow, and we don't want joins to be added with
-            // radiuses in getStrokeBounds()
+            // Add some tolerance for good roots, as t = 0, 1 are added
+            // separately anyhow, and we don't want joins to be added with radii
+            // in getStrokeBounds()
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         // Only add strokeWidth to bounds for points which lie  within 0 < t < 1
@@ -1056,12 +1069,16 @@ new function() { // Scope for methods that require numerical integration
             tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
 /*#*/ if (__options.fatlineClipping) {
         // Avoid deeper recursion.
-        if (recursion > 20)
+        // NOTE: @iconexperience determined that more than 20 recursions are
+        // needed sometimes, depending on the tDiff threshold values further
+        // below when determining which curve converges the least. He also
+        // recommended a threshold of 0.5 instead of the initial 0.8
+        // See: https://github.com/paperjs/paper.js/issues/565
+        if (recursion > 32)
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             tolerance = /*#=*/Numerical.TOLERANCE,
-            hullEpsilon = 1e-9,
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
@@ -1078,12 +1095,11 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 3) {
+        if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
-            tMinNew = (tMax + tMin) / 2;
-            tMaxNew = tMinNew;
+            tMaxNew = tMinNew = (tMax + tMin) / 2;
             tDiff = 0;
         } else {
             // Get the top and bottom parts of the convex-hull
@@ -1098,7 +1114,7 @@ new function() { // Scope for methods that require numerical integration
             tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
             // No intersections if one of the tvalues are null or 'undefined'
             if (tMinClip == null || tMaxClip == null)
-                return false;
+                return;
             // Clip P with the fatline for Q
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             tDiff = tMaxClip - tMinClip;
@@ -1108,7 +1124,7 @@ new function() { // Scope for methods that require numerical integration
             tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
         }
         // Check if we need to subdivide the curves
-        if (oldTDiff > 0.8 && tDiff > 0.8) {
+        if (oldTDiff > 0.5 && tDiff > 0.5) {
             // Subdivide the curve which has converged the least.
             if (tMaxNew - tMinNew > uMax - uMin) {
                 var parts = Curve.subdivide(v1, 0.5),
@@ -1142,7 +1158,7 @@ new function() { // Scope for methods that require numerical integration
                         curve1, t1, Curve.evaluate(v1, t1, 0),
                         curve2, t2, Curve.evaluate(v2, t2, 0));
             }
-        } else { // Iterate
+        } else if (tDiff > 0) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
@@ -1246,48 +1262,36 @@ new function() { // Scope for methods that require numerical integration
     }
 
     /**
-     * Clips the convex-hull and returns [tMin, tMax] for the curve contained
+     * Clips the convex-hull and returns [tMin, tMax] for the curve contained.
      */
     function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
-        var tProxy,
-            tVal = null,
-            px, py,
-            qx, qy;
-        for (var i = 0, l = hullBottom.length - 1; i < l; i++) {
-            py = hullBottom[i][1];
-            qy = hullBottom[i + 1][1];
-            if (py < qy) {
-                tProxy = null;
-            } else if (qy <= dMax) {
-                px = hullBottom[i][0];
-                qx = hullBottom[i + 1][0];
-                tProxy = px + (dMax - py) * (qx - px) / (qy - py);
-            } else {
-                // Try the next chain
-                continue;
-            }
-            // We got a proxy-t;
-            break;
+        if (hullTop[0][1] < dMin) {
+            // Left of hull is below dMin, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullTop, true, dMin);
+        } else if (hullBottom[0][1] > dMax) {
+            // Left of hull is above dMax, walk through the hull until it
+            // enters the region between dMin and dMax
+            return clipConvexHullPart(hullBottom, false, dMax);
+        } else {
+            // Left of hull is between dMin and dMax, no clipping possible
+            return hullTop[0][0];
         }
-        if (hullTop[0][1] <= dMax)
-            tProxy = hullTop[0][0];
-        for (var i = 0, l = hullTop.length - 1; i < l; i++) {
-            py = hullTop[i][1];
-            qy = hullTop[i + 1][1];
-            if (py >= dMin) {
-                tVal = tProxy;
-            } else if (py > qy) {
-                tVal = null;
-            } else if (qy >= dMin) {
-                px = hullTop[i][0];
-                qx = hullTop[i + 1][0];
-                tVal = px + (dMin  - py) * (qx - px) / (qy - py);
-            } else {
-                continue;
-            }
-            break;
+    }
+
+    function clipConvexHullPart(part, top, threshold) {
+        var px = part[0][0],
+            py = part[0][1];
+        for (var i = 1, l = part.length; i < l; i++) {
+            var qx = part[i][0],
+                qy = part[i][1];
+            if (top ? qy >= threshold : qy <= threshold)
+                return px + (threshold - py) * (qx - px) / (qy - py);
+            px = qx;
+            py = qy;
         }
-        return tVal;
+        // All points of hull are above / below the threshold
+        return null;
     }
 /*#*/ } // __options.fatlineClipping
 
@@ -1364,19 +1368,89 @@ new function() { // Scope for methods that require numerical integration
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
-        getIntersections: function(v1, v2, curve1, curve2, locations, include) {
+        getIntersections: function(v1, v2, c1, c2, locations, include) {
             var linear1 = Curve.isLinear(v1),
-                linear2 = Curve.isLinear(v2);
+                linear2 = Curve.isLinear(v2),
+                c1p1 = c1.getPoint1(),
+                c1p2 = c1.getPoint2(),
+                c2p1 = c2.getPoint1(),
+                c2p2 = c2.getPoint2(),
+                tolerance = /*#=*/Numerical.TOLERANCE;
+            // Handle a special case where if both curves start or end at the
+            // same point, the same end-point case will be handled after we
+            // calculate other intersections within the curve.
+            if (c1p1.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 0, c1p1);
+            if (c1p1.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
+            // Determine the correct intersection method based on values of
+            // linear1 & 2:
             (linear1 && linear2
                 ? addLineIntersection
                 : linear1 || linear2
                     ? addCurveLineIntersections
                     : addCurveIntersections)(
-                        v1, v2, curve1, curve2, locations, include,
+                        v1, v2, c1, c2, locations, include,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
+            // Handle the special case where c1's end-point overlap with
+            // c2's points.
+            if (c1p2.isClose(c2p1, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
+            if (c1p2.isClose(c2p2, tolerance))
+                addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
+            return locations;
+        },
+
+        filterIntersections: function(locations, _expand) {
+            var last = locations.length - 1,
+                tMax = 1 - /*#=*/Numerical.TOLERANCE;
+            // Merge intersections very close to the end of a curve to the
+            // beginning of the next curve.
+            for (var i = last; i >= 0; i--) {
+                var loc = locations[i],
+                    next = loc._curve.getNext(),
+                    next2 = loc._curve2.getNext();
+                if (next && loc._parameter >= tMax) {
+                    loc._parameter = 0;
+                    loc._curve = next;
+                }
+                if (next2 && loc._parameter2 >= tMax) {
+                    loc._parameter2 = 0;
+                    loc._curve2 = next2;
+                }
+            }
+
+            // Compare helper to filter locations
+            function compare(loc1, loc2) {
+                var path1 = loc1.getPath(),
+                    path2 = loc2.getPath();
+                return path1 === path2
+                        // We can add parameter (0 <= t <= 1) to index
+                        // (a integer) to compare both at the same time
+                        ? (loc1.getIndex() + loc1.getParameter())
+                                - (loc2.getIndex() + loc2.getParameter())
+                        // Sort by path id to group all locations on the same path.
+                        : path1._id - path2._id;
+            }
+
+            if (last > 0) {
+                locations.sort(compare);
+                // Filter out duplicate locations.
+                for (var i = last; i > 0; i--) {
+                    if (locations[i].equals(locations[i - 1])) {
+                        locations.splice(i, 1);
+                        last--;
+                    }
+                }
+            }
+            if (_expand) {
+                for (var i = last; i >= 0; i--)
+                    locations.push(locations[i].getIntersection());
+                locations.sort(compare);
+            }
             return locations;
         }
     }};

@@ -1144,12 +1144,14 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     split: function(index, parameter) {
         if (parameter === null)
-            return;
+            return null;
         if (arguments.length === 1) {
             var arg = index;
             // split(offset), convert offset to location
             if (typeof arg === 'number')
                 arg = this.getLocationAt(arg);
+            if (!arg)
+                return null
             // split(location)
             index = arg.index;
             parameter = arg.parameter;
@@ -1182,7 +1184,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Just have path point to this. The moving around of segments
                 // will happen below.
                 path = this;
-            } else if (index > 0) {
+            } else {
                 // Pass true for _preserve, in case of CompoundPath, to avoid
                 // reversing of path direction, which would mess with segs!
                 // Use _clone to copy over all other attributes, including style
@@ -1248,7 +1250,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Joins the path with the specified path, which will be removed in the
      * process.
      *
-     * @param {Path} path
+     * @param {Path} path the path to join this path with
+     * @return {Path} the joined path
      *
      * @example {@paperscript}
      * // Joining two paths:
@@ -1314,19 +1317,20 @@ var Path = PathItem.extend(/** @lends Path# */{
             var segments = path._segments,
                 last1 = this.getLastSegment(),
                 last2 = path.getLastSegment();
-            if (last1._point.equals(last2._point))
+            if (!last2) // an empty path?
+                return this;
+            if (last1 && last1._point.equals(last2._point))
                 path.reverse();
-            var first1,
-                first2 = path.getFirstSegment();
-            if (last1._point.equals(first2._point)) {
+            var first2 = path.getFirstSegment();
+            if (last1 && last1._point.equals(first2._point)) {
                 last1.setHandleOut(first2._handleOut);
                 this._add(segments.slice(1));
             } else {
-                first1 = this.getFirstSegment();
-                if (first1._point.equals(first2._point))
+                var first1 = this.getFirstSegment();
+                if (first1 && first1._point.equals(first2._point))
                     path.reverse();
                 last2 = path.getLastSegment();
-                if (first1._point.equals(last2._point)) {
+                if (first1 && first1._point.equals(last2._point)) {
                     first1.setHandleIn(last2._handleIn);
                     // Prepend all segments from path except the last one
                     this._add(segments.slice(0, segments.length - 1), 0);
@@ -1349,6 +1353,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             last.remove();
             this.setClosed(true);
         }
+        return this;
     },
 
 
@@ -2415,7 +2420,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                     x = pt.x,
                     y = pt.y,
                     abs = Math.abs,
-                    EPSILON = /*#=*/Numerical.EPSILON,
+                    epsilon = /*#=*/Numerical.EPSILON,
                     rx = abs(radius.width),
                     ry = abs(radius.height),
                     rxSq = rx * rx,
@@ -2432,7 +2437,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 }
                 factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
                         (rxSq * ySq + rySq * xSq);
-                if (abs(factor) < EPSILON)
+                if (abs(factor) < epsilon)
                     factor = 0;
                 if (factor < 0)
                     throw new Error(
@@ -2610,19 +2615,10 @@ statics: {
      */
     isClockwise: function(segments) {
         var sum = 0;
-        // Method derived from:
-        // http://stackoverflow.com/questions/1165647
-        // We treat the curve points and handles as the outline of a polygon of
-        // which we determine the orientation using the method of calculating
-        // the sum over the edges. This will work even with non-convex polygons,
-        // telling you whether it's mostly clockwise
         // TODO: Check if this works correctly for all open paths.
-        for (var i = 0, l = segments.length; i < l; i++) {
-            var v = Curve.getValues(
-                    segments[i], segments[i + 1 < l ? i + 1 : 0]);
-            for (var j = 2; j < 8; j += 2)
-                sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
-        }
+        for (var i = 0, l = segments.length; i < l; i++)
+            sum += Curve.getEdgeSum(Curve.getValues(
+                    segments[i], segments[i + 1 < l ? i + 1 : 0]));
         return sum > 0;
     },
 
