@@ -324,7 +324,7 @@ Base.exports.PaperScript = (function() {
      * @name PaperScript.execute
      * @function
      * @param {String} code the PaperScript code.
-     * @param {PaperScript} scope the scope for which the code is executed.
+     * @param {PaperScope} scope the scope for which the code is executed.
      * @param {String} url the url of the source, for source-map debugging.
      */
     function execute(code, scope, url, options) {
