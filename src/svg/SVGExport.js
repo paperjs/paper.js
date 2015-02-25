@@ -202,6 +202,7 @@ new function() {
         attrs.y += bounds.y;
         attrs.width = formatter.number(bounds.width);
         attrs.height = formatter.number(bounds.height);
+        attrs.overflow = 'visible';
         return createElement('use', attrs);
     }
 
