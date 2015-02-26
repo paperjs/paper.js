@@ -15,6 +15,10 @@
  * @namespace
  */
 var Key = new function() {
+    if ( noCanvas ) {
+        return;
+    }
+
     // TODO: cancel, clear, page-down, page-up, comma, minus, period, slash, ...
 
     var specialKeys = {

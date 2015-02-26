@@ -67,20 +67,23 @@ var DomEvent = /** @lends DomEvent */{
 };
 
 DomEvent.requestAnimationFrame = new function() {
-    var nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame'),
+    var nativeRequest = typeof window === 'object' &&
+            DomElement.getPrefixed(window, 'requestAnimationFrame'),
         requested = false,
         callbacks = [],
         focused = true,
         timer;
 
-    DomEvent.add(window, {
-        focus: function() {
-            focused = true;
-        },
-        blur: function() {
-            focused = false;
-        }
-    });
+    if ( typeof window === 'object' ) {
+        DomEvent.add(window, {
+            focus: function() {
+                focused = true;
+            },
+            blur: function() {
+                focused = false;
+            }
+        });
+    }
 
     function handleCallbacks() {
         // Checks all installed callbacks for element visibility and

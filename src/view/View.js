@@ -30,72 +30,82 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._element = element;
         var size;
 /*#*/ if (__options.environment == 'browser') {
-        // Sub-classes may set _pixelRatio first
-        if (!this._pixelRatio)
-            this._pixelRatio = window.devicePixelRatio || 1;
-        // Generate an id for this view / element if it does not have one
-        this._id = element.getAttribute('id');
-        if (this._id == null)
-            element.setAttribute('id', this._id = 'view-' + View._id++);
-        // Install event handlers
-        DomEvent.add(element, this._viewEvents);
-        // Borrowed from Hammer.js:
-        var none = 'none';
-        DomElement.setPrefixed(element.style, {
-            userSelect: none,
-            // This makes the element blocking in IE10+
-            // You could experiment with the value, see this issue:
-            // https://github.com/EightMedia/hammer.js/issues/241
-            touchAction: none,
-            touchCallout: none,
-            contentZooming: none,
-            userDrag: none,
-            tapHighlightColor: 'rgba(0,0,0,0)'
-        });
-
-        function getSize(name) {
-            return element[name] || parseInt(element.getAttribute(name), 10);
-        };
-
-        function getCanvasSize() {
-            // Try visible size first, since that will help handling previously
-            // scaled canvases (e.g. when dealing with pixel-ratio)
-            var size = DomElement.getSize(element);
-            return size.isNaN() || size.isZero()
-                    // If the element is invisible, we cannot directly access
-                    // element.width / height, because they would appear 0.
-                    // Reading the attributes should still work.
-                    ? new Size(getSize('width'), getSize('height'))
-                    : size;
-        };
-
-        // If the element has the resize attribute, listen to resize events and
-        // update its coordinate space accordingly
-        if (PaperScope.hasAttribute(element, 'resize')) {
-            var that = this;
-            DomEvent.add(window, this._windowEvents = {
-                resize: function() {
-                    that.setViewSize(getCanvasSize());
-                }
+        if ( !noCanvas ) {
+            // Sub-classes may set _pixelRatio first
+            if (!this._pixelRatio)
+                this._pixelRatio = window.devicePixelRatio || 1;
+            // Generate an id for this view / element if it does not have one
+            this._id = element.getAttribute('id');
+            if (this._id == null)
+                element.setAttribute('id', this._id = 'view-' + View._id++);
+            // Install event handlers
+            DomEvent.add(element, this._viewEvents);
+            // Borrowed from Hammer.js:
+            var none = 'none';
+            DomElement.setPrefixed(element.style, {
+                userSelect: none,
+                // This makes the element blocking in IE10+
+                // You could experiment with the value, see this issue:
+                // https://github.com/EightMedia/hammer.js/issues/241
+                touchAction: none,
+                touchCallout: none,
+                contentZooming: none,
+                userDrag: none,
+                tapHighlightColor: 'rgba(0,0,0,0)'
             });
-        }
-        // Set canvas size even if we just determined the size from it, since
-        // it might have been set to a % size, in which case it would use some
-        // default internal size (300x150 on WebKit) and scale up the pixels.
-        // We also need this call here for HiDPI support.
-        this._setViewSize(size = getCanvasSize());
-        // TODO: Test this on IE:
-        if (PaperScope.hasAttribute(element, 'stats')
-                && typeof Stats !== 'undefined') {
-            this._stats = new Stats();
-            // Align top-left to the element
-            var stats = this._stats.domElement,
-                style = stats.style,
-                offset = DomElement.getOffset(element);
-            style.position = 'absolute';
-            style.left = offset.x + 'px';
-            style.top = offset.y + 'px';
-            document.body.appendChild(stats);
+
+            function getSize(name) {
+                return element[name] || parseInt(element.getAttribute(name), 10);
+            }
+
+            function getCanvasSize() {
+                // Try visible size first, since that will help handling previously
+                // scaled canvases (e.g. when dealing with pixel-ratio)
+                var size = DomElement.getSize(element);
+                return size.isNaN() || size.isZero()
+                        // If the element is invisible, we cannot directly access
+                        // element.width / height, because they would appear 0.
+                        // Reading the attributes should still work.
+                        ? new Size(getSize('width'), getSize('height'))
+                        : size;
+            }
+
+            // If the element has the resize attribute, listen to resize events and
+            // update its coordinate space accordingly
+            if (PaperScope.hasAttribute(element, 'resize')) {
+                var that = this;
+                DomEvent.add(window, this._windowEvents = {
+                    resize: function() {
+                        that.setViewSize(getCanvasSize());
+                    }
+                });
+            }
+            // Set canvas size even if we just determined the size from it, since
+            // it might have been set to a % size, in which case it would use some
+            // default internal size (300x150 on WebKit) and scale up the pixels.
+            // We also need this call here for HiDPI support.
+            this._setViewSize(size = getCanvasSize());
+            // TODO: Test this on IE:
+            if (PaperScope.hasAttribute(element, 'stats')
+                    && typeof Stats !== 'undefined') {
+                this._stats = new Stats();
+                // Align top-left to the element
+                var stats = this._stats.domElement,
+                    style = stats.style,
+                    offset = DomElement.getOffset(element);
+                style.position = 'absolute';
+                style.left = offset.x + 'px';
+                style.top = offset.y + 'px';
+                document.body.appendChild(stats);
+            }
+
+        } else { // noCanvas === true
+            // Sub-classes may set _pixelRatio first
+            if (!this._pixelRatio)
+                this._pixelRatio = 1;
+            // Generate an id for this view
+            this._id = 'view-' + View._id++;
+            size = new Size(element.width, element.height);
         }
 /*#*/ } else if (__options.environment == 'node') {
         // Sub-classes may set _pixelRatio first
@@ -673,6 +683,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
 }, new function() {
     // Injection scope for mouse events on the browser
 /*#*/ if (__options.environment == 'browser') {
+    if ( noCanvas ) {
+        return;
+    }
+
     var tool,
         prevFocus,
         tempFocus,

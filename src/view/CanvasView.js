@@ -32,22 +32,24 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * @param {Size} size the size of the canvas to be created
      */
     initialize: function CanvasView(project, canvas) {
-        // Handle canvas argument
-        if (!(canvas instanceof HTMLCanvasElement)) {
-            // See if the arguments describe the view size:
-            var size = Size.read(arguments);
-            if (size.isZero())
-                throw new Error(
-                        'Cannot create CanvasView with the provided argument: '
-                        + [].slice.call(arguments, 1));
-            canvas = CanvasProvider.getCanvas(size);
+        if ( !noCanvas ) {
+            // Handle canvas argument
+            if (!(canvas instanceof HTMLCanvasElement)) {
+                // See if the arguments describe the view size:
+                var size = Size.read(arguments);
+                if (size.isZero())
+                    throw new Error(
+                            'Cannot create CanvasView with the provided argument: '
+                            + [].slice.call(arguments, 1));
+                canvas = CanvasProvider.getCanvas(size);
+            }
+            this._context = canvas.getContext('2d');
         }
-        this._context = canvas.getContext('2d');
         // Have Item count installed mouse events.
         this._eventCounters = {};
         this._pixelRatio = 1;
 /*#*/ if (__options.environment == 'browser') {
-        if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
+        if (!noCanvas && !/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,
