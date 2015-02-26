@@ -1157,8 +1157,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Specifies whether the group applies transformations directly to its
-     * children, or whether they are to be stored in its {@link #matrix}
+     * Controls whether the transformations applied to the item (e.g. through
+     * {@link #transform(matrix)}, {@link #rotate(angle)},
+     * {@link #scale(scale)}, etc.) are stored in its {@link #matrix} property,
+     * or whether they are directly applied to its contents or children (passed
+     * on to the segments in {@link Path} items, the children of {@link Group}
+     * items, etc.).
      *
      * @type Boolean
      * @default true
