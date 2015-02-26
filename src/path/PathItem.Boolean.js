@@ -296,7 +296,6 @@ PathItem.inject(new function() {
                 var curve = curves[i],
                     values = curve.values,
                     winding = curve.winding,
-                    next = curve.next,
                     prevT,
                     prevX;
                 // Since the curves are monotone in y direction, we can just
