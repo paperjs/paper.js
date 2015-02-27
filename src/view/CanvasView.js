@@ -35,7 +35,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         // Handle canvas argument
         if (!(canvas instanceof HTMLCanvasElement)) {
             // See if the arguments describe the view size:
-            var size = Size.read(arguments);
+            var size = Size.read(arguments, 1);
             if (size.isZero())
                 throw new Error(
                         'Cannot create CanvasView with the provided argument: '
