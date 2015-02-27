@@ -22,7 +22,7 @@ var jsdom = require('jsdom'),
     // Expose global browser variables and create a document and a window using
     // jsdom, e.g. for import/exportSVG()
     document = jsdom.jsdom('<html><body></body></html>'),
-    window = document.parentWindow,
+    window = document.defaultView,
     navigator = window.navigator,
     HTMLCanvasElement = Canvas,
     Image = Canvas.Image;
