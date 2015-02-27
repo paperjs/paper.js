@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "canvas": ">= 0.7.0",
-    "jsdom": ">= 0.6.0",
+    "jsdom": "3.1.2",
     "request": "~2.27.0"
   },
   "devDependencies": {
