@@ -163,6 +163,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             current = new Point(),
             start = new Point();
 
+        if (!parts) return;
+
         function getCoord(index, coord) {
             var val = +coords[index];
             if (relative)
