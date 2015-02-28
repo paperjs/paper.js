@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.21 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.22 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Nov 22 09:01:01 2014 -0800
+ * Date: Sat Feb 28 19:20:48 2015 +0100
  *
  ***
  *
@@ -219,10 +219,8 @@ var Base = new function() {
 						|| ctor.name === 'Object');
 			},
 
-			pick: function() {
-				for (var i = 0, l = arguments.length; i < l; i++)
-					if (arguments[i] !== undefined)
-						return arguments[i];
+			pick: function(a, b) {
+				return a !== undefined ? a : b;
 			}
 		}
 	});
@@ -245,6 +243,10 @@ Base.inject({
 							: type === 'string' ? "'" + value + "'" : value));
 				}
 			}, []).join(', ') + ' }';
+	},
+
+	getClassName: function() {
+		return this._class || '';
 	},
 
 	exportJSON: function(options) {
@@ -456,7 +458,8 @@ Base.inject({
 		},
 
 		deserialize: function(json, create, _data) {
-			var res = json;
+			var res = json,
+				isRoot = !_data;
 			_data = _data || {};
 			if (Array.isArray(json)) {
 				var type = json[0],
@@ -485,7 +488,9 @@ Base.inject({
 				for (var key in json)
 					res[key] = Base.deserialize(json[key], create, _data);
 			}
-			return res;
+			return isRoot && json && json.length && json[0][0] === 'dictionary'
+					? res[1]
+					: res;
 		},
 
 		exportJSON: function(obj, options) {
@@ -704,7 +709,7 @@ var PaperScope = Base.extend({
 
 	},
 
-	version: '0.9.21',
+	version: '0.9.22',
 
 	getView: function() {
 		return this.project && this.project.getView();
@@ -887,26 +892,14 @@ var Numerical = new function() {
 	var abs = Math.abs,
 		sqrt = Math.sqrt,
 		pow = Math.pow,
-		cos = Math.cos,
-		PI = Math.PI,
-		TOLERANCE = 10e-6,
-		EPSILON = 10e-12;
-
-	function setupRoots(roots, min, max) {
-		var unbound = min === undefined,
-			minE = min - EPSILON,
-			maxE = max + EPSILON,
-			count = 0;
-		return function(root) {
-			if (unbound || root > minE && root < maxE)
-				roots[count++] = root < min ? min : root > max ? max : root;
-			return count;
-		};
-	}
+		TOLERANCE = 1e-6,
+		EPSILON = 1e-12,
+		MACHINE_EPSILON = 1.12e-16;
 
 	return {
 		TOLERANCE: TOLERANCE,
 		EPSILON: EPSILON,
+		MACHINE_EPSILON: MACHINE_EPSILON,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
@@ -947,58 +940,109 @@ var Numerical = new function() {
 		},
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var add = setupRoots(roots, min, max);
-
-			if (abs(a) < EPSILON) {
-				if (abs(b) >= EPSILON)
-					return add(-c / b);
-				return abs(c) < EPSILON ? -1 : 0;
+			var count = 0,
+				x1, x2 = Infinity,
+				B = b,
+				D;
+			b /= 2;
+			D = b * b - a * c;
+			if (abs(D) < MACHINE_EPSILON) {
+				var pow = Math.pow,
+					gmC = pow(abs(a*b*c), 1/3);
+				if (gmC < 1e-8) {
+					/*
+					 * we multiply with a factor to normalize the
+					 * coefficients. The factor is just the nearest exponent
+					 * of 10, big enough to raise all the coefficients to
+					 * nearly [-1, +1] range.
+					 */
+					var mult = pow(10, abs(
+						Math.floor(Math.log(gmC) * Math.LOG10E)));
+					if (!isFinite(mult))
+						mult = 0;
+					a *= mult;
+					b *= mult;
+					c *= mult;
+					D = b * b - a * c;
+				}
 			}
-			var p = b / (2 * a);
-			var q = c / a;
-			var p2 = p * p;
-			if (p2 < q - EPSILON)
-				return 0;
-			var s = p2 > q ? sqrt(p2 - q) : 0,
-				count = add(s - p);
-			if (s > 0)
-				count = add(-s - p);
+			if (abs(a) < MACHINE_EPSILON) {
+				if (abs(B) < MACHINE_EPSILON)
+					return abs(c) < MACHINE_EPSILON ? -1 : 0;
+				x1 = -c / B;
+			} else {
+				if (D >= -MACHINE_EPSILON) {
+					D = D < 0 ? 0 : D;
+					var R = sqrt(D);
+					if (b >= MACHINE_EPSILON && b <= MACHINE_EPSILON) {
+						x1 = abs(a) >= abs(c) ? R / a : -c / R;
+						x2 = -x1;
+					} else {
+						var q = -(b + (b < 0 ? -1 : 1) * R);
+						x1 = q / a;
+						x2 = c / q;
+					}
+				}
+			}
+			if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
+				roots[count++] = x1;
+			if (x2 !== x1
+					&& isFinite(x2) && (min == null || x2 >= min && x2 <= max))
+				roots[count++] = x2;
 			return count;
 		},
 
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			if (abs(a) < EPSILON)
-				return Numerical.solveQuadratic(b, c, d, roots, min, max);
-
-			b /= a;
-			c /= a;
-			d /= a;
-			var add = setupRoots(roots, min, max),
-				bb = b * b,
-				p = (bb - 3 * c) / 9,
-				q = (2 * bb * b - 9 * b * c + 27 * d) / 54,
-				ppp = p * p * p,
-				D = q * q - ppp;
-			b /= 3;
-			if (abs(D) < EPSILON) {
-				if (abs(q) < EPSILON)
-					return add(-b);
-				var sqp = sqrt(p),
-					snq = q > 0 ? 1 : -1;
-				add(-snq * 2 * sqp - b);
-				return add(snq * sqp - b);
+			var x, b1, c2, count = 0;
+			if (a === 0) {
+				a = b;
+				b1 = c;
+				c2 = d;
+				x = Infinity;
+			} else if (d === 0) {
+				b1 = b;
+				c2 = c;
+				x = 0;
+			} else {
+				var ec = 1 + MACHINE_EPSILON,
+					x0, q, qd, t, r, s, tmp;
+				x = -(b / a) / 3;
+				tmp = a * x,
+				b1 = tmp + b,
+				c2 = b1 * x + c,
+				qd = (tmp + b1) * x + c2,
+				q = c2 * x + d;
+				t = q /a;
+				r = pow(abs(t), 1/3);
+				s = t < 0 ? -1 : 1;
+				t = -qd / a;
+				r = t > 0 ? 1.3247179572 * Math.max(r, sqrt(t)) : r;
+				x0 = x - s * r;
+				if (x0 !== x) {
+					do {
+						x = x0;
+						tmp = a * x,
+						b1 = tmp + b,
+						c2 = b1 * x + c,
+						qd = (tmp + b1) * x + c2,
+						q = c2 * x + d;
+						x0 = qd === 0 ? x : x - q / qd / ec;
+						if (x0 === x) {
+							x = x0;
+							break;
+						}
+					} while (s * x0 > s * x);
+					if (abs(a) * x * x > abs(d / x)) {
+						c2 = -d / x;
+						b1 = (c2 - c) / x;
+					}
+				}
 			}
-			if (D < 0) {
-				var sqp = sqrt(p),
-					phi = Math.acos(q / (sqp * sqp * sqp)) / 3,
-					t = -2 * sqp,
-					o = 2 * PI / 3;
-				add(t * cos(phi) - b);
-				add(t * cos(phi + o) - b);
-				return add(t * cos(phi - o) - b);
-			}
-			var A = (q > 0 ? -1 : 1) * pow(abs(q) + sqrt(D), 1 / 3);
-			return add(A + p / A - b);
+			var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
+			if (isFinite(x) && (count === 0 || x !== roots[count - 1])
+					&& (min == null || x >= min && x <= max))
+				roots[count++] = x;
+			return count;
 		}
 	};
 };
@@ -1218,11 +1262,11 @@ var Point = Base.extend({
 	},
 
 	isColinear: function(point) {
-		return Math.abs(this.cross(point)) < 0.00001;
+		return Math.abs(this.cross(point)) < 1e-12;
 	},
 
 	isOrthogonal: function(point) {
-		return Math.abs(this.dot(point)) < 0.00001;
+		return Math.abs(this.dot(point)) < 1e-12;
 	},
 
 	isZero: function() {
@@ -1951,10 +1995,11 @@ var Matrix = Base.extend({
 		return this;
 	},
 
-	apply: function() {
+	apply: function(recursively, _setApplyMatrix) {
 		var owner = this._owner;
 		if (owner) {
-			owner.transform(null, true);
+			owner.transform(null, true, Base.pick(recursively, true),
+					_setApplyMatrix);
 			return this.isIdentity();
 		}
 		return false;
@@ -2382,11 +2427,11 @@ var Line = Base.extend({
 				vx -= px;
 				vy -= py;
 			}
-			if (Numerical.isZero(vx))
-				return x - px;
-			var m = vy / vx,
-				b = py - m * px;
-			return (y - (m * x) - b) / Math.sqrt(m * m + 1);
+			return Numerical.isZero(vx)
+					? vy >= 0 ? px - x : x - px
+					: Numerical.isZero(vy)
+						? vx >= 0 ? y - py : py - y
+						: (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
 		}
 	}
 });
@@ -2465,18 +2510,27 @@ var Project = PaperScopeItem.extend({
 		return items;
 	},
 
-	addChild: function(child) {
-		if (child instanceof Layer) {
-			Base.splice(this.layers, [child]);
+	insertChild: function(index, item, _preserve) {
+		if (item instanceof Layer) {
+			item._remove(false, true);
+			Base.splice(this.layers, [item], index, 0);
+			item._setProject(this, true);
+			if (this._changes)
+				item._changed(5);
 			if (!this._activeLayer)
-				this._activeLayer = child;
-		} else if (child instanceof Item) {
+				this._activeLayer = item;
+		} else if (item instanceof Item) {
 			(this._activeLayer
-				|| this.addChild(new Layer(Item.NO_INSERT))).addChild(child);
+				|| this.insertChild(index, new Layer(Item.NO_INSERT)))
+					.insertChild(index, item, _preserve);
 		} else {
-			child = null;
+			item = null;
 		}
-		return child;
+		return item;
+	},
+
+	addChild: function(item, _preserve) {
+		return this.insertChild(undefined, item, _preserve);
 	},
 
 	_updateSelection: function(item) {
@@ -2608,6 +2662,12 @@ var Symbol = Base.extend({
 
 	clone: function() {
 		return new Symbol(this._definition.clone(false));
+	},
+
+	equals: function(symbol) {
+		return symbol === this
+				|| symbol && this.definition.equals(symbol.definition)
+				|| false;
 	}
 });
 
@@ -2800,10 +2860,6 @@ var Item = Base.extend(Emitter, {
 
 	getId: function() {
 		return this._id;
-	},
-
-	getClassName: function() {
-		return this._class;
 	},
 
 	getName: function() {
@@ -3155,8 +3211,8 @@ var Item = Base.extend(Emitter, {
 		return this._applyMatrix;
 	},
 
-	setApplyMatrix: function(transform) {
-		if (this._applyMatrix = this._canApplyMatrix && !!transform)
+	setApplyMatrix: function(apply) {
+		if (this._applyMatrix = this._canApplyMatrix && !!apply)
 			this.transform(null, true);
 	},
 
@@ -3364,7 +3420,7 @@ var Item = Base.extend(Emitter, {
 			tolerancePadding = options._tolerancePadding = new Size(
 						Path._getPenPadding(1, totalMatrix.inverted())
 					).multiply(
-						Math.max(options.tolerance, 0.00001)
+						Math.max(options.tolerance, 0.000001)
 					);
 		point = matrix._inverseTransform(point);
 
@@ -3541,7 +3597,7 @@ var Item = Base.extend(Emitter, {
 	},
 
 	insertChild: function(index, item, _preserve) {
-		var res = this.insertChildren(index, [item], _preserve);
+		var res = item ? this.insertChildren(index, [item], _preserve) : null;
 		return res && res[0];
 	},
 
@@ -3558,7 +3614,9 @@ var Item = Base.extend(Emitter, {
 				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
-					item._remove(false, true);
+					var shift = item._parent === this && item._index < index;
+					if (item._remove(false, true) && shift)
+						index--;
 				}
 			}
 			Base.splice(children, items, index, 0);
@@ -3580,29 +3638,28 @@ var Item = Base.extend(Emitter, {
 		return items;
 	},
 
-	_insert: function(above, item, _preserve) {
-		if (!item._parent)
-			return null;
-		var index = item._index + (above ? 1 : 0);
-		if (item._parent === this._parent && index > this._index)
-			index--;
-		return item._parent.insertChild(index, this, _preserve);
+	_insertSibling: function(index, item, _preserve) {
+		return this._parent
+				? this._parent.insertChild(index, item, _preserve)
+				: null;
 	},
 
 	insertAbove: function(item, _preserve) {
-		return this._insert(true, item, _preserve);
+		return item._insertSibling(item._index + 1, this, _preserve);
 	},
 
 	insertBelow: function(item, _preserve) {
-		return this._insert(false, item, _preserve);
+		return item._insertSibling(item._index, this, _preserve);
 	},
 
 	sendToBack: function() {
-		return this._parent.insertChild(0, this);
+		return (this._parent || this instanceof Layer && this._project)
+				.insertChild(0, this);
 	},
 
 	bringToFront: function() {
-		return this._parent.addChild(this);
+		return (this._parent || this instanceof Layer && this._project)
+				.addChild(this);
 	},
 
 	appendTop: '#addChild',
@@ -3817,17 +3874,20 @@ var Item = Base.extend(Emitter, {
 }, {
 
 }), {
-	transform: function(matrix, _applyMatrix) {
+	transform: function(matrix, _applyMatrix, _applyRecursively,
+			_setApplyMatrix) {
 		if (matrix && matrix.isIdentity())
 			matrix = null;
 		var _matrix = this._matrix,
 			applyMatrix = (_applyMatrix || this._applyMatrix)
-				&& (!_matrix.isIdentity() || matrix);
+					&& ((!_matrix.isIdentity() || matrix)
+						|| _applyMatrix && _applyRecursively && this._children);
 		if (!matrix && !applyMatrix)
 			return this;
 		if (matrix)
 			_matrix.preConcatenate(matrix);
-		if (applyMatrix = applyMatrix && this._transformContent(_matrix)) {
+		if (applyMatrix = applyMatrix && this._transformContent(_matrix,
+					_applyRecursively, _setApplyMatrix)) {
 			var pivot = this._pivot,
 				style = this._style,
 				fillColor = style.getFillColor(true),
@@ -3839,6 +3899,8 @@ var Item = Base.extend(Emitter, {
 			if (strokeColor)
 				strokeColor.transform(_matrix);
 			_matrix.reset(true);
+			if (_setApplyMatrix && this._canApplyMatrix)
+				this._applyMatrix = true;
 		}
 		var bounds = this._bounds,
 			position = this._position;
@@ -3861,11 +3923,12 @@ var Item = Base.extend(Emitter, {
 		return this;
 	},
 
-	_transformContent: function(matrix) {
+	_transformContent: function(matrix, applyRecursively, setApplyMatrix) {
 		var children = this._children;
 		if (children) {
 			for (var i = 0, l = children.length; i < l; i++)
-				children[i].transform(matrix, true);
+				children[i].transform(matrix, true, applyRecursively,
+						setApplyMatrix);
 			return true;
 		}
 	},
@@ -4185,9 +4248,9 @@ var Layer = Group.extend({
 		}
 	},
 
-	_remove: function _remove(notify) {
+	_remove: function _remove(notifySelf, notifyParent) {
 		if (this._parent)
-			return _remove.base.call(this, notify);
+			return _remove.base.call(this, notifySelf, notifyParent);
 		if (this._index != null) {
 			var project = this._project;
 			if (project._activeLayer === this)
@@ -4195,7 +4258,11 @@ var Layer = Group.extend({
 						|| this.getPreviousSibling();
 			Base.splice(project.layers, null, this._index, 1);
 			this._installEvents(false);
-			project._needsUpdate = true;
+			if (notifySelf && project._changes)
+				this._changed(5);
+			if (notifyParent) {
+				project._needsUpdate = true;
+			}
 			return true;
 		}
 		return false;
@@ -4219,15 +4286,10 @@ var Layer = Group.extend({
 		this._project._activeLayer = this;
 	},
 
-	_insert: function _insert(above, item, _preserve) {
-		if (item instanceof Layer && !item._parent) {
-			this._remove(true, true);
-			Base.splice(item._project.layers, [this],
-					item._index + (above ? 1 : 0), 0);
-			this._setProject(item._project, true);
-			return this;
-		}
-		return _insert.base.call(this, above, item, _preserve);
+	_insertSibling: function _insertSibling(index, item, _preserve) {
+		return !this._parent
+				? this._project.insertChild(index, item, _preserve)
+				: _insertSibling.base.call(this, index, item, _preserve);
 	}
 });
 
@@ -4574,8 +4636,10 @@ var Raster = Item.extend({
 				this.setImage(object);
 			}
 		}
-		if (!this._size)
+		if (!this._size) {
 			this._size = new Size();
+			this._loaded = false;
+		}
 	},
 
 	_equals: function(item) {
@@ -4591,37 +4655,53 @@ var Raster = Item.extend({
 		} else if (canvas) {
 			var copyCanvas = CanvasProvider.getCanvas(this._size);
 			copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
-			copy.setCanvas(copyCanvas);
+			copy.setImage(copyCanvas);
 		}
 		return this._clone(copy, insert);
 	},
 
 	getSize: function() {
 		var size = this._size;
-		return new LinkedSize(size.width, size.height, this, 'setSize');
+		return new LinkedSize(size ? size.width : 0, size ? size.height : 0,
+				this, 'setSize');
 	},
 
 	setSize: function() {
 		var size = Size.read(arguments);
-		if (!this._size.equals(size)) {
-			var element = this.getElement();
-			this.setCanvas(CanvasProvider.getCanvas(size));
-			if (element)
-				this.getContext(true).drawImage(element, 0, 0,
-						size.width, size.height);
+		if (!size.equals(this._size)) {
+			if (size.width > 0 && size.height > 0) {
+				var element = this.getElement();
+				this.setImage(CanvasProvider.getCanvas(size));
+				if (element)
+					this.getContext(true).drawImage(element, 0, 0,
+							size.width, size.height);
+			} else {
+				if (this._canvas)
+					CanvasProvider.release(this._canvas);
+				this._size = size.clone();
+			}
 		}
 	},
 
 	getWidth: function() {
-		return this._size.width;
+		return this._size ? this._size.width : 0;
+	},
+
+	setWidth: function(width) {
+		this.setSize(width, this.getHeight());
 	},
 
 	getHeight: function() {
-		return this._size.height;
+		return this._size ? this._size.height : 0;
+	},
+
+	setHeight: function(height) {
+		this.setSize(this.getWidth(), height);
 	},
 
 	isEmpty: function() {
-		return this._size.width === 0 && this._size.height === 0;
+		var size = this._size;
+		return !size || size.width === 0 && size.height === 0;
 	},
 
 	getResolution: function() {
@@ -4647,9 +4727,11 @@ var Raster = Item.extend({
 		if (image && image.getContext) {
 			this._image = null;
 			this._canvas = image;
+			this._loaded = true;
 		} else {
 			this._image = image;
 			this._canvas = null;
+			this._loaded = image && image.complete;
 		}
 		this._size = new Size(
 				image ? image.naturalWidth || image.width : 0,
@@ -4734,7 +4816,7 @@ var Raster = Item.extend({
 	},
 
 	getElement: function() {
-		return this._canvas || this._image;
+		return this._canvas || this._loaded && this._image;
 	}
 }, {
 	beans: false,
@@ -4750,7 +4832,7 @@ var Raster = Item.extend({
 	getSubRaster: function() {
 		var rect = Rectangle.read(arguments),
 			raster = new Raster(Item.NO_INSERT);
-		raster.setCanvas(this.getSubCanvas(rect));
+		raster.setImage(this.getSubCanvas(rect));
 		raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
 		raster._matrix.preConcatenate(this._matrix);
 		raster.insertAbove(this);
@@ -4802,8 +4884,10 @@ var Raster = Item.extend({
 		if (path)
 			path.draw(ctx, new Base({ clip: true, matrices: [matrix] }));
 		this._matrix.applyToContext(ctx);
-		ctx.drawImage(this.getElement(),
-				-this._size.width / 2, -this._size.height / 2);
+		var element = this.getElement(),
+			size = this._size;
+		if (element)
+			ctx.drawImage(element, -size.width / 2, -size.height / 2);
 		ctx.restore();
 		var pixels = ctx.getImageData(0.5, 0.5, Math.ceil(width),
 				Math.ceil(height)).data,
@@ -5345,6 +5429,7 @@ var SegmentPoint = Point.extend({
 
 var Curve = Base.extend({
 	_class: 'Curve',
+
 	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
 		var count = arguments.length;
 		if (count === 3) {
@@ -5498,14 +5583,9 @@ var Curve = Base.extend({
 				&& this._segment2._handleIn.isZero();
 	},
 
-	isHorizontal: function() {
-		return this.isLinear() && Numerical.isZero(
-				this._segment1._point._y - this._segment2._point._y);
-	},
-
 	getIntersections: function(curve) {
-		return Curve.getIntersections(this.getValues(), curve.getValues(),
-				this, curve, []);
+		return Curve.filterIntersections(Curve.getIntersections(
+				this.getValues(), curve.getValues(), this, curve, []));
 	},
 
 	_getParameter: function(offset, isParameter) {
@@ -5520,7 +5600,7 @@ var Curve = Base.extend({
 
 	divide: function(offset, isParameter, ignoreLinear) {
 		var parameter = this._getParameter(offset, isParameter),
-			tolerance = 0.00001,
+			tolerance = 0.000001,
 			res = null;
 		if (parameter > tolerance && parameter < 1 - tolerance) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
@@ -5615,7 +5695,7 @@ statics: {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
-			tolerance = 0.00001,
+			tolerance = 0.000001,
 			x, y;
 
 		if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
@@ -5685,12 +5765,15 @@ statics: {
 			p2 = v[coord + 6],
 			c = 3 * (c1 - p1),
 			b = 3 * (c2 - c1) - c,
-			a = p2 - p1 - c - b;
+			a = p2 - p1 - c - b,
+			isZero = Numerical.isZero;
+		if (isZero(a) && isZero(b))
+			a = b = 0;
 		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 	},
 
 	getParameterOf: function(v, x, y) {
-		var tolerance = 0.00001;
+		var tolerance = 0.000001;
 		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
 			return 0;
 		if (Math.abs(v[6] - x) < tolerance && Math.abs(v[7] - y) < tolerance)
@@ -5757,6 +5840,12 @@ statics: {
 				+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
 	},
 
+	getEdgeSum: function(v) {
+		return	  (v[0] - v[2]) * (v[3] + v[1])
+				+ (v[2] - v[4]) * (v[5] + v[3])
+				+ (v[4] - v[6]) * (v[7] + v[5]);
+	},
+
 	getBounds: function(v) {
 		var min = v.slice(0, 2),
 			max = min.slice(),
@@ -5780,7 +5869,7 @@ statics: {
 			b = 2 * (v0 + v2) - 4 * v1,
 			c = v1 - v0,
 			count = Numerical.solveQuadratic(a, b, c, roots),
-			tMin = 0.00001,
+			tMin = 0.000001,
 			tMax = 1 - tMin;
 		add(v3, 0);
 		for (var i = 0; i < count; i++) {
@@ -5871,7 +5960,7 @@ statics: {
 			refine(i / count);
 
 		var step = 1 / (count * 2);
-		while (step > 0.00001) {
+		while (step > 0.000001) {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
 		}
@@ -5954,7 +6043,7 @@ new function() {
 				return length - offset;
 			}
 			return Numerical.findRoot(f, ds, start + guess, a, b, 16,
-					0.00001);
+					0.000001);
 		}
 	};
 }, new function() {
@@ -5967,11 +6056,10 @@ new function() {
 
 	function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
 			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-		if (recursion > 20)
+		if (recursion > 32)
 			return;
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-			tolerance = 0.00001,
-			hullEpsilon = 1e-9,
+			tolerance = 0.000001,
 			getSignedDistance = Line.getSignedDistance,
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
 			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
@@ -5983,9 +6071,8 @@ new function() {
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
 			tMinNew, tMaxNew, tDiff;
-		if (q0x === q3x && uMax - uMin <= hullEpsilon && recursion > 3) {
-			tMinNew = (tMax + tMin) / 2;
-			tMaxNew = tMinNew;
+		if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
+			tMaxNew = tMinNew = (tMax + tMin) / 2;
 			tDiff = 0;
 		} else {
 			var hull = getConvexHull(dp0, dp1, dp2, dp3),
@@ -5997,13 +6084,13 @@ new function() {
 			bottom.reverse();
 			tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
 			if (tMinClip == null || tMaxClip == null)
-				return false;
+				return;
 			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
 			tDiff = tMaxClip - tMinClip;
 			tMinNew = tMax * tMinClip + tMin * (1 - tMinClip);
 			tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
 		}
-		if (oldTDiff > 0.8 && tDiff > 0.8) {
+		if (oldTDiff > 0.5 && tDiff > 0.5) {
 			if (tMaxNew - tMinNew > uMax - uMin) {
 				var parts = Curve.subdivide(v1, 0.5),
 					t = tMinNew + (tMaxNew - tMinNew) / 2;
@@ -6035,7 +6122,7 @@ new function() {
 						curve1, t1, Curve.evaluate(v1, t1, 0),
 						curve2, t2, Curve.evaluate(v2, t2, 0));
 			}
-		} else {
+		} else if (tDiff > 0) {
 			addCurveIntersections(v2, v1, curve2, curve1, locations, include,
 					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
 		}
@@ -6075,43 +6162,27 @@ new function() {
 	}
 
 	function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
-		var tProxy,
-			tVal = null,
-			px, py,
-			qx, qy;
-		for (var i = 0, l = hullBottom.length - 1; i < l; i++) {
-			py = hullBottom[i][1];
-			qy = hullBottom[i + 1][1];
-			if (py < qy) {
-				tProxy = null;
-			} else if (qy <= dMax) {
-				px = hullBottom[i][0];
-				qx = hullBottom[i + 1][0];
-				tProxy = px + (dMax - py) * (qx - px) / (qy - py);
-			} else {
-				continue;
-			}
-			break;
+		if (hullTop[0][1] < dMin) {
+			return clipConvexHullPart(hullTop, true, dMin);
+		} else if (hullBottom[0][1] > dMax) {
+			return clipConvexHullPart(hullBottom, false, dMax);
+		} else {
+			return hullTop[0][0];
 		}
-		if (hullTop[0][1] <= dMax)
-			tProxy = hullTop[0][0];
-		for (var i = 0, l = hullTop.length - 1; i < l; i++) {
-			py = hullTop[i][1];
-			qy = hullTop[i + 1][1];
-			if (py >= dMin) {
-				tVal = tProxy;
-			} else if (py > qy) {
-				tVal = null;
-			} else if (qy >= dMin) {
-				px = hullTop[i][0];
-				qx = hullTop[i + 1][0];
-				tVal = px + (dMin  - py) * (qx - px) / (qy - py);
-			} else {
-				continue;
-			}
-			break;
+	}
+
+	function clipConvexHullPart(part, top, threshold) {
+		var px = part[0][0],
+			py = part[0][1];
+		for (var i = 1, l = part.length; i < l; i++) {
+			var qx = part[i][0],
+				qy = part[i][1];
+			if (top ? qy >= threshold : qy <= threshold)
+				return px + (threshold - py) * (qx - px) / (qy - py);
+			px = qx;
+			py = qy;
 		}
-		return tVal;
+		return null;
 	}
 
 	function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
@@ -6166,16 +6237,72 @@ new function() {
 	}
 
 	return { statics: {
-		getIntersections: function(v1, v2, curve1, curve2, locations, include) {
+		getIntersections: function(v1, v2, c1, c2, locations, include) {
 			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2);
+				linear2 = Curve.isLinear(v2),
+				c1p1 = c1.getPoint1(),
+				c1p2 = c1.getPoint2(),
+				c2p1 = c2.getPoint1(),
+				c2p2 = c2.getPoint2(),
+				tolerance = 0.000001;
+			if (c1p1.isClose(c2p1, tolerance))
+				addLocation(locations, include, c1, 0, c1p1, c2, 0, c1p1);
+			if (c1p1.isClose(c2p2, tolerance))
+				addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
 			(linear1 && linear2
 				? addLineIntersection
 				: linear1 || linear2
 					? addCurveLineIntersections
 					: addCurveIntersections)(
-						v1, v2, curve1, curve2, locations, include,
+						v1, v2, c1, c2, locations, include,
 						0, 1, 0, 1, 0, false, 0);
+			if (c1p2.isClose(c2p1, tolerance))
+				addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
+			if (c1p2.isClose(c2p2, tolerance))
+				addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
+			return locations;
+		},
+
+		filterIntersections: function(locations, _expand) {
+			var last = locations.length - 1,
+				tMax = 1 - 0.000001;
+			for (var i = last; i >= 0; i--) {
+				var loc = locations[i],
+					next = loc._curve.getNext(),
+					next2 = loc._curve2.getNext();
+				if (next && loc._parameter >= tMax) {
+					loc._parameter = 0;
+					loc._curve = next;
+				}
+				if (next2 && loc._parameter2 >= tMax) {
+					loc._parameter2 = 0;
+					loc._curve2 = next2;
+				}
+			}
+
+			function compare(loc1, loc2) {
+				var path1 = loc1.getPath(),
+					path2 = loc2.getPath();
+				return path1 === path2
+						? (loc1.getIndex() + loc1.getParameter())
+								- (loc2.getIndex() + loc2.getParameter())
+						: path1._id - path2._id;
+			}
+
+			if (last > 0) {
+				locations.sort(compare);
+				for (var i = last; i > 0; i--) {
+					if (locations[i].equals(locations[i - 1])) {
+						locations.splice(i, 1);
+						last--;
+					}
+				}
+			}
+			if (_expand) {
+				for (var i = last; i >= 0; i--)
+					locations.push(locations[i].getIntersection());
+				locations.sort(compare);
+			}
 			return locations;
 		}
 	}};
@@ -6291,13 +6418,14 @@ var CurveLocation = Base.extend({
 	},
 
 	equals: function(loc) {
-		var isZero = Numerical.isZero;
+		var abs = Math.abs,
+			tolerance = 0.000001;
 		return this === loc
 				|| loc
 					&& this._curve === loc._curve
 					&& this._curve2 === loc._curve2
-					&& isZero(this._parameter - loc._parameter)
-					&& isZero(this._parameter2 - loc._parameter2)
+					&& abs(this._parameter - loc._parameter) <= tolerance
+					&& abs(this._parameter2 - loc._parameter2) <= tolerance
 				|| false;
 	},
 
@@ -6344,8 +6472,8 @@ var PathItem = Item.extend({
 			length1 = curves1.length,
 			length2 = path ? curves2.length : length1,
 			values2 = [],
-			MIN = 1e-11,
-			MAX = 1 - 1e-11;
+			tMin = 0.000001,
+			tMax = 1 - tMin;
 		if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
 			return [];
 		for (var i = 0; i < length2; i++)
@@ -6365,7 +6493,7 @@ var PathItem = Item.extend({
 					Curve.getIntersections(
 						parts[0], parts[1], curve1, curve1, locations,
 						function(loc) {
-							if (loc._parameter <= MAX) {
+							if (loc._parameter <= tMax) {
 								loc._parameter /= 2;
 								loc._parameter2 = 0.5 + loc._parameter2 / 2;
 								return true;
@@ -6380,50 +6508,12 @@ var PathItem = Item.extend({
 					!path && (j === i + 1 || j === length2 - 1 && i === 0)
 						&& function(loc) {
 							var t = loc._parameter;
-							return t >= MIN && t <= MAX;
+							return t >= tMin && t <= tMax;
 						}
 				);
 			}
 		}
-		var last = locations.length - 1;
-		for (var i = last; i >= 0; i--) {
-			var loc = locations[i],
-				next = loc._curve.getNext(),
-				next2 = loc._curve2.getNext();
-			if (next && loc._parameter >= MAX) {
-				loc._parameter = 0;
-				loc._curve = next;
-			}
-			if (next2 && loc._parameter2 >= MAX) {
-				loc._parameter2 = 0;
-				loc._curve2 = next2;
-			}
-		}
-
-		function compare(loc1, loc2) {
-			var path1 = loc1.getPath(),
-				path2 = loc2.getPath();
-			return path1 === path2
-					? (loc1.getIndex() + loc1.getParameter())
-							- (loc2.getIndex() + loc2.getParameter())
-					: path1._id - path2._id;
-		}
-
-		if (last > 0) {
-			locations.sort(compare);
-			for (var i = last; i >= 1; i--) {
-				if (locations[i].equals(locations[i === 0 ? last : i - 1])) {
-					locations.splice(i, 1);
-					last--;
-				}
-			}
-		}
-		if (_expand) {
-			for (var i = last; i >= 0; i--)
-				locations.push(locations[i].getIntersection());
-			locations.sort(compare);
-		}
-		return locations;
+		return Curve.filterIntersections(locations, _expand);
 	},
 
 	_asPathItem: function() {
@@ -6456,7 +6546,7 @@ var PathItem = Item.extend({
 
 		this.clear();
 
-		for (var i = 0, l = parts.length; i < l; i++) {
+		for (var i = 0, l = parts && parts.length; i < l; i++) {
 			var part = parts[i],
 				command = part[0],
 				lower = command.toLowerCase();
@@ -6526,8 +6616,8 @@ var PathItem = Item.extend({
 			case 'a':
 				for (var j = 0; j < length; j += 7) {
 					this.arcTo(current = getPoint(j + 5),
-							new Size(+coords[0], +coords[1]),
-							+coords[2], +coords[4], +coords[3]);
+							new Size(+coords[j], +coords[j + 1]),
+							+coords[j + 2], +coords[j + 4], +coords[j + 3]);
 				}
 				break;
 			case 'z':
@@ -6581,7 +6671,8 @@ var Path = PathItem.extend({
 	},
 
 	_equals: function(item) {
-		return Base.equals(this._segments, item._segments);
+		return this._closed === item._closed
+				&& Base.equals(this._segments, item._segments);
 	},
 
 	clone: function(insert) {
@@ -6965,15 +7056,17 @@ var Path = PathItem.extend({
 
 	split: function(index, parameter) {
 		if (parameter === null)
-			return;
+			return null;
 		if (arguments.length === 1) {
 			var arg = index;
 			if (typeof arg === 'number')
 				arg = this.getLocationAt(arg);
+			if (!arg)
+				return null
 			index = arg.index;
 			parameter = arg.parameter;
 		}
-		var tolerance = 0.00001;
+		var tolerance = 0.000001;
 		if (parameter >= 1 - tolerance) {
 			index++;
 			parameter--;
@@ -6988,7 +7081,7 @@ var Path = PathItem.extend({
 			if (this._closed) {
 				this.setClosed(false);
 				path = this;
-			} else if (index > 0) {
+			} else {
 				path = this._clone(new Path().insertAbove(this, true));
 			}
 			path._add(segs, 0);
@@ -7030,19 +7123,20 @@ var Path = PathItem.extend({
 			var segments = path._segments,
 				last1 = this.getLastSegment(),
 				last2 = path.getLastSegment();
-			if (last1._point.equals(last2._point))
+			if (!last2)
+				return this;
+			if (last1 && last1._point.equals(last2._point))
 				path.reverse();
-			var first1,
-				first2 = path.getFirstSegment();
-			if (last1._point.equals(first2._point)) {
+			var first2 = path.getFirstSegment();
+			if (last1 && last1._point.equals(first2._point)) {
 				last1.setHandleOut(first2._handleOut);
 				this._add(segments.slice(1));
 			} else {
-				first1 = this.getFirstSegment();
-				if (first1._point.equals(first2._point))
+				var first1 = this.getFirstSegment();
+				if (first1 && first1._point.equals(first2._point))
 					path.reverse();
 				last2 = path.getLastSegment();
-				if (first1._point.equals(last2._point)) {
+				if (first1 && first1._point.equals(last2._point)) {
 					first1.setHandleIn(last2._handleIn);
 					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
@@ -7060,6 +7154,7 @@ var Path = PathItem.extend({
 			last.remove();
 			this.setClosed(true);
 		}
+		return this;
 	},
 
 	toShape: function(insert) {
@@ -7674,7 +7769,7 @@ var Path = PathItem.extend({
 					x = pt.x,
 					y = pt.y,
 					abs = Math.abs,
-					EPSILON = 1e-11,
+					epsilon = 1e-12,
 					rx = abs(radius.width),
 					ry = abs(radius.height),
 					rxSq = rx * rx,
@@ -7690,7 +7785,7 @@ var Path = PathItem.extend({
 				}
 				factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
 						(rxSq * ySq + rySq * xSq);
-				if (abs(factor) < EPSILON)
+				if (abs(factor) < epsilon)
 					factor = 0;
 				if (factor < 0)
 					throw new Error(
@@ -7822,12 +7917,9 @@ var Path = PathItem.extend({
 statics: {
 	isClockwise: function(segments) {
 		var sum = 0;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var v = Curve.getValues(
-					segments[i], segments[i + 1 < l ? i + 1 : 0]);
-			for (var j = 2; j < 8; j += 2)
-				sum += (v[j - 2] - v[j]) * (v[j + 1] + v[j - 1]);
-		}
+		for (var i = 0, l = segments.length; i < l; i++)
+			sum += Curve.getEdgeSum(Curve.getValues(
+					segments[i], segments[i + 1 < l ? i + 1 : 0]));
 		return sum > 0;
 	},
 
@@ -8195,6 +8287,18 @@ var CompoundPath = PathItem.extend({
 			this._children[i].smooth();
 	},
 
+	reduce: function reduce() {
+		if (this._children.length === 0) {
+			var path = new Path(Item.NO_INSERT);
+			path.insertAbove(this);
+			path.setStyle(this._style);
+			this.remove();
+			return path;
+		} else {
+			return reduce.base.call(this);
+		}
+	},
+
 	isClockwise: function() {
 		var child = this.getFirstChild();
 		return child && child.isClockwise();
@@ -8341,24 +8445,42 @@ var CompoundPath = PathItem.extend({
 });
 
 PathItem.inject(new function() {
-	function computeBoolean(path1, path2, operator, subtract) {
+	var operators = {
+		unite: function(w) {
+			return w === 1 || w === 0;
+		},
+
+		intersect: function(w) {
+			return w === 2;
+		},
+
+		subtract: function(w) {
+			return w === 1;
+		},
+
+		exclude: function(w) {
+			return w === 1;
+		}
+	};
+
+	function computeBoolean(path1, path2, operation) {
+		var operator = operators[operation];
 		function preparePath(path) {
-			return path.clone(false).reduce().reorient().transform(null, true);
+			return path.clone(false).reduce().reorient().transform(null, true,
+					true);
 		}
 
 		var _path1 = preparePath(path1),
 			_path2 = path2 && path1 !== path2 && preparePath(path2);
-		if (!_path1.isClockwise())
-			_path1.reverse();
-		if (_path2 && !(subtract ^ _path2.isClockwise()))
+		if (_path2 && /^(subtract|exclude)$/.test(operation)
+				^ (_path2.isClockwise() !== _path1.isClockwise()))
 			_path2.reverse();
 		splitPath(_path1.getIntersections(_path2, null, true));
 
 		var chain = [],
-			windings = [],
-			lengths = [],
 			segments = [],
-			monoCurves = [];
+			monoCurves = [],
+			tolerance = 0.000001;
 
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
@@ -8380,85 +8502,89 @@ PathItem.inject(new function() {
 			var segment = segments[i];
 			if (segment._winding != null)
 				continue;
-			chain.length = windings.length = lengths.length = 0;
-			var totalLength = 0,
-				startSeg = segment;
+			chain.length = 0;
+			var startSeg = segment,
+				totalLength = 0,
+				windingSum = 0;
 			do {
-				chain.push(segment);
-				lengths.push(totalLength += segment.getCurve().getLength());
+				var length = segment.getCurve().getLength();
+				chain.push({ segment: segment, length: length });
+				totalLength += length;
 				segment = segment.getNext();
 			} while (segment && !segment._intersection && segment !== startSeg);
 			for (var j = 0; j < 3; j++) {
-				var length = totalLength * Math.random(),
-					amount = lengths.length,
-					k = 0;
-				do {
-					if (lengths[k] >= length) {
-						if (k > 0)
-							length -= lengths[k - 1];
+				var length = totalLength * (j + 1) / 4;
+				for (k = 0, m = chain.length; k < m; k++) {
+					var node = chain[k],
+						curveLength = node.length;
+					if (length <= curveLength) {
+						if (length <= tolerance
+								|| curveLength - length <= tolerance)
+							length = curveLength / 2;
+						var curve = node.segment.getCurve(),
+							pt = curve.getPointAt(length),
+							hor = curve.isLinear() && Math.abs(curve
+									.getTangentAt(0.5, true).y) <= tolerance,
+							path = curve._path;
+						if (path._parent instanceof CompoundPath)
+							path = path._parent;
+						windingSum += operation === 'subtract' && _path2
+							&& (path === _path1 && _path2._getWinding(pt, hor)
+							|| path === _path2 && !_path1._getWinding(pt, hor))
+							? 0
+							: getWinding(pt, monoCurves, hor);
 						break;
 					}
-				} while (++k < amount);
-				var curve = chain[k].getCurve(),
-					point = curve.getPointAt(length),
-					hor = curve.isHorizontal(),
-					path = curve._path;
-				if (path._parent instanceof CompoundPath)
-					path = path._parent;
-				windings[j] = subtract && _path2
-						&& (path === _path1 && _path2._getWinding(point, hor)
-						|| path === _path2 && !_path1._getWinding(point, hor))
-						? 0
-						: getWinding(point, monoCurves, hor);
+					length -= curveLength;
+				}
 			}
-			windings.sort();
-			var winding = windings[1];
+			var winding = Math.round(windingSum / 3);
 			for (var j = chain.length - 1; j >= 0; j--)
-				chain[j]._winding = winding;
+				chain[j].segment._winding = winding;
 		}
-		var result = new CompoundPath();
+		var result = new CompoundPath(Item.NO_INSERT);
+		result.insertAbove(path1);
 		result.addChildren(tracePaths(segments, operator), true);
-		_path1.remove();
-		if (_path2)
-			_path2.remove();
 		result = result.reduce();
 		result.setStyle(path1._style);
 		return result;
 	}
 
 	function splitPath(intersections) {
-		var TOLERANCE = 0.00001,
-			linearSegments;
+		var tMin = 0.000001,
+			tMax = 1 - tMin,
+			linearHandles;
 
 		function resetLinear() {
-			for (var i = 0, l = linearSegments.length; i < l; i++) {
-				var segment = linearSegments[i];
-				segment._handleOut.set(0, 0);
-				segment._handleIn.set(0, 0);
-			}
+			for (var i = 0, l = linearHandles.length; i < l; i++)
+				linearHandles[i].set(0, 0);
 		}
 
-		for (var i = intersections.length - 1, curve, prevLoc; i >= 0; i--) {
+		for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
 			var loc = intersections[i],
 				t = loc._parameter;
-			if (prevLoc && prevLoc._curve === loc._curve
-					&& prevLoc._parameter > 0) {
-				t /= prevLoc._parameter;
+			if (prev && prev._curve === loc._curve && prev._parameter > 0) {
+				t /= prev._parameter;
 			} else {
-				if (linearSegments)
-					resetLinear();
 				curve = loc._curve;
-				linearSegments = curve.isLinear() && [];
+				if (linearHandles)
+					resetLinear();
+				linearHandles = curve.isLinear() ? [
+						curve._segment1._handleOut,
+						curve._segment2._handleIn
+					] : null;
 			}
 			var newCurve,
 				segment;
 			if (newCurve = curve.divide(t, true, true)) {
 				segment = newCurve._segment1;
 				curve = newCurve.getPrevious();
+				if (linearHandles)
+					linearHandles.push(segment._handleOut, segment._handleIn);
 			} else {
-				segment = t < TOLERANCE
+				segment = t < tMin
 					? curve._segment1
-					: t > 1 - TOLERANCE
+					: t > tMax
 						? curve._segment2
 						: curve.getPartLength(0, t) < curve.getPartLength(t, 1)
 							? curve._segment1
@@ -8466,75 +8592,86 @@ PathItem.inject(new function() {
 			}
 			segment._intersection = loc.getIntersection();
 			loc._segment = segment;
-			if (linearSegments)
-				linearSegments.push(segment);
-			prevLoc = loc;
+			prev = loc;
 		}
-		if (linearSegments)
+		if (linearHandles)
 			resetLinear();
 	}
 
 	function getWinding(point, curves, horizontal, testContains) {
-		var TOLERANCE = 0.00001,
-			x = point.x,
-			y = point.y,
+		var tolerance = 0.000001,
+			tMin = tolerance,
+			tMax = 1 - tMin,
+			px = point.x,
+			py = point.y,
 			windLeft = 0,
 			windRight = 0,
 			roots = [],
-			abs = Math.abs,
-			MAX = 1 - TOLERANCE;
+			abs = Math.abs;
 		if (horizontal) {
 			var yTop = -Infinity,
 				yBottom = Infinity,
-				yBefore = y - TOLERANCE,
-				yAfter = y + TOLERANCE;
+				yBefore = py - tolerance,
+				yAfter = py + tolerance;
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var values = curves[i].values;
-				if (Curve.solveCubic(values, 0, x, roots, 0, 1) > 0) {
+				if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
 					for (var j = roots.length - 1; j >= 0; j--) {
-						var y0 = Curve.evaluate(values, roots[j], 0).y;
-						if (y0 < yBefore && y0 > yTop) {
-							yTop = y0;
-						} else if (y0 > yAfter && y0 < yBottom) {
-							yBottom = y0;
+						var y = Curve.evaluate(values, roots[j], 0).y;
+						if (y < yBefore && y > yTop) {
+							yTop = y;
+						} else if (y > yAfter && y < yBottom) {
+							yBottom = y;
 						}
 					}
 				}
 			}
-			yTop = (yTop + y) / 2;
-			yBottom = (yBottom + y) / 2;
+			yTop = (yTop + py) / 2;
+			yBottom = (yBottom + py) / 2;
 			if (yTop > -Infinity)
-				windLeft = getWinding(new Point(x, yTop), curves);
+				windLeft = getWinding(new Point(px, yTop), curves);
 			if (yBottom < Infinity)
-				windRight = getWinding(new Point(x, yBottom), curves);
+				windRight = getWinding(new Point(px, yBottom), curves);
 		} else {
-			var xBefore = x - TOLERANCE,
-				xAfter = x + TOLERANCE;
+			var xBefore = px - tolerance,
+				xAfter = px + tolerance;
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var curve = curves[i],
 					values = curve.values,
 					winding = curve.winding,
-					next = curve.next;
+					prevT,
+					prevX;
 				if (winding && (winding === 1
-						&& y >= values[1] && y <= values[7]
-						|| y >= values[7] && y <= values[1])
-					&& Curve.solveCubic(values, 1, y, roots, 0,
-						!next.winding && next.values[1] === y ? 1 : MAX) === 1){
+						&& py >= values[1] && py <= values[7]
+						|| py >= values[7] && py <= values[1])
+					&& Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
 					var t = roots[0],
-						x0 = Curve.evaluate(values, t, 0).x,
+						x = Curve.evaluate(values, t, 0).x,
 						slope = Curve.evaluate(values, t, 1).y;
-					if (abs(slope) < TOLERANCE && !Curve.isLinear(values)
-							|| t < TOLERANCE && slope * Curve.evaluate(
-								curve.previous.values, t, 1).y < 0) {
-						if (testContains && x0 >= xBefore && x0 <= xAfter) {
-							++windLeft;
-							++windRight;
+					if (!(t > tMax
+							&& (i === l - 1 || curve.next !== curves[i + 1])
+							&& abs(Curve.evaluate(curve.next.values, 0, 0).x -x)
+								<= tolerance
+						|| i > 0 && curve.previous === curves[i - 1]
+							&& abs(prevX - x) < tolerance
+							&& prevT > tMax && t < tMin)) {
+						if (Numerical.isZero(slope) && !Curve.isLinear(values)
+								|| t < tMin && slope * Curve.evaluate(
+									curve.previous.values, 1, 1).y < 0
+								|| t > tMax && slope * Curve.evaluate(
+									curve.next.values, 0, 1).y < 0) {
+							if (testContains && x >= xBefore && x <= xAfter) {
+								++windLeft;
+								++windRight;
+							}
+						} else if (x <= xBefore) {
+							windLeft += winding;
+						} else if (x >= xAfter) {
+							windRight += winding;
 						}
-					} else if (x0 <= xBefore) {
-						windLeft += winding;
-					} else if (x0 >= xAfter) {
-						windRight += winding;
 					}
+					prevT = t;
+					prevX = x;
 				}
 			}
 		}
@@ -8542,12 +8679,9 @@ PathItem.inject(new function() {
 	}
 
 	function tracePaths(segments, operator, selfOp) {
-		operator = operator || function() {
-			return true;
-		};
 		var paths = [],
-			ZERO = 1e-3,
-			ONE = 1 - 1e-3;
+			tMin = 0.000001,
+			tMax = 1 - tMin;
 		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
 			seg = startSeg = segments[i];
 			if (seg._visited || !operator(seg._winding))
@@ -8573,11 +8707,11 @@ PathItem.inject(new function() {
 						var c1 = seg.getCurve();
 						if (dir > 0)
 							c1 = c1.getPrevious();
-						var t1 = c1.getTangentAt(dir < 1 ? ZERO : ONE, true),
+						var t1 = c1.getTangentAt(dir < 1 ? tMin : tMax, true),
 							c4 = interSeg.getCurve(),
 							c3 = c4.getPrevious(),
-							t3 = c3.getTangentAt(ONE, true),
-							t4 = c4.getTangentAt(ZERO, true),
+							t3 = c3.getTangentAt(tMax, true),
+							t4 = c4.getTangentAt(tMin, true),
 							w3 = t1.cross(t3),
 							w4 = t1.cross(t4);
 						if (w3 * w4 !== 0) {
@@ -8630,25 +8764,19 @@ PathItem.inject(new function() {
 		},
 
 		unite: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 1 || w === 0;
-			}, false);
+			return computeBoolean(this, path, 'unite');
 		},
 
 		intersect: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 2;
-			}, false);
+			return computeBoolean(this, path, 'intersect');
 		},
 
 		subtract: function(path) {
-			return computeBoolean(this, path, function(w) {
-				return w === 1;
-			}, true);
+			return computeBoolean(this, path, 'subtract');
 		},
 
 		exclude: function(path) {
-			return new Group([this.subtract(path), path.subtract(this)]);
+			return computeBoolean(this, path, 'exclude');
 		},
 
 		divide: function(path) {
@@ -8694,10 +8822,10 @@ Path.inject({
 				var a = 3 * (y1 - y2) - y0 + y3,
 					b = 2 * (y0 + y2) - 4 * y1,
 					c = y1 - y0,
-					TOLERANCE = 0.00001,
+					tolerance = 0.000001,
 					roots = [];
-				var count = Numerical.solveQuadratic(a, b, c, roots, TOLERANCE,
-						1 - TOLERANCE);
+				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
+						1 - tolerance);
 				if (count === 0) {
 					insertCurve(v);
 				} else {
@@ -8782,16 +8910,18 @@ CompoundPath.inject({
 		var children = this.removeChildren().sort(function(a, b) {
 			return b.getBounds().getArea() - a.getBounds().getArea();
 		});
-		this.addChildren(children);
-		var clockwise = children[0].isClockwise();
-		for (var i = 1, l = children.length; i < l; i++) {
-			var point = children[i].getInteriorPoint(),
-				counters = 0;
-			for (var j = i - 1; j >= 0; j--) {
-				if (children[j].contains(point))
-					counters++;
+		if (children.length > 0) {
+			this.addChildren(children);
+			var clockwise = children[0].isClockwise();
+			for (var i = 1, l = children.length; i < l; i++) {
+				var point = children[i].getInteriorPoint(),
+					counters = 0;
+				for (var j = i - 1; j >= 0; j--) {
+					if (children[j].contains(point))
+						counters++;
+				}
+				children[i].setClockwise(counters % 2 === 0 && clockwise);
 			}
-			children[i].setClockwise(counters % 2 === 0 && clockwise);
 		}
 		return this;
 	}
@@ -8826,7 +8956,7 @@ var PathIterator = Base.extend({
 				var x = curve[6] - curve[0],
 					y = curve[7] - curve[1],
 					dist = Math.sqrt(x * x + y * y);
-				if (dist > 0.00001) {
+				if (dist > 0.000001) {
 					length += dist;
 					parts.push({
 						offset: length,
@@ -8906,28 +9036,42 @@ var PathIterator = Base.extend({
 
 var PathFitter = Base.extend({
 	initialize: function(path, error) {
-		this.points = [];
-		var segments = path._segments,
+		var points = this.points = [],
+			segments = path._segments,
 			prev;
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var point = segments[i].point.clone();
 			if (!prev || !prev.equals(point)) {
-				this.points.push(point);
+				points.push(point);
 				prev = point;
 			}
 		}
+
+		if (path._closed) {
+			this.closed = true;
+			points.unshift(points[points.length - 1]);
+			points.push(points[1]);
+		}
+
 		this.error = error;
 	},
 
 	fit: function() {
 		var points = this.points,
-			length = points.length;
-		this.segments = length > 0 ? [new Segment(points[0])] : [];
+			length = points.length,
+			segments = this.segments = length > 0
+					? [new Segment(points[0])] : [];
 		if (length > 1)
 			this.fitCubic(0, length - 1,
 				points[1].subtract(points[0]).normalize(),
 				points[length - 2].subtract(points[length - 1]).normalize());
-		return this.segments;
+
+		if (this.closed) {
+			segments.shift();
+			segments.pop();
+		}
+
+		return segments;
 	},
 
 	fitCubic: function(first, last, tan1, tan2) {
@@ -8970,7 +9114,7 @@ var PathFitter = Base.extend({
 	},
 
 	generateBezier: function(first, last, uPrime, tan1, tan2) {
-		var epsilon = 1e-11,
+		var epsilon = 1e-12,
 			pt1 = this.points[first],
 			pt2 = this.points[last],
 			C = [[0, 0], [0, 0]],
@@ -9046,7 +9190,7 @@ var PathFitter = Base.extend({
 			pt2 = this.evaluate(1, curve2, u),
 			diff = pt.subtract(point),
 			df = pt1.dot(pt1) + diff.dot(pt2);
-		if (Math.abs(df) < 0.00001)
+		if (Math.abs(df) < 0.000001)
 			return u;
 		return u - diff.dot(pt1) / df;
 	},
@@ -9114,9 +9258,9 @@ var TextItem = Item.extend({
 		return this._content === item._content;
 	},
 
-	_clone: function _clone(copy) {
+	_clone: function _clone(copy, insert) {
 		copy.setContent(this._content);
-		return _clone.base.call(this, copy);
+		return _clone.base.call(this, copy, insert);
 	},
 
 	getContent: function() {
@@ -9964,7 +10108,7 @@ var Style = Base.extend(new function() {
 					children[i]._style[set](value);
 			} else {
 				var old = this._values[key];
-				if (old != value) {
+				if (old !== value) {
 					if (isColor) {
 						if (old)
 							old._owner = undefined;
@@ -9992,7 +10136,6 @@ var Style = Base.extend(new function() {
 					value = this._defaults[key];
 					if (value && value.clone)
 						value = value.clone();
-					this._values[key] = value;
 				} else {
 					var ctor = isColor ? Color : isPoint ? Point : null;
 					if (ctor && !(value && value.constructor === ctor)) {
@@ -10099,7 +10242,7 @@ var jsdom = require('jsdom'),
 	domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
 	Canvas = require('canvas'),
 	document = jsdom.jsdom('<html><body></body></html>'),
-	window = document.parentWindow,
+	window = document.defaultView,
 	navigator = window.navigator,
 	HTMLCanvasElement = Canvas,
 	Image = Canvas.Image;
@@ -10459,7 +10602,7 @@ var CanvasView = View.extend({
 
 	initialize: function CanvasView(project, canvas) {
 		if (!(canvas instanceof HTMLCanvasElement)) {
-			var size = Size.read(arguments);
+			var size = Size.read(arguments, 1);
 			if (size.isZero())
 				throw new Error(
 						'Cannot create CanvasView with the provided argument: '
@@ -10473,16 +10616,18 @@ var CanvasView = View.extend({
 	},
 
 	_setViewSize: function(size) {
-		var width = size.width,
-			height = size.height,
+		var element = this._element,
 			pixelRatio = this._pixelRatio,
-			element = this._element,
-			style = element.style;
+			width = size.width,
+			height = size.height;
 		element.width = width * pixelRatio;
 		element.height = height * pixelRatio;
 		if (pixelRatio !== 1) {
-			style.width = width + 'px';
-			style.height = height + 'px';
+			if (!PaperScope.hasAttribute(element, 'resize')) {
+				var style = element.style;
+				style.width = width + 'px';
+				style.height = height + 'px';
+			}
 			this._context.scale(pixelRatio, pixelRatio);
 		}
 	},
@@ -11075,11 +11220,11 @@ new function() {
 					scale = decomposed.scaling;
 				if (trans && !trans.isZero())
 					parts.push('translate(' + formatter.point(trans) + ')');
-				if (angle)
-					parts.push('rotate(' + formatter.number(angle) + ')');
 				if (!Numerical.isZero(scale.x - 1)
 						|| !Numerical.isZero(scale.y - 1))
 					parts.push('scale(' + formatter.point(scale) +')');
+				if (angle)
+					parts.push('rotate(' + formatter.number(angle) + ')');
 				attrs.transform = parts.join(' ');
 			} else {
 				attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
@@ -11211,6 +11356,7 @@ new function() {
 		attrs.y += bounds.y;
 		attrs.width = formatter.number(bounds.width);
 		attrs.height = formatter.number(bounds.height);
+		attrs.overflow = 'visible';
 		return createElement('use', attrs);
 	}
 
@@ -11370,7 +11516,7 @@ new function() {
 			if (onExport)
 				node = onExport(item, node, options) || node;
 			var data = JSON.stringify(item._data);
-			if (data && data  !== '{}')
+			if (data && data !== '{}' && data !== 'null')
 				node.setAttribute('data-paper-data', data);
 		}
 		return node && applyStyle(item, node, isRoot);
@@ -11838,10 +11984,10 @@ new function() {
 			item,
 			data = node.getAttribute && node.getAttribute('data-paper-data'),
 			settings = scope.settings,
-			prevApplyMatrix = settings.applyMatrix;
+			applyMatrix = settings.applyMatrix;
 		settings.applyMatrix = false;
 		item = importer && importer(node, type, options, isRoot) || null;
-		settings.applyMatrix = prevApplyMatrix;
+		settings.applyMatrix = applyMatrix;
 		if (item) {
 			if (type !== '#document' && !(item instanceof Group))
 				item = applyAttributes(item, node, isRoot);
@@ -11855,8 +12001,11 @@ new function() {
 			if (data)
 				item._data = JSON.parse(data);
 		}
-		if (isRoot)
+		if (isRoot) {
 			definitions = {};
+			if (applyMatrix && item)
+				item.matrix.apply(true, true);
+		}
 		return item;
 	}
 
