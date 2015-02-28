@@ -29,10 +29,8 @@
     "request": "~2.27.0"
   },
   "devDependencies": {
-    "uglify-js": "~2.3.6",
-    "prepro": "~0.8.3",
-    "grunt": "~0.4.1",
-    "grunt-contrib-uglify": "~0.2.2"
+    "uglify-js": "~2.4.16",
+    "prepro": "~0.8.3"
   },
   "keywords": [
     "vector",
