@@ -90,8 +90,10 @@ var Raster = Item.extend(/** @lends Raster# */{
                 this.setImage(object);
             }
         }
-        if (!this._size)
+        if (!this._size) {
             this._size = new Size();
+            this._loaded = false;
+        }
     },
 
     _equals: function(item) {
@@ -225,10 +227,12 @@ var Raster = Item.extend(/** @lends Raster# */{
             // A canvas object
             this._image = null;
             this._canvas = image;
+            this._loaded = true;
         } else {
             // A image object
             this._image = image;
             this._canvas = null;
+            this._loaded = image && image.complete;
         }
         // Both canvas and image have width / height attributes. Due to IE,
         // naturalWidth / Height needs to be checked for a swell, because it
@@ -394,7 +398,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     // DOCS: document Raster#getElement
     getElement: function() {
-        return this._canvas || this._image;
+        // Only return the internal element if the content is actually ready.
+        return this._canvas || this._loaded && this._image;
     }
 }, /** @lends Raster# */{
     // Explicitly deactivate the creation of beans, as we have functions here
@@ -526,8 +531,10 @@ var Raster = Item.extend(/** @lends Raster# */{
             path.draw(ctx, new Base({ clip: true, matrices: [matrix] }));
         // Now draw the image clipped into it.
         this._matrix.applyToContext(ctx);
-        ctx.drawImage(this.getElement(),
-                -this._size.width / 2, -this._size.height / 2);
+        var element = this.getElement(),
+            size = this._size;
+        if (element)
+            ctx.drawImage(element, -size.width / 2, -size.height / 2);
         ctx.restore();
         // Get pixel data from the context and calculate the average color value
         // from it, taking alpha into account.
