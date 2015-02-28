@@ -163,8 +163,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             current = new Point(),
             start = new Point();
 
-        if (!parts) return;
-
         function getCoord(index, coord) {
             var val = +coords[index];
             if (relative)
@@ -182,7 +180,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // First clear the previous content
         this.clear();
 
-        for (var i = 0, l = parts.length; i < l; i++) {
+        for (var i = 0, l = parts && parts.length; i < l; i++) {
             var part = parts[i],
                 command = part[0],
                 lower = command.toLowerCase();
