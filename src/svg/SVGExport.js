@@ -387,7 +387,7 @@ new function() {
             if (onExport)
                 node = onExport(item, node, options) || node;
             var data = JSON.stringify(item._data);
-            if (data && data  !== '{}')
+            if (data && data !== '{}' && data !== 'null')
                 node.setAttribute('data-paper-data', data);
         }
         return node && applyStyle(item, node, isRoot);
