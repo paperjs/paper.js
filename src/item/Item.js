@@ -1172,10 +1172,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._applyMatrix;
     },
 
-    setApplyMatrix: function(transform) {
+    setApplyMatrix: function(apply) {
         // Tell #transform() to apply the internal matrix if _applyMatrix
         // can be set to true.
-        if (this._applyMatrix = this._canApplyMatrix && !!transform)
+        if (this._applyMatrix = this._canApplyMatrix && !!apply)
             this.transform(null, true);
     },
 

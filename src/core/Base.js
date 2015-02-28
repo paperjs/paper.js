@@ -393,7 +393,8 @@ Base.inject(/** @lends Base# */{
          * first
          */
         deserialize: function(json, create, _data) {
-            var res = json;
+            var res = json,
+                isRoot = !_data;
             // A _data side-car to deserialize that can hold any kind of
             // 'global' data across a deserialization. It's currently only used
             // to hold dictionary definitions.
@@ -438,7 +439,10 @@ Base.inject(/** @lends Base# */{
                 for (var key in json)
                     res[key] = Base.deserialize(json[key], create, _data);
             }
-            return res;
+            // Filter out deserialized dictionary.
+            return isRoot && json && json.length && json[0][0] === 'dictionary'
+                    ? res[1]
+                    : res;
         },
 
         exportJSON: function(obj, options) {
