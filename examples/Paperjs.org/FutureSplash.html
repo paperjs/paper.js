@@ -80,14 +80,12 @@
             if (!point.fixed && location.distance < size.height / 4) {
                 var y = event.point.y;
                 point.y += (y - point.y) / 6;
-                if (segment.previous && !segment.previous.point.fixed) {
-                    var previous = segment.previous.point;
+                var previous = segment.previous && segment.previous.point;
+                var next = segment.next && segment.next.point;
+                if (previous && !previous.fixed)
                     previous.y += (y - previous.y) / 24;
-                }
-                if (segment.next && !segment.next.point.fixed) {
-                    var next = segment.next.point;
+                if (next && !next.fixed)
                     next.y += (y - next.y) / 24;
-                }
             }
         }
 
