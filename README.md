@@ -38,11 +38,11 @@ The various distributions come with three different pre-build versions of Paper.
 
 You can also use NPM to install Paper.js for Node.js. But before doing so, you need the Cairo Graphics library installed, see <http://cairographics.org/>.
 
-**Installing Cairo on OSX:**
+**Installing Cairo and Pango on OSX:**
 
 The easiest way to install Cairo is install Homebrew <http://mxcl.github.io/homebrew/> then issue the command:
 
-    brew install cairo
+    brew install cairo pango
 
 Note that currently there is an issue on OSX with Cairo. If the above causes errors, the following will most likely fix it:
 
@@ -52,13 +52,13 @@ Also, whenever you would like to update the modules, you will need to execute:
 
     PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
 
-**Installing Cairo on Debian/Ubuntu Linux:**
+**Installing Cairo, Pango and all other dependencies on Debian/Ubuntu Linux:**
 
-    sudo apt-get install libcairo2-dev
+    sudo apt-get install libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev libgif-dev
 
-You might also need these additional packages if you don't usually build from c++ sources:
+You might also need to install the build-essential package if you don't usually build from c++ sources:
 
-    sudo apt-get install build-essential libssl-dev libjpeg8-dev libgif-dev
+    sudo apt-get install build-essential
 
 **After Cairo has been installed:**
 
