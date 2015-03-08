@@ -94,7 +94,7 @@ To update the `jsdoc-toolkit` submodule inside the `build` folder, used to gener
 
     git submodule update --init
 
-### Building the Library
+### Setting Up For Building
 
 Paper.js has a couple of dependencies as Bower and NPM modules. See <http://madebyhoundstooth.com/blog/install-node-with-homebrew-on-os-x/> for a tutorial explaining how to install Node.js, NPM and Bower on OSX.
 
@@ -111,6 +111,8 @@ Next you need to create minified versions of some of these dependencies. This is
 
     cd build
     ./minify-components.sh
+
+### Building the Library
 
 The Paper.js sources are distributed across many separate files, organised in subfolders inside the `src` folder. To compile them all into one distributable file, you can run the `build.sh` script inside the `build` folder:
 
@@ -129,18 +131,9 @@ In order to minify the resulting built versions, you can run the `minify.sh` scr
     cd build
     ./minify.sh
 
-### Building the Documentation
+### Editing and Running Directly from Separate Source Files During Development
 
-Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
-
-    cd build
-    ./docs.sh
-
-Your docs will then be located at `dist/docs`.
-
-### Editing and Running Code during Development
-
-As a handy alternative to building the library after each change to try it out in your scripts, there is a helper script `src/load.js` that loads the library directly from all the separate source files in the `src` folder. The shell script `load.sh` in the `build` folder produces a `paper.js` library in `dist` that does nothing else than loading the source files through `src/load.js`. This means you can switch between loading from sources and loading a built library simply by running `build.sh` or `load.sh` inside the `build` folder.
+As a handy alternative to building the library after each change to try it out in your scripts, there is a helper script `src/load.js` that loads the library directly from all the separate source files in the `src` folder. The shell script `load.sh` in the `build` folder produces the `paper-full.js` and `paper-node.js` files in `dist` as symbolic links to `src/load.js`. This means you can switch between loading from sources and loading a built library simply by running `build.sh` or `load.sh` inside the `build` folder.
 
     cd build
     ./load.sh
@@ -151,6 +144,19 @@ And to go back to a built library
     ./build.sh
 
 Note that your PaperScripts examples do not need to change, they can keep loading `dist/paper-full.js`, which will always do the right thing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro JS preprocessing library <http://github.com/lehni/prepro.js>.
+
+### Branch structure
+
+Since the release of version `v0.9.22`, Paper.js has adopted aspects of the Git-Flow workflow. For now, this just means that all development is taking place in the `develop` branch, which is only merged into `master` when a new release occurs. Inside `develop`, `src/load.js` is used by default to load the library.
+
+### Building the Documentation
+
+Similarly to building the library, you can run `docs.sh` inside the `build` folder to build the documentation.
+
+    cd build
+    ./docs.sh
+
+Your docs will then be located at `dist/docs`.
 
 ### Testing
 
@@ -172,15 +178,14 @@ As mentioned earlier in this article, we prefer that you send a [*pull request*]
 
 2. Clone of your repository: `git clone https://yourusername@github.com/yourusername/paper.js.git`
 
-3. This is important: Create a so-called *topic branch*: `git checkout -tb name-of-my-patch` where "name-of-my-patch" is a short but descriptive name of the patch you're about to create. Don't worry about the perfect name though -- you can change this name at any time later on.
+3. This is important: Create a so-called *topic branch* based on the `develop` branch: `git checkout -tb name-of-my-patch develop` where `name-of-my-patch` is a short but descriptive name of the patch you're about to create. Don't worry about the perfect name though -- you can change this name at any time later on.
 
-4. Hack! Make your changes, additions, etc., commit them then push them to your github fork: `git push origin name-of-my-patch`
+4. Hack! Make your changes, additions, etc., commit them then push them to your GitHub fork: `git push origin name-of-my-patch`
 
+5. Send a pull request to the upstream repository's owner by visiting your repository's site at GitHub (i.e. https://github.com/yourusername/paper.js) and press the "Pull Request" button. Make sure you are creating the pull request to the `develop` branch, not the `master` branch. Here's a good guide on pull requests: <http://help.github.com/pull-requests/>
 
-5. Send a pull request to the upstream repository's owner by visiting your repository's site at github (i.e. https://github.com/yourusername/paper.js) and press the "Pull Request" button. Here's a good guide on pull requests: <http://help.github.com/pull-requests/>
-
-**Use one topic branch per feature** -- don't mix different kinds of patches in the same branch. Instead, merge them all together into your master branch (or develop everything in your master and then cherry-pick-and-merge into the different topic branches). Git provides for an extremely flexible workflow, which in many ways causes more confusion than it helps you when new to collaborative software development. The guides provided by GitHub at <http://help.github.com/> are a really good starting point and reference.
-If you are fixing a ticket, a convenient way to name the branch is to use the URL slug from the bug tracker, like this: `git checkout -tb 53-feature-manually-select-language`.
+**Use one topic branch per feature** -- don't mix different kinds of patches in the same branch. Instead, merge them all together into your `develop` branch (or develop everything in your `develop` branch and then cherry-pick-and-merge into the different topic branches). Git provides for an extremely flexible workflow, which in many ways causes more confusion than it helps you when new to collaborative software development. The guides provided by GitHub at <http://help.github.com/> are a really good starting point and reference.
+If you are fixing an issue, a convenient way to name the branch is to use the issue number as a prefix, like this: `git checkout -tb 53-feature-manually-select-language`.
 
 #### Contributor License Agreement
 
