@@ -131,7 +131,7 @@ In order to minify the resulting built versions, you can run the `minify.sh` scr
     cd build
     ./minify.sh
 
-### Working Directly with Separate Source Files During Development
+### Running Directly from Separate Source Files
 
 As a handy alternative to building the library after each change to try it out in your scripts, there is a helper script `src/load.js` that loads the library directly from all the separate source files in the `src` folder. The shell script `load.sh` in the `build` folder produces the `paper-full.js` and `paper-node.js` files in `dist` as symbolic links to `src/load.js`. This means you can switch between loading from sources and loading a built library simply by running `build.sh` or `load.sh` inside the `build` folder.
 
