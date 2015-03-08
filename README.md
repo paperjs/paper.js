@@ -147,7 +147,8 @@ Note that your PaperScripts examples do not need to change, they can keep loadin
 
 ### Branch structure
 
-Since the release of version `v0.9.22`, Paper.js has adopted aspects of the Git-Flow workflow. For now, this just means that all development is taking place in the `develop` branch, which is only merged into `master` when a new release occurs. Inside `develop`, `src/load.js` is used by default to load the library.
+Since the release of version `v0.9.22`, Paper.js has adopted aspects of the Git-Flow workflow. For now, this just means that all development is taking place in the `develop` branch, which is only merged into `master` when a new release occurs. On this `develop` branch, `src/load.js` is used by default to load the library.
+
 
 ### Building the Documentation
 
