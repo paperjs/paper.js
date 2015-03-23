@@ -24,9 +24,11 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "canvas": "~1.2.1",
     "jsdom": "~3.1.2",
     "request": "~2.53.0"
+  },
+  "optionalDependencies": {
+    "canvas": "~1.2.1"
   },
   "devDependencies": {
     "uglify-js": "~2.4.16",
