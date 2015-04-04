@@ -483,6 +483,9 @@ statics: {
 
     // TODO: Instead of constants for type, use a "enum" and code substitution.
     evaluate: function(v, t, type) {
+        // Do not produce results if parameter is out of range or invalid.
+        if (t == null || t < 0 || t > 1)
+            return null;
         var p1x = v[0], p1y = v[1],
             c1x = v[2], c1y = v[3],
             c2x = v[4], c2y = v[5],
@@ -850,7 +853,9 @@ statics: {
     getLocationAt: function(offset, isParameter) {
         if (!isParameter)
             offset = this.getParameterAt(offset);
-        return offset >= 0 && offset <= 1 && new CurveLocation(this, offset);
+        return offset != null && offset >= 0 && offset <= 1
+                ? new CurveLocation(this, offset)
+                : null;
     },
 
     /**
@@ -1025,7 +1030,9 @@ new function() { // Scope for methods that require numerical integration
                 return start;
             // See if we're going forward or backward, and handle cases
             // differently
-            var forward = offset > 0,
+            var tolerance = /*#=*/Numerical.TOLERANCE,
+                abs = Math.abs,
+                forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
                 // Use integrand to calculate both range length and part
@@ -1034,8 +1041,13 @@ new function() { // Scope for methods that require numerical integration
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            if (Math.abs(offset) >= rangeLength)
+            if (abs(offset - rangeLength) <= tolerance) {
+                // Matched the end:
                 return forward ? b : a;
+            } else if (abs(offset) > rangeLength) {
+                // We're out of bounds.
+                return null;
+            }
             // Use offset / rangeLength for an initial guess for t, to
             // bring us closer:
             var guess = offset / rangeLength,
@@ -1054,7 +1066,7 @@ new function() { // Scope for methods that require numerical integration
             // Start with out initial guess for x.
             // NOTE: guess is a negative value when not looking forward.
             return Numerical.findRoot(f, ds, start + guess, a, b, 16,
-                    /*#=*/Numerical.TOLERANCE);
+                    tolerance);
         }
     };
 }, new function() { // Scope for intersection using bezier fat-line clipping

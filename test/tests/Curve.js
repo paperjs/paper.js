@@ -31,6 +31,9 @@ test('Curve#getPointAt()', function() {
         equals(curve.getPointAt(entry[0], true), entry[1],
                 'curve.getPointAt(' + entry[0] + ', true);');
     }
+
+    equals(curve.getPointAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
 });
 
 test('Curve#getTangentAt()', function() {
@@ -132,4 +135,18 @@ test('Curve#getParameterAt()', function() {
                 + ' should be the same value as at offset' + o2,
                 Numerical.TOLERANCE);
     }
+
+    equals(curve.getParameterAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
+});
+
+test('Curve#getLocationAt()', function() {
+    var curve = new Path([
+        [[0, 0], [0, 0], [100, 0]],
+        [[200, 200]],
+    ]).firstCurve;
+
+    equals(curve.getLocationAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
+//            'Should return null when point is not on the curve.');
 });
