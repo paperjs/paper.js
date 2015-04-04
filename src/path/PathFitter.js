@@ -171,31 +171,33 @@ var PathFitter = Base.extend({
         // If alpha negative, use the Wu/Barsky heuristic (see text)
         // (if alpha is 0, you get coincident control points that lead to
         // divide by zero in any subsequent NewtonRaphsonRootFind() call.
-        var segLength = pt2.getDistance(pt1);
-        epsilon *= segLength;
-        if (alpha1 < epsilon || alpha2 < epsilon) {
+        var segLength = pt2.getDistance(pt1),
+            eps = epsilon * segLength,
+            handle1,
+            handle2;
+        if (alpha1 < eps || alpha2 < eps) {
             // fall back on standard (probably inaccurate) formula,
             // and subdivide further if needed.
             alpha1 = alpha2 = segLength / 3;
-        }
-
-        // Check if the found control points are in the right order when
-        // projected onto the line through pt1 and pt2.
-        var line = pt2.subtract(pt1),
+        } else {
+            // Check if the found control points are in the right order when
+            // projected onto the line through pt1 and pt2.
+            var line = pt2.subtract(pt1);
             // Control points 1 and 2 are positioned an alpha distance out
             // on the tangent vectors, left and right, respectively
-            cp1Delta = tan1.normalize(alpha1),
-            cp2Delta = tan2.normalize(alpha2);
-        if (cp1Delta.dot(line) - cp2Delta.dot(line) > segLength * segLength) {
-            // Fall back to the Wu/Barsky heuristic above.
-            alpha1 = alpha2 = segLength / 3;
-            cp1Delta = tan1.normalize(alpha1);
-            cp2Delta = tan2.normalize(alpha2);
+            handle1 = tan1.normalize(alpha1);
+            handle2 = tan2.normalize(alpha2);
+            if (handle1.dot(line) - handle2.dot(line) > segLength * segLength) {
+                // Fall back to the Wu/Barsky heuristic above.
+                alpha1 = alpha2 = segLength / 3;
+                handle1 = handle2 = null; // Force recalculation
+            }
         }
 
         // First and last control points of the Bezier curve are
         // positioned exactly at the first and last data points
-        return [pt1, pt1.add(cp1Delta), pt2.add(cp2Delta), pt2];
+        return [pt1, pt1.add(handle1 || tan1.normalize(alpha1)),
+                pt2.add(handle2 || tan2.normalize(alpha2)), pt2];
     },
 
     // Given set of points and their parameterization, try to find
@@ -205,12 +207,10 @@ var PathFitter = Base.extend({
             u[i - first] = this.findRoot(curve, this.points[i], u[i - first]);
         }
         // Detect if the new parameterization has reordered the points.
-        // In that case, we would fit the points of the path in the
-        // wrong order.
-        for (var j = 1, jLen = u.length; j < jLen; j++) {
-            if (u[j] <= u[j - 1]) {
-              return false;
-            }
+        // In that case, we would fit the points of the path in the wrong order.
+        for (var i = 1, l = u.length; i < l; i++) {
+            if (u[i] <= u[i - 1])
+                return false;
         }
         return true;
     },
