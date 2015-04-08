@@ -17,6 +17,8 @@
 
 /*#*/ include('Color.js');
 
+/*#*/ include('Emitter.js');
+
 /*#*/ include('Project.js');
 
 /*#*/ include('Item.js');
