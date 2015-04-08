@@ -12,14 +12,8 @@
 
 module('Emitter');
 
-function emitterFactory() {
-	var emitter = {};
-	paper.Base.each(Emitter, function (f, k) {emitter[k] = f});
-	return emitter;
-}
-
 test('on()', function() {
-    var emitter = emitterFactory(),
+    var emitter = new Base(Emitter),
 		installed;
 	// fake event type registration
 	emitter._eventTypes = {mouseMove: {install: function(){ installed = true;} } };
@@ -43,7 +37,7 @@ test('on()', function() {
 });
 
 test('off()', function() {
-	var emitter = emitterFactory(),
+	var emitter = new Base(Emitter),
 		uninstalled, called = 0,
 		handler = function () {called++},
 		handler2 = function () {};
@@ -74,7 +68,7 @@ test('off()', function() {
 });
 
 test('emit()', function() {
-	var emitter = emitterFactory(),
+	var emitter = new Base(Emitter),
 		called,
 		handler = function (e) {called = e};
 	// fake event type registration
