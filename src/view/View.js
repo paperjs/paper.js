@@ -457,8 +457,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#update
      * @function
+     * @param {Boolean} [force=false] {@true if the view should be updated even
+     * if no change has happened}
+     * @return {Boolean} {@true if the view was updated}
      */
-    // update: function() {
+    // update: function(force) {
     // },
 
     /**

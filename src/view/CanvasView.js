@@ -109,13 +109,17 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
     },
 
     /**
-     * Updates the view if there are changes.
+     * Updates the view if there are changes. Note that when using built-in
+     * event hanlders for interaction, animation and load events, this method is
+     * invoked for you automatically at the end.
      *
-     * @function
+     * @param {Boolean} [force=false] {@true if the view should be updated even
+     * if no change has happened}
+     * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
+    update: function(force) {
         var project = this._project;
-        if (!project || !project._needsUpdate)
+        if (!project || !force && !project._needsUpdate)
             return false;
         // Initial tests conclude that clearing the canvas using clearRect
         // is always faster than setting canvas.width = canvas.width
