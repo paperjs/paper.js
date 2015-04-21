@@ -58,9 +58,19 @@ var View = Base.extend(Emitter, /** @lends View# */{
         };
 
         function getCanvasSize() {
-            // Try visible size first, since that will help handling previously
+            // Try to read size from style first, because DomElement.getSize() returns
+            // bounding box, which might not represent real canvas height/width
+            // when 2D/3D CSS transformation is used.
+            var style = element.style;
+            var size = new Size(parseInt(style.width, 10), parseInt(style.height, 10));
+
+            if (!size.isNaN()) {
+                return size;
+            }
+
+            // Try visible size, since that will help handling previously
             // scaled canvases (e.g. when dealing with pixel-ratio)
-            var size = DomElement.getSize(element);
+            size = DomElement.getSize(element);
             return size.isNaN() || size.isZero()
                     // If the element is invisible, we cannot directly access
                     // element.width / height, because they would appear 0.
