@@ -52,11 +52,13 @@ var DomElement = new function() {
                 // exception. Emulate the behavior of all other browsers, which
                 // return a rectangle of 0 dimensions.
                 rect = el.getBoundingClientRect();
+                var x = rect.left - (html.clientLeft || body.clientLeft || 0),
+                y = rect.top - (html.clientTop || body.clientTop || 0);                
             } catch (e) {
                 rect = { left: 0, top: 0, width: 0, height: 0 };
+                var x = rect.left - 0,
+                y = rect.top - 0;    
             }
-            var x = rect.left - (html.clientLeft || body.clientLeft || 0),
-                y = rect.top - (html.clientTop || body.clientTop || 0);
             if (!viewport) {
                 var view = doc.defaultView;
                 x += view.pageXOffset || html.scrollLeft || body.scrollLeft;
