@@ -58,6 +58,7 @@ var DomElement = new function() {
                 rect = { left: 0, top: 0, width: 0, height: 0 };
                 var x = rect.left - 0,
                 y = rect.top - 0;    
+                throw "clientLeft error caught"
             }
             if (!viewport) {
                 var view = doc.defaultView;
