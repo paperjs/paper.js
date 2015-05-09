@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 28 19:20:48 2015 +0100
+ * Date: Sat May 9 16:59:29 2015 +0200
  *
  ***
  *
@@ -10278,11 +10278,14 @@ var DomElement = new function() {
 				rect;
 			try {
 				rect = el.getBoundingClientRect();
+				var x = rect.left - (html.clientLeft || body.clientLeft || 0),
+				y = rect.top - (html.clientTop || body.clientTop || 0);
 			} catch (e) {
 				rect = { left: 0, top: 0, width: 0, height: 0 };
+				var x = rect.left - 0,
+				y = rect.top - 0;
+				throw "clientLeft error caught"
 			}
-			var x = rect.left - (html.clientLeft || body.clientLeft || 0),
-				y = rect.top - (html.clientTop || body.clientTop || 0);
 			if (!viewport) {
 				var view = doc.defaultView;
 				x += view.pageXOffset || html.scrollLeft || body.scrollLeft;
