@@ -279,11 +279,8 @@ var Color = Base.extend(new function() {
                     this._properties = types[type];
                     this._type = type;
                 }
-                value = parser.call(this, value);
-                if (value != null) {
-                    this._components[index] = value;
-                    this._changed();
-                }
+                this._components[index] = parser.call(this, value);
+                this._changed();
             };
         }, this);
     }, /** @lends Color# */{
