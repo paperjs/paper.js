@@ -392,7 +392,7 @@ Base.inject(/** @lends Base# */{
          * The passed json data is recoursively traversed and converted, leaves
          * first
          */
-        deserialize: function(json, create, _data) {
+        deserialize: function(json, create, _data, _isDictionary) {
             var res = json,
                 isRoot = !_data;
             // A _data side-car to deserialize that can hold any kind of
@@ -405,22 +405,24 @@ Base.inject(/** @lends Base# */{
                 // deserialize all elements of the array.
                 var type = json[0],
                     // Handle stored dictionary specially, since we need to
-                    // keep is a lookup table to retrieve referenced items from.
+                    // keep a lookup table to retrieve referenced items from.
                     isDictionary = type === 'dictionary';
-                if (!isDictionary) {
-                    // First see if this is perhaps a dictionary reference, and
-                    // if so return its definition instead.
-                    if (_data.dictionary && json.length == 1 && /^#/.test(type))
-                        return _data.dictionary[type];
-                    type = Base.exports[type];
-                }
+                // First see if this is perhaps a dictionary reference, and
+                // if so return its definition instead.
+                if (json.length == 1 && /^#/.test(type))
+                    return _data.dictionary[type];
+                type = Base.exports[type];
                 res = [];
+                // We need to set the dictionary object before further
+                // deserialization, because serialized symbols may contain
+                // references to serialized gradients
+                if (_isDictionary)
+                    _data.dictionary = res;
                 // Skip first type entry for arguments
                 for (var i = type ? 1 : 0, l = json.length; i < l; i++)
-                    res.push(Base.deserialize(json[i], create, _data));
-                if (isDictionary) {
-                    _data.dictionary = res[0];
-                } else if (type) {
+                    res.push(Base.deserialize(json[i], create, _data,
+                            isDictionary));
+                if (type) {
                     // Create serialized type and pass collected arguments to
                     // constructor().
                     var args = res;
@@ -436,6 +438,9 @@ Base.inject(/** @lends Base# */{
                 }
             } else if (Base.isPlainObject(json)) {
                 res = {};
+                // See above why we have to set this before Base.deserialize()
+                if (_isDictionary)
+                    _data.dictionary = res;
                 for (var key in json)
                     res[key] = Base.deserialize(json[key], create, _data);
             }

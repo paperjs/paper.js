@@ -91,7 +91,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project;
         if (!internal)
-            this._id = Item._id = (Item._id || 0) + 1;
+            this._id = UID.get();
         // Inherit the applyMatrix setting from paper.settings.applyMatrix
         this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
         // Handle matrix before everything else, to avoid issues with

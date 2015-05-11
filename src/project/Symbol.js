@@ -61,7 +61,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      */
     initialize: function Symbol(item, dontCenter) {
         // Define this Symbols's unique id.
-        this._id = Symbol._id = (Symbol._id || 0) + 1;
+        this._id = UID.get();
         this.project = paper.project;
         this.project.symbols.push(this);
         if (item)

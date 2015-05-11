@@ -44,6 +44,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     initialize: function CurveLocation(curve, parameter, point, _curve2,
             _parameter2, _point2, _distance) {
         // Define this CurveLocation's unique id.
+        // NOTE: We do not use the same pool as the rest of the library here,
+        // since this is only required to be unique at runtime among other
+        // CurveLocation objects.
         this._id = CurveLocation._id = (CurveLocation._id || 0) + 1;
         this._curve = curve;
         // Also store references to segment1 and segment2, in case path
