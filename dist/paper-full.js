@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 9 16:59:29 2015 +0200
+ * Date: Mon May 11 15:18:20 2015 +0200
  *
  ***
  *
@@ -10284,7 +10284,7 @@ var DomElement = new function() {
 				rect = { left: 0, top: 0, width: 0, height: 0 };
 				var x = rect.left - 0,
 				y = rect.top - 0;
-				throw "clientLeft error caught"
+				console.debug("ZB clientLeft bug detected.");
 			}
 			if (!viewport) {
 				var view = doc.defaultView;
