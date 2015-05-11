@@ -450,6 +450,7 @@ Base.exports.PaperScript = (function() {
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
                 src = script.src,
+                async = PaperScope.hasAttribute(script, 'asyc'),
                 scopeAttribute = 'data-paper-scope';
             if (!canvas)
                 throw new Error('Unable to find canvas with id "'
@@ -462,11 +463,15 @@ Base.exports.PaperScript = (function() {
             // compiling multiple scripts for the same element.
             canvas.setAttribute(scopeAttribute, scope._id);
             if (src) {
-                // If we're loading from a source, request that first and then
-                // run later.
+                // If we're loading from a source, request the source
+                // synchronously to guarantee code is executed in the
+                // same order the script tags appear.
+                // If the async attribute is specified on the script element,
+                // request the source asynchronously and execute as soon as
+                // it is retreived.
                 Http.request('get', src, function(code) {
                     execute(code, scope, src);
-                });
+                }, async);
             } else {
                 // We can simply get the code form the script tag.
                 execute(script.innerHTML, scope, script.baseURI);
