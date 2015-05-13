@@ -16,18 +16,18 @@ test('on()', function() {
     var emitter = new Base(Emitter),
 		installed;
 	// fake event type registration
-	emitter._eventTypes = {mouseMove: {install: function(){ installed = true;} } };
+	emitter._eventTypes = {mousemove: {install: function(){ installed = true;} } };
 	equals(function() {
-		return !emitter.responds('mouseMove');
+		return !emitter.responds('mousemove');
 	}, true);
-    emitter.on('mouseMove', function() {});
+    emitter.on('mousemove', function() {});
 	equals(function() {
-        return emitter.responds('mouseMove')
+        return emitter.responds('mousemove')
     }, true);
 	equals(function() { return installed; }, true);
 	// one time installation only
 	installed = false;
-	emitter.on('mouseMove', function() {});
+	emitter.on('mousemove', function() {});
 	equals(function() { return !installed; }, true);
 
 	emitter.on('customUnregistered', function() {});
@@ -41,21 +41,21 @@ test('off()', function() {
 		uninstalled, called = 0,
 		handler = function () {called++},
 		handler2 = function () {};
-	emitter._eventTypes = {mouseMove: {uninstall: function(){ uninstalled = true;} } };
+	emitter._eventTypes = {mousemove: {uninstall: function(){ uninstalled = true;} } };
 
-	emitter.on('mouseMove', handler);
-	emitter.on('mouseMove', handler2);
+	emitter.on('mousemove', handler);
+	emitter.on('mousemove', handler2);
 	emitter.on('custom', handler);
-	emitter.emit('mouseMove');
+	emitter.emit('mousemove');
 	equals(function() {	return called == 1; }, true);
 
-	emitter.off('mouseMove', handler2);
-	emitter.emit('mouseMove');
+	emitter.off('mousemove', handler2);
+	emitter.emit('mousemove');
 	equals(function() {	return called == 2; }, true);
 	equals(function() { return !uninstalled }, true);
 
-	emitter.off('mouseMove', handler);
-	emitter.emit('mouseMove');
+	emitter.off('mousemove', handler);
+	emitter.emit('mousemove');
 	equals(function() {	return called == 2; }, true);
 	equals(function() { return uninstalled }, true);
 
@@ -72,13 +72,13 @@ test('emit()', function() {
 		called,
 		handler = function (e) {called = e};
 	// fake event type registration
-	emitter._eventTypes = {mouseMove: {} };
-	emitter.on('mouseMove', handler);
+	emitter._eventTypes = {mousemove: {} };
+	emitter.on('mousemove', handler);
 	emitter.on('custom', handler);
 
-	emitter.emit('mouseMove', 'mouseMove');
+	emitter.emit('mousemove', 'mousemove');
 	equals(function() {
-		return called == 'mouseMove';
+		return called == 'mousemove';
 	}, true);
 
 	emitter.emit('custom', 'custom');
