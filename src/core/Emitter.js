@@ -23,17 +23,15 @@ var Emitter = {
                 this.on(key, value);
             }, this);
         } else {
-            var entry = this._eventTypes[type];
-            if (entry) {
-                var handlers = this._callbacks = this._callbacks || {};
-                handlers = handlers[type] = handlers[type] || [];
-                if (handlers.indexOf(func) === -1) { // Not added yet, add now.
-                    handlers.push(func);
-                    // See if this is the first handler that we're attaching,
-                    // and call install if defined.
-                    if (entry.install && handlers.length == 1)
-                        entry.install.call(this, type);
-                }
+            var entry = this._eventTypes[type],
+                handlers = this._callbacks = this._callbacks || {};
+            handlers = handlers[type] = handlers[type] || [];
+            if (handlers.indexOf(func) === -1) { // Not added yet, add now.
+                handlers.push(func);
+                // See if this is the first handler that we're attaching,
+                // and call install if defined.
+                if (entry && entry.install && handlers.length == 1)
+                    entry.install.call(this, type);
             }
         }
         return this;
@@ -50,12 +48,12 @@ var Emitter = {
         var entry = this._eventTypes[type],
             handlers = this._callbacks && this._callbacks[type],
             index;
-        if (entry && handlers) {
+        if (handlers) {
             // See if this is the last handler that we're detaching (or if we
             // are detaching all handlers), and call uninstall if defined.
             if (!func || (index = handlers.indexOf(func)) !== -1
                     && handlers.length === 1) {
-                if (entry.uninstall)
+                if (entry && entry.uninstall)
                     entry.uninstall.call(this, type);
                 delete this._callbacks[type];
             } else if (index !== -1) {
@@ -106,7 +104,7 @@ var Emitter = {
         for (var type in handlers) {
             if (handlers[type].length > 0) {
                 var entry = this._eventTypes[type],
-                    func = entry[key];
+                    func = entry && entry[key];
                 if (func)
                     func.call(this, type);
             }
