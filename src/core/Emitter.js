@@ -23,7 +23,8 @@ var Emitter = {
                 this.on(key, value);
             }, this);
         } else {
-            var entry = this._eventTypes[type],
+            var types = this._eventTypes,
+                entry = types && types[type],
                 handlers = this._callbacks = this._callbacks || {};
             handlers = handlers[type] = handlers[type] || [];
             if (handlers.indexOf(func) === -1) { // Not added yet, add now.
@@ -45,7 +46,8 @@ var Emitter = {
             }, this);
             return;
         }
-        var entry = this._eventTypes[type],
+        var types = this._eventTypes,
+            entry = types && types[type],
             handlers = this._callbacks && this._callbacks[type],
             index;
         if (handlers) {
@@ -103,7 +105,8 @@ var Emitter = {
             key = install ? 'install' : 'uninstall';
         for (var type in handlers) {
             if (handlers[type].length > 0) {
-                var entry = this._eventTypes[type],
+                var types = this._eventTypes,
+                    entry = types && types[type],
                     func = entry && entry[key];
                 if (func)
                     func.call(this, type);
