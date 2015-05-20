@@ -13,6 +13,9 @@
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
   ],
   "main": "dist/paper-node.js",
+  "jspm": {
+    "main": "dist/paper-core.js"
+  },
   "files": [
     "AUTHORS.md",
     "dist/paper-node.js",
