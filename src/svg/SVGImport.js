@@ -87,6 +87,14 @@ new function() {
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
         }
+        // Put defs first, Affinity designer exports defs as last
+        if (isRoot) {
+            var defsNodes = [], otherNodes = [];
+            for (var i = 0, l = nodes.length; i < l; i++) {
+                nodes[i].nodeName.toLowerCase() === 'defs' ? defsNodes.push(nodes[i]) : otherNodes.push(nodes[i]);
+            }
+            nodes = defsNodes.concat(otherNodes);
+        }
         // Collect the children in an array and apply them all at once.
         for (var i = 0, l = nodes.length; i < l; i++) {
             var childNode = nodes[i],
