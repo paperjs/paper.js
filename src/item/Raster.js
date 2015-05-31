@@ -43,7 +43,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * placed
      *
      * @example {@paperscript height=300} // Creating a raster using a url
-     * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
+     * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
      * var raster = new Raster(url);
      *
      * // If you create a Raster using a url, you can use the onLoad
@@ -67,7 +67,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript height=300}
      * var raster = new Raster({
-     *     source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
      *     position: view.center
      * });
      *

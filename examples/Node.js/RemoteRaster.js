@@ -4,7 +4,7 @@ var fs = require('fs');
 var canvas = new paper.Canvas(800, 600);
 paper.setup(canvas);
 
-var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
+var url = 'http://assets.paperjs.org/images/marilyn.jpg';
 var raster = new paper.Raster(url);
 raster.position = paper.view.center;
 
