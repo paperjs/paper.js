@@ -1454,7 +1454,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             radius = hitStroke
                     ? style.getStrokeWidth() / 2
                     // Set radius to 0 when we're hit-testing fills with
-                    // tolerance, to handle tolerance  through stroke hit-test
+                    // tolerance, to handle tolerance through stroke hit-test
                     // functionality. Also use 0 when hit-testing curves.
                     : hitFill && options.tolerance > 0 || hitCurves
                         ? 0 : null;
