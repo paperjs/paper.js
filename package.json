@@ -16,9 +16,7 @@
   "browser": "dist/paper-full.js",
   "files": [
     "AUTHORS.md",
-    "dist/paper-node.js",
-    "dist/paper-full.js",
-    "dist/paper-core.js",
+    "dist/",
     "examples/Node.js",
     "LICENSE.txt",
     "README.md"
