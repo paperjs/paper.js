@@ -892,6 +892,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Scriptographer behaves weirdly then too.
         if (!children || children.length == 0)
             return new Rectangle();
+        // Call _updateBoundsCache() even when the group is currently empty
+        // (or only holds empty / invisible items), so future changes in these
+        // items will cause right handling of _boundsCache.
+        Item._updateBoundsCache(this, cacheItem);
         var x1 = Infinity,
             x2 = -x1,
             y1 = x1,
@@ -945,32 +949,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Do not transform by the internal matrix if there is a internalGetter.
         var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
-        // Set up a boundsCache structure that keeps track of items that keep
-        // cached bounds that depend on this item. We store this in the parent,
-        // for multiple reasons:
-        // The parent receives CHILDREN change notifications for when its
-        // children are added or removed and can thus clear the cache, and we
-        // save a lot of memory, e.g. when grouping 100 items and asking the
-        // group for its bounds. If stored on the children, we would have 100
-        // times the same structure.
         // Note: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
-        var cacheParent = this._parent || this._parentSymbol;
-        if (cacheParent) {
-            // Set-up the parent's boundsCache structure if it does not
-            // exist yet and add the cacheItem to it.
-            var id = cacheItem._id,
-                ref = cacheParent._boundsCache = cacheParent._boundsCache || {
-                    // Use both a hash-table for ids and an array for the list,
-                    // so we can keep track of items that were added already
-                    ids: {},
-                    list: []
-                };
-            if (!ref.ids[id]) {
-                ref.list.push(cacheItem);
-                ref.ids[id] = cacheItem;
-            }
-        }
+        Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
         if (cache && this._bounds && this._bounds[cache])
             return this._bounds[cache].clone();
         // If we're caching bounds on this item, pass it on as cacheItem, so the
@@ -994,8 +975,36 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     statics: {
         /**
+         * Set up a boundsCache structure that keeps track of items that keep
+         * cached bounds that depend on this item. We store this in the parent,
+         * for multiple reasons:
+         * The parent receives CHILDREN change notifications for when its
+         * children are added or removed and can thus clear the cache, and we
+         * save a lot of memory, e.g. when grouping 100 items and asking the
+         * group for its bounds. If stored on the children, we would have 100
+         * times the same structure.
+         */
+        _updateBoundsCache: function(parent, item) {
+            if (parent) {
+                // Set-up the parent's boundsCache structure if it does not
+                // exist yet and add the item to it.
+                var id = item._id,
+                    ref = parent._boundsCache = parent._boundsCache || {
+                        // Use a hash-table for ids and an array for the list,
+                        // so we can keep track of items that were added already
+                        ids: {},
+                        list: []
+                    };
+                if (!ref.ids[id]) {
+                    ref.list.push(item);
+                    ref.ids[id] = item;
+                }
+            }
+        },
+
+        /**
          * Clears cached bounds of all items that the children of this item are
-         * contributing to. See #_getCachedBounds() for an explanation why this
+         * contributing to. See _updateBoundsCache() for an explanation why this
          * information is stored on parents, not the children themselves.
          */
         _clearBoundsCache: function(item) {
@@ -1005,7 +1014,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (cache) {
                 // Erase cache before looping, to prevent circular recursion.
                 item._bounds = item._position = item._boundsCache = undefined;
-                for (var i = 0, list = cache.list, l = list.length; i < l; i++) {
+                for (var i = 0, list = cache.list, l = list.length; i < l; i++){
                     var other = list[i];
                     if (other !== item) {
                         other._bounds = other._position = undefined;
