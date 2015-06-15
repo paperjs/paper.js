@@ -225,15 +225,22 @@ Base.exports.PaperScript = (function() {
                         || parentType === 'MemberExpression' && parent.computed
                 )) {
                     if (node.type === 'UpdateExpression') {
-                        var arg = getCode(node.argument);
-                        var str = arg + ' = __$__(' + arg
-                                + ', "' + node.operator[0] + '", 1)';
+                        var arg = getCode(node.argument),
+                            exp = '__$__(' + arg + ', "' + node.operator[0]
+                                    + '", 1)',
+                            str = arg + ' = ' + exp;
                         // If this is not a prefixed update expression
                         // (++a, --a), assign the old value before updating it.
                         if (!node.prefix
                                 && (parentType === 'AssignmentExpression'
-                                    || parentType === 'VariableDeclarator'))
+                                    || parentType === 'VariableDeclarator')) {
+                            // Handle special issue #691 where the old value is
+                            // assigned to itself, and the expression is just
+                            // executed after, e.g.: `var x = ***; x = x++;`
+                            if (getCode(parent.left || parent.id) === arg)
+                                str = exp;
                             str = arg + '; ' + str;
+                        }
                         replaceCode(node, str);
                     } else { // AssignmentExpression
                         if (/^.=$/.test(node.operator)
