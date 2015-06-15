@@ -57,6 +57,7 @@ var Emitter = {
                     && handlers.length === 1) {
                 if (entry && entry.uninstall)
                     entry.uninstall.call(this, type);
+                // Delete handlers entry again, so responds() returns false.
                 delete this._callbacks[type];
             } else if (index !== -1) {
                 // Just remove this one handler
@@ -79,12 +80,15 @@ var Emitter = {
         if (!handlers)
             return false;
         var args = [].slice.call(arguments, 1);
+        // Create a clone of the handlers list so changes caused by on / off
+        // won't throw us off track here:
+        handlers = handlers.slice();
         for (var i = 0, l = handlers.length; i < l; i++) {
             // When the handler function returns false, prevent the default
-            // behaviour and stop propagation of the event by calling stop()
-            if (handlers[i].apply(this, args) === false
-                    && event && event.stop) {
-                event.stop();
+            // behavior and stop propagation of the event by calling stop()
+            if (handlers[i].apply(this, args) === false) {
+                if (event && event.stop)
+                    event.stop();
                 break;
             }
         }
