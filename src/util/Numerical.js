@@ -176,12 +176,12 @@ var Numerical = new function() {
                 B = b,
                 D;
             b /= 2;
-            D = b * b - a * c;          // Discriminant
+            D = b * b - a * c; // Discriminant
             /*
              * If the discriminant is very small, we can try to pre-condition
              * the coefficients, so that we may get better accuracy
              */
-            if (abs(D) < MACHINE_EPSILON) {
+            if (D !== 0 && abs(D) < MACHINE_EPSILON) {
                 // If the geometric mean of the coefficients is small enough
                 var pow = Math.pow,
                     gmC = pow(abs(a*b*c), 1/3);
