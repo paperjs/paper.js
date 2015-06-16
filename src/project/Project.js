@@ -661,8 +661,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      * items should be expanded to path items
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
-     * {Boolean} whether imported items should have
-     * their transformation matrices applied to their contents or not
+     * {Boolean} whether imported items should have their transformation
+     * matrices applied to their contents or not
      *
      * @param {SVGElement|String} svg the SVG content to import
      * @param {Object} [options] the import options

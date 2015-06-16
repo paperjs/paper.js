@@ -628,7 +628,7 @@ new function() {
             definitions = {};
             // Now if settings.applyMatrix was set, apply recursively and set
             // #applyMatrix = true on the item and all children.
-            if (applyMatrix && item)
+            if (item && Base.pick(options.applyMatrix, applyMatrix))
                 item.matrix.apply(true, true);
         }
         return item;
