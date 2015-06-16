@@ -79,7 +79,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Object} props the properties to be applied to the item
      * @param {Point} point the point by which to transform the internal matrix
-     * @returns {Boolean} {@true if the properties were successfully be applied,
+     * @return {Boolean} {@true if the properties were successfully be applied,
      * or if none were provided}
      */
     _initialize: function(props, point) {
@@ -1641,7 +1641,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // TEST:
     /**
      * @param {Rectangle} rect the rectangle to check against
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isInside: function(/* rect */) {
         return Rectangle.read(arguments).contains(this.getBounds());
@@ -1664,7 +1664,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // TEST:
     /**
      * @param {Item} item the item to check against
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
@@ -1831,9 +1831,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @see #getItems(match)
      * @param {Object} match the criteria to match against.
      * @return {@true if the item matches all the criteria}
+     * @see #getItems(match)
      */
     /**
      * Checks whether the item matches the given criteria. Extended matching is
@@ -1849,11 +1849,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @see #getItems(match)
      * @param {String} name the name of the state to match against.
      * @param {Object} compare the value, function or regular expression to
      * compare against.
      * @return {@true if the item matches the state}
+     * @see #getItems(match)
      */
     matches: function(name, compare) {
         // matchObject() is used to match against objects in a nested manner.
@@ -1931,9 +1931,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option match.overlapping {Rectangle} the rectangle with which the items
      * need to at least partly overlap.
      *
-     * @see #matches(match)
      * @param {Object} match the criteria to match against.
      * @return {Item[]} the list of matching descendant items.
+     * @see #matches(match)
      */
     getItems: function(match) {
         return Item._getItems(this._children, match, this._matrix);
@@ -1950,9 +1950,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @see #getItems(match)
      * @param {Object} match the criteria to match against.
      * @return {Item} the first descendant item  matching the given criteria.
+     * @see #getItems(match)
      */
     getItem: function(match) {
         return Item._getItems(this._children, match, this._matrix, null, true)
@@ -2439,8 +2439,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
     },
 
-    // TODO: Item#isEditable is currently ignored in the documentation, as
-    // locking an item currently has no effect
     /**
      * {@grouptitle Tests}
      * Specifies whether the item has any content or not. The meaning of what
@@ -2461,6 +2459,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * locked or hidden}
      * @ignore
      */
+    // TODO: Item#isEditable is currently ignored in the documentation, as
+    // locking an item currently has no effect
     isEditable: function() {
         var item = this;
         while (item) {

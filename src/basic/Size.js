@@ -459,7 +459,7 @@ var Size = Base.extend(/** @lends Size# */{
          * @static
          * @param {Size} size1
          * @param {Size} size2
-         * @returns {Size} the newly created size object
+         * @return {Size} the newly created size object
          *
          * @example
          * var size1 = new Size(10, 100);
@@ -480,7 +480,7 @@ var Size = Base.extend(/** @lends Size# */{
          * @static
          * @param {Size} size1
          * @param {Size} size2
-         * @returns {Size} the newly created size object
+         * @return {Size} the newly created size object
          *
          * @example
          * var size1 = new Size(10, 100);
@@ -498,7 +498,7 @@ var Size = Base.extend(/** @lends Size# */{
          * Returns a size object with random {@link #width} and {@link #height}
          * values between {@code 0} and {@code 1}.
          *
-         * @returns {Size} the newly created size object
+         * @return {Size} the newly created size object
          * @static
          *
          * @example
