@@ -1049,7 +1049,7 @@ new function() { // Scope for methods that require numerical integration
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            if (abs(offset - rangeLength) <= tolerance) {
+            if (abs(offset - rangeLength) < tolerance) {
                 // Matched the end:
                 return forward ? b : a;
             } else if (abs(offset) > rangeLength) {
@@ -1115,7 +1115,7 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
+        if (q0x === q3x && uMax - uMin < tolerance && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
