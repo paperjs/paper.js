@@ -341,7 +341,7 @@ var Size = Base.extend(/** @lends Size# */{
      * @operator
      * @param {Number} value
      * @return {Size} the integer remainders of dividing the size by the value
-     *                 as a new size
+     * as a new size
      *
      * @example
      * var size = new Size(12, 6);
@@ -356,7 +356,7 @@ var Size = Base.extend(/** @lends Size# */{
      * @operator
      * @param {Size} size
      * @return {Size} the integer remainders of dividing the sizes by each
-     *                 other as a new size
+     * other as a new size
      *
      * @example
      * var size = new Size(12, 6);

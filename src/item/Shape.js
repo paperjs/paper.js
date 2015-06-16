@@ -163,9 +163,9 @@ var Shape = Item.extend(/** @lends Shape# */{
      *
      * @param {Boolean} [insert=true] specifies whether the new path should be
      * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * shape item.
+     * shape item
      * @return {Shape} the newly created path item with the same geometry as
-     * this shape item.
+     * this shape item
      * @see Path#toShape(insert)
      */
     toPath: function(insert) {
@@ -407,7 +407,7 @@ statics: new function() {
          *
          * @name Shape.Rectangle
          * @param {Rectangle} rectangle the rectangle object describing the
-         * geometry of the rectangular shape to be created.
+         * geometry of the rectangular shape to be created
          * @param {Size} [radius=null] the size of the rounded corners
          * @return {Shape} the newly created shape
          *

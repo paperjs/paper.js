@@ -410,7 +410,7 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @param {Point} point
      * @param {Boolean} [squared=false] Controls whether the distance should
-     *        remain squared, or its square root should be calculated.
+     * remain squared, or its square root should be calculated
      * @return {Number}
      */
     getDistance: function(/* point, squared */) {
@@ -430,7 +430,7 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @param {Number} [length=1] The length of the normalized vector
      * @return {Point} the normalized vector of the vector that is represented
-     *                 by this point's coordinates
+     * by this point's coordinates
      */
     normalize: function(length) {
         if (length === undefined)
@@ -641,7 +641,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @operator
      * @param {Number} value
      * @return {Point} the integer remainders of dividing the point by the value
-     *                 as a new point
+     * as a new point
      *
      * @example
      * var point = new Point(12, 6);
@@ -656,7 +656,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @operator
      * @param {Point} point
      * @return {Point} the integer remainders of dividing the points by each
-     *                 other as a new point
+     * other as a new point
      *
      * @example
      * var point = new Point(12, 6);

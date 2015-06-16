@@ -484,7 +484,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @param {Path|Rectangle|Point} object
      * @return {Color} the average color contained in the area covered by the
-     * specified path, rectangle or point.
+     * specified path, rectangle or point
      */
     getAverageColor: function(object) {
         var bounds, path;

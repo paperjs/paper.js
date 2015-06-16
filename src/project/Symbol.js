@@ -26,7 +26,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      * Creates a Symbol item.
      *
      * @param {Item} item the source item which is copied as the definition of
-     *               the symbol
+     * the symbol
      * @param {Boolean} [dontCenter=false]
      *
      * @example {@paperscript split=true height=240}
@@ -90,7 +90,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      * Private notifier that is called whenever a change occurs in this symbol's
      * definition.
      *
-     * @param {ChangeFlag} flags describes what exactly has changed.
+     * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
@@ -133,7 +133,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
     /**
      * Places in instance of the symbol in the project.
      *
-     * @param [position] The position of the placed symbol.
+     * @param [position] The position of the placed symbol
      * @return {PlacedSymbol}
      */
     place: function(position) {

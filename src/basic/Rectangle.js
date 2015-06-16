@@ -37,7 +37,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *
      * @name Rectangle#initialize
      * @param {Object} object an object containing properties to be set on the
-     *        rectangle.
+     * rectangle
      *
      * @example // Create a rectangle between {x: 20, y: 20} and {x: 80, y:80}
      * var rectangle = new Rectangle({
@@ -530,7 +530,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @function
      * @param {Rectangle} rect The specified rectangle
      * @return {Boolean} {@true if the rectangle entirely contains the specified
-     *                   rectangle}
+     * rectangle}
      *
      * @example {@paperscript}
      * // Checking whether the bounding box of one item is contained within
@@ -600,7 +600,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *
      * @param {Rectangle} rect the specified rectangle
      * @return {Boolean} {@true if the rectangle and the specified rectangle
-     *                   intersect each other}
+     * intersect each other}
      *
      * @example {@paperscript}
      * // Checking whether the bounding box of one item intersects with
@@ -660,9 +660,9 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * with the specified rectangle.
      *
      * @param {Rectangle} rect The rectangle to be intersected with this
-     *                         rectangle
+     * rectangle
      * @return {Rectangle} the largest rectangle contained in both the specified
-     *                     rectangle and in this rectangle
+     * rectangle and in this rectangle
      *
      * @example {@paperscript}
      * // Intersecting two rectangles and visualizing the result using rectangle
@@ -709,7 +709,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *
      * @param {Rectangle} rect the rectangle to be combined with this rectangle
      * @return {Rectangle} the smallest rectangle containing both the specified
-     *                     rectangle and this rectangle.
+     * rectangle and this rectangle
      */
     unite: function(/* rect */) {
         var rect = Rectangle.read(arguments),

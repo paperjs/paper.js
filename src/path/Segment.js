@@ -32,11 +32,11 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @name Segment#initialize
      * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
      * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
-     *        anchor point of the segment that describes the in tangent of the
-     *        segment.
+     * anchor point of the segment that describes the in tangent of the
+     * segment
      * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
-     *        anchor point of the segment that describes the out tangent of the
-     *        segment.
+     * anchor point of the segment that describes the out tangent of the
+     * segment
      *
      * @example {@paperscript}
      * var handleIn = new Point(-80, -100);
@@ -56,7 +56,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @name Segment#initialize
      * @param {Object} object an object literal containing properties to
-     * be set on the segment.
+     * be set on the segment
      *
      * @example {@paperscript}
      * // Creating segments using object notation:
@@ -80,18 +80,18 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @param {Number} x the x coordinate of the segment point
      * @param {Number} y the y coordinate of the segment point
-     * @param {Number} inX the x coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the in tangent
-     *        of the segment.
-     * @param {Number} inY the y coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the in tangent
-     *        of the segment.
-     * @param {Number} outX the x coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the out tangent
-     *        of the segment.
-     * @param {Number} outY the y coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the out tangent
-     *        of the segment.
+     * @param {Number} inX the x coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the in tangent of the
+     * segment
+     * @param {Number} inY the y coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the in tangent of the
+     * segment
+     * @param {Number} outX the x coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the out tangent of the
+     * segment
+     * @param {Number} outY the y coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the out tangent of the
+     * segment
      *
      * @example {@paperscript}
      * var inX = -80;

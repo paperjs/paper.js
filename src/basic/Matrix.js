@@ -158,6 +158,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * Attempts to apply the matrix to the content of item that it belongs to,
      * meaning its transformation is baked into the item's content or children.
+     *
      * @param {Boolean} recursively controls whether to apply transformations
      * recursively on children
      * @return {Boolean} {@true if the matrix was applied}
@@ -483,7 +484,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Number[]} dst the array into which to store the transformed
      * point pairs
      * @param {Number} count the number of points to transform
-     * @return {Number[]} the dst array, containing the transformed coordinates.
+     * @return {Number[]} the dst array, containing the transformed coordinates
      */
     transform: function(/* point | */ src, dst, count) {
         return arguments.length < 3
@@ -594,7 +595,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * an object with these properties if it succeeded, {@code null} otherwise.
      *
      * @return {Object} the decomposed matrix, or {@code null} if decomposition
-     * is not possible.
+     * is not possible
      */
     decompose: function() {
         // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition

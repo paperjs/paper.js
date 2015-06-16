@@ -99,9 +99,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.compile
      * @function
-     * @param {String} code the PaperScript code.
-     * @param {String} url the url of the source, for source-map debugging.
-     * @return {String} the compiled PaperScript as JavaScript code.
+     * @param {String} code the PaperScript code
+     * @param {String} url the url of the source, for source-map debugging
+     * @return {String} the compiled PaperScript as JavaScript code
      */
     function compile(code, url, options) {
         if (!code)
@@ -330,9 +330,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.execute
      * @function
-     * @param {String} code the PaperScript code.
-     * @param {PaperScope} scope the scope for which the code is executed.
-     * @param {String} url the url of the source, for source-map debugging.
+     * @param {String} code the PaperScript code
+     * @param {PaperScope} scope the scope for which the code is executed
+     * @param {String} url the url of the source, for source-map debugging
      */
     function execute(code, scope, url, options) {
         // Set currently active scope.
@@ -506,9 +506,9 @@ Base.exports.PaperScript = (function() {
      * @name PaperScript.load
      * @function
      * @param {HTMLScriptElement} [script=null] the script to load. If none is
-     * provided, all scripts of the HTML document are iterated over and loaded.
+     * provided, all scripts of the HTML document are iterated over and loaded
      * @return {PaperScope} the scope produced for the passed {@code script}, or
-     * {@code undefined} of multiple scripts area loaded.
+     * {@code undefined} of multiple scripts area loaded
      */
     function load(script) {
         return script ? loadScript(script) : loadAll();

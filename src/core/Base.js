@@ -47,9 +47,15 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
-     * Serializes this object to a JSON string.
+     * Exports (serializes) this object to a JSON data object or string.
      *
-     * @param {Object} [options={ asString: true, precision: 5 }]
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as
+     * a {@code Object} or a {@code String}
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in JSON data
+     *
+     * @param {Object} [options] the serialization options
+     * @return {String} the exported JSON data
      */
     exportJSON: function(options) {
         return Base.exportJSON(this, options);
@@ -65,8 +71,7 @@ Base.inject(/** @lends Base# */{
      * literal describing all the properties to be set on the created instance.
      *
      * @param {Object} props an object describing the properties to set
-     * @param {Object} [exclude=undefined] a lookup table listing properties to
-     * exclude
+     * @param {Object} [exclude] a lookup table listing properties to exclude
      * @param {Boolean} [dontCheck=false] whether to perform a
      * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
@@ -156,11 +161,12 @@ Base.inject(/** @lends Base# */{
          * the subclass from the passed arguments list or array, at the given
          * index, up to the specified length.
          * When called directly on Base, it reads any value without conversion
-         * from the apssed arguments list or array.
+         * from the passed arguments list or array.
          * This is used in argument conversion, e.g. by all basic types (Point,
          * Size, Rectangle) and also higher classes such as Color and Segment.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Number} length the amount of elements that can be read
          * @param {Object} options {@code options.readNull} controls whether
@@ -204,8 +210,9 @@ Base.inject(/** @lends Base# */{
         /**
          * Allows peeking ahead in reading of values and objects from arguments
          * list through Base.read().
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          */
         peek: function(list, start) {
@@ -222,8 +229,9 @@ Base.inject(/** @lends Base# */{
         /**
          * Reads all readable arguments from the list, handling nested arrays
          * separately.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Object} options {@code options.readNull} controls whether
          * null is returned or converted. {@code options.clone} controls whether
@@ -247,10 +255,11 @@ Base.inject(/** @lends Base# */{
          * Base.readNamed() can read both from such named properties and normal
          * unnamed arguments through Base.read(). In use for example for the
          * various Path.Constructors.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {String} name the property name to read from.
+         * @param {String} name the property name to read from
          */
         readNamed: function(list, name, start, options, length) {
             var value = this.getNamed(list, name),
@@ -275,8 +284,8 @@ Base.inject(/** @lends Base# */{
         /**
          * @return the named value if the list provides an arguments object,
          * {@code null} if the named value is {@code null} or {@code undefined},
-         * and {@code undefined} if there is no arguments object.
-         * If no name is provided, it returns the whole arguments object.
+         * and {@code undefined} if there is no arguments object
+         * If no name is provided, it returns the whole arguments object
          */
         getNamed: function(list, name) {
             var arg = list[0];

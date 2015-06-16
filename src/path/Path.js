@@ -75,9 +75,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
+     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
-     * of this path.
+     * of this path
      * @return {Path} the newly created path
      *
      * @example {@paperscript}
@@ -488,7 +489,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Segment|Point} segment the segment or point to be added.
      * @return {Segment} the added segment. This is not necessarily the same
-     * object, e.g. if the segment to be added already belongs to another path.
+     * object, e.g. if the segment to be added already belongs to another path
      *
      * @example {@paperscript}
      * // Adding segments to a path using point objects:
@@ -560,10 +561,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Inserts one or more segments at a given index in the list of this path's
      * segments.
      *
-     * @param {Number} index the index at which to insert the segment.
+     * @param {Number} index the index at which to insert the segment
      * @param {Segment|Point} segment the segment or point to be inserted.
      * @return {Segment} the added segment. This is not necessarily the same
-     * object, e.g. if the segment to be added already belongs to another path.
+     * object, e.g. if the segment to be added already belongs to another path
      *
      * @example {@paperscript}
      * // Inserting a segment:
@@ -615,7 +616,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @param {Segment[]} segments
      * @return {Segment[]} an array of the added segments. These segments are
      * not necessarily the same objects, e.g. if the segment to be added already
-     * belongs to another path.
+     * belongs to another path
      *
      * @example {@paperscript}
      * // Adding an array of Point objects:
@@ -658,11 +659,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Inserts an array of segments at a given index in the path's
      * {@link #segments} array.
      *
-     * @param {Number} index the index at which to insert the segments.
-     * @param {Segment[]} segments the segments to be inserted.
+     * @param {Number} index the index at which to insert the segments
+     * @param {Segment[]} segments the segments to be inserted
      * @return {Segment[]} an array of the added segments. These segments are
      * not necessarily the same objects, e.g. if the segment to be added already
-     * belongs to another path.
+     * belongs to another path
      */
     insertSegments: function(index, segments) {
         return this._add(Segment.readAll(segments), index);
@@ -1362,9 +1363,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Boolean} [insert=true] specifies whether the new shape should be
      * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * path item.
+     * path item
      * @return {Shape} the newly created shape item with the same geometry as
-     * this path item if it can be matched, {@code null} otherwise.
+     * this path item if it can be matched, {@code null} otherwise
      * @see Shape#toPath(insert)
      */
     toShape: function(insert) {
@@ -1640,8 +1641,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * Returns the curve location of the specified point if it lies on the
      * path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {CurveLocation} the curve location of the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         var point = Point.read(arguments),
@@ -1657,8 +1659,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Returns the length of the path from its beginning up to up to the
      * specified point if it lies on the path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {Number} the length of the path up to the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -1669,7 +1672,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Returns the curve location of the specified offset on the path.
      *
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {CurveLocation} the curve location at the specified offset
      */
@@ -1704,7 +1707,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getPointAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the point at the given offset
      *
@@ -1767,7 +1770,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getTangentAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the tangent vector at the given offset
      *
@@ -1838,7 +1841,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getNormalAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the normal vector at the given offset
      *
@@ -1912,7 +1915,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getCurvatureAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Number} the normal vector at the given offset
      *
@@ -2181,8 +2184,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Solves a tri-diagonal system for one of coordinates (x or y) of first
      * bezier control points.
      *
-     * @param rhs right hand side vector.
-     * @return Solution vector.
+     * @param rhs right hand side vector
+     * @return Solution vector
      */
     function getFirstControlPoints(rhs) {
         var n = rhs.length,

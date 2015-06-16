@@ -334,9 +334,9 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @name Curve#divide
      * @function
      * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *        or the curve time parameter if {@code isParameter} is {@code true}
+     * or the curve time parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
+     * is a curve time parameter
      * @return {Curve} the second part of the divided curve
      */
     // TODO: Rename to divideAt()?
@@ -400,9 +400,9 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @name Curve#split
      * @function
      * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *        or the curve time parameter if {@code isParameter} is {@code true}
+     * or the curve time parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
+     * is a curve time parameter
      * @return {Path} the newly created path after splitting, if any
      * @see Path#split(index, parameter)
      */
@@ -825,9 +825,10 @@ statics: {
      * the parameter is searched to the left of the start parameter. If no start
      * parameter is provided, a default of {@code 0} for positive values of
      * {@code offset} and {@code 1} for negative values of {@code offset}.
+     *
      * @param {Number} offset
      * @param {Number} [start]
-     * @return {Number} the curve time parameter at the specified offset.
+     * @return {Number} the curve time parameter at the specified offset
      */
     getParameterAt: function(offset, start) {
         return Curve.getParameterAt(this.getValues(), offset, start);
@@ -836,8 +837,9 @@ statics: {
     /**
      * Returns the curve time parameter of the specified point if it lies on the
      * curve, {@code null} otherwise.
-     * @param {Point} point the point on the curve.
-     * @return {Number} the curve time parameter of the specified point.
+     *
+     * @param {Point} point the point on the curve
+     * @return {Number} the curve time parameter of the specified point
      */
     getParameterOf: function(/* point */) {
         var point = Point.read(arguments);
@@ -847,11 +849,12 @@ statics: {
     /**
      * Calculates the curve location at the specified offset or curve time
      * parameter.
+     *
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {CurveLocation} the curve location at the specified the offset.
+     * is a curve time parameter
+     * @return {CurveLocation} the curve location at the specified the offset
      */
     getLocationAt: function(offset, isParameter) {
         if (!isParameter)
@@ -864,8 +867,9 @@ statics: {
     /**
      * Returns the curve location of the specified point if it lies on the
      * curve, {@code null} otherwise.
-     * @param {Point} point the point on the curve.
-     * @return {CurveLocation} the curve location of the specified point.
+     *
+     * @param {Point} point the point on the curve
+     * @return {CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         return this.getLocationAt(this.getParameterOf(Point.read(arguments)),
@@ -875,8 +879,9 @@ statics: {
     /**
      * Returns the length of the path from its beginning up to up to the
      * specified point if it lies on the path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {Number} the length of the path up to the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -926,10 +931,10 @@ statics: {
      * @name Curve#getPointAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the point on the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the point on the curve at the specified offset
      */
 
     /**
@@ -938,10 +943,10 @@ statics: {
      * @name Curve#getTangentAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the tangent of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the tangent of the curve at the specified offset
      */
 
     /**
@@ -950,10 +955,10 @@ statics: {
      * @name Curve#getNormalAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the normal of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the normal of the curve at the specified offset
      */
 
     /**
@@ -965,10 +970,10 @@ statics: {
      * @name Curve#getCurvatureAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Number} the curvature of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Number} the curvature of the curve at the specified offset
      */
 }),
 new function() { // Scope for methods that require numerical integration

@@ -267,7 +267,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * Private notifier that is called whenever a change occurs in this view.
      * Used only by Matrix for now.
      *
-     * @param {ChangeFlag} flags describes what exactly has changed.
+     * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
         if (flags & /*#=*/ChangeFlag.APPEARANCE)
@@ -413,7 +413,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * Checks whether the view is currently visible within the current browser
      * viewport.
      *
-     * @return {Boolean} whether the view is visible.
+     * @return {Boolean} whether the view is visible
      */
     isVisible: function() {
         return DomElement.isInView(this._element);
@@ -504,11 +504,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * the frame event:
      *
      * @option event.count {Number} the number of times the frame event was
-     * fired.
+     * fired
      * @option event.time {Number} the total amount of time passed since the
-     * first frame event in seconds.
-     * @code event.delta {Number} the time passed in seconds since the last
-     * frame event.
+     * first frame event in seconds
+     * @option event.delta {Number} the time passed in seconds since the last
+     * frame event
      *
      * @example {@paperscript}
      * // Creating an animation:
@@ -578,7 +578,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#on
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: {@code frame, resize}.
+     * following properties: {@code frame, resize}
      * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -644,7 +644,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {String('frame', 'resize')} type the event type
      * @param {Object} event an object literal containing properties describing
-     * the event.
+     * the event
      * @return {Boolean} {@true if the event had listeners}
      */
 

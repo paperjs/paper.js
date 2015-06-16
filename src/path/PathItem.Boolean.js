@@ -185,6 +185,7 @@ PathItem.inject(new function() {
      * Private method for splitting a PathItem at the given intersections.
      * The routine works for both self intersections and intersections
      * between PathItems.
+     *
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
@@ -486,7 +487,7 @@ PathItem.inject(new function() {
          * part of a horizontal curve
          * @param {Boolean} testContains whether we need to consider this point
          * as part of stationary points on the curve itself, used when checking
-         * the winding about a point.
+         * the winding about a point
          * @return {Number} the winding number
          */
         _getWinding: function(point, horizontal, testContains) {

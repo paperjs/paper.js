@@ -366,7 +366,7 @@ var Color = Base.extend(new function() {
          *
          * @name Color#initialize
          * @param {Object} object an object describing the components and
-         *        properties of the color.
+         * properties of the color
          *
          * @example {@paperscript}
          * // Creating a HSB Color:
@@ -797,7 +797,7 @@ var Color = Base.extend(new function() {
          *
          * @param {Boolean} hex whether to return the color in hexadecial
          * representation or as a CSS RGB / RGBA string.
-         * @return {String} a CSS string representation of the color.
+         * @return {String} a CSS string representation of the color
          */
         toCSS: function(hex) {
             // TODO: Support HSL / HSLA CSS3 colors directly, without conversion
@@ -1186,7 +1186,7 @@ var Color = Base.extend(new function() {
          * @operator
          * @param {Number} number the number to subtract
          * @return {Color} the subtraction of the color and the value as a new
-         *         color
+         * color
          *
          * @example
          * var color = new Color(0.5, 1, 1);
@@ -1220,7 +1220,7 @@ var Color = Base.extend(new function() {
          * @operator
          * @param {Number} number the number to multiply
          * @return {Color} the multiplication of the color and the value as a
-         *         new color
+         * new color
          *
          * @example
          * var color = new Color(0.5, 1, 1);
@@ -1254,7 +1254,7 @@ var Color = Base.extend(new function() {
          * @operator
          * @param {Number} number the number to divide
          * @return {Color} the division of the color and the value as a new
-         *         color
+         * color
          *
          * @example
          * var color = new Color(0.5, 1, 1);

@@ -231,7 +231,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Private notifier that is called whenever a change occurs in this item or
      * its sub-elements, such as Segments, Curves, Styles, etc.
      *
-     * @param {ChangeFlag} flags describes what exactly has changed.
+     * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
         var symbol = this._parentSymbol,
@@ -284,8 +284,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Sets those properties of the passed object literal on this item to
      * the values defined in the object literal, if the item has property of the
      * given name (or a setter defined for it).
+     *
      * @param {Object} props
-     * @return {Item} the item itself.
+     * @return {Item} the item itself
      *
      * @example {@paperscript}
      * // Setting properties through an object literal
@@ -1463,7 +1464,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Boolean} [insert=true] specifies whether the copy should be
      * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * original.
+     * original
      * @return {Item} the newly cloned item
      *
      * @example {@paperscript}
@@ -1492,7 +1493,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Boolean} [insert=true] specifies whether the copy should be
      * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * original.
+     * original
      * @return {Item} the newly cloned item
      */
     _clone: function(copy, insert, includeMatrix) {
@@ -1630,7 +1631,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     }
      * }
      *
-     * @param {Point} point The point to check for.
+     * @param {Point} point The point to check for
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -1697,30 +1698,29 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The options object allows you to control the specifics of the hit-test
      * and may contain a combination of the following values:
      *
-     * @option options.tolerance {Number} the tolerance of the hit-test in
-     * points. Can also be controlled through
-     * {@link PaperScope#settings}{@code .hitTolerance}.
+     * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
+     * {Number} the tolerance of the hit-test in points
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc.
-     * @option options.fill {Boolean} hit-test the fill of items.
+     * Shape, Raster, PlacedSymbol, PointText}, etc
+     * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
-     * taking into account the setting of stroke color and width.
+     * taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     * {@link Path} items.
+     * {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
-     * without taking the stroke color or width into account.
-     * @option options.handles {Boolean} hit-test for the handles.
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+     * without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles
+     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments
      * @option options.ends {Boolean} only hit-test for the first or last
-     * segment points of open path items.
+     * segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have
-     * {@link Item#guide} set to {@code true}.
-     * @option options.selected {Boolean} only hit selected items.
+     * {@link Item#guide} set to {@code true}
+     * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point The point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
@@ -1845,8 +1845,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @param {Object} match the criteria to match against.
-     * @return {@true if the item matches all the criteria}
+     * @param {Object} match the criteria to match against
+     * @return {Boolean} {@true if the item matches all the criteria}
      * @see #getItems(match)
      */
     /**
@@ -1863,10 +1863,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @param {String} name the name of the state to match against.
+     * @param {String} name the name of the state to match against
      * @param {Object} compare the value, function or regular expression to
-     * compare against.
-     * @return {@true if the item matches the state}
+     * compare against
+     * @return {Boolean} {@true if the item matches the state}
      * @see #getItems(match)
      */
     matches: function(name, compare) {
@@ -1941,12 +1941,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * examples.
      *
      * @option match.inside {Rectangle} the rectangle in which the items need to
-     * be fully contained.
+     * be fully contained
      * @option match.overlapping {Rectangle} the rectangle with which the items
-     * need to at least partly overlap.
+     * need to at least partly overlap
      *
-     * @param {Object} match the criteria to match against.
-     * @return {Item[]} the list of matching descendant items.
+     * @param {Object} match the criteria to match against
+     * @return {Item[]} the list of matching descendant items
      * @see #matches(match)
      */
     getItems: function(match) {
@@ -1964,8 +1964,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @param {Object} match the criteria to match against.
-     * @return {Item} the first descendant item  matching the given criteria.
+     * @param {Object} match the criteria to match against
+     * @return {Item} the first descendant item  matching the given criteria
      * @see #getItems(match)
      */
     getItem: function(match) {
@@ -2043,13 +2043,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#exportJSON
      * @function
      *
-     * @option options.asString {Boolean} whether the JSON is returned as a
-     * {@code Object} or a {@code String}.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in JSON data.
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as a
+     * {@code Object} or a {@code String}
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in JSON data
      *
-     * @param {Object} [options={ asString: true, precision: 5 }] the
-     * serialization options
+     * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
      */
 
@@ -2060,7 +2059,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * to this item's {@link Item#children} list. Note that not all type of
      * items can have children.
      *
-     * @param {String} json the JSON data to import from.
+     * @param {String} json the JSON data to import from
      */
     importJSON: function(json) {
         // Try importing into `this`. If another item is returned, try adding
@@ -2078,15 +2077,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#exportSVG
      * @function
      *
-     * @option options.asString {Boolean} whether a SVG node or a {@code String}
-     * is to be returned.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in SVG data.
-     * @option options.matchShapes {Boolean} whether path items should tried to
-     * be converted to shape items, if their geometries can be made to match.
+     * @option [options.asString=false] {Boolean} whether a SVG node or a
+     * {@code String} is to be returned
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in SVG data
+     * @option [options.matchShapes=false] {Boolean} whether path items should
+     * tried to be converted to shape items, if their geometries can be made to
+     * match
      *
-     * @param {Object} [options={ asString: false, precision: 5,
-     * matchShapes: false }] the export options.
+     * @param {Object} [options] the export options
      * @return {SVGElement} the item converted to an SVG node
      */
 
@@ -2100,11 +2099,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#importSVG
      * @function
      *
-     * @option options.expandShapes {Boolean} whether imported shape items
-     * should be expanded to path items.
+     * @option [options.expandShapes=false] {Boolean} whether imported shape
+     * items should be expanded to path items
      *
      * @param {SVGElement|String} svg the SVG content to import
-     * @param {Object} [options={ expandShapes: false }] the import options
+     * @param {Object} [options] the import options
      * @return {Item} the imported Paper.js parent item
      */
 
@@ -2116,7 +2115,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or {@code null} if adding was not
-     * possible.
+     * possible
      */
     addChild: function(item, _preserve) {
         return this.insertChild(undefined, item, _preserve);
@@ -2130,7 +2129,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} index
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertChild: function(index, item, _preserve) {
         var res = item ? this.insertChildren(index, [item], _preserve) : null;
@@ -2144,7 +2143,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item[]} items The items to be added as children
      * @return {Item[]} the added items, or {@code null} if adding was not
-     * possible.
+     * possible
      */
     addChildren: function(items, _preserve) {
         return this.insertChildren(this._children.length, items, _preserve);
@@ -2158,7 +2157,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} index
      * @param {Item[]} items The items to be appended as children
      * @return {Item[]} the inserted items, or {@code null} if inserted was not
-     * possible.
+     * possible
      */
     insertChildren: function(index, items, _preserve, _proto) {
         // CompoundPath#insertChildren() requires _preserve and _type:
@@ -2223,7 +2222,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertAbove: function(item, _preserve) {
         return item._insertSibling(item._index + 1, this, _preserve);
@@ -2234,7 +2233,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item below which it should be inserted
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertBelow: function(item, _preserve) {
         return item._insertSibling(item._index, this, _preserve);
@@ -3046,7 +3045,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Transform the item.
      *
-     * @param {Matrix} matrix the matrix by which the item shall be transformed.
+     * @param {Matrix} matrix the matrix by which the item shall be transformed
      */
     // TODO: Implement flags:
     // @param {String[]} flags Array of any of the following: 'objects',
@@ -3281,11 +3280,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * the frame event:
      *
      * @option event.count {Number} the number of times the frame event was
-     * fired.
+     * fired
      * @option event.time {Number} the total amount of time passed since the
-     * first frame event in seconds.
+     * first frame event in seconds
      * @option event.delta {Number} the time passed in seconds since the last
-     * frame event.
+     * frame event
      *
      * @see View#onFrame
      * @example {@paperscript}

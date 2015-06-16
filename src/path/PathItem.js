@@ -482,7 +482,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @function
      * @param {Point} to the point where the arc should end
      * @param {Boolean} [clockwise=true] specifies whether the arc should be
-     *        drawn in clockwise direction.
+     *        drawn in clockwise direction
      *
      * @example {@paperscript}
      * var path = new Path();
@@ -530,7 +530,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @name PathItem#closePath
      * @function
      * @param {Boolean} join controls whether the method should attempt to merge
-     * the first segment with the last if they lie in the same location.
+     * the first segment with the last if they lie in the same location
      * @see Path#closed
      */
 
@@ -552,7 +552,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @name PathItem#lineBy
      * @function
      * @param {Point} to the vector which is added to the position of the last
-     * segment of the path, to get to the position of the new segment.
+     * segment of the path, to get to the position of the new segment
      *
      * @example {@paperscript}
      * var path = new Path();
