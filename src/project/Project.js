@@ -674,8 +674,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this._updateVersion++;
         ctx.save();
         matrix.applyToContext(ctx);
-        // Use new Base() so we can use param.extend() to easily override
-        // values
+        // Use new Base() so we can use param.extend() to easily override values
         var param = new Base({
             offset: new Point(0, 0),
             pixelRatio: pixelRatio,

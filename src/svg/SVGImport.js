@@ -374,7 +374,10 @@ new function() {
     // We need to define style attributes first, and merge in all others after,
     // since transform needs to be applied after fill color, as transformations
     // can affect gradient fills.
-    var attributes = Base.each(SVGStyles, function(entry) {
+    // Use Base.set() to control sequence of attributes and have all entries in
+    // SVGStyles (e.g. 'stroke') before the additional attributes below (e.g.
+    // 'stroke-opacity'). See issue #694.
+    var attributes = Base.set(Base.each(SVGStyles, function(entry) {
         this[entry.attribute] = function(item, value) {
             item[entry.set](convertValue(value, entry.type, entry.fromSVG));
             // When applying gradient colors to shapes, we need to offset
@@ -388,7 +391,7 @@ new function() {
                             item.getPosition(true).negate()));
             }
         };
-    }, {
+    }, {}), {
         id: function(item, value) {
             definitions[value] = item;
             if (item.setName)
