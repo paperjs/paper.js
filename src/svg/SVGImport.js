@@ -87,19 +87,20 @@ new function() {
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
         }
-        // Put defs first, Affinity designer exports defs as last
         if (isRoot) {
-            var defsNodes = [], otherNodes = [];
-            for (var i = 0, l = nodes.length; i < l; i++) {
-                nodes[i].nodeName.toLowerCase() === 'defs' ? defsNodes.push(nodes[i]) : otherNodes.push(nodes[i]);
+            // Import all defs first, since in SVG they can be in any location.
+            // e.g. Affinity Designer exports defs as last.
+            var defs = node.querySelectorAll('defs');
+            for (var i = 0, l = defs.length; i < l; i++) {
+                importSVG(defs[i], options, false);
             }
-            nodes = defsNodes.concat(otherNodes);
         }
         // Collect the children in an array and apply them all at once.
         for (var i = 0, l = nodes.length; i < l; i++) {
             var childNode = nodes[i],
                 child;
             if (childNode.nodeType === 1
+                    && childNode.nodeName.toLowerCase() !== 'defs'
                     && (child = importSVG(childNode, options, false))
                     && !(child instanceof Symbol))
                 children.push(child);
