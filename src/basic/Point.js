@@ -702,7 +702,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is colinear}
      */
     isColinear: function(point) {
-        return Math.abs(this.cross(point)) < /*#=*/Numerical.EPSILON;
+        return Math.abs(this.cross(point)) < /*#=*/Numerical.TOLERANCE;
     },
 
     /**
@@ -713,7 +713,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is orthogonal}
      */
     isOrthogonal: function(point) {
-        return Math.abs(this.dot(point)) < /*#=*/Numerical.EPSILON;
+        return Math.abs(this.dot(point)) < /*#=*/Numerical.TOLERANCE;
     },
 
     /**
