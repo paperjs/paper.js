@@ -12,6 +12,30 @@
 
 module('Curve');
 
+test('Curve#getParameterOf()', function() {
+    // For issue #708:
+    var path = new Path.Rectangle({
+        center: new Point(300, 100),
+        size: new Point(100, 100),
+        strokeColor: 'black'
+    });
+
+    for (var pos = 0; pos < path.length; pos += 10) {
+        var point1 = path.getPointAt(pos),
+            point2 = null;
+        for (var i = 0; i < path.curves.length; i++) {
+            var curve = path.curves[i];
+            var parameter = curve.getParameterOf(point1);
+            if (parameter) {
+                point2 = curve.getLocationAt(parameter, true).point;
+                break;
+            }
+        }
+        equals(point1, point2, 'curve.getLocationAt(curve.getParameterOf('
+                + point1 + ')).point;');
+    }
+});
+
 test('Curve#getPointAt()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
