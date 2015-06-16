@@ -1356,9 +1356,17 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this;
     },
 
-
-    // DOCS: toShape
-
+    /**
+     * Attempts to create a new shape item with same geometry as this path item,
+     * and inherits all settings from it, similar to {@link Item#clone()}.
+     *
+     * @param {Boolean} [insert=true] specifies whether the new shape should be
+     * inserted into the DOM. When set to {@code true}, it is inserted above the
+     * path item.
+     * @return {Shape} the newly created shape item with the same geometry as
+     * this path item if it can be matched, {@code null} otherwise.
+     * @see Shape#toPath(insert)
+     */
     toShape: function(insert) {
         if (!this._closed)
             return null;
@@ -1419,18 +1427,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 
         if (type) {
             var center = this.getPosition(true),
-                shape = new type({
+                shape = this._clone(new type({
                     center: center,
                     size: size,
                     radius: radius,
                     insert: false
-                });
+                }), insert, false);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
-            shape.setStyle(this._style);
-            // Insert is true by default.
-            if (insert || insert === undefined)
-                shape.insertAbove(this);
             return shape;
         }
         return null;
