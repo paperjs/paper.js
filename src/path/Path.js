@@ -89,6 +89,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     initialize: function Path(arg) {
         this._closed = false;
         this._segments = [];
+        // Increased on every change of segments, so CurveLocation knows when to
+        // update its internally cached values.
+        this._version = 0;
         // arg can either be an object literal containing properties to be set
         // on the path, a list of segments to be set, or the first of multiple
         // arguments describing separate segments.
@@ -148,10 +151,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                 parent._currentPath = undefined;
             // Clockwise state becomes undefined as soon as geometry changes.
             this._length = this._clockwise = undefined;
-            // Only notify all curves if we're not told that only one Segment
-            // has changed and took already care of notifications.
-            if (this._curves && !(flags & /*#=*/ChangeFlag.SEGMENTS)) {
-                for (var i = 0, l = this._curves.length; i < l; i++)
+            if (flags & /*#=*/ChangeFlag.SEGMENTS) {
+                this._version++; // See CurveLocation
+            } else if (this._curves) {
+                // Only notify all curves if we're not told that only segments
+                // have changed and took already care of notifications.
+               for (var i = 0, l = this._curves.length; i < l; i++)
                     this._curves[i]._changed();
             }
             // Clear cached curves used for winding direction and containment

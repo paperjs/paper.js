@@ -39,7 +39,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      *
      * @param {Curve} curve
      * @param {Number} parameter
-     * @param {Point} point
+     * @param {Point} [point]
      */
     initialize: function CurveLocation(curve, parameter, point, _curve2,
             _parameter2, _point2, _distance) {
@@ -48,18 +48,20 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // since this is only required to be unique at runtime among other
         // CurveLocation objects.
         this._id = UID.get(CurveLocation);
+        var path = curve._path;
+        this._version = path ? path._version : 0;
         this._curve = curve;
+        this._parameter = parameter;
+        this._point = point || curve.getPointAt(parameter, true);
+        this._curve2 = _curve2;
+        this._parameter2 = _parameter2;
+        this._point2 = _point2;
+        this._distance = _distance;
         // Also store references to segment1 and segment2, in case path
         // splitting / dividing is going to happen, in which case the segments
         // can be used to determine the new curves, see #getCurve(true)
         this._segment1 = curve._segment1;
         this._segment2 = curve._segment2;
-        this._parameter = parameter;
-        this._point = point;
-        this._curve2 = _curve2;
-        this._parameter2 = _parameter2;
-        this._point2 = _point2;
-        this._distance = _distance;
     },
 
     /**
@@ -95,39 +97,31 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @type Curve
      * @bean
      */
-    getCurve: function(_uncached) {
-        if (!this._curve || _uncached) {
+    getCurve: function() {
+        var curve = this._curve,
+            path = curve && curve._path;
+        if (path && path._version !== this._version) {
+            // If the path's segments have changed in the meantime, clear the
+            // internal _parameter value and force refetching of the correct
+            // curve again here.
+            curve = null;
+            this._parameter = null;
+        }
+        if (!curve) {
             // If we're asked to get the curve uncached, access current curve
             // objects through segment1 / segment2. Since path splitting or
             // dividing might have happened in the meantime, try segment1's
             // curve, and see if _point lies on it still, otherwise assume it's
             // the curve before segment2.
-            this._curve = this._segment1.getCurve();
-            if (this._curve.getParameterOf(this._point) == null)
-                this._curve = this._segment2.getPrevious().getCurve();
+            curve = this._segment1.getCurve();
+            if (curve.getParameterOf(this._point) == null)
+                curve = this._segment2.getPrevious().getCurve();
+            this._curve = curve;
+            // Fetch path again as it could be on a new one through split()
+            path = curve._path;
+            this._version = path ? path._version : 0;
         }
-        return this._curve;
-    },
-
-    /**
-     * The curve location on the intersecting curve, if this location is the
-     * result of a call to {@link PathItem#getIntersections(path)} /
-     * {@link Curve#getIntersections(curve)}.
-     *
-     * @type CurveLocation
-     * @bean
-     */
-    getIntersection: function() {
-        var intersection = this._intersection;
-        if (!intersection && this._curve2) {
-            var param = this._parameter2;
-            // If we have the parameter on the other curve use that for
-            // intersection rather than the point.
-            this._intersection = intersection = new CurveLocation(
-                    this._curve2, param, this._point2 || this._point, this);
-            intersection._intersection = this;
-        }
-        return intersection;
+        return curve;
     },
 
     /**
@@ -151,6 +145,33 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     getIndex: function() {
         var curve = this.getCurve();
         return curve && curve.getIndex();
+    },
+
+    /**
+     * The curve parameter, as used by various bezier curve calculations. It is
+     * value between {@code 0} (beginning of the curve) and {@code 1} (end of
+     * the curve).
+     *
+     * @type Number
+     * @bean
+     */
+    getParameter: function() {
+        var curve = this.getCurve(),
+            parameter = this._parameter;
+        return curve && parameter == null
+            ? this._parameter = curve.getParameterOf(this._point)
+            : parameter;
+    },
+
+    /**
+     * The point which is defined by the {@link #curve} and
+     * {@link #parameter}.
+     *
+     * @type Point
+     * @bean
+     */
+    getPoint: function() {
+        return this._point;
     },
 
     /**
@@ -180,34 +201,23 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * The curve parameter, as used by various bezier curve calculations. It is
-     * value between {@code 0} (beginning of the curve) and {@code 1} (end of
-     * the curve).
+     * The curve location on the intersecting curve, if this location is the
+     * result of a call to {@link PathItem#getIntersections(path)} /
+     * {@link Curve#getIntersections(curve)}.
      *
-     * @type Number
+     * @type CurveLocation
      * @bean
      */
-    getParameter: function(_uncached) {
-        if ((this._parameter == null || _uncached) && this._point) {
-            var curve = this.getCurve(_uncached);
-            this._parameter = curve && curve.getParameterOf(this._point);
+    getIntersection: function() {
+        var intersection = this._intersection;
+        if (!intersection && this._curve2) {
+            // If we have the parameter on the other curve use that for
+            // intersection rather than the point.
+            this._intersection = intersection = new CurveLocation(this._curve2,
+                    this._parameter2, this._point2 || this._point, this);
+            intersection._intersection = this;
         }
-        return this._parameter;
-    },
-
-    /**
-     * The point which is defined by the {@link #curve} and
-     * {@link #parameter}.
-     *
-     * @type Point
-     * @bean
-     */
-    getPoint: function(_uncached) {
-        if ((!this._point || _uncached) && this._parameter != null) {
-            var curve = this.getCurve(_uncached);
-            this._point = curve && curve.getPointAt(this._parameter, true);
-        }
-        return this._point;
+        return intersection;
     },
 
     /**
@@ -241,14 +251,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return this._distance;
     },
 
+    // DOCS: divide(), split()
+
     divide: function() {
-        var curve = this.getCurve(true);
-        return curve && curve.divide(this.getParameter(true), true);
+        var curve = this.getCurve();
+        return curve && curve.divide(this.getParameter(), true);
     },
 
     split: function() {
-        var curve = this.getCurve(true);
-        return curve && curve.split(this.getParameter(true), true);
+        var curve = this.getCurve();
+        return curve && curve.split(this.getParameter(), true);
     },
 
     /**
@@ -265,11 +277,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // in Curve.js when considering two locations the same.
             tolerance = /*#=*/Numerical.TOLERANCE;
         return this === loc
-                || loc
-                    && this._curve === loc._curve
+                || loc instanceof CurveLocation
+                    // Call getCurve() and getParameter() to keep in sync
+                    && this.getCurve() === loc.getCurve()
+                    && abs(this.getParameter() - loc.getParameter()) < tolerance
+                    // _curve2/_parameter2 are only used for Boolean operations
+                    // and don't need syncing there.
                     && this._curve2 === loc._curve2
-                    && abs(this._parameter - loc._parameter) <= tolerance
-                    && abs(this._parameter2 - loc._parameter2) <= tolerance
+                    && abs(this._parameter2 - loc._parameter2) < tolerance
                 || false;
     },
 

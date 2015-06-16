@@ -857,10 +857,9 @@ statics: {
      * @return {CurveLocation} the curve location at the specified the offset
      */
     getLocationAt: function(offset, isParameter) {
-        if (!isParameter)
-            offset = this.getParameterAt(offset);
-        return offset != null && offset >= 0 && offset <= 1
-                ? new CurveLocation(this, offset)
+        var t = isParameter ? offset : this.getParameterAt(offset);
+        return t != null && t >= 0 && t <= 1
+                ? new CurveLocation(this, t)
                 : null;
     },
 
