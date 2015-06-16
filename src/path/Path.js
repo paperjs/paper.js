@@ -1378,8 +1378,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             radius,
             topCenter;
 
-        function isColinear(i, j) {
-            return segments[i].isColinear(segments[j]);
+        function isCollinear(i, j) {
+            return segments[i].isCollinear(segments[j]);
         }
 
         function isOrthogonal(i) {
@@ -1398,12 +1398,12 @@ var Path = PathItem.extend(/** @lends Path# */{
         // between straight objects (line, polyline, rect, and  polygon) and
         // objects with curves(circle, ellipse, roundedRectangle).
         if (this.isPolygon() && segments.length === 4
-                && isColinear(0, 2) && isColinear(1, 3) && isOrthogonal(1)) {
+                && isCollinear(0, 2) && isCollinear(1, 3) && isOrthogonal(1)) {
             type = Shape.Rectangle;
             size = new Size(getDistance(0, 3), getDistance(0, 1));
             topCenter = segments[1]._point.add(segments[2]._point).divide(2);
         } else if (segments.length === 8 && isArc(0) && isArc(2) && isArc(4)
-                && isArc(6) && isColinear(1, 5) && isColinear(3, 7)) {
+                && isArc(6) && isCollinear(1, 5) && isCollinear(3, 7)) {
             // It's a rounded rectangle.
             type = Shape.Rectangle;
             size = new Size(getDistance(1, 6), getDistance(0, 3));
@@ -2706,7 +2706,7 @@ statics: {
             var handleIn = segment._handleIn,
                 handleOut = segment._handleOut;
             if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
-                    && handleIn.isColinear(handleOut)) {
+                    && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
                 Path._addBevelJoin(segment, join, radius, miterLimit, add);

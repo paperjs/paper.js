@@ -81,7 +81,7 @@ var Line = Base.extend(/** @lends Line# */{
      * @param {Line} line
      * @param {Boolean} [isInfinite=false]
      * @return {Point} the intersection point of the lines, {@code undefined}
-     * if the two lines are colinear, or {@code null} if they don't intersect.
+     * if the two lines are collinear, or {@code null} if they don't intersect.
      */
     intersect: function(line, isInfinite) {
         return Line.intersect(

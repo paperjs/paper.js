@@ -134,18 +134,18 @@ test('equals()', function() {
     }, false);
 });
 
-test('isColinear()', function() {
+test('isCollinear()', function() {
     equals(function() {
-        return new Point(10, 5).isColinear(new Point(20, 10));
+        return new Point(10, 5).isCollinear(new Point(20, 10));
     }, true);
     equals(function() {
-        return new Point(5, 10).isColinear(new Point(-5, -10));
+        return new Point(5, 10).isCollinear(new Point(-5, -10));
     }, true);
     equals(function() {
-        return new Point(10, 10).isColinear(new Point(20, 10));
+        return new Point(10, 10).isCollinear(new Point(20, 10));
     }, false);
     equals(function() {
-        return new Point(10, 10).isColinear(new Point(10, -10));
+        return new Point(10, 10).isCollinear(new Point(10, -10));
     }, false);
 });
 

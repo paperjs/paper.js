@@ -210,7 +210,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         // See #setPoint:
         this._handleIn.set(point.x, point.y);
         // Update corner accordingly
-        // this.corner = !this._handleIn.isColinear(this._handleOut);
+        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     /**
@@ -229,7 +229,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         // See #setPoint:
         this._handleOut.set(point.x, point.y);
         // Update corner accordingly
-        // this.corner = !this._handleIn.isColinear(this._handleOut);
+        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     // TODO: Rename this to #corner?
@@ -253,20 +253,23 @@ var Segment = Base.extend(/** @lends Segment# */{
         }
     },
 
-    // DOCS: #isColinear(segment), #isOrthogonal(), #isArc()
+    // DOCS: #isCollinear(segment), #isOrthogonal(), #isArc()
 
     /**
      * Returns true if the the two segments are the beginning of two lines and
      * if these two lines are running parallel.
      */
-    isColinear: function(segment) {
+    isCollinear: function(segment) {
         var next1 = this.getNext(),
             next2 = segment.getNext();
         return this._handleOut.isZero() && next1._handleIn.isZero()
                 && segment._handleOut.isZero() && next2._handleIn.isZero()
-                && next1._point.subtract(this._point).isColinear(
+                && next1._point.subtract(this._point).isCollinear(
                     next2._point.subtract(segment._point));
     },
+
+    // TODO: Remove version with typo after a while (deprecated June 2015)
+    isColinear: '#isCollinear',
 
     isOrthogonal: function() {
         var prev = this.getPrevious(),

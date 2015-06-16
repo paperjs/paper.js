@@ -695,15 +695,20 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * Checks if the vector represented by this point is colinear (parallel) to
+     * Checks if the vector represented by this point is collinear (parallel) to
      * another vector.
      *
      * @param {Point} point the vector to check against
-     * @return {Boolean} {@true it is colinear}
+     * @return {Boolean} {@true it is collinear}
      */
-    isColinear: function(point) {
+    isCollinear: function(point) {
+        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
+        // conversion test.
         return Math.abs(this.cross(point)) < /*#=*/Numerical.TOLERANCE;
     },
+
+    // TODO: Remove version with typo after a while (deprecated June 2015)
+    isColinear: '#isCollinear',
 
     /**
      * Checks if the vector represented by this point is orthogonal
@@ -713,6 +718,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is orthogonal}
      */
     isOrthogonal: function(point) {
+        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
+        // conversion test.
         return Math.abs(this.dot(point)) < /*#=*/Numerical.TOLERANCE;
     },
 
