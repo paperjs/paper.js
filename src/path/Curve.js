@@ -604,18 +604,21 @@ statics: {
             sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
             sy = Curve.solveCubic(v, 1, y, tys, 0, 1),
             tx, ty;
-        // sx, sy == -1 means infinite solutions:
+        // sx, sy === -1 means infinite solutions:
         // Loop through all solutions for x and match with solutions for y,
         // to see if we either have a matching pair, or infinite solutions
         // for one or the other.
-        for (var cx = 0;  sx == -1 || cx < sx;) {
-            if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
-                for (var cy = 0; sy == -1 || cy < sy;) {
-                    if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
+        for (var cx = 0;  sx === -1 || cx < sx;) {
+            if (sx === -1 || (tx = txs[cx++]) > 0 && tx < 1) {
+                for (var cy = 0; sy === -1 || cy < sy;) {
+                    if (sy === -1 || (ty = tys[cy++]) > 0 && ty < 1) {
                         // Handle infinite solutions by assigning root of
                         // the other polynomial
-                        if (sx == -1) tx = ty;
-                        else if (sy == -1) ty = tx;
+                        if (sx === -1) {
+                            tx = ty;
+                        } else if (sy === -1) {
+                            ty = tx;
+                        }
                         // Use average if we're within tolerance
                         if (Math.abs(tx - ty) < tolerance)
                             return (tx + ty) * 0.5;
@@ -623,7 +626,7 @@ statics: {
                 }
                 // Avoid endless loops here: If sx is infinite and there was
                 // no fitting ty, there's no solution for this bezier
-                if (sx == -1)
+                if (sx === -1)
                     break;
             }
         }
