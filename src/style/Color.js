@@ -605,6 +605,9 @@ var Color = Base.extend(new function() {
             }
             // Default fallbacks: rgb, black
             this._type = type || 'rgb';
+            // Define this Color's unique id in its own private id pool.
+            // NOTE: This is required by SVG Export code!
+            this._id = UID.get(Color);
             if (!components) {
                 // Produce a components array now, and parse values. Even if no
                 // values are defined, parsers are still called to produce

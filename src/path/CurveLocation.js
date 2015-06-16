@@ -47,7 +47,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // NOTE: We do not use the same pool as the rest of the library here,
         // since this is only required to be unique at runtime among other
         // CurveLocation objects.
-        this._id = CurveLocation._id = (CurveLocation._id || 0) + 1;
+        this._id = UID.get(CurveLocation);
         this._curve = curve;
         // Also store references to segment1 and segment2, in case path
         // splitting / dividing is going to happen, in which case the segments

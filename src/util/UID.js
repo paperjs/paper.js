@@ -17,6 +17,7 @@
  */
 var UID = {
     _id: 1,
+    _pools: {},
 
     /**
      * Returns the next unique id.
@@ -24,7 +25,17 @@ var UID = {
      * @return {Number} The next unique id
      * @static
      **/
-    get: function() {
-        return this._id++;
+    get: function(ctor) {
+        if (ctor) {
+            // Use one UID pool per given constructor
+            var name = ctor._class,
+                pool = this._pools[name];
+            if (!pool)
+                pool = this._pools[name] = { _id: 1 };
+            return pool._id++;
+        } else {
+            // Use the global UID pool:
+            return this._id++;
+        }
     }
 };
