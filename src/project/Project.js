@@ -648,7 +648,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return {SVGElement} the project converted to an SVG node
      */
 
-    // DOCS: Document importSVG('file.svg', callback);
     /**
      * Converts the provided SVG content into Paper.js items and adds them to
      * the active layer of this project.
@@ -660,13 +659,34 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      * items should be expanded to path items
+     * @option [options.onLoad] {Function} the callback function to call once
+     * the SVG content is loaded from the given URL. Only required when loading
+     * from external files.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      * {Boolean} whether imported items should have their transformation
      * matrices applied to their contents or not
      *
-     * @param {SVGElement|String} svg the SVG content to import
+     * @param {SVGElement|String} svg the SVG content to import, either as a SVG
+     * DOM node, a string containing SVG content, or a string describing the URL
+     * of the SVG file to fetch.
      * @param {Object} [options] the import options
-     * @return {Item} the imported Paper.js parent item
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
+     */
+    /**
+     * Imports the provided external SVG file, converts it into Paper.js items
+     * and adds them to the active layer of this project.
+     * Note that the project is not cleared first. You can call
+     * {@link Project#clear()} to do so.
+     *
+     * @name Project#importSVG
+     * @function
+     *
+     * @param {SVGElement|String} svg the URL of the SVG file to fetch.
+     * @param {Function} onLoad the callback function to call once the SVG
+     * content is loaded from the given URL.
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
      */
 
     draw: function(ctx, matrix, pixelRatio) {
