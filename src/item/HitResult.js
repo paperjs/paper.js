@@ -100,8 +100,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 
     statics: {
         /**
-         * Merges default options into options hash for #hitTest() calls, and
-         * marks as merged, to prevent repeated merging in nested calls.
+         * Merges default options into options hash for #hitTest() calls.
          *
          * @private
          */

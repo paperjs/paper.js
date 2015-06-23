@@ -99,9 +99,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.compile
      * @function
-     * @param {String} code the PaperScript code.
-     * @param {String} url the url of the source, for source-map debugging.
-     * @return {String} the compiled PaperScript as JavaScript code.
+     * @param {String} code the PaperScript code
+     * @param {String} url the url of the source, for source-map debugging
+     * @return {String} the compiled PaperScript as JavaScript code
      */
     function compile(code, url, options) {
         if (!code)
@@ -225,15 +225,22 @@ Base.exports.PaperScript = (function() {
                         || parentType === 'MemberExpression' && parent.computed
                 )) {
                     if (node.type === 'UpdateExpression') {
-                        var arg = getCode(node.argument);
-                        var str = arg + ' = __$__(' + arg
-                                + ', "' + node.operator[0] + '", 1)';
+                        var arg = getCode(node.argument),
+                            exp = '__$__(' + arg + ', "' + node.operator[0]
+                                    + '", 1)',
+                            str = arg + ' = ' + exp;
                         // If this is not a prefixed update expression
                         // (++a, --a), assign the old value before updating it.
                         if (!node.prefix
                                 && (parentType === 'AssignmentExpression'
-                                    || parentType === 'VariableDeclarator'))
+                                    || parentType === 'VariableDeclarator')) {
+                            // Handle special issue #691 where the old value is
+                            // assigned to itself, and the expression is just
+                            // executed after, e.g.: `var x = ***; x = x++;`
+                            if (getCode(parent.left || parent.id) === arg)
+                                str = exp;
                             str = arg + '; ' + str;
+                        }
                         replaceCode(node, str);
                     } else { // AssignmentExpression
                         if (/^.=$/.test(node.operator)
@@ -323,9 +330,9 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.execute
      * @function
-     * @param {String} code the PaperScript code.
-     * @param {PaperScope} scope the scope for which the code is executed.
-     * @param {String} url the url of the source, for source-map debugging.
+     * @param {String} code the PaperScript code
+     * @param {PaperScope} scope the scope for which the code is executed
+     * @param {String} url the url of the source, for source-map debugging
      */
     function execute(code, scope, url, options) {
         // Set currently active scope.
@@ -450,6 +457,7 @@ Base.exports.PaperScript = (function() {
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
                 src = script.src,
+                async = PaperScope.hasAttribute(script, 'asyc'),
                 scopeAttribute = 'data-paper-scope';
             if (!canvas)
                 throw new Error('Unable to find canvas with id "'
@@ -462,11 +470,15 @@ Base.exports.PaperScript = (function() {
             // compiling multiple scripts for the same element.
             canvas.setAttribute(scopeAttribute, scope._id);
             if (src) {
-                // If we're loading from a source, request that first and then
-                // run later.
+                // If we're loading from a source, request the source
+                // synchronously to guarantee code is executed in the
+                // same order the script tags appear.
+                // If the async attribute is specified on the script element,
+                // request the source asynchronously and execute as soon as
+                // it is retreived.
                 Http.request('get', src, function(code) {
                     execute(code, scope, src);
-                });
+                }, async);
             } else {
                 // We can simply get the code form the script tag.
                 execute(script.innerHTML, scope, script.baseURI);
@@ -494,9 +506,9 @@ Base.exports.PaperScript = (function() {
      * @name PaperScript.load
      * @function
      * @param {HTMLScriptElement} [script=null] the script to load. If none is
-     * provided, all scripts of the HTML document are iterated over and loaded.
+     * provided, all scripts of the HTML document are iterated over and loaded
      * @return {PaperScope} the scope produced for the passed {@code script}, or
-     * {@code undefined} of multiple scripts area loaded.
+     * {@code undefined} of multiple scripts area loaded
      */
     function load(script) {
         return script ? loadScript(script) : loadAll();

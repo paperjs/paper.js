@@ -350,10 +350,8 @@ var Raster = Item.extend(/** @lends Raster# */{
             // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
         } else {
-            // Trigger the onLoad event on the image once it's loaded
-            DomEvent.add(image, {
-                load: loaded
-            });
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, { load: loaded });
             // A new image created above? Set the source now.
             if (!image.src)
                 image.src = src;
@@ -486,7 +484,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @param {Path|Rectangle|Point} object
      * @return {Color} the average color contained in the area covered by the
-     * specified path, rectangle or point.
+     * specified path, rectangle or point
      */
     getAverageColor: function(object) {
         var bounds, path;

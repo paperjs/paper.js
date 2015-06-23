@@ -334,9 +334,9 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @name Curve#divide
      * @function
      * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *        or the curve time parameter if {@code isParameter} is {@code true}
+     * or the curve time parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
+     * is a curve time parameter
      * @return {Curve} the second part of the divided curve
      */
     // TODO: Rename to divideAt()?
@@ -400,9 +400,9 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @name Curve#split
      * @function
      * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *        or the curve time parameter if {@code isParameter} is {@code true}
+     * or the curve time parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
+     * is a curve time parameter
      * @return {Path} the newly created path after splitting, if any
      * @see Path#split(index, parameter)
      */
@@ -483,6 +483,9 @@ statics: {
 
     // TODO: Instead of constants for type, use a "enum" and code substitution.
     evaluate: function(v, t, type) {
+        // Do not produce results if parameter is out of range or invalid.
+        if (t == null || t < 0 || t > 1)
+            return null;
         var p1x = v[0], p1y = v[1],
             c1x = v[2], c1y = v[3],
             c2x = v[4], c2y = v[5],
@@ -601,18 +604,21 @@ statics: {
             sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
             sy = Curve.solveCubic(v, 1, y, tys, 0, 1),
             tx, ty;
-        // sx, sy == -1 means infinite solutions:
+        // sx, sy === -1 means infinite solutions:
         // Loop through all solutions for x and match with solutions for y,
         // to see if we either have a matching pair, or infinite solutions
         // for one or the other.
-        for (var cx = 0;  sx == -1 || cx < sx;) {
-            if (sx == -1 || (tx = txs[cx++]) >= 0 && tx <= 1) {
-                for (var cy = 0; sy == -1 || cy < sy;) {
-                    if (sy == -1 || (ty = tys[cy++]) >= 0 && ty <= 1) {
+        for (var cx = 0;  sx === -1 || cx < sx;) {
+            if (sx === -1 || (tx = txs[cx++]) > 0 && tx < 1) {
+                for (var cy = 0; sy === -1 || cy < sy;) {
+                    if (sy === -1 || (ty = tys[cy++]) > 0 && ty < 1) {
                         // Handle infinite solutions by assigning root of
                         // the other polynomial
-                        if (sx == -1) tx = ty;
-                        else if (sy == -1) ty = tx;
+                        if (sx === -1) {
+                            tx = ty;
+                        } else if (sy === -1) {
+                            ty = tx;
+                        }
                         // Use average if we're within tolerance
                         if (Math.abs(tx - ty) < tolerance)
                             return (tx + ty) * 0.5;
@@ -620,7 +626,7 @@ statics: {
                 }
                 // Avoid endless loops here: If sx is infinite and there was
                 // no fitting ty, there's no solution for this bezier
-                if (sx == -1)
+                if (sx === -1)
                     break;
             }
         }
@@ -819,9 +825,10 @@ statics: {
      * the parameter is searched to the left of the start parameter. If no start
      * parameter is provided, a default of {@code 0} for positive values of
      * {@code offset} and {@code 1} for negative values of {@code offset}.
+     *
      * @param {Number} offset
      * @param {Number} [start]
-     * @return {Number} the curve time parameter at the specified offset.
+     * @return {Number} the curve time parameter at the specified offset
      */
     getParameterAt: function(offset, start) {
         return Curve.getParameterAt(this.getValues(), offset, start);
@@ -830,8 +837,9 @@ statics: {
     /**
      * Returns the curve time parameter of the specified point if it lies on the
      * curve, {@code null} otherwise.
-     * @param {Point} point the point on the curve.
-     * @return {Number} the curve time parameter of the specified point.
+     *
+     * @param {Point} point the point on the curve
+     * @return {Number} the curve time parameter of the specified point
      */
     getParameterOf: function(/* point */) {
         var point = Point.read(arguments);
@@ -841,23 +849,26 @@ statics: {
     /**
      * Calculates the curve location at the specified offset or curve time
      * parameter.
+     *
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {CurveLocation} the curve location at the specified the offset.
+     * is a curve time parameter
+     * @return {CurveLocation} the curve location at the specified the offset
      */
     getLocationAt: function(offset, isParameter) {
-        if (!isParameter)
-            offset = this.getParameterAt(offset);
-        return offset >= 0 && offset <= 1 && new CurveLocation(this, offset);
+        var t = isParameter ? offset : this.getParameterAt(offset);
+        return t != null && t >= 0 && t <= 1
+                ? new CurveLocation(this, t)
+                : null;
     },
 
     /**
      * Returns the curve location of the specified point if it lies on the
      * curve, {@code null} otherwise.
-     * @param {Point} point the point on the curve.
-     * @return {CurveLocation} the curve location of the specified point.
+     *
+     * @param {Point} point the point on the curve
+     * @return {CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         return this.getLocationAt(this.getParameterOf(Point.read(arguments)),
@@ -867,8 +878,9 @@ statics: {
     /**
      * Returns the length of the path from its beginning up to up to the
      * specified point if it lies on the path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {Number} the length of the path up to the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -918,10 +930,10 @@ statics: {
      * @name Curve#getPointAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the point on the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the point on the curve at the specified offset
      */
 
     /**
@@ -930,10 +942,10 @@ statics: {
      * @name Curve#getTangentAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the tangent of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the tangent of the curve at the specified offset
      */
 
     /**
@@ -942,10 +954,10 @@ statics: {
      * @name Curve#getNormalAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Point} the normal of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Point} the normal of the curve at the specified offset
      */
 
     /**
@@ -957,10 +969,10 @@ statics: {
      * @name Curve#getCurvatureAt
      * @function
      * @param {Number} offset the offset on the curve, or the curve time
-     *        parameter if {@code isParameter} is {@code true}
+     * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
-     *        is a curve time parameter.
-     * @return {Number} the curvature of the curve at the specified offset.
+     * is a curve time parameter
+     * @return {Number} the curvature of the curve at the specified offset
      */
 }),
 new function() { // Scope for methods that require numerical integration
@@ -1025,7 +1037,9 @@ new function() { // Scope for methods that require numerical integration
                 return start;
             // See if we're going forward or backward, and handle cases
             // differently
-            var forward = offset > 0,
+            var tolerance = /*#=*/Numerical.TOLERANCE,
+                abs = Math.abs,
+                forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
                 // Use integrand to calculate both range length and part
@@ -1034,8 +1048,13 @@ new function() { // Scope for methods that require numerical integration
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            if (Math.abs(offset) >= rangeLength)
+            if (abs(offset - rangeLength) < tolerance) {
+                // Matched the end:
                 return forward ? b : a;
+            } else if (abs(offset) > rangeLength) {
+                // We're out of bounds.
+                return null;
+            }
             // Use offset / rangeLength for an initial guess for t, to
             // bring us closer:
             var guess = offset / rangeLength,
@@ -1054,7 +1073,7 @@ new function() { // Scope for methods that require numerical integration
             // Start with out initial guess for x.
             // NOTE: guess is a negative value when not looking forward.
             return Numerical.findRoot(f, ds, start + guess, a, b, 16,
-                    /*#=*/Numerical.TOLERANCE);
+                    tolerance);
         }
     };
 }, new function() { // Scope for intersection using bezier fat-line clipping
@@ -1095,7 +1114,7 @@ new function() { // Scope for methods that require numerical integration
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin <= tolerance && recursion > 3) {
+        if (q0x === q3x && uMax - uMin < tolerance && recursion > 3) {
             // The fatline of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.

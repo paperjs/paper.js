@@ -161,12 +161,12 @@ var Numerical = new function() {
          *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          *  Blinn J. - "How to solve a Quadratic Equation"
          *
-         * @param {Number} a The quadratic term.
-         * @param {Number} b The linear term.
-         * @param {Number} c The constant term.
-         * @param {Number[]} roots The array to store the roots in.
+         * @param {Number} a The quadratic term
+         * @param {Number} b The linear term
+         * @param {Number} c The constant term
+         * @param {Number[]} roots The array to store the roots in
          * @return {Number} The number of real roots found, or -1 if there are
-         * infinite solutions.
+         * infinite solutions
          *
          * @author Harikrishnan Gopalakrishnan
          */
@@ -176,12 +176,12 @@ var Numerical = new function() {
                 B = b,
                 D;
             b /= 2;
-            D = b * b - a * c;          // Discriminant
+            D = b * b - a * c; // Discriminant
             /*
              * If the discriminant is very small, we can try to pre-condition
              * the coefficients, so that we may get better accuracy
              */
-            if (abs(D) < MACHINE_EPSILON) {
+            if (D !== 0 && abs(D) < MACHINE_EPSILON) {
                 // If the geometric mean of the coefficients is small enough
                 var pow = Math.pow,
                     gmC = pow(abs(a*b*c), 1/3);
@@ -254,10 +254,10 @@ var Numerical = new function() {
          * @param {Number} a The cubic term (x³ term).
          * @param {Number} b The quadratic term (x² term).
          * @param {Number} c The linear term (x term).
-         * @param {Number} d The constant term.
-         * @param {Number[]} roots The array to store the roots in.
+         * @param {Number} d The constant term
+         * @param {Number[]} roots The array to store the roots in
          * @return {Number} The number of real roots found, or -1 if there are
-         * infinite solutions.
+         * infinite solutions
          *
          * @author Harikrishnan Gopalakrishnan
          */

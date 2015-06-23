@@ -21,15 +21,15 @@ var PathIterator = Base.extend({
     /**
      * Creates a path iterator for the given path.
      *
-     * @param {Path} path the path to iterate over.
+     * @param {Path} path the path to iterate over
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
-     * curve subdivision when mapping offsets to curve parameters.
+     * curve subdivision when mapping offsets to curve parameters
      * @param {Number} [tolerance=0.25] the error tolerance at which the
      * recursion is interrupted before the maximum number of iterations is
-     * reached.
+     * reached
      * @param {Matrix} [matrix] the matrix by which to transform the path's
      * coordinates without modifying the actual path.
-     * @return {PathIterator} the newly created path iterator.
+     * @return {PathIterator} the newly created path iterator
      */
     initialize: function(path, maxRecursion, tolerance, matrix) {
         // Instead of relying on path.curves, we only use segments here and

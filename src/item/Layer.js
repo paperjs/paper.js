@@ -36,7 +36,7 @@ var Layer = Group.extend(/** @lends Layer# */{
      *
      * @name Layer#initialize
      * @param {Item[]} [children] An array of items that will be added to the
-     * newly created layer.
+     * newly created layer
      *
      * @example
      * var layer = new Layer();
@@ -48,7 +48,7 @@ var Layer = Group.extend(/** @lends Layer# */{
      *
      * @name Layer#initialize
      * @param {Object} object an object literal containing the properties to be
-     * set on the layer.
+     * set on the layer
      *
      * @example {@paperscript}
      * var path = new Path([100, 100], [100, 200]);

@@ -157,19 +157,29 @@ var Shape = Item.extend(/** @lends Shape# */{
         return false;
     },
 
-    // DOCS: #toPath([insert=true])
+    /**
+     * Creates a new path item with same geometry as this shape item, and
+     * inherits all settings from it, similar to {@link Item#clone()}.
+     *
+     * @param {Boolean} [insert=true] specifies whether the new path should be
+     * inserted into the DOM. When set to {@code true}, it is inserted above the
+     * shape item
+     * @return {Shape} the newly created path item with the same geometry as
+     * this shape item
+     * @see Path#toShape(insert)
+     */
     toPath: function(insert) {
-        var path = new Path[Base.capitalize(this._type)]({
+        var path = this._clone(new Path[Base.capitalize(this._type)]({
             center: new Point(),
             size: this._size,
             radius: this._radius,
             insert: false
-        });
-        path.setStyle(this._style);
-        path.transform(this._matrix);
-        // Insert is true by default.
-        if (insert || insert === undefined)
-            path.insertAbove(this);
+        }), insert);
+        // The created path will inherit #applyMatrix from this Shape, hence it
+        // will always be false.
+        // Respect the setting of paper.settings.applyMatrix for new paths:
+        if (paper.settings.applyMatrix)
+            path.setApplyMatrix(true);
         return path;
     },
 
@@ -397,7 +407,7 @@ statics: new function() {
          *
          * @name Shape.Rectangle
          * @param {Rectangle} rectangle the rectangle object describing the
-         * geometry of the rectangular shape to be created.
+         * geometry of the rectangular shape to be created
          * @param {Size} [radius=null] the size of the rounded corners
          * @return {Shape} the newly created shape
          *

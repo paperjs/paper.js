@@ -138,15 +138,15 @@ PathItem.inject(new function() {
                     if (length <= curveLength) {
                         // If the selected location on the curve falls onto its
                         // beginning or end, use the curve's center instead.
-                        if (length <= tolerance
-                                || curveLength - length <= tolerance)
+                        if (length < tolerance
+                                || curveLength - length < tolerance)
                             length = curveLength / 2;
                         var curve = node.segment.getCurve(),
                             pt = curve.getPointAt(length),
                             // Determine if the curve is a horizontal linear
                             // curve by checking the slope of it's tangent.
                             hor = curve.isLinear() && Math.abs(curve
-                                    .getTangentAt(0.5, true).y) <= tolerance,
+                                    .getTangentAt(0.5, true).y) < tolerance,
                             path = curve._path;
                         if (path._parent instanceof CompoundPath)
                             path = path._parent;
@@ -185,6 +185,7 @@ PathItem.inject(new function() {
      * Private method for splitting a PathItem at the given intersections.
      * The routine works for both self intersections and intersections
      * between PathItems.
+     *
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
@@ -319,7 +320,7 @@ PathItem.inject(new function() {
                             // Detect and exclude intercepts at 'end' of loops:
                             && (i === l - 1 || curve.next !== curves[i + 1])
                             && abs(Curve.evaluate(curve.next.values, 0, 0).x -x)
-                                <= tolerance
+                                < tolerance
                         // Detect 2nd case of a consecutive intercept, but make
                         // sure we're still on the same loop
                         || i > 0 && curve.previous === curves[i - 1]
@@ -486,7 +487,7 @@ PathItem.inject(new function() {
          * part of a horizontal curve
          * @param {Boolean} testContains whether we need to consider this point
          * as part of stationary points on the curve itself, used when checking
-         * the winding about a point.
+         * the winding about a point
          * @return {Number} the winding number
          */
         _getWinding: function(point, horizontal, testContains) {

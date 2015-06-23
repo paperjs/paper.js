@@ -47,9 +47,15 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
-     * Serializes this object to a JSON string.
+     * Exports (serializes) this object to a JSON data object or string.
      *
-     * @param {Object} [options={ asString: true, precision: 5 }]
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as
+     * a {@code Object} or a {@code String}
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in JSON data
+     *
+     * @param {Object} [options] the serialization options
+     * @return {String} the exported JSON data
      */
     exportJSON: function(options) {
         return Base.exportJSON(this, options);
@@ -65,8 +71,7 @@ Base.inject(/** @lends Base# */{
      * literal describing all the properties to be set on the created instance.
      *
      * @param {Object} props an object describing the properties to set
-     * @param {Object} [exclude=undefined] a lookup table listing properties to
-     * exclude
+     * @param {Object} [exclude] a lookup table listing properties to exclude
      * @param {Boolean} [dontCheck=false] whether to perform a
      * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
@@ -156,11 +161,12 @@ Base.inject(/** @lends Base# */{
          * the subclass from the passed arguments list or array, at the given
          * index, up to the specified length.
          * When called directly on Base, it reads any value without conversion
-         * from the apssed arguments list or array.
+         * from the passed arguments list or array.
          * This is used in argument conversion, e.g. by all basic types (Point,
          * Size, Rectangle) and also higher classes such as Color and Segment.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Number} length the amount of elements that can be read
          * @param {Object} options {@code options.readNull} controls whether
@@ -204,8 +210,9 @@ Base.inject(/** @lends Base# */{
         /**
          * Allows peeking ahead in reading of values and objects from arguments
          * list through Base.read().
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          */
         peek: function(list, start) {
@@ -222,8 +229,9 @@ Base.inject(/** @lends Base# */{
         /**
          * Reads all readable arguments from the list, handling nested arrays
          * separately.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Object} options {@code options.readNull} controls whether
          * null is returned or converted. {@code options.clone} controls whether
@@ -247,10 +255,11 @@ Base.inject(/** @lends Base# */{
          * Base.readNamed() can read both from such named properties and normal
          * unnamed arguments through Base.read(). In use for example for the
          * various Path.Constructors.
+         *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array.
+         * or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {String} name the property name to read from.
+         * @param {String} name the property name to read from
          */
         readNamed: function(list, name, start, options, length) {
             var value = this.getNamed(list, name),
@@ -275,8 +284,8 @@ Base.inject(/** @lends Base# */{
         /**
          * @return the named value if the list provides an arguments object,
          * {@code null} if the named value is {@code null} or {@code undefined},
-         * and {@code undefined} if there is no arguments object.
-         * If no name is provided, it returns the whole arguments object.
+         * and {@code undefined} if there is no arguments object
+         * If no name is provided, it returns the whole arguments object
          */
         getNamed: function(list, name) {
             var arg = list[0];
@@ -392,7 +401,7 @@ Base.inject(/** @lends Base# */{
          * The passed json data is recoursively traversed and converted, leaves
          * first
          */
-        deserialize: function(json, create, _data) {
+        deserialize: function(json, create, _data, _isDictionary) {
             var res = json,
                 isRoot = !_data;
             // A _data side-car to deserialize that can hold any kind of
@@ -405,22 +414,24 @@ Base.inject(/** @lends Base# */{
                 // deserialize all elements of the array.
                 var type = json[0],
                     // Handle stored dictionary specially, since we need to
-                    // keep is a lookup table to retrieve referenced items from.
+                    // keep a lookup table to retrieve referenced items from.
                     isDictionary = type === 'dictionary';
-                if (!isDictionary) {
-                    // First see if this is perhaps a dictionary reference, and
-                    // if so return its definition instead.
-                    if (_data.dictionary && json.length == 1 && /^#/.test(type))
-                        return _data.dictionary[type];
-                    type = Base.exports[type];
-                }
+                // First see if this is perhaps a dictionary reference, and
+                // if so return its definition instead.
+                if (json.length == 1 && /^#/.test(type))
+                    return _data.dictionary[type];
+                type = Base.exports[type];
                 res = [];
+                // We need to set the dictionary object before further
+                // deserialization, because serialized symbols may contain
+                // references to serialized gradients
+                if (_isDictionary)
+                    _data.dictionary = res;
                 // Skip first type entry for arguments
                 for (var i = type ? 1 : 0, l = json.length; i < l; i++)
-                    res.push(Base.deserialize(json[i], create, _data));
-                if (isDictionary) {
-                    _data.dictionary = res[0];
-                } else if (type) {
+                    res.push(Base.deserialize(json[i], create, _data,
+                            isDictionary));
+                if (type) {
                     // Create serialized type and pass collected arguments to
                     // constructor().
                     var args = res;
@@ -436,6 +447,9 @@ Base.inject(/** @lends Base# */{
                 }
             } else if (Base.isPlainObject(json)) {
                 res = {};
+                // See above why we have to set this before Base.deserialize()
+                if (_isDictionary)
+                    _data.dictionary = res;
                 for (var key in json)
                     res[key] = Base.deserialize(json[key], create, _data);
             }
