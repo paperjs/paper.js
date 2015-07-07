@@ -32,7 +32,7 @@
     "canvas": "~1.2.1"
   },
   "devDependencies": {
-    "uglify-js": "~2.4.16",
+    "uglify-js": "~2.4.23",
     "prepro": "~0.8.3"
   },
   "keywords": [
