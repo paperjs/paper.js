@@ -462,7 +462,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             return src;
 /*#*/ }
         var canvas = this.getCanvas();
-        return canvas ? canvas.toDataURL() : null;
+        return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
     },
 
     /**
