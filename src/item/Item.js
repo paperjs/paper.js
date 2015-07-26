@@ -117,9 +117,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT)
-            // Filter out insert and parent property as these were handled above
-            // and don't check for plain object as that's done through hasProps.
-            this._set(props, { insert: true, parent: true }, true);
+            // Filter out insert, parent and project properties as these were
+            // handled above.
+            this._set(props, { insert: true, project: true, parent: true },
+                    // Don't check for plain object as that's done by hasProps.
+                    true);
         return hasProps;
     },
 
