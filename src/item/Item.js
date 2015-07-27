@@ -3857,7 +3857,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     // If native blending is possible, see if the item allows it
                     || (nativeBlend || normalBlend && opacity < 1)
                         && this._canComposite(),
-            pixelRatio = param.pixelRatio,
+            pixelRatio = param.pixelRatio || 1,
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
