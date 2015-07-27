@@ -35,6 +35,7 @@
     "gulp": "^3.9.0",
     "gulp-qunit": "^1.2.1",
     "prepro": "~0.8.3",
+    "qunitjs": "~1.15.0",
     "uglify-js": "~2.4.23"
   },
   "keywords": [

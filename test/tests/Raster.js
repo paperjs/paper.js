@@ -24,7 +24,7 @@ test('Create a raster without a source and set its size', function() {
 });
 
 asyncTest('Create a raster from a url', function(callback) {
-    var raster = new Raster('resources/paper-js.gif');
+    var raster = new Raster('assets/paper-js.gif');
     raster.onLoad = function() {
         equals(raster.size.toString(), new Size(146, 146).toString(), true);
         callback();
@@ -41,7 +41,7 @@ asyncTest('Create a raster from a data url', function(callback) {
 
 asyncTest('Create a raster from a dom image', function(callback) {
     var img = document.createElement('img');
-    img.src = 'resources/paper-js.gif';
+    img.src = 'assets/paper-js.gif';
     document.body.appendChild(img);
     DomEvent.add(img, {
         load: function() {
@@ -62,7 +62,7 @@ test('Create a raster from a canvas', function(callback) {
 
 asyncTest('Create a raster from a dom id', function(callback) {
     var img = document.createElement('img');
-    img.src = 'resources/paper-js.gif';
+    img.src = 'assets/paper-js.gif';
     img.id = 'testimage';
     document.body.appendChild(img);
     DomEvent.add(img, {
