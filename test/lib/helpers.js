@@ -67,6 +67,28 @@ var comparators = {
         QUnit.push(Base.equals(actual, expected), actual, expected, message);
     },
 
+    Element: function(actual, expected, message, options) {
+        // Convention: Loop through the attribute lists of both actual and
+        // expected element, and compare values even if they may be inherited.
+        // This is to handle styling values on SVGElements more flexibly.
+        equals(actual && actual.tagName, expected.tagName,
+                (message || '') + '.tagName', options);
+        for (var i = 0; i < expected.attributes.length; i++) {
+            var attr = expected.attributes[i];
+            if (attr.specified) {
+                equals(actual && actual.getAttribute(attr.name), attr.value,
+                        (message || '') + '.' + attr.name, options);
+            }
+        }
+        for (var i = 0; i < actual && actual.attributes.length; i++) {
+            var attr = actual.attributes[i];
+            if (attr.specified) {
+                equals(attr.value, expected.getAttribute(attr.name)
+                        (message || '') + '.' + attr.name, options);
+            }
+        }
+    },
+
     Base: function(actual, expected, message, options) {
         comparators.Object(actual, expected, message, options);
     },
@@ -228,14 +250,12 @@ function equals(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || (cls = expected && expected._class)
-            || type === 'object' && 'Object';
+            || expected instanceof Element && 'Element' // handle DOM Elements
+            || (cls = expected && expected._class) // check _class 2nd last
+            || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
-    if (!message) {
-        message = type
-                ? type.charAt(0).toLowerCase() + type.substring(1)
-                : 'value';
-    }
+    if (!message)
+        message = type ? type.toLowerCase() : 'value';
     if (comparator) {
         comparator(actual, expected, message, options);
     } else if (expected && expected.equals) {

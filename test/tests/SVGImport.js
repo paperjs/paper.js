@@ -12,12 +12,6 @@
 
 module('SVGImport');
 
-test('Import complex CompoundPath and clone', function() {
-    var svg = createSVG('<path id="path" fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/>;');
-    var item = paper.project.importSVG(svg.getElementById('path'));
-    equals(item, item.clone(), null, { cloned: true });
-});
-
 test('Import SVG line', function() {
     var attrs = {
         x1: 5,
@@ -112,10 +106,16 @@ test('Import SVG polygon', function() {
 });
 
 test('Import SVG polyline', function() {
-    var points = "5,5 45,45 5,45 45,5";
+    var points = '5,5 45,45 5,45 45,5';
     var imported = paper.project.importSVG(createSVG('polyline', {
         points: points
     }));
     var path = createPolyPath(points);
     equals(imported, path);
+});
+
+test('Import complex CompoundPath and clone', function() {
+    var svg = createSVG('<path id="path" fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/>;');
+    var item = paper.project.importSVG(svg.getElementById('path'));
+    equals(item, item.clone(), null, { cloned: true });
 });
