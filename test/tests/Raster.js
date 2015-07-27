@@ -130,8 +130,9 @@ test('Raster#getAverageColor(path)', function() {
         fillColor: new Color(1, 0, 0)
     });
     var raster = paper.project.activeLayer.rasterize(72);
-    circle.scale(0.9);
-    equals(raster.getAverageColor(circle), circle.fillColor);
+    circle.scale(0.8);
+    equals(raster.getAverageColor(circle), circle.fillColor, null,
+            { tolerance: 10e-4 });
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
@@ -151,7 +152,8 @@ test('Raster#getAverageColor(path) with compound path', function() {
     var compoundPath = new CompoundPath(path, path2);
     compoundPath.fillColor = new Color(1, 0, 0);
     var raster = paper.project.activeLayer.rasterize(72);
-    path.scale(0.9);
-    path2.scale(1.1);
-    equals(raster.getAverageColor(compoundPath), new Color(1, 0, 0), null, { tolerance: 10e-4 });
+    path.scale(0.8);
+    path2.scale(1.2);
+    equals(raster.getAverageColor(compoundPath), new Color(1, 0, 0), null,
+            { tolerance: 10e-4 });
 });
