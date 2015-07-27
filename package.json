@@ -32,8 +32,10 @@
     "canvas": "~1.2.1"
   },
   "devDependencies": {
-    "uglify-js": "~2.4.23",
-    "prepro": "~0.8.3"
+    "gulp": "^3.9.0",
+    "gulp-qunit": "^1.2.1",
+    "prepro": "~0.8.3",
+    "uglify-js": "~2.4.23"
   },
   "keywords": [
     "vector",
