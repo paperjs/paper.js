@@ -312,12 +312,12 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript}
      * var raster = new Raster();
-     * raster.source = 'http://paperjs.org/about/resources/paper-js.gif';
+     * raster.source = 'http://paperjs.org/about/paper-js.gif';
      * raster.position = view.center;
      *
      * @example {@paperscript}
      * var raster = new Raster({
-     *     source: 'http://paperjs.org/about/resources/paper-js.gif',
+     *     source: 'http://paperjs.org/about/paper-js.gif',
      *     position: view.center
      * });
      */
