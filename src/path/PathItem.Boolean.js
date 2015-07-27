@@ -132,7 +132,7 @@ PathItem.inject(new function() {
             for (var j = 0; j < 3; j++) {
                 // Try the points at 1/4, 2/4 and 3/4 of the total length:
                 var length = totalLength * (j + 1) / 4;
-                for (k = 0, m = chain.length; k < m; k++) {
+                for (var k = 0, m = chain.length; k < m; k++) {
                     var node = chain[k],
                         curveLength = node.length;
                     if (length <= curveLength) {
