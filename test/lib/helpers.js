@@ -273,8 +273,16 @@ function asyncTest(testName, expected) {
 
 // SVG
 
-function createSVG(xml) {
-    return new DOMParser().parseFromString(
-        '<svg xmlns="http://www.w3.org/2000/svg">' + xml + '</svg>',
-        'text/xml');
+function createSVG(str, attrs) {
+    if (attrs) {
+        // Similar to SVGExport's createElement / setAttributes.
+        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+        for (var key in attrs)
+            node.setAttribute(key, attrs[key]);
+        return node;
+    } else {
+        return new DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
+            'text/xml');
+    }
 }
