@@ -457,7 +457,7 @@ Base.exports.PaperScript = (function() {
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
                 src = script.src,
-                async = PaperScope.hasAttribute(script, 'asyc'),
+                async = PaperScope.hasAttribute(script, 'async'),
                 scopeAttribute = 'data-paper-scope';
             if (!canvas)
                 throw new Error('Unable to find canvas with id "'
