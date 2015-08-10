@@ -121,9 +121,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @name PaperScope#settings
      * @type Object
      *
-     * @option settings.applyMatrix {Boolean}
-     * @option settings.handleSize {Number}
-     * @option settings.hitTolerance {Number}
+     * @option [settings.applyMatrix=true] {Boolean}
+     * @option [settings.handleSize=4] {Number}
+     * @option [settings.hitTolerance=0] {Number}
      */
 
     /**

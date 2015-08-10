@@ -17,6 +17,8 @@
 
 /*#*/ include('Color.js');
 
+/*#*/ include('Emitter.js');
+
 /*#*/ include('Project.js');
 
 /*#*/ include('Item.js');
@@ -37,6 +39,8 @@
 /*#*/ include('Path_Length.js');
 /*#*/ include('Path_Intersections.js');
 /*#*/ include('Path_Boolean.js');
+
+/*#*/ include('Shape.js');
 
 /*#*/ include('Curve.js');
 /*#*/ include('CurveLocation.js');

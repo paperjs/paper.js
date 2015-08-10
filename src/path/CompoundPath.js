@@ -29,7 +29,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * Creates a new compound path item and places it in the active layer.
      *
-     * @param {Path[]} [paths] the paths to place within the compound path.
+     * @param {Path[]} [paths] the paths to place within the compound path
      *
      * @example {@paperscript}
      * // Create a circle shaped path with a hole in it:
@@ -80,7 +80,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      *
      * @name CompoundPath#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
-     * of this path.
+     * of this path
      * @return {CompoundPath} the newly created path
      *
      * @example {@paperscript}

@@ -39,12 +39,10 @@ cd $PAPER_DIR
 echo "Commiting Version"
 # Update versions
 update_version 'package.json'
-update_version 'bower.json'
 update_version 'component.json'
 # Add changed json configuration files
 git add -u src/options.js # Commit as well, since it was manually bumped.
 git add -u package.json
-git add -u bower.json
 git add -u component.json
 # Add all changed files in dist
 git add -u dist

@@ -124,7 +124,7 @@ Path.inject({ statics: new function() {
          *
          * @name Path.Rectangle
          * @param {Rectangle} rectangle the rectangle object describing the
-         * geometry of the rectangular path to be created.
+         * geometry of the rectangular path to be created
          * @param {Size} [radius=null] the size of the rounded corners
          * @return {Path} the newly created path
          *

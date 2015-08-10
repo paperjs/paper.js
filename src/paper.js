@@ -51,6 +51,7 @@ var paper = new function(undefined) {
 
 /*#*/ include('util/Formatter.js');
 /*#*/ include('util/Numerical.js');
+/*#*/ include('util/UID.js');
 
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:

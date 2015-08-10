@@ -43,7 +43,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * placed
      *
      * @example {@paperscript height=300} // Creating a raster using a url
-     * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
+     * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
      * var raster = new Raster(url);
      *
      * // If you create a Raster using a url, you can use the onLoad
@@ -67,7 +67,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript height=300}
      * var raster = new Raster({
-     *     source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
      *     position: view.center
      * });
      *
@@ -350,10 +350,8 @@ var Raster = Item.extend(/** @lends Raster# */{
             // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
         } else {
-            // Trigger the onLoad event on the image once it's loaded
-            DomEvent.add(image, {
-                load: loaded
-            });
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, { load: loaded });
             // A new image created above? Set the source now.
             if (!image.src)
                 image.src = src;
@@ -486,7 +484,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @param {Path|Rectangle|Point} object
      * @return {Color} the average color contained in the area covered by the
-     * specified path, rectangle or point.
+     * specified path, rectangle or point
      */
     getAverageColor: function(object) {
         var bounds, path;

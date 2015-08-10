@@ -66,8 +66,8 @@ var Gradient = Base.extend(/** @lends Gradient# */{
 
     // DOCS: Document #initialize()
     initialize: function Gradient(stops, radial) {
-        // Define this Gradient's unique id.
-        this._id = Gradient._id = (Gradient._id || 0) + 1;
+        // Use UID here since Gradients are exported through dictionary.add().
+        this._id = UID.get();
         if (stops && this._set(stops))
             stops = radial = null;
         if (!this._stops)
@@ -124,7 +124,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
         var stops = [];
         for (var i = 0, l = this._stops.length; i < l; i++)
             stops[i] = this._stops[i].clone();
-        return new Gradient(stops);
+        return new Gradient(stops, this._radial);
     },
 
     /**

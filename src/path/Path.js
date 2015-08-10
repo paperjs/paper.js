@@ -75,9 +75,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
+     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
-     * of this path.
+     * of this path
      * @return {Path} the newly created path
      *
      * @example {@paperscript}
@@ -88,6 +89,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     initialize: function Path(arg) {
         this._closed = false;
         this._segments = [];
+        // Increased on every change of segments, so CurveLocation knows when to
+        // update its internally cached values.
+        this._version = 0;
         // arg can either be an object literal containing properties to be set
         // on the path, a list of segments to be set, or the first of multiple
         // arguments describing separate segments.
@@ -147,10 +151,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                 parent._currentPath = undefined;
             // Clockwise state becomes undefined as soon as geometry changes.
             this._length = this._clockwise = undefined;
-            // Only notify all curves if we're not told that only one Segment
-            // has changed and took already care of notifications.
-            if (this._curves && !(flags & /*#=*/ChangeFlag.SEGMENTS)) {
-                for (var i = 0, l = this._curves.length; i < l; i++)
+            if (flags & /*#=*/ChangeFlag.SEGMENTS) {
+                this._version++; // See CurveLocation
+            } else if (this._curves) {
+                // Only notify all curves if we're not told that only segments
+                // have changed and took already care of notifications.
+               for (var i = 0, l = this._curves.length; i < l; i++)
                     this._curves[i]._changed();
             }
             // Clear cached curves used for winding direction and containment
@@ -488,7 +494,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Segment|Point} segment the segment or point to be added.
      * @return {Segment} the added segment. This is not necessarily the same
-     * object, e.g. if the segment to be added already belongs to another path.
+     * object, e.g. if the segment to be added already belongs to another path
      *
      * @example {@paperscript}
      * // Adding segments to a path using point objects:
@@ -560,10 +566,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Inserts one or more segments at a given index in the list of this path's
      * segments.
      *
-     * @param {Number} index the index at which to insert the segment.
+     * @param {Number} index the index at which to insert the segment
      * @param {Segment|Point} segment the segment or point to be inserted.
      * @return {Segment} the added segment. This is not necessarily the same
-     * object, e.g. if the segment to be added already belongs to another path.
+     * object, e.g. if the segment to be added already belongs to another path
      *
      * @example {@paperscript}
      * // Inserting a segment:
@@ -615,7 +621,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @param {Segment[]} segments
      * @return {Segment[]} an array of the added segments. These segments are
      * not necessarily the same objects, e.g. if the segment to be added already
-     * belongs to another path.
+     * belongs to another path
      *
      * @example {@paperscript}
      * // Adding an array of Point objects:
@@ -658,11 +664,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Inserts an array of segments at a given index in the path's
      * {@link #segments} array.
      *
-     * @param {Number} index the index at which to insert the segments.
-     * @param {Segment[]} segments the segments to be inserted.
+     * @param {Number} index the index at which to insert the segments
+     * @param {Segment[]} segments the segments to be inserted
      * @return {Segment[]} an array of the added segments. These segments are
      * not necessarily the same objects, e.g. if the segment to be added already
-     * belongs to another path.
+     * belongs to another path
      */
     insertSegments: function(index, segments) {
         return this._add(Segment.readAll(segments), index);
@@ -1356,9 +1362,17 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this;
     },
 
-
-    // DOCS: toShape
-
+    /**
+     * Attempts to create a new shape item with same geometry as this path item,
+     * and inherits all settings from it, similar to {@link Item#clone()}.
+     *
+     * @param {Boolean} [insert=true] specifies whether the new shape should be
+     * inserted into the DOM. When set to {@code true}, it is inserted above the
+     * path item
+     * @return {Shape} the newly created shape item with the same geometry as
+     * this path item if it can be matched, {@code null} otherwise
+     * @see Shape#toPath(insert)
+     */
     toShape: function(insert) {
         if (!this._closed)
             return null;
@@ -1369,8 +1383,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             radius,
             topCenter;
 
-        function isColinear(i, j) {
-            return segments[i].isColinear(segments[j]);
+        function isCollinear(i, j) {
+            return segments[i].isCollinear(segments[j]);
         }
 
         function isOrthogonal(i) {
@@ -1389,12 +1403,12 @@ var Path = PathItem.extend(/** @lends Path# */{
         // between straight objects (line, polyline, rect, and  polygon) and
         // objects with curves(circle, ellipse, roundedRectangle).
         if (this.isPolygon() && segments.length === 4
-                && isColinear(0, 2) && isColinear(1, 3) && isOrthogonal(1)) {
+                && isCollinear(0, 2) && isCollinear(1, 3) && isOrthogonal(1)) {
             type = Shape.Rectangle;
             size = new Size(getDistance(0, 3), getDistance(0, 1));
             topCenter = segments[1]._point.add(segments[2]._point).divide(2);
         } else if (segments.length === 8 && isArc(0) && isArc(2) && isArc(4)
-                && isArc(6) && isColinear(1, 5) && isColinear(3, 7)) {
+                && isArc(6) && isCollinear(1, 5) && isCollinear(3, 7)) {
             // It's a rounded rectangle.
             type = Shape.Rectangle;
             size = new Size(getDistance(1, 6), getDistance(0, 3));
@@ -1419,18 +1433,14 @@ var Path = PathItem.extend(/** @lends Path# */{
 
         if (type) {
             var center = this.getPosition(true),
-                shape = new type({
+                shape = this._clone(new type({
                     center: center,
                     size: size,
                     radius: radius,
                     insert: false
-                });
+                }), insert, false);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
-            shape.setStyle(this._style);
-            // Insert is true by default.
-            if (insert || insert === undefined)
-                shape.insertAbove(this);
             return shape;
         }
         return null;
@@ -1454,7 +1464,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             radius = hitStroke
                     ? style.getStrokeWidth() / 2
                     // Set radius to 0 when we're hit-testing fills with
-                    // tolerance, to handle tolerance  through stroke hit-test
+                    // tolerance, to handle tolerance through stroke hit-test
                     // functionality. Also use 0 when hit-testing curves.
                     : hitFill && options.tolerance > 0 || hitCurves
                         ? 0 : null;
@@ -1636,8 +1646,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * Returns the curve location of the specified point if it lies on the
      * path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {CurveLocation} the curve location of the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
         var point = Point.read(arguments),
@@ -1653,8 +1664,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Returns the length of the path from its beginning up to up to the
      * specified point if it lies on the path, {@code null} otherwise.
-     * @param {Point} point the point on the path.
-     * @return {Number} the length of the path up to the specified point.
+     *
+     * @param {Point} point the point on the path
+     * @return {Number} the length of the path up to the specified point
      */
     getOffsetOf: function(/* point */) {
         var loc = this.getLocationOf.apply(this, arguments);
@@ -1665,7 +1677,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Returns the curve location of the specified offset on the path.
      *
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {CurveLocation} the curve location at the specified offset
      */
@@ -1700,7 +1712,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getPointAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the point at the given offset
      *
@@ -1763,7 +1775,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getTangentAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the tangent vector at the given offset
      *
@@ -1834,7 +1846,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getNormalAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the normal vector at the given offset
      *
@@ -1908,7 +1920,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @name Path#getCurvatureAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
-     * the beginning of the path and {@link Path#length} at the end.
+     * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Number} the normal vector at the given offset
      *
@@ -2177,8 +2189,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Solves a tri-diagonal system for one of coordinates (x or y) of first
      * bezier control points.
      *
-     * @param rhs right hand side vector.
-     * @return Solution vector.
+     * @param rhs right hand side vector
+     * @return Solution vector
      */
     function getFirstControlPoints(rhs) {
         var n = rhs.length,
@@ -2699,7 +2711,7 @@ statics: {
             var handleIn = segment._handleIn,
                 handleOut = segment._handleOut;
             if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
-                    && handleIn.isColinear(handleOut)) {
+                    && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
                 Path._addBevelJoin(segment, join, radius, miterLimit, add);

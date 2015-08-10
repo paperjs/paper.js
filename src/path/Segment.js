@@ -32,11 +32,11 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @name Segment#initialize
      * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
      * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
-     *        anchor point of the segment that describes the in tangent of the
-     *        segment.
+     * anchor point of the segment that describes the in tangent of the
+     * segment
      * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
-     *        anchor point of the segment that describes the out tangent of the
-     *        segment.
+     * anchor point of the segment that describes the out tangent of the
+     * segment
      *
      * @example {@paperscript}
      * var handleIn = new Point(-80, -100);
@@ -56,7 +56,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @name Segment#initialize
      * @param {Object} object an object literal containing properties to
-     * be set on the segment.
+     * be set on the segment
      *
      * @example {@paperscript}
      * // Creating segments using object notation:
@@ -80,18 +80,18 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @param {Number} x the x coordinate of the segment point
      * @param {Number} y the y coordinate of the segment point
-     * @param {Number} inX the x coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the in tangent
-     *        of the segment.
-     * @param {Number} inY the y coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the in tangent
-     *        of the segment.
-     * @param {Number} outX the x coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the out tangent
-     *        of the segment.
-     * @param {Number} outY the y coordinate of the the handle point relative
-     *        to the anchor point of the segment that describes the out tangent
-     *        of the segment.
+     * @param {Number} inX the x coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the in tangent of the
+     * segment
+     * @param {Number} inY the y coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the in tangent of the
+     * segment
+     * @param {Number} outX the x coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the out tangent of the
+     * segment
+     * @param {Number} outY the y coordinate of the the handle point relative to
+     * the anchor point of the segment that describes the out tangent of the
+     * segment
      *
      * @example {@paperscript}
      * var inX = -80;
@@ -210,7 +210,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         // See #setPoint:
         this._handleIn.set(point.x, point.y);
         // Update corner accordingly
-        // this.corner = !this._handleIn.isColinear(this._handleOut);
+        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     /**
@@ -229,7 +229,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         // See #setPoint:
         this._handleOut.set(point.x, point.y);
         // Update corner accordingly
-        // this.corner = !this._handleIn.isColinear(this._handleOut);
+        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     // TODO: Rename this to #corner?
@@ -253,20 +253,23 @@ var Segment = Base.extend(/** @lends Segment# */{
         }
     },
 
-    // DOCS: #isColinear(segment), #isOrthogonal(), #isArc()
+    // DOCS: #isCollinear(segment), #isOrthogonal(), #isArc()
 
     /**
      * Returns true if the the two segments are the beginning of two lines and
      * if these two lines are running parallel.
      */
-    isColinear: function(segment) {
+    isCollinear: function(segment) {
         var next1 = this.getNext(),
             next2 = segment.getNext();
         return this._handleOut.isZero() && next1._handleIn.isZero()
                 && segment._handleOut.isZero() && next2._handleIn.isZero()
-                && next1._point.subtract(this._point).isColinear(
+                && next1._point.subtract(this._point).isCollinear(
                     next2._point.subtract(segment._point));
     },
+
+    // TODO: Remove version with typo after a while (deprecated June 2015)
+    isColinear: '#isCollinear',
 
     isOrthogonal: function() {
         var prev = this.getPrevious(),

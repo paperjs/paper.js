@@ -12,6 +12,23 @@
 
 module('HitResult');
 
+test('hit-testing options', function() {
+    var defaultOptions = {
+        type: null,
+        tolerance: paper.settings.hitTolerance,
+        fill: true,
+        stroke: true,
+        segments: true,
+        handles: false,
+        ends: false,
+        center: false,
+        bounds: false,
+        guides: false,
+        selected: false
+    };
+    equals(HitResult.getOptions(), defaultOptions, 'Default options');
+});
+
 test('hitting a filled shape', function() {
     var path = new Path.Circle([50, 50], 50);
 

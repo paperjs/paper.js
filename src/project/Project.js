@@ -303,30 +303,29 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The options object allows you to control the specifics of the hit-test
      * and may contain a combination of the following values:
      *
-     * @option options.tolerance {Number} the tolerance of the hit-test in
-     * points. Can also be controlled through
-     * {@link PaperScope#settings}{@code .hitTolerance}.
+     * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
+     * {Number} the tolerance of the hit-test in points
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc.
-     * @option options.fill {Boolean} hit-test the fill of items.
+     * Shape, Raster, PlacedSymbol, PointText}, etc
+     * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
-     * taking into account the setting of stroke color and width.
+     * taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     * {@link Path} items.
+     * {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
-     * without taking the stroke color or width into account.
-     * @option options.handles {Boolean} hit-test for the handles.
+     * without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles
      * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
-     * segment points of open path items.
+     * segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have
-     * {@link Item#guide} set to {@code true}.
-     * @option options.selected {Boolean} only hit selected items.
+     * {@link Item#guide} set to {@code true}
+     * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
@@ -364,9 +363,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * contained.
      *
      * @option match.inside {Rectangle} the rectangle in which the items need to
-     * be fully contained.
+     * be fully contained
      * @option match.overlapping {Rectangle} the rectangle with which the items
-     * need to at least partly overlap.
+     * need to at least partly overlap
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({
@@ -573,8 +572,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @see Item#matches(match)
      * @see Item#getItems(match)
-     * @param {Object} match the criteria to match against.
-     * @return {Item[]} the list of matching items contained in the project.
+     * @param {Object} match the criteria to match against
+     * @return {Item[]} the list of matching items contained in the project
      */
     getItems: function(match) {
         return Item._getItems(this.layers, match);
@@ -590,8 +589,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * does work for {@link Item#data}.
      * See {@link #getItems(match)} for a selection of illustrated examples.
      *
-     * @param {Object} match the criteria to match against.
-     * @return {Item} the first item in the project matching the given criteria.
+     * @param {Object} match the criteria to match against
+     * @return {Item} the first item in the project matching the given criteria
      */
     getItem: function(match) {
         return Item._getItems(this.layers, match, null, null, true)[0] || null;
@@ -601,18 +600,17 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * {@grouptitle Importing / Exporting JSON and SVG}
      *
      * Exports (serializes) the project with all its layers and child items to
-     * a JSON data string.
+     * a JSON data object or string.
      *
      * @name Project#exportJSON
      * @function
      *
-     * @option options.asString {Boolean} whether the JSON is returned as a
-     * {@code Object} or a {@code String}.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in JSON data.
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as
+     * a {@code Object} or a {@code String}
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in JSON data
      *
-     * @param {Object} [options={ asString: true, precision: 5 }] the
-     * serialization options
+     * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
      */
 
@@ -621,7 +619,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that the project is not cleared first. You can call
      * {@link Project#clear()} to do so.
      *
-     * @param {String} json the JSON data to import from.
+     * @param {String} json the JSON data to import from
      */
     importJSON: function(json) {
         this.activate();
@@ -638,19 +636,18 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @name Project#exportSVG
      * @function
      *
-     * @option options.asString {Boolean} whether a SVG node or a {@code String}
-     * is to be returned.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in SVG data.
-     * @option options.matchShapes {Boolean} whether path items should tried to
-     * be converted to shape items, if their geometries can be made to match.
+     * @option [options.asString=false] {Boolean} whether a SVG node or a
+     * {@code String} is to be returned
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in SVG data
+     * @option [options.matchShapes=false] {Boolean} whether path items should
+     * tried to be converted to shape items, if their geometries can be made to
+     * match
      *
-     * @param {Object} [options={ asString: false, precision: 5,
-     * matchShapes: false }] the export options.
+     * @param {Object} [options] the export options
      * @return {SVGElement} the project converted to an SVG node
      */
 
-    // DOCS: Document importSVG('file.svg', callback);
     /**
      * Converts the provided SVG content into Paper.js items and adds them to
      * the active layer of this project.
@@ -660,12 +657,36 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @name Project#importSVG
      * @function
      *
-     * @option options.expandShapes {Boolean} whether imported shape items
-     * should be expanded to path items.
+     * @option [options.expandShapes=false] {Boolean} whether imported shape
+     * items should be expanded to path items
+     * @option [options.onLoad] {Function} the callback function to call once
+     * the SVG content is loaded from the given URL. Only required when loading
+     * from external files.
+     * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
+     * {Boolean} whether imported items should have their transformation
+     * matrices applied to their contents or not
      *
-     * @param {SVGElement|String} svg the SVG content to import
-     * @param {Object} [options={ expandShapes: false }] the import options
-     * @return {Item} the imported Paper.js parent item
+     * @param {SVGElement|String} svg the SVG content to import, either as a SVG
+     * DOM node, a string containing SVG content, or a string describing the URL
+     * of the SVG file to fetch.
+     * @param {Object} [options] the import options
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
+     */
+    /**
+     * Imports the provided external SVG file, converts it into Paper.js items
+     * and adds them to the active layer of this project.
+     * Note that the project is not cleared first. You can call
+     * {@link Project#clear()} to do so.
+     *
+     * @name Project#importSVG
+     * @function
+     *
+     * @param {SVGElement|String} svg the URL of the SVG file to fetch.
+     * @param {Function} onLoad the callback function to call once the SVG
+     * content is loaded from the given URL.
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
      */
 
     draw: function(ctx, matrix, pixelRatio) {
@@ -674,8 +695,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this._updateVersion++;
         ctx.save();
         matrix.applyToContext(ctx);
-        // Use new Base() so we can use param.extend() to easily override
-        // values
+        // Use new Base() so we can use param.extend() to easily override values
         var param = new Base({
             offset: new Point(0, 0),
             pixelRatio: pixelRatio,
