@@ -1418,7 +1418,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
 
         function isArc(i) {
-            return segments[i].isArc();
+            return segments[i].isOrthogonalArc();
         }
 
         function getDistance(i, j) {

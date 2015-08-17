@@ -268,8 +268,12 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Returns true if the the two segments are the beginning of two lines and
-     * if these two lines are running parallel.
+     * Checks if the the two segments are the beginning of two lines that are
+     * collinear, meaning they run in parallel.
+     *
+     * @param {Segment} the other segment to check against
+     * @return {Boolean} {@true if the two lines are collinear}
+     * @see Curve#isCollinear(curve)
      */
     isCollinear: function(segment) {
         var next1 = this.getNext(),
@@ -283,6 +287,13 @@ var Segment = Base.extend(/** @lends Segment# */{
     // TODO: Remove version with typo after a while (deprecated June 2015)
     isColinear: '#isCollinear',
 
+    /**
+     * Checks if the segment is connecting two lines that are orthogonal,
+     * meaning they connect at an 90° angle.
+     *
+     * @return {Boolean} {@true if the two lines connected by this segment are
+     * orthogonal}
+     */
     isOrthogonal: function() {
         var prev = this.getPrevious(),
             next = this.getNext();
@@ -293,16 +304,20 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Returns true if the segment at the given index is the beginning of an
-     * orthogonal arc segment. The code looks at the length of the handles and
-     * their relation to the distance to the imaginary corner point. If the
-     * relation is kappa, then it's an arc.
+     * Checks if the segment is the beginning of an orthogonal arc, as used in
+     * the construction of circles and ellipses.
+     *
+     * @return {Boolean} {@true if the segment is the beginning of an orthogonal
+     * arc}
+     * @see Curve#isOrthogonalArc()
      */
-    isArc: function() {
+    isOrthogonalArc: function() {
         var next = this.getNext(),
             handle1 = this._handleOut,
             handle2 = next._handleIn,
             kappa = /*#=*/Numerical.KAPPA;
+        // Look at the length of the handles and their relation to the distance
+        // to the imaginary corner point and see if it their relation is kappa.
         if (handle1.isOrthogonal(handle2)) {
             var from = this._point,
                 to = next._point,
@@ -317,6 +332,9 @@ var Segment = Base.extend(/** @lends Segment# */{
         }
         return false;
     },
+
+    // TODO: Remove a while (deprecated August 2015)
+    isArc: '#isOrthogonalArc',
 
     _selectionState: 0,
 

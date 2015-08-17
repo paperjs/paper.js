@@ -314,6 +314,29 @@ var Curve = Base.extend(/** @lends Curve# */{
         return this._segment1.isLinear();
     },
 
+    /**
+     * Checks if the the two curves describe lines that are collinear, meaning
+     * they run in parallel.
+     *
+     * @param {Curve} the other curve to check against
+     * @return {Boolean} {@true if the two lines are collinear}
+     * @see Segment#isCollinear(segment)
+     */
+    isCollinear: function(curve) {
+        return this._segment1.isCollinear(curve._segment1);
+    },
+
+    /**
+     * Checks if the curve describes an orthogonal arc, as used in the
+     * construction of circles and ellipses.
+     *
+     * @return {Boolean} {@true if the curve describes an orthogonal arc}
+     * @see Segment#isOrthogonalArc()
+     */
+    isOrthogonalArc: function() {
+        return this._segment1.isOrthogonalArc();
+    },
+
     // DOCS: Curve#getIntersections()
     getIntersections: function(curve) {
         return Curve.filterIntersections(Curve.getIntersections(
