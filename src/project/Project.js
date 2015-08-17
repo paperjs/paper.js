@@ -641,8 +641,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.precision=5] {Number} the amount of fractional digits in
      * numbers used in SVG data
      * @option [options.matchShapes=false] {Boolean} whether path items should
-     * tried to be converted to shape items, if their geometries can be made to
-     * match
+     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
+     * polyline, polygon), if their geometries match
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the project converted to an SVG node

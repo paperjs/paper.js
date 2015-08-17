@@ -114,7 +114,8 @@ new function() {
     }
 
     function exportPath(item, options) {
-        if (options.matchShapes) {
+        var matchShapes = options.matchShapes;
+        if (matchShapes) {
             var shape = item.toShape(false);
             if (shape)
                 return exportShape(shape, options);
@@ -124,7 +125,7 @@ new function() {
             attrs = getTransform(item._matrix);
         if (segments.length === 0)
             return null;
-        if (item.isPolygon()) {
+        if (matchShapes && !item.isPolygon()) {
             if (segments.length >= 3) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];

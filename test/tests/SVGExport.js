@@ -20,7 +20,7 @@ test('Export SVG line', function() {
         y2: 45
     };
     var path = new Path.Line([attrs.x1, attrs.y1], [attrs.x2, attrs.y2]);
-    equals(path.exportSVG(), createSVG('line', attrs));
+    equals(path.exportSVG({ matchShapes: true }), createSVG('line', attrs));
 });
 
 test('Export SVG rect', function() {
