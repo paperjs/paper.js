@@ -829,17 +829,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     setPivot: function(/* point */) {
-        this._pivot = Point.read(arguments);
+        // Clone existing points since we're caching internally.
+        this._pivot = Point.read(arguments, 0, { clone: true, readNull: true });
         // No need for _changed() since the only thing this affects is _position
         this._position = undefined;
     },
 
     _pivot: null,
-
-    // TODO: Keep these around for a bit since it was introduced on the mailing
-    // list, then remove in a while.
-    getRegistration: '#getPivot',
-    setRegistration: '#setPivot'
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
         'internalBounds', 'internalRoughBounds'],
     function(key) {
@@ -1525,6 +1521,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // NOTE: This will also bake in the matrix that we just initialized,
         // in case #applyMatrix is true.
         copy.setApplyMatrix(this._applyMatrix);
+        copy.setPivot(this._pivot);
         // Copy over the selection state, use setSelected so the item
         // is also added to Project#selectedItems if it is selected.
         copy.setSelected(this._selected);
