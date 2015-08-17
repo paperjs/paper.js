@@ -125,7 +125,7 @@ new function() {
             attrs = getTransform(item._matrix);
         if (segments.length === 0)
             return null;
-        if (matchShapes && item.isPolygon()) {
+        if (matchShapes && !item.hasHandles()) {
             if (segments.length >= 3) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];

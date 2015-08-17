@@ -368,12 +368,38 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this._segments.length === 0;
     },
 
-    isPolygon: function() {
-        for (var i = 0, l = this._segments.length; i < l; i++) {
-            if (!this._segments[i].isLinear())
+    /**
+     * Checks if this path consists of only linear curves. This can mean that
+     * the curves have no handles defined, or that the handles run collinear
+     * with the line.
+     *
+     * @return {Boolean} {@true if the path is entirely linear}
+     * @see Segment#isLinear()
+     * @see Curve#isLinear()
+     */
+    isLinear: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++) {
+            if (!segments[i].isLinear())
                 return false;
         }
         return true;
+    },
+
+    /**
+     * Checks if none of the curves in the path define any curve handles.
+     *
+     * @return {Boolean} {@true if the path contains no curve handles}
+     * @see Segment#hasHandles()
+     * @see Curve#hasHandles()
+     */
+    hasHandles: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++) {
+            if (segments[i].hasHandles())
+                return true;
+        }
+        return false;
     },
 
     _transformContent: function(matrix) {
@@ -1402,7 +1428,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         // See if actually have any curves in the path. Differentiate
         // between straight objects (line, polyline, rect, and  polygon) and
         // objects with curves(circle, ellipse, roundedRectangle).
-        if (this.isPolygon() && segments.length === 4
+        if (!this.hasHandles() && segments.length === 4
                 && isCollinear(0, 2) && isCollinear(1, 3) && isOrthogonal(1)) {
             type = Shape.Rectangle;
             size = new Size(getDistance(0, 3), getDistance(0, 1));

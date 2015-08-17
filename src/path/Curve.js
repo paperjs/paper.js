@@ -291,14 +291,27 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Checks if this curve is linear, meaning it does not define any curve
-     * handle.
+     * Checks if this curve defines any curve handle.
+     *
+     * @return {Boolean} {@true if the curve has handles defined}
+     * @see Segment#hasHandles()
+     * @see Path#hasHandles()
+     */
+    hasHandles: function() {
+        return !this._segment1._handleOut.isZero()
+                || !this._segment2._handleIn.isZero();
+    },
 
+    /**
+     * Checks if this curve appears as a line. This can mean that it has no
+     * handles defined, or that the handles run collinear with the line.
+     *
      * @return {Boolean} {@true if the curve is linear}
+     * @see Segment#isLinear()
+     * @see Path#isLinear()
      */
     isLinear: function() {
-        return this._segment1._handleOut.isZero()
-                && this._segment2._handleIn.isZero();
+        return this._segment1.isLinear();
     },
 
     // DOCS: Curve#getIntersections()
@@ -643,10 +656,19 @@ statics: {
         return v;
     },
 
-    isLinear: function(v) {
+    hasHandles: function(v) {
         var isZero = Numerical.isZero;
-        return isZero(v[0] - v[2]) && isZero(v[1] - v[3])
-                && isZero(v[4] - v[6]) && isZero(v[5] - v[7]);
+        return !(isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+                && isZero(v[4] - v[6]) && isZero(v[5] - v[7]));
+    },
+
+    isLinear: function(v) {
+        // See Segment#isLinear():
+        var p1x = v[0], p1y = v[1],
+            p2x = v[6], p2y = v[7],
+            l = new Point(p2x - p1x, p2y - p1y);
+        return l.isCollinear(new Point(v[2] - p1x, v[3] - p1y))
+                && l.isCollinear(new Point(v[4] - p2x, v[5] - p2y));
     },
 
     isFlatEnough: function(v, tolerance) {

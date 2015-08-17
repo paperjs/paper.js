@@ -145,8 +145,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     _serialize: function(options) {
-        // If the Segment is linear, only serialize point, otherwise handles too
-        return Base.serialize(this.isLinear() ? this._point
+        // If it is straight, only serialize point, otherwise handles too.
+        return Base.serialize(this.isStraight() ? this._point
                 : [this._point, this._handleIn, this._handleOut],
                 options, true);
     },
@@ -209,8 +209,6 @@ var Segment = Base.extend(/** @lends Segment# */{
         var point = Point.read(arguments);
         // See #setPoint:
         this._handleIn.set(point.x, point.y);
-        // Update corner accordingly
-        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     /**
@@ -228,32 +226,46 @@ var Segment = Base.extend(/** @lends Segment# */{
         var point = Point.read(arguments);
         // See #setPoint:
         this._handleOut.set(point.x, point.y);
-        // Update corner accordingly
-        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
-    // TODO: Rename this to #corner?
     /**
-     * Specifies whether the segment has no handles defined, meaning it connects
-     * two straight lines.
+     * Checks whether the segment has curve handles defined, meaning it is not
+     * a straight segment.
      *
-     * @type Boolean
-     * @bean
+     * @return {Boolean} {@true if the segment has handles defined}
+     * @see Curve#hasHandles()
+     * @see Path#hasHandles()
      */
-    isLinear: function() {
+    hasHandles: function() {
+        return !this.isStraight();
+    },
+
+    /**
+     * Checks whether the segment is straight, meaning it has no curve
+     * handles defined.
+     * If two straight segments are adjacent to each other, the curve between
+     * them will be a straight line.
+     *
+     * @return {Boolean} {@true if the segment is straight}
+     */
+    isStraight: function() {
         return this._handleIn.isZero() && this._handleOut.isZero();
     },
 
-    setLinear: function(linear) {
-        if (linear) {
-            this._handleIn.set(0, 0);
-            this._handleOut.set(0, 0);
-        } else {
-            // TODO: smooth() ?
-        }
+    /**
+     * Checks if the curve that starts in this segment appears as a line. This
+     * can mean that it has no handles defined, or that the handles run
+     * collinear with the line.
+     *
+     * @return {Boolean} {@true if the curve is linear}
+     * @see Curve#isLinear()
+     * @see Path#isLinear()
+     */
+    isLinear: function() {
+        var next = this.getNext(),
+            l = next._point.subtract(this._point);
+        return l.isCollinear(this._handleOut) && l.isCollinear(next._handleIn);
     },
-
-    // DOCS: #isCollinear(segment), #isOrthogonal(), #isArc()
 
     /**
      * Returns true if the the two segments are the beginning of two lines and
