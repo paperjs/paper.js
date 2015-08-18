@@ -1980,7 +1980,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (!param) {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
-                // inside // overlapping:
+                // inside / overlapping:
                 var overlapping = match.overlapping,
                     inside = match.inside,
                     // If overlapping is set, we also perform the inside check:
@@ -1988,8 +1988,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     rect =  bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
-                    inside: rect,
-                    overlapping: overlapping && new Path.Rectangle({
+                    inside: !!inside,
+                    overlapping: !!overlapping,
+                    rect: rect,
+                    path: overlapping && new Path.Rectangle({
                         rectangle: rect,
                         insert: false
                     })
@@ -2001,21 +2003,21 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                             { inside: true, overlapping: true });
             }
             var items = param.items,
-                inside = param.inside,
-                overlapping = param.overlapping;
-            matrix = inside && (matrix || new Matrix());
+                rect = param.rect;
+            matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
                     childMatrix = matrix && matrix.chain(child._matrix),
                     add = true;
-                if (inside) {
+                if (rect) {
                     var bounds = child.getBounds(childMatrix);
                     // Regardless of the setting of inside / overlapping, if the
-                    // bounds don't even overlap, we can skip this child.
-                    if (!inside.intersects(bounds))
+                    // bounds don't even intersect, we can skip this child.
+                    if (!rect.intersects(bounds))
                         continue;
-                    if (!(inside && inside.contains(bounds)) && !(overlapping
-                            && overlapping.intersects(child, childMatrix)))
+                    if (!(param.inside && rect.contains(bounds))
+                            && !(param.overlapping && (bounds.contains(rect)
+                                || param.path.intersects(child, childMatrix))))
                         add = false;
                 }
                 if (add && child.matches(match)) {
