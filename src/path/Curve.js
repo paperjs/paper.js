@@ -617,13 +617,7 @@ statics: {
             p2 = v[coord + 6],
             c = 3 * (c1 - p1),
             b = 3 * (c2 - c1) - c,
-            a = p2 - p1 - c - b,
-            isZero = Numerical.isZero;
-        // If both a and b are near zero, we should treat the curve as a line in
-        // order to find the right solutions in some edge-cases in
-        // Curve.getParameterOf()
-        if (isZero(a) && isZero(b))
-            a = b = 0;
+            a = p2 - p1 - c - b;
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
