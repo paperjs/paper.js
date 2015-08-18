@@ -572,7 +572,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @see Item#matches(match)
      * @see Item#getItems(match)
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item[]} the list of matching items contained in the project
      */
     getItems: function(match) {
@@ -589,7 +589,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * does work for {@link Item#data}.
      * See {@link #getItems(match)} for a selection of illustrated examples.
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item} the first item in the project matching the given criteria
      */
     getItem: function(match) {

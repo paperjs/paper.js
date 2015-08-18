@@ -1844,7 +1844,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Boolean} {@true if the item matches all the criteria}
      * @see #getItems(match)
      */
@@ -1886,12 +1886,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
             return true;
         }
-        if (typeof name === 'object') {
+        var type = typeof name;
+        if (type === 'object') {
             // `name` is the match object, not a string
             for (var key in name) {
                 if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
             }
+        } else if (type === 'function') {
+            return name(this);
         } else {
             var value = /^(empty|editable)$/.test(name)
                     // Handle boolean test functions separately, by calling them
@@ -1921,7 +1924,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return true;
     },
 
-
     /**
      * Fetch the descendants (children or children of children) of this item
      * that match the properties in the specified object.
@@ -1944,7 +1946,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option match.overlapping {Rectangle} the rectangle with which the items
      * need to at least partly overlap
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item[]} the list of matching descendant items
      * @see #matches(match)
      */
@@ -1963,7 +1965,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item} the first descendant item  matching the given criteria
      * @see #getItems(match)
      */
@@ -1977,7 +1979,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // method can be used for Project#layers as well in Project.
         _getItems: function _getItems(children, match, matrix, param,
                 firstOnly) {
-            if (!param) {
+            if (!param && typeof match === 'object') {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
                 // inside / overlapping:
@@ -2002,8 +2004,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     match = Base.set({}, match,
                             { inside: true, overlapping: true });
             }
-            var items = param.items,
-                rect = param.rect;
+            var items = param && param.items,
+                rect = param && param.rect;
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
