@@ -518,8 +518,7 @@ statics: {
         return values;
     },
 
-    // TODO: Instead of constants for type, use a "enum" and code substitution.
-    evaluate: function(v, t, type) {
+    _evaluate: function(v, t, type, normalized) {
         // Do not produce results if parameter is out of range or invalid.
         if (t == null || t < 0 || t > 1)
             return null;
@@ -552,36 +551,74 @@ statics: {
                 // 1: tangent, 1st derivative
                 // 2: normal, 1st derivative
                 // 3: curvature, 1st derivative & 2nd derivative
+                // Simply use the derivation of the bezier function for both
+                // the x and y coordinates:
                 // Prevent tangents and normals of length 0:
                 // http://stackoverflow.com/questions/10506868/
-                if (t < tolerance && c1x === p1x && c1y === p1y
-                        || t > 1 - tolerance && c2x === p2x && c2y === p2y) {
-                    x = c2x - c1x;
-                    y = c2y - c1y;
-                } else if (t < tolerance) {
+                if (t < tolerance) {
                     x = cx;
                     y = cy;
                 } else if (t > 1 - tolerance) {
                     x = 3 * (p2x - c2x);
                     y = 3 * (p2y - c2y);
                 } else {
-                    // Simply use the derivation of the bezier function for both
-                    // the x and y coordinates:
                     x = (3 * ax * t + 2 * bx) * t + cx;
                     y = (3 * ay * t + 2 * by) * t + cy;
+                }
+                if (normalized) {
+                    // When the tangent at t is zero and we're at the beginning
+                    // or the end, we can use the vector between the handles,
+                    // but only when normalizing as its weighted length is 0.
+                    if (x === 0 && y === 0
+                            && (t < tolerance || t > 1 - tolerance)) {
+                        x = c2x - c1x;
+                        y = c2y - c1y;
+                    }
+                    // Now normalize x & y
+                    var len = Math.sqrt(x * x + y * y);
+                    x /= len;
+                    y /= len;
                 }
                 if (type === 3) {
                     // Calculate 2nd derivative, and curvature from there:
                     // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
                     // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
                     var x2 = 6 * ax * t + 2 * bx,
-                        y2 = 6 * ay * t + 2 * by;
-                    return (x * y2 - y * x2) / Math.pow(x * x + y * y, 3 / 2);
+                        y2 = 6 * ay * t + 2 * by,
+                        d = Math.pow(x * x + y * y, 3 / 2);
+                    // For JS optimizations we always return a Point, although
+                    // curvature is just a numeric value, stored in x:
+                    x = d !== 0 ? (x * y2 - y * x2) / d : 0;
+                    y = 0;
                 }
             }
         }
         // The normal is simply the rotated tangent:
         return type === 2 ? new Point(y, -x) : new Point(x, y);
+    },
+
+    getPoint: function(v, t) {
+        return Curve._evaluate(v, t, 0, false);
+    },
+
+    getTangent: function(v, t) {
+        return Curve._evaluate(v, t, 1, true);
+    },
+
+    getWeightedTangent: function(v, t) {
+        return Curve._evaluate(v, t, 1, false);
+    },
+
+    getNormal: function(v, t) {
+        return Curve._evaluate(v, t, 2, true);
+    },
+
+    getWeightedNormal: function(v, t) {
+        return Curve._evaluate(v, t, 2, false);
+    },
+
+    getCurvature: function(v, t) {
+        return Curve._evaluate(v, t, 3, false).x;
     },
 
     subdivide: function(v, t) {
@@ -835,22 +872,18 @@ statics: {
      * @type Rectangle
      * @ignore
      */
-}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
+}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
+        'getWeightedNormal', 'getCurvature'],
     // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
     // the need to create a Curve object first, as required by the code that
     // finds path interesections.
-    function(name, index) {
+    function(name) {
         this[name + 'At'] = function(offset, isParameter) {
             var values = this.getValues();
-            return Curve.evaluate(values, isParameter
-                    ? offset : Curve.getParameterAt(values, offset, 0), index);
-        };
-        // Deprecated and undocumented, but keep around for now.
-        // TODO: Remove once enough time has passed (28.01.2013)
-        this[name] = function(parameter) {
-            return Curve.evaluate(this.getValues(), parameter, index);
+            return Curve[name](values, isParameter ? offset
+                    : Curve.getParameterAt(values, offset, 0));
         };
     },
 /** @lends Curve# */{
@@ -936,8 +969,7 @@ statics: {
 
         function refine(t) {
             if (t >= 0 && t <= 1) {
-                var dist = point.getDistance(
-                        Curve.evaluate(values, t, 0), true);
+                var dist = point.getDistance(Curve.getPoint(values, t), true);
                 if (dist < minDist) {
                     minDist = dist;
                     minT = t;
@@ -955,7 +987,7 @@ statics: {
             if (!refine(minT - step) && !refine(minT + step))
                 step /= 2;
         }
-        var pt = Curve.evaluate(values, minT, 0);
+        var pt = Curve.getPoint(values, minT);
         return new CurveLocation(this, minT, pt, null, null, null,
                 point.getDistance(pt));
     },
@@ -973,11 +1005,12 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the point on the curve at the specified offset
+     * @return {Point} the point on the curve at the given offset
      */
 
     /**
-     * Calculates the tangent vector of the curve at the given offset.
+     * Calculates the normalized tangent vector of the curve at the given
+     * offset.
      *
      * @name Curve#getTangentAt
      * @function
@@ -985,7 +1018,7 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the tangent of the curve at the specified offset
+     * @return {Point} the normalized tangent of the curve at the given offset
      */
 
     /**
@@ -997,7 +1030,33 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the normal of the curve at the specified offset
+     * @return {Point} the normal of the curve at the given offset
+     */
+
+    /**
+     * Calculates the weighted tangent vector of the curve at the given
+     * offset, its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedTangentAt
+     * @function
+     * @param {Number} offset the offset on the curve, or the curve time
+     * parameter if {@code isParameter} is {@code true}
+     * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+     * is a curve time parameter
+     * @return {Point} the weighted tangent of the curve at the given offset
+     */
+
+    /**
+     * Calculates the weighted normal vector of the curve at the given offset,
+     * its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedNormalAt
+     * @function
+     * @param {Number} offset the offset on the curve, or the curve time
+     * parameter if {@code isParameter} is {@code true}
+     * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+     * is a curve time parameter
+     * @return {Point} the weighted normal of the curve at the given offset
      */
 
     /**
@@ -1012,7 +1071,7 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Number} the curvature of the curve at the specified offset
+     * @return {Number} the curvature of the curve at the given offset
      */
 }),
 new function() { // Scope for methods that require numerical integration
@@ -1210,12 +1269,12 @@ new function() { // Scope for methods that require numerical integration
                 t2 = uMin + (uMax - uMin) / 2;
             if (reverse) {
                 addLocation(locations, include,
-                        curve2, t2, Curve.evaluate(v2, t2, 0),
-                        curve1, t1, Curve.evaluate(v1, t1, 0));
+                        curve2, t2, Curve.getPoint(v2, t2),
+                        curve1, t1, Curve.getPoint(v1, t1));
             } else {
                 addLocation(locations, include,
-                        curve1, t1, Curve.evaluate(v1, t1, 0),
-                        curve2, t2, Curve.evaluate(v2, t2, 0));
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2));
             }
         } else if (tDiff > 0) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
@@ -1393,7 +1452,7 @@ new function() { // Scope for methods that require numerical integration
         // happen with lines, in which case we should not be here.
         for (var i = 0; i < count; i++) {
             var tc = roots[i],
-                x = Curve.evaluate(rvc, tc, 0).x;
+                x = Curve.getPoint(rvc, tc).x;
             // We do have a point on the infinite line. Check if it falls on
             // the line *segment*.
             if (x >= 0 && x <= rlx2) {
@@ -1402,8 +1461,8 @@ new function() { // Scope for methods that require numerical integration
                     t1 = flip ? tl : tc,
                     t2 = flip ? tc : tl;
                 addLocation(locations, include,
-                        curve1, t1, Curve.evaluate(v1, t1, 0),
-                        curve2, t2, Curve.evaluate(v2, t2, 0));
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2));
             }
         }
     }

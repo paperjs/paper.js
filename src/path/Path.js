@@ -996,7 +996,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         // Iterate over path and evaluate and add points at given offsets
         var segments = [];
         while (pos <= end) {
-            segments.push(new Segment(iterator.evaluate(pos, 0)));
+            segments.push(new Segment(iterator.getPointAt(pos)));
             pos += step;
         }
         this.setSegments(segments);
@@ -1638,7 +1638,8 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // TODO: intersects(item)
     // TODO: contains(item)
-}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
+}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
+        'getWeightedNormal', 'getCurvature'],
     function(name) {
         this[name + 'At'] = function(offset, isParameter) {
             var loc = this.getLocationAt(offset, isParameter);
@@ -1713,8 +1714,9 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (isParameter) {
             // offset consists of curve index and curve parameter, before and
             // after the fractional digit.
-            var index = ~~offset; // = Math.floor()
-            return curves[index].getLocationAt(offset - index, true);
+            var index = ~~offset, // = Math.floor()
+                curve = curves[index];
+            return curve ? curve.getLocationAt(offset - index, true) : null;
         }
         for (var i = 0, l = curves.length; i < l; i++) {
             var start = length,
@@ -1796,14 +1798,14 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
 
     /**
-     * Calculates the tangent vector of the path at the given offset.
+     * Calculates the normalized tangent vector of the path at the given offset.
      *
      * @name Path#getTangentAt
      * @function
      * @param {Number} offset the offset on the path, where {@code 0} is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
-     * @return {Point} the tangent vector at the given offset
+     * @return {Point} the normalized tangent vector at the given offset
      *
      * @example {@paperscript height=150}
      * // Working with the tangent vector at a given offset:
@@ -1823,11 +1825,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      * // Find the point on the path:
      * var point = path.getPointAt(offset);
      *
-     * // Find the tangent vector at the given offset:
-     * var tangent = path.getTangentAt(offset);
-     *
-     * // Make the tangent vector 60pt long:
-     * tangent.length = 60;
+     * // Find the tangent vector at the given offset
+     * // and give it a length of 60:
+     * var tangent = path.getTangentAt(offset) * 60;
      *
      * var line = new Path({
      *     segments: [point, point + tangent],
@@ -1853,11 +1853,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     // Find the point on the path at the given offset:
      *     var point = path.getPointAt(offset);
      *
-     *     // Find the normal vector on the path at the given offset:
-     *     var tangent = path.getTangentAt(offset);
-     *
-     *     // Make the tangent vector 60pt long:
-     *     tangent.length = 60;
+     *     // Find the tangent vector on the path at the given offset
+     *     // and give it a length of 60:
+     *     var tangent = path.getTangentAt(offset) * 60;
      *
      *     var line = new Path({
      *         segments: [point, point + tangent],
@@ -1894,11 +1892,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      * // Find the point on the path:
      * var point = path.getPointAt(offset);
      *
-     * // Find the normal vector at the given offset:
-     * var normal = path.getNormalAt(offset);
-     *
-     * // Make the normal vector 30pt long:
-     * normal.length = 30;
+     * // Find the normal vector on the path at the given offset
+     * // and give it a length of 30:
+     * var normal = path.getNormalAt(offset) * 30;
      *
      * var line = new Path({
      *     segments: [point, point + normal],
@@ -1924,17 +1920,37 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     // Find the point on the path at the given offset:
      *     var point = path.getPointAt(offset);
      *
-     *     // Find the normal vector on the path at the given offset:
-     *     var normal = path.getNormalAt(offset);
-     *
-     *     // Make the normal vector 30pt long:
-     *     normal.length = 30;
+     *     // Find the normal vector on the path at the given offset
+     *     // and give it a length of 30:
+     *     var normal = path.getNormalAt(offset) * 30;
      *
      *     var line = new Path({
      *         segments: [point, point + normal],
      *         strokeColor: 'red'
      *     });
      * }
+     */
+
+    /**
+     * Calculates the weighted tangent vector of the path at the given offset.
+     *
+     * @name Path#getWeightedTangentAt
+     * @function
+     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * the beginning of the path and {@link Path#length} at the end
+     * @param {Boolean} [isParameter=false]
+     * @return {Point} the weighted tangent vector at the given offset
+     */
+
+    /**
+     * Calculates the weighted normal vector of the path at the given offset.
+     *
+     * @name Path#getWeightedNormalAt
+     * @function
+     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * the beginning of the path and {@link Path#length} at the end
+     * @param {Boolean} [isParameter=false]
+     * @return {Point} the weighted normal vector at the given offset
      */
 
     /**
@@ -1949,7 +1965,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Number} the normal vector at the given offset
-     *
+     */
 
     /**
      * Returns the nearest location on the path to the specified point.
@@ -2848,7 +2864,7 @@ statics: {
         // Calculate the corner points of butt and square caps
         var point = segment._point,
             loc = segment.getLocation(),
-            normal = loc.getNormal().normalize(radius);
+            normal = loc.getNormal().multiply(radius); // normal is normalized
         if (area) {
             addPoint(point.subtract(normal));
             addPoint(point.add(normal));

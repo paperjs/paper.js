@@ -271,7 +271,7 @@ PathItem.inject(new function() {
                 var values = curves[i].values;
                 if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
                     for (var j = roots.length - 1; j >= 0; j--) {
-                        var y = Curve.evaluate(values, roots[j], 0).y;
+                        var y = Curve.getPoint(values, roots[j]).y;
                         if (y < yBefore && y > yTop) {
                             yTop = y;
                         } else if (y > yAfter && y < yBottom) {
@@ -325,8 +325,8 @@ PathItem.inject(new function() {
                         // sure we're still on the same loop.
                         || t < tMin && prevT > tMax
                             && curve.previous === prevCurve)) {
-                        var x = Curve.evaluate(values, t, 0).x,
-                            slope = Curve.evaluate(values, t, 1).y,
+                        var x = Curve.getPoint(values, t).x,
+                            slope = Curve.getTangent(values, t).y,
                             counted = false;
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
@@ -334,11 +334,11 @@ PathItem.inject(new function() {
                         // This essentially is not a crossing.
                         if (Numerical.isZero(slope) && !Curve.isLinear(values)
                                 // Does the slope over curve beginning change?
-                                || t < tMin && slope * Curve.evaluate(
-                                    curve.previous.values, 1, 1).y < 0
+                                || t < tMin && slope * Curve.getTangent(
+                                    curve.previous.values, 1).y < 0
                                 // Does the slope over curve end change?
-                                || t > tMax && slope * Curve.evaluate(
-                                    curve.next.values, 0, 1).y < 0) {
+                                || t > tMax && slope * Curve.getTangent(
+                                    curve.next.values, 0).y < 0) {
                             if (testContains && x >= xBefore && x <= xAfter) {
                                 ++windLeft;
                                 ++windRight;
@@ -695,7 +695,7 @@ Path.inject(/** @lends Path# */{
                         || y >= values[7] && y <= values[1])
                         && Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
                     for (var j = roots.length - 1; j >= 0; j--)
-                        xIntercepts.push(Curve.evaluate(values, roots[j], 0).x);
+                        xIntercepts.push(Curve.getPoint(values, roots[j]).x);
                 }
                 if (xIntercepts.length > 1)
                     break;
