@@ -1638,8 +1638,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // TODO: intersects(item)
     // TODO: contains(item)
-}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
-        'getWeightedNormal', 'getCurvature'],
+}, Base.each(Curve.evaluateMethods,
     function(name) {
         this[name + 'At'] = function(offset, isParameter) {
             var loc = this.getLocationAt(offset, isParameter);

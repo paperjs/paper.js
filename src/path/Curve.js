@@ -719,7 +719,8 @@ statics: {
                     padding);
         }
     }
-}}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+}}, Base.each(
+    ['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
     // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
@@ -769,21 +770,7 @@ statics: {
      * @type Rectangle
      * @ignore
      */
-}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
-        'getWeightedNormal', 'getCurvature'],
-    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
-    // determine the bounds of Curve objects with defined segment1 and segment2
-    // values Curve.getBounds() can be used directly on curve arrays, without
-    // the need to create a Curve object first, as required by the code that
-    // finds path interesections.
-    function(name) {
-        this[name + 'At'] = function(offset, isParameter) {
-            var values = this.getValues();
-            return Curve[name](values, isParameter ? offset
-                    : Curve.getParameterAt(values, offset, 0));
-        };
-    },
-/** @lends Curve# */{
+}), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...
@@ -970,7 +957,28 @@ statics: {
      * is a curve time parameter
      * @return {Number} the curvature of the curve at the given offset
      */
-}),
+},
+new function() { // // Scope to inject various evaluate methods
+    var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
+        'getWeightedNormal', 'getCurvature'];
+    return Base.each(methods,
+    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+    // determine the bounds of Curve objects with defined segment1 and segment2
+    // values Curve.getBounds() can be used directly on curve arrays, without
+    // the need to create a Curve object first, as required by the code that
+    // finds path interesections.
+    function(name) {
+        this[name + 'At'] = function(offset, isParameter) {
+            var values = this.getValues();
+            return Curve[name](values, isParameter ? offset
+                    : Curve.getParameterAt(values, offset, 0));
+        };
+    }, {
+        statics: {
+            evaluateMethods: methods
+        }
+    })
+},
 new function() { // Scope for methods that require private functions
 
     function getLengthIntegrand(v) {
