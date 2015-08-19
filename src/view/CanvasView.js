@@ -84,15 +84,28 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
     /**
      * Converts the provide size in any of the units allowed in the browser to
-     * pixels, by the use of the context.font property.
+     * pixels.
      */
     getPixelSize: function(size) {
-        var ctx = this._context,
-            prevFont = ctx.font;
-        ctx.font = size + ' serif';
-        size = parseFloat(ctx.font);
-        ctx.font = prevFont;
-        return size;
+        var browser = paper.browser,
+            pixels;
+        if (browser && browser.firefox) {
+            // Firefox doesn't appear to convert  context.font sizes to pixels,
+            // while other browsers do. Workaround:
+            var parent = this._element.parentNode,
+                temp = document.createElement('div');
+            temp.style.fontSize = size;
+            parent.appendChild(temp);
+            pixels = parseFloat(DomElement.getStyles(temp).fontSize);
+            parent.removeChild(temp);
+        } else {
+            var ctx = this._context,
+                prevFont = ctx.font;
+            ctx.font = size + ' serif';
+            pixels = parseFloat(ctx.font);
+            ctx.font = prevFont;
+        }
+        return pixels;
     },
 
     getTextWidth: function(font, lines) {
