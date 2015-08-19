@@ -958,7 +958,7 @@ statics: {
      * @return {Number} the curvature of the curve at the given offset
      */
 },
-new function() { // // Scope to inject various evaluate methods
+new function() { // // Scope to inject various curve evaluation methods
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
@@ -966,7 +966,7 @@ new function() { // // Scope to inject various evaluate methods
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
     // the need to create a Curve object first, as required by the code that
-    // finds path interesections.
+    // finds path intersections.
     function(name) {
         this[name + 'At'] = function(offset, isParameter) {
             var values = this.getValues();
