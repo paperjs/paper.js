@@ -311,7 +311,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Path#isLinear()
      */
     isLinear: function() {
-        return this._segment1.isLinear();
+        return Segment.isLinear(this._segment1, this._segment2);
     },
 
     /**
@@ -323,7 +323,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Segment#isCollinear(segment)
      */
     isCollinear: function(curve) {
-        return this._segment1.isCollinear(curve._segment1);
+        return Ssegment.isCollinear(this._segment1, this._segment2,
+                curve._segment1, curve._segment2);
     },
 
     /**
@@ -334,7 +335,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Segment#isOrthogonalArc()
      */
     isOrthogonalArc: function() {
-        return this._segment1.isOrthogonalArc();
+        return Segment.isOrthogonalArc(this._segment1, this._segment2);
     },
 
     // DOCS: Curve#getIntersections()
