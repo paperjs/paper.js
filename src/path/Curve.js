@@ -518,109 +518,6 @@ statics: {
         return values;
     },
 
-    _evaluate: function(v, t, type, normalized) {
-        // Do not produce results if parameter is out of range or invalid.
-        if (t == null || t < 0 || t > 1)
-            return null;
-        var p1x = v[0], p1y = v[1],
-            c1x = v[2], c1y = v[3],
-            c2x = v[4], c2y = v[5],
-            p2x = v[6], p2y = v[7],
-            tolerance = /*#=*/Numerical.TOLERANCE,
-            x, y;
-
-        // Handle special case at beginning / end of curve
-        if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
-            var isZero = t < tolerance;
-            x = isZero ? p1x : p2x;
-            y = isZero ? p1y : p2y;
-        } else {
-            // Calculate the polynomial coefficients.
-            var cx = 3 * (c1x - p1x),
-                bx = 3 * (c2x - c1x) - cx,
-                ax = p2x - p1x - cx - bx,
-
-                cy = 3 * (c1y - p1y),
-                by = 3 * (c2y - c1y) - cy,
-                ay = p2y - p1y - cy - by;
-            if (type === 0) {
-                // Calculate the curve point at parameter value t
-                x = ((ax * t + bx) * t + cx) * t + p1x;
-                y = ((ay * t + by) * t + cy) * t + p1y;
-            } else {
-                // 1: tangent, 1st derivative
-                // 2: normal, 1st derivative
-                // 3: curvature, 1st derivative & 2nd derivative
-                // Simply use the derivation of the bezier function for both
-                // the x and y coordinates:
-                // Prevent tangents and normals of length 0:
-                // http://stackoverflow.com/questions/10506868/
-                if (t < tolerance) {
-                    x = cx;
-                    y = cy;
-                } else if (t > 1 - tolerance) {
-                    x = 3 * (p2x - c2x);
-                    y = 3 * (p2y - c2y);
-                } else {
-                    x = (3 * ax * t + 2 * bx) * t + cx;
-                    y = (3 * ay * t + 2 * by) * t + cy;
-                }
-                if (normalized) {
-                    // When the tangent at t is zero and we're at the beginning
-                    // or the end, we can use the vector between the handles,
-                    // but only when normalizing as its weighted length is 0.
-                    if (x === 0 && y === 0
-                            && (t < tolerance || t > 1 - tolerance)) {
-                        x = c2x - c1x;
-                        y = c2y - c1y;
-                    }
-                    // Now normalize x & y
-                    var len = Math.sqrt(x * x + y * y);
-                    x /= len;
-                    y /= len;
-                }
-                if (type === 3) {
-                    // Calculate 2nd derivative, and curvature from there:
-                    // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
-                    // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-                    var x2 = 6 * ax * t + 2 * bx,
-                        y2 = 6 * ay * t + 2 * by,
-                        d = Math.pow(x * x + y * y, 3 / 2);
-                    // For JS optimizations we always return a Point, although
-                    // curvature is just a numeric value, stored in x:
-                    x = d !== 0 ? (x * y2 - y * x2) / d : 0;
-                    y = 0;
-                }
-            }
-        }
-        // The normal is simply the rotated tangent:
-        return type === 2 ? new Point(y, -x) : new Point(x, y);
-    },
-
-    getPoint: function(v, t) {
-        return Curve._evaluate(v, t, 0, false);
-    },
-
-    getTangent: function(v, t) {
-        return Curve._evaluate(v, t, 1, true);
-    },
-
-    getWeightedTangent: function(v, t) {
-        return Curve._evaluate(v, t, 1, false);
-    },
-
-    getNormal: function(v, t) {
-        return Curve._evaluate(v, t, 2, true);
-    },
-
-    getWeightedNormal: function(v, t) {
-        return Curve._evaluate(v, t, 2, false);
-    },
-
-    getCurvature: function(v, t) {
-        return Curve._evaluate(v, t, 3, false).x;
-    },
-
     subdivide: function(v, t) {
         var p1x = v[0], p1y = v[1],
             c1x = v[2], c1y = v[3],
@@ -1074,7 +971,7 @@ statics: {
      * @return {Number} the curvature of the curve at the given offset
      */
 }),
-new function() { // Scope for methods that require numerical integration
+new function() { // Scope for methods that require private functions
 
     function getLengthIntegrand(v) {
         // Calculate the coefficients of a Bezier derivative.
@@ -1105,6 +1002,85 @@ new function() { // Scope for methods that require numerical integration
         // TODO: There should be much better educated guesses for
         // this. Also, what does this depend on? Required precision?
         return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
+    }
+
+    function evaluate(v, t, type, normalized) {
+        // Do not produce results if parameter is out of range or invalid.
+        if (t == null || t < 0 || t > 1)
+            return null;
+        var p1x = v[0], p1y = v[1],
+            c1x = v[2], c1y = v[3],
+            c2x = v[4], c2y = v[5],
+            p2x = v[6], p2y = v[7],
+            tolerance = /*#=*/Numerical.TOLERANCE,
+            x, y;
+
+        // Handle special case at beginning / end of curve
+        if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
+            var isZero = t < tolerance;
+            x = isZero ? p1x : p2x;
+            y = isZero ? p1y : p2y;
+        } else {
+            // Calculate the polynomial coefficients.
+            var cx = 3 * (c1x - p1x),
+                bx = 3 * (c2x - c1x) - cx,
+                ax = p2x - p1x - cx - bx,
+
+                cy = 3 * (c1y - p1y),
+                by = 3 * (c2y - c1y) - cy,
+                ay = p2y - p1y - cy - by;
+            if (type === 0) {
+                // Calculate the curve point at parameter value t
+                x = ((ax * t + bx) * t + cx) * t + p1x;
+                y = ((ay * t + by) * t + cy) * t + p1y;
+            } else {
+                // 1: tangent, 1st derivative
+                // 2: normal, 1st derivative
+                // 3: curvature, 1st derivative & 2nd derivative
+                // Simply use the derivation of the bezier function for both
+                // the x and y coordinates:
+                // Prevent tangents and normals of length 0:
+                // http://stackoverflow.com/questions/10506868/
+                if (t < tolerance) {
+                    x = cx;
+                    y = cy;
+                } else if (t > 1 - tolerance) {
+                    x = 3 * (p2x - c2x);
+                    y = 3 * (p2y - c2y);
+                } else {
+                    x = (3 * ax * t + 2 * bx) * t + cx;
+                    y = (3 * ay * t + 2 * by) * t + cy;
+                }
+                if (normalized) {
+                    // When the tangent at t is zero and we're at the beginning
+                    // or the end, we can use the vector between the handles,
+                    // but only when normalizing as its weighted length is 0.
+                    if (x === 0 && y === 0
+                            && (t < tolerance || t > 1 - tolerance)) {
+                        x = c2x - c1x;
+                        y = c2y - c1y;
+                    }
+                    // Now normalize x & y
+                    var len = Math.sqrt(x * x + y * y);
+                    x /= len;
+                    y /= len;
+                }
+                if (type === 3) {
+                    // Calculate 2nd derivative, and curvature from there:
+                    // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
+                    // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+                    var x2 = 6 * ax * t + 2 * bx,
+                        y2 = 6 * ay * t + 2 * by,
+                        d = Math.pow(x * x + y * y, 3 / 2);
+                    // For JS optimizations we always return a Point, although
+                    // curvature is just a numeric value, stored in x:
+                    x = d !== 0 ? (x * y2 - y * x2) / d : 0;
+                    y = 0;
+                }
+            }
+        }
+        // The normal is simply the rotated tangent:
+        return type === 2 ? new Point(y, -x) : new Point(x, y);
     }
 
     return {
@@ -1173,6 +1149,30 @@ new function() { // Scope for methods that require numerical integration
             // NOTE: guess is a negative value when not looking forward.
             return Numerical.findRoot(f, ds, start + guess, a, b, 16,
                     tolerance);
+        },
+
+        getPoint: function(v, t) {
+            return evaluate(v, t, 0, false);
+        },
+
+        getTangent: function(v, t) {
+            return evaluate(v, t, 1, true);
+        },
+
+        getWeightedTangent: function(v, t) {
+            return evaluate(v, t, 1, false);
+        },
+
+        getNormal: function(v, t) {
+            return evaluate(v, t, 2, true);
+        },
+
+        getWeightedNormal: function(v, t) {
+            return evaluate(v, t, 2, false);
+        },
+
+        getCurvature: function(v, t) {
+            return evaluate(v, t, 3, false).x;
         }
     };
 }, new function() { // Scope for intersection using bezier fat-line clipping
