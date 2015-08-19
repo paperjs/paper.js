@@ -123,8 +123,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     },
 
     setFixedDistance: function(distance) {
-        this._minDistance = distance;
-        this._maxDistance = distance;
+        this._minDistance = this._maxDistance = distance;
     },
 
     /**

@@ -342,6 +342,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 /*#*/ if (__options.environment == 'browser') {
             // src can be an URL or a DOM ID to load the image from
             image = document.getElementById(src) || new Image();
+            image.crossOrigin = 'anonymous';
 
         // IE has naturalWidth / Height defined, but width / height set to 0
         // when the image is invisible in the document.

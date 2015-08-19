@@ -511,13 +511,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     _transformCoordinates: function(src, dst, count) {
         var i = 0,
-            j = 0,
             max = 2 * count;
         while (i < max) {
-            var x = src[i++],
-                y = src[i++];
-            dst[j++] = x * this._a + y * this._b + this._tx;
-            dst[j++] = x * this._c + y * this._d + this._ty;
+            var x = src[i],
+                y = src[i+1];
+            dst[i++] = x * this._a + y * this._b + this._tx;
+            dst[i++] = x * this._c + y * this._d + this._ty;
         }
         return dst;
     },
