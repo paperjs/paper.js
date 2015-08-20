@@ -2087,6 +2087,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option [options.matchShapes=false] {Boolean} whether path items should
      * tried to be converted to SVG shape items (rect, circle, ellipse, line,
      * polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images
+     * should be embedded as base64 data inlined in the xlink:href attribute,
+     * or kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the item converted to an SVG node

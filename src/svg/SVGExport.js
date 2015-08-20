@@ -101,15 +101,17 @@ new function() {
         return node;
     }
 
-    function exportRaster(item) {
+    function exportRaster(item, options) {
         var attrs = getTransform(item._matrix, true),
-            size = item.getSize();
+            size = item.getSize(),
+            image = item.getImage();
         // Take into account that rasters are centered:
         attrs.x -= size.width / 2;
         attrs.y -= size.height / 2;
         attrs.width = size.width;
         attrs.height = size.height;
-        attrs.href = item.toDataURL();
+        attrs.href = options.embedImages === false && image && image.src
+                || item.toDataURL();
         return createElement('image', attrs);
     }
 
