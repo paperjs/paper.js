@@ -1193,7 +1193,6 @@ new function() { // Scope for methods that require private functions
 
     function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
             tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-/*#*/ if (__options.fatlineClipping) {
         // Avoid deeper recursion.
         // NOTE: @iconexperience determined that more than 20 recursions are
         // needed sometimes, depending on the tDiff threshold values further
@@ -1288,36 +1287,8 @@ new function() { // Scope for methods that require private functions
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
-/*#*/ } else { // !__options.fatlineClipping
-        // Subdivision method
-        var bounds1 = Curve.getBounds(v1),
-            bounds2 = Curve.getBounds(v2),
-            tolerance = /*#=*/Numerical.TOLERANCE;
-        if (bounds1.touches(bounds2)) {
-            // See if both curves are flat enough to be treated as lines, either
-            // because they have no control points at all, or are "flat enough"
-            // If the curve was flat in a previous iteration, we don't need to
-            // recalculate since it does not need further subdivision then.
-            if ((Curve.isLinear(v1) || Curve.isFlatEnough(v1, tolerance))
-                && (Curve.isLinear(v2) || Curve.isFlatEnough(v2, tolerance))) {
-                // See if the parametric equations of the lines interesct.
-                addLineIntersection(v1, v2, curve1, curve2, locations, include);
-            } else {
-                // Subdivide both curves, and see if they intersect.
-                // If one of the curves is flat already, no further subdivion
-                // is required.
-                var v1s = Curve.subdivide(v1),
-                    v2s = Curve.subdivide(v2);
-                for (var i = 0; i < 2; i++)
-                    for (var j = 0; j < 2; j++)
-                        addCurveIntersections(v1s[i], v2s[j], curve1, curve2,
-                                locations, include);
-            }
-        }
-/*#*/ } // !__options.fatlineClipping
     }
 
-/*#*/ if (__options.fatlineClipping) {
     /**
      * Calculate the convex hull for the non-parametric bezier curve D(ti, di(t))
      * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
@@ -1419,7 +1390,6 @@ new function() { // Scope for methods that require private functions
         // All points of hull are above / below the threshold
         return null;
     }
-/*#*/ } // __options.fatlineClipping
 
     /**
      * Intersections between curve and line becomes rather simple here mostly

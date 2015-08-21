@@ -25,7 +25,6 @@ var __options = {
     environment: 'browser',
     parser: 'acorn',
     svg: true,
-    fatlineClipping: true,
     booleanOperations: true,
     nativeContains: false,
     paperScript: true
