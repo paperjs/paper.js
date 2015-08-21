@@ -77,18 +77,18 @@ Base.inject(/** @lends Base# */{
      * @return {Boolean} {@true if the object is a plain object}
      */
     _set: function(props, exclude, dontCheck) {
-        if (props && (dontCheck || Base.isPlainObject(props))) {
+        if (dontCheck || Base.isPlainObject(props)) {
             // If props is a filtering object, we need to execute hasOwnProperty
             // on the original object (it's parent / prototype). See _filtered
             // inheritance trick in the argument reading code.
-            var orig = props._filtering || props;
-            for (var key in orig) {
-                if (orig.hasOwnProperty(key) && !(exclude && exclude[key])) {
-                    var value = props[key];
+            var keys = Object.keys(props._filtering || props);
+            for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                if (!(exclude && exclude[key])) {
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
-                    if (value !== undefined)
-                        this[key] = value;
+                    if (props[key] !== undefined)
+                        this[key] = props[key];
                 }
             }
             return true;
@@ -380,10 +380,10 @@ Base.inject(/** @lends Base# */{
                     res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
-                for (var i in obj)
-                    if (obj.hasOwnProperty(i))
-                        res[i] = Base.serialize(obj[i], options, compact,
-                                dictionary);
+                for (var keys = Object.keys(obj), i = 0; i < keys.length; i++) {
+                    var key = keys[i];
+                    res[key] = Base.serialize(obj[key], options, compact, dictionary);
+                }
             } else if (typeof obj === 'number') {
                 res = options.formatter.number(obj, options.precision);
             } else {
