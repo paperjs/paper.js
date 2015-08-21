@@ -479,9 +479,13 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * Returns a Base 64 encoded {@code data:} URL representation of the raster.
      *
+     * @param {options} options for converting to DataURL.
+     *
      * @return {String}
      */
-    toDataURL: function() {
+    toDataURL: function(options) {
+        options = options || {};
+        
         // See if the linked image is base64 encoded already, if so reuse it,
         // otherwise try using canvas.toDataURL()
 /*#*/ if (__options.environment == 'node') {
@@ -496,7 +500,22 @@ var Raster = Item.extend(/** @lends Raster# */{
             return src;
 /*#*/ }
         var canvas = this.getCanvas();
-        return canvas ? canvas.toDataURL() : null;
+        
+        if (!options.quality) {
+            //default quality used by most browsers
+            options.quality = 0.92;
+        }
+        
+        if (options.type) {
+            if ((options.type !== "image/jpeg") && (options.type !== "image/png")) {
+                //Default to image/png if options.type is an unknown type
+                options.type = "image/png";
+            }
+            
+            return canvas ? canvas.toDataURL(options.type, options.quality) : null;
+        } else {
+            return canvas ? canvas.toDataURL() : null;
+        }
     },
 
     /**
