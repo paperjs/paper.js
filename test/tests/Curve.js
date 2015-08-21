@@ -76,8 +76,10 @@ test('Curve#getTangentAt()', function() {
 
     for (var i = 0; i < tangents.length; i++) {
         var entry = tangents[i];
-        equals(curve.getTangentAt(entry[0], true), entry[1],
+        equals(curve.getTangentAt(entry[0], true), entry[1].normalize(),
                 'curve.getTangentAt(' + entry[0] + ', true);');
+        equals(curve.getWeightedTangentAt(entry[0], true), entry[1],
+                'curve.getWeightedTangentAt(' + entry[0] + ', true);');
     }
 });
 
@@ -97,8 +99,10 @@ test('Curve#getNormalAt()', function() {
 
     for (var i = 0; i < normals.length; i++) {
         var entry = normals[i];
-        equals(curve.getNormalAt(entry[0], true), entry[1],
+        equals(curve.getNormalAt(entry[0], true), entry[1].normalize(),
                 'curve.getNormalAt(' + entry[0] + ', true);');
+        equals(curve.getWeightedNormalAt(entry[0], true), entry[1],
+                'curve.getWeightedNormalAt(' + entry[0] + ', true);');
     }
 });
 

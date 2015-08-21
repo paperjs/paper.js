@@ -74,14 +74,22 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
 /*#*/ if (__options.environment == 'browser') {
         if (!this.browser) {
-            var browser = proto.browser = {};
+            var agent = navigator.userAgent.toLowerCase(),
+                // Detect basic platforms, only mac internally required for now.
+                platform = (/(win)/.exec(agent)
+                        || /(mac)/.exec(agent)
+                        || /(linux)/.exec(agent)
+                        || [])[0],
+                browser = proto.browser = { platform: platform };
+            if (platform)
+                browser[platform] = true;
             // Use replace() to get all matches, and deal with Chrome/Webkit
             // overlap:
             // TODO: Do we need Mozilla next to Firefox? Other than the
             // different treatment of the Chrome/Webkit overlap
-            // here: { chrome: true, webkit: false }, mozilla missing is the
+            // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
-            navigator.userAgent.toLowerCase().replace(
+            agent.replace(
                 /(opera|chrome|safari|webkit|firefox|msie|trident|atom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
                 function(all, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.

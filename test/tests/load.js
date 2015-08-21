@@ -59,6 +59,7 @@
 
 /*#*/ include('HitResult.js');
 
+/*#*/ include('JSON.js');
+
 /*#*/ include('SVGImport.js');
 /*#*/ include('SVGExport.js');
-/*#*/ include('JSON.js');

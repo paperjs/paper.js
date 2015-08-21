@@ -456,8 +456,12 @@ Base.exports.PaperScript = (function() {
             // project is created for it now.
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
-                src = script.src,
-                async = PaperScope.hasAttribute(script, 'asyc'),
+                // To avoid possible duplicate browser requests for PaperScript
+                // files, support the data-src attribute as well as src:
+                // TODO: Consider switching from data-paper- to data- prefix
+                // in PaperScope.getAttribute() and use it here too:
+                src = script.src || script.getAttribute('data-src'),
+                async = PaperScope.hasAttribute(script, 'async'),
                 scopeAttribute = 'data-paper-scope';
             if (!canvas)
                 throw new Error('Unable to find canvas with id "'

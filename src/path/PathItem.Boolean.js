@@ -132,7 +132,7 @@ PathItem.inject(new function() {
             for (var j = 0; j < 3; j++) {
                 // Try the points at 1/4, 2/4 and 3/4 of the total length:
                 var length = totalLength * (j + 1) / 4;
-                for (k = 0, m = chain.length; k < m; k++) {
+                for (var k = 0, m = chain.length; k < m; k++) {
                     var node = chain[k],
                         curveLength = node.length;
                     if (length <= curveLength) {
@@ -244,7 +244,7 @@ PathItem.inject(new function() {
     }
 
     /**
-     * Private method that returns the winding contribution of the  given point
+     * Private method that returns the winding contribution of the given point
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
@@ -271,7 +271,7 @@ PathItem.inject(new function() {
                 var values = curves[i].values;
                 if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
                     for (var j = roots.length - 1; j >= 0; j--) {
-                        var y = Curve.evaluate(values, roots[j], 0).y;
+                        var y = Curve.getPoint(values, roots[j]).y;
                         if (y < yBefore && y > yTop) {
                             yTop = y;
                         } else if (y > yAfter && y < yBottom) {
@@ -284,6 +284,7 @@ PathItem.inject(new function() {
             // half of closest top and bottom intercepts.
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
+            // TODO: Don't we need to pass on testContains here?
             if (yTop > -Infinity)
                 windLeft = getWinding(new Point(px, yTop), curves);
             if (yBottom < Infinity)
@@ -293,12 +294,13 @@ PathItem.inject(new function() {
                 xAfter = px + tolerance;
             // Find the winding number for right side of the curve, inclusive of
             // the curve itself, while tracing along its +-x direction.
+            var startCounted = false,
+                prevCurve,
+                prevT;
             for (var i = 0, l = curves.length; i < l; i++) {
                 var curve = curves[i],
                     values = curve.values,
-                    winding = curve.winding,
-                    prevT,
-                    prevX;
+                    winding = curve.winding;
                 // Since the curves are monotone in y direction, we can just
                 // compare the endpoints of the curve to determine if the
                 // ray from query point along +-x direction will intersect
@@ -307,48 +309,56 @@ PathItem.inject(new function() {
                         && py >= values[1] && py <= values[7]
                         || py >= values[7] && py <= values[1])
                     && Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
-                    var t = roots[0],
-                        x = Curve.evaluate(values, t, 0).x,
-                        slope = Curve.evaluate(values, t, 1).y;
+                    var t = roots[0];
                     // Due to numerical precision issues, two consecutive curves
                     // may register an intercept twice, at t = 1 and 0, if y is
                     // almost equal to one of the endpoints of the curves.
                     // But since curves may contain more than one loop of curves
                     // and the end point on the last curve of a loop would not
                     // be registered as a double, we need to filter these cases:
-                    if (!(t > tMax
-                            // Detect and exclude intercepts at 'end' of loops:
-                            && (i === l - 1 || curve.next !== curves[i + 1])
-                            && abs(Curve.evaluate(curve.next.values, 0, 0).x -x)
-                                < tolerance
+                    if (!( // = the following conditions will be excluded:
+                        // Detect and exclude intercepts at 'end' of loops
+                        // if the start of the loop was already counted.
+                        // This also works for the last curve: [i + 1] == null
+                        t > tMax && startCounted && curve.next !== curves[i + 1]
                         // Detect 2nd case of a consecutive intercept, but make
-                        // sure we're still on the same loop
-                        || i > 0 && curve.previous === curves[i - 1]
-                            && abs(prevX - x) < tolerance
-                            && prevT > tMax && t < tMin)) {
+                        // sure we're still on the same loop.
+                        || t < tMin && prevT > tMax
+                            && curve.previous === prevCurve)) {
+                        var x = Curve.getPoint(values, t).x,
+                            slope = Curve.getTangent(values, t).y,
+                            counted = false;
                         // Take care of cases where the curve and the preceding
                         // curve merely touches the ray towards +-x direction,
                         // but proceeds to the same side of the ray.
                         // This essentially is not a crossing.
                         if (Numerical.isZero(slope) && !Curve.isLinear(values)
                                 // Does the slope over curve beginning change?
-                                || t < tMin && slope * Curve.evaluate(
-                                    curve.previous.values, 1, 1).y < 0
+                                || t < tMin && slope * Curve.getTangent(
+                                    curve.previous.values, 1).y < 0
                                 // Does the slope over curve end change?
-                                || t > tMax && slope * Curve.evaluate(
-                                    curve.next.values, 0, 1).y < 0) {
+                                || t > tMax && slope * Curve.getTangent(
+                                    curve.next.values, 0).y < 0) {
                             if (testContains && x >= xBefore && x <= xAfter) {
                                 ++windLeft;
                                 ++windRight;
+                                counted = true;
                             }
                         } else if (x <= xBefore) {
                             windLeft += winding;
+                            counted = true;
                         } else if (x >= xAfter) {
                             windRight += winding;
+                            counted = true;
                         }
+                        // Detect the beginning of a new loop by comparing with
+                        // the previous curve, and set startCounted accordingly.
+                        // This also works for the first loop where i - 1 == -1
+                        if (curve.previous !== curves[i - 1])
+                            startCounted = t < tMin && counted;
                     }
+                    prevCurve = curve;
                     prevT = t;
-                    prevX = x;
                 }
             }
         }
@@ -465,12 +475,11 @@ PathItem.inject(new function() {
             // Add the path to the result, while avoiding stray segments and
             // incomplete paths. The amount of segments for valid paths depend
             // on their geometry:
-            // - Closed paths with only straight lines (polygons) need more than
-            //   two segments.
-            // - Closed paths with curves can consist of only one segment.
-            // - Open paths need at least two segments.
+            // - Closed paths with only straight lines need more than 2 segments
+            // - Closed paths with curves can consist of only one segment
+            // - Open paths need at least two segments
             if (path._segments.length >
-                    (path._closed ? path.isPolygon() ? 2 : 0 : 1))
+                    (path._closed ? path.isLinear() ? 2 : 0 : 1))
                 paths.push(path);
         }
         return paths;
@@ -686,7 +695,7 @@ Path.inject(/** @lends Path# */{
                         || y >= values[7] && y <= values[1])
                         && Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
                     for (var j = roots.length - 1; j >= 0; j--)
-                        xIntercepts.push(Curve.evaluate(values, roots[j], 0).x);
+                        xIntercepts.push(Curve.getPoint(values, roots[j]).x);
                 }
                 if (xIntercepts.length > 1)
                     break;

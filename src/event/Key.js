@@ -65,6 +65,7 @@ var Key = new function() {
     // charCode so keyup can do the right.
     charCodeMap = {}, // keyCode -> charCode mappings for pressed keys
     keyMap = {}, // Map for currently pressed keys
+    commandFixMap, // Keys that will not receive keyup events due to Mac bug
     downCode; // The last keyCode from keydown
 
     function handleKey(down, keyCode, charCode, event) {
@@ -77,9 +78,6 @@ var Key = new function() {
             tool = scope && scope.tool,
             name;
         keyMap[key] = down;
-        // Detect modifiers and mark them as pressed / released
-        if (specialKey && (name = Base.camelize(specialKey)) in modifiers)
-            modifiers[name] = down;
         // Link the keyCode from keydown with the charCode form keypress,
         // so keyup can retrieve the charCode again.
         // Use delete instead of setting to null, so charCodeMap only contains
@@ -90,6 +88,30 @@ var Key = new function() {
             charCodeMap[keyCode] = charCode;
         } else {
             delete charCodeMap[keyCode];
+        }
+        // Detect modifiers and mark them as pressed / released
+        if (specialKey && (name = Base.camelize(specialKey)) in modifiers) {
+            modifiers[name] = down;
+            var browser = paper.browser;
+            if (name === 'command' && browser && browser.mac) {
+                // Fix a strange behavior on Mac where no keyup events are
+                // received for any keys pressed while the command key is down.
+                // Keep track of the normal keys being pressed and trigger keyup
+                // events for all these keys when command is released:
+                if (down) {
+                    commandFixMap = {};
+                } else {
+                    for (var code in commandFixMap) {
+                        // Make sure it wasn't released already in the meantime:
+                        if (code in charCodeMap)
+                            handleKey(false, code, commandFixMap[code], event);
+                    }
+                    commandFixMap = null;
+                }
+            }
+        } else if (down && commandFixMap) {
+            // A normal key, add it to commandFixMap if that's defined.
+            commandFixMap[keyCode] = charCode;
         }
         if (tool && tool.responds(type)) {
             // Update global reference to this scope.

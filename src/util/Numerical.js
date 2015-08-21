@@ -161,10 +161,12 @@ var Numerical = new function() {
          *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          *  Blinn J. - "How to solve a Quadratic Equation"
          *
-         * @param {Number} a The quadratic term
-         * @param {Number} b The linear term
-         * @param {Number} c The constant term
-         * @param {Number[]} roots The array to store the roots in
+         * @param {Number} a the quadratic term
+         * @param {Number} b the linear term
+         * @param {Number} c the constant term
+         * @param {Number[]} roots the array to store the roots in
+         * @param {Number} [min] the lower bound of the allowed roots
+         * @param {Number} [max] the upper bound of the allowed roots
          * @return {Number} The number of real roots found, or -1 if there are
          * infinite solutions
          *
@@ -177,21 +179,15 @@ var Numerical = new function() {
                 D;
             b /= 2;
             D = b * b - a * c; // Discriminant
-            /*
-             * If the discriminant is very small, we can try to pre-condition
-             * the coefficients, so that we may get better accuracy
-             */
+            // If the discriminant is very small, we can try to pre-condition
+            // the coefficients, so that we may get better accuracy
             if (D !== 0 && abs(D) < MACHINE_EPSILON) {
                 // If the geometric mean of the coefficients is small enough
-                var pow = Math.pow,
-                    gmC = pow(abs(a*b*c), 1/3);
+                var gmC = pow(abs(a * b * c), 1 / 3);
                 if (gmC < 1e-8) {
-                    /*
-                     * we multiply with a factor to normalize the
-                     * coefficients. The factor is just the nearest exponent
-                     * of 10, big enough to raise all the coefficients to
-                     * nearly [-1, +1] range.
-                     */
+                    // We multiply with a factor to normalize the coefficients.
+                    // The factor is just the nearest exponent of 10, big enough
+                    // to raise all the coefficients to nearly [-1, +1] range.
                     var mult = pow(10, abs(
                         Math.floor(Math.log(gmC) * Math.LOG10E)));
                     if (!isFinite(mult))
@@ -203,10 +199,10 @@ var Numerical = new function() {
                     D = b * b - a * c;
                 }
             }
-            if (abs(a) < MACHINE_EPSILON) {
+            if (abs(a) < EPSILON) {
                 // This could just be a linear equation
-                if (abs(B) < MACHINE_EPSILON)
-                    return abs(c) < MACHINE_EPSILON ? -1 : 0;
+                if (abs(B) < EPSILON)
+                    return abs(c) < EPSILON ? -1 : 0;
                 x1 = -c / B;
             } else {
                 // No real roots if D < 0
@@ -251,26 +247,29 @@ var Numerical = new function() {
          * W. Kahan's paper contains inferences on accuracy of cubic
          * zero-finding methods. Also testing methods for robustness.
          *
-         * @param {Number} a The cubic term (x³ term).
-         * @param {Number} b The quadratic term (x² term).
-         * @param {Number} c The linear term (x term).
-         * @param {Number} d The constant term
-         * @param {Number[]} roots The array to store the roots in
-         * @return {Number} The number of real roots found, or -1 if there are
+         * @param {Number} a the cubic term (x³ term)
+         * @param {Number} b the quadratic term (x² term)
+         * @param {Number} c the linear term (x term)
+         * @param {Number} d the constant term
+         * @param {Number[]} roots the array to store the roots in
+         * @param {Number} [min] the lower bound of the allowed roots
+         * @param {Number} [max] the upper bound of the allowed roots
+         * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
          * @author Harikrishnan Gopalakrishnan
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
-            var x, b1, c2, count = 0;
+            var count = 0,
+                x, b1, c2;
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
-            if (a === 0) {
+            if (abs(a) < EPSILON) {
                 a = b;
                 b1 = c;
                 c2 = d;
                 x = Infinity;
-            } else if (d === 0) {
+            } else if (abs(d) < EPSILON) {
                 b1 = b;
                 c2 = c;
                 x = 0;

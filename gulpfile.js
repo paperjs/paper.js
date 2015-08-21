@@ -10,6 +10,10 @@
  * All rights reserved.
  */
 
-/*#*/ include('lib/qunit/qunit.js');
-/*#*/ include('lib/helpers.js');
-/*#*/ include('tests/load.js');
+var gulp = require('gulp'),
+    qunit = require('gulp-qunit');
+
+gulp.task('test', function() {
+    return gulp.src('./test/index.html')
+        .pipe(qunit());
+});

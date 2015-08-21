@@ -117,9 +117,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT)
-            // Filter out insert and parent property as these were handled above
-            // and don't check for plain object as that's done through hasProps.
-            this._set(props, { insert: true, parent: true }, true);
+            // Filter out insert, parent and project properties as these were
+            // handled above.
+            this._set(props, { insert: true, project: true, parent: true },
+                    // Don't check for plain object as that's done by hasProps.
+                    true);
         return hasProps;
     },
 
@@ -827,17 +829,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     setPivot: function(/* point */) {
-        this._pivot = Point.read(arguments);
+        // Clone existing points since we're caching internally.
+        this._pivot = Point.read(arguments, 0, { clone: true, readNull: true });
         // No need for _changed() since the only thing this affects is _position
         this._position = undefined;
     },
 
     _pivot: null,
-
-    // TODO: Keep these around for a bit since it was introduced on the mailing
-    // list, then remove in a while.
-    getRegistration: '#getPivot',
-    setRegistration: '#setPivot'
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
         'internalBounds', 'internalRoughBounds'],
     function(key) {
@@ -1130,9 +1128,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._matrix;
     },
 
-    setMatrix: function(matrix) {
+    setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
-        this._matrix.initialize(matrix);
+        var matrix = this._matrix;
+        matrix.initialize.apply(matrix, arguments);
         if (this._applyMatrix) {
             // Directly apply the internal matrix. This will also call
             // _changed() for us.
@@ -1523,6 +1522,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // NOTE: This will also bake in the matrix that we just initialized,
         // in case #applyMatrix is true.
         copy.setApplyMatrix(this._applyMatrix);
+        copy.setPivot(this._pivot);
         // Copy over the selection state, use setSelected so the item
         // is also added to Project#selectedItems if it is selected.
         copy.setSelected(this._selected);
@@ -1845,7 +1845,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Boolean} {@true if the item matches all the criteria}
      * @see #getItems(match)
      */
@@ -1887,12 +1887,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
             return true;
         }
-        if (typeof name === 'object') {
+        var type = typeof name;
+        if (type === 'object') {
             // `name` is the match object, not a string
             for (var key in name) {
                 if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
             }
+        } else if (type === 'function') {
+            return name(this);
         } else {
             var value = /^(empty|editable)$/.test(name)
                     // Handle boolean test functions separately, by calling them
@@ -1922,7 +1925,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return true;
     },
 
-
     /**
      * Fetch the descendants (children or children of children) of this item
      * that match the properties in the specified object.
@@ -1945,7 +1947,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option match.overlapping {Rectangle} the rectangle with which the items
      * need to at least partly overlap
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item[]} the list of matching descendant items
      * @see #matches(match)
      */
@@ -1964,7 +1966,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item} the first descendant item  matching the given criteria
      * @see #getItems(match)
      */
@@ -1978,10 +1980,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // method can be used for Project#layers as well in Project.
         _getItems: function _getItems(children, match, matrix, param,
                 firstOnly) {
-            if (!param) {
+            if (!param && typeof match === 'object') {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
-                // inside // overlapping:
+                // inside / overlapping:
                 var overlapping = match.overlapping,
                     inside = match.inside,
                     // If overlapping is set, we also perform the inside check:
@@ -1989,8 +1991,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     rect =  bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
-                    inside: rect,
-                    overlapping: overlapping && new Path.Rectangle({
+                    inside: !!inside,
+                    overlapping: !!overlapping,
+                    rect: rect,
+                    path: overlapping && new Path.Rectangle({
                         rectangle: rect,
                         insert: false
                     })
@@ -2001,22 +2005,22 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     match = Base.set({}, match,
                             { inside: true, overlapping: true });
             }
-            var items = param.items,
-                inside = param.inside,
-                overlapping = param.overlapping;
-            matrix = inside && (matrix || new Matrix());
+            var items = param && param.items,
+                rect = param && param.rect;
+            matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
                     childMatrix = matrix && matrix.chain(child._matrix),
                     add = true;
-                if (inside) {
+                if (rect) {
                     var bounds = child.getBounds(childMatrix);
                     // Regardless of the setting of inside / overlapping, if the
-                    // bounds don't even overlap, we can skip this child.
-                    if (!inside.intersects(bounds))
+                    // bounds don't even intersect, we can skip this child.
+                    if (!rect.intersects(bounds))
                         continue;
-                    if (!(inside && inside.contains(bounds)) && !(overlapping
-                            && overlapping.intersects(child, childMatrix)))
+                    if (!(param.inside && rect.contains(bounds))
+                            && !(param.overlapping && (bounds.contains(rect)
+                                || param.path.intersects(child, childMatrix))))
                         add = false;
                 }
                 if (add && child.matches(match)) {
@@ -2082,8 +2086,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option [options.precision=5] {Number} the amount of fractional digits in
      * numbers used in SVG data
      * @option [options.matchShapes=false] {Boolean} whether path items should
-     * tried to be converted to shape items, if their geometries can be made to
-     * match
+     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
+     * polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images
+     * should be embedded as base64 data inlined in the xlink:href attribute,
+     * or kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the item converted to an SVG node
@@ -3855,7 +3862,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     // If native blending is possible, see if the item allows it
                     || (nativeBlend || normalBlend && opacity < 1)
                         && this._canComposite(),
-            pixelRatio = param.pixelRatio,
+            pixelRatio = param.pixelRatio || 1,
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct

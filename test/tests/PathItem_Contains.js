@@ -168,8 +168,8 @@ test('Path#contains() (Rectangle Contours)', function() {
         curves = path.getCurves();
 
     for (var i = 0; i < curves.length; i++) {
-        testPoint(path, curves[i].getPoint(0), true);
-        testPoint(path, curves[i].getPoint(0.5), true);
+        testPoint(path, curves[i].getPointAt(0, true), true);
+        testPoint(path, curves[i].getPointAt(0.5, true), true);
     }
 });
 
@@ -181,8 +181,8 @@ test('Path#contains() (Rotated Rectangle Contours)', function() {
     path.rotate(45);
 
     for (var i = 0; i < curves.length; i++) {
-        testPoint(path, curves[i].getPoint(0), true);
-        testPoint(path, curves[i].getPoint(0.5), true);
+        testPoint(path, curves[i].getPointAt(0, true), true);
+        testPoint(path, curves[i].getPointAt(0.5, true), true);
     }
 });
 

@@ -203,7 +203,7 @@ var Shape = Item.extend(/** @lends Shape# */{
                     size = this._size,
                     width = size.width,
                     height = size.height;
-                if (untransformed && type === 'rect' && rx === 0 && ry === 0) {
+                if (untransformed && type === 'rectangle' && rx === 0 && ry === 0) {
                     // Rectangles with no rounding
                     ctx.rect(-width / 2, -height / 2, width, height);
                 } else {

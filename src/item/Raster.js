@@ -26,6 +26,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _boundsGetter: 'getBounds',
     _boundsSelected: true,
     _serializeFields: {
+        crossOrigin: null, // NOTE: Needs to be set before source to work!
         source: null
     },
 
@@ -113,6 +114,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
             copy.setImage(copyCanvas);
         }
+        copy._crossOrigin = this._crossOrigin;
         return this._clone(copy, insert);
     },
 
@@ -312,12 +314,12 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript}
      * var raster = new Raster();
-     * raster.source = 'http://paperjs.org/about/resources/paper-js.gif';
+     * raster.source = 'http://paperjs.org/about/paper-js.gif';
      * raster.position = view.center;
      *
      * @example {@paperscript}
      * var raster = new Raster({
-     *     source: 'http://paperjs.org/about/resources/paper-js.gif',
+     *     source: 'http://paperjs.org/about/paper-js.gif',
      *     position: view.center
      * });
      */
@@ -327,6 +329,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     setSource: function(src) {
         var that = this,
+            crossOrigin = this._crossOrigin,
             image;
 
         function loaded() {
@@ -340,9 +343,10 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
 
 /*#*/ if (__options.environment == 'browser') {
-            // src can be an URL or a DOM ID to load the image from
-            image = document.getElementById(src) || new Image();
-
+        // src can be an URL or a DOM ID to load the image from
+        image = document.getElementById(src) || new Image();
+        if (crossOrigin)
+            image.crossOrigin = crossOrigin;
         // IE has naturalWidth / Height defined, but width / height set to 0
         // when the image is invisible in the document.
         if (image.naturalWidth && image.naturalHeight) {
@@ -359,6 +363,8 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.setImage(image);
 /*#*/ } else if (__options.environment == 'node') {
         image = new Image();
+        if (crossOrigin)
+            image.crossOrigin = crossOrigin;
         // If we're running on the server and it's a string,
         // check if it is a data URL
         if (/^data:/.test(src)) {
@@ -392,6 +398,34 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
         this.setImage(image);
 /*#*/ } // __options.environment == 'node'
+    },
+
+    /**
+     * The crossOrigin value to be used when loading the image resource, in
+     * order to support CORS. Note that this needs to be set before setting the
+     * {@link #source} property in order to always work (e.g. when the image is
+     * cached in the browser).
+     *
+     * @bean
+     * @type String
+     *
+     * @example {@paperscript}
+     * var raster = new Raster({
+     *     crossOrigin: 'anonymous',
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
+     *     position: view.center
+     * });
+     *
+     * console.log(view.element.toDataURL('image/png').substring(0, 32));
+     */
+    getCrossOrigin: function() {
+        return this._image && this._image.crossOrigin || this._crossOrigin || '';
+    },
+
+    setCrossOrigin: function(crossOrigin) {
+        this._crossOrigin = crossOrigin;
+        if (this._image)
+            this._image.crossOrigin = crossOrigin;
     },
 
     // DOCS: document Raster#getElement

@@ -572,7 +572,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @see Item#matches(match)
      * @see Item#getItems(match)
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item[]} the list of matching items contained in the project
      */
     getItems: function(match) {
@@ -589,7 +589,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * does work for {@link Item#data}.
      * See {@link #getItems(match)} for a selection of illustrated examples.
      *
-     * @param {Object} match the criteria to match against
+     * @param {Object|Function} match the criteria to match against
      * @return {Item} the first item in the project matching the given criteria
      */
     getItem: function(match) {
@@ -641,8 +641,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.precision=5] {Number} the amount of fractional digits in
      * numbers used in SVG data
      * @option [options.matchShapes=false] {Boolean} whether path items should
-     * tried to be converted to shape items, if their geometries can be made to
-     * match
+     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
+     * polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images
+     * should be embedded as base64 data inlined in the xlink:href attribute,
+     * or kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the project converted to an SVG node

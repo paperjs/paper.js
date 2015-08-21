@@ -81,12 +81,13 @@ Base.inject(/** @lends Base# */{
             // If props is a filtering object, we need to execute hasOwnProperty
             // on the original object (it's parent / prototype). See _filtered
             // inheritance trick in the argument reading code.
-            var orig = props._filtering || props;
-            for (var key in orig) {
-                if (orig.hasOwnProperty(key) && !(exclude && exclude[key])) {
-                    var value = props[key];
+            var keys = Object.keys(props._filtering || props);
+            for (var i = 0, l = keys.length; i < l; i++) {
+                var key = keys[i];
+                if (!(exclude && exclude[key])) {
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
+                    var value = props[key];
                     if (value !== undefined)
                         this[key] = value;
                 }
@@ -118,12 +119,6 @@ Base.inject(/** @lends Base# */{
          * arrays and properties of objects.
          */
         equals: function(obj1, obj2) {
-            function checkKeys(o1, o2) {
-                for (var i in o1)
-                    if (o1.hasOwnProperty(i) && !o2.hasOwnProperty(i))
-                        return false;
-                return true;
-            }
             if (obj1 === obj2)
                 return true;
             // Call #equals() on both obj1 and obj2
@@ -131,25 +126,33 @@ Base.inject(/** @lends Base# */{
                 return obj1.equals(obj2);
             if (obj2 && obj2.equals)
                 return obj2.equals(obj1);
-            // Compare arrays
-            if (Array.isArray(obj1) && Array.isArray(obj2)) {
-                if (obj1.length !== obj2.length)
-                    return false;
-                for (var i = 0, l = obj1.length; i < l; i++) {
-                    if (!Base.equals(obj1[i], obj2[i]))
+            // Deep compare objects or arrays
+            if (obj1 && obj2
+                    && typeof obj1 === 'object' && typeof obj2 === 'object') {
+                // Compare arrays
+                if (Array.isArray(obj1) && Array.isArray(obj2)) {
+                    var length = obj1.length;
+                    if (length !== obj2.length)
                         return false;
-                }
-                return true;
-            }
-            // Compare objects
-            if (obj1 && typeof obj1 === 'object'
-                    && obj2 && typeof obj2 === 'object') {
-                if (!checkKeys(obj1, obj2) || !checkKeys(obj2, obj1))
-                    return false;
-                for (var i in obj1) {
-                    if (obj1.hasOwnProperty(i)
-                            && !Base.equals(obj1[i], obj2[i]))
+                    while (length--) {
+                        if (!Base.equals(obj1[length], obj2[length]))
+                            return false;
+                    }
+                } else {
+                    // Deep compare objects.
+                    var keys = Object.keys(obj1),
+                        length = keys.length;
+                    // Ensure that both objects contain the same number of
+                    // properties before comparing deep equality.
+                    if (length !== Object.keys(obj2).length)
                         return false;
+                    while (length--) {
+                        // Deep compare each member
+                        var key = keys[length];
+                        if (!(obj2.hasOwnProperty(key)
+                                && Base.equals(obj1[key], obj2[key])))
+                            return false;
+                    }
                 }
                 return true;
             }
@@ -378,10 +381,12 @@ Base.inject(/** @lends Base# */{
                     res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
-                for (var i in obj)
-                    if (obj.hasOwnProperty(i))
-                        res[i] = Base.serialize(obj[i], options, compact,
-                                dictionary);
+                var keys = Object.keys(obj);
+                for (var i = 0, l = keys.length; i < l; i++) {
+                    var key = keys[i];
+                    res[key] = Base.serialize(obj[key], options, compact,
+                            dictionary);
+                }
             } else if (typeof obj === 'number') {
                 res = options.formatter.number(obj, options.precision);
             } else {

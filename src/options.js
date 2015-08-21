@@ -17,19 +17,15 @@
 // The paper.js version.
 // NOTE: Adjust value here before calling publish.sh, which then updates and
 // publishes the various JSON package files automatically.
-var version = '0.9.23';
+var version = '0.9.24';
 
 var __options = {
     // If this file is loaded in the browser, we're in dev mode through load.js
     version: typeof window === 'object' ? 'dev' : version,
     environment: 'browser',
     parser: 'acorn',
-    legacy: true,
     svg: true,
-    fatlineClipping: true,
     booleanOperations: true,
     nativeContains: false,
-    paperScript: true,
-    palette: true,
-    debug: false
+    paperScript: true
 };

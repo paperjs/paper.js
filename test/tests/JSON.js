@@ -26,7 +26,6 @@ test('Circles', function() {
     var rectangle = new Rectangle(topLeft, size);
     var path = new Path.Ellipse(rectangle);
     path.fillColor = 'black';
-    console.log('JSON', path.exportJSON());
 
     var topLeft = new Point(5, 400);
     var size = new Size(100, 50);

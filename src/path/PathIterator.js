@@ -134,11 +134,6 @@ var PathIterator = Base.extend({
         };
     },
 
-    evaluate: function(offset, type) {
-        var param = this.getParameterAt(offset);
-        return Curve.evaluate(this.curves[param.index], param.value, type);
-    },
-
     drawPart: function(ctx, from, to) {
         from = this.getParameterAt(from);
         to = this.getParameterAt(to);
@@ -151,10 +146,11 @@ var PathIterator = Base.extend({
             ctx.bezierCurveTo.apply(ctx, curve.slice(2));
         }
     }
-}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
-    function(name, index) {
-        this[name + 'At'] = function(offset) {
-            return this.evaluate(offset, index);
+}, Base.each(Curve.evaluateMethods,
+    function(name) {
+        this[name + 'At'] = function(offset, weighted) {
+            var param = this.getParameterAt(offset);
+            return Curve[name](this.curves[param.index], param.value, weighted);
         };
     }, {})
 );

@@ -145,8 +145,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     _serialize: function(options) {
-        // If the Segment is linear, only serialize point, otherwise handles too
-        return Base.serialize(this.isLinear() ? this._point
+        // If it is straight, only serialize point, otherwise handles too.
+        return Base.serialize(this.isStraight() ? this._point
                 : [this._point, this._handleIn, this._handleOut],
                 options, true);
     },
@@ -209,8 +209,6 @@ var Segment = Base.extend(/** @lends Segment# */{
         var point = Point.read(arguments);
         // See #setPoint:
         this._handleIn.set(point.x, point.y);
-        // Update corner accordingly
-        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
     /**
@@ -228,83 +226,86 @@ var Segment = Base.extend(/** @lends Segment# */{
         var point = Point.read(arguments);
         // See #setPoint:
         this._handleOut.set(point.x, point.y);
-        // Update corner accordingly
-        // this.corner = !this._handleIn.isCollinear(this._handleOut);
     },
 
-    // TODO: Rename this to #corner?
     /**
-     * Specifies whether the segment has no handles defined, meaning it connects
-     * two straight lines.
+     * Checks whether the segment has curve handles defined, meaning it is not
+     * a straight segment.
      *
-     * @type Boolean
-     * @bean
+     * @return {Boolean} {@true if the segment has handles defined}
+     * @see Curve#hasHandles()
+     * @see Path#hasHandles()
      */
-    isLinear: function() {
+    hasHandles: function() {
+        return !this.isStraight();
+    },
+
+    /**
+     * Checks whether the segment is straight, meaning it has no curve
+     * handles defined.
+     * If two straight segments are adjacent to each other, the curve between
+     * them will be a straight line.
+     *
+     * @return {Boolean} {@true if the segment is straight}
+     */
+    isStraight: function() {
         return this._handleIn.isZero() && this._handleOut.isZero();
     },
 
-    setLinear: function(linear) {
-        if (linear) {
-            this._handleIn.set(0, 0);
-            this._handleOut.set(0, 0);
-        } else {
-            // TODO: smooth() ?
-        }
+    /**
+     * Checks if the curve that starts in this segment appears as a line. This
+     * can mean that it has no handles defined, or that the handles run
+     * collinear with the line.
+     *
+     * @return {Boolean} {@true if the curve is linear}
+     * @see Curve#isLinear()
+     * @see Path#isLinear()
+     */
+    isLinear: function() {
+        return Segment.isLinear(this, this.getNext());
     },
 
-    // DOCS: #isCollinear(segment), #isOrthogonal(), #isArc()
-
     /**
-     * Returns true if the the two segments are the beginning of two lines and
-     * if these two lines are running parallel.
+     * Checks if the the two segments are the beginning of two lines that are
+     * collinear, meaning they run in parallel.
+     *
+     * @param {Segment} the other segment to check against
+     * @return {Boolean} {@true if the two lines are collinear}
+     * @see Curve#isCollinear(curve)
      */
     isCollinear: function(segment) {
-        var next1 = this.getNext(),
-            next2 = segment.getNext();
-        return this._handleOut.isZero() && next1._handleIn.isZero()
-                && segment._handleOut.isZero() && next2._handleIn.isZero()
-                && next1._point.subtract(this._point).isCollinear(
-                    next2._point.subtract(segment._point));
+        return Segment.isCollinear(this, this.getNext(),
+                segment, segment.getNext());
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
     isColinear: '#isCollinear',
 
+    /**
+     * Checks if the segment is connecting two lines that are orthogonal,
+     * meaning they connect at an 90° angle.
+     *
+     * @return {Boolean} {@true if the two lines connected by this segment are
+     * orthogonal}
+     */
     isOrthogonal: function() {
-        var prev = this.getPrevious(),
-            next = this.getNext();
-        return prev._handleOut.isZero() && this._handleIn.isZero()
-            && this._handleOut.isZero() && next._handleIn.isZero()
-            && this._point.subtract(prev._point).isOrthogonal(
-                    next._point.subtract(this._point));
+        return Segment.isOrthogonal(this.getPrevious(), this, this.getNext());
     },
 
     /**
-     * Returns true if the segment at the given index is the beginning of an
-     * orthogonal arc segment. The code looks at the length of the handles and
-     * their relation to the distance to the imaginary corner point. If the
-     * relation is kappa, then it's an arc.
+     * Checks if the segment is the beginning of an orthogonal arc, as used in
+     * the construction of circles and ellipses.
+     *
+     * @return {Boolean} {@true if the segment is the beginning of an orthogonal
+     * arc}
+     * @see Curve#isOrthogonalArc()
      */
-    isArc: function() {
-        var next = this.getNext(),
-            handle1 = this._handleOut,
-            handle2 = next._handleIn,
-            kappa = /*#=*/Numerical.KAPPA;
-        if (handle1.isOrthogonal(handle2)) {
-            var from = this._point,
-                to = next._point,
-                // Find the corner point by intersecting the lines described
-                // by both handles:
-                corner = new Line(from, handle1, true).intersect(
-                        new Line(to, handle2, true), true);
-            return corner && Numerical.isZero(handle1.getLength() /
-                    corner.subtract(from).getLength() - kappa)
-                && Numerical.isZero(handle2.getLength() /
-                    corner.subtract(to).getLength() - kappa);
-        }
-        return false;
+    isOrthogonalArc: function() {
+        return Segment.isOrthogonalArc(this, this.getNext());
     },
+
+    // TODO: Remove a while (deprecated August 2015)
+    isArc: '#isOrthogonalArc',
 
     _selectionState: 0,
 
@@ -560,5 +561,51 @@ var Segment = Base.extend(/** @lends Segment# */{
             }
         }
         return coords;
+    },
+
+   statics: {
+        // These statics are shared between Segment and Curve, for versions of
+        // these methods that are implemented in both places.
+
+        isLinear: function(seg1, seg2) {
+            var l = seg2._point.subtract(seg1._point);
+            return l.isCollinear(seg1._handleOut)
+                    && l.isCollinear(seg2._handleIn);
+        },
+
+        isCollinear: function(seg1, seg2, seg3, seg4) {
+            return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+                    && seg3._handleOut.isZero() && seg4._handleIn.isZero()
+                    && seg2._point.subtract(seg1._point).isCollinear(
+                        seg4._point.subtract(seg3._point));
+        },
+
+        isOrthogonal: function(seg1, seg2, seg3) {
+            return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+                && seg2._handleOut.isZero() && seg3._handleIn.isZero()
+                && seg2._point.subtract(seg1._point).isOrthogonal(
+                        seg3._point.subtract(seg2._point));
+        },
+
+        isOrthogonalArc: function(seg1, seg2) {
+            var handle1 = seg1._handleOut,
+                handle2 = seg2._handleIn,
+                kappa = /*#=*/Numerical.KAPPA;
+            // Look at handle length and the distance to the imaginary corner
+            // point and see if it their relation is kappa.
+            if (handle1.isOrthogonal(handle2)) {
+                var pt1 = seg1._point,
+                    pt2 = seg2._point,
+                    // Find the corner point by intersecting the lines described
+                    // by both handles:
+                    corner = new Line(pt1, handle1, true).intersect(
+                            new Line(pt2, handle2, true), true);
+                return corner && Numerical.isZero(handle1.getLength() /
+                        corner.subtract(pt1).getLength() - kappa)
+                    && Numerical.isZero(handle2.getLength() /
+                        corner.subtract(pt2).getLength() - kappa);
+            }
+            return false;
+        },
     }
 });

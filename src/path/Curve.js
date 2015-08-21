@@ -291,14 +291,51 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Checks if this curve is linear, meaning it does not define any curve
-     * handle.
+     * Checks if this curve defines any curve handle.
+     *
+     * @return {Boolean} {@true if the curve has handles defined}
+     * @see Segment#hasHandles()
+     * @see Path#hasHandles()
+     */
+    hasHandles: function() {
+        return !this._segment1._handleOut.isZero()
+                || !this._segment2._handleIn.isZero();
+    },
 
+    /**
+     * Checks if this curve appears as a line. This can mean that it has no
+     * handles defined, or that the handles run collinear with the line.
+     *
      * @return {Boolean} {@true if the curve is linear}
+     * @see Segment#isLinear()
+     * @see Path#isLinear()
      */
     isLinear: function() {
-        return this._segment1._handleOut.isZero()
-                && this._segment2._handleIn.isZero();
+        return Segment.isLinear(this._segment1, this._segment2);
+    },
+
+    /**
+     * Checks if the the two curves describe lines that are collinear, meaning
+     * they run in parallel.
+     *
+     * @param {Curve} the other curve to check against
+     * @return {Boolean} {@true if the two lines are collinear}
+     * @see Segment#isCollinear(segment)
+     */
+    isCollinear: function(curve) {
+        return Ssegment.isCollinear(this._segment1, this._segment2,
+                curve._segment1, curve._segment2);
+    },
+
+    /**
+     * Checks if the curve describes an orthogonal arc, as used in the
+     * construction of circles and ellipses.
+     *
+     * @return {Boolean} {@true if the curve describes an orthogonal arc}
+     * @see Segment#isOrthogonalArc()
+     */
+    isOrthogonalArc: function() {
+        return Segment.isOrthogonalArc(this._segment1, this._segment2);
     },
 
     // DOCS: Curve#getIntersections()
@@ -481,72 +518,6 @@ statics: {
         return values;
     },
 
-    // TODO: Instead of constants for type, use a "enum" and code substitution.
-    evaluate: function(v, t, type) {
-        // Do not produce results if parameter is out of range or invalid.
-        if (t == null || t < 0 || t > 1)
-            return null;
-        var p1x = v[0], p1y = v[1],
-            c1x = v[2], c1y = v[3],
-            c2x = v[4], c2y = v[5],
-            p2x = v[6], p2y = v[7],
-            tolerance = /*#=*/Numerical.TOLERANCE,
-            x, y;
-
-        // Handle special case at beginning / end of curve
-        if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
-            var isZero = t < tolerance;
-            x = isZero ? p1x : p2x;
-            y = isZero ? p1y : p2y;
-        } else {
-            // Calculate the polynomial coefficients.
-            var cx = 3 * (c1x - p1x),
-                bx = 3 * (c2x - c1x) - cx,
-                ax = p2x - p1x - cx - bx,
-
-                cy = 3 * (c1y - p1y),
-                by = 3 * (c2y - c1y) - cy,
-                ay = p2y - p1y - cy - by;
-            if (type === 0) {
-                // Calculate the curve point at parameter value t
-                x = ((ax * t + bx) * t + cx) * t + p1x;
-                y = ((ay * t + by) * t + cy) * t + p1y;
-            } else {
-                // 1: tangent, 1st derivative
-                // 2: normal, 1st derivative
-                // 3: curvature, 1st derivative & 2nd derivative
-                // Prevent tangents and normals of length 0:
-                // http://stackoverflow.com/questions/10506868/
-                if (t < tolerance && c1x === p1x && c1y === p1y
-                        || t > 1 - tolerance && c2x === p2x && c2y === p2y) {
-                    x = c2x - c1x;
-                    y = c2y - c1y;
-                } else if (t < tolerance) {
-                    x = cx;
-                    y = cy;
-                } else if (t > 1 - tolerance) {
-                    x = 3 * (p2x - c2x);
-                    y = 3 * (p2y - c2y);
-                } else {
-                    // Simply use the derivation of the bezier function for both
-                    // the x and y coordinates:
-                    x = (3 * ax * t + 2 * bx) * t + cx;
-                    y = (3 * ay * t + 2 * by) * t + cy;
-                }
-                if (type === 3) {
-                    // Calculate 2nd derivative, and curvature from there:
-                    // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
-                    // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-                    var x2 = 6 * ax * t + 2 * bx,
-                        y2 = 6 * ay * t + 2 * by;
-                    return (x * y2 - y * x2) / Math.pow(x * x + y * y, 3 / 2);
-                }
-            }
-        }
-        // The normal is simply the rotated tangent:
-        return type === 2 ? new Point(y, -x) : new Point(x, y);
-    },
-
     subdivide: function(v, t) {
         var p1x = v[0], p1y = v[1],
             c1x = v[2], c1y = v[3],
@@ -581,13 +552,7 @@ statics: {
             p2 = v[coord + 6],
             c = 3 * (c1 - p1),
             b = 3 * (c2 - c1) - c,
-            a = p2 - p1 - c - b,
-            isZero = Numerical.isZero;
-        // If both a and b are near zero, we should treat the curve as a line in
-        // order to find the right solutions in some edge-cases in
-        // Curve.getParameterOf()
-        if (isZero(a) && isZero(b))
-            a = b = 0;
+            a = p2 - p1 - c - b;
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
@@ -643,10 +608,19 @@ statics: {
         return v;
     },
 
-    isLinear: function(v) {
+    hasHandles: function(v) {
         var isZero = Numerical.isZero;
-        return isZero(v[0] - v[2]) && isZero(v[1] - v[3])
-                && isZero(v[4] - v[6]) && isZero(v[5] - v[7]);
+        return !(isZero(v[0] - v[2]) && isZero(v[1] - v[3])
+                && isZero(v[4] - v[6]) && isZero(v[5] - v[7]));
+    },
+
+    isLinear: function(v) {
+        // See Segment#isLinear():
+        var p1x = v[0], p1y = v[1],
+            p2x = v[6], p2y = v[7],
+            l = new Point(p2x - p1x, p2y - p1y);
+        return l.isCollinear(new Point(v[2] - p1x, v[3] - p1y))
+                && l.isCollinear(new Point(v[4] - p2x, v[5] - p2y));
     },
 
     isFlatEnough: function(v, tolerance) {
@@ -745,7 +719,8 @@ statics: {
                     padding);
         }
     }
-}}, Base.each(['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+}}, Base.each(
+    ['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
     // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
@@ -795,25 +770,7 @@ statics: {
      * @type Rectangle
      * @ignore
      */
-}), Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
-    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
-    // determine the bounds of Curve objects with defined segment1 and segment2
-    // values Curve.getBounds() can be used directly on curve arrays, without
-    // the need to create a Curve object first, as required by the code that
-    // finds path interesections.
-    function(name, index) {
-        this[name + 'At'] = function(offset, isParameter) {
-            var values = this.getValues();
-            return Curve.evaluate(values, isParameter
-                    ? offset : Curve.getParameterAt(values, offset, 0), index);
-        };
-        // Deprecated and undocumented, but keep around for now.
-        // TODO: Remove once enough time has passed (28.01.2013)
-        this[name] = function(parameter) {
-            return Curve.evaluate(this.getValues(), parameter, index);
-        };
-    },
-/** @lends Curve# */{
+}), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...
@@ -896,8 +853,7 @@ statics: {
 
         function refine(t) {
             if (t >= 0 && t <= 1) {
-                var dist = point.getDistance(
-                        Curve.evaluate(values, t, 0), true);
+                var dist = point.getDistance(Curve.getPoint(values, t), true);
                 if (dist < minDist) {
                     minDist = dist;
                     minT = t;
@@ -915,7 +871,7 @@ statics: {
             if (!refine(minT - step) && !refine(minT + step))
                 step /= 2;
         }
-        var pt = Curve.evaluate(values, minT, 0);
+        var pt = Curve.getPoint(values, minT);
         return new CurveLocation(this, minT, pt, null, null, null,
                 point.getDistance(pt));
     },
@@ -933,11 +889,12 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the point on the curve at the specified offset
+     * @return {Point} the point on the curve at the given offset
      */
 
     /**
-     * Calculates the tangent vector of the curve at the given offset.
+     * Calculates the normalized tangent vector of the curve at the given
+     * offset.
      *
      * @name Curve#getTangentAt
      * @function
@@ -945,7 +902,7 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the tangent of the curve at the specified offset
+     * @return {Point} the normalized tangent of the curve at the given offset
      */
 
     /**
@@ -957,7 +914,33 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Point} the normal of the curve at the specified offset
+     * @return {Point} the normal of the curve at the given offset
+     */
+
+    /**
+     * Calculates the weighted tangent vector of the curve at the given
+     * offset, its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedTangentAt
+     * @function
+     * @param {Number} offset the offset on the curve, or the curve time
+     * parameter if {@code isParameter} is {@code true}
+     * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+     * is a curve time parameter
+     * @return {Point} the weighted tangent of the curve at the given offset
+     */
+
+    /**
+     * Calculates the weighted normal vector of the curve at the given offset,
+     * its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedNormalAt
+     * @function
+     * @param {Number} offset the offset on the curve, or the curve time
+     * parameter if {@code isParameter} is {@code true}
+     * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
+     * is a curve time parameter
+     * @return {Point} the weighted normal of the curve at the given offset
      */
 
     /**
@@ -972,10 +955,31 @@ statics: {
      * parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Number} the curvature of the curve at the specified offset
+     * @return {Number} the curvature of the curve at the given offset
      */
-}),
-new function() { // Scope for methods that require numerical integration
+},
+new function() { // // Scope to inject various curve evaluation methods
+    var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
+        'getWeightedNormal', 'getCurvature'];
+    return Base.each(methods,
+    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+    // determine the bounds of Curve objects with defined segment1 and segment2
+    // values Curve.getBounds() can be used directly on curve arrays, without
+    // the need to create a Curve object first, as required by the code that
+    // finds path intersections.
+    function(name) {
+        this[name + 'At'] = function(offset, isParameter) {
+            var values = this.getValues();
+            return Curve[name](values, isParameter ? offset
+                    : Curve.getParameterAt(values, offset, 0));
+        };
+    }, {
+        statics: {
+            evaluateMethods: methods
+        }
+    })
+},
+new function() { // Scope for methods that require private functions
 
     function getLengthIntegrand(v) {
         // Calculate the coefficients of a Bezier derivative.
@@ -1006,6 +1010,85 @@ new function() { // Scope for methods that require numerical integration
         // TODO: There should be much better educated guesses for
         // this. Also, what does this depend on? Required precision?
         return Math.max(2, Math.min(16, Math.ceil(Math.abs(b - a) * 32)));
+    }
+
+    function evaluate(v, t, type, normalized) {
+        // Do not produce results if parameter is out of range or invalid.
+        if (t == null || t < 0 || t > 1)
+            return null;
+        var p1x = v[0], p1y = v[1],
+            c1x = v[2], c1y = v[3],
+            c2x = v[4], c2y = v[5],
+            p2x = v[6], p2y = v[7],
+            tolerance = /*#=*/Numerical.TOLERANCE,
+            x, y;
+
+        // Handle special case at beginning / end of curve
+        if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
+            var isZero = t < tolerance;
+            x = isZero ? p1x : p2x;
+            y = isZero ? p1y : p2y;
+        } else {
+            // Calculate the polynomial coefficients.
+            var cx = 3 * (c1x - p1x),
+                bx = 3 * (c2x - c1x) - cx,
+                ax = p2x - p1x - cx - bx,
+
+                cy = 3 * (c1y - p1y),
+                by = 3 * (c2y - c1y) - cy,
+                ay = p2y - p1y - cy - by;
+            if (type === 0) {
+                // Calculate the curve point at parameter value t
+                x = ((ax * t + bx) * t + cx) * t + p1x;
+                y = ((ay * t + by) * t + cy) * t + p1y;
+            } else {
+                // 1: tangent, 1st derivative
+                // 2: normal, 1st derivative
+                // 3: curvature, 1st derivative & 2nd derivative
+                // Simply use the derivation of the bezier function for both
+                // the x and y coordinates:
+                // Prevent tangents and normals of length 0:
+                // http://stackoverflow.com/questions/10506868/
+                if (t < tolerance) {
+                    x = cx;
+                    y = cy;
+                } else if (t > 1 - tolerance) {
+                    x = 3 * (p2x - c2x);
+                    y = 3 * (p2y - c2y);
+                } else {
+                    x = (3 * ax * t + 2 * bx) * t + cx;
+                    y = (3 * ay * t + 2 * by) * t + cy;
+                }
+                if (normalized) {
+                    // When the tangent at t is zero and we're at the beginning
+                    // or the end, we can use the vector between the handles,
+                    // but only when normalizing as its weighted length is 0.
+                    if (x === 0 && y === 0
+                            && (t < tolerance || t > 1 - tolerance)) {
+                        x = c2x - c1x;
+                        y = c2y - c1y;
+                    }
+                    // Now normalize x & y
+                    var len = Math.sqrt(x * x + y * y);
+                    x /= len;
+                    y /= len;
+                }
+                if (type === 3) {
+                    // Calculate 2nd derivative, and curvature from there:
+                    // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
+                    // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+                    var x2 = 6 * ax * t + 2 * bx,
+                        y2 = 6 * ay * t + 2 * by,
+                        d = Math.pow(x * x + y * y, 3 / 2);
+                    // For JS optimizations we always return a Point, although
+                    // curvature is just a numeric value, stored in x:
+                    x = d !== 0 ? (x * y2 - y * x2) / d : 0;
+                    y = 0;
+                }
+            }
+        }
+        // The normal is simply the rotated tangent:
+        return type === 2 ? new Point(y, -x) : new Point(x, y);
     }
 
     return {
@@ -1074,6 +1157,30 @@ new function() { // Scope for methods that require numerical integration
             // NOTE: guess is a negative value when not looking forward.
             return Numerical.findRoot(f, ds, start + guess, a, b, 16,
                     tolerance);
+        },
+
+        getPoint: function(v, t) {
+            return evaluate(v, t, 0, false);
+        },
+
+        getTangent: function(v, t) {
+            return evaluate(v, t, 1, true);
+        },
+
+        getWeightedTangent: function(v, t) {
+            return evaluate(v, t, 1, false);
+        },
+
+        getNormal: function(v, t) {
+            return evaluate(v, t, 2, true);
+        },
+
+        getWeightedNormal: function(v, t) {
+            return evaluate(v, t, 2, false);
+        },
+
+        getCurvature: function(v, t) {
+            return evaluate(v, t, 3, false).x;
         }
     };
 }, new function() { // Scope for intersection using bezier fat-line clipping
@@ -1086,7 +1193,6 @@ new function() { // Scope for methods that require numerical integration
 
     function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
             tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-/*#*/ if (__options.fatlineClipping) {
         // Avoid deeper recursion.
         // NOTE: @iconexperience determined that more than 20 recursions are
         // needed sometimes, depending on the tDiff threshold values further
@@ -1170,47 +1276,19 @@ new function() { // Scope for methods that require numerical integration
                 t2 = uMin + (uMax - uMin) / 2;
             if (reverse) {
                 addLocation(locations, include,
-                        curve2, t2, Curve.evaluate(v2, t2, 0),
-                        curve1, t1, Curve.evaluate(v1, t1, 0));
+                        curve2, t2, Curve.getPoint(v2, t2),
+                        curve1, t1, Curve.getPoint(v1, t1));
             } else {
                 addLocation(locations, include,
-                        curve1, t1, Curve.evaluate(v1, t1, 0),
-                        curve2, t2, Curve.evaluate(v2, t2, 0));
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2));
             }
         } else if (tDiff > 0) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
-/*#*/ } else { // !__options.fatlineClipping
-        // Subdivision method
-        var bounds1 = Curve.getBounds(v1),
-            bounds2 = Curve.getBounds(v2),
-            tolerance = /*#=*/Numerical.TOLERANCE;
-        if (bounds1.touches(bounds2)) {
-            // See if both curves are flat enough to be treated as lines, either
-            // because they have no control points at all, or are "flat enough"
-            // If the curve was flat in a previous iteration, we don't need to
-            // recalculate since it does not need further subdivision then.
-            if ((Curve.isLinear(v1) || Curve.isFlatEnough(v1, tolerance))
-                && (Curve.isLinear(v2) || Curve.isFlatEnough(v2, tolerance))) {
-                // See if the parametric equations of the lines interesct.
-                addLineIntersection(v1, v2, curve1, curve2, locations, include);
-            } else {
-                // Subdivide both curves, and see if they intersect.
-                // If one of the curves is flat already, no further subdivion
-                // is required.
-                var v1s = Curve.subdivide(v1),
-                    v2s = Curve.subdivide(v2);
-                for (var i = 0; i < 2; i++)
-                    for (var j = 0; j < 2; j++)
-                        addCurveIntersections(v1s[i], v2s[j], curve1, curve2,
-                                locations, include);
-            }
-        }
-/*#*/ } // !__options.fatlineClipping
     }
 
-/*#*/ if (__options.fatlineClipping) {
     /**
      * Calculate the convex hull for the non-parametric bezier curve D(ti, di(t))
      * The ti is equally spaced across [0..1] — [0, 1/3, 2/3, 1] for
@@ -1312,7 +1390,6 @@ new function() { // Scope for methods that require numerical integration
         // All points of hull are above / below the threshold
         return null;
     }
-/*#*/ } // __options.fatlineClipping
 
     /**
      * Intersections between curve and line becomes rather simple here mostly
@@ -1353,7 +1430,7 @@ new function() { // Scope for methods that require numerical integration
         // happen with lines, in which case we should not be here.
         for (var i = 0; i < count; i++) {
             var tc = roots[i],
-                x = Curve.evaluate(rvc, tc, 0).x;
+                x = Curve.getPoint(rvc, tc).x;
             // We do have a point on the infinite line. Check if it falls on
             // the line *segment*.
             if (x >= 0 && x <= rlx2) {
@@ -1362,8 +1439,8 @@ new function() { // Scope for methods that require numerical integration
                     t1 = flip ? tl : tc,
                     t2 = flip ? tc : tl;
                 addLocation(locations, include,
-                        curve1, t1, Curve.evaluate(v1, t1, 0),
-                        curve2, t2, Curve.evaluate(v2, t2, 0));
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2));
             }
         }
     }

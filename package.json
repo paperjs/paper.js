@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.9.23",
+  "version": "0.9.24",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -25,13 +25,18 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "canvas": "~1.2.1",
     "jsdom": "~3.1.2",
     "request": "~2.53.0"
   },
+  "optionalDependencies": {
+    "canvas": "~1.2.1"
+  },
   "devDependencies": {
-    "uglify-js": "~2.4.23",
-    "prepro": "~0.8.3"
+    "gulp": "^3.9.0",
+    "gulp-qunit": "^1.2.1",
+    "prepro": "~0.8.3",
+    "qunitjs": "~1.15.0",
+    "uglify-js": "~2.4.23"
   },
   "keywords": [
     "vector",
