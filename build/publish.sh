@@ -33,6 +33,9 @@ cd ../paperjs.org
 SITE_DIR=`PWD`
 DIST_FILE=content/11-Download/paperjs-v$VERSION.zip # Relative to $SITE_DIR
 
+cd $PAPER_DIR
+# Make sure we're in the right branch
+git checkout develop
 cd $PAPER_DIR/build
 ./dist.sh
 cd $PAPER_DIR
@@ -46,14 +49,28 @@ git add -u package.json
 git add -u component.json
 # Add all changed files in dist
 git add -u dist
-# Commit
-git commit -m "Bump version to v$VERSION"
-# Tag & Push
+# Commit version
+git commit -m "Release version v$VERSION"
+# Tag version
 git tag "v$VERSION"
-git push
+# Merge develop into master
+git checkout master
+git merge develop -X theirs
+# Push commits on both branches and tags
+git push origin master develop
 git push --tags
 # Publish
 npm publish
+# Go back to develop branch and switch to using load.js again
+git checkout develop
+cd $PAPER_DIR/build
+./load.sh
+cd $PAPER_DIR
+# Add all changed files in dist
+git add -u dist
+# Commit version
+git commit -m "Switch back to load.js versions for development."
+git push origin develop
 
 # Copy paperjs.zip to the website's download folder
 cd $SITE_DIR
