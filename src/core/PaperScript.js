@@ -456,7 +456,7 @@ Base.exports.PaperScript = (function() {
             // project is created for it now.
             var canvasId = PaperScope.getAttribute(script, 'canvas'),
                 canvas = document.getElementById(canvasId),
-                src = script.src,
+                src = script.src + '?nocache',
                 async = PaperScope.hasAttribute(script, 'async'),
                 scopeAttribute = 'data-paper-scope';
             if (!canvas)
