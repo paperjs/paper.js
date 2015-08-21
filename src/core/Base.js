@@ -125,33 +125,36 @@ Base.inject(/** @lends Base# */{
                 return obj1.equals(obj2);
             if (obj2 && obj2.equals)
                 return obj2.equals(obj1);
-
-            // Deep compare objects or arraays
-            // Compare objects
-            if (obj1 && obj2 &&
-                    typeof obj1 === 'object' &&
-                    typeof obj2 === 'object') {
+            // Deep compare objects or arrays
+            if (obj1 && obj2
+                    && typeof obj1 === 'object' && typeof obj2 === 'object') {
                 // Compare arrays
                 if (Array.isArray(obj1) && Array.isArray(obj2)) {
-                    if (obj1.length !== obj2.length) return false;
-                    for (var i = 0, l = obj1.length; i < l; i++) {
-                        if (!Base.equals(obj1[i], obj2[i])) return false;
+                    var length = obj1.length;
+                    if (length !== obj2.length)
+                        return false;
+                    while (length--) {
+                        if (!Base.equals(obj1[length], obj2[length]))
+                            return false;
                     }
                 } else {
                     // Deep compare objects.
-                    var keys = Object.keys(obj1), key;
-                    var length = keys.length;
-                    // Ensure that both objects contain the same number of properties before comparing deep equality.
-                    if (Object.keys(obj2).length !== length) return false;
+                    var keys = Object.keys(obj1),
+                        length = keys.length;
+                    // Ensure that both objects contain the same number of
+                    // properties before comparing deep equality.
+                    if (length !== Object.keys(obj2).length)
+                        return false;
                     while (length--) {
                         // Deep compare each member
-                        key = keys[length];
-                        if (!(obj2.hasOwnProperty(key) && Base.equals(obj1[key], obj2[key]))) return false;
+                        var key = keys[length];
+                        if (!(obj2.hasOwnProperty(key)
+                                && Base.equals(obj1[key], obj2[key])))
+                            return false;
                     }
                 }
                 return true;
             }
-
             return false;
         },
 
