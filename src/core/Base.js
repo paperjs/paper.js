@@ -77,18 +77,19 @@ Base.inject(/** @lends Base# */{
      * @return {Boolean} {@true if the object is a plain object}
      */
     _set: function(props, exclude, dontCheck) {
-        if (dontCheck || Base.isPlainObject(props)) {
+        if (props && (dontCheck || Base.isPlainObject(props))) {
             // If props is a filtering object, we need to execute hasOwnProperty
             // on the original object (it's parent / prototype). See _filtered
             // inheritance trick in the argument reading code.
             var keys = Object.keys(props._filtering || props);
-            for (var i = 0; i < keys.length; i++) {
+            for (var i = 0, l = keys.length; i < l; i++) {
                 var key = keys[i];
                 if (!(exclude && exclude[key])) {
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
-                    if (props[key] !== undefined)
-                        this[key] = props[key];
+                    var value = props[key];
+                    if (value !== undefined)
+                        this[key] = value;
                 }
             }
             return true;
@@ -380,9 +381,11 @@ Base.inject(/** @lends Base# */{
                     res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
-                for (var keys = Object.keys(obj), i = 0; i < keys.length; i++) {
+                var keys = Object.keys(obj);
+                for (var i = 0, l = keys.length; i < l; i++) {
                     var key = keys[i];
-                    res[key] = Base.serialize(obj[key], options, compact, dictionary);
+                    res[key] = Base.serialize(obj[key], options, compact,
+                            dictionary);
                 }
             } else if (typeof obj === 'number') {
                 res = options.formatter.number(obj, options.precision);
