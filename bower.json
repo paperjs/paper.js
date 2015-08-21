@@ -7,6 +7,7 @@
     "type": "git",
     "url": "git://github.com/paperjs/paper.js"
   },
+  "bugs": "https://github.com/paperjs/paper.js/issues",
   "authors": [
     "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
     "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
