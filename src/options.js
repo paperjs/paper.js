@@ -24,12 +24,9 @@ var __options = {
     version: typeof window === 'object' ? 'dev' : version,
     environment: 'browser',
     parser: 'acorn',
-    legacy: true,
     svg: true,
     fatlineClipping: true,
     booleanOperations: true,
     nativeContains: false,
-    paperScript: true,
-    palette: true,
-    debug: false
+    paperScript: true
 };
