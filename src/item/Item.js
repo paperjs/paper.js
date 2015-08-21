@@ -1128,9 +1128,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._matrix;
     },
 
-    setMatrix: function(matrix) {
+    setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
-        this._matrix.initialize(matrix);
+        this._matrix.initialize.apply(this._matrix, arguments);
         if (this._applyMatrix) {
             // Directly apply the internal matrix. This will also call
             // _changed() for us.
