@@ -1003,6 +1003,37 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+    * Converts the curves in a path to straight lines with an even distribution
+    * of points. The distance between the produced segments is as close as
+    * possible to the value specified by the {@code maxDistance} parameter.
+    *
+    * see flatten, difference from flatten: only change curved path elements
+    *
+    * @param {Number} nSteps the number of steps per curved segment, default: 10
+    */
+    flatten2: function(nSteps) {
+        nSteps = nSteps || 10;
+
+        var iterator = new PathIterator(this, 64, 0.1);
+        // Iterate over path and evaluate and add points at given offsets
+        var segments = [];
+        for (var i = 0; i < iterator.curves.length; i++) {
+          var cd = iterator.curves[i];
+          var curve = new Curve(cd[0], cd[1], cd[2], cd[3], cd[4], cd[5], cd[6], cd[7]);
+
+          if (curve.isLinear())
+            segments.push(curve.segment1);
+
+          else {
+            for (var j = 0; j <= nSteps; j++) {
+              segments.push(new Segment(Curve.evaluate(cd, j / nSteps, 0)));
+            }
+          }
+        }
+        this.setSegments(segments);
+    },
+
+    /**
      * Reduces the path by removing curves that have a lenght of 0.
      */
     reduce: function() {
