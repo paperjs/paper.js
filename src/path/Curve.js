@@ -298,8 +298,22 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Path#hasHandles()
      */
     hasHandles: function() {
-        return !this._segment1._handleOut.isZero()
-                || !this._segment2._handleIn.isZero();
+        return !this.isStraight();
+    },
+
+    /**
+     * Checks whether the curve is straight, meaning it has no curve handles
+     * defined and thus appears as a line.
+     * Note that this is not the same as {@link #isLinear()}, which performs a
+     * full linearity check that includes handles running collinear to the line
+     * direction.
+     *
+     * @return {Boolean} {@true if the curve is straight}
+     * @see Segment#isStraight()
+     */
+    isStraight: function() {
+        return this._segment1._handleOut.isZero()
+                && this._segment2._handleIn.isZero();
     },
 
     /**
@@ -378,19 +392,19 @@ var Curve = Base.extend(/** @lends Curve# */{
      * is within the valid range, {code null} otherwise.
      */
     // TODO: Rename to divideAt()?
-    divide: function(offset, isParameter, ignoreLinear) {
+    divide: function(offset, isParameter, ignoreStraight) {
         var parameter = this._getParameter(offset, isParameter),
             tolerance = /*#=*/Numerical.TOLERANCE,
             res = null;
         // Only divide if not at the beginning or end.
         if (parameter >= tolerance && parameter <= 1 - tolerance) {
             var parts = Curve.subdivide(this.getValues(), parameter),
-                isLinear = ignoreLinear ? false : this.isLinear(),
+                setHandles = ignoreStraight || this.hasHandles(),
                 left = parts[0],
                 right = parts[1];
 
             // Write back the results:
-            if (!isLinear) {
+            if (setHandles) {
                 this._segment1._handleOut.set(left[2] - left[0],
                         left[3] - left[1]);
                 // segment2 is the end segment. By inserting newSegment
@@ -403,8 +417,8 @@ var Curve = Base.extend(/** @lends Curve# */{
             // Create the new segment, convert absolute -> relative:
             var x = left[6], y = left[7],
                 segment = new Segment(new Point(x, y),
-                        !isLinear && new Point(left[4] - x, left[5] - y),
-                        !isLinear && new Point(right[2] - x, right[3] - y));
+                        setHandles && new Point(left[4] - x, left[5] - y),
+                        setHandles && new Point(right[2] - x, right[3] - y));
 
             // Insert it in the segments list, if needed:
             if (this._path) {

@@ -191,14 +191,8 @@ PathItem.inject(new function() {
     function splitPath(intersections) {
         var tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
-            linearHandles;
-
-        function setLinear() {
-            // Reset linear segments if they were part of a linear curve
-            // and if we are done with the entire curve.
-            for (var i = 0, l = linearHandles.length; i < l; i++)
-                linearHandles[i].set(0, 0);
-        }
+            isStraight = false,
+            straightSegments = [];
 
         for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
             var loc = intersections[i],
@@ -210,12 +204,7 @@ PathItem.inject(new function() {
                 t /= prev._parameter;
             } else {
                 curve = loc._curve;
-                if (linearHandles)
-                    setLinear();
-                linearHandles = curve.isLinear() ? [
-                        curve._segment1._handleOut,
-                        curve._segment2._handleIn
-                    ] : null;
+                isStraight = curve.isStraight();
             }
             var segment;
             if (t < tMin) {
@@ -223,22 +212,30 @@ PathItem.inject(new function() {
             } else if (t > tMax) {
                 segment = curve._segment2;
             } else {
-                // Split the curve at t, while ignoring linearity of curves,
-                // passing true for ignoreLinear as we don't want to have
-                // parametrically linear curves reset their handles.
+                // Split the curve at t, passing true for ignoreStraight to not
+                // force the result of splitting straight curves straight.
                 var newCurve = curve.divide(t, true, true);
                 segment = newCurve._segment1;
                 curve = newCurve.getPrevious();
-                if (linearHandles)
-                    linearHandles.push(segment._handleOut, segment._handleIn);
+                // Keep track of segments of once straight curves, so they can
+                // be set back straight at the end.
+                if (isStraight)
+                    straightSegments.push(segment);
             }
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc.getIntersection();
             loc._segment = segment;
             prev = loc;
         }
-        if (linearHandles)
-            setLinear();
+        // Reset linear segments if they were part of a linear curve
+        // and if we are done with the entire curve.
+        for (var i = 0, l = straightSegments.length; i < l; i++) {
+            var segment = straightSegments[i];
+            // TODO: Implement Segment#makeStraight(),
+            // or #adjustHandles({ straight: true }))
+            segment._handleIn.set(0, 0);
+            segment._handleOut.set(0, 0);
+        }
     }
 
     /**

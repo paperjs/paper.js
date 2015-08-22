@@ -241,12 +241,15 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Checks whether the segment is straight, meaning it has no curve
-     * handles defined.
-     * If two straight segments are adjacent to each other, the curve between
-     * them will be a straight line.
+     * Checks whether the segment is straight, meaning it has no curve handles
+     * defined. If two straight segments follow each each other in a path, the
+     * curve between them will appear as a straight line.
+     * Note that this is not the same as {@link #isLinear()}, which performs a
+     * full linearity check that includes handles running collinear to the line
+     * direction.
      *
      * @return {Boolean} {@true if the segment is straight}
+     * @see Curve#isStraight()
      */
     isStraight: function() {
         return this._handleIn.isZero() && this._handleOut.isZero();
