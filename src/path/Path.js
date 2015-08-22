@@ -1197,7 +1197,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         var curves = this.getCurves();
         if (index >= 0 && index < curves.length) {
             // Only divide curves if we're not on an existing segment already.
-            if (parameter > tolerance) {
+            if (parameter >= tolerance) {
                 // Divide the curve with the index at given parameter.
                 // Increase because dividing adds more segments to the path.
                 curves[index++].divide(parameter, true);

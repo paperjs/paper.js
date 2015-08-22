@@ -193,7 +193,7 @@ PathItem.inject(new function() {
             tMax = 1 - tMin,
             linearHandles;
 
-        function resetLinear() {
+        function setLinear() {
             // Reset linear segments if they were part of a linear curve
             // and if we are done with the entire curve.
             for (var i = 0, l = linearHandles.length; i < l; i++)
@@ -211,28 +211,26 @@ PathItem.inject(new function() {
             } else {
                 curve = loc._curve;
                 if (linearHandles)
-                    resetLinear();
+                    setLinear();
                 linearHandles = curve.isLinear() ? [
                         curve._segment1._handleOut,
                         curve._segment2._handleIn
                     ] : null;
             }
-            var newCurve,
-                segment;
-            // Split the curve at t, while ignoring linearity of curves
-            if (newCurve = curve.divide(t, true, true)) {
+            var segment;
+            if (t < tMin) {
+                segment = curve._segment1;
+            } else if (t > tMax) {
+                segment = curve._segment2;
+            } else {
+                // Split the curve at t, while ignoring linearity of curves,
+                // passing true for ignoreLinear as we don't want to have
+                // parametrically linear curves reset their handles.
+                var newCurve = curve.divide(t, true, true);
                 segment = newCurve._segment1;
                 curve = newCurve.getPrevious();
                 if (linearHandles)
                     linearHandles.push(segment._handleOut, segment._handleIn);
-            } else {
-                segment = t < tMin
-                    ? curve._segment1
-                    : t > tMax
-                        ? curve._segment2
-                        : curve.getPartLength(0, t) < curve.getPartLength(t, 1)
-                            ? curve._segment1
-                            : curve._segment2;
             }
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc.getIntersection();
@@ -240,7 +238,7 @@ PathItem.inject(new function() {
             prev = loc;
         }
         if (linearHandles)
-            resetLinear();
+            setLinear();
     }
 
     /**

@@ -374,14 +374,16 @@ var Curve = Base.extend(/** @lends Curve# */{
      * or the curve time parameter if {@code isParameter} is {@code true}
      * @param {Boolean} [isParameter=false] pass {@code true} if {@code offset}
      * is a curve time parameter
-     * @return {Curve} the second part of the divided curve
+     * @return {Curve} the second part of the divided curve, if the offset
+     * is within the valid range, {code null} otherwise.
      */
     // TODO: Rename to divideAt()?
     divide: function(offset, isParameter, ignoreLinear) {
         var parameter = this._getParameter(offset, isParameter),
             tolerance = /*#=*/Numerical.TOLERANCE,
             res = null;
-        if (parameter > tolerance && parameter < 1 - tolerance) {
+        // Only divide if not at the beginning or end.
+        if (parameter >= tolerance && parameter <= 1 - tolerance) {
             var parts = Curve.subdivide(this.getValues(), parameter),
                 isLinear = ignoreLinear ? false : this.isLinear(),
                 left = parts[0],
