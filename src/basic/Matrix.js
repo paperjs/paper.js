@@ -539,7 +539,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     _transformBounds: function(bounds, dest, _dontNotify) {
         var coords = this._transformCorners(bounds),
             min = coords.slice(0, 2),
-            max = coords.slice();
+            max = min.slice();
         for (var i = 2; i < 8; i++) {
             var val = coords[i],
                 j = i & 1;
