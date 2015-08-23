@@ -402,7 +402,7 @@ PathItem.inject(new function() {
         var segmentOffset = {};
 
         function labelSegment(seg, text, color) {
-            var textAngle = 45;
+            var textAngle = 30;
             var point = seg.point;
             var key = Math.round(point.x * 1000) + ',' + Math.round(point.y * 1000);
             var offset = segmentOffset[key] || 0;
@@ -430,7 +430,7 @@ PathItem.inject(new function() {
             labelSegment(seg, (segmentCount++) + '/' + index + ': ' + text
                     + '   v: ' + !!seg._visited
                     + '   op: ' + operator(seg._winding)
-                    + '   o: ' + (inter ? inter._overlap : 0)
+                    + '   o: ' + (inter ? inter._overlap || 0 : 0)
                     + '   w: ' + seg._winding
                     , color);
         }
@@ -441,7 +441,7 @@ PathItem.inject(new function() {
             var inter = seg._intersection;
             labelSegment(seg, i
                     + '   i: ' + !!inter
-                    + '   o: ' + (inter ? inter._overlap : 0)
+                    + '   o: ' + (inter ? inter._overlap || 0 : 0)
                     + '   w: ' + seg._winding
                     , 'green');
         }
@@ -495,6 +495,7 @@ PathItem.inject(new function() {
                             w4 = t1.cross(t4);
                         var signature = (w3 * w4).toPrecision(1) + ' (' + w3.toPrecision(1) + ' * ' + w4.toPrecision(1) + ')';
                         var overlap = inter._overlap;
+                        var oldDir = dir;
                         if (overlap) {
                             // Switch to the overlapping intersection segment.
                             if (firstOverlap && overlap === 1) {
