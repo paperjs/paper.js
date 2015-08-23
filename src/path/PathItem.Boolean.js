@@ -25,7 +25,7 @@
  *
  * Not supported yet
  *  - Boolean operations on self-intersecting Paths
- *  - Paths are clones of each other that ovelap exactly on top of each other!
+ *  - Paths are clones of each other that overlap exactly on top of each other!
  *
  * @author Harikrishnan Gopalakrishnan
  * http://hkrish.com/playground/paperjs/booleanStudy.html
@@ -158,6 +158,18 @@ PathItem.inject(new function() {
                             || path === _path2 && !_path1._getWinding(pt, hor))
                             ? 0
                             : getWinding(pt, monoCurves, hor);
+                        /*
+                        new Path.Circle({
+                            center: pt,
+                            radius: 3,
+                            strokeColor: 'red'
+                        });
+                        new PointText({
+                            point: pt,
+                            content: getWinding(pt, monoCurves, hor),
+                            fillColor: 'red'
+                        });
+                        */
                         break;
                     }
                     length -= curveLength;
@@ -165,15 +177,27 @@ PathItem.inject(new function() {
             }
             // Assign the average winding to the entire curve chain.
             var winding = Math.round(windingSum / 3);
-            for (var j = chain.length - 1; j >= 0; j--)
-                chain[j].segment._winding = winding;
+            for (var j = chain.length - 1; j >= 0; j--) {
+                var seg = chain[j].segment,
+                    inter = seg._intersection;
+                seg._winding = winding;
+                if (inter && inter._overlap && winding === 1)
+                    seg._winding = 2;
+                /*
+                new PointText({
+                    point: seg.point,
+                    content: seg._winding,
+                    fillColor: 'green'
+                });
+                */
+            }
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath(Item.NO_INSERT);
-        result.insertAbove(path1);
         result.addChildren(tracePaths(segments, operator), true);
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
+        result.insertAbove(path1);
         // Copy over the left-hand item's style and we're done.
         // TODO: Consider using Item#_clone() for this, but find a way to not
         // clone children / name (content).
@@ -189,6 +213,7 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
+        // TODO: Make public in API, since useful!
         var tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
             isStraight = false,
@@ -373,15 +398,66 @@ PathItem.inject(new function() {
      * @return {Path[]} the contours traced
      */
     function tracePaths(segments, operator, selfOp) {
+        var segmentCount = 0;
+        var segmentOffset = {};
+
+        function labelSegment(seg, text, color) {
+            var textAngle = 45;
+            var point = seg.point;
+            var key = Math.round(point.x * 1000) + ',' + Math.round(point.y * 1000);
+            var offset = segmentOffset[key] || 0;
+            segmentOffset[key] = offset + 1;
+            var text = new PointText({
+                point: point.add(new Point(8, 4).rotate(textAngle).add(0, offset * 14)),
+                content: text,
+                justification: 'left',
+                fillColor: color
+            });
+            text.pivot = text.globalToLocal(text.point);
+            text.rotation = textAngle;
+        }
+
+        function drawSegment(seg, text, index, color) {
+            if (false)
+                return;
+            // return;
+            new Path.Circle({
+                center: seg.point,
+                radius: 3,
+                strokeColor: color
+            });
+            var inter = seg._intersection;
+            labelSegment(seg, (segmentCount++) + '/' + index + ': ' + text
+                    + '   v: ' + !!seg._visited
+                    + '   op: ' + operator(seg._winding)
+                    + '   o: ' + (inter ? inter._overlap : 0)
+                    + '   w: ' + seg._winding
+                    , color);
+        }
+
+        for (var i = 0; i < 0 && segments.length; i++) {
+            var seg = segments[i];
+            var point = seg.point;
+            var inter = seg._intersection;
+            labelSegment(seg, i
+                    + '   i: ' + !!inter
+                    + '   o: ' + (inter ? inter._overlap : 0)
+                    + '   w: ' + seg._winding
+                    , 'green');
+        }
+
         var paths = [];
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
-            if (seg._visited || !operator(seg._winding))
+            if (seg._visited || !operator(seg._winding)) {
+                drawSegment(seg, 'ignore', i, 'red');
                 continue;
+            }
             var path = new Path(Item.NO_INSERT),
                 inter = seg._intersection,
                 startInterSeg = inter && inter._segment,
                 added = false, // Whether a first segment as added already
+                firstOverlap = true,
                 dir = 1;
             do {
                 var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
@@ -404,7 +480,7 @@ PathItem.inject(new function() {
                         var c1 = seg.getCurve();
                         if (dir > 0)
                             c1 = c1.getPrevious();
-                        var t1 = c1.getTangentAt(dir < 1 ? 0 : 1, true),
+                        var t1 = c1.getTangentAt(dir < 0 ? 0 : 1, true),
                             // Get both curves at the intersection (except the
                             // entry curves).
                             c4 = interSeg.getCurve(),
@@ -417,7 +493,21 @@ PathItem.inject(new function() {
                             // the correct contour to traverse next.
                             w3 = t1.cross(t3),
                             w4 = t1.cross(t4);
-                        if (w3 * w4 !== 0) {
+                        var signature = (w3 * w4).toPrecision(1) + ' (' + w3.toPrecision(1) + ' * ' + w4.toPrecision(1) + ')';
+                        var overlap = inter._overlap;
+                        if (overlap) {
+                            // Switch to the overlapping intersection segment.
+                            if (firstOverlap && overlap === 1) {
+                                drawSegment(seg, '1st overlap ' + signature, i, 'orange');
+                                firstOverlap = false;
+                            } else {
+                                drawSegment(seg, '2nd overlap ' + signature, i, 'orange');
+                                seg._visited = interSeg._visited;
+                                seg = interSeg;
+                                dir = 1;
+                                firstOverlap = true;
+                            }
+                        } else if (Math.abs(w3 * w4) > Numerical.EPSILON) {
                             // Do not attempt to switch contours if we aren't
                             // sure that there is a possible candidate.
                             var curve = w3 < w4 ? c3 : c4,
@@ -430,19 +520,24 @@ PathItem.inject(new function() {
                             // contour to traverse, stay on the same contour.
                             if (nextSeg._visited && seg._path !== nextSeg._path
                                         || !operator(nextSeg._winding)) {
-                                dir = 1;
+                                drawSegment(nextSeg, 'not suitable ' + signature + ', old dir: ' + oldDir, i, 'orange');
+                                dir = 1; // TODO: oldDir?
                             } else {
                                 // Switch to the intersection segment.
                                 seg._visited = interSeg._visited;
                                 seg = interSeg;
+                                drawSegment(seg, 'switch ' + signature, i, 'green');
                                 if (nextSeg._visited)
                                     dir = 1;
                             }
                         } else {
+                            drawSegment(seg, 'no cross ' + signature, i, 'blue');
                             dir = 1;
                         }
                     }
                     handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
+                } else {
+                    drawSegment(seg, 'keep', i, 'black');
                 }
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
@@ -459,18 +554,17 @@ PathItem.inject(new function() {
             if (seg && (seg === startSeg || seg === startInterSeg)) {
                 path.firstSegment.setHandleIn((seg === startInterSeg
                         ? startInterSeg : seg)._handleIn);
-                path.setClosed(true);
             } else {
                 path.lastSegment._handleOut.set(0, 0);
+                console.error('Boolean operation results in open path!');
             }
+            path.setClosed(true);
             // Add the path to the result, while avoiding stray segments and
             // incomplete paths. The amount of segments for valid paths depend
             // on their geometry:
             // - Closed paths with only straight lines need more than 2 segments
             // - Closed paths with curves can consist of only one segment
-            // - Open paths need at least two segments
-            if (path._segments.length >
-                    (path._closed ? path.isLinear() ? 2 : 0 : 1))
+            if (path._segments.length > path.isLinear() ? 2 : 0)
                 paths.push(path);
         }
         return paths;

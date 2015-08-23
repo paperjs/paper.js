@@ -214,7 +214,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // If we have the parameter on the other curve use that for
             // intersection rather than the point.
             this._intersection = intersection = new CurveLocation(this._curve2,
-                    this._parameter2, this._point2 || this._point, this);
+                    this._parameter2, this._point2 || this._point);
+            intersection._overlap = this._overlap;
             intersection._intersection = this;
         }
         return intersection;
@@ -246,6 +247,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      *
      * @type Number
      * @bean
+     * @see Curve#getNearestLocation(point)
+     * @see Path#getNearestLocation(point)
      */
     getDistance: function() {
         return this._distance;

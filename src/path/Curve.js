@@ -1203,8 +1203,12 @@ new function() { // Scope for methods that require private functions
     function addLocation(locations, include, curve1, t1, point1, curve2, t2,
             point2) {
         var loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);
-        if (!include || include(loc))
+        if (!include || include(loc)) {
             locations.push(loc);
+        } else {
+            loc = null;
+        }
+        return loc;
     }
 
     function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
@@ -1476,11 +1480,86 @@ new function() { // Scope for methods that require private functions
         }
     }
 
+    /**
+     * Code to detect overlaps of intersecting curves by @iconexperience:
+     * https://github.com/paperjs/paper.js/issues/648
+     */
+    function addOverlap(v1, v2, curve1, curve2, locations, include) {
+        var abs = Math.abs,
+            tolerance = Numerical.TOLERANCE,
+            isLinear = Curve.isLinear(v1) || Curve.isLinear(v2);
+        if (isLinear) {
+            // If one curve is linear, the other curve must be linear, too. Otherwise they cannot overlap.
+            // Linear curves can only overlap if they are collinear, which means they must be are parallel and
+            // any point of curve 1 must be on curve 2
+            if (!Curve.isLinear(v1) || !Curve.isLinear(v2) ||
+                    abs((v1[0] - v1[6]) * (v2[1] - v2[7]) - (v1[1] - v1[7]) * (v2[0] - v2[6])) > tolerance ||
+                    abs(Line.getSignedDistance(v2[0], v2[1], v2[6], v2[7], v1[0], v1[1], false)) > tolerance) {
+                return false;
+            }
+        }
+        var v = [v1, v2],
+            matches = [];
+        // Iterate through all end points. First p1 and p2 of curve 1, then p1 and p2 of curve 2
+        for (var vIdx = 0, t1 = 0; vIdx < 2 && matches.length < 2; vIdx += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
+            var t2 = Curve.getParameterOf(v[vIdx^1], v[vIdx][t1 === 0 ? 0 : 6], v[vIdx][t1 === 0 ? 1 : 7]);
+            if (t2 != null) {  // if point is on curve
+                var match = vIdx === 0 ? [t1, t2] : [t2, t1];
+                if (matches.length === 1 && match[0] < matches[0][0]) {
+                    matches.unshift(match);
+                } else if (matches.length === 0 || match[0] != matches[0][0] || match[1] != matches[0][1]) {
+                    matches.push(match);
+                }
+            }
+            if (vIdx === 1 && matches.length == 0) {
+                return false; // if we checked three points but found no match then curves cannot overlap
+            }
+        }
+        // if we found two matches, the end points of v1 and v2 should be the same. We only have to check if the
+        // handles are the same, too.
+        var overlap = 1;
+        if (matches.length == 2) {
+            // create values for overlapping part of each curve
+            v[0] = Curve.getPart(v[0], matches[0][0], matches[1][0]);
+            v[1] = Curve.getPart(v[1], Math.min(matches[0][1], matches[1][1]), Math.max(matches[0][1], matches[1][1]));
+            // reverse values of second curve if necessary
+            if (abs(v[0][0] - v[1][6]) < tolerance && abs(v[0][1] - v[1][7]) < tolerance) {
+                overlap = -1;
+                v[1] = [v[1][6], v[1][7], v[1][4], v[1][5], v[1][2], v[1][3], v[1][0], v[1][1]];
+            }
+            // check if handles of overlapping paths are similar enough. We could do another check for curve identity
+            // here if we find a better criteria
+            if (isLinear ||
+                    abs(v[0][2] - v[1][2]) < tolerance && abs(v[0][3] - v[1][3]) < tolerance &&
+                    abs(v[0][4] - v[1][4]) < tolerance && abs(v[0][5] - v[1][5]) < tolerance) {
+                // overlapping parts are identical
+                var t1 = matches[0][0],
+                    t2 = matches[0][1],
+                    loc = addLocation(locations, include,
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2), true);
+                if (loc)
+                    loc._overlap = overlap;
+                var t1 = matches[1][0],
+                    t2 = matches[1][1];
+                    loc = addLocation(locations, include,
+                        curve1, t1, Curve.getPoint(v1, t1),
+                        curve2, t2, Curve.getPoint(v2, t2), true);
+                if (loc)
+                    loc._overlap = overlap;
+                return true;
+            }
+        }
+        return false;
+    }
+
     return { statics: /** @lends Curve */{
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
         getIntersections: function(v1, v2, c1, c2, locations, include) {
+            if (addOverlap(v1, v2, c1, c2, locations, include))
+                return locations;
             var linear1 = Curve.isLinear(v1),
                 linear2 = Curve.isLinear(v2),
                 c1p1 = c1.getPoint1(),
@@ -1550,12 +1629,20 @@ new function() { // Scope for methods that require private functions
 
             if (last > 0) {
                 locations.sort(compare);
-                // Filter out duplicate locations.
-                for (var i = last; i > 0; i--) {
-                    if (locations[i].equals(locations[i - 1])) {
-                        locations.splice(i, 1);
+                // Filter out duplicate locations, but preserve _overlap setting
+                // among all duplicated (only one of them will have it defined)
+                var i = last,
+                    loc = locations[i];
+                while(--i >= 0) {
+                    var prev = locations[i];
+                    if (prev.equals(loc)) {
+                        var overlap = loc._overlap;
+                        if (overlap)
+                            prev._overlap = overlap;
+                        locations.splice(i + 1, 1); // Remove loc
                         last--;
                     }
+                    loc = prev;
                 }
             }
             if (_expand) {
