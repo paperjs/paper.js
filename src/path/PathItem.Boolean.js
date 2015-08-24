@@ -178,10 +178,10 @@ PathItem.inject(new function() {
                         // number along overlaps.
                         // Calculate the new winding number based on current
                         // number and role in the operation.
-                        var newWind =
-                                wind === 0 && getMainPath(seg) === _path1 ? 1 :
-                                wind === 1 && getMainPath(seg) === _path2 ? 2 :
-                                null;
+                        var path = getMainPath(seg),
+                            newWind = wind === 0 && path === _path1 ? 1
+                                    : wind === 1 && path === _path2 ? 2
+                                    : null;
                         if (newWind != null) {
                             // Check against the winding of the intersecting
                             // path, to exclude islands in compound paths, where
@@ -696,8 +696,8 @@ PathItem.inject(new function() {
 
 Path.inject(/** @lends Path# */{
     /**
-     * Private method that returns and caches all the curves in this Path, which
-     * are monotonically decreasing or increasing in the y-direction.
+     * Private method that returns and caches all the curves in this Path,
+     * which are monotonically decreasing or increasing in the y-direction.
      * Used by getWinding().
      */
     _getMonoCurves: function() {
