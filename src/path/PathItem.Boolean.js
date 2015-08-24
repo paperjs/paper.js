@@ -199,7 +199,8 @@ PathItem.inject(new function() {
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath(Item.NO_INSERT);
-        result.addChildren(tracePaths(segments, monoCurves, operation), true);
+        result.addChildren(tracePaths(segments, monoCurves, operation, !_path2),
+                true);
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
         result.insertAbove(path1);
@@ -496,7 +497,7 @@ PathItem.inject(new function() {
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
-                if (added && (!operator(seg._winding) || selfOp)
+                if (added && (selfOp || !operator(seg._winding))
                         && (inter = seg._intersection)
                         && (interSeg = inter._segment)
                         && interSeg !== startSeg) {
@@ -577,17 +578,19 @@ PathItem.inject(new function() {
                 // Move to the next segment according to the traversal direction
                 seg = dir > 0 ? seg.getNext() : seg. getPrevious();
                 if (reportSegments) {
-                    console.log(seg, !seg._visited,
+                    console.log(seg, seg && !seg._visited,
                         seg !== startSeg, seg !== startInterSeg,
-                        seg._intersection, operator(seg._winding));
+                        seg && seg._intersection, seg && operator(seg._winding));
                     if (!(seg && !seg._visited
                         && seg !== startSeg && seg !== startInterSeg
                         && (seg._intersection || operator(seg._winding)))) {
-                        new Path.Circle({
-                            center: seg.point,
-                            radius: 4,
-                            fillColor: 'red'
-                        });
+                        if (seg) {
+                            new Path.Circle({
+                                center: seg.point,
+                                radius: 4,
+                                fillColor: 'red'
+                            });
+                        }
                     }
                 }
             } while (seg && !seg._visited
