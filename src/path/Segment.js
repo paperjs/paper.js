@@ -577,6 +577,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         },
 
         isCollinear: function(seg1, seg2, seg3, seg4) {
+            // TODO: This assumes isStraight(), while isLinear() allows handles!
             return seg1._handleOut.isZero() && seg2._handleIn.isZero()
                     && seg3._handleOut.isZero() && seg4._handleIn.isZero()
                     && seg2._point.subtract(seg1._point).isCollinear(
@@ -584,9 +585,10 @@ var Segment = Base.extend(/** @lends Segment# */{
         },
 
         isOrthogonal: function(seg1, seg2, seg3) {
+            // TODO: This assumes isStraight(), while isLinear() allows handles!
             return seg1._handleOut.isZero() && seg2._handleIn.isZero()
-                && seg2._handleOut.isZero() && seg3._handleIn.isZero()
-                && seg2._point.subtract(seg1._point).isOrthogonal(
+                    && seg2._handleOut.isZero() && seg3._handleIn.isZero()
+                    && seg2._point.subtract(seg1._point).isOrthogonal(
                         seg3._point.subtract(seg2._point));
         },
 

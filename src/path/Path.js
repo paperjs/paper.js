@@ -1003,13 +1003,16 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Reduces the path by removing curves that have a lenght of 0.
+     * Reduces the path by removing curves that have a length of 0,
+     * and unnecessary segments between two collinear curves.
      */
     reduce: function() {
         var curves = this.getCurves();
         for (var i = curves.length - 1; i >= 0; i--) {
-            var curve = curves[i];
-            if (curve.isLinear() && curve.getLength() === 0)
+            var curve = curves[i],
+                next;
+            if (curve.isLinear() && (curve.getLength() === 0
+                    || (next = curve.getNext()) && curve.isCollinear(next)))
                 curve.remove();
         }
         return this;

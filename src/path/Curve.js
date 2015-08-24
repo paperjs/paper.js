@@ -337,7 +337,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Segment#isCollinear(segment)
      */
     isCollinear: function(curve) {
-        return Ssegment.isCollinear(this._segment1, this._segment2,
+        return Segment.isCollinear(this._segment1, this._segment2,
                 curve._segment1, curve._segment2);
     },
 
@@ -478,8 +478,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Removes the curve from the path that it belongs to, by merging its two
-     * path segments.
+     * Removes the curve from the path that it belongs to, by removing its
+     * second segment and merging its handle with the first segment.
      * @return {Boolean} {@true if the curve was removed}
      */
     remove: function() {
