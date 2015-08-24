@@ -1517,14 +1517,12 @@ new function() { // Scope for methods that require private functions
         }
         // if we found two matches, the end points of v1 and v2 should be the same. We only have to check if the
         // handles are the same, too.
-        var overlap = 1;
         if (matches.length == 2) {
             // create values for overlapping part of each curve
             v[0] = Curve.getPart(v[0], matches[0][0], matches[1][0]);
             v[1] = Curve.getPart(v[1], Math.min(matches[0][1], matches[1][1]), Math.max(matches[0][1], matches[1][1]));
             // reverse values of second curve if necessary
             if (abs(v[0][0] - v[1][6]) < tolerance && abs(v[0][1] - v[1][7]) < tolerance) {
-                overlap = -1;
                 v[1] = [v[1][6], v[1][7], v[1][4], v[1][5], v[1][2], v[1][3], v[1][0], v[1][1]];
             }
             // check if handles of overlapping paths are similar enough. We could do another check for curve identity
@@ -1539,14 +1537,14 @@ new function() { // Scope for methods that require private functions
                         curve1, t1, Curve.getPoint(v1, t1),
                         curve2, t2, Curve.getPoint(v2, t2), true);
                 if (loc)
-                    loc._overlap = overlap;
+                    loc._overlap = true;
                 var t1 = matches[1][0],
                     t2 = matches[1][1];
                     loc = addLocation(locations, include,
                         curve1, t1, Curve.getPoint(v1, t1),
                         curve2, t2, Curve.getPoint(v2, t2), true);
                 if (loc)
-                    loc._overlap = overlap;
+                    loc._overlap = true;
                 return true;
             }
         }

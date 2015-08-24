@@ -55,7 +55,6 @@ PathItem.inject(new function() {
     // for each curve in the graph after curves in the operands are
     // split at intersections.
     function computeBoolean(path1, path2, operation) {
-        var operator = operators[operation];
         // Creates a cloned version of the path that we can modify freely, with
         // its matrix applied to its geometry. Calls #reduce() to simplify
         // compound paths and remove empty curves, and #reorient() to make sure
@@ -158,18 +157,6 @@ PathItem.inject(new function() {
                             || path === _path2 && !_path1._getWinding(pt, hor))
                             ? 0
                             : getWinding(pt, monoCurves, hor);
-                        /*
-                        new Path.Circle({
-                            center: pt,
-                            radius: 3,
-                            strokeColor: 'red'
-                        });
-                        new PointText({
-                            point: pt,
-                            content: getWinding(pt, monoCurves, hor),
-                            fillColor: 'red'
-                        });
-                        */
                         break;
                     }
                     length -= curveLength;
@@ -179,22 +166,30 @@ PathItem.inject(new function() {
             var winding = Math.round(windingSum / 3);
             for (var j = chain.length - 1; j >= 0; j--) {
                 var seg = chain[j].segment,
-                    inter = seg._intersection;
-                seg._winding = winding;
-                if (inter && inter._overlap && winding === 1 && /^(unite)$/.test(operation))
-                    seg._winding = 2;
-                /*
-                new PointText({
-                    point: seg.point,
-                    content: seg._winding,
-                    fillColor: 'green'
-                });
-                */
+                    inter = seg._intersection,
+                    path = seg._path,
+                    wind = winding;
+                if (inter && inter._overlap) {
+                    switch (operation) {
+                    case 'unite':
+                        if (wind === 1)
+                            wind = 2;
+                        break;
+                    case 'subtract':
+                        if (wind === 0 && path === _path1) {
+                            wind = 1;
+                        } else if (wind === 1 && path === _path2) {
+                            wind = 0;
+                        }
+                        break;
+                    }
+                }
+                seg._winding = wind;
             }
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath(Item.NO_INSERT);
-        result.addChildren(tracePaths(segments, operator), true);
+        result.addChildren(tracePaths(segments, monoCurves, operation), true);
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
         result.insertAbove(path1);
@@ -397,7 +392,7 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, operator, selfOp) {
+    function tracePaths(segments, monoCurves, operation, selfOp) {
         var segmentCount = 0;
         var segmentOffset = {};
 
@@ -408,10 +403,11 @@ PathItem.inject(new function() {
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var text = new PointText({
-                point: point.add(new Point(8, 4).rotate(textAngle).add(0, offset * 14)),
+                point: point.add(new Point(8, 4).rotate(textAngle).add(0, offset * 10)),
                 content: text,
                 justification: 'left',
-                fillColor: color
+                fillColor: color,
+                fontSize: 8
             });
             text.pivot = text.globalToLocal(text.point);
             text.rotation = textAngle;
@@ -420,15 +416,17 @@ PathItem.inject(new function() {
         function drawSegment(seg, text, index, color) {
             if (false)
                 return;
-            // return;
             new Path.Circle({
                 center: seg.point,
                 radius: 3,
                 strokeColor: color
             });
             var inter = seg._intersection;
-            labelSegment(seg, (segmentCount++) + '/' + index + ': ' + text
+            labelSegment(seg, '#' + paths.length + '.'
+                            + (path ? path._segments.length : 0)
+                            + ' ' + (segmentCount++) + '/' + index + ': ' + text
                     + '   v: ' + !!seg._visited
+                    + '   p: ' + seg._path._id
                     + '   op: ' + operator(seg._winding)
                     + '   o: ' + (inter && inter._overlap || 0)
                     + '   w: ' + seg._winding
@@ -446,12 +444,14 @@ PathItem.inject(new function() {
                     , 'green');
         }
 
-        var paths = [],
+        var operator = operators[operation],
+            paths = [],
+            tolerance = /*#=*/Numerical.TOLERANCE,
             // Values for getTangentAt() that are almost 0 and 1.
             // NOTE: Even though getTangentAt() supports 0 and 1 instead of
             // tMin and tMax, we still need to use this instead, as other issues
             // emerge from switching to 0 and 1 in edge cases.
-            tMin = /*#=*/Numerical.TOLERANCE,
+            tMin = tolerance,
             tMax = 1 - tMin;
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
@@ -463,7 +463,6 @@ PathItem.inject(new function() {
                 inter = seg._intersection,
                 startInterSeg = inter && inter._segment,
                 added = false, // Whether a first segment as added already
-                firstOverlap = true,
                 dir = 1;
             do {
                 var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
@@ -483,18 +482,17 @@ PathItem.inject(new function() {
                         seg = interSeg;
                         dir = 1;
                     } else {
-                        var overlap = inter._overlap;
-                        if (overlap) {
+                        if (inter._overlap && operation === 'unite') {
                             // Switch to the overlapping intersection segment.
-                            if (firstOverlap && overlap === 1) {
-                                drawSegment(seg, '1st overlap ' + overlap.start, i, 'orange');
-                                firstOverlap = false;
-                            } else {
-                                drawSegment(seg, '2nd overlap ' + overlap.end, i, 'orange');
+                            drawSegment(seg, 'overlap', i, 'orange');
+                            var curve = interSeg.getCurve(),
+                                pt = curve.getPointAt(0.5, true),
+                                hor = curve.isLinear() && Math.abs(curve
+                                        .getTangentAt(0.5, true).y) < tolerance;
+                            if (getWinding(pt, monoCurves, hor) === 1) {
                                 seg._visited = interSeg._visited;
                                 seg = interSeg;
                                 dir = 1;
-                                firstOverlap = true;
                             }
                         } else {
                             var c1 = seg.getCurve();
@@ -554,6 +552,20 @@ PathItem.inject(new function() {
                 seg._visited = true;
                 // Move to the next segment according to the traversal direction
                 seg = dir > 0 ? seg.getNext() : seg. getPrevious();
+                console.log(seg, !seg._visited,
+                    seg !== startSeg, seg !== startInterSeg,
+                    seg._intersection, operator(seg._winding));
+                if (!(seg && !seg._visited
+                    && seg !== startSeg && seg !== startInterSeg
+                    && (seg._intersection || operator(seg._winding)))) {
+                    new Path.Circle({
+                        center: seg.point,
+                        radius: 4,
+                        fillColor: 'red'
+                    });
+                }
+                /*
+                */
             } while (seg && !seg._visited
                     && seg !== startSeg && seg !== startInterSeg
                     && (seg._intersection || operator(seg._winding)));
