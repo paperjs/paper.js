@@ -867,6 +867,11 @@ statics: {
             minDist = Infinity,
             minT = 0;
 
+        // If there are no handles,
+        // we can get nearest location precisely with less calculation
+        if (this.isStraight())
+            return this.getAnchorNearestLocation(point);
+
         function refine(t) {
             if (t >= 0 && t <= 1) {
                 var dist = point.getDistance(Curve.getPoint(values, t), true);
@@ -890,6 +895,40 @@ statics: {
         var pt = Curve.getPoint(values, minT);
         return new CurveLocation(this, minT, pt, null, null, null,
                 point.getDistance(pt));
+    },
+
+    getAnchorNearestLocation: function(/* point */) {
+        var point0 = Point.read(arguments),
+            point1 = this.getPoint1(),
+            point2 = this.getPoint2(),
+            vector12 = point2.subtract(point1),
+            vector10 = point0.subtract(point1),
+            nearestPoint, minT;
+
+        if (vector12.dot(vector10) <= 0) {
+            minT = 0;
+            nearestPoint = new Point(point1);
+        } else if (vector12.dot(point2.subtract(point0)) <= 0) {
+            minT = 1;
+            nearestPoint = new Point(point2);
+        } else {
+            var normalized12 = vector12.normalize(),
+                distance1n = vector10.dot(normalized12);
+            minT = distance1n / vector12.getLength();
+            if (minT <= 0) {
+                minT = 0;
+                nearestPoint = new Point(point1);
+            } else if (minT >= 1) {
+                minT = 1;
+                nearestPoint = new Point(point2);
+            } else {
+                nearestPoint = new Point(
+                    point1.x + distance1n * normalized12.x,
+                    point1.y + distance1n * normalized12.y);
+            }
+        }
+        return new CurveLocation(this, minT, nearestPoint, null, null, null,
+                point0.getDistance(nearestPoint));
     },
 
     getNearestPoint: function(/* point */) {
