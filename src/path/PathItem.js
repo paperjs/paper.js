@@ -59,19 +59,21 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     }
      * }
      */
-    getIntersections: function(path, _matrix, _expand) {
+    getIntersections: function(path, _matrix) {
         // NOTE: For self-intersection, path is null. This means you can also
         // just call path.getIntersections() without an argument to get self
         // intersections.
         // NOTE: The hidden argument _matrix is used internally to override the
         // passed path's transformation matrix.
-        if (this === path)
-            path = null;
-        var locations = [],
-            curves1 = this.getCurves(),
+        return Curve.filterIntersections(this._getIntersections(
+                this !== path ? path : null, _matrix, []));
+    },
+
+    _getIntersections: function(path, matrix, locations, returnFirst) {
+        var curves1 = this.getCurves(),
             curves2 = path ? path.getCurves() : curves1,
             matrix1 = this._matrix.orNullIfIdentity(),
-            matrix2 = path ? (_matrix || path._matrix).orNullIfIdentity()
+            matrix2 = path ? (matrix || path._matrix).orNullIfIdentity()
                 : matrix1,
             length1 = curves1.length,
             length2 = path ? curves2.length : length1,
@@ -120,6 +122,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             // Check for intersections with other curves. For self intersection,
             // we can start at i + 1 instead of 0
             for (var j = path ? 0 : i + 1; j < length2; j++) {
+                // There might be already one location from the above
+                // self-intersection check:
+                if (returnFirst && locations.length)
+                    break;
                 Curve.getIntersections(
                     values1, values2[j], curve1, curves2[j], locations,
                     // Avoid end point intersections on consecutive curves when
@@ -132,7 +138,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 );
             }
         }
-        return Curve.filterIntersections(locations, _expand);
+        return locations;
     },
 
     _asPathItem: function() {

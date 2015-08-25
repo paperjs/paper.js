@@ -77,7 +77,8 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
-        splitPath(_path1.getIntersections(_path2, null, true));
+        splitPath(Curve.filterIntersections(
+                _path1._getIntersections(_path2, null, []), true));
 
         var chain = [],
             segments = [],
@@ -538,7 +539,7 @@ PathItem.inject(new function() {
                             // the correct contour to traverse next.
                             w3 = t1.cross(t3),
                             w4 = t1.cross(t4);
-                        if (Math.abs(w3 * w4) > Numerical.EPSILON) {
+                        if (Math.abs(w3 * w4) > /*#=*/Numerical.EPSILON) {
                             // Do not attempt to switch contours if we aren't
                             // sure that there is a possible candidate.
                             var curve = w3 < w4 ? c3 : c4,
@@ -603,7 +604,8 @@ PathItem.inject(new function() {
                         ? startInterSeg : seg)._handleIn);
             } else {
                 path.lastSegment._handleOut.set(0, 0);
-                console.error('Boolean operation results in open path!');
+                console.error('Boolean operation results in open path, length =',
+                    path._segments.length);
             }
             path.setClosed(true);
             // Add the path to the result, while avoiding stray segments and
