@@ -27,7 +27,7 @@ test('path.unite(); #609', function() {
     path2.closePath();
 
     var result = path1.unite(path2);
-    equals(result.pathData, 'M100,100c27.61424,0 50,22.38576 50,50c0,27.61424 -22.38576,50 -50,50z M100,200c-27.61424,0 -50,-22.38576 -50,-50c0,-27.61424 22.38576,-50 50,-50z', 'result.pathData');
+    equals(result.pathData, 'M150,150c0,27.61424 -22.38576,50 -50,50c-27.61424,0 -50,-22.38576 -50,-50c0,-27.61424 22.38576,-50 50,-50c27.61424,0 50,22.38576 50,50z', 'result.pathData');
 });
 
 test('ring.subtract(square); #610', function() {
