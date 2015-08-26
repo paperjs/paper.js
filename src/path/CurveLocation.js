@@ -217,7 +217,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     this._parameter2, this._point2 || this._point);
             intersection._overlap = this._overlap;
             intersection._intersection = this;
-            intersection._other = true;
         }
         return intersection;
     },
