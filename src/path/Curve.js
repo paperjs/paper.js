@@ -1555,20 +1555,20 @@ new function() { // Scope for methods that require private functions
                     abs(c2[3] - c1[3]) < epsilon &&
                     abs(c2[7] - c1[7]) < epsilon) {
                 // Overlapping parts are identical
-                var t1 = pairs[0][0],
-                    t2 = pairs[0][1],
-                    loc = addLocation(locations, include,
-                        curve1, t1, Curve.getPoint(v1, t1),
-                        curve2, t2, Curve.getPoint(v2, t2), true);
-                if (loc)
-                    loc._overlap = true;
-                var t1 = pairs[1][0],
-                    t2 = pairs[1][1];
-                    loc = addLocation(locations, include,
-                        curve1, t1, Curve.getPoint(v1, t1),
-                        curve2, t2, Curve.getPoint(v2, t2), true);
-                if (loc)
-                    loc._overlap = true;
+                var t11 = pairs[0][0],
+                    t12 = pairs[0][1],
+                    t21 = pairs[1][0],
+                    t22 = pairs[1][1],
+                    loc1 = addLocation(locations, include,
+                        curve1, t11, Curve.getPoint(v1, t11),
+                        curve2, t12, Curve.getPoint(v2, t12), true),
+                    loc2 = addLocation(locations, include,
+                        curve1, t21, Curve.getPoint(v1, t21),
+                        curve2, t22, Curve.getPoint(v2, t22), true);
+                if (loc1)
+                    loc1._overlap = true;
+                if (loc2)
+                    loc2._overlap = true;
                 return true;
             }
         }
@@ -1658,10 +1658,11 @@ new function() { // Scope for methods that require private functions
                 while(--i >= 0) {
                     var prev = locations[i];
                     if (prev.equals(loc)) {
+                        locations.splice(i + 1, 1); // Remove loc.
+                        // Preserve overlap setting.
                         var overlap = loc._overlap;
                         if (overlap)
                             prev._overlap = overlap;
-                        locations.splice(i + 1, 1); // Remove loc
                         last--;
                     }
                     loc = prev;

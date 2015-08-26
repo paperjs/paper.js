@@ -287,7 +287,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     // _curve2/_parameter2 are only used for Boolean operations
                     // and don't need syncing there.
                     && this._curve2 === loc._curve2
-                    && abs(this._parameter2 - loc._parameter2) < tolerance
+                    && abs((this._parameter2 || 0) - (loc._parameter2 || 0))
+                            < tolerance
                 || false;
     },
 
