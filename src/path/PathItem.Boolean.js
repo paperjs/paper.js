@@ -80,6 +80,18 @@ PathItem.inject(new function() {
         splitPath(Curve.filterIntersections(
                 _path1._getIntersections(_path2, null, []), true));
 
+        /*
+        console.time('inter');
+        var locations = _path1._getIntersections(_path2, null, []);
+        console.timeEnd('inter');
+        if (_path2 && false) {
+            console.time('self');
+            _path1._getIntersections(null, null, locations);
+            _path2._getIntersections(null, null, locations);
+            console.timeEnd('self');
+        }
+        splitPath(Curve.filterIntersections(locations, true));
+        */
         var chain = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -417,24 +429,25 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, monoCurves, operation, selfOp) {
+    function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
         var segmentOffset = {};
-        var reportSegments = false;
-        var reportWindings = false;
+        var reportSegments = false && !window.silent;
+        var reportWindings = false && !window.silent;
+        var textAngle = 0;
+        var fontSize = 4 / paper.project.activeLayer.scaling.x;
 
         function labelSegment(seg, text, color) {
-            var textAngle = 30;
             var point = seg.point;
-            var key = Math.round(point.x * 1000) + ',' + Math.round(point.y * 1000);
+            var key = Math.round(point.x / 10) + ',' + Math.round(point.y / 10);
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var text = new PointText({
-                point: point.add(new Point(8, 4).rotate(textAngle).add(0, offset * 10)),
+                point: point.add(new Point(fontSize, fontSize / 2).rotate(textAngle).add(0, offset * fontSize * 1.2)),
                 content: text,
                 justification: 'left',
                 fillColor: color,
-                fontSize: 8
+                fontSize: fontSize
             });
             text.pivot = text.globalToLocal(text.point);
             text.rotation = textAngle;
@@ -445,15 +458,18 @@ PathItem.inject(new function() {
                 return;
             new Path.Circle({
                 center: seg.point,
-                radius: 3,
-                strokeColor: color
+                radius: fontSize / 2,
+                strokeColor: color,
+                strokeScaling: false
             });
             var inter = seg._intersection;
-            labelSegment(seg, '#' + paths.length + '.'
-                            + (path ? path._segments.length : 0)
+            labelSegment(seg, '#' + (paths.length + 1) + '.'
+                            + (path ? path._segments.length + 1 : 1)
                             + ' ' + (segmentCount++) + '/' + index + ': ' + text
                     + '   v: ' + !!seg._visited
                     + '   p: ' + seg._path._id
+                    + '   x: ' + seg._point.x
+                    + '   y: ' + seg._point.y
                     + '   op: ' + operator(seg._winding)
                     + '   o: ' + (inter && inter._overlap || 0)
                     + '   w: ' + seg._winding
@@ -467,6 +483,8 @@ PathItem.inject(new function() {
             labelSegment(seg, i
                     + '   i: ' + !!inter
                     + '   p: ' + seg._path._id
+                    + '   x: ' + seg._point.x
+                    + '   y: ' + seg._point.y
                     + '   o: ' + (inter && inter._overlap || 0)
                     + '   w: ' + seg._winding
                     , 'green');
@@ -499,11 +517,11 @@ PathItem.inject(new function() {
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
-                if (added && (selfOp || !operator(seg._winding))
+                if (added && (!operator(seg._winding))
                         && (inter = seg._intersection)
                         && (interSeg = inter._segment)
                         && interSeg !== startSeg) {
-                    if (selfOp) {
+                    if (interSeg._path === seg._path) {
                         // Switch to the intersection segment, if we are
                         // resolving self-Intersections.
                         seg._visited = interSeg._visited;
@@ -515,7 +533,7 @@ PathItem.inject(new function() {
                         // leave the overlapping area.
                         // NOTE: We cannot check the next (overlapping)
                         // segment since its winding number will always be 2
-                        drawSegment(seg, 'overlap', i, 'orange');
+                        drawSegment(seg, 'overlap ' + dir, i, 'orange');
                         var curve = interSeg.getCurve();
                         if (getWinding(curve.getPointAt(0.5, true),
                                 monoCurves, isHorizontal(curve)) === 1) {
@@ -589,8 +607,9 @@ PathItem.inject(new function() {
                         if (seg) {
                             new Path.Circle({
                                 center: seg.point,
-                                radius: 4,
-                                fillColor: 'red'
+                                radius: fontSize / 2,
+                                fillColor: 'red',
+                                strokeScaling: false
                             });
                         }
                     }
@@ -603,18 +622,26 @@ PathItem.inject(new function() {
             if (seg && (seg === startSeg || seg === startInterSeg)) {
                 path.firstSegment.setHandleIn((seg === startInterSeg
                         ? startInterSeg : seg)._handleIn);
+                path.setClosed(true);
+                if (reportSegments) {
+                    console.log('Boolean operation completed',
+                            '#' + (paths.length + 1) + '.' +
+                            (path ? path._segments.length + 1 : 1));
+                }
             } else {
-                path.lastSegment._handleOut.set(0, 0);
-                console.error('Boolean operation results in open path, length =',
-                    path._segments.length);
+                // path.lastSegment._handleOut.set(0, 0);
+                console.error('Boolean operation results in open path, segs =',
+                        path._segments.length, 'length = ', path.getLength(),
+                        '#' + (paths.length + 1) + '.' +
+                        (path ? path._segments.length + 1 : 1));
+                path = null;
             }
-            path.setClosed(true);
             // Add the path to the result, while avoiding stray segments and
             // incomplete paths. The amount of segments for valid paths depend
             // on their geometry:
             // - Closed paths with only straight lines need more than 2 segments
             // - Closed paths with curves can consist of only one segment
-            if (path._segments.length > path.isLinear() ? 2 : 0)
+            if (path && path._segments.length > path.isLinear() ? 2 : 0)
                 paths.push(path);
         }
         return paths;
