@@ -315,7 +315,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     statics: {
         sort: function(locations) {
-            var tolerance = 1 - /*#=*/Numerical.TOLERANCE;
+            var tolerance = /*#=*/Numerical.TOLERANCE;
             locations.sort(function compare(l1, l2) {
                 var curve1 = l1._curve,
                     curve2 = l2._curve,
