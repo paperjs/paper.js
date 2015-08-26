@@ -575,10 +575,11 @@ statics: {
     getParameterOf: function(v, x, y) {
         // Handle beginnings and end separately, as they are not detected
         // sometimes.
-        var tolerance = /*#=*/Numerical.TOLERANCE;
-        if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
+        var tolerance = /*#=*/Numerical.TOLERANCE,
+            abs = Math.abs;
+        if (abs(v[0] - x) < tolerance && abs(v[1] - y) < tolerance)
             return 0;
-        if (Math.abs(v[6] - x) < tolerance && Math.abs(v[7] - y) < tolerance)
+        if (abs(v[6] - x) < tolerance && abs(v[7] - y) < tolerance)
             return 1;
         var txs = [],
             tys = [],
@@ -601,7 +602,7 @@ statics: {
                             ty = tx;
                         }
                         // Use average if we're within tolerance
-                        if (Math.abs(tx - ty) < tolerance)
+                        if (abs(tx - ty) < tolerance)
                             return (tx + ty) * 0.5;
                     }
                 }
@@ -1486,60 +1487,83 @@ new function() { // Scope for methods that require private functions
      */
     function addOverlap(v1, v2, curve1, curve2, locations, include) {
         var abs = Math.abs,
-            tolerance = Numerical.TOLERANCE,
-            isLinear = Curve.isLinear(v1) || Curve.isLinear(v2);
-        if (isLinear) {
-            // If one curve is linear, the other curve must be linear, too. Otherwise they cannot overlap.
-            // Linear curves can only overlap if they are collinear, which means they must be are parallel and
-            // any point of curve 1 must be on curve 2
-            if (!Curve.isLinear(v1) || !Curve.isLinear(v2) ||
-                    abs((v1[0] - v1[6]) * (v2[1] - v2[7]) - (v1[1] - v1[7]) * (v2[0] - v2[6])) > tolerance ||
-                    abs(Line.getSignedDistance(v2[0], v2[1], v2[6], v2[7], v1[0], v1[1], false)) > tolerance) {
+            tolerance = /*#=*/Numerical.TOLERANCE,
+            epsilon = /*#=*/Numerical.EPSILON,
+            linear1 = Curve.isLinear(v1),
+            linear2 = Curve.isLinear(v2),
+            linear =  linear1 && linear2;
+        if (linear) {
+            // Linear curves can only overlap if they are collinear, which means
+            // they must be are collinear and any point of curve 1 must be on
+            // curve 2
+            var line1 = new Line(v1[0], v1[1], v1[6], v1[7], false),
+                line2 = new Line(v2[0], v2[1], v2[6], v2[7], false);
+            if (!line1.isCollinear(line2) ||
+                    line1.getDistance(line2.getPoint()) > epsilon)
                 return false;
-            }
+        } else if (linear1 ^ linear2) {
+            // If one curve is linear, the other curve must be linear, too,
+            // otherwise they cannot overlap.
+            return false;
         }
         var v = [v1, v2],
-            matches = [];
-        // Iterate through all end points. First p1 and p2 of curve 1, then p1 and p2 of curve 2
-        for (var vIdx = 0, t1 = 0; vIdx < 2 && matches.length < 2; vIdx += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-            var t2 = Curve.getParameterOf(v[vIdx^1], v[vIdx][t1 === 0 ? 0 : 6], v[vIdx][t1 === 0 ? 1 : 7]);
-            if (t2 != null) {  // if point is on curve
-                var match = vIdx === 0 ? [t1, t2] : [t2, t1];
-                if (matches.length === 1 && match[0] < matches[0][0]) {
-                    matches.unshift(match);
-                } else if (matches.length === 0 || match[0] != matches[0][0] || match[1] != matches[0][1]) {
-                    matches.push(match);
+            pairs = [];
+        // Iterate through all end points: First p1 and p2 of curve 1,
+        // then p1 and p2 of curve 2
+        for (var i = 0, t1 = 0;
+                i < 2 && pairs.length < 2;
+                i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
+            var t2 = Curve.getParameterOf(v[i ^ 1],
+                    v[i][t1 === 0 ? 0 : 6],
+                    v[i][t1 === 0 ? 1 : 7]);
+            if (t2 != null) {  // If point is on curve
+                var pair = i === 0 ? [t1, t2] : [t2, t1];
+                if (pairs.length === 1 && pair[0] < pairs[0][0]) {
+                    pairs.unshift(pair);
+                } else if (pairs.length === 0
+                        || abs(pair[0] - pairs[0][0]) > tolerance
+                        || abs(pair[1] - pairs[0][1]) > tolerance) {
+                    pairs.push(pair);
                 }
             }
-            if (vIdx === 1 && matches.length == 0) {
-                return false; // if we checked three points but found no match then curves cannot overlap
-            }
+            // If we checked 3 points but found no match, curves cannot overlap
+            if (i === 1 && pairs.length === 0)
+                return false;
         }
-        // if we found two matches, the end points of v1 and v2 should be the same. We only have to check if the
-        // handles are the same, too.
-        if (matches.length == 2) {
+        // If we found 2 pairs, the end points of v1 & v2 should be the same.
+        // We only have to check if the handles are the same, too.
+        if (pairs.length === 2) {
             // create values for overlapping part of each curve
-            v[0] = Curve.getPart(v[0], matches[0][0], matches[1][0]);
-            v[1] = Curve.getPart(v[1], Math.min(matches[0][1], matches[1][1]), Math.max(matches[0][1], matches[1][1]));
-            // reverse values of second curve if necessary
-            if (abs(v[0][0] - v[1][6]) < tolerance && abs(v[0][1] - v[1][7]) < tolerance) {
-                v[1] = [v[1][6], v[1][7], v[1][4], v[1][5], v[1][2], v[1][3], v[1][0], v[1][1]];
+            var c1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
+                c2 = Curve.getPart(v[1], Math.min(pairs[0][1], pairs[1][1]),
+                        Math.max(pairs[0][1], pairs[1][1]));
+            // Reverse values of second curve if necessary
+            // if (abs(c1[0] - c2[6]) < epsilon && abs(c1[1] - c2[7]) < epsilon) {
+            if (pairs[0][1] > pairs[1][1]) {
+                c2 = [c2[6], c2[7], c2[4], c2[5], c2[2], c2[3], c2[0], c2[1]];
             }
-            // check if handles of overlapping paths are similar enough. We could do another check for curve identity
-            // here if we find a better criteria
-            if (isLinear ||
-                    abs(v[0][2] - v[1][2]) < tolerance && abs(v[0][3] - v[1][3]) < tolerance &&
-                    abs(v[0][4] - v[1][4]) < tolerance && abs(v[0][5] - v[1][5]) < tolerance) {
-                // overlapping parts are identical
-                var t1 = matches[0][0],
-                    t2 = matches[0][1],
+            // Check if handles of overlapping paths are similar enough.
+            // We could do another check for curve identity here if we find a
+            // better criteria.
+            if (linear ||
+                    abs(c2[0] - c1[0]) < epsilon &&
+                    abs(c2[1] - c1[1]) < epsilon &&
+                    abs(c2[1] - c1[1]) < epsilon &&
+                    abs(c2[3] - c1[3]) < epsilon &&
+                    abs(c2[2] - c1[2]) < epsilon &&
+                    abs(c2[5] - c1[5]) < epsilon &&
+                    abs(c2[3] - c1[3]) < epsilon &&
+                    abs(c2[7] - c1[7]) < epsilon) {
+                // Overlapping parts are identical
+                var t1 = pairs[0][0],
+                    t2 = pairs[0][1],
                     loc = addLocation(locations, include,
                         curve1, t1, Curve.getPoint(v1, t1),
                         curve2, t2, Curve.getPoint(v2, t2), true);
                 if (loc)
                     loc._overlap = true;
-                var t1 = matches[1][0],
-                    t2 = matches[1][1];
+                var t1 = pairs[1][0],
+                    t2 = pairs[1][1];
                     loc = addLocation(locations, include,
                         curve1, t1, Curve.getPoint(v1, t1),
                         curve2, t2, Curve.getPoint(v2, t2), true);
@@ -1593,7 +1617,7 @@ new function() { // Scope for methods that require private functions
             return locations;
         },
 
-        filterIntersections: function(locations, _expand) {
+        filterIntersections: function(locations, expand) {
             var last = locations.length - 1,
                 tMax = 1 - /*#=*/Numerical.TOLERANCE;
             // Merge intersections very close to the end of a curve to the
@@ -1618,17 +1642,17 @@ new function() { // Scope for methods that require private functions
                     path2 = loc2.getPath();
                 return path1 === path2
                         // We can add parameter (0 <= t <= 1) to index
-                        // (a integer) to compare both at the same time
+                        // (a integer) to compare both at the same time.
                         ? (loc1.getIndex() + loc1.getParameter())
                                 - (loc2.getIndex() + loc2.getParameter())
-                        // Sort by path id to group all locations on the same path.
+                        // Sort by path id to group all locs on the same path.
                         : path1._id - path2._id;
             }
 
             if (last > 0) {
                 locations.sort(compare);
                 // Filter out duplicate locations, but preserve _overlap setting
-                // among all duplicated (only one of them will have it defined)
+                // among all duplicated (only one of them will have it defined).
                 var i = last,
                     loc = locations[i];
                 while(--i >= 0) {
@@ -1643,7 +1667,7 @@ new function() { // Scope for methods that require private functions
                     loc = prev;
                 }
             }
-            if (_expand) {
+            if (expand) {
                 for (var i = last; i >= 0; i--)
                     locations.push(locations[i].getIntersection());
                 locations.sort(compare);

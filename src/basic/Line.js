@@ -112,6 +112,10 @@ var Line = Base.extend(/** @lends Line# */{
                 point.x, point.y, true));
     },
 
+    isCollinear: function(line) {
+        return this._vx * line._vy - this._vy * line._vx < 1e-10;
+    },
+
     statics: /** @lends Line */{
         intersect: function(apx, apy, avx, avy, bpx, bpy, bvx, bvy, asVector,
                 isInfinite) {
