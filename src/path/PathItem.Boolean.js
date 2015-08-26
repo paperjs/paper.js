@@ -220,6 +220,24 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
+        console.log('splitting', intersections.length);
+        intersections.forEach(function(inter) {
+            var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
+                'i', inter.getIndex(), 't', inter._parameter,
+                'i2', inter._curve2 ? inter._curve2.getIndex() :  null,
+                't2', inter._parameter2, 'o', !!inter._overlap];
+            if (inter._other) {
+                inter = inter.getIntersection();
+                log.push('Other', inter._id, 'p', inter.getPath()._id,
+                    'i', inter.getIndex(), 't', inter._parameter,
+                    'i2', inter._curve2 ? inter._curve2.getIndex() : null,
+                    't2', inter._parameter2, 'o', !!inter._overlap);
+            }
+            console.log(log.map(function(v) {
+                return v == null ? '-' : v
+            }).join(' '));
+        });
+
         // TODO: Make public in API, since useful!
         var tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
@@ -466,6 +484,7 @@ PathItem.inject(new function() {
                 inter = seg._intersection;
             labelSegment(seg, i
                     + '   i: ' + !!inter
+                    + '   p: ' + seg._path._id
                     + '   o: ' + (inter && inter._overlap || 0)
                     + '   w: ' + seg._winding
                     , 'green');

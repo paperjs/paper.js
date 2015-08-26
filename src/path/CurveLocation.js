@@ -217,6 +217,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     this._parameter2, this._point2 || this._point);
             intersection._overlap = this._overlap;
             intersection._intersection = this;
+            intersection._other = true;
         }
         return intersection;
     },
@@ -286,6 +287,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     && abs(this.getParameter() - loc.getParameter()) < tolerance
                     // _curve2/_parameter2 are only used for Boolean operations
                     // and don't need syncing there.
+                    // TODO: That's not quite true though... Rework this!
                     && this._curve2 === loc._curve2
                     && abs((this._parameter2 || 0) - (loc._parameter2 || 0))
                             < tolerance
@@ -310,6 +312,30 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         if (this._distance != null)
             parts.push('distance: ' + f.number(this._distance));
         return '{ ' + parts.join(', ') + ' }';
+    },
+
+    statics: {
+        sort: function(locations) {
+            var tolerance = 1 - /*#=*/Numerical.TOLERANCE;
+            locations.sort(function compare(l1, l2) {
+                var curve1 = l1._curve,
+                    curve2 = l2._curve,
+                    path1 = curve1._path,
+                    path2 = curve2._path;
+                // Sort by path-id, curve, parameter, curve2, parameter2 so we
+                // can easily remove duplicates with calls to equals() after.
+                return path1 === path2
+                    ? curve1 === curve2
+                        ? Math.abs(l1._parameter - l2._parameter) < tolerance
+                            ? l1._curve2 === l2._curve2
+                                ? l1._parameter2 - l2._parameter2
+                                : l1._curve2.getIndex() - l2._curve2.getIndex()
+                            : l1._parameter - l2._parameter
+                        : curve1.getIndex() - curve2.getIndex()
+                    // Sort by path id to group all locs on the same path.
+                    : path1._id - path2._id;
+            });
+        }
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()

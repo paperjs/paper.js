@@ -1191,8 +1191,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             index = arg.index;
             parameter = arg.parameter;
         }
-        var tolerance = /*#=*/Numerical.TOLERANCE;
-        if (parameter >= 1 - tolerance) {
+        var tMin = /*#=*/Numerical.TOLERANCE,
+            tMax = 1 - tMin;
+        if (parameter >= tMax) {
             // t == 1 is the same as t == 0 and index ++
             index++;
             parameter--;
@@ -1200,7 +1201,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         var curves = this.getCurves();
         if (index >= 0 && index < curves.length) {
             // Only divide curves if we're not on an existing segment already.
-            if (parameter >= tolerance) {
+            if (parameter >= tMin) {
                 // Divide the curve with the index at given parameter.
                 // Increase because dividing adds more segments to the path.
                 curves[index++].divide(parameter, true);

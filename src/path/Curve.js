@@ -1623,34 +1623,19 @@ new function() { // Scope for methods that require private functions
             // Merge intersections very close to the end of a curve to the
             // beginning of the next curve.
             for (var i = last; i >= 0; i--) {
-                var loc = locations[i],
-                    next = loc._curve.getNext(),
-                    next2 = loc._curve2.getNext();
-                if (next && loc._parameter >= tMax) {
+                var loc = locations[i];
+                if (loc._parameter >= tMax && (next = loc._curve.getNext())) {
                     loc._parameter = 0;
                     loc._curve = next;
                 }
-                if (next2 && loc._parameter2 >= tMax) {
+                if (loc._parameter2 >= tMax && (next = loc._curve2.getNext())) {
                     loc._parameter2 = 0;
-                    loc._curve2 = next2;
+                    loc._curve2 = next;
                 }
             }
 
-            // Compare helper to filter locations
-            function compare(loc1, loc2) {
-                var path1 = loc1.getPath(),
-                    path2 = loc2.getPath();
-                return path1 === path2
-                        // We can add parameter (0 <= t <= 1) to index
-                        // (a integer) to compare both at the same time.
-                        ? (loc1.getIndex() + loc1.getParameter())
-                                - (loc2.getIndex() + loc2.getParameter())
-                        // Sort by path id to group all locs on the same path.
-                        : path1._id - path2._id;
-            }
-
             if (last > 0) {
-                locations.sort(compare);
+                CurveLocation.sort(locations);
                 // Filter out duplicate locations, but preserve _overlap setting
                 // among all duplicated (only one of them will have it defined).
                 var i = last,
@@ -1671,7 +1656,7 @@ new function() { // Scope for methods that require private functions
             if (expand) {
                 for (var i = last; i >= 0; i--)
                     locations.push(locations[i].getIntersection());
-                locations.sort(compare);
+                CurveLocation.sort(locations);
             }
             return locations;
         }
