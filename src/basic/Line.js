@@ -113,7 +113,10 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     isCollinear: function(line) {
-        return this._vx * line._vy - this._vy * line._vx < 1e-10;
+        // TODO: Tests showed that 1e-10 might work well here, but we want to
+        // keep it in sync with Point#isCollinear()
+        return this._vx * line._vy - this._vy * line._vx
+                < /*#=*/Numerical.TOLERANCE;
     },
 
     statics: /** @lends Line */{

@@ -703,7 +703,8 @@ var Point = Base.extend(/** @lends Point# */{
      */
     isCollinear: function(point) {
         // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
-        // conversion test.
+        // conversion test. But tolerance is probably too large?
+        // TODO: Tests showed that 1e-10 might work well here.
         return Math.abs(this.cross(point)) < /*#=*/Numerical.TOLERANCE;
     },
 
