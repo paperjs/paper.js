@@ -55,6 +55,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._point = point || curve.getPointAt(parameter, true);
         this._curve2 = _curve2;
         this._parameter2 = _parameter2;
+        if (_parameter2 == 0.19410221115440937)
+            debugger;
         this._point2 = _point2;
         this._distance = _distance;
         // Also store references to segment1 and segment2, in case path
@@ -217,6 +219,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     this._parameter2, this._point2 || this._point);
             intersection._overlap = this._overlap;
             intersection._intersection = this;
+            intersection._other = true;
         }
         return intersection;
     },
@@ -320,19 +323,32 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 var curve1 = l1._curve,
                     curve2 = l2._curve,
                     path1 = curve1._path,
-                    path2 = curve2._path;
+                    path2 = curve2._path,
+                    res;
                 // Sort by path-id, curve, parameter, curve2, parameter2 so we
                 // can easily remove duplicates with calls to equals() after.
-                return path1 === path2
-                    ? curve1 === curve2
-                        ? Math.abs(l1._parameter - l2._parameter) < tolerance
-                            ? l1._curve2 === l2._curve2
+                if (path1 === path2) {
+                    if (curve1 === curve2) {
+                        var diff = l1._parameter - l2._parameter;
+                        if (Math.abs(diff) < tolerance) {
+                            var curve21 = l1._curve2,
+                                curve22 = l2._curve2;
+                            res = curve21 === curve22 // equal or both null
                                 ? l1._parameter2 - l2._parameter2
-                                : l1._curve2.getIndex() - l2._curve2.getIndex()
-                            : l1._parameter - l2._parameter
-                        : curve1.getIndex() - curve2.getIndex()
+                                : curve21 && curve22
+                                    ? curve21.getIndex() - curve22.getIndex()
+                                    : curve21 ? 1 : -1;
+                        } else {
+                            res = diff;
+                        }
+                    } else {
+                        res = curve1.getIndex() - curve2.getIndex();
+                    }
+                } else {
                     // Sort by path id to group all locs on the same path.
-                    : path1._id - path2._id;
+                    res = path1._id - path2._id;
+                }
+                return res;
             });
         }
     }
