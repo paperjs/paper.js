@@ -232,6 +232,24 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
+        console.log('splitting', intersections.length);
+        intersections.forEach(function(inter) {
+            var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
+                'i', inter.getIndex(), 't', inter._parameter,
+                'i2', inter._curve2 ? inter._curve2.getIndex() :  null,
+                't2', inter._parameter2, 'o', !!inter._overlap];
+            if (inter._other) {
+                inter = inter.getIntersection();
+                log.push('Other', inter._id, 'p', inter.getPath()._id,
+                    'i', inter.getIndex(), 't', inter._parameter,
+                    'i2', inter._curve2 ? inter._curve2.getIndex() : null,
+                    't2', inter._parameter2, 'o', !!inter._overlap);
+            }
+            console.log(log.map(function(v) {
+                return v == null ? '-' : v
+            }).join(' '));
+        });
+
         // TODO: Make public in API, since useful!
         var tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
@@ -417,6 +435,10 @@ PathItem.inject(new function() {
         return Math.max(abs(windLeft), abs(windRight));
     }
 
+    var segmentOffset = {};
+    var pathIndices = {};
+    var pathIndex = 0;
+
     /**
      * Private method to trace closed contours from a set of segments according
      * to a set of constraints-winding contribution and a custom operator.
@@ -431,9 +453,8 @@ PathItem.inject(new function() {
      */
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
-        var segmentOffset = {};
         var reportSegments = false && !window.silent;
-        var reportWindings = false && !window.silent;
+        var reportWindings = true && !window.silent;
         var textAngle = 0;
         var fontSize = 4 / paper.project.activeLayer.scaling.x;
 
@@ -476,13 +497,19 @@ PathItem.inject(new function() {
                     , color);
         }
 
+
+
         for (var i = 0; i < (reportWindings ? segments.length : 0); i++) {
             var seg = segments[i];
+                path = seg._path,
+                id = path._id,
                 point = seg.point,
                 inter = seg._intersection;
-            labelSegment(seg, i
+            if (!(id in pathIndices))
+                pathIndices[id] = ++pathIndex;
+
+            labelSegment(seg, '#' + pathIndex + '.' + (i + 1)
                     + '   i: ' + !!inter
-                    + '   p: ' + seg._path._id
                     + '   x: ' + seg._point.x
                     + '   y: ' + seg._point.y
                     + '   o: ' + (inter && inter._overlap || 0)
