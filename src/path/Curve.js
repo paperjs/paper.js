@@ -97,6 +97,15 @@ var Curve = Base.extend(/** @lends Curve# */{
         }
     },
 
+    _serialize: function(options) {
+        // If it is straight, only serialize point, otherwise handles too.
+        return Base.serialize(this.isStraight()
+                ? [this.getPoint1(), this.getPoint2()]
+                : [this.getPoint1(), this.getHandle1(), this.getHandle2(),
+                    this.getPoint2()],
+                options, true);
+    },
+
     _changed: function() {
         // Clear cached values.
         this._length = this._bounds = undefined;
