@@ -64,6 +64,10 @@ var Numerical = new function() {
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
+    function clip(value, min, max) {
+        return value < min ? min : value > max ? max : value;
+    }
+
     return /** @lends Numerical */{
         TOLERANCE: TOLERANCE,
         // Precision when comparing against 0
@@ -174,6 +178,8 @@ var Numerical = new function() {
          */
         solveQuadratic: function(a, b, c, roots, min, max) {
             var count = 0,
+                eMin = min - EPSILON,
+                eMax = max + EPSILON,
                 x1, x2 = Infinity,
                 B = b,
                 D;
@@ -222,11 +228,13 @@ var Numerical = new function() {
                     // count = D > MACHINE_EPSILON ? 2 : 1;
                 }
             }
-            if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
-                roots[count++] = x1;
+            // We need to include EPSILON in the comparisons with min / max,
+            // as some solutions are ever so lightly out of bounds.
+            if (isFinite(x1) && (min == null || x1 > eMin && x1 < eMax))
+                roots[count++] = min == null ? x1 : clip(x1, min, max);
             if (x2 !== x1
-                    && isFinite(x2) && (min == null || x2 >= min && x2 <= max))
-                roots[count++] = x2;
+                    && isFinite(x2) && (min == null || x2 > eMin && x2 < eMax))
+                roots[count++] = min == null ? x2 : clip(x2, min, max);
             return count;
         },
 
@@ -321,8 +329,8 @@ var Numerical = new function() {
             // The cubic has been deflated to a quadratic.
             var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
             if (isFinite(x) && (count === 0 || x !== roots[count - 1])
-                    && (min == null || x >= min && x <= max))
-                roots[count++] = x;
+                    && (min == null || x > min - EPSILON && x < max + EPSILON))
+                roots[count++] = min == null ? x : clip(x, min, max);
             return count;
         }
     };
