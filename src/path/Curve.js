@@ -1335,7 +1335,7 @@ new function() { // Scope for methods that require private functions
                         curve1, t1, Curve.getPoint(v1, t1),
                         curve2, t2, Curve.getPoint(v2, t2));
             }
-        } else if (tDiff > 0) { // Iterate
+        } else if (tDiff > /*#=*/Numerical.EPSILON) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
         }
