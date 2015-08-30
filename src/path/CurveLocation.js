@@ -55,8 +55,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._point = point || curve.getPointAt(parameter, true);
         this._curve2 = _curve2;
         this._parameter2 = _parameter2;
-        if (_parameter2 == 0.19410221115440937)
-            debugger;
         this._point2 = _point2;
         this._distance = _distance;
         // Also store references to segment1 and segment2, in case path
