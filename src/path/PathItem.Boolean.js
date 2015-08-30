@@ -232,23 +232,25 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
-        console.log('splitting', intersections.length);
-        intersections.forEach(function(inter) {
-            var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
-                'i', inter.getIndex(), 't', inter._parameter,
-                'i2', inter._curve2 ? inter._curve2.getIndex() :  null,
-                't2', inter._parameter2, 'o', !!inter._overlap];
-            if (inter._other) {
-                inter = inter.getIntersection();
-                log.push('Other', inter._id, 'p', inter.getPath()._id,
+        if (false) {
+            console.log('Intersections', intersections.length);
+            intersections.forEach(function(inter) {
+                var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
                     'i', inter.getIndex(), 't', inter._parameter,
-                    'i2', inter._curve2 ? inter._curve2.getIndex() : null,
-                    't2', inter._parameter2, 'o', !!inter._overlap);
-            }
-            console.log(log.map(function(v) {
-                return v == null ? '-' : v
-            }).join(' '));
-        });
+                    'i2', inter._curve2 ? inter._curve2.getIndex() :  null,
+                    't2', inter._parameter2, 'o', !!inter._overlap];
+                if (inter._other) {
+                    inter = inter.getIntersection();
+                    log.push('Other', inter._id, 'p', inter.getPath()._id,
+                        'i', inter.getIndex(), 't', inter._parameter,
+                        'i2', inter._curve2 ? inter._curve2.getIndex() : null,
+                        't2', inter._parameter2, 'o', !!inter._overlap);
+                }
+                console.log(log.map(function(v) {
+                    return v == null ? '-' : v
+                }).join(' '));
+            });
+        }
 
         // TODO: Make public in API, since useful!
         var tMin = /*#=*/Numerical.TOLERANCE,
@@ -454,7 +456,7 @@ PathItem.inject(new function() {
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
         var reportSegments = false && !window.silent;
-        var reportWindings = true && !window.silent;
+        var reportWindings = false && !window.silent;
         var textAngle = 0;
         var fontSize = 4 / paper.project.activeLayer.scaling.x;
 
