@@ -216,7 +216,11 @@ PathItem.inject(new function() {
                 true);
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
-        result.insertAbove(path1);
+        // Insert the resulting path above whichever of the two paths appear
+        // further up in the stack.
+        result.insertAbove(path2 && path1.isSibling(path2)
+                && path1.getIndex() < path2.getIndex()
+                    ? path2 : path1);
         // Copy over the left-hand item's style and we're done.
         // TODO: Consider using Item#_clone() for this, but find a way to not
         // clone children / name (content).

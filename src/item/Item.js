@@ -2665,6 +2665,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
+     * Checks if the item is an a sibling of the specified item.
+     *
+     * @param {Item} item the item to check against
+     * @return {Boolean} {@true if the item is aa sibling of the specified item}
+     */
+    isSibling: function(item) {
+        return this._parent === item._parent;
+    },
+
+    /**
      * Checks whether the item is grouped with the specified item.
      *
      * @param {Item} item
