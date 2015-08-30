@@ -175,6 +175,9 @@ PathItem.inject(new function() {
                 var seg = chain[j].segment,
                     inter = seg._intersection,
                     wind = winding;
+                // We need to handle the edge cases of overlapping curves
+                // differently based on the type of operation, and adjust the
+                // winding number accordingly:
                 if (inter && inter._overlap) {
                     switch (operation) {
                     case 'unite':
@@ -184,25 +187,6 @@ PathItem.inject(new function() {
                     case 'intersect':
                         if (wind === 2)
                             wind = 1;
-                        break;
-                    case 'subtract':
-                        // When subtracting, we need to reverse the winding
-                        // number along overlaps.
-                        // Calculate the new winding number based on current
-                        // number and role in the operation.
-                        var path = getMainPath(seg),
-                            newWind = wind === 0 && path === _path1 ? 1
-                                    : wind === 1 && path === _path2 ? 2
-                                    : null;
-                        if (newWind != null) {
-                            // Check against the winding of the intersecting
-                            // path, to exclude islands in compound paths, where
-                            // the reversal of winding numbers below in overlaps
-                            // is not required:
-                            var pt = inter._segment._path.getInteriorPoint();
-                            if (getWinding(pt, monoCurves) === 1)
-                                wind = newWind;
-                        }
                         break;
                     }
                 }
