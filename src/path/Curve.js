@@ -1251,7 +1251,7 @@ new function() { // Scope for methods that require private functions
         // below when determining which curve converges the least. He also
         // recommended a threshold of 0.5 instead of the initial 0.8
         // See: https://github.com/paperjs/paper.js/issues/565
-        if (recursion > 32)
+        if (++recursion >= 32)
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
@@ -1272,8 +1272,8 @@ new function() { // Scope for methods that require private functions
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew, tDiff;
-        if (q0x === q3x && uMax - uMin < tolerance && recursion > 3) {
-            // The fatline of Q has converged to a point, the clipping is not
+        if (q0x === q3x && uMax - uMin < tolerance && recursion >= 3) {
+            // The fat-line of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
             tMaxNew = tMinNew = (tMax + tMin) / 2;
@@ -1292,7 +1292,7 @@ new function() { // Scope for methods that require private functions
             // No intersections if one of the tvalues are null or 'undefined'
             if (tMinClip == null || tMaxClip == null)
                 return;
-            // Clip P with the fatline for Q
+            // Clip P with the fat-line for Q
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             tDiff = tMaxClip - tMinClip;
             // tMin and tMax are within the range (0, 1). We need to project it
@@ -1308,7 +1308,7 @@ new function() { // Scope for methods that require private functions
                     t = tMinNew + (tMaxNew - tMinNew) / 2;
                 addCurveIntersections(
                     v2, parts[0], curve2, curve1, locations, include,
-                    uMin, uMax, tMinNew, t, tDiff, !reverse, ++recursion);
+                    uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
                 addCurveIntersections(
                     v2, parts[1], curve2, curve1, locations, include,
                     uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
@@ -1317,7 +1317,7 @@ new function() { // Scope for methods that require private functions
                     t = uMin + (uMax - uMin) / 2;
                 addCurveIntersections(
                     parts[0], v1, curve2, curve1, locations, include,
-                    uMin, t, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
+                    uMin, t, tMinNew, tMaxNew, tDiff, !reverse, recursion);
                 addCurveIntersections(
                     parts[1], v1, curve2, curve1, locations, include,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
@@ -1337,7 +1337,7 @@ new function() { // Scope for methods that require private functions
             }
         } else if (tDiff > /*#=*/Numerical.EPSILON) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, include,
-                    uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
+                    uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
         }
     }
 
