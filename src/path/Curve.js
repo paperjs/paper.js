@@ -58,43 +58,65 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @param {Number} y2
      */
     initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-        var count = arguments.length;
+        var count = arguments.length,
+            values,
+            seg1, seg2,
+            point1, point2,
+            handle1, handle2;
+        // The following code has to either set seg1 & seg2,
+        // or point1, point2, handle1 & handle2. At the end, the internal
+        // segments are created accordingly.
         if (count === 3) {
             // Undocumented internal constructor, used by Path#getCurves()
             // new Segment(path, segment1, segment2);
             this._path = arg0;
-            this._segment1 = arg1;
-            this._segment2 = arg2;
+            seg1 = arg1;
+            seg2 = arg2;
         } else if (count === 0) {
-            this._segment1 = new Segment();
-            this._segment2 = new Segment();
+            seg1 = new Segment();
+            seg2 = new Segment();
         } else if (count === 1) {
             // new Segment(segment);
             // Note: This copies from existing segments through bean getters
-            this._segment1 = new Segment(arg0.segment1);
-            this._segment2 = new Segment(arg0.segment2);
+            if ('segment1' in arg0) {
+                seg1 = new Segment(arg0.segment1);
+                seg2 = new Segment(arg0.segment2);
+            } else if ('point1' in arg0) {
+                // As printed by #toString()
+                point1 = arg0.point1;
+                handle1 = arg0.handle1;
+                handle2 = arg0.handle2;
+                point2 = arg0.point2;
+            } else if (Array.isArray(arg0)) {
+                // Convert getValues() array back to points and handles so we
+                // can create segments for those.
+                point1 = [arg0[0], arg0[1]];
+                point2 = [arg0[6], arg0[7]];
+                handle1 = [arg0[2] - arg0[0], arg0[3] - arg0[1]];
+                handle2 = [arg0[4] - arg0[6], arg0[5] - arg0[7]];
+            }
         } else if (count === 2) {
             // new Segment(segment1, segment2);
-            this._segment1 = new Segment(arg0);
-            this._segment2 = new Segment(arg1);
-        } else {
-            var point1, handle1, handle2, point2;
-            if (count === 4) {
-                point1 = arg0;
-                handle1 = arg1;
-                handle2 = arg2;
-                point2 = arg3;
-            } else if (count === 8) {
-                // Convert getValue() array back to points and handles so we
-                // can create segments for those.
-                point1 = [arg0, arg1];
-                point2 = [arg6, arg7];
-                handle1 = [arg2 - arg0, arg3 - arg1];
-                handle2 = [arg4 - arg6, arg5 - arg7];
-            }
-            this._segment1 = new Segment(point1, null, handle1);
-            this._segment2 = new Segment(point2, handle2, null);
+            seg1 = new Segment(arg0);
+            seg2 = new Segment(arg1);
+        } else if (count === 4) {
+            point1 = arg0;
+            handle1 = arg1;
+            handle2 = arg2;
+            point2 = arg3;
+        } else if (count === 8) {
+            // Convert getValues() array from arguments list back to points and
+            // handles so we can create segments for those.
+            // NOTE: This could be merged with the above code after the array
+            // check through the `arguments` object, but it would break JS
+            // optimizations.
+            point1 = [arg0, arg1];
+            point2 = [arg6, arg7];
+            handle1 = [arg2 - arg0, arg3 - arg1];
+            handle2 = [arg4 - arg6, arg5 - arg7];
         }
+        this._segment1 = seg1 || new Segment(point1, null, handle1);
+        this._segment2 = seg2 || new Segment(point2, handle2, null);
     },
 
     _serialize: function(options) {
