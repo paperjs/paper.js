@@ -79,7 +79,6 @@ PathItem.inject(new function() {
         // intersection, _path2 will be null and getIntersections() handles it.
         splitPath(Curve.filterIntersections(
                 _path1._getIntersections(_path2, null, []), true));
-
         /*
         console.time('inter');
         var locations = _path1._getIntersections(_path2, null, []);
@@ -459,10 +458,11 @@ PathItem.inject(new function() {
      */
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
+        var pathCount = 0;
         var reportSegments = false && !window.silent;
         var reportWindings = false && !window.silent;
         var textAngle = 0;
-        var fontSize = 4 / paper.project.activeLayer.scaling.x;
+        var fontSize = 1 / paper.project.activeLayer.scaling.x;
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
@@ -470,7 +470,8 @@ PathItem.inject(new function() {
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var text = new PointText({
-                point: point.add(new Point(fontSize, fontSize / 2).rotate(textAngle).add(0, offset * fontSize * 1.2)),
+                point: point.add(new Point(fontSize, fontSize / 2)
+                        .rotate(textAngle).add(0, offset * fontSize * 1.2)),
                 content: text,
                 justification: 'left',
                 fillColor: color,
@@ -490,7 +491,7 @@ PathItem.inject(new function() {
                 strokeScaling: false
             });
             var inter = seg._intersection;
-            labelSegment(seg, '#' + (paths.length + 1) + '.'
+            labelSegment(seg, '#' + (pathCount + 1) + '.'
                             + (path ? path._segments.length + 1 : 1)
                             + ' ' + (segmentCount++) + '/' + index + ': ' + text
                     + '   v: ' + !!seg._visited
@@ -658,14 +659,14 @@ PathItem.inject(new function() {
                 path.setClosed(true);
                 if (reportSegments) {
                     console.log('Boolean operation completed',
-                            '#' + (paths.length + 1) + '.' +
+                            '#' + (pathCount + 1) + '.' +
                             (path ? path._segments.length + 1 : 1));
                 }
             } else {
                 // path.lastSegment._handleOut.set(0, 0);
                 console.error('Boolean operation results in open path, segs =',
                         path._segments.length, 'length = ', path.getLength(),
-                        '#' + (paths.length + 1) + '.' +
+                        '#' + (pathCount + 1) + '.' +
                         (path ? path._segments.length + 1 : 1));
                 path = null;
             }
@@ -676,6 +677,9 @@ PathItem.inject(new function() {
             // - Closed paths with curves can consist of only one segment
             if (path && path._segments.length > path.isLinear() ? 2 : 0)
                 paths.push(path);
+            if (reportSegments) {
+                pathCount++;
+            }
         }
         return paths;
     }
