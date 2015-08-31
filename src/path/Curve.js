@@ -1271,7 +1271,8 @@ new function() { // Scope for methods that require private functions
             dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
-            tMinNew, tMaxNew, tDiff;
+            tMinNew, tMaxNew,
+            tDiff;
         if (q0x === q3x && uMax - uMin < tolerance && recursion >= 3) {
             // The fat-line of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
@@ -1284,13 +1285,11 @@ new function() { // Scope for methods that require private functions
                 top = hull[0],
                 bottom = hull[1],
                 tMinClip, tMaxClip;
-            // Clip the convex-hull with dMin and dMax
-            tMinClip = clipConvexHull(top, bottom, dMin, dMax);
-            top.reverse();
-            bottom.reverse();
-            tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
-            // No intersections if one of the tvalues are null or 'undefined'
-            if (tMinClip == null || tMaxClip == null)
+            // Clip the convex-hull with dMin and dMax, taking into account that
+            // there will be no intersections if one of the tvalues are null.
+            if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
+                (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
+                    dMin, dMax)) == null)
                 return;
             // Clip P with the fat-line for Q
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
