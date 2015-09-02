@@ -1653,7 +1653,8 @@ new function() { // Scope for methods that require private functions
             // Merge intersections very close to the end of a curve to the
             // beginning of the next curve.
             for (var i = last; i >= 0; i--) {
-                var loc = locations[i];
+                var loc = locations[i],
+                    next;
                 if (loc._parameter >= tMax && (next = loc._curve.getNext())) {
                     loc._parameter = 0;
                     loc._curve = next;
