@@ -571,9 +571,11 @@ var Segment = Base.extend(/** @lends Segment# */{
         // these methods that are implemented in both places.
 
         isLinear: function(seg1, seg2) {
-            var l = seg2._point.subtract(seg1._point);
-            return l.isCollinear(seg1._handleOut)
-                    && l.isCollinear(seg2._handleIn);
+            var l = seg2._point.subtract(seg1._point),
+                h1 = seg1._handleOut,
+                h2 = seg2._handleIn;
+            return l.isZero() ? h1.isZero() && h2.isZero()
+                    : l.isCollinear(h2) && l.isCollinear(h2);
         },
 
         isCollinear: function(seg1, seg2, seg3, seg4) {

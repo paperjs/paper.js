@@ -666,9 +666,11 @@ statics: {
         // See Segment#isLinear():
         var p1x = v[0], p1y = v[1],
             p2x = v[6], p2y = v[7],
-            l = new Point(p2x - p1x, p2y - p1y);
-        return l.isCollinear(new Point(v[2] - p1x, v[3] - p1y))
-                && l.isCollinear(new Point(v[4] - p2x, v[5] - p2y));
+            l = new Point(p2x - p1x, p2y - p1y),
+            h1 = new Point(v[2] - p1x, v[3] - p1y),
+            h2 = new Point(v[4] - p2x, v[5] - p2y);
+        return l.isZero() ? h1.isZero() && h2.isZero()
+                : l.isCollinear(h2) && l.isCollinear(h2);
     },
 
     isFlatEnough: function(v, tolerance) {
