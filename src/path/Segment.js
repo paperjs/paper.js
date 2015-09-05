@@ -575,7 +575,7 @@ var Segment = Base.extend(/** @lends Segment# */{
                 h1 = seg1._handleOut,
                 h2 = seg2._handleIn;
             return l.isZero() ? h1.isZero() && h2.isZero()
-                    : l.isCollinear(h2) && l.isCollinear(h2);
+                    : l.isCollinear(h1) && l.isCollinear(h2);
         },
 
         isCollinear: function(seg1, seg2, seg3, seg4) {

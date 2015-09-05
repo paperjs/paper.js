@@ -670,7 +670,7 @@ statics: {
             h1 = new Point(v[2] - p1x, v[3] - p1y),
             h2 = new Point(v[4] - p2x, v[5] - p2y);
         return l.isZero() ? h1.isZero() && h2.isZero()
-                : l.isCollinear(h2) && l.isCollinear(h2);
+                : l.isCollinear(h1) && l.isCollinear(h2);
     },
 
     isFlatEnough: function(v, tolerance) {
