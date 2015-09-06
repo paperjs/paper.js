@@ -134,6 +134,45 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
+     * Returns a copy of the curve.
+     *
+     * @return {Curve}
+     */
+    clone: function() {
+        return new Curve(this._segment1, this._segment2);
+    },
+
+    /**
+     * @return {String} a string representation of the curve
+     */
+    toString: function() {
+        var parts = [ 'point1: ' + this._segment1._point ];
+        if (!this._segment1._handleOut.isZero())
+            parts.push('handle1: ' + this._segment1._handleOut);
+        if (!this._segment2._handleIn.isZero())
+            parts.push('handle2: ' + this._segment2._handleIn);
+        parts.push('point2: ' + this._segment2._point);
+        return '{ ' + parts.join(', ') + ' }';
+    },
+
+    /**
+     * Removes the curve from the path that it belongs to, by removing its
+     * second segment and merging its handle with the first segment.
+     * @return {Boolean} {@true if the curve was removed}
+     */
+    remove: function() {
+        var removed = false;
+        if (this._path) {
+            var segment2 = this._segment2,
+                handleOut = segment2._handleOut;
+            removed = segment2.remove();
+            if (removed)
+                this._segment1._handleOut.set(handleOut.x, handleOut.y);
+        }
+        return removed;
+    },
+
+    /**
      * The first anchor point of the curve.
      *
      * @type Point
@@ -322,7 +361,7 @@ var Curve = Base.extend(/** @lends Curve# */{
         if (this._length == null) {
             // Use simple point distance for straight curves
             this._length = this.isLinear()
-                ? this._segment2._point.getDistance(this._segment1._point)
+                ? this.getVector().getLength()
                 : Curve.getLength(this.getValues(), 0, 1);
         }
         return this._length;
@@ -338,6 +377,17 @@ var Curve = Base.extend(/** @lends Curve# */{
         return Curve.getArea(this.getValues());
     },
 
+    /**
+     * The total direction of the curve as a vector pointing from
+     * {@link #point1} to {@link #point2}.
+     *
+     * @type Point
+     * @bean
+     */
+    getVector: function() {
+        return this._segment2._point.subtract(this._segment1._point);
+    },
+
     getPart: function(from, to) {
         return new Curve(Curve.getPart(this.getValues(), from, to));
     },
@@ -345,67 +395,6 @@ var Curve = Base.extend(/** @lends Curve# */{
     // DOCS: Curve#getPartLength(from, to)
     getPartLength: function(from, to) {
         return Curve.getLength(this.getValues(), from, to);
-    },
-
-    /**
-     * Checks if this curve has any curve handles set.
-     *
-     * @return {Boolean} {@true if the curve has handles set}
-     * @see Curve#getHandle1()
-     * @see Curve#getHandle2()
-     * @see Segment#hasHandles()
-     * @see Path#hasHandles()
-     */
-    hasHandles: function() {
-        return !this._segment1._handleOut.isZero()
-                || !this._segment2._handleIn.isZero();
-    },
-
-    /**
-     * Clears the curve's handles by setting their coordinates to zero,
-     * turning the curve into a straight line.
-     */
-    clearHandles: function() {
-        this._segment1._handleOut.set(0, 0);
-        this._segment2._handleIn.set(0, 0);
-    },
-
-    /**
-     * Checks if this curve appears as a straight line. This can mean that it
-     * has no handles defined, or that the handles run collinear with the line
-     * that connects the curve's start and end point, not falling outside of
-     * the line.
-     *
-     * @return {Boolean} {@true if the curve is linear}
-     * @see Segment#isLinear()
-     * @see Path#isLinear()
-     */
-    isLinear: function() {
-        return Segment.isLinear(this._segment1, this._segment2);
-    },
-
-    /**
-     * Checks if the the two curves describe lines that are collinear, meaning
-     * they run in parallel.
-     *
-     * @param {Curve} curve the other curve to check against
-     * @return {Boolean} {@true if the two lines are collinear}
-     * @see Segment#isCollinear(segment)
-     */
-    isCollinear: function(curve) {
-        return Segment.isCollinear(this._segment1, this._segment2,
-                curve._segment1, curve._segment2);
-    },
-
-    /**
-     * Checks if the curve describes an orthogonal arc, as used in the
-     * construction of circles and ellipses.
-     *
-     * @return {Boolean} {@true if the curve describes an orthogonal arc}
-     * @see Segment#isOrthogonalArc()
-     */
-    isOrthogonalArc: function() {
-        return Segment.isOrthogonalArc(this._segment1, this._segment2);
     },
 
     /**
@@ -541,45 +530,14 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Removes the curve from the path that it belongs to, by removing its
-     * second segment and merging its handle with the first segment.
-     * @return {Boolean} {@true if the curve was removed}
+     * Clears the curve's handles by setting their coordinates to zero,
+     * turning the curve into a straight line.
      */
-    remove: function() {
-        var removed = false;
-        if (this._path) {
-            var segment2 = this._segment2,
-                handleOut = segment2._handleOut;
-            removed = segment2.remove();
-            if (removed)
-                this._segment1._handleOut.set(handleOut.x, handleOut.y);
-        }
-        return removed;
+    clearHandles: function() {
+        this._segment1._handleOut.set(0, 0);
+        this._segment2._handleIn.set(0, 0);
     },
 
-    /**
-     * Returns a copy of the curve.
-     *
-     * @return {Curve}
-     */
-    clone: function() {
-        return new Curve(this._segment1, this._segment2);
-    },
-
-    /**
-     * @return {String} a string representation of the curve
-     */
-    toString: function() {
-        var parts = [ 'point1: ' + this._segment1._point ];
-        if (!this._segment1._handleOut.isZero())
-            parts.push('handle1: ' + this._segment1._handleOut);
-        if (!this._segment2._handleIn.isZero())
-            parts.push('handle2: ' + this._segment2._handleIn);
-        parts.push('point2: ' + this._segment2._point);
-        return '{ ' + parts.join(', ') + ' }';
-    },
-
-// Mess with indentation in order to get more line-space below...
 statics: {
     getValues: function(segment1, segment2, matrix) {
         var p1 = segment1._point,
@@ -692,26 +650,6 @@ statics: {
         var isZero = Numerical.isZero;
         return !(isZero(v[0] - v[2]) && isZero(v[1] - v[3])
                 && isZero(v[4] - v[6]) && isZero(v[5] - v[7]));
-    },
-
-    isLinear: function(v) {
-        // See Segment#isLinear():
-        var p1x = v[0], p1y = v[1],
-            p2x = v[6], p2y = v[7],
-            l = new Point(p2x - p1x, p2y - p1y),
-            h1 = new Point(v[2] - p1x, v[3] - p1y),
-            h2 = new Point(v[4] - p2x, v[5] - p2y);
-        if (l.isZero()) {
-            return h1.isZero() && h2.isZero();
-        } else if (h1.isCollinear(l) && h2.isCollinear(l)) {
-            // Get the scalar projection of h1 and h2 onto l, and make sure they
-            // lie within l (note that h2 is reversed)
-            var div = l.dot(l),
-                p1 = l.dot(h1) / div,
-                p2 = l.dot(h2) / div;
-                return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
-        }
-        return false;
     },
 
     isFlatEnough: function(v, tolerance) {
@@ -833,6 +771,8 @@ statics: {
     },
 /** @lends Curve# */{
     /**
+     * {@grouptitle Bounding Boxes}
+     *
      * The bounding rectangle of the curve excluding stroke width.
      *
      * @name Curve#bounds
@@ -861,13 +801,88 @@ statics: {
      * @type Rectangle
      * @ignore
      */
-}), /** @lends Curve# */{
+}),  new function() { // Injection scope for tests
+    function isLinear(l, h1, h2) {
+        if (h1.isZero() && h2.isZero()) {
+            // No handles.
+            return true;
+        } else if (l.isZero()) {
+            // Zero-length line, with some handles defined.
+            return false;
+        } else if (h1.isCollinear(l) && h2.isCollinear(l)) {
+            // Collinear handles. Project them onto line to see if they are
+            // within the line's range:
+            var div = l.dot(l),
+                p1 = l.dot(h1) / div,
+                p2 = l.dot(h2) / div;
+            return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+        }
+        return false;
+    }
+
+    return /** @lends Curve# */{
+        /**
+         * {@grouptitle Tests}
+         *
+         * Checks if this curve has any curve handles set.
+         *
+         * @return {Boolean} {@true if the curve has handles set}
+         * @see Curve#handle1
+         * @see Curve#handle2
+         * @see Segment#hasHandles()
+         * @see Path#hasHandles()
+         */
+        hasHandles: function() {
+            return !this._segment1._handleOut.isZero()
+                    || !this._segment2._handleIn.isZero();
+        },
+
+        /**
+         * Checks if this curve appears as a straight line. This can mean that
+         * it has no handles defined, or that the handles run collinear with the
+         * line that connects the curve's start and end point, not falling
+         * outside of the line.
+         *
+         * @return {Boolean} {@true if the curve is linear}
+         */
+        isLinear: function() {
+            var seg1 = this._segment1,
+                seg2 = this._segment2;
+            return isLinear(seg2._point.subtract(seg1._point),
+                    seg1._handleOut, seg2._handleIn);
+        },
+
+        /**
+         * Checks if the the two curves describe straight lines that are
+         * collinear, meaning they run in parallel.
+         *
+         * @param {Curve} curve the other curve to check against
+         * @return {Boolean} {@true if the two lines are collinear}
+         */
+        isCollinear: function(curve) {
+            return this.isLinear() && curve.isLinear()
+                    && this.getVector().isCollinear(curve.getVector());
+        },
+
+        statics: {
+            isLinear: function(v) {
+                var p1x = v[0], p1y = v[1],
+                    p2x = v[6], p2y = v[7];
+                return isLinear(new Point(p2x - p1x, p2y - p1y),
+                        new Point(v[2] - p1x, v[3] - p1y),
+                        new Point(v[4] - p2x, v[5] - p2y));
+            }
+        }
+    }
+}, /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...
     beans: false,
 
     /**
+     * {@grouptitle Positions on Curves}
+     *
      * Calculates the curve time parameter of the specified offset on the path,
      * relative to the provided start parameter. If offset is a negative value,
      * the parameter is searched to the left of the start parameter. If no start
@@ -935,6 +950,14 @@ statics: {
         return loc ? loc.getOffset() : null;
     },
 
+    /**
+     * Returns the nearest location on the curve to the specified point.
+     *
+     * @function
+     * @param {Point} point the point for which we search the nearest location
+     * @return {CurveLocation} the location on the curve that's the closest to
+     * the specified point
+     */
     getNearestLocation: function(/* point */) {
         var point = Point.read(arguments),
             values = this.getValues(),
@@ -967,6 +990,14 @@ statics: {
                 point.getDistance(pt));
     },
 
+    /**
+     * Returns the nearest point on the curve to the specified point.
+     *
+     * @function
+     * @param {Point} point the point for which we search the nearest point
+     * @return {Point} the point on the curve that's the closest to the
+     * specified point
+     */
     getNearestPoint: function(/* point */) {
         return this.getNearestLocation.apply(this, arguments).getPoint();
     }
@@ -1050,7 +1081,6 @@ statics: {
      */
 },
 new function() { // // Scope to inject various curve evaluation methods
-
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
@@ -1183,8 +1213,7 @@ new function() { // Scope for methods that require private functions
         return type === 2 ? new Point(y, -x) : new Point(x, y);
     }
 
-    return {
-        statics: true,
+    return { statics: {
 
         getLength: function(v, a, b) {
             if (a === undefined)
@@ -1274,9 +1303,10 @@ new function() { // Scope for methods that require private functions
         getCurvature: function(v, t) {
             return evaluate(v, t, 3, false).x;
         }
-    };
+    }};
 },
 new function() { // Scope for intersection using bezier fat-line clipping
+
     function addLocation(locations, include, curve1, t1, point1, curve2, t2,
             point2) {
         var loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);

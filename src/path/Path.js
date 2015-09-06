@@ -1406,15 +1406,47 @@ var Path = PathItem.extend(/** @lends Path# */{
             topCenter;
 
         function isCollinear(i, j) {
-            return segments[i].isCollinear(segments[j]);
+            var seg1 = segments[i],
+                seg2 = seg1.getNext(),
+                seg3 = segments[j],
+                seg4 = seg3.getNext();
+            return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+                    && seg3._handleOut.isZero() && seg4._handleIn.isZero()
+                    && seg2._point.subtract(seg1._point).isCollinear(
+                        seg4._point.subtract(seg3._point));
         }
 
         function isOrthogonal(i) {
-            return segments[i].isOrthogonal();
+            var seg2 = segments[i],
+                seg1 = seg2.getPrevious(),
+                seg3 = seg2.getNext();
+            return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+                    && seg2._handleOut.isZero() && seg3._handleIn.isZero()
+                    && seg2._point.subtract(seg1._point).isOrthogonal(
+                        seg3._point.subtract(seg2._point));
         }
 
         function isArc(i) {
-            return segments[i].isOrthogonalArc();
+            var seg1 = segments[i],
+                seg2 = seg1.getNext(),
+                handle1 = seg1._handleOut,
+                handle2 = seg2._handleIn,
+                kappa = /*#=*/Numerical.KAPPA;
+            // Look at handle length and the distance to the imaginary corner
+            // point and see if it their relation is kappa.
+            if (handle1.isOrthogonal(handle2)) {
+                var pt1 = seg1._point,
+                    pt2 = seg2._point,
+                    // Find the corner point by intersecting the lines described
+                    // by both handles:
+                    corner = new Line(pt1, handle1, true).intersect(
+                            new Line(pt2, handle2, true), true);
+                return corner && Numerical.isZero(handle1.getLength() /
+                        corner.subtract(pt1).getLength() - kappa)
+                    && Numerical.isZero(handle2.getLength() /
+                        corner.subtract(pt2).getLength() - kappa);
+            }
+            return false;
         }
 
         function getDistance(i, j) {
