@@ -2020,8 +2020,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     getNearestPoint: function(/* point */) {
         return this.getNearestLocation.apply(this, arguments).getPoint();
     }
-}), new function() { // Scope for drawing
-
+}),
+new function() { // Scope for drawing
     // Note that in the code below we're often accessing _x and _y on point
     // objects that were read from segments. This is because the SegmentPoint
     // class overrides the plain x / y properties with getter / setters and
@@ -2220,8 +2220,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
         }
     };
-}, new function() { // Path Smoothing
-
+},
+new function() { // Path Smoothing
     /**
      * Solves a tri-diagonal system for one of coordinates (x or y) of first
      * bezier control points.
@@ -2346,7 +2346,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             }
         }
     };
-}, new function() { // PostScript-style drawing commands
+},
+new function() { // PostScript-style drawing commands
     /**
      * Helper method that returns the current segment and checks if a moveTo()
      * command is required first.

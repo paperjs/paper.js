@@ -144,8 +144,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         project._needsUpdate = false;
         return true;
     }
-}, new function() { // Item based mouse handling:
-
+},
+new function() { // Item based mouse handling:
     var downPoint,
         lastPoint,
         overPoint,

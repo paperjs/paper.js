@@ -1112,7 +1112,8 @@ var Color = Base.extend(new function() {
             }
         }
     });
-}, new function() {
+},
+new function() {
     var operators = {
         add: function(a, b) {
             return a + b;

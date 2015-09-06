@@ -298,7 +298,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                         : matrix.chain(mx));
         }
     }
-}, new function() { // Injection scope for PostScript-like drawing functions
+},
+new function() { // Injection scope for PostScript-like drawing functions
     /**
      * Helper method that returns the current path and checks if a moveTo()
      * command is required first.

@@ -277,7 +277,6 @@ var Shape = Item.extend(/** @lends Shape# */{
     }
 },
 new function() { // Scope for _contains() and _hitTestSelf() code.
-
     // Returns the center of the quarter corner ellipse for rounded rectangle,
     // if the point lies within its bounding box.
     function getCornerCenter(that, point, expand) {

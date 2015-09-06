@@ -673,8 +673,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
             return new CanvasView(project, element);
         }
     }
-}, new function() {
-    // Injection scope for mouse events on the browser
+},
+new function() { // Injection scope for mouse events on the browser
 /*#*/ if (__options.environment == 'browser') {
     var tool,
         prevFocus,

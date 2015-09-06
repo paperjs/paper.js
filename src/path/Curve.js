@@ -1050,6 +1050,7 @@ statics: {
      */
 },
 new function() { // // Scope to inject various curve evaluation methods
+
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
@@ -1274,7 +1275,8 @@ new function() { // Scope for methods that require private functions
             return evaluate(v, t, 3, false).x;
         }
     };
-}, new function() { // Scope for intersection using bezier fat-line clipping
+},
+new function() { // Scope for intersection using bezier fat-line clipping
     function addLocation(locations, include, curve1, t1, point1, curve2, t2,
             point2) {
         var loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);

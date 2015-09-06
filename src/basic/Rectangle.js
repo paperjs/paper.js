@@ -857,7 +857,8 @@ var LinkedRectangle = Rectangle.extend({
             this._owner[this._setter](this);
         return this;
     }
-}, new function() {
+},
+new function() {
     var proto = Rectangle.prototype;
 
     return Base.each(['x', 'y', 'width', 'height'], function(key) {
