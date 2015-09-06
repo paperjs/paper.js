@@ -186,9 +186,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
     /**
      * Injects the paper scope into any other given scope. Can be used for
-     * examle to inject the currently active PaperScope into the window's global
-     * scope, to emulate PaperScript-style globally accessible Paper classes and
-     * objects.
+     * example to inject the currently active PaperScope into the window's
+     * global scope, to emulate PaperScript-style globally accessible Paper
+     * classes and objects.
      *
      * <b>Please note:</b> Using this method may override native constructors
      * (e.g. Path). This may cause problems when using Paper.js in conjunction
