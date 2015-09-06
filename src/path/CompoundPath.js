@@ -220,8 +220,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The area of the path in square points. Self-intersecting paths can
-     * contain sub-areas that cancel each other out.
+     * The area that the path's geometry is covering. Self-intersecting paths
+     * can contain sub-areas that cancel each other out.
      *
      * @type Number
      * @bean

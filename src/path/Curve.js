@@ -279,10 +279,30 @@ var Curve = Base.extend(/** @lends Curve# */{
         this.getPoint2().setSelected(selected);
     },
 
+    /**
+     * An array of 8 float values, describing this curve's geometry in four
+     * absolute x/y pairs (point1, handle1, handle2, point2). This format is
+     * used internally for efficient processing of curve geometries, e.g. when
+     * calculating intersections or bounds.
+     *
+     * Note that the handles are converted to absolute coordinates.
+     *
+     * @type Number[]
+     * @bean
+     */
     getValues: function(matrix) {
         return Curve.getValues(this._segment1, this._segment2, matrix);
     },
 
+    /**
+     * An array of 4 point objects, describing this curve's geometry in absolute
+     * coordinates (point1, handle1, handle2, point2).
+     *
+     * Note that the handles are converted to absolute coordinates.
+     *
+     * @type Point[]
+     * @bean
+     */
     getPoints: function() {
         // Convert to array of absolute points
         var coords = this.getValues(),
@@ -293,7 +313,7 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * The approximated length of the curve in points.
+     * The approximated length of the curve.
      *
      * @type Number
      * @bean
@@ -308,6 +328,12 @@ var Curve = Base.extend(/** @lends Curve# */{
         return this._length;
     },
 
+    /**
+     * The area that the curve's geometry is covering.
+     *
+     * @type Number
+     * @bean
+     */
     getArea: function() {
         return Curve.getArea(this.getValues());
     },

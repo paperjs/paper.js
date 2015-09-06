@@ -304,7 +304,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * and may contain a combination of the following values:
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     * {Number} the tolerance of the hit-test in points
+     * {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
      * Shape, Raster, PlacedSymbol, PointText}, etc

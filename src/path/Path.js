@@ -802,7 +802,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * The approximate length of the path in points.
+     * The approximate length of the path.
      *
      * @type Number
      * @bean
@@ -818,8 +818,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * The area of the path in square points. Self-intersecting paths can
-     * contain sub-areas that cancel each other out.
+     * The area that the path's geometry is covering. Self-intersecting paths
+     * can contain sub-areas that cancel each other out.
      *
      * @type Number
      * @bean

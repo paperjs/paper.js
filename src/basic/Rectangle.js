@@ -475,7 +475,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      */
 
     /**
-     * The area of the rectangle in square points.
+     * The area of the rectangle.
      *
      * @type Number
      * @bean
