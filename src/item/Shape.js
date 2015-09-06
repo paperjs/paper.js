@@ -64,7 +64,7 @@ var Shape = Item.extend(/** @lends Shape# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #getType()} instead.
+     * @deprecated use {@link #type} instead.
      */
     getShape: '#getType',
     setShape: '#setType',

@@ -1190,7 +1190,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getApplyMatrix()} instead.
+     * @deprecated use {@link #applyMatrix} instead.
      */
     getTransformContent: '#getApplyMatrix',
     setTransformContent: '#setApplyMatrix',

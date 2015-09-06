@@ -1966,7 +1966,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Returns the nearest location on the path to the specified point.
      *
      * @function
-     * @param point {Point} the point for which we search the nearest location
+     * @param {Point} point the point for which we search the nearest location
      * @return {CurveLocation} the location on the path that's the closest to
      * the specified point
      */
@@ -1989,7 +1989,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Returns the nearest point on the path to the specified point.
      *
      * @function
-     * @param point {Point} the point for which we search the nearest point
+     * @param {Point} point the point for which we search the nearest point
      * @return {Point} the point on the path that's the closest to the specified
      * point
      *
