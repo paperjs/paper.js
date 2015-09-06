@@ -821,6 +821,7 @@ statics: {
         return h1.equals(third) && h2.negate().equals(third);
     }
 }, function(test, name) {
+    // Produce the instance version that is called on curve object.
     this[name] = function() {
         var seg1 = this._segment1,
             seg2 = this._segment2;
@@ -828,6 +829,7 @@ statics: {
                 seg1._handleOut, seg2._handleIn);
     };
 
+    // Produce the static version that handles a curve values array.
     this.statics[name] = function(v) {
         var p1x = v[0], p1y = v[1],
             p2x = v[6], p2y = v[7];
@@ -836,10 +838,10 @@ statics: {
                 new Point(v[4] - p2x, v[5] - p2y));
     };
 }, /** @lends Curve# */{
-    statics: {}, // Filled in the loop above
+    statics: {}, // Filled in the Base.each loop above.
 
     /**
-     * {@grouptitle Tests}
+     * {@grouptitle Curve Tests}
      *
      * Checks if this curve has any curve handles set.
      *
@@ -866,9 +868,9 @@ statics: {
      */
 
     /**
-     * Checks if this curve is parametrically linear, meaning that its
-     * handles are positioned at 1/3 and 2/3 of the total length of the
-     * straight curve.
+     * Checks if this curve is parametrically linear, meaning that it is
+     * straight and its handles are positioned at 1/3 and 2/3 of the total
+     * length of the curve.
      *
      * @name Curve#isLinear
      * @function
