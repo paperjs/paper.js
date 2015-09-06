@@ -1021,7 +1021,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         for (var i = curves.length - 1; i >= 0; i--) {
             var curve = curves[i],
                 next;
-            if (curve.isLinear() && (curve.getLength() === 0
+            if (!curve.hasHandles() && (curve.getLength() === 0
                     || (next = curve.getNext()) && curve.isCollinear(next)))
                 curve.remove();
         }
