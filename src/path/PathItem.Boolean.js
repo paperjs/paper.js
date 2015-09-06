@@ -25,7 +25,6 @@
  *
  * Not supported yet
  *  - Boolean operations on self-intersecting Paths
- *  - Paths are clones of each other that overlap exactly on top of each other!
  *
  * @author Harikrishnan Gopalakrishnan
  * http://hkrish.com/playground/paperjs/booleanStudy.html
