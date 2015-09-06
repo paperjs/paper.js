@@ -358,12 +358,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @bean
      */
     getLength: function() {
-        if (this._length == null) {
-            // Use simple point distance for straight curves
-            this._length = this.isLinear()
-                ? this.getVector().getLength()
-                : Curve.getLength(this.getValues(), 0, 1);
-        }
+        if (this._length == null)
+            this._length = Curve.getLength(this.getValues(), 0, 1);
         return this._length;
     },
 
@@ -802,7 +798,7 @@ statics: {
      * @ignore
      */
 }),  new function() { // Injection scope for tests
-    function isLinear(l, h1, h2) {
+    function isStraight(l, h1, h2) {
         if (h1.isZero() && h2.isZero()) {
             // No handles.
             return true;
@@ -843,12 +839,12 @@ statics: {
          * line that connects the curve's start and end point, not falling
          * outside of the line.
          *
-         * @return {Boolean} {@true if the curve is linear}
+         * @return {Boolean} {@true if the curve is straight}
          */
-        isLinear: function() {
+        isStraight: function() {
             var seg1 = this._segment1,
                 seg2 = this._segment2;
-            return isLinear(seg2._point.subtract(seg1._point),
+            return isStraight(seg2._point.subtract(seg1._point),
                     seg1._handleOut, seg2._handleIn);
         },
 
@@ -860,15 +856,15 @@ statics: {
          * @return {Boolean} {@true if the two lines are collinear}
          */
         isCollinear: function(curve) {
-            return this.isLinear() && curve.isLinear()
+            return this.isStraight() && curve.isStraight()
                     && this.getVector().isCollinear(curve.getVector());
         },
 
         statics: {
-            isLinear: function(v) {
+            isStraight: function(v) {
                 var p1x = v[0], p1y = v[1],
                     p2x = v[6], p2y = v[7];
-                return isLinear(new Point(p2x - p1x, p2y - p1y),
+                return isStraight(new Point(p2x - p1x, p2y - p1y),
                         new Point(v[2] - p1x, v[3] - p1y),
                         new Point(v[4] - p2x, v[5] - p2y));
             }
@@ -1220,12 +1216,8 @@ new function() { // Scope for methods that require private functions
                 a = 0;
             if (b === undefined)
                 b = 1;
-            var isZero = Numerical.isZero;
-            // See if the curve is linear by checking p1 == c1 and p2 == c2
-            if (a === 0 && b === 1
-                    && isZero(v[0] - v[2]) && isZero(v[1] - v[3])
-                    && isZero(v[6] - v[4]) && isZero(v[7] - v[5])) {
-                // Straight line
+            if (a === 0 && b === 1 && Curve.isStraight(v)) {
+                // The length of straight curves can be calculated more easily.
                 var dx = v[6] - v[0], // p2x - p1x
                     dy = v[7] - v[1]; // p2y - p1y
                 return Math.sqrt(dx * dx + dy * dy);
@@ -1525,7 +1517,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
      */
     function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
             include) {
-        var flip = Curve.isLinear(v1),
+        var flip = Curve.isStraight(v1),
             vc = flip ? v2 : v1,
             vl = flip ? v1 : v2,
             lx1 = vl[0], ly1 = vl[1],
@@ -1594,10 +1586,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
         var abs = Math.abs,
             tolerance = /*#=*/Numerical.TOLERANCE,
             epsilon = /*#=*/Numerical.EPSILON,
-            linear1 = Curve.isLinear(v1),
-            linear2 = Curve.isLinear(v2),
-            linear =  linear1 && linear2;
-        if (linear) {
+            straight1 = Curve.isStraight(v1),
+            straight2 = Curve.isStraight(v2),
+            straight =  straight1 && straight2;
+        if (straight) {
             // Linear curves can only overlap if they are collinear, which means
             // they must be are collinear and any point of curve 1 must be on
             // curve 2
@@ -1606,8 +1598,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             if (!line1.isCollinear(line2) ||
                     line1.getDistance(line2.getPoint()) > epsilon)
                 return false;
-        } else if (linear1 ^ linear2) {
-            // If one curve is linear, the other curve must be linear, too,
+        } else if (straight1 ^ straight2) {
+            // If one curve is straight, the other curve must be straight, too,
             // otherwise they cannot overlap.
             return false;
         }
@@ -1650,7 +1642,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Check if handles of overlapping paths are similar enough.
             // We could do another check for curve identity here if we find a
             // better criteria.
-            if (linear ||
+            if (straight ||
                     abs(c2[0] - c1[0]) < epsilon &&
                     abs(c2[1] - c1[1]) < epsilon &&
                     abs(c2[1] - c1[1]) < epsilon &&
@@ -1687,8 +1679,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
         getIntersections: function(v1, v2, c1, c2, locations, include) {
             if (addOverlap(v1, v2, c1, c2, locations, include))
                 return locations;
-            var linear1 = Curve.isLinear(v1),
-                linear2 = Curve.isLinear(v2),
+            var straight1 = Curve.isStraight(v1),
+                straight2 = Curve.isStraight(v2),
                 c1p1 = c1.getPoint1(),
                 c1p2 = c1.getPoint2(),
                 c2p1 = c2.getPoint1(),
@@ -1702,10 +1694,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
             if (c1p1.isClose(c2p2, tolerance))
                 addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
             // Determine the correct intersection method based on values of
-            // linear1 & 2:
-            (linear1 && linear2
+            // straight1 & 2:
+            (straight1 && straight2
                 ? addLineIntersection
-                : linear1 || linear2
+                : straight1 || straight2
                     ? addCurveLineIntersections
                     : addCurveIntersections)(
                         v1, v2, c1, c2, locations, include,

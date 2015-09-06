@@ -291,9 +291,9 @@ PathItem.inject(new function() {
     }
 
     function isHorizontal(curve) {
-        // Determine if the curve is a horizontal linear curve by checking the
+        // Determine if the curve is a horizontal straight curve by checking the
         // slope of it's tangent.
-        return curve.isLinear() && Math.abs(curve.getTangentAt(0.5, true).y)
+        return curve.isStraight() && Math.abs(curve.getTangentAt(0.5, true).y)
                 < /*#=*/Numerical.TOLERANCE;
     }
 
@@ -386,7 +386,7 @@ PathItem.inject(new function() {
                         // curve merely touches the ray towards +-x direction,
                         // but proceeds to the same side of the ray.
                         // This essentially is not a crossing.
-                        if (Numerical.isZero(slope) && !Curve.isLinear(values)
+                        if (Numerical.isZero(slope) && !Curve.isStraight(values)
                                 // Does the slope over curve beginning change?
                                 || t < tMin && slope * Curve.getTangent(
                                     curve.previous.values, 1).y < 0
@@ -785,8 +785,8 @@ Path.inject(/** @lends Path# */{
                 y1 = v[3],
                 y2 = v[5],
                 y3 = v[7];
-            if (Curve.isLinear(v)) {
-                // Handling linear curves is easy.
+            if (Curve.isStraight(v)) {
+                // Handling straight curves is easy.
                 insertCurve(v);
             } else {
                 // Split the curve at y extrema, to get bezier curves with clear
