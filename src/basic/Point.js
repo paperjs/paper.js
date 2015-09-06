@@ -721,6 +721,7 @@ var Point = Base.extend(/** @lends Point# */{
     isOrthogonal: function(point) {
         // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
         // conversion test.
+        // TODO: Test if 1e-10 works here too? See #isCollinear()
         return Math.abs(this.dot(point)) < /*#=*/Numerical.TOLERANCE;
     },
 
@@ -767,23 +768,19 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * Returns the projection of the point on another point.
+     * Returns the projection of the point onto another point.
      * Both points are interpreted as vectors.
      *
      * @param {Point} point
-     * @return {Point} the projection of the point on another point
+     * @return {Point} the projection of the point onto another point
      */
     project: function(/* point */) {
-        var point = Point.read(arguments);
-        if (point.isZero()) {
-            return new Point(0, 0);
-        } else {
-            var scale = this.dot(point) / point.dot(point);
-            return new Point(
-                point.x * scale,
-                point.y * scale
-            );
-        }
+        var point = Point.read(arguments),
+            scale = point.isZero() ? 0 : this.dot(point) / point.dot(point);
+        return new Point(
+            point.x * scale,
+            point.y * scale
+        );
     },
 
     /**
