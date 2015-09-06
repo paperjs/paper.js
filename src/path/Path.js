@@ -802,24 +802,6 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Checks if this path consists of only straight curves. This can mean that
-     * the curves have no handles defined, or that the handles run collinear
-     * with the line.
-     *
-     * @return {Boolean} {@true if the path is entirely linear}
-     * @see Segment#isLinear()
-     * @see Curve#isLinear()
-     */
-    isLinear: function() {
-        var segments = this._segments;
-        for (var i = 0, l = segments.length; i < l; i++) {
-            if (!segments[i].isLinear())
-                return false;
-        }
-        return true;
-    },
-
-    /**
      * The approximate length of the path in points.
      *
      * @type Number

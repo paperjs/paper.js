@@ -650,11 +650,11 @@ PathItem.inject(new function() {
                 path = null;
             }
             // Add the path to the result, while avoiding stray segments and
-            // incomplete paths. The amount of segments for valid paths depend
-            // on their geometry:
-            // - Closed paths with only straight lines need more than 2 segments
-            // - Closed paths with curves can consist of only one segment
-            if (path && path._segments.length > path.isLinear() ? 2 : 0)
+            // paths that are incomplete or cover no area.
+            // As an optimization, only check paths with 4 or less segments
+            // for their area, and assume that they cover an area when more.
+            if (path && (path._segments.length > 4
+                    || !Numerical.isZero(path.getArea())))
                 paths.push(path);
             if (reportSegments) {
                 pathCount++;
