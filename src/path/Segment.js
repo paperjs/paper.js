@@ -253,7 +253,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     /**
      * Checks if the curve that starts in this segment appears as a straight
      * line. This can mean that it has no handles defined, or that the handles
-     * run collinear with the line.
+     * run collinear with the line that connects the curve's start and end
+     * point, not falling outside of the line.
      *
      * @return {Boolean} {@true if the curve starting in this segment is linear}
      * @see Curve#isLinear()
@@ -572,8 +573,15 @@ var Segment = Base.extend(/** @lends Segment# */{
             var l = seg2._point.subtract(seg1._point),
                 h1 = seg1._handleOut,
                 h2 = seg2._handleIn;
-            return l.isZero() ? h1.isZero() && h2.isZero()
-                    : l.isCollinear(h1) && l.isCollinear(h2);
+            if (l.isZero()) {
+                return h1.isZero() && h2.isZero();
+            } else if (h1.isCollinear(l) && h2.isCollinear(l)) {
+                var div = l.dot(l),
+                    p1 = l.dot(h1) / div,
+                    p2 = l.dot(h2) / div;
+                    return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+            }
+            return false;
         },
 
         isCollinear: function(seg1, seg2, seg3, seg4) {

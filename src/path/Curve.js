@@ -344,7 +344,9 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     /**
      * Checks if this curve appears as a straight line. This can mean that it
-     * has no handles defined, or that the handles run collinear with the line.
+     * has no handles defined, or that the handles run collinear with the line
+     * that connects the curve's start and end point, not falling outside of
+     * the line.
      *
      * @return {Boolean} {@true if the curve is linear}
      * @see Segment#isLinear()
@@ -664,8 +666,17 @@ statics: {
             l = new Point(p2x - p1x, p2y - p1y),
             h1 = new Point(v[2] - p1x, v[3] - p1y),
             h2 = new Point(v[4] - p2x, v[5] - p2y);
-        return l.isZero() ? h1.isZero() && h2.isZero()
-                : l.isCollinear(h1) && l.isCollinear(h2);
+        if (l.isZero()) {
+            return h1.isZero() && h2.isZero();
+        } else if (h1.isCollinear(l) && h2.isCollinear(l)) {
+            // Get the scalar projection of h1 and h2 onto l, and make sure they
+            // lie within l (note that h2 is reversed)
+            var div = l.dot(l),
+                p1 = l.dot(h1) / div,
+                p2 = l.dot(h2) / div;
+                return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+        }
+        return false;
     },
 
     isFlatEnough: function(v, tolerance) {
