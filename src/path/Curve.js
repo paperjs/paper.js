@@ -797,8 +797,8 @@ statics: {
      * @type Rectangle
      * @ignore
      */
-}),  new function() { // Injection scope for tests
-    function isStraight(l, h1, h2) {
+}), Base.each({ // Injection scope for tests both as instance and static methods
+    isStraight: function(l, h1, h2) {
         if (h1.isZero() && h2.isZero()) {
             // No handles.
             return true;
@@ -814,63 +814,79 @@ statics: {
             return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
         }
         return false;
+    },
+
+    isLinear: function(l, h1, h2) {
+        var third = l.divide(3);
+        return h1.equals(third) && h2.negate().equals(third);
     }
+}, function(test, name) {
+    this[name] = function() {
+        var seg1 = this._segment1,
+            seg2 = this._segment2;
+        return test(seg2._point.subtract(seg1._point),
+                seg1._handleOut, seg2._handleIn);
+    };
 
-    return /** @lends Curve# */{
-        /**
-         * {@grouptitle Tests}
-         *
-         * Checks if this curve has any curve handles set.
-         *
-         * @return {Boolean} {@true if the curve has handles set}
-         * @see Curve#handle1
-         * @see Curve#handle2
-         * @see Segment#hasHandles()
-         * @see Path#hasHandles()
-         */
-        hasHandles: function() {
-            return !this._segment1._handleOut.isZero()
-                    || !this._segment2._handleIn.isZero();
-        },
-
-        /**
-         * Checks if this curve appears as a straight line. This can mean that
-         * it has no handles defined, or that the handles run collinear with the
-         * line that connects the curve's start and end point, not falling
-         * outside of the line.
-         *
-         * @return {Boolean} {@true if the curve is straight}
-         */
-        isStraight: function() {
-            var seg1 = this._segment1,
-                seg2 = this._segment2;
-            return isStraight(seg2._point.subtract(seg1._point),
-                    seg1._handleOut, seg2._handleIn);
-        },
-
-        /**
-         * Checks if the the two curves describe straight lines that are
-         * collinear, meaning they run in parallel.
-         *
-         * @param {Curve} curve the other curve to check against
-         * @return {Boolean} {@true if the two lines are collinear}
-         */
-        isCollinear: function(curve) {
-            return this.isStraight() && curve.isStraight()
-                    && this.getVector().isCollinear(curve.getVector());
-        },
-
-        statics: {
-            isStraight: function(v) {
-                var p1x = v[0], p1y = v[1],
-                    p2x = v[6], p2y = v[7];
-                return isStraight(new Point(p2x - p1x, p2y - p1y),
-                        new Point(v[2] - p1x, v[3] - p1y),
-                        new Point(v[4] - p2x, v[5] - p2y));
-            }
-        }
-    }
+    this.statics[name] = function(v) {
+        var p1x = v[0], p1y = v[1],
+            p2x = v[6], p2y = v[7];
+        return test(new Point(p2x - p1x, p2y - p1y),
+                new Point(v[2] - p1x, v[3] - p1y),
+                new Point(v[4] - p2x, v[5] - p2y));
+    };
 }, /** @lends Curve# */{
+    statics: {}, // Filled in the loop above
+
+    /**
+     * {@grouptitle Tests}
+     *
+     * Checks if this curve has any curve handles set.
+     *
+     * @return {Boolean} {@true if the curve has handles set}
+     * @see Curve#handle1
+     * @see Curve#handle2
+     * @see Segment#hasHandles()
+     * @see Path#hasHandles()
+     */
+    hasHandles: function() {
+        return !this._segment1._handleOut.isZero()
+                || !this._segment2._handleIn.isZero();
+    },
+
+    /**
+     * Checks if this curve appears as a straight line. This can mean that
+     * it has no handles defined, or that the handles run collinear with the
+     * line that connects the curve's start and end point, not falling
+     * outside of the line.
+     *
+     * @name Curve#isStraight
+     * @function
+     * @return {Boolean} {@true if the curve is straight}
+     */
+
+    /**
+     * Checks if this curve is parametrically linear, meaning that its
+     * handles are positioned at 1/3 and 2/3 of the total length of the
+     * straight curve.
+     *
+     * @name Curve#isLinear
+     * @function
+     * @return {Boolean} {@true if the curve is parametrically linear}
+     */
+
+   /**
+     * Checks if the the two curves describe straight lines that are
+     * collinear, meaning they run in parallel.
+     *
+     * @param {Curve} curve the other curve to check against
+     * @return {Boolean} {@true if the two lines are collinear}
+     */
+    isCollinear: function(curve) {
+        return this.isStraight() && curve.isStraight()
+                && this.getVector().isCollinear(curve.getVector());
+    }
+}), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
     // See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...

@@ -211,3 +211,15 @@ test('Curve#isStraight()', function() {
         return new Curve([100, 100], null, [-50, -50], [100, 100]).isStraight();
     }, false);
 });
+
+test('Curve#isLinear()', function() {
+    equals(function() {
+        return new Curve([100, 100], [100 / 3, 100 / 3], [-100 / 3, -100 / 3], [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, null, [100, 100]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, null, [200, 200]).isLinear();
+    }, false);
+});
