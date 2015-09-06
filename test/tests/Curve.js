@@ -178,3 +178,36 @@ test('Curve#getLocationAt()', function() {
             'Should return null when offset is out of range.');
 //            'Should return null when point is not on the curve.');
 });
+
+test('Curve#isLinear()', function() {
+    equals(function() {
+        return new Curve([100, 100], null, null, [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [-50, -50], null, [200, 200]).isLinear();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], null, [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], [-50, -50], [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], [50, 50], [200, 200]).isLinear();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, [-50, -50], [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, [50, 50], [200, 200]).isLinear();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, null, [100, 100]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], null, [100, 100]).isLinear();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, [-50, -50], [100, 100]).isLinear();
+    }, false);
+});
