@@ -300,7 +300,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      */
     getLength: function() {
         if (this._length == null) {
-            // Use simple point distance for linear curves
+            // Use simple point distance for straight curves
             this._length = this.isLinear()
                 ? this._segment2._point.getDistance(this._segment1._point)
                 : Curve.getLength(this.getValues(), 0, 1);
@@ -343,8 +343,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Checks if this curve appears as a line. This can mean that it has no
-     * handles defined, or that the handles run collinear with the line.
+     * Checks if this curve appears as a straight line. This can mean that it
+     * has no handles defined, or that the handles run collinear with the line.
      *
      * @return {Boolean} {@true if the curve is linear}
      * @see Segment#isLinear()

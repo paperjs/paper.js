@@ -251,11 +251,11 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Checks if the curve that starts in this segment appears as a line. This
-     * can mean that it has no handles defined, or that the handles run
-     * collinear with the line.
+     * Checks if the curve that starts in this segment appears as a straight
+     * line. This can mean that it has no handles defined, or that the handles
+     * run collinear with the line.
      *
-     * @return {Boolean} {@true if the curve is linear}
+     * @return {Boolean} {@true if the curve starting in this segment is linear}
      * @see Curve#isLinear()
      * @see Path#isLinear()
      */
@@ -563,7 +563,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 
    statics: {
         // These statics are shared between Segment and Curve, for versions of
-        // these methods that are implemented in both places.
+        // these methods that are implemented in both places. Most of these
+        // methods relate more to the nature of curves than segments, but since
+        // curves are made out of segments, and segments are the main path data
+        // structure, while curves are 2nd class citizens, they are defined here
 
         isLinear: function(seg1, seg2) {
             var l = seg2._point.subtract(seg1._point),

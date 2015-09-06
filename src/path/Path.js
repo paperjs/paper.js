@@ -368,50 +368,6 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this._segments.length === 0;
     },
 
-    /**
-     * Checks if this path consists of only linear curves. This can mean that
-     * the curves have no handles defined, or that the handles run collinear
-     * with the line.
-     *
-     * @return {Boolean} {@true if the path is entirely linear}
-     * @see Segment#isLinear()
-     * @see Curve#isLinear()
-     */
-    isLinear: function() {
-        var segments = this._segments;
-        for (var i = 0, l = segments.length; i < l; i++) {
-            if (!segments[i].isLinear())
-                return false;
-        }
-        return true;
-    },
-
-    /**
-     * Checks if none of the curves in the path define any curve handles.
-     *
-     * @return {Boolean} {@true if the path contains no curve handles}
-     * @see Segment#hasHandles()
-     * @see Curve#hasHandles()
-     */
-    hasHandles: function() {
-        var segments = this._segments;
-        for (var i = 0, l = segments.length; i < l; i++) {
-            if (segments[i].hasHandles())
-                return true;
-        }
-        return false;
-    },
-
-    /**
-     * Clears the path's handles by setting their coordinates to zero,
-     * turning the path into a polygon (or a polyline if it isn't closed).
-     */
-    clearHandles: function() {
-        var segments = this._segments;
-        for (var i = 0, l = segments.length; i < l; i++)
-            segments[i].clearHandles();
-    },
-
     _transformContent: function(matrix) {
         var coords = new Array(6);
         for (var i = 0, l = this._segments.length; i < l; i++)
@@ -818,6 +774,50 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // DOCS Path#clear()
     clear: '#removeSegments',
+
+    /**
+     * Checks if none of the curves in the path define any curve handles.
+     *
+     * @return {Boolean} {@true if the path contains no curve handles}
+     * @see Segment#hasHandles()
+     * @see Curve#hasHandles()
+     */
+    hasHandles: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++) {
+            if (segments[i].hasHandles())
+                return true;
+        }
+        return false;
+    },
+
+    /**
+     * Clears the path's handles by setting their coordinates to zero,
+     * turning the path into a polygon (or a polyline if it isn't closed).
+     */
+    clearHandles: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++)
+            segments[i].clearHandles();
+    },
+
+    /**
+     * Checks if this path consists of only straight curves. This can mean that
+     * the curves have no handles defined, or that the handles run collinear
+     * with the line.
+     *
+     * @return {Boolean} {@true if the path is entirely linear}
+     * @see Segment#isLinear()
+     * @see Curve#isLinear()
+     */
+    isLinear: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++) {
+            if (!segments[i].isLinear())
+                return false;
+        }
+        return true;
+    },
 
     /**
      * The approximate length of the path in points.
