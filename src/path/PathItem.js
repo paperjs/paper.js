@@ -32,8 +32,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * supported.
      *
      * @param {PathItem} path the other item to find the intersections with
-     * @param {Boolean} [sorted=false] specifies whether the returned
-     * {@link CurveLocation} objects should be sorted by path and offset
      * @return {CurveLocation[]} the locations of all intersection between the
      * paths
      * @example {@paperscript} // Finding the intersections between two paths

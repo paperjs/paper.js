@@ -322,9 +322,11 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * Checks if this curve defines any curve handle.
+     * Checks if this curve has any curve handles set.
      *
-     * @return {Boolean} {@true if the curve has handles defined}
+     * @return {Boolean} {@true if the curve has handles set}
+     * @see Curve#getHandle1()
+     * @see Curve#getHandle2()
      * @see Segment#hasHandles()
      * @see Path#hasHandles()
      */
@@ -360,7 +362,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * Checks if the the two curves describe lines that are collinear, meaning
      * they run in parallel.
      *
-     * @param {Curve} the other curve to check against
+     * @param {Curve} curve the other curve to check against
      * @return {Boolean} {@true if the two lines are collinear}
      * @see Segment#isCollinear(segment)
      */
@@ -380,7 +382,14 @@ var Curve = Base.extend(/** @lends Curve# */{
         return Segment.isOrthogonalArc(this._segment1, this._segment2);
     },
 
-    // DOCS: Curve#getIntersections()
+    /**
+     * Returns all intersections between two {@link Curve} objects as an array
+     * of {@link CurveLocation} objects.
+     *
+     * @param {Curve} curve the other curve to find the intersections with
+     * @return {CurveLocation[]} the locations of all intersection between the
+     * curves
+     */
     getIntersections: function(curve) {
         return Curve.filterIntersections(Curve.getIntersections(
                 this.getValues(), curve.getValues(), this, curve, []));

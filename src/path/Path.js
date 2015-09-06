@@ -776,9 +776,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     clear: '#removeSegments',
 
     /**
-     * Checks if none of the curves in the path define any curve handles.
+     * Checks if any of the curves in the path have curve handles set.
      *
-     * @return {Boolean} {@true if the path contains no curve handles}
+     * @return {Boolean} {@true if the path has curve handles set}
      * @see Segment#hasHandles()
      * @see Curve#hasHandles()
      */

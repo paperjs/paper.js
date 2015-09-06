@@ -230,10 +230,11 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Checks whether the segment has curve handles defined, meaning it is not
-     * a straight segment.
+     * Checks if the segment has any curve handles set.
      *
-     * @return {Boolean} {@true if the segment has handles defined}
+     * @return {Boolean} {@true if the segment has handles set}
+     * @see Segment#getHandleIn()
+     * @see Segment#getHandleOut()
      * @see Curve#hasHandles()
      * @see Path#hasHandles()
      */
@@ -268,7 +269,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      * Checks if the the two segments are the beginning of two lines that are
      * collinear, meaning they run in parallel.
      *
-     * @param {Segment} the other segment to check against
+     * @param {Segment} segment the other segment to check against
      * @return {Boolean} {@true if the two lines are collinear}
      * @see Curve#isCollinear(curve)
      */
