@@ -191,9 +191,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * objects.
      *
      * <b>Please note:</b> Using this method may override native constructors
-     * (e.g. Path, RGBColor). This may cause problems when using Paper.js in
-     * conjunction with other libraries that rely on these constructors. Keep
-     * the library scoped if you encounter issues caused by this.
+     * (e.g. Path). This may cause problems when using Paper.js in conjunction
+     * with other libraries that rely on these constructors. Keep the library
+     * scoped if you encounter issues caused by this.
      *
      * @example
      * paper.install(window);

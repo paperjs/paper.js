@@ -1283,23 +1283,3 @@ var Color = Base.extend(new function() {
          */
     });
 });
-
-// Expose Color.RGB, etc. constructors, as well as RgbColor, RGBColor, etc.for
-// backward compatibility.
-Base.each(Color._types, function(properties, type) {
-    var ctor = this[Base.capitalize(type) + 'Color'] = function(arg) {
-            var argType = arg != null && typeof arg,
-                components = argType === 'object' && arg.length != null
-                    ? arg
-                    : argType === 'string'
-                        ? null
-                        : arguments;
-            return components
-                    ? new Color(type, components)
-                    : new Color(arg);
-        };
-    if (type.length == 3) {
-        var acronym = type.toUpperCase();
-        Color[acronym] = this[acronym + 'Color'] = ctor;
-    }
-}, Base.exports);
