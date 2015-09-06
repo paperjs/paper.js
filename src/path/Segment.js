@@ -145,9 +145,10 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     _serialize: function(options) {
-        // If it is straight, only serialize point, otherwise handles too.
-        return Base.serialize(this.isStraight() ? this._point
-                : [this._point, this._handleIn, this._handleOut],
+        // If it is has no handles, only serialize point, otherwise handles too.
+        return Base.serialize(this.hasHandles()
+                ? [this._point, this._handleIn, this._handleOut]
+                : this._point,
                 options, true);
     },
 
@@ -237,22 +238,16 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @see Path#hasHandles()
      */
     hasHandles: function() {
-        return !this.isStraight();
+        return !this._handleIn.isZero() || !this._handleOut.isZero();
     },
 
     /**
-     * Checks whether the segment is straight, meaning it has no curve handles
-     * defined. If two straight segments follow each each other in a path, the
-     * curve between them will appear as a straight line.
-     * Note that this is not the same as {@link #isLinear()}, which performs a
-     * full linearity check that includes handles running collinear to the line
-     * direction.
-     *
-     * @return {Boolean} {@true if the segment is straight}
-     * @see Curve#isStraight()
+     * Clears the segment's handles by setting their coordinates to zero,
+     * turning the segment into a corner.
      */
-    isStraight: function() {
-        return this._handleIn.isZero() && this._handleOut.isZero();
+    clearHandles: function() {
+        this._handleIn.set(0, 0);
+        this._handleOut.set(0, 0);
     },
 
     /**
@@ -579,7 +574,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         },
 
         isCollinear: function(seg1, seg2, seg3, seg4) {
-            // TODO: This assumes isStraight(), while isLinear() allows handles!
+            // TODO: This assumes !hasHandles(), while isLinear() allows handles!
             return seg1._handleOut.isZero() && seg2._handleIn.isZero()
                     && seg3._handleOut.isZero() && seg4._handleIn.isZero()
                     && seg2._point.subtract(seg1._point).isCollinear(
@@ -587,7 +582,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         },
 
         isOrthogonal: function(seg1, seg2, seg3) {
-            // TODO: This assumes isStraight(), while isLinear() allows handles!
+            // TODO: This assumes !hasHandles(), while isLinear() allows handles!
             return seg1._handleOut.isZero() && seg2._handleIn.isZero()
                     && seg2._handleOut.isZero() && seg3._handleIn.isZero()
                     && seg2._point.subtract(seg1._point).isOrthogonal(

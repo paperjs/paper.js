@@ -402,6 +402,16 @@ var Path = PathItem.extend(/** @lends Path# */{
         return false;
     },
 
+    /**
+     * Clears the path's handles by setting their coordinates to zero,
+     * turning the path into a polygon (or a polyline if it isn't closed).
+     */
+    clearHandles: function() {
+        var segments = this._segments;
+        for (var i = 0, l = segments.length; i < l; i++)
+            segments[i].clearHandles();
+    },
+
     _transformContent: function(matrix) {
         var coords = new Array(6);
         for (var i = 0, l = this._segments.length; i < l; i++)

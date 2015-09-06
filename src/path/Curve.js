@@ -120,11 +120,11 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     _serialize: function(options) {
-        // If it is straight, only serialize point, otherwise handles too.
-        return Base.serialize(this.isStraight()
-                ? [this.getPoint1(), this.getPoint2()]
-                : [this.getPoint1(), this.getHandle1(), this.getHandle2(),
-                    this.getPoint2()],
+        // If it has no handles, only serialize points, otherwise handles too.
+        return Base.serialize(this.hasHandles()
+                ? [this.getPoint1(), this.getHandle1(), this.getHandle2(),
+                    this.getPoint2()]
+                : [this.getPoint1(), this.getPoint2()],
                 options, true);
     },
 
@@ -329,22 +329,17 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Path#hasHandles()
      */
     hasHandles: function() {
-        return !this.isStraight();
+        return !this._segment1._handleOut.isZero()
+                || !this._segment2._handleIn.isZero();
     },
 
     /**
-     * Checks whether the curve is straight, meaning it has no curve handles
-     * defined and thus appears as a line.
-     * Note that this is not the same as {@link #isLinear()}, which performs a
-     * full linearity check that includes handles running collinear to the line
-     * direction.
-     *
-     * @return {Boolean} {@true if the curve is straight}
-     * @see Segment#isStraight()
+     * Clears the curve's handles by setting their coordinates to zero,
+     * turning the curve into a straight line.
      */
-    isStraight: function() {
-        return this._segment1._handleOut.isZero()
-                && this._segment2._handleIn.isZero();
+    clearHandles: function() {
+        this._segment1._handleOut.set(0, 0);
+        this._segment2._handleIn.set(0, 0);
     },
 
     /**

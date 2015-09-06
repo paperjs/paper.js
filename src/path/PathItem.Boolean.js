@@ -242,8 +242,8 @@ PathItem.inject(new function() {
         // TODO: Make public in API, since useful!
         var tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
-            isStraight = false,
-            straightSegments = [];
+            noHandles = false,
+            clearSegments = [];
 
         for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
             var loc = intersections[i],
@@ -255,7 +255,7 @@ PathItem.inject(new function() {
                 t /= prev._parameter;
             } else {
                 curve = loc._curve;
-                isStraight = curve.isStraight();
+                noHandles = !curve.hasHandles();
             }
             var segment;
             if (t < tMin) {
@@ -270,22 +270,18 @@ PathItem.inject(new function() {
                 curve = newCurve.getPrevious();
                 // Keep track of segments of once straight curves, so they can
                 // be set back straight at the end.
-                if (isStraight)
-                    straightSegments.push(segment);
+                if (noHandles)
+                    clearSegments.push(segment);
             }
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc.getIntersection();
             loc._segment = segment;
             prev = loc;
         }
-        // Reset linear segments if they were part of a linear curve
-        // and if we are done with the entire curve.
-        for (var i = 0, l = straightSegments.length; i < l; i++) {
-            var segment = straightSegments[i];
-            // TODO: Implement Segment#makeStraight(),
-            // or #adjustHandles({ straight: true }))
-            segment._handleIn.set(0, 0);
-            segment._handleOut.set(0, 0);
+        // Clear segment handles if they were part of a curve with no handles,
+        // once we are done with the entire curve.
+        for (var i = 0, l = clearSegments.length; i < l; i++) {
+            clearSegments[i].clearHandles();
         }
     }
 
