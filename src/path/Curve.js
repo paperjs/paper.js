@@ -1695,10 +1695,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 return locations;
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                c1p1 = c1.getPoint1(),
-                c1p2 = c1.getPoint2(),
-                c2p1 = c2.getPoint1(),
-                c2p2 = c2.getPoint2(),
+                c1p1 = new Point(v1[0], v1[1]),
+                c1p2 = new Point(v1[6], v1[7]),
+                c2p1 = new Point(v2[0], v2[1]),
+                c2p2 = new Point(v2[6], v2[7]),
                 tolerance = /*#=*/Numerical.TOLERANCE;
             // Handle a special case where if both curves start or end at the
             // same point, the same end-point case will be handled after we
