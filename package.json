@@ -23,7 +23,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">= 0.4.0"
+    "node": ">=0.8.0 <3"
   },
   "dependencies": {
     "jsdom": "~3.1.2",
