@@ -1317,14 +1317,17 @@ new function() { // Scope for methods that require private functions
 },
 new function() { // Scope for intersection using bezier fat-line clipping
 
-    function addLocation(locations, param, curve1, t1, point1, curve2, t2,
-            point2) {
+    function addLocation(locations, param,
+            curve1, t1, point1, v1,
+            curve2, t2, point2, v2) {
         var loc = null,
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         if (t1 >= (param.startConnected ? tMin : 0)
                 && t1 <= (param.endConnected ? tMax : 1)) {
-            loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);
+            loc = new CurveLocation(
+                    curve1, t1, point1 || Curve.getPoint(v1, t1),
+                    curve2, t2, point2 || Curve.getPoint(v2, t2));
             if (param.adjust)
                 param.adjust(loc);
             locations.push(loc);
@@ -1416,12 +1419,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 t2 = uMin + (uMax - uMin) / 2;
             if (reverse) {
                 addLocation(locations, param,
-                        curve2, t2, Curve.getPoint(v2, t2),
-                        curve1, t1, Curve.getPoint(v1, t1));
+                        curve2, t2, null, v2,
+                        curve1, t1, null, v1);
             } else {
                 addLocation(locations, param,
-                        curve1, t1, Curve.getPoint(v1, t1),
-                        curve2, t2, Curve.getPoint(v2, t2));
+                        curve1, t1, null, v1,
+                        curve2, t2, null, v2);
             }
         } else if (tDiff > /*#=*/Numerical.EPSILON) { // Iterate
             addCurveIntersections(v2, v1, curve2, curve1, locations, param,
@@ -1579,8 +1582,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     t1 = flip ? tl : tc,
                     t2 = flip ? tc : tl;
                 addLocation(locations, param,
-                        curve1, t1, Curve.getPoint(v1, t1),
-                        curve2, t2, Curve.getPoint(v2, t2));
+                        curve1, t1, null, v1,
+                        curve2, t2, null, v1);
             }
         }
     }
@@ -1595,8 +1598,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var x = point.x,
                 y = point.y;
             addLocation(locations, param,
-                    curve1, Curve.getParameterOf(v1, x, y), point,
-                    curve2, Curve.getParameterOf(v2, x, y), point);
+                    curve1, Curve.getParameterOf(v1, x, y), point, null,
+                    curve2, Curve.getParameterOf(v2, x, y), point, null);
         }
     }
 
@@ -1675,11 +1678,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     t21 = pairs[1][0],
                     t22 = pairs[1][1],
                     loc1 = addLocation(locations, param,
-                        curve1, t11, Curve.getPoint(v1, t11),
-                        curve2, t12, Curve.getPoint(v2, t12), true),
+                        curve1, t11, null, v1,
+                        curve2, t12, null, v2),
                     loc2 = addLocation(locations, param,
-                        curve1, t21, Curve.getPoint(v1, t21),
-                        curve2, t22, Curve.getPoint(v2, t22), true);
+                        curve1, t21, null, v1,
+                        curve2, t22, null, v2);
                 if (loc1)
                     loc1._overlap = true;
                 if (loc2)
@@ -1721,9 +1724,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
             if (c1p1.isClose(c2p1, tolerance))
-                addLocation(locations, param, curve1, 0, c1p1, curve2, 0, c1p1);
+                addLocation(locations, param, curve1, 0, c1p1, null,
+                        curve2, 0, c1p1, null);
             if (!param.startConnected && c1p1.isClose(c2p2, tolerance))
-                addLocation(locations, param, curve1, 0, c1p1, curve2, 1, c1p1);
+                addLocation(locations, param, curve1, 0, c1p1, null,
+                        curve2, 1, c1p1, null);
             // Determine the correct intersection method based on whether one or
             // curves are straight lines:
             (straight1 && straight2
@@ -1739,9 +1744,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Handle the special case where the first curve's end-point
             // overlaps with the second curve's start- or end-points.
             if (!param.endConnected && c1p2.isClose(c2p1, tolerance))
-                addLocation(locations, param, curve1, 1, c1p2, curve2, 0, c1p2);
+                addLocation(locations, param, curve1, 1, c1p2, null,
+                        curve2, 0, c1p2, null);
             if (c1p2.isClose(c2p2, tolerance))
-                addLocation(locations, param, curve1, 1, c1p2, curve2, 1, c1p2);
+                addLocation(locations, param, curve1, 1, c1p2, null,
+                        curve2, 1, c1p2, null);
             return locations;
         },
 
