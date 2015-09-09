@@ -90,15 +90,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 // First check for self-intersections within the same curve
                 var seg1 = curve1.getSegment1(),
                     seg2 = curve1.getSegment2(),
+                    p1 = seg1._point,
+                    p2 = seg2._point,
                     h1 = seg1._handleOut,
-                    h2 = seg2._handleIn;
+                    h2 = seg2._handleIn,
+                    l1 = new Line(p1.subtract(h1), p1.add(h1)),
+                    l2 = new Line(p2.subtract(h2), p1.add(h2));
                 // Check if extended handles of endpoints of this curve
                 // intersects each other. We cannot have a self intersection
                 // within this curve if they don't intersect due to convex-hull
                 // property.
-                if (new Line(seg1._point.subtract(h1), h1.multiply(2), true)
-                        .intersect(new Line(seg2._point.subtract(h2),
-                        h2.multiply(2), true), false)) {
+                if (l1.intersect(l2, false)) {
                     // Self intersecting is found by dividing the curve in two
                     // and and then applying the normal curve intersection code.
                     var parts = Curve.subdivide(values1);
