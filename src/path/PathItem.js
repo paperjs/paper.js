@@ -104,8 +104,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     // Self intersecting is found by dividing the curve in two
                     // and and then applying the normal curve intersection code.
                     var parts = Curve.subdivide(values1);
-                    Curve._getIntersections(
-                        parts[0], parts[1], curve1, curve1, locations, {
+                    Curve._getIntersections(parts[0], parts[1], curve1, curve1,
+                        locations, {
                             // Only possible if there is only one curve:
                             startConnected: length1 === 1,
                             // After splitting, the end is always connected:

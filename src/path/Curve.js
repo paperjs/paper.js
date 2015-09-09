@@ -1328,7 +1328,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
             loc = new CurveLocation(
-                    c1, t1, p1 || Curve.getPoint(v1, t1),
+                    c1, t1, p1 || Curve.getPoint(v1, t1),
                     c2, t2, p2 || Curve.getPoint(v2, t2));
             if (param.adjust)
                 param.adjust(loc);
