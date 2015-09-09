@@ -76,20 +76,22 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
-        splitPath(Curve._filterIntersections(
-                _path1._getIntersections(_path2, null, []), true));
-        /*
-        console.time('inter');
+
+        // Without support for self-intersection
+        // splitPath(Curve._filterIntersections(
+        //         _path1._getIntersections(_path2, null, []), true));
+
+        // console.time('inter');
         var locations = _path1._getIntersections(_path2, null, []);
-        console.timeEnd('inter');
+        // console.timeEnd('inter');
         if (_path2 && false) {
-            console.time('self');
+            // console.time('self');
             _path1._getIntersections(null, null, locations);
             _path2._getIntersections(null, null, locations);
-            console.timeEnd('self');
+            // console.timeEnd('self');
         }
         splitPath(Curve._filterIntersections(locations, true));
-        */
+
         var chain = [],
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
