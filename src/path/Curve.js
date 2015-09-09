@@ -1695,7 +1695,20 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
         _getIntersections: function(v1, v2, curve1, curve2, locations, param) {
-            if (!param.startConnected && !param.endConnected
+            var min = Math.min,
+                max = Math.max;
+            // Avoid checking curves if completely out of control bounds.
+            // Also detect and handle overlaps.
+            if (!(
+                    max(v1[0], v1[2], v1[4], v1[6]) >=
+                    min(v2[0], v2[2], v2[4], v2[6]) &&
+                    max(v1[1], v1[3], v1[5], v1[7]) >=
+                    min(v2[1], v2[3], v2[5], v2[7]) &&
+                    min(v1[0], v1[2], v1[4], v1[6]) <=
+                    max(v2[0], v2[2], v2[4], v2[6]) &&
+                    min(v1[1], v1[3], v1[5], v1[7]) <=
+                    max(v2[1], v2[3], v2[5], v2[7])
+                ) || !param.startConnected && !param.endConnected
                     && addOverlap(v1, v2, curve1, curve2, locations, param))
                 return locations;
             var straight1 = Curve.isStraight(v1),
