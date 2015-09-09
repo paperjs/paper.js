@@ -1317,17 +1317,19 @@ new function() { // Scope for methods that require private functions
 },
 new function() { // Scope for intersection using bezier fat-line clipping
 
-    function addLocation(locations, param,
-            curve1, t1, point1, v1,
-            curve2, t2, point2, v2) {
+    function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2) {
         var loc = null,
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
+        if (t1 == null)
+            t1 = Curve.getParameterOf(v1, p1.x, p1.y);
         if (t1 >= (param.startConnected ? tMin : 0)
                 && t1 <= (param.endConnected ? tMax : 1)) {
+            if (t2 == null)
+                t2 = Curve.getParameterOf(v2, p2.x, p2.y);
             loc = new CurveLocation(
-                    curve1, t1, point1 || Curve.getPoint(v1, t1),
-                    curve2, t2, point2 || Curve.getPoint(v2, t2));
+                    c1, t1, p1 || Curve.getPoint(v1, t1),
+                    c2, t2, p2 || Curve.getPoint(v2, t2));
             if (param.adjust)
                 param.adjust(loc);
             locations.push(loc);
@@ -1335,7 +1337,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         return loc;
     }
 
-    function addCurveIntersections(v1, v2, curve1, curve2, locations, param,
+    function addCurveIntersections(v1, v2, c1, c2, locations, param,
             tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
         // Avoid deeper recursion.
         // NOTE: @iconexperience determined that more than 20 recursions are
@@ -1398,36 +1400,30 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 var parts = Curve.subdivide(v1, 0.5),
                     t = tMinNew + (tMaxNew - tMinNew) / 2;
                 addCurveIntersections(
-                    v2, parts[0], curve2, curve1, locations, param,
+                    v2, parts[0], c2, c1, locations, param,
                     uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
                 addCurveIntersections(
-                    v2, parts[1], curve2, curve1, locations, param,
+                    v2, parts[1], c2, c1, locations, param,
                     uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
             } else {
                 var parts = Curve.subdivide(v2, 0.5),
                     t = uMin + (uMax - uMin) / 2;
                 addCurveIntersections(
-                    parts[0], v1, curve2, curve1, locations, param,
+                    parts[0], v1, c2, c1, locations, param,
                     uMin, t, tMinNew, tMaxNew, tDiff, !reverse, recursion);
                 addCurveIntersections(
-                    parts[1], v1, curve2, curve1, locations, param,
+                    parts[1], v1, c2, c1, locations, param,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
         } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
-            if (reverse) {
-                addLocation(locations, param,
-                        curve2, t2, null, v2,
-                        curve1, t1, null, v1);
-            } else {
-                addLocation(locations, param,
-                        curve1, t1, null, v1,
-                        curve2, t2, null, v2);
-            }
+            addLocation(locations, param,
+                reverse ? v2 : v1, reverse ? c2 : c1, reverse ? t2 : t1, null,
+                reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t1 : t2, null);
         } else if (tDiff > /*#=*/Numerical.EPSILON) { // Iterate
-            addCurveIntersections(v2, v1, curve2, curve1, locations, param,
+            addCurveIntersections(v2, v1, c2, c1, locations, param,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
         }
     }
@@ -1540,7 +1536,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
      * line is on the X axis, and solve the implicit equations for the X axis
      * and the curve.
      */
-    function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
+    function addCurveLineIntersections(v1, v2, c1, c2, locations,
             param) {
         var flip = Curve.isStraight(v1),
             vc = flip ? v2 : v1,
@@ -1581,25 +1577,18 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 var tl = Curve.getParameterOf(rvl, x, 0),
                     t1 = flip ? tl : tc,
                     t2 = flip ? tc : tl;
-                addLocation(locations, param,
-                        curve1, t1, null, v1,
-                        curve2, t2, null, v1);
+                addLocation(locations, param, v1, c1, t1, null,
+                        v2, c2, t2, null);
             }
         }
     }
 
-    function addLineIntersection(v1, v2, curve1, curve2, locations, param) {
-        var point = Line.intersect(
+    function addLineIntersection(v1, v2, c1, c2, locations, param) {
+        var pt = Line.intersect(
                 v1[0], v1[1], v1[6], v1[7],
                 v2[0], v2[1], v2[6], v2[7]);
-        if (point) {
-            // We need to return the parameters for the intersection,
-            // since they will be used for sorting
-            var x = point.x,
-                y = point.y;
-            addLocation(locations, param,
-                    curve1, Curve.getParameterOf(v1, x, y), point, null,
-                    curve2, Curve.getParameterOf(v2, x, y), point, null);
+        if (pt) {
+            addLocation(locations, param, v1, c1, null, pt, v2, c2, null, pt);
         }
     }
 
@@ -1607,7 +1596,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
      * Code to detect overlaps of intersecting curves by @iconexperience:
      * https://github.com/paperjs/paper.js/issues/648
      */
-    function addOverlap(v1, v2, curve1, curve2, locations, param) {
+    function addOverlap(v1, v2, c1, c2, locations, param) {
         var abs = Math.abs,
             tolerance = /*#=*/Numerical.TOLERANCE,
             epsilon = /*#=*/Numerical.EPSILON,
@@ -1656,33 +1645,31 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // We only have to check if the handles are the same, too.
         if (pairs.length === 2) {
             // create values for overlapping part of each curve
-            var c1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
-                c2 = Curve.getPart(v[1], Math.min(pairs[0][1], pairs[1][1]),
+            var p1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
+                p2 = Curve.getPart(v[1], Math.min(pairs[0][1], pairs[1][1]),
                         Math.max(pairs[0][1], pairs[1][1]));
             // Reverse values of second curve if necessary
-            // if (abs(c1[0] - c2[6]) < epsilon && abs(c1[1] - c2[7]) < epsilon) {
+            // if (abs(p1[0] - p2[6]) < epsilon && abs(p1[1] - p2[7]) < epsilon) {
             if (pairs[0][1] > pairs[1][1]) {
-                c2 = [c2[6], c2[7], c2[4], c2[5], c2[2], c2[3], c2[0], c2[1]];
+                p2 = [p2[6], p2[7], p2[4], p2[5], p2[2], p2[3], p2[0], p2[1]];
             }
             // Check if handles of overlapping paths are similar enough.
             // We could do another check for curve identity here if we find a
             // better criteria.
             if (straight ||
-                    abs(c2[2] - c1[2]) < epsilon &&
-                    abs(c2[3] - c1[3]) < epsilon &&
-                    abs(c2[4] - c1[4]) < epsilon &&
-                    abs(c2[5] - c1[5]) < epsilon) {
+                    abs(p2[2] - p1[2]) < epsilon &&
+                    abs(p2[3] - p1[3]) < epsilon &&
+                    abs(p2[4] - p1[4]) < epsilon &&
+                    abs(p2[5] - p1[5]) < epsilon) {
                 // Overlapping parts are identical
                 var t11 = pairs[0][0],
                     t12 = pairs[0][1],
                     t21 = pairs[1][0],
                     t22 = pairs[1][1],
-                    loc1 = addLocation(locations, param,
-                        curve1, t11, null, v1,
-                        curve2, t12, null, v2),
-                    loc2 = addLocation(locations, param,
-                        curve1, t21, null, v1,
-                        curve2, t22, null, v2);
+                    loc1 = addLocation(locations, param, v1, c1, t11, null,
+                        v2, c2, t12, null),
+                    loc2 = addLocation(locations, param, v1, c1, t21, null,
+                        v2, c2, t22, null);
                 if (loc1)
                     loc1._overlap = true;
                 if (loc2)
@@ -1697,7 +1684,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
-        _getIntersections: function(v1, v2, curve1, curve2, locations, param) {
+        _getIntersections: function(v1, v2, c1, c2, locations, param) {
             var min = Math.min,
                 max = Math.max;
             // Avoid checking curves if completely out of control bounds.
@@ -1712,7 +1699,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     min(v1[1], v1[3], v1[5], v1[7]) <=
                     max(v2[1], v2[3], v2[5], v2[7])
                 ) || !param.startConnected && !param.endConnected
-                    && addOverlap(v1, v2, curve1, curve2, locations, param))
+                    && addOverlap(v1, v2, c1, c2, locations, param))
                 return locations;
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
@@ -1724,11 +1711,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
             if (c1p1.isClose(c2p1, tolerance))
-                addLocation(locations, param, curve1, 0, c1p1, null,
-                        curve2, 0, c1p1, null);
+                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c1p1);
             if (!param.startConnected && c1p1.isClose(c2p2, tolerance))
-                addLocation(locations, param, curve1, 0, c1p1, null,
-                        curve2, 1, c1p1, null);
+                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c1p1);
             // Determine the correct intersection method based on whether one or
             // curves are straight lines:
             (straight1 && straight2
@@ -1736,7 +1721,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 : straight1 || straight2
                     ? addCurveLineIntersections
                     : addCurveIntersections)(
-                        v1, v2, curve1, curve2, locations, param,
+                        v1, v2, c1, c2, locations, param,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
@@ -1744,11 +1729,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Handle the special case where the first curve's end-point
             // overlaps with the second curve's start- or end-points.
             if (!param.endConnected && c1p2.isClose(c2p1, tolerance))
-                addLocation(locations, param, curve1, 1, c1p2, null,
-                        curve2, 0, c1p2, null);
+                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c1p2);
             if (c1p2.isClose(c2p2, tolerance))
-                addLocation(locations, param, curve1, 1, c1p2, null,
-                        curve2, 1, c1p2, null);
+                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c1p2);
             return locations;
         },
 
