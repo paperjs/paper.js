@@ -27,17 +27,17 @@
   },
   "dependencies": {
     "jsdom": "~3.1.2",
-    "request": "~2.53.0"
+    "request": "~2.61.0"
   },
   "optionalDependencies": {
-    "canvas": "~1.2.1"
+    "canvas": "~1.2.8"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-qunit": "^1.2.1",
     "prepro": "~0.8.3",
     "qunitjs": "~1.15.0",
-    "uglify-js": "~2.4.23"
+    "uglify-js": "~2.4.24"
   },
   "keywords": [
     "vector",
