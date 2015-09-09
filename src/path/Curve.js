@@ -1661,14 +1661,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // We could do another check for curve identity here if we find a
             // better criteria.
             if (straight ||
-                    abs(c2[0] - c1[0]) < epsilon &&
-                    abs(c2[1] - c1[1]) < epsilon &&
-                    abs(c2[1] - c1[1]) < epsilon &&
-                    abs(c2[3] - c1[3]) < epsilon &&
                     abs(c2[2] - c1[2]) < epsilon &&
-                    abs(c2[5] - c1[5]) < epsilon &&
                     abs(c2[3] - c1[3]) < epsilon &&
-                    abs(c2[7] - c1[7]) < epsilon) {
+                    abs(c2[4] - c1[4]) < epsilon &&
+                    abs(c2[5] - c1[5]) < epsilon) {
                 // Overlapping parts are identical
                 var t11 = pairs[0][0],
                     t12 = pairs[0][1],
