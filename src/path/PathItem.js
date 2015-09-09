@@ -110,11 +110,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                             startConnected: length1 === 1,
                             // After splitting, the end is always connected:
                             endConnected: true,
-                            adjust: function(loc) {
+                            reparametrize: function(t1, t2) {
                                 // Since the curve was split above, we need to
                                 // adjust the parameters for both locations.
-                                loc._parameter /= 2;
-                                loc._parameter2 = 0.5 + loc._parameter2 / 2;
+                                return {
+                                    t1: t1 / 2,
+                                    t2: (1 + t2) / 2
+                                };
                             }
                         }
                     );

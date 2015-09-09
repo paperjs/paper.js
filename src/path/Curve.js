@@ -1000,8 +1000,7 @@ statics: {
                 step /= 2;
         }
         var pt = Curve.getPoint(values, minT);
-        return new CurveLocation(this, minT, pt, null, null, null,
-                point.getDistance(pt));
+        return new CurveLocation(this, minT, pt, point.getDistance(pt));
     },
 
     /**
@@ -1317,7 +1316,8 @@ new function() { // Scope for methods that require private functions
 },
 new function() { // Scope for intersection using bezier fat-line clipping
 
-    function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2) {
+    function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
+            overlap) {
         var loc = null,
             tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
@@ -1327,11 +1327,16 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 && t1 <= (param.endConnected ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
-            loc = new CurveLocation(
-                    c1, t1, p1 || Curve.getPoint(v1, t1),
-                    c2, t2, p2 || Curve.getPoint(v2, t2));
-            if (param.adjust)
-                param.adjust(loc);
+            var reparametrize = param.reparametrize;
+            if (reparametrize) {
+                var res = reparametrize(t1, t2);
+                t1 = res.t1;
+                t2 = res.t2;
+            }
+            loc = new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
+                    null, overlap,
+                    new CurveLocation(c2, t2, p2 || Curve.getPoint(v2, t2),
+                        null, overlap));
             locations.push(loc);
         }
         return loc;
@@ -1662,18 +1667,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     abs(p2[4] - p1[4]) < epsilon &&
                     abs(p2[5] - p1[5]) < epsilon) {
                 // Overlapping parts are identical
-                var t11 = pairs[0][0],
-                    t12 = pairs[0][1],
-                    t21 = pairs[1][0],
-                    t22 = pairs[1][1],
-                    loc1 = addLocation(locations, param, v1, c1, t11, null,
-                        v2, c2, t12, null),
-                    loc2 = addLocation(locations, param, v1, c1, t21, null,
-                        v2, c2, t22, null);
-                if (loc1)
-                    loc1._overlap = true;
-                if (loc2)
-                    loc2._overlap = true;
+                addLocation(locations, param, v1, c1, pairs[0][0], null,
+                    v2, c2, pairs[0][1], null, true),
+                addLocation(locations, param, v1, c1, pairs[1][0], null,
+                    v2, c2, pairs[1][1], null, true);
                 return true;
             }
         }
@@ -1736,37 +1733,22 @@ new function() { // Scope for intersection using bezier fat-line clipping
         },
 
         _filterIntersections: function(locations, expand) {
-            var last = locations.length - 1,
-                tMax = 1 - /*#=*/Numerical.TOLERANCE;
-            // Merge intersections very close to the end of a curve to the
-            // beginning of the next curve, so we can compare them.
-            for (var i = last; i >= 0; i--) {
-                var loc = locations[i],
-                    next;
-                if (loc._parameter >= tMax && (next = loc._curve.getNext())) {
-                    loc._parameter = 0;
-                    loc._curve = next;
-                }
-                if (loc._parameter2 >= tMax && (next = loc._curve2.getNext())) {
-                    loc._parameter2 = 0;
-                    loc._curve2 = next;
-                }
-            }
-
+            var last = locations.length - 1;
             if (last > 0) {
                 CurveLocation.sort(locations);
-                // Filter out duplicate locations, but preserve _overlap setting
-                // among all duplicated (only one of them will have it defined).
+                // Filter out duplicate locations, but preserve _overlap among
+                // all duplicated (only one of them will have it defined).
                 var i = last,
                     loc = locations[i];
                 while(--i >= 0) {
                     var prev = locations[i];
                     if (prev.equals(loc)) {
-                        locations.splice(i + 1, 1); // Remove loc.
-                        // Preserve overlap setting.
-                        var overlap = loc._overlap;
-                        if (overlap)
-                            prev._overlap = overlap;
+                        locations.splice(i + 1, 1); // Remove location.
+                        // Preserve _overlap for both linked intersections.
+                        var over = loc._overlap;
+                        if (over) {
+                            prev._overlap = prev._intersection._overlap = over;
+                        }
                         last--;
                     }
                     loc = prev;
@@ -1774,7 +1756,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             }
             if (expand) {
                 for (var i = last; i >= 0; i--)
-                    locations.push(locations[i].getIntersection());
+                    locations.push(locations[i]._intersection);
                 CurveLocation.sort(locations);
             }
             return locations;

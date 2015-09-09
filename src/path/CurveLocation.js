@@ -41,8 +41,17 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @param {Number} parameter
      * @param {Point} [point]
      */
-    initialize: function CurveLocation(curve, parameter, point, _curve2,
-            _parameter2, _point2, _distance) {
+    initialize: function CurveLocation(curve, parameter, point,
+            _distance, _overlap, _intersection) {
+        // Merge intersections very close to the end of a curve to the
+        // beginning of the next curve.
+        if (parameter >= 1 - /*#=*/Numerical.TOLERANCE) {
+            var next = curve.getNext();
+            if (next) {
+                parameter = 0;
+                curve = next;
+            }
+        }
         // Define this CurveLocation's unique id.
         // NOTE: We do not use the same pool as the rest of the library here,
         // since this is only required to be unique at runtime among other
@@ -53,10 +62,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._curve = curve;
         this._parameter = parameter;
         this._point = point || curve.getPointAt(parameter, true);
-        this._curve2 = _curve2;
-        this._parameter2 = _parameter2;
-        this._point2 = _point2;
         this._distance = _distance;
+        this._overlap = _overlap;
+        this._intersection = _intersection;
+        this._other = false;
+        if (_intersection) {
+            _intersection._intersection = this;
+            _intersection._other = true;
+        }
         // Also store references to segment1 and segment2, in case path
         // splitting / dividing is going to happen, in which case the segments
         // can be used to determine the new curves, see #getCurve(true)
@@ -209,17 +222,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      */
     getIntersection: function() {
-        var intersection = this._intersection;
-        if (!intersection && this._curve2) {
-            // If we have the parameter on the other curve use that for
-            // intersection rather than the point.
-            this._intersection = intersection = new CurveLocation(this._curve2,
-                    this._parameter2, this._point2 || this._point);
-            intersection._overlap = this._overlap;
-            intersection._intersection = this;
-            intersection._other = true;
-        }
-        return intersection;
+        return this._intersection;
     },
 
     /**
@@ -275,23 +278,20 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @param {CurveLocation} location
      * @return {Boolean} {@true if the locations are equal}
      */
-    equals: function(loc) {
-        var abs = Math.abs,
-            // Use the same tolerance for curve time parameter comparisons as
-            // in Curve.js when considering two locations the same.
-            tolerance = /*#=*/Numerical.TOLERANCE;
+    equals: function(loc, _ignoreIntersection) {
         return this === loc
-                || loc instanceof CurveLocation
-                    // Call getCurve() and getParameter() to keep in sync
-                    && this.getCurve() === loc.getCurve()
-                    && abs(this.getParameter() - loc.getParameter()) < tolerance
-                    // _curve2/_parameter2 are only used for Boolean operations
-                    // and don't need syncing there.
-                    // TODO: That's not quite true though... Rework this!
-                    && this._curve2 === loc._curve2
-                    && abs((this._parameter2 || 0) - (loc._parameter2 || 0))
-                            < tolerance
-                || false;
+            || loc instanceof CurveLocation
+                // Call getCurve() and getParameter() to keep in sync
+                && this.getCurve() === loc.getCurve()
+                // Use the same tolerance for curve time parameter
+                // comparisons as in Curve.js
+                && Math.abs(this.getParameter() - loc.getParameter())
+                    < /*#=*/Numerical.TOLERANCE
+                && (_ignoreIntersection
+                    || (!this._intersection && !loc._intersection
+                        || this._intersection && this._intersection.equals(
+                                loc._intersection, true)))
+            || false;
     },
 
     /**
@@ -329,10 +329,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     if (curve1 === curve2) {
                         var diff = l1._parameter - l2._parameter;
                         if (Math.abs(diff) < tolerance) {
-                            var curve21 = l1._curve2,
-                                curve22 = l2._curve2;
+                            var i1 = l1._intersection,
+                                i2 = l2._intersection,
+                                curve21 = i1 && i1._curve,
+                                curve22 = i2 && l2._curve;
                             res = curve21 === curve22 // equal or both null
-                                ? l1._parameter2 - l2._parameter2
+                                ? (i1 ? i1._parameter : 0) - (i2 ? i2._parameter : 0)
                                 : curve21 && curve22
                                     ? curve21.getIndex() - curve22.getIndex()
                                     : curve21 ? 1 : -1;

@@ -225,14 +225,12 @@ PathItem.inject(new function() {
             intersections.forEach(function(inter) {
                 var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
                     'i', inter.getIndex(), 't', inter._parameter,
-                    'i2', inter._curve2 ? inter._curve2.getIndex() :  null,
-                    't2', inter._parameter2, 'o', !!inter._overlap];
+                    'o', !!inter._overlap];
                 if (inter._other) {
-                    inter = inter.getIntersection();
+                    inter = inter._intersection;
                     log.push('Other', inter._id, 'p', inter.getPath()._id,
                         'i', inter.getIndex(), 't', inter._parameter,
-                        'i2', inter._curve2 ? inter._curve2.getIndex() : null,
-                        't2', inter._parameter2, 'o', !!inter._overlap);
+                        'o', !!inter._overlap);
                 }
                 console.log(log.map(function(v) {
                     return v == null ? '-' : v
@@ -275,7 +273,7 @@ PathItem.inject(new function() {
                     clearSegments.push(segment);
             }
             // Link the new segment with the intersection on the other curve
-            segment._intersection = loc.getIntersection();
+            segment._intersection = loc._intersection;
             loc._segment = segment;
             prev = loc;
         }
