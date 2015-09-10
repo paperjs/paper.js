@@ -106,8 +106,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     var parts = Curve.subdivide(values1);
                     Curve._getIntersections(parts[0], parts[1], curve1, curve1,
                         locations, {
-                            // Only possible if there is only one curve:
-                            startConnected: length1 === 1,
+                            // Only possible if there is only one closed curve:
+                            startConnected: length1 === 1 && p1.equals(p2),
                             // After splitting, the end is always connected:
                             endConnected: true,
                             reparametrize: function(t1, t2) {

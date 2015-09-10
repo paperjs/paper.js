@@ -65,9 +65,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._distance = _distance;
         this._overlap = _overlap;
         this._intersection = _intersection;
-        this._other = false;
         if (_intersection) {
             _intersection._intersection = this;
+            // TODO: Remove this once debug logging is removed.
             _intersection._other = true;
         }
         // Also store references to segment1 and segment2, in case path
@@ -325,6 +325,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     res;
                 // Sort by path-id, curve, parameter, curve2, parameter2 so we
                 // can easily remove duplicates with calls to equals() after.
+                // NOTE: We don't call getCurve() / getParameter() here, since
+                // this code is used internally in boolean operations where all
+                // this information remains valid during processing.
                 if (path1 === path2) {
                     if (curve1 === curve2) {
                         var diff = l1._parameter - l2._parameter;
@@ -334,7 +337,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                                 curve21 = i1 && i1._curve,
                                 curve22 = i2 && l2._curve;
                             res = curve21 === curve22 // equal or both null
-                                ? (i1 ? i1._parameter : 0) - (i2 ? i2._parameter : 0)
+                                ? i1 && i2 ? i1._parameter - i2._parameter : 0
                                 : curve21 && curve22
                                     ? curve21.getIndex() - curve22.getIndex()
                                     : curve21 ? 1 : -1;
