@@ -496,6 +496,7 @@ PathItem.inject(new function() {
 
             labelSegment(seg, '#' + pathIndex + '.' + (i + 1)
                     + '   i: ' + !!inter
+                    + '   p: ' + seg._path._id
                     + '   x: ' + seg._point.x
                     + '   y: ' + seg._point.y
                     + '   o: ' + (inter && inter._overlap || 0)
@@ -526,20 +527,23 @@ PathItem.inject(new function() {
             do {
                 var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
                     handleOut = dir > 0 ? seg._handleOut : seg._handleIn,
-                    interSeg;
+                    inter = seg._intersection,
+                    interSeg = inter && inter._segment;
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
-                if (added && (!operator(seg._winding))
-                        && (inter = seg._intersection)
-                        && (interSeg = inter._segment)
-                        && interSeg !== startSeg) {
-                    if (interSeg._path === seg._path) {
-                        // Switch to the intersection segment, if we are
+                if (added && interSeg && interSeg !== startSeg) {
+                    if (interSeg._path === seg._path) { // Self-intersection
+                        drawSegment(seg, 'self-int ' + dir, i, 'red');
+                        // Switch to the intersection segment, as we need to
                         // resolving self-Intersections.
                         seg._visited = interSeg._visited;
                         seg = interSeg;
                         dir = 1;
+                    } else if (operator(seg._winding)) {
+                        // Do not switch to the intersection as the segment is
+                        // part of the boolean result.
+                        drawSegment(seg, 'keep', i, 'black');
                     } else if (inter._overlap && operation !== 'intersect') {
                         // Switch to the overlapping intersection segment
                         // if its winding number along the curve is 1, to
