@@ -1330,8 +1330,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var reparametrize = param.reparametrize;
             if (reparametrize) {
                 var res = reparametrize(t1, t2);
-                t1 = res.t1;
-                t2 = res.t2;
+                t1 = res[0];
+                t2 = res[1];
             }
             loc = new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
                     null, overlap,

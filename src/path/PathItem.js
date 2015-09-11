@@ -103,7 +103,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 if (l1.intersect(l2, false)) {
                     // Self intersecting is found by dividing the curve in two
                     // and and then applying the normal curve intersection code.
-                    var parts = Curve.subdivide(values1);
+                    var parts = Curve.subdivide(values1, 0.5);
                     Curve._getIntersections(parts[0], parts[1], curve1, curve1,
                         locations, {
                             // Only possible if there is only one closed curve:
@@ -113,10 +113,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                             reparametrize: function(t1, t2) {
                                 // Since the curve was split above, we need to
                                 // adjust the parameters for both locations.
-                                return {
-                                    t1: t1 / 2,
-                                    t2: (1 + t2) / 2
-                                };
+                                return [t1 / 2, (1 + t2) / 2];
                             }
                         }
                     );
