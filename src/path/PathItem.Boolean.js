@@ -13,23 +13,18 @@
 /*
  * Boolean Geometric Path Operations
  *
- * This is mostly written for clarity and compatibility, not optimised for
- * performance, and has to be tested heavily for stability.
- *
  * Supported
  *  - Path and CompoundPath items
  *  - Boolean Union
  *  - Boolean Intersection
  *  - Boolean Subtraction
- *  - Resolving a self-intersecting Path
- *
- * Not supported yet
- *  - Boolean operations on self-intersecting Paths
+ *  - Boolean Exclusion
+ *  - Resolving a self-intersecting Path items
+ *  - Boolean operations on self-intersecting Paths items
  *
  * @author Harikrishnan Gopalakrishnan
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
-
 PathItem.inject(new function() {
     var operators = {
         unite: function(w) {
@@ -83,8 +78,19 @@ PathItem.inject(new function() {
             // console.time('self-intersection');
             // Resolve self-intersections on both source paths and add them to
             // the locations too:
+            // var self = [];
             _path1._getIntersections(null, null, locations);
             _path2._getIntersections(null, null, locations);
+            /*
+            self.forEach(function(inter) {
+                new Path.Circle({
+                    center: inter.point,
+                    radius: 3,
+                    fillColor: 'red'
+                });
+            });
+            console.log(self);
+            */
             // console.timeEnd('self-intersection');
         }
         // console.timeEnd('intersection');
