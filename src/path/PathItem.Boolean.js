@@ -76,20 +76,18 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
-
-        // Without support for self-intersection
-        // splitPath(Curve._filterIntersections(
-        //         _path1._getIntersections(_path2, null, []), true));
-
-        // console.time('inter');
+        // console.time('intersection');
         var locations = _path1._getIntersections(_path2, null, []);
         // console.timeEnd('inter');
-        if (_path2 && false) {
-            // console.time('self');
+        if (_path2) {
+            // console.time('self-intersection');
+            // Resolve self-intersections on both source paths and add them to
+            // the locations too:
             _path1._getIntersections(null, null, locations);
             _path2._getIntersections(null, null, locations);
-            // console.timeEnd('self');
+            // console.timeEnd('self-intersection');
         }
+        // console.timeEnd('intersection');
         splitPath(Curve._filterIntersections(locations, true));
 
         var chain = [],
@@ -438,8 +436,8 @@ PathItem.inject(new function() {
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
         var pathCount = 0;
-        var reportSegments = false && !window.silent;
         var reportWindings = false && !window.silent;
+        var reportSegments = false && !window.silent;
         var textAngle = 0;
         var fontSize = 1 / paper.project.activeLayer.scaling.x;
 
