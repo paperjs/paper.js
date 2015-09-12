@@ -1182,7 +1182,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             index = arg.index;
             parameter = arg.parameter;
         }
-        var tMin = /*#=*/Numerical.TOLERANCE,
+        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (parameter >= tMax) {
             // t == 1 is the same as t == 0 and index ++

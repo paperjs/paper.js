@@ -45,7 +45,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             _distance, _overlap, _intersection) {
         // Merge intersections very close to the end of a curve to the
         // beginning of the next curve.
-        if (parameter >= 1 - /*#=*/Numerical.TOLERANCE) {
+        if (parameter >= 1 - /*#=*/Numerical.CURVETIME_EPSILON) {
             var next = curve.getNext();
             if (next) {
                 parameter = 0;
@@ -286,7 +286,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 // Use the same tolerance for curve time parameter
                 // comparisons as in Curve.js
                 && Math.abs(this.getParameter() - loc.getParameter())
-                    < /*#=*/Numerical.TOLERANCE
+                    < /*#=*/Numerical.CURVETIME_EPSILON
                 && (_ignoreIntersection
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(
@@ -316,7 +316,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     statics: {
         sort: function(locations) {
-            var tolerance = /*#=*/Numerical.TOLERANCE;
             locations.sort(function compare(l1, l2) {
                 var curve1 = l1._curve,
                     curve2 = l2._curve,
@@ -331,7 +330,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 if (path1 === path2) {
                     if (curve1 === curve2) {
                         var diff = l1._parameter - l2._parameter;
-                        if (Math.abs(diff) < tolerance) {
+                        if (Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON){
                             var i1 = l1._intersection,
                                 i2 = l2._intersection,
                                 curve21 = i1 && i1._curve,

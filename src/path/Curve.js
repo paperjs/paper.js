@@ -442,10 +442,11 @@ var Curve = Base.extend(/** @lends Curve# */{
     // TODO: Rename to divideAt()?
     divide: function(offset, isParameter, ignoreStraight) {
         var parameter = this._getParameter(offset, isParameter),
-            tolerance = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin,
             res = null;
         // Only divide if not at the beginning or end.
-        if (parameter >= tolerance && parameter <= 1 - tolerance) {
+        if (parameter >= tMin && parameter <= tMax) {
             var parts = Curve.subdivide(this.getValues(), parameter),
                 setHandles = ignoreStraight || this.hasHandles(),
                 left = parts[0],
@@ -618,8 +619,8 @@ statics: {
                         } else if (sy === -1) {
                             ty = tx;
                         }
-                        // Use average if we're within tolerance
-                        if (abs(tx - ty) < /*#=*/Numerical.TOLERANCE)
+                        // Use average if we're within epsilon
+                        if (abs(tx - ty) < /*#=*/Numerical.CURVETIME_EPSILON)
                             return (tx + ty) * 0.5;
                     }
                 }
@@ -726,7 +727,7 @@ statics: {
             // Add some tolerance for good roots, as t = 0, 1 are added
             // separately anyhow, and we don't want joins to be added with radii
             // in getStrokeBounds()
-            tMin = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         // Only add strokeWidth to bounds for points which lie  within 0 < t < 1
         // The corner cases for cap and join are handled in getStrokeBounds()
@@ -995,7 +996,7 @@ statics: {
 
         // Now iteratively refine solution until we reach desired precision.
         var step = 1 / (count * 2);
-        while (step > /*#=*/Numerical.TOLERANCE) {
+        while (step > /*#=*/Numerical.CURVETIME_EPSILON) {
             if (!refine(minT - step) && !refine(minT + step))
                 step /= 2;
         }
@@ -1155,12 +1156,13 @@ new function() { // Scope for methods that require private functions
             c1x = v[2], c1y = v[3],
             c2x = v[4], c2y = v[5],
             p2x = v[6], p2y = v[7],
-            tolerance = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin,
             x, y;
 
         // Handle special case at beginning / end of curve
-        if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
-            var isZero = t < tolerance;
+        if (type === 0 && (t < tMin || t > tMax)) {
+            var isZero = t < tMin;
             x = isZero ? p1x : p2x;
             y = isZero ? p1y : p2y;
         } else {
@@ -1184,10 +1186,10 @@ new function() { // Scope for methods that require private functions
                 // the x and y coordinates:
                 // Prevent tangents and normals of length 0:
                 // http://stackoverflow.com/questions/10506868/
-                if (t < tolerance) {
+                if (t < tMin) {
                     x = cx;
                     y = cy;
-                } else if (t > 1 - tolerance) {
+                } else if (t > tMax) {
                     x = 3 * (p2x - c2x);
                     y = 3 * (p2y - c2y);
                 } else {
@@ -1198,8 +1200,7 @@ new function() { // Scope for methods that require private functions
                     // When the tangent at t is zero and we're at the beginning
                     // or the end, we can use the vector between the handles,
                     // but only when normalizing as its weighted length is 0.
-                    if (x === 0 && y === 0
-                            && (t < tolerance || t > 1 - tolerance)) {
+                    if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
                         x = c2x - c1x;
                         y = c2y - c1y;
                     }
@@ -1250,8 +1251,7 @@ new function() { // Scope for methods that require private functions
                 return start;
             // See if we're going forward or backward, and handle cases
             // differently
-            var tolerance = /*#=*/Numerical.TOLERANCE,
-                abs = Math.abs,
+            var abs = Math.abs,
                 forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
@@ -1261,7 +1261,7 @@ new function() { // Scope for methods that require private functions
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            if (abs(offset - rangeLength) < tolerance) {
+            if (abs(offset - rangeLength) < /*#=*/Numerical.GEOMETRIC_EPSILON) {
                 // Matched the end:
                 return forward ? b : a;
             } else if (abs(offset) > rangeLength) {
@@ -1286,7 +1286,7 @@ new function() { // Scope for methods that require private functions
             // Start with out initial guess for x.
             // NOTE: guess is a negative value when not looking forward.
             return Numerical.findRoot(f, ds, start + guess, a, b, 16,
-                    tolerance);
+                    /*#=*/Numerical.CURVETIME_EPSILON);
         },
 
         getPoint: function(v, t) {
@@ -1319,7 +1319,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
     function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
             overlap) {
         var loc = null,
-            tMin = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (t1 == null)
             t1 = Curve.getParameterOf(v1, p1.x, p1.y);
@@ -1353,7 +1353,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-            tolerance = /*#=*/Numerical.TOLERANCE,
+            epsilon = /*#=*/Numerical.CURVETIME_EPSILON,
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
@@ -1371,7 +1371,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew,
             tDiff;
-        if (q0x === q3x && uMax - uMin < tolerance && recursion >= 3) {
+        if (q0x === q3x && uMax - uMin < epsilon && recursion >= 3) {
             // The fat-line of Q has converged to a point, the clipping is not
             // reliable. Return the value we have even though we will miss the
             // precision.
@@ -1419,7 +1419,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     parts[1], v1, c2, c1, locations, param,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
@@ -1602,8 +1602,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
      */
     function addOverlap(v1, v2, c1, c2, locations, param) {
         var abs = Math.abs,
-            tolerance = /*#=*/Numerical.TOLERANCE,
-            epsilon = /*#=*/Numerical.EPSILON,
+            timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
             straight1 = Curve.isStraight(v1),
             straight2 = Curve.isStraight(v2),
             straight =  straight1 && straight2;
@@ -1614,7 +1614,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var line1 = new Line(v1[0], v1[1], v1[6], v1[7]),
                 line2 = new Line(v2[0], v2[1], v2[6], v2[7]);
             if (!line1.isCollinear(line2) || line1.getDistance(line2.getPoint())
-                    > /*#=*/Numerical.GEOMETRIC_EPSILON)
+                    > geomEpsilon)
                 return false;
         } else if (straight1 ^ straight2) {
             // If one curve is straight, the other curve must be straight, too,
@@ -1636,8 +1636,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 if (pairs.length === 1 && pair[0] < pairs[0][0]) {
                     pairs.unshift(pair);
                 } else if (pairs.length === 0
-                        || abs(pair[0] - pairs[0][0]) > tolerance
-                        || abs(pair[1] - pairs[0][1]) > tolerance) {
+                        || abs(pair[0] - pairs[0][0]) > timeEpsilon
+                        || abs(pair[1] - pairs[0][1]) > timeEpsilon) {
                     pairs.push(pair);
                 }
             }
@@ -1660,10 +1660,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // We could do another check for curve identity here if we find a
             // better criteria.
             if (straight ||
-                    abs(p2[2] - p1[2]) < epsilon &&
-                    abs(p2[3] - p1[3]) < epsilon &&
-                    abs(p2[4] - p1[4]) < epsilon &&
-                    abs(p2[5] - p1[5]) < epsilon) {
+                    abs(p2[2] - p1[2]) < geomEpsilon &&
+                    abs(p2[3] - p1[3]) < geomEpsilon &&
+                    abs(p2[4] - p1[4]) < geomEpsilon &&
+                    abs(p2[5] - p1[5]) < geomEpsilon) {
                 // Overlapping parts are identical
                 addLocation(locations, param, v1, c1, pairs[0][0], null,
                     v2, c2, pairs[0][1], null, true),

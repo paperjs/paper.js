@@ -81,6 +81,7 @@ var Numerical = new function() {
          * range (see MACHINE_EPSILON).
          */
         EPSILON: EPSILON,
+        CURVETIME_EPSILON: 1e-6,
         GEOMETRIC_EPSILON: 1e-9,
         /**
          * MACHINE_EPSILON for a double precision (Javascript Number) is

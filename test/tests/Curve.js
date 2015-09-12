@@ -161,7 +161,7 @@ test('Curve#getParameterAt()', function() {
         var t2 = curve.getParameterAt(o2);
         equals(t1, t2, 'Curve parameter at offset ' + o1
                 + ' should be the same value as at offset' + o2,
-                Numerical.TOLERANCE);
+                Numerical.CURVETIME_EPSILON);
     }
 
     equals(curve.getParameterAt(curve.length + 1), null,

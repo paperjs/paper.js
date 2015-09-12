@@ -100,7 +100,7 @@ PathItem.inject(new function() {
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y
             monoCurves = [],
-            tolerance = /*#=*/Numerical.TOLERANCE;
+            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -154,8 +154,7 @@ PathItem.inject(new function() {
                     if (length <= curveLength) {
                         // If the selected location on the curve falls onto its
                         // beginning or end, use the curve's center instead.
-                        if (length < tolerance
-                                || curveLength - length < tolerance)
+                        if (length < epsilon || curveLength - length < epsilon)
                             length = curveLength / 2;
                         var curve = node.segment.getCurve(),
                             pt = curve.getPointAt(length),
@@ -227,15 +226,20 @@ PathItem.inject(new function() {
         if (false) {
             console.log('Intersections', intersections.length);
             intersections.forEach(function(inter) {
+                if (inter._other)
+                    return;
+                var other = inter._intersection;
                 var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
                     'i', inter.getIndex(), 't', inter._parameter,
-                    'o', !!inter._overlap];
-                if (inter._other) {
-                    inter = inter._intersection;
-                    log.push('Other', inter._id, 'p', inter.getPath()._id,
-                        'i', inter.getIndex(), 't', inter._parameter,
-                        'o', !!inter._overlap);
-                }
+                    'o', !!inter._overlap,
+                    'Other', other._id, 'p', other.getPath()._id,
+                    'i', other.getIndex(), 't', other._parameter,
+                    'o', !!other._overlap];
+                new Path.Circle({
+                    center: inter.point,
+                    radius: 3,
+                    strokeColor: 'green'
+                });
                 console.log(log.map(function(v) {
                     return v == null ? '-' : v
                 }).join(' '));
@@ -243,7 +247,7 @@ PathItem.inject(new function() {
         }
 
         // TODO: Make public in API, since useful!
-        var tMin = /*#=*/Numerical.TOLERANCE,
+        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             noHandles = false,
             clearSegments = [];
@@ -298,7 +302,7 @@ PathItem.inject(new function() {
         // Determine if the curve is a horizontal straight curve by checking the
         // slope of it's tangent.
         return curve.isStraight() && Math.abs(curve.getTangentAt(0.5, true).y)
-                < /*#=*/Numerical.TOLERANCE;
+                < /*#=*/Numerical.GEOMETRIC_EPSILON;
     }
 
     /**
@@ -307,7 +311,7 @@ PathItem.inject(new function() {
      */
     function getWinding(point, curves, horizontal, testContains) {
         var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            tMin = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             px = point.x,
             py = point.y,
@@ -514,7 +518,7 @@ PathItem.inject(new function() {
             // NOTE: Even though getTangentAt() supports 0 and 1 instead of
             // tMin and tMax, we still need to use this instead, as other issues
             // emerge from switching to 0 and 1 in edge cases.
-            tMin = /*#=*/Numerical.TOLERANCE,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
@@ -801,7 +805,7 @@ Path.inject(/** @lends Path# */{
                 var a = 3 * (y1 - y2) - y0 + y3,
                     b = 2 * (y0 + y2) - 4 * y1,
                     c = y1 - y0,
-                    tMin = /*#=*/Numerical.TOLERANCE,
+                    tMin = /*#=*/Numerical.CURVETIME_EPSILON,
                     tMax = 1 - tMin,
                     roots = [],
                     // Keep then range to 0 .. 1 (excluding) in the search for y
