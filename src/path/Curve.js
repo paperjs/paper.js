@@ -592,11 +592,11 @@ statics: {
     getParameterOf: function(v, x, y) {
         // Handle beginnings and end separately, as they are not detected
         // sometimes.
-        var tolerance = /*#=*/Numerical.TOLERANCE,
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
             abs = Math.abs;
-        if (abs(v[0] - x) < tolerance && abs(v[1] - y) < tolerance)
+        if (abs(v[0] - x) < epsilon && abs(v[1] - y) < epsilon)
             return 0;
-        if (abs(v[6] - x) < tolerance && abs(v[7] - y) < tolerance)
+        if (abs(v[6] - x) < epsilon && abs(v[7] - y) < epsilon)
             return 1;
         var txs = [],
             tys = [],
@@ -619,7 +619,7 @@ statics: {
                             ty = tx;
                         }
                         // Use average if we're within tolerance
-                        if (abs(tx - ty) < tolerance)
+                        if (abs(tx - ty) < /*#=*/Numerical.TOLERANCE)
                             return (tx + ty) * 0.5;
                     }
                 }
