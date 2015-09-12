@@ -1702,12 +1702,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c1p2 = new Point(v1[6], v1[7]),
                 c2p1 = new Point(v2[0], v2[1]),
                 c2p2 = new Point(v2[6], v2[7]),
-                tolerance = /*#=*/Numerical.TOLERANCE;
+                epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
-            if (c1p1.isClose(c2p1, tolerance))
+            if (c1p1.isClose(c2p1, epsilon))
                 addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c1p1);
-            if (!param.startConnected && c1p1.isClose(c2p2, tolerance))
+            if (!param.startConnected && c1p1.isClose(c2p2, epsilon))
                 addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c1p1);
             // Determine the correct intersection method based on whether one or
             // curves are straight lines:
@@ -1723,9 +1723,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         0, 1, 0, 1, 0, false, 0);
             // Handle the special case where the first curve's end-point
             // overlaps with the second curve's start- or end-points.
-            if (!param.endConnected && c1p2.isClose(c2p1, tolerance))
+            if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
                 addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c1p2);
-            if (c1p2.isClose(c2p2, tolerance))
+            if (c1p2.isClose(c2p2, epsilon))
                 addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c1p2);
             return locations;
         },
