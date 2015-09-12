@@ -1333,13 +1333,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 t1 = res[0];
                 t2 = res[1];
             }
-            loc = new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
-                    null, overlap,
-                    new CurveLocation(c2, t2, p2 || Curve.getPoint(v2, t2),
-                        null, overlap));
-            locations.push(loc);
+            locations.push(
+                    new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
+                        null, overlap,
+                        new CurveLocation(c2, t2, p2 || Curve.getPoint(v2, t2),
+                            null, overlap)));
         }
-        return loc;
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, param,
@@ -1612,10 +1611,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Linear curves can only overlap if they are collinear, which means
             // they must be are collinear and any point of curve 1 must be on
             // curve 2
-            var line1 = new Line(v1[0], v1[1], v1[6], v1[7], false),
-                line2 = new Line(v2[0], v2[1], v2[6], v2[7], false);
-            if (!line1.isCollinear(line2) ||
-                    line1.getDistance(line2.getPoint()) > epsilon)
+            var line1 = new Line(v1[0], v1[1], v1[6], v1[7]),
+                line2 = new Line(v2[0], v2[1], v2[6], v2[7]);
+            if (!line1.isCollinear(line2) || line1.getDistance(line2.getPoint())
+                    > /*#=*/Numerical.GEOMETRY_TOLERANCE)
                 return false;
         } else if (straight1 ^ straight2) {
             // If one curve is straight, the other curve must be straight, too,
@@ -1654,7 +1653,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 p2 = Curve.getPart(v[1], Math.min(pairs[0][1], pairs[1][1]),
                         Math.max(pairs[0][1], pairs[1][1]));
             // Reverse values of second curve if necessary
-            // if (abs(p1[0] - p2[6]) < epsilon && abs(p1[1] - p2[7]) < epsilon) {
             if (pairs[0][1] > pairs[1][1]) {
                 p2 = [p2[6], p2[7], p2[4], p2[5], p2[2], p2[3], p2[0], p2[1]];
             }

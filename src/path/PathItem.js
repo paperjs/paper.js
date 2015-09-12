@@ -81,6 +81,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // we don't need to iterate through their curves.
         if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
             return locations;
+        // Cache values for curves2 as we re-iterate them for each in curves1.
         for (var i = 0; i < length2; i++)
             values2[i] = curves2[i].getValues(matrix2);
         for (var i = 0; i < length1; i++) {
@@ -126,13 +127,17 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 // self-intersection check:
                 if (returnFirst && locations.length)
                     break;
+                var curve2 = curves2[j];
                 // Avoid end point intersections on consecutive curves when
                 // self intersecting.
                 Curve._getIntersections(
-                    values1, values2[j], curve1, curves2[j], locations,
+                    values1, values2[j], curve1, curve2, locations,
                     self ? {
-                        startConnected: j === length2 - 1 && i === 0,
-                        endConnected: j === i + 1
+                        // Do not compare indices here to determine connection,
+                        // since one array of curves can contain curves from
+                        // separate sup-paths of a compound path.
+                        startConnected: curve1.getPrevious() === curve2,
+                        endConnected: curve1.getNext() === curve2
                     } : {}
                 );
             }
