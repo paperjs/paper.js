@@ -510,12 +510,11 @@ PathItem.inject(new function() {
 
         var paths = [],
             operator = operators[operation],
-            tolerance = /*#=*/Numerical.TOLERANCE,
             // Values for getTangentAt() that are almost 0 and 1.
             // NOTE: Even though getTangentAt() supports 0 and 1 instead of
             // tMin and tMax, we still need to use this instead, as other issues
             // emerge from switching to 0 and 1 in edge cases.
-            tMin = tolerance,
+            tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin;
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
@@ -802,20 +801,20 @@ Path.inject(/** @lends Path# */{
                 var a = 3 * (y1 - y2) - y0 + y3,
                     b = 2 * (y0 + y2) - 4 * y1,
                     c = y1 - y0,
-                    tolerance = /*#=*/Numerical.TOLERANCE,
-                    roots = [];
-                // Keep then range to 0 .. 1 (excluding) in the search for y
-                // extrema.
-                var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
-                        1 - tolerance);
-                if (count === 0) {
+                    tMin = /*#=*/Numerical.TOLERANCE,
+                    tMax = 1 - tMin,
+                    roots = [],
+                    // Keep then range to 0 .. 1 (excluding) in the search for y
+                    // extrema.
+                    n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
+                if (n === 0) {
                     insertCurve(v);
                 } else {
                     roots.sort();
                     var t = roots[0],
                         parts = Curve.subdivide(v, t);
                     insertCurve(parts[0]);
-                    if (count > 1) {
+                    if (n > 1) {
                         // If there are two extrema, renormalize t to the range
                         // of the second range and split again.
                         t = (roots[1] - t) / (1 - t);
