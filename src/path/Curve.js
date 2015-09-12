@@ -1327,9 +1327,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 && t1 <= (param.endConnected ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
-            var reparametrize = param.reparametrize;
-            if (reparametrize) {
-                var res = reparametrize(t1, t2);
+            var renormalize = param.renormalize;
+            if (renormalize) {
+                var res = renormalize(t1, t2);
                 t1 = res[0];
                 t2 = res[1];
             }
