@@ -200,4 +200,4 @@ For a list of contributors, please see [AUTHORS](https://github.com/paperjs/pape
 
 ## License
 
-See the file [LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt)
+Distributed under the MIT license. See [LICENSE.txt](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt) for details.
