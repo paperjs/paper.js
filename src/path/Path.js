@@ -1001,10 +1001,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     reduce: function() {
         var curves = this.getCurves();
         for (var i = curves.length - 1; i >= 0; i--) {
-            var curve = curves[i],
-                next;
+            var curve = curves[i];
             if (!curve.hasHandles() && (curve.getLength() === 0
-                    || (next = curve.getNext()) && curve.isCollinear(next)))
+                    || curve.isCollinear(curve.getNext())))
                 curve.remove();
         }
         return this;

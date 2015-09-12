@@ -131,16 +131,23 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this._children[i].smooth();
     },
 
+    // DOCS: reduce()
+    // TEST: reduce()
     reduce: function reduce() {
-        if (this._children.length === 0) { // Replace with a simple empty Path
+        var children = this._children;
+        for (var i = children.length - 1; i >= 0; i--) {
+            var path = children[i].reduce();
+            if (path.isEmpty())
+                children.splice(i, 1);
+        }
+        if (children.length === 0) { // Replace with a simple empty Path
             var path = new Path(Item.NO_INSERT);
             path.insertAbove(this);
             path.setStyle(this._style);
             this.remove();
             return path;
-        } else {
-            return reduce.base.call(this);
         }
+        return reduce.base.call(this);
     },
 
     /**

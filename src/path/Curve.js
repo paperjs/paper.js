@@ -885,7 +885,7 @@ statics: {
      * @return {Boolean} {@true if the two lines are collinear}
      */
     isCollinear: function(curve) {
-        return this.isStraight() && curve.isStraight()
+        return curve && this.isStraight() && curve.isStraight()
                 && this.getVector().isCollinear(curve.getVector());
     }
 }), /** @lends Curve# */{
