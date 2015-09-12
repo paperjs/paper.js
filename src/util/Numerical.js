@@ -81,6 +81,7 @@ var Numerical = new function() {
          * range (see MACHINE_EPSILON).
          */
         EPSILON: EPSILON,
+        GEOMETRIC_EPSILON: 1e-9,
         /**
          * MACHINE_EPSILON for a double precision (Javascript Number) is
          * 2.220446049250313e-16. (try this in the js console)

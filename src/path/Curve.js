@@ -1614,7 +1614,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var line1 = new Line(v1[0], v1[1], v1[6], v1[7]),
                 line2 = new Line(v2[0], v2[1], v2[6], v2[7]);
             if (!line1.isCollinear(line2) || line1.getDistance(line2.getPoint())
-                    > /*#=*/Numerical.GEOMETRY_TOLERANCE)
+                    > /*#=*/Numerical.GEOMETRIC_EPSILON)
                 return false;
         } else if (straight1 ^ straight2) {
             // If one curve is straight, the other curve must be straight, too,

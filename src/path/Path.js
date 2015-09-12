@@ -2502,7 +2502,6 @@ new function() { // PostScript-style drawing commands
                     x = pt.x,
                     y = pt.y,
                     abs = Math.abs,
-                    epsilon = /*#=*/Numerical.EPSILON,
                     rx = abs(radius.width),
                     ry = abs(radius.height),
                     rxSq = rx * rx,
@@ -2519,7 +2518,7 @@ new function() { // PostScript-style drawing commands
                 }
                 factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
                         (rxSq * ySq + rySq * xSq);
-                if (abs(factor) < epsilon)
+                if (abs(factor) < /*#=*/Numerical.EPSILON)
                     factor = 0;
                 if (factor < 0)
                     throw new Error(

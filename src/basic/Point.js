@@ -702,10 +702,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is collinear}
      */
     isCollinear: function(point) {
-        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
-        // conversion test. But tolerance is probably too large?
-        // TODO: Tests showed that 1e-10 might work well here.
-        return Math.abs(this.cross(point)) < /*#=*/Numerical.TOLERANCE;
+        return Math.abs(this.cross(point)) < /*#=*/Numerical.GEOMETRIC_EPSILON;
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -719,10 +716,7 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is orthogonal}
      */
     isOrthogonal: function(point) {
-        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
-        // conversion test.
-        // TODO: Test if 1e-10 works here too? See #isCollinear()
-        return Math.abs(this.dot(point)) < /*#=*/Numerical.TOLERANCE;
+        return Math.abs(this.dot(point)) < /*#=*/Numerical.GEOMETRIC_EPSILON;
     },
 
     /**
