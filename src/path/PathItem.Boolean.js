@@ -306,8 +306,8 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        var tolerance = /*#=*/Numerical.TOLERANCE,
-            tMin = tolerance,
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            tMin = /*#=*/Numerical.TOLERANCE,
             tMax = 1 - tMin,
             px = point.x,
             py = point.y,
@@ -321,8 +321,8 @@ PathItem.inject(new function() {
         if (horizontal) {
             var yTop = -Infinity,
                 yBottom = Infinity,
-                yBefore = py - tolerance,
-                yAfter = py + tolerance;
+                yBefore = py - epsilon,
+                yAfter = py + epsilon;
             // Find the closest top and bottom intercepts for the same vertical
             // line.
             for (var i = 0, l = curves.length; i < l; i++) {
@@ -348,8 +348,8 @@ PathItem.inject(new function() {
             if (yBottom < Infinity)
                 windRight = getWinding(new Point(px, yBottom), curves);
         } else {
-            var xBefore = px - tolerance,
-                xAfter = px + tolerance;
+            var xBefore = px - epsilon,
+                xAfter = px + epsilon;
             // Find the winding number for right side of the curve, inclusive of
             // the curve itself, while tracing along its +-x direction.
             var startCounted = false,
