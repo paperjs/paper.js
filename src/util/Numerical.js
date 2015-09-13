@@ -81,7 +81,18 @@ var Numerical = new function() {
          * range (see MACHINE_EPSILON).
          */
         EPSILON: EPSILON,
+        /**
+         * The epsilon to be used when handling curve-time parameters. This
+         * cannot be smaller, because errors add up to about 1e-7 in the bezier
+         * fat-line clipping code as a result of recursive sub-division.
+         */
         CURVETIME_EPSILON: 1e-6,
+        /**
+         * The epsilon to be used when performing "geometric" checks, such as
+         * point distances and examining cross products to check for
+         * collinearity. This value is somewhat arbitrary and was chosen by
+         * trial and error.
+         */
         GEOMETRIC_EPSILON: 1e-9,
         /**
          * MACHINE_EPSILON for a double precision (Javascript Number) is
