@@ -222,19 +222,6 @@ PathItem.inject(new function() {
         }
     }
 
-    function getMainPath(item) {
-        var path = item._path,
-            parent = path._parent;
-        return parent instanceof CompoundPath ? parent : path;
-    }
-
-    function isHorizontal(curve) {
-        // Determine if the curve is a horizontal straight curve by checking the
-        // slope of it's tangent.
-        return curve.isStraight() && Math.abs(curve.getTangentAt(0.5, true).y)
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
-    }
-
     /**
      * Private method that returns the winding contribution of the given point
      * with respect to a given set of monotone curves.
@@ -368,8 +355,9 @@ PathItem.inject(new function() {
             totalLength = 0,
             windingSum = 0;
         do {
-            var length = segment.getCurve().getLength();
-            chain.push({ segment: segment, length: length });
+            var curve = segment.getCurve(),
+                length = curve.getLength();
+            chain.push({ segment: segment, curve: curve, length: length });
             totalLength += length;
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== startSeg);
@@ -389,10 +377,13 @@ PathItem.inject(new function() {
                     // beginning or end, use the curve's center instead.
                     if (length < epsilon || curveLength - length < epsilon)
                         length = curveLength / 2;
-                    var curve = node.segment.getCurve(),
+                    var curve = node.curve,
+                        path = curve._path,
+                        parent = path._parent,
                         pt = curve.getPointAt(length),
-                        hor = isHorizontal(curve),
-                        path = getMainPath(curve);
+                        hor = curve.isHorizontal();
+                    if (parent instanceof CompoundPath)
+                        path = parent;
                     // While subtracting, we need to omit this curve if this
                     // curve is contributing to the second operand and is
                     // outside the first operand.
@@ -564,7 +555,7 @@ PathItem.inject(new function() {
                         drawSegment(seg, 'overlap ' + dir, i, 'orange');
                         var curve = interSeg.getCurve();
                         if (getWinding(curve.getPointAt(0.5, true),
-                                monoCurves, isHorizontal(curve)) === 1) {
+                                monoCurves, curve.isHorizontal()) === 1) {
                             seg._visited = interSeg._visited;
                             seg = interSeg;
                             dir = 1;

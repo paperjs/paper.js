@@ -888,6 +888,26 @@ statics: {
     isCollinear: function(curve) {
         return curve && this.isStraight() && curve.isStraight()
                 && this.getVector().isCollinear(curve.getVector());
+    },
+
+   /**
+     * Checks if the curve is a straight horizontal line.
+     *
+     * @return {Boolean} {@true if the line is horizontal}
+     */
+    isHorizontal: function() {
+        return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).y)
+                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+    },
+
+   /**
+     * Checks if the curve is a straight vertical line.
+     *
+     * @return {Boolean} {@true if the line is vertical}
+     */
+    isVertical: function() {
+        return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).x)
+                < /*#=*/Numerical.GEOMETRIC_EPSILON;
     }
 }), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
