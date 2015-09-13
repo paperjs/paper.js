@@ -104,7 +104,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     insertChildren: function insertChildren(index, items, _preserve) {
         // Convert CompoundPath items in the children list by adding their
         // children to the list and removing their parent.
-        var before = items.slice();
         for (var i = items.length - 1; i >= 0; i--) {
             var item = items[i];
             if (item instanceof CompoundPath) {
