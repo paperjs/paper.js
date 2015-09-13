@@ -70,6 +70,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // TODO: Remove this once debug logging is removed.
             _intersection._other = true;
         }
+        this._segment = null; // To be determined, see #getSegment()
         // Also store references to segment1 and segment2, in case path
         // splitting / dividing is going to happen, in which case the segments
         // can be used to determine the new curves, see #getCurve(true)

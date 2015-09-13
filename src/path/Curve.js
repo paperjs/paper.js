@@ -619,7 +619,7 @@ statics: {
                         } else if (sy === -1) {
                             ty = tx;
                         }
-                        // Use average if we're within epsilon
+                        // Use average if we're within curve-time epsilon
                         if (abs(tx - ty) < /*#=*/Numerical.CURVETIME_EPSILON)
                             return (tx + ty) * 0.5;
                     }
@@ -1333,6 +1333,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 t1 = res[0];
                 t2 = res[1];
             }
+            /*
+            var d1 = p1 ? p1.getDistance(Curve.getPoint(v1, t1)) : 0,
+                d2 = p2 ? p2.getDistance(Curve.getPoint(v2, t2)) : 0;
+            if (!Numerical.isZero(d1) || !Numerical.isZero(d2))
+                debugger;
+            */
             locations.push(
                     new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
                         null, overlap,

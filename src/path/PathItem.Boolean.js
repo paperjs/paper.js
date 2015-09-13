@@ -96,11 +96,9 @@ PathItem.inject(new function() {
         // console.timeEnd('intersection');
         splitPath(Curve._filterIntersections(locations, true));
 
-        var chain = [],
-            segments = [],
+        var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
-            monoCurves = [],
-            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+            monoCurves = [];
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -116,91 +114,23 @@ PathItem.inject(new function() {
             collect(_path2._children || [_path2]);
         // Propagate the winding contribution. Winding contribution of curves
         // does not change between two intersections.
-        // First, sort all segments with an intersection to the beginning.
-        segments.sort(function(a, b) {
-            var _a = a._intersection,
-                _b = b._intersection;
-            return !_a && !_b || _a && _b ? 0 : _a ? -1 : 1;
-        });
+        // First, propagate winding contributions for curve chains starting in
+        // all intersections:
+        for (var i = 0, l = locations.length; i < l; i++) {
+            propagateWinding(locations[i]._segment, _path1, _path2, monoCurves,
+                    operation);
+        }
+        // Now process the segments that are not part of any intersecting chains
         for (var i = 0, l = segments.length; i < l; i++) {
             var segment = segments[i];
-            if (segment._winding != null)
-                continue;
-            // Here we try to determine the most probable winding number
-            // contribution for this curve-chain. Once we have enough confidence
-            // in the winding contribution, we can propagate it until the
-            // intersection or end of a curve chain.
-            chain.length = 0;
-            var startSeg = segment,
-                totalLength = 0,
-                windingSum = 0;
-            do {
-                var length = segment.getCurve().getLength();
-                chain.push({ segment: segment, length: length });
-                totalLength += length;
-                segment = segment.getNext();
-            } while (segment && !segment._intersection && segment !== startSeg);
-            // Calculate the average winding among three evenly distributed
-            // points along this curve chain as a representative winding number.
-            // This selection gives a better chance of returning a correct
-            // winding than equally dividing the curve chain, with the same
-            // (amortised) time.
-            for (var j = 0; j < 3; j++) {
-                // Try the points at 1/4, 2/4 and 3/4 of the total length:
-                var length = totalLength * (j + 1) / 4;
-                for (var k = 0, m = chain.length; k < m; k++) {
-                    var node = chain[k],
-                        curveLength = node.length;
-                    if (length <= curveLength) {
-                        // If the selected location on the curve falls onto its
-                        // beginning or end, use the curve's center instead.
-                        if (length < epsilon || curveLength - length < epsilon)
-                            length = curveLength / 2;
-                        var curve = node.segment.getCurve(),
-                            pt = curve.getPointAt(length),
-                            hor = isHorizontal(curve),
-                            path = getMainPath(curve);
-                        // While subtracting, we need to omit this curve if this
-                        // curve is contributing to the second operand and is
-                        // outside the first operand.
-                        windingSum += operation === 'subtract' && _path2
-                            && (path === _path1 && _path2._getWinding(pt, hor)
-                            || path === _path2 && !_path1._getWinding(pt, hor))
-                            ? 0
-                            : getWinding(pt, monoCurves, hor);
-                        break;
-                    }
-                    length -= curveLength;
-                }
-            }
-            // Assign the average winding to the entire curve chain.
-            var winding = Math.round(windingSum / 3);
-            for (var j = chain.length - 1; j >= 0; j--) {
-                var seg = chain[j].segment,
-                    inter = seg._intersection,
-                    wind = winding;
-                // We need to handle the edge cases of overlapping curves
-                // differently based on the type of operation, and adjust the
-                // winding number accordingly:
-                if (inter && inter._overlap) {
-                    switch (operation) {
-                    case 'unite':
-                        if (wind === 1)
-                            wind = 2;
-                        break;
-                    case 'intersect':
-                        if (wind === 2)
-                            wind = 1;
-                        break;
-                    }
-                }
-                seg._winding = wind;
+            if (segment._winding == null) {
+                propagateWinding(segment, _path1, _path2, monoCurves,
+                        operation);
             }
         }
         // Trace closed contours and insert them into the result.
         var result = new CompoundPath(Item.NO_INSERT);
-        result.addChildren(tracePaths(segments, monoCurves, operation, !_path2),
-                true);
+        result.addChildren(tracePaths(segments, monoCurves, operation), true);
         // See if the CompoundPath can be reduced to just a simple Path.
         result = result.reduce();
         // Insert the resulting path above whichever of the two paths appear
@@ -427,6 +357,80 @@ PathItem.inject(new function() {
         return Math.max(abs(windLeft), abs(windRight));
     }
 
+    function propagateWinding(segment, path1, path2, monoCurves, operation) {
+        // Here we try to determine the most probable winding number
+        // contribution for the curve-chain starting with this segment. Once we
+        // have enough confidence in the winding contribution, we can propagate
+        // it until the next intersection or end of a curve chain.
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+            chain = [],
+            startSeg = segment,
+            totalLength = 0,
+            windingSum = 0;
+        do {
+            var length = segment.getCurve().getLength();
+            chain.push({ segment: segment, length: length });
+            totalLength += length;
+            segment = segment.getNext();
+        } while (segment && !segment._intersection && segment !== startSeg);
+        // Calculate the average winding among three evenly distributed
+        // points along this curve chain as a representative winding number.
+        // This selection gives a better chance of returning a correct
+        // winding than equally dividing the curve chain, with the same
+        // (amortised) time.
+        for (var i = 0; i < 3; i++) {
+            // Try the points at 1/4, 2/4 and 3/4 of the total length:
+            var length = totalLength * (i + 1) / 4;
+            for (var k = 0, m = chain.length; k < m; k++) {
+                var node = chain[k],
+                    curveLength = node.length;
+                if (length <= curveLength) {
+                    // If the selected location on the curve falls onto its
+                    // beginning or end, use the curve's center instead.
+                    if (length < epsilon || curveLength - length < epsilon)
+                        length = curveLength / 2;
+                    var curve = node.segment.getCurve(),
+                        pt = curve.getPointAt(length),
+                        hor = isHorizontal(curve),
+                        path = getMainPath(curve);
+                    // While subtracting, we need to omit this curve if this
+                    // curve is contributing to the second operand and is
+                    // outside the first operand.
+                    windingSum += operation === 'subtract' && path2
+                        && (path === path1 && path2._getWinding(pt, hor)
+                        || path === path2 && !path1._getWinding(pt, hor))
+                        ? 0
+                        : getWinding(pt, monoCurves, hor);
+                    break;
+                }
+                length -= curveLength;
+            }
+        }
+        // Assign the average winding to the entire curve chain.
+        var winding = Math.round(windingSum / 3);
+        for (var j = chain.length - 1; j >= 0; j--) {
+            var seg = chain[j].segment,
+                inter = seg._intersection,
+                wind = winding;
+            // We need to handle the edge cases of overlapping curves
+            // differently based on the type of operation, and adjust the
+            // winding number accordingly:
+            if (inter && inter._overlap) {
+                switch (operation) {
+                case 'unite':
+                    if (wind === 1)
+                        wind = 2;
+                    break;
+                case 'intersect':
+                    if (wind === 2)
+                        wind = 1;
+                    break;
+                }
+            }
+            seg._winding = wind;
+        }
+    }
+
     var segmentOffset = {};
     var pathIndices = {};
     var pathIndex = 0;
@@ -523,7 +527,7 @@ PathItem.inject(new function() {
         for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
             seg = startSeg = segments[i];
             if (seg._visited || !operator(seg._winding)) {
-                drawSegment(seg, 'ignore', i, 'red');
+                drawSegment(seg, seg._visited ? 'visited' : 'ignore', i, 'red');
                 continue;
             }
             var path = new Path(Item.NO_INSERT),
