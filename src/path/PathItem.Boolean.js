@@ -44,20 +44,19 @@ PathItem.inject(new function() {
         }
     };
 
+    // Creates a cloned version of the path that we can modify freely, with its
+    // matrix applied to its geometry. Calls #reduce() to simplify compound
+    // paths and remove empty curves, and #reorient() to make sure all paths
+    // have correct winding direction.
+    function preparePath(path) {
+        return path.clone(false).reduce().reorient().transform(null, true, true);
+    }
+
     // Boolean operators return true if a curve with the given winding
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
     // split at intersections.
     function computeBoolean(path1, path2, operation) {
-        // Creates a cloned version of the path that we can modify freely, with
-        // its matrix applied to its geometry. Calls #reduce() to simplify
-        // compound paths and remove empty curves, and #reorient() to make sure
-        // all paths have correct winding direction.
-        function preparePath(path) {
-            return path.clone(false).reduce().reorient().transform(null, true,
-                    true);
-        }
-
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // Note that the result paths might not belong to the same type
@@ -153,7 +152,7 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
-        if (false) {
+        if (window.report) {
             console.log('Intersections', intersections.length);
             intersections.forEach(function(inter) {
                 if (inter._other)
@@ -443,12 +442,12 @@ PathItem.inject(new function() {
         var pathCount = 0;
         var reportWindings = false && !window.silent;
         var reportSegments = false && !window.silent;
-        var textAngle = 0;
-        var fontSize = 1 / paper.project.activeLayer.scaling.x;
+        var textAngle = 20;
+        var fontSize = 5 / paper.project.activeLayer.scaling.x;
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
-            var key = Math.round(point.x / 10) + ',' + Math.round(point.y / 10);
+            var key = Math.round(point.x) + ',' + Math.round(point.y);
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var text = new PointText({
@@ -459,6 +458,7 @@ PathItem.inject(new function() {
                 fillColor: color,
                 fontSize: fontSize
             });
+            // TODO! PointText should have pivot in #point by default!
             text.pivot = text.globalToLocal(text.point);
             text.rotation = textAngle;
         }
@@ -515,37 +515,44 @@ PathItem.inject(new function() {
             // emerge from switching to 0 and 1 in edge cases.
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
-        for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
-            seg = startSeg = segments[i];
+        for (var i = 0, l = segments.length; i < l; i++) {
+            var seg = segments[i];
             if (seg._visited || !operator(seg._winding)) {
-                drawSegment(seg, seg._visited ? 'visited' : 'ignore', i, 'red');
+                // drawSegment(seg, seg._visited ? 'visited' : 'filtered', i, 'red');
                 continue;
             }
             var path = new Path(Item.NO_INSERT),
+                startSeg = seg,
                 inter = seg._intersection,
-                startInterSeg = inter && inter._segment,
+                otherSeg = inter && inter._segment,
+                startOtherSeg = otherSeg,
                 added = false, // Whether a first segment as added already
                 dir = 1;
             do {
                 var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
-                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn,
-                    inter = seg._intersection,
-                    interSeg = inter && inter._segment;
+                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
-                if (added && interSeg && interSeg !== startSeg) {
-                    if (interSeg._path === seg._path) { // Self-intersection
+                if (added && otherSeg && otherSeg !== startSeg) {
+                    if (otherSeg._path === seg._path) { // Self-intersection
                         drawSegment(seg, 'self-int ' + dir, i, 'red');
                         // Switch to the intersection segment, as we need to
                         // resolving self-Intersections.
-                        seg._visited = interSeg._visited;
-                        seg = interSeg;
+                        seg = otherSeg;
                         dir = 1;
                     } else if (operator(seg._winding)) {
-                        // Do not switch to the intersection as the segment is
-                        // part of the boolean result.
-                        drawSegment(seg, 'keep', i, 'black');
+                        // We need to handle exclusion separately and switch on
+                        // every intersection that's part of the result.
+                        if (operation === 'exclude') {
+                            seg = otherSeg;
+                            dir = 1;
+                            drawSegment(seg, 'exclude', i, 'green');
+                        } else {
+                            // Do not switch to the intersection as the segment
+                            // is part of the boolean result.
+                            drawSegment(seg, 'keep', i, 'black');
+                        }
                     } else if (inter._overlap && operation !== 'intersect') {
                         // Switch to the overlapping intersection segment
                         // if its winding number along the curve is 1, to
@@ -553,11 +560,10 @@ PathItem.inject(new function() {
                         // NOTE: We cannot check the next (overlapping)
                         // segment since its winding number will always be 2
                         drawSegment(seg, 'overlap ' + dir, i, 'orange');
-                        var curve = interSeg.getCurve();
+                        var curve = otherSeg.getCurve();
                         if (getWinding(curve.getPointAt(0.5, true),
                                 monoCurves, curve.isHorizontal()) === 1) {
-                            seg._visited = interSeg._visited;
-                            seg = interSeg;
+                            seg = otherSeg;
                             dir = 1;
                         }
                     } else {
@@ -567,7 +573,7 @@ PathItem.inject(new function() {
                         var t1 = c1.getTangentAt(dir < 0 ? tMin : tMax, true),
                             // Get both curves at the intersection
                             // (except the entry curves).
-                            c4 = interSeg.getCurve(),
+                            c4 = otherSeg.getCurve(),
                             c3 = c4.getPrevious(),
                             // Calculate their winding values and tangents.
                             t3 = c3.getTangentAt(tMax, true),
@@ -594,11 +600,11 @@ PathItem.inject(new function() {
                                 dir = 1;
                             } else {
                                 // Switch to the intersection segment.
-                                seg._visited = interSeg._visited;
-                                seg = interSeg;
-                                drawSegment(seg, 'switch', i, 'green');
+                                seg = otherSeg;
+                                // TODO:Why is this necessary, why not always 1?
                                 if (nextSeg._visited)
                                     dir = 1;
+                                drawSegment(seg, 'switch', i, 'green');
                             }
                         } else {
                             drawSegment(seg, 'no cross', i, 'blue');
@@ -612,35 +618,27 @@ PathItem.inject(new function() {
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
                 path.add(new Segment(seg._point, added && handleIn, handleOut));
-                added = true;
                 seg._visited = true;
+                added = true;
                 // Move to the next segment according to the traversal direction
                 seg = dir > 0 ? seg.getNext() : seg. getPrevious();
+                inter = seg && seg._intersection;
+                otherSeg = inter && inter._segment;
                 if (reportSegments) {
                     console.log(seg, seg && !seg._visited,
-                        seg !== startSeg, seg !== startInterSeg,
-                        seg && seg._intersection, seg && operator(seg._winding));
-                    if (!(seg && !seg._visited
-                        && seg !== startSeg && seg !== startInterSeg
-                        && (seg._intersection || operator(seg._winding)))) {
-                        if (seg) {
-                            new Path.Circle({
-                                center: seg.point,
-                                radius: fontSize / 2,
-                                fillColor: 'red',
-                                strokeScaling: false
-                            });
-                        }
-                    }
+                        seg !== startSeg, seg !== startOtherSeg,
+                        inter, seg && operator(seg._winding));
                 }
-            } while (seg && !seg._visited
-                    && seg !== startSeg && seg !== startInterSeg
-                    && (seg._intersection || operator(seg._winding)));
+            } while (seg && seg !== startSeg && seg !== startOtherSeg
+                    // Exclusion switches on each intersection, we need to look
+                    // ahead & carry on if the other segment wasn't visited yet.
+                    && (!seg._visited || operation === 'exclude'
+                        && otherSeg && !otherSeg._visited)
+                    && (inter || operator(seg._winding)));
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
-            if (seg && (seg === startSeg || seg === startInterSeg)) {
-                path.firstSegment.setHandleIn((seg === startInterSeg
-                        ? startInterSeg : seg)._handleIn);
+            if (seg === startSeg || seg === startOtherSeg) {
+                path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
                 if (reportSegments) {
                     console.log('Boolean operation completed',
