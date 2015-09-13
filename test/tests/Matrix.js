@@ -16,8 +16,7 @@ test('Decomposition: rotate()', function() {
         var m = new Matrix().rotate(a),
             s = 'new Matrix().rotate(' + a + ')';
         equals(m.getRotation(), Base.pick(ea, a),
-            s + '.getRotation()',
-            Numerical.TOLERANCE);
+            s + '.getRotation()');
         equals(m.getScaling(), new Point(1, 1),
             s + '.getScaling()');
     }
@@ -42,8 +41,7 @@ test('Decomposition: scale()', function() {
         var m = new Matrix().scale(sx, sy),
             s = 'new Matrix().scale(' + sx + ', ' + sy + ')';
         equals(m.getRotation(), ea || 0,
-                s + '.getRotation()',
-                Numerical.TOLERANCE);
+                s + '.getRotation()');
         equals(m.getScaling(), new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
                 s + '.getScaling()');
     }
@@ -64,8 +62,7 @@ test('Decomposition: rotate() & scale()', function() {
         var m = new Matrix().scale(sx, sy).rotate(a),
             s = 'new Matrix().scale(' + sx + ', ' + sy + ').rotate(' + a + ')';
         equals(m.getRotation(), ea || a,
-                s + '.getRotation()',
-                Numerical.TOLERANCE);
+                s + '.getRotation()');
         equals(m.getScaling(), new Point(Base.pick(ex, sx), Base.pick(ey, sy)),
                 s + '.getScaling()');
     }
