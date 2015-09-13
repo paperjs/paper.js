@@ -152,7 +152,7 @@ PathItem.inject(new function() {
      * @param {CurveLocation[]} intersections Array of CurveLocation objects
      */
     function splitPath(intersections) {
-        if (window.report) {
+        if (window.reportIntersections) {
             console.log('Intersections', intersections.length);
             intersections.forEach(function(inter) {
                 if (inter._other)
@@ -440,8 +440,6 @@ PathItem.inject(new function() {
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
         var pathCount = 0;
-        var reportWindings = false && !window.silent;
-        var reportSegments = false && !window.silent;
         var textAngle = 20;
         var fontSize = 5 / paper.project.activeLayer.scaling.x;
 
@@ -464,7 +462,7 @@ PathItem.inject(new function() {
         }
 
         function drawSegment(seg, text, index, color) {
-            if (!reportSegments)
+            if (!window.reportSegments)
                 return;
             new Path.Circle({
                 center: seg.point,
@@ -488,7 +486,7 @@ PathItem.inject(new function() {
 
 
 
-        for (var i = 0; i < (reportWindings ? segments.length : 0); i++) {
+        for (var i = 0; i < (window.reportWindings ? segments.length : 0); i++) {
             var seg = segments[i];
                 path = seg._path,
                 id = path._id,
@@ -509,6 +507,7 @@ PathItem.inject(new function() {
 
         var paths = [],
             operator = operators[operation],
+            epsilon = /*#=*/Numerical.EPSILON,
             // Values for getTangentAt() that are almost 0 and 1.
             // NOTE: Even though getTangentAt() supports 0 and 1 instead of
             // tMin and tMax, we still need to use this instead, as other issues
@@ -525,7 +524,7 @@ PathItem.inject(new function() {
                 startSeg = seg,
                 inter = seg._intersection,
                 otherSeg = inter && inter._segment,
-                startOtherSeg = otherSeg,
+                otherStartSeg = otherSeg,
                 added = false, // Whether a first segment as added already
                 dir = 1;
             do {
@@ -545,9 +544,17 @@ PathItem.inject(new function() {
                         // We need to handle exclusion separately and switch on
                         // every intersection that's part of the result.
                         if (operation === 'exclude') {
-                            seg = otherSeg;
-                            dir = 1;
-                            drawSegment(seg, 'exclude', i, 'green');
+                            // Look at the crossing tangents to decide whether
+                            // to switch over or not.
+                            var t1 = seg.getCurve().getTangentAt(tMin, true),
+                                t2 = otherSeg.getCurve().getTangentAt(tMin, true);
+                            if (Math.abs(t1.cross(t2)) > epsilon) {
+                                seg = otherSeg;
+                                drawSegment(seg, 'exclude:switch', i, 'green');
+                                dir = 1;
+                            } else {
+                                drawSegment(seg, 'exclude:no cross', i, 'blue');
+                            }
                         } else {
                             // Do not switch to the intersection as the segment
                             // is part of the boolean result.
@@ -567,31 +574,28 @@ PathItem.inject(new function() {
                             dir = 1;
                         }
                     } else {
-                        var c1 = seg.getCurve();
-                        if (dir > 0)
-                            c1 = c1.getPrevious();
-                        var t1 = c1.getTangentAt(dir < 0 ? tMin : tMax, true),
+                        var t = seg.getCurve().getTangentAt(tMin, true),
                             // Get both curves at the intersection
                             // (except the entry curves).
-                            c4 = otherSeg.getCurve(),
-                            c3 = c4.getPrevious(),
+                            c2 = otherSeg.getCurve(),
+                            c1 = c2.getPrevious(),
                             // Calculate their winding values and tangents.
-                            t3 = c3.getTangentAt(tMax, true),
-                            t4 = c4.getTangentAt(tMin, true),
+                            t1 = c1.getTangentAt(tMax, true),
+                            t2 = c2.getTangentAt(tMin, true),
                             // Cross product of the entry and exit tangent
                             // vectors at the intersection, will let us select
                             // the correct contour to traverse next.
-                            w3 = t1.cross(t3),
-                            w4 = t1.cross(t4);
-                        if (Math.abs(w3 * w4) > /*#=*/Numerical.EPSILON) {
+                            w1 = t.cross(t1),
+                            w2 = t.cross(t2);
+                        if (Math.abs(w1 * w2) > epsilon) {
                             // Do not attempt to switch contours if we aren't
                             // sure that there is a possible candidate.
-                            var curve = w3 < w4 ? c3 : c4,
+                            var curve = w1 < w2 ? c1 : c2,
                                 nextCurve = operator(curve._segment1._winding)
                                     ? curve
-                                    : w3 < w4 ? c4 : c3,
+                                    : w1 < w2 ? c2 : c1,
                                 nextSeg = nextCurve._segment1;
-                            dir = nextCurve === c3 ? -1 : 1;
+                            dir = nextCurve === c1 ? -1 : 1;
                             // If we didn't find a suitable direction for next
                             // contour to traverse, stay on the same contour.
                             if (nextSeg._visited && seg._path !== nextSeg._path
@@ -601,7 +605,7 @@ PathItem.inject(new function() {
                             } else {
                                 // Switch to the intersection segment.
                                 seg = otherSeg;
-                                // TODO:Why is this necessary, why not always 1?
+                                // TODO: Find a case that actually requires this
                                 if (nextSeg._visited)
                                     dir = 1;
                                 drawSegment(seg, 'switch', i, 'green');
@@ -624,12 +628,12 @@ PathItem.inject(new function() {
                 seg = dir > 0 ? seg.getNext() : seg. getPrevious();
                 inter = seg && seg._intersection;
                 otherSeg = inter && inter._segment;
-                if (reportSegments) {
+                if (window.reportSegments) {
                     console.log(seg, seg && !seg._visited,
-                        seg !== startSeg, seg !== startOtherSeg,
+                        seg !== startSeg, seg !== otherStartSeg,
                         inter, seg && operator(seg._winding));
                 }
-            } while (seg && seg !== startSeg && seg !== startOtherSeg
+            } while (seg && seg !== startSeg && seg !== otherStartSeg
                     // Exclusion switches on each intersection, we need to look
                     // ahead & carry on if the other segment wasn't visited yet.
                     && (!seg._visited || operation === 'exclude'
@@ -637,10 +641,10 @@ PathItem.inject(new function() {
                     && (inter || operator(seg._winding)));
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
-            if (seg === startSeg || seg === startOtherSeg) {
+            if (seg === startSeg || seg === otherStartSeg) {
                 path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
-                if (reportSegments) {
+                if (window.reportSegments) {
                     console.log('Boolean operation completed',
                             '#' + (pathCount + 1) + '.' +
                             (path ? path._segments.length + 1 : 1));
@@ -660,7 +664,7 @@ PathItem.inject(new function() {
             if (path && (path._segments.length > 4
                     || !Numerical.isZero(path.getArea())))
                 paths.push(path);
-            if (reportSegments) {
+            if (window.reportSegments) {
                 pathCount++;
             }
         }
