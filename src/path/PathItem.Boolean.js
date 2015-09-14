@@ -84,7 +84,7 @@ PathItem.inject(new function() {
             self.forEach(function(inter) {
                 new Path.Circle({
                     center: inter.point,
-                    radius: 3,
+                    radius: fontSize / 2 * scaleFactor,
                     fillColor: 'red'
                 });
             });
@@ -144,6 +144,10 @@ PathItem.inject(new function() {
         return result;
     }
 
+    var scaleFactor = 1 / 3000; // 0.5; // 1 / 3000;
+    var textAngle = 60;
+    var fontSize = 5;
+
     /**
      * Private method for splitting a PathItem at the given intersections.
      * The routine works for both self intersections and intersections
@@ -153,7 +157,7 @@ PathItem.inject(new function() {
      */
     function splitPath(intersections) {
         if (window.reportIntersections) {
-            console.log('Intersections', intersections.length);
+            console.log('Intersections', intersections.length / 2);
             intersections.forEach(function(inter) {
                 if (inter._other)
                     return;
@@ -166,8 +170,9 @@ PathItem.inject(new function() {
                     'o', !!other._overlap];
                 new Path.Circle({
                     center: inter.point,
-                    radius: 3,
-                    strokeColor: 'green'
+                    radius: fontSize / 2 * scaleFactor,
+                    strokeColor: 'green',
+                    strokeScaling: false
                 });
                 console.log(log.map(function(v) {
                     return v == null ? '-' : v
@@ -440,17 +445,17 @@ PathItem.inject(new function() {
     function tracePaths(segments, monoCurves, operation) {
         var segmentCount = 0;
         var pathCount = 0;
-        var textAngle = 20;
-        var fontSize = 5 / paper.project.activeLayer.scaling.x;
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
-            var key = Math.round(point.x) + ',' + Math.round(point.y);
+            var key = Math.round(point.x / scaleFactor) + ',' + Math.round(point.y / scaleFactor);
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
+            var size = fontSize * scaleFactor;
             var text = new PointText({
-                point: point.add(new Point(fontSize, fontSize / 2)
-                        .rotate(textAngle).add(0, offset * fontSize * 1.2)),
+                point: point.add(
+                        new Point(size, size / 2).add(0, offset * size * 1.2)
+                        .rotate(textAngle)),
                 content: text,
                 justification: 'left',
                 fillColor: color,
@@ -458,7 +463,8 @@ PathItem.inject(new function() {
             });
             // TODO! PointText should have pivot in #point by default!
             text.pivot = text.globalToLocal(text.point);
-            text.rotation = textAngle;
+            text.scale(scaleFactor);
+            text.rotate(textAngle);
         }
 
         function drawSegment(seg, text, index, color) {
@@ -466,7 +472,7 @@ PathItem.inject(new function() {
                 return;
             new Path.Circle({
                 center: seg.point,
-                radius: fontSize / 2,
+                radius: fontSize / 2 * scaleFactor,
                 strokeColor: color,
                 strokeScaling: false
             });
