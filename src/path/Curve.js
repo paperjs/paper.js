@@ -1662,6 +1662,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 if (pairs.length === 1 && pair[0] < pairs[0][0]) {
                     pairs.unshift(pair);
                 } else if (pairs.length === 0
+                        // TODO: Compare distance of points instead!
                         || abs(pair[0] - pairs[0][0]) > timeEpsilon
                         || abs(pair[1] - pairs[0][1]) > timeEpsilon) {
                     pairs.push(pair);
