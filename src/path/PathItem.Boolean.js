@@ -531,33 +531,53 @@ PathItem.inject(new function() {
                 inter = seg._intersection,
                 otherSeg = inter && inter._segment,
                 otherStartSeg = otherSeg,
-                added = false; // Whether a first segment as added already
+                added = false, // Whether a first segment as added already
+                dir = 1;
             do {
-                var handleIn = added && seg._handleIn;
+                var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
+                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
                 if (added && otherSeg && otherSeg !== startSeg) {
                     if (otherSeg._path === seg._path) { // Self-intersection
-                        drawSegment(seg, 'self-int', i, 'red');
+                        drawSegment(seg, 'self-int ' + dir, i, 'red');
                         // Switch to the intersection segment, as we need to
                         // resolving self-Intersections.
                         seg = otherSeg;
-                    } else if (operation !== 'exclude' && operator(seg._winding)) {
-                        // Do not switch to the intersection as the segment
-                        // is part of the boolean result.
-                        drawSegment(seg, 'keep', i, 'black');
-                    } else if (operation !== 'intersect' && inter._overlap) {
+                        dir = 1;
+                    } else if (operator(seg._winding)) {
+                        // We need to handle exclusion separately and switch on
+                        // every intersection that's part of the result.
+                        if (operation === 'exclude') {
+                            // Look at the crossing tangents to decide whether
+                            // to switch over or not.
+                            var t1 = seg.getCurve().getTangentAt(tMin, true),
+                                t2 = otherSeg.getCurve().getTangentAt(tMin, true);
+                            if (Math.abs(t1.cross(t2)) > epsilon) {
+                                seg = otherSeg;
+                                drawSegment(seg, 'exclude:switch', i, 'green');
+                                dir = 1;
+                            } else {
+                                drawSegment(seg, 'exclude:no cross', i, 'blue');
+                            }
+                        } else {
+                            // Do not switch to the intersection as the segment
+                            // is part of the boolean result.
+                            drawSegment(seg, 'keep', i, 'black');
+                        }
+                    } else if (inter._overlap && operation !== 'intersect') {
                         // Switch to the overlapping intersection segment
                         // if its winding number along the curve is 1, to
                         // leave the overlapping area.
                         // NOTE: We cannot check the next (overlapping)
                         // segment since its winding number will always be 2
-                        drawSegment(seg, 'overlap', i, 'orange');
+                        drawSegment(seg, 'overlap ' + dir, i, 'orange');
                         var curve = otherSeg.getCurve();
                         if (getWinding(curve.getPointAt(0.5, true),
                                 monoCurves, curve.isHorizontal()) === 1) {
                             seg = otherSeg;
+                            dir = 1;
                         }
                     } else {
                         var t = seg.getCurve().getTangentAt(tMin, true),
@@ -567,27 +587,51 @@ PathItem.inject(new function() {
                             c1 = c2.getPrevious(),
                             // Calculate their winding values and tangents.
                             t1 = c1.getTangentAt(tMax, true),
-                            t2 = c2.getTangentAt(tMin, true);
+                            t2 = c2.getTangentAt(tMin, true),
                             // Cross product of the entry and exit tangent
                             // vectors at the intersection, will let us select
                             // the correct contour to traverse next.
-                        if (Math.abs(t.cross(t1) * t.cross(t2)) > epsilon) {
-                            seg = otherSeg;
-                            drawSegment(seg, 'switch', i, 'green');
+                            w1 = t.cross(t1),
+                            w2 = t.cross(t2);
+                        if (Math.abs(w1 * w2) > epsilon) {
+                            // Do not attempt to switch contours if we aren't
+                            // sure that there is a possible candidate.
+                            var curve = w1 < w2 ? c1 : c2,
+                                nextCurve = operator(curve._segment1._winding)
+                                    ? curve
+                                    : w1 < w2 ? c2 : c1,
+                                nextSeg = nextCurve._segment1;
+                            dir = nextCurve === c1 ? -1 : 1;
+                            // If we didn't find a suitable direction for next
+                            // contour to traverse, stay on the same contour.
+                            if (nextSeg._visited && seg._path !== nextSeg._path
+                                        || !operator(nextSeg._winding)) {
+                                drawSegment(nextSeg, 'not suitable', i, 'orange');
+                                dir = 1;
+                            } else {
+                                // Switch to the intersection segment.
+                                seg = otherSeg;
+                                // TODO: Find a case that actually requires this
+                                if (nextSeg._visited)
+                                    dir = 1;
+                                drawSegment(seg, 'switch', i, 'green');
+                            }
                         } else {
                             drawSegment(seg, 'no cross', i, 'blue');
+                            dir = 1;
                         }
                     }
+                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
                 } else {
                     drawSegment(seg, 'keep', i, 'black');
                 }
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
-                path.add(new Segment(seg._point, handleIn, seg._handleOut));
+                path.add(new Segment(seg._point, added && handleIn, handleOut));
                 seg._visited = true;
                 added = true;
                 // Move to the next segment according to the traversal direction
-                seg = seg.getNext();
+                seg = dir > 0 ? seg.getNext() : seg. getPrevious();
                 inter = seg && seg._intersection;
                 otherSeg = inter && inter._segment;
                 if (window.reportSegments) {
