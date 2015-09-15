@@ -150,7 +150,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             if (parent)
                 parent._currentPath = undefined;
             // Clockwise state becomes undefined as soon as geometry changes.
-            this._length = this._clockwise = undefined;
+            // Also clear cached mono curves used for winding calculations.
+            this._length = this._clockwise = this._monoCurves = undefined;
             if (flags & /*#=*/ChangeFlag.SEGMENTS) {
                 this._version++; // See CurveLocation
             } else if (this._curves) {
@@ -159,10 +160,6 @@ var Path = PathItem.extend(/** @lends Path# */{
                for (var i = 0, l = this._curves.length; i < l; i++)
                     this._curves[i]._changed();
             }
-            // Clear cached curves used for winding direction and containment
-            // calculation.
-            // NOTE: This is only needed with __options.booleanOperations
-            this._monoCurves = undefined;
         } else if (flags & /*#=*/ChangeFlag.STROKE) {
             // TODO: We could preserve the purely geometric bounds that are not
             // affected by stroke: _bounds.bounds and _bounds.handleBounds

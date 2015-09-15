@@ -145,7 +145,8 @@ PathItem.inject(new function() {
             }
         }
         return finishBoolean(CompoundPath,
-                tracePaths(segments, monoCurves, operation), path1, path2);
+                tracePaths(segments, monoCurves, operation, _path1, _path2),
+                path1, path2);
     }
 
     var scaleFactor = 1; // 1 / 3000;
@@ -220,6 +221,7 @@ PathItem.inject(new function() {
             }
             // Link the new segment with the intersection on the other curve
             segment._intersection = loc._intersection;
+            // loc._setCurve(segment.getCurve());
             loc._segment = segment;
             prev = loc;
         }
@@ -359,7 +361,7 @@ PathItem.inject(new function() {
         // it until the next intersection or end of a curve chain.
         var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
             chain = [],
-            startSeg = segment,
+            start = segment,
             totalLength = 0,
             windingSum = 0;
         do {
@@ -368,7 +370,7 @@ PathItem.inject(new function() {
             chain.push({ segment: segment, curve: curve, length: length });
             totalLength += length;
             segment = segment.getNext();
-        } while (segment && !segment._intersection && segment !== startSeg);
+        } while (segment && !segment._intersection && segment !== start);
         // Calculate the average winding among three evenly distributed
         // points along this curve chain as a representative winding number.
         // This selection gives a better chance of returning a correct
@@ -446,7 +448,7 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, monoCurves, operation) {
+    function tracePaths(segments, monoCurves, operation, path1, path2) {
         var segmentCount = 0;
         var pathCount = 1;
 
@@ -525,64 +527,58 @@ PathItem.inject(new function() {
             tMax = 1 - tMin;
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i];
-            if (seg._visited || !operator(seg._winding)) {
-                // drawSegment(seg, seg._visited ? 'visited' : 'filtered', i, 'red');
+            if (seg._visited || !operator(seg._winding))
                 continue;
-            }
             var path = new Path(Item.NO_INSERT),
-                startSeg = seg,
+                start = seg,
                 inter = seg._intersection,
-                otherSeg = inter && inter._segment,
-                otherStartSeg = otherSeg,
+                other = inter && inter._segment,
+                otherStart = other,
                 added = false; // Whether a first segment as added already
             do {
                 var handleIn = added && seg._handleIn;
-                if (added && otherSeg && otherSeg !== startSeg) {
-                    // There is an intersection. If the intersecting segment is
-                    // valid, try switching to it to continue traversal.
-                    // Otherwise stay on the same contour.
-                    if (otherSeg._path === seg._path) { // Self-intersection
-                        drawSegment(seg, 'self-int', i, 'red');
-                        // Switch to the intersecting segment, as we need to
-                        // resolving self-Intersections.
-                        seg = otherSeg;
-                    } else if (operation !== 'exclude'
-                            && operator(seg._winding)) {
-                        // Do not switch to the intersecting segment as it is
-                        // contained inside the boolean result.
-                        drawSegment(seg, 'ignore-keep', i, 'black');
-                    } else if (operation !== 'intersect' && inter._overlap) {
-                        // Switch to the overlapping intersection segment
-                        // if its winding number along the curve is 1, to
-                        // leave the overlapping area.
-                        // NOTE: We cannot check the next (overlapping)
-                        // segment since its winding number will always be 2
-                        drawSegment(seg, 'overlap', i, 'orange');
-                        var curve = otherSeg.getCurve();
-                        if (getWinding(curve.getPointAt(0.5, true),
-                                monoCurves, curve.isHorizontal()) === 1) {
-                            seg = otherSeg;
-                        }
-                    } else if (operation === 'exclude'
-                            || operator(otherSeg._winding)) {
-                        // Look at both tangents at the intersection to
-                        // determine if this intersection is actually a crossing
-                        var t1 = seg.getPrevious().getCurve().getTangentAt(tMax, true),
-                            t2 = otherSeg.getCurve().getTangentAt(tMin, true);
-                        if (t1.isCollinear(t2)) {
-                            // Do not attempt to switch contours if we aren't
-                            // sure that there is a possible candidate.
-                            drawSegment(seg, 'no cross', i, 'blue');
-                        } else  {
-                            // Switch to the intersection segment.
-                            seg = otherSeg;
-                            drawSegment(seg, 'switch', i, 'green');
-                        }
-                    } else {
-                        drawSegment(otherSeg, 'not suitable', i, 'orange');
+                if (!added || !other || other === start) {
+                    // TODO: Is (other === start) check really required?
+                    // Does that ever occur?
+                    // Just add the first segment and all segments that have no
+                    // intersection.
+                    drawSegment(seg, 'add', i, 'black');
+                } else if (other._path === seg._path) { // Self-intersection
+                    drawSegment(seg, 'self-int', i, 'red');
+                    // Switch to the intersecting segment, as we need to
+                    // resolving self-Intersections.
+                    seg = other;
+                } else if (operation !== 'intersect' && inter._overlap) {
+                    // Switch to the overlapping intersection segment
+                    // if its winding number along the curve is 1, to
+                    // leave the overlapping area.
+                    // NOTE: We cannot check the next (overlapping)
+                    // segment since its winding number will always be 2
+                    drawSegment(seg, 'overlap', i, 'orange');
+                    var curve = other.getCurve();
+                    if (getWinding(curve.getPointAt(0.5, true),
+                            monoCurves, curve.isHorizontal()) === 1) {
+                        seg = other;
                     }
+                } else if (operation === 'exclude') {
+                    // We need to handle exclusion separately, as we want to
+                    // switch at each crossing, and at each intersection within
+                    // the exclusion area even if it is not crossing.
+                    if (inter.isCrossing() || path2.contains(seg._point)) {
+                        seg = other;
+                        drawSegment(seg, 'exclude-cross', i, 'green');
+                    } else {
+                        drawSegment(other, 'exclude-no-cross', i, 'orange');
+                    }
+                } else if (operator(seg._winding)) {
+                    // Do not switch to the intersecting segment as it is
+                    // contained inside the boolean result.
+                    drawSegment(seg, 'ignore-keep', i, 'black');
+                } else if (operator(other._winding) && inter.isCrossing()) {
+                    seg = other;
+                    drawSegment(seg, 'cross', i, 'green');
                 } else {
-                    drawSegment(seg, 'keep', i, 'black');
+                    drawSegment(other, 'no-cross', i, 'orange');
                 }
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
@@ -597,15 +593,15 @@ PathItem.inject(new function() {
                 seg._visited = added = true;
                 seg = seg.getNext();
                 inter = seg && seg._intersection;
-                otherSeg = inter && inter._segment;
-            } while (seg && seg !== startSeg && seg !== otherStartSeg
+                other = inter && inter._segment;
+            } while (seg && seg !== start && seg !== otherStart
                     // If we're about to switch, try to see if we can carry on
                     // if the other segment wasn't visited yet.
-                    && (!seg._visited || otherSeg && !otherSeg._visited)
+                    && (!seg._visited || other && !other._visited)
                     && (inter || operator(seg._winding)));
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
-            if (seg === startSeg || seg === otherStartSeg) {
+            if (seg === start || seg === otherStart) {
                 path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
                 if (window.reportSegments) {
