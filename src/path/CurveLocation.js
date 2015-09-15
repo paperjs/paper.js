@@ -57,19 +57,24 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // since this is only required to be unique at runtime among other
         // CurveLocation objects.
         this._id = UID.get(CurveLocation);
-        var path = curve._path;
-        this._version = path ? path._version : 0;
-        this._curve = curve;
+        this._setCurve(curve);
         this._parameter = parameter;
         this._point = point || curve.getPointAt(parameter, true);
         this._distance = _distance;
         this._overlap = _overlap;
+        this._crossing = null;
         this._intersection = _intersection;
         if (_intersection) {
             _intersection._intersection = this;
             // TODO: Remove this once debug logging is removed.
             _intersection._other = true;
         }
+    },
+
+    _setCurve: function(curve) {
+        var path = curve._path;
+        this._version = path ? path._version : 0;
+        this._curve = curve;
         this._segment = null; // To be determined, see #getSegment()
         // Also store references to segment1 and segment2, in case path
         // splitting / dividing is going to happen, in which case the segments
@@ -84,25 +89,26 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @type Segment
      * @bean
      */
-    getSegment: function(_preferFirst) {
-        if (!this._segment) {
-            var curve = this.getCurve(),
-                parameter = this.getParameter();
-            if (parameter === 1) {
-                this._segment = curve._segment2;
-            } else if (parameter === 0 || _preferFirst) {
-                this._segment = curve._segment1;
-            } else if (parameter == null) {
-                return null;
-            } else {
+    getSegment: function() {
+        // Request curve first, so _segment gets invalidated if it's out of sync
+        var curve = this.getCurve(),
+            segment = this._segment;
+        if (!segment) {
+            var parameter = this.getParameter();
+            if (parameter === 0) {
+                segment = curve._segment1;
+            } else if (parameter === 1) {
+                segment = curve._segment2;
+            } else if (parameter != null) {
                 // Determine the closest segment by comparing curve lengths
-                this._segment = curve.getPartLength(0, parameter)
+                segment = curve.getPartLength(0, parameter)
                     < curve.getPartLength(parameter, 1)
                         ? curve._segment1
                         : curve._segment2;
             }
+            this._segment = segment;
         }
-        return this._segment;
+        return segment;
     },
 
     /**
@@ -113,29 +119,34 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      */
     getCurve: function() {
         var curve = this._curve,
-            path = curve && curve._path;
+            path = curve && curve._path,
+            that = this;
         if (path && path._version !== this._version) {
             // If the path's segments have changed in the meantime, clear the
             // internal _parameter value and force refetching of the correct
             // curve again here.
-            curve = null;
-            this._parameter = null;
+            curve = this._parameter = this._curve = null;
         }
-        if (!curve) {
-            // If we're asked to get the curve uncached, access current curve
-            // objects through segment1 / segment2. Since path splitting or
-            // dividing might have happened in the meantime, try segment1's
-            // curve, and see if _point lies on it still, otherwise assume it's
-            // the curve before segment2.
-            curve = this._segment1.getCurve();
-            if (curve.getParameterOf(this._point) == null)
-                curve = this._segment2.getPrevious().getCurve();
-            this._curve = curve;
-            // Fetch path again as it could be on a new one through split()
-            path = curve._path;
-            this._version = path ? path._version : 0;
+
+        // If path is out of sync, access current curve objects through segment1
+        // / segment2. Since path splitting or dividing might have happened in
+        // the meantime, try segment1's curve, and see if _point lies on it
+        // still, otherwise assume it's the curve before segment2.
+        function trySegment(segment) {
+            var curve = segment && segment.getCurve();
+            if (curve && (that._parameter = curve.getParameterOf(that._point))
+                    != null) {
+                // Fetch path again as it could be on a new one through split()
+                that._setCurve(curve);
+                that._segment = segment;
+                return curve;
+            }
         }
-        return curve;
+
+        return curve
+            || trySegment(this._segment)
+            || trySegment(this._segment1)
+            || trySegment(this._segment2.getPrevious());
     },
 
     /**
@@ -269,6 +280,70 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     split: function() {
         var curve = this.getCurve();
         return curve && curve.split(this.getParameter(), true);
+    },
+
+    isCrossing: function(report) {
+        // Implementation based on work by Andy Finnell:
+        // http://losingfight.com/blog/2011/07/09/how-to-implement-boolean-operations-on-bezier-paths-part-3/
+        // https://bitbucket.org/andyfinnell/vectorboolean
+        var intersection = this._intersection,
+            crossing = this._crossing;
+        if (crossing != null || !intersection)
+            return crossing || false;
+        // TODO: isTangent() ?
+        // TODO: isAtEndPoint() ?
+        // -> Return if it's a tangent, or if not at an end point, only end
+        // point intersections need more checking!
+        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin,
+            PI = Math.PI,
+            PI_2 = PI * 2,
+            // TODO: Make getCurve() sync work in boolean ops after splitting!!!
+            c2 = this._curve,
+            c1 = c2.getPrevious(),
+            c4 = intersection._curve,
+            c3 = c4.getPrevious();
+        if (!c1 || !c3)
+            return this._crossing = false;
+        if (report) {
+            new Path.Circle({
+                center: this.getPoint(),
+                radius: 10,
+                strokeColor: 'red'
+            });
+            new Path({
+                segments: [c1.getSegment1(), c1.getSegment2(), c2.getSegment2()],
+                strokeColor: 'red'
+            });
+            new Path({
+                segments: [c3.getSegment1(), c3.getSegment2(), c4.getSegment2()],
+                strokeColor: 'orange'
+            });
+            console.log(c1.getValues(), c2.getValues(), c3.getValues(), c4.getValues());
+        }
+
+        function getAngle(tangent) {
+            var a = tangent.getAngleInRadians();
+            return a < -PI ? a + PI_2 : a >= PI ? a - PI_2 : a;
+        }
+
+        function isInRange(angle, min, max) {
+            return min < max
+                ? angle > min && angle < max
+                // The range wraps around 0:
+                : angle > min && angle <= PI || angle >= -PI && angle < max;
+        }
+
+        // Calculate angles for all four tangents at the intersection point
+        var a1 = getAngle(c1.getTangentAt(tMax, true).negate()),
+            a2 = getAngle(c2.getTangentAt(tMin, true)),
+            a3 = getAngle(c3.getTangentAt(tMax, true).negate()),
+            a4 = getAngle(c4.getTangentAt(tMin, true));
+
+        // Count how many times curve2 angles appear between the curve1 angles
+        // If each pair of angles split the other two, then the edges cross.
+        return (isInRange(a3, a1, a2) ^ isInRange(a4, a1, a2))
+            && (isInRange(a3, a2, a1) ^ isInRange(a4, a2, a1));
     },
 
     /**
