@@ -537,8 +537,7 @@ PathItem.inject(new function() {
                 added = false, // Whether a first segment as added already
                 dir = 1;
             do {
-                var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
-                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
+                var handleIn = dir > 0 ? seg._handleIn : seg._handleOut;
                 // If the intersection segment is valid, try switching to
                 // it, with an appropriate direction to continue traversal.
                 // Else, stay on the same contour.
@@ -549,19 +548,11 @@ PathItem.inject(new function() {
                         // resolving self-Intersections.
                         seg = otherSeg;
                         dir = 1;
-                    } else if (operator(seg._winding)) {
-                        // We need to handle exclusion separately and switch on
-                        // every intersection that's part of the result.
-                        if (operation === 'exclude') {
-                            seg = otherSeg;
-                            dir = 1;
-                            drawSegment(seg, 'exclude', i, 'green');
-                        } else {
-                            // Do not switch to the intersection as the segment
-                            // is part of the boolean result.
-                            drawSegment(seg, 'keep', i, 'black');
-                        }
-                    } else if (inter._overlap && operation !== 'intersect') {
+                    } else if (operation !== 'exclude' && operator(seg._winding)) {
+                        // Do not switch to the intersection as the segment is
+                        // part of the boolean result.
+                        drawSegment(seg, 'keep', i, 'black');
+                    } else if (operation !== 'intersect' && inter._overlap) {
                         // Switch to the overlapping intersection segment
                         // if its winding number along the curve is 1, to
                         // leave the overlapping area.
@@ -591,52 +582,54 @@ PathItem.inject(new function() {
                             // the correct contour to traverse next.
                             w3 = t1.cross(t3),
                             w4 = t1.cross(t4);
-                        if (Math.abs(w3 * w4) > /*#=*/Numerical.EPSILON) {
+                        if (Math.abs(w3 * w4) < /*#=*/Numerical.EPSILON) {
+                            drawSegment(seg, 'no cross', i, 'blue');
+                            dir = 1; // TODO: Why? Is this correct?
+                        } else if (operation === 'exclude') {
                             // Do not attempt to switch contours if we aren't
                             // sure that there is a possible candidate.
-                            var curve = w3 < w4 ? c3 : c4,
-                                nextCurve = operator(curve._segment1._winding)
-                                    ? curve
-                                    : w3 < w4 ? c4 : c3,
-                                nextSeg = nextCurve._segment1;
-                            dir = nextCurve === c3 ? -1 : 1;
                             // If we didn't find a suitable direction for next
                             // contour to traverse, stay on the same contour.
-                            if (nextSeg._visited && seg._path !== nextSeg._path
-                                        || !operator(nextSeg._winding)) {
-                                drawSegment(nextSeg, 'not suitable', i, 'orange');
+                            // Switch to the intersection segment.
+                            seg = otherSeg;
+                            drawSegment(seg, 'exclude:switch', i, 'green');
+                            dir = 1;
+                       } else {
+                            // Do not attempt to switch contours if we aren't
+                            // sure that there is a possible candidate.
+                            var curve = w3 < w4 ? c3 : c4;
+                            if (!operator(curve._segment1._winding))
+                                curve = curve === c3 ? c4 : c3;
+                            dir = curve === c3 ? -1 : 1;
+                            var next = curve._segment1;
+                            // If we didn't find a suitable direction for next
+                            // contour to traverse, stay on the same contour.
+                            if (next._visited && seg._path !== next._path
+                                        || !operator(next._winding)) {
+                                drawSegment(next, 'not suitable', i, 'orange');
                                 dir = 1;
                             } else {
                                 // Switch to the intersection segment.
                                 seg = otherSeg;
-                                // TODO:Why is this necessary, why not always 1?
-                                if (nextSeg._visited)
-                                    dir = 1;
+                                if (next._visited)
+                                    dir = -dir;
                                 drawSegment(seg, 'switch', i, 'green');
                             }
-                        } else {
-                            drawSegment(seg, 'no cross', i, 'blue');
-                            dir = 1;
                         }
                     }
-                    handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
                 } else {
                     drawSegment(seg, 'keep', i, 'black');
                 }
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
-                path.add(new Segment(seg._point, added && handleIn, handleOut));
+                path.add(new Segment(seg._point, added && handleIn,
+                        dir > 0 ? seg._handleOut : seg._handleIn));
                 seg._visited = true;
                 added = true;
                 // Move to the next segment according to the traversal direction
-                seg = dir > 0 ? seg.getNext() : seg. getPrevious();
+                seg = dir > 0 ? seg.getNext() : seg.getPrevious();
                 inter = seg && seg._intersection;
                 otherSeg = inter && inter._segment;
-                if (window.reportSegments) {
-                    console.log(seg, seg && !seg._visited,
-                        seg !== startSeg, seg !== otherStartSeg,
-                        inter, seg && operator(seg._winding));
-                }
             } while (seg && seg !== startSeg && seg !== otherStartSeg
                     // Exclusion switches on each intersection, we need to look
                     // ahead & carry on if the other segment wasn't visited yet.
