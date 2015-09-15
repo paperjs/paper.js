@@ -52,6 +52,23 @@ PathItem.inject(new function() {
         return path.clone(false).reduce().reorient().transform(null, true, true);
     }
 
+    function finishBoolean(ctor, paths, path1, path2) {
+        var result = new ctor(Item.NO_INSERT);
+        result.addChildren(paths, true);
+        // See if the CompoundPath can be reduced to just a simple Path.
+        result = result.reduce();
+        // Insert the resulting path above whichever of the two paths appear
+        // further up in the stack.
+        result.insertAbove(path2 && path1.isSibling(path2)
+                && path1.getIndex() < path2.getIndex()
+                    ? path2 : path1);
+        // Copy over the left-hand item's style and we're done.
+        // TODO: Consider using Item#_clone() for this, but find a way to not
+        // clone children / name (content).
+        result.setStyle(path1._style);
+        return result;
+    }
+
     // Boolean operators return true if a curve with the given winding
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
@@ -127,21 +144,8 @@ PathItem.inject(new function() {
                         operation);
             }
         }
-        // Trace closed contours and insert them into the result.
-        var result = new CompoundPath(Item.NO_INSERT);
-        result.addChildren(tracePaths(segments, monoCurves, operation), true);
-        // See if the CompoundPath can be reduced to just a simple Path.
-        result = result.reduce();
-        // Insert the resulting path above whichever of the two paths appear
-        // further up in the stack.
-        result.insertAbove(path2 && path1.isSibling(path2)
-                && path1.getIndex() < path2.getIndex()
-                    ? path2 : path1);
-        // Copy over the left-hand item's style and we're done.
-        // TODO: Consider using Item#_clone() for this, but find a way to not
-        // clone children / name (content).
-        result.setStyle(path1._style);
-        return result;
+        return finishBoolean(CompoundPath,
+                tracePaths(segments, monoCurves, operation), path1, path2);
     }
 
     var scaleFactor = 1 / 3000; // 0.5; // 1 / 3000;
@@ -746,7 +750,8 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         divide: function(path) {
-            return new Group([this.subtract(path), this.intersect(path)]);
+            return finishBoolean(Group,
+                    [this.subtract(path), this.intersect(path)], this, path);
         }
     };
 });
