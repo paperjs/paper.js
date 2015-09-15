@@ -513,7 +513,6 @@ PathItem.inject(new function() {
 
         var paths = [],
             operator = operators[operation],
-            epsilon = /*#=*/Numerical.EPSILON,
             // Values for getTangentAt() that are almost 0 and 1.
             // NOTE: Even though getTangentAt() supports 0 and 1 instead of
             // tMin and tMax, we still need to use this instead, as other issues
@@ -550,17 +549,9 @@ PathItem.inject(new function() {
                         // We need to handle exclusion separately and switch on
                         // every intersection that's part of the result.
                         if (operation === 'exclude') {
-                            // Look at the crossing tangents to decide whether
-                            // to switch over or not.
-                            var t1 = seg.getCurve().getTangentAt(tMin, true),
-                                t2 = otherSeg.getCurve().getTangentAt(tMin, true);
-                            if (Math.abs(t1.cross(t2)) > epsilon) {
-                                seg = otherSeg;
-                                drawSegment(seg, 'exclude:switch', i, 'green');
-                                dir = 1;
-                            } else {
-                                drawSegment(seg, 'exclude:no cross', i, 'blue');
-                            }
+                            seg = otherSeg;
+                            dir = 1;
+                            drawSegment(seg, 'exclude', i, 'green');
                         } else {
                             // Do not switch to the intersection as the segment
                             // is part of the boolean result.
@@ -580,28 +571,31 @@ PathItem.inject(new function() {
                             dir = 1;
                         }
                     } else {
-                        var t = seg.getCurve().getTangentAt(tMin, true),
+                        var c1 = seg.getCurve();
+                        if (dir > 0)
+                            c1 = c1.getPrevious();
+                        var t1 = c1.getTangentAt(dir < 0 ? tMin : tMax, true),
                             // Get both curves at the intersection
                             // (except the entry curves).
-                            c2 = otherSeg.getCurve(),
-                            c1 = c2.getPrevious(),
+                            c4 = otherSeg.getCurve(),
+                            c3 = c4.getPrevious(),
                             // Calculate their winding values and tangents.
-                            t1 = c1.getTangentAt(tMax, true),
-                            t2 = c2.getTangentAt(tMin, true),
+                            t3 = c3.getTangentAt(tMax, true),
+                            t4 = c4.getTangentAt(tMin, true),
                             // Cross product of the entry and exit tangent
                             // vectors at the intersection, will let us select
                             // the correct contour to traverse next.
-                            w1 = t.cross(t1),
-                            w2 = t.cross(t2);
-                        if (Math.abs(w1 * w2) > epsilon) {
+                            w3 = t1.cross(t3),
+                            w4 = t1.cross(t4);
+                        if (Math.abs(w3 * w4) > /*#=*/Numerical.EPSILON) {
                             // Do not attempt to switch contours if we aren't
                             // sure that there is a possible candidate.
-                            var curve = w1 < w2 ? c1 : c2,
+                            var curve = w3 < w4 ? c3 : c4,
                                 nextCurve = operator(curve._segment1._winding)
                                     ? curve
-                                    : w1 < w2 ? c2 : c1,
+                                    : w3 < w4 ? c4 : c3,
                                 nextSeg = nextCurve._segment1;
-                            dir = nextCurve === c1 ? -1 : 1;
+                            dir = nextCurve === c3 ? -1 : 1;
                             // If we didn't find a suitable direction for next
                             // contour to traverse, stay on the same contour.
                             if (nextSeg._visited && seg._path !== nextSeg._path
@@ -611,7 +605,7 @@ PathItem.inject(new function() {
                             } else {
                                 // Switch to the intersection segment.
                                 seg = otherSeg;
-                                // TODO: Find a case that actually requires this
+                                // TODO:Why is this necessary, why not always 1?
                                 if (nextSeg._visited)
                                     dir = 1;
                                 drawSegment(seg, 'switch', i, 'green');
