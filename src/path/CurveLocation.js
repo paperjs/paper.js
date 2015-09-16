@@ -294,6 +294,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // TODO: isAtEndPoint() ?
         // -> Return if it's a tangent, or if not at an end point, only end
         // point intersections need more checking!
+        // Values for getTangentAt() that are almost 0 and 1.
+        // NOTE: Even though getTangentAt() has code to support 0 and 1 instead
+        // of tMin and tMax, we still need to use this instead, as other issues
+        // emerge from switching to 0 and 1 in edge cases.
+        // NOTE: VectorBoolean has code that slowly shifts these points inwards
+        // until the resulting tangents are not ambiguous. Do we need this too?
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             PI = Math.PI,

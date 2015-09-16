@@ -518,13 +518,7 @@ PathItem.inject(new function() {
         }
 
         var paths = [],
-            operator = operators[operation],
-            // Values for getTangentAt() that are almost 0 and 1.
-            // NOTE: Even though getTangentAt() supports 0 and 1 instead of
-            // tMin and tMax, we still need to use this instead, as other issues
-            // emerge from switching to 0 and 1 in edge cases.
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin;
+            operator = operators[operation];
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i];
             if (seg._visited || !operator(seg._winding))
