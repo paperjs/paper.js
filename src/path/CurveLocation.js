@@ -403,16 +403,22 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 if (path1 === path2) {
                     if (curve1 === curve2) {
                         var diff = l1._parameter - l2._parameter;
+                        // TODO: Compare points instead of parameter like in
+                        // equals? or curve time there too? Why was it changed?
                         if (Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON){
                             var i1 = l1._intersection,
                                 i2 = l2._intersection,
                                 curve21 = i1 && i1._curve,
-                                curve22 = i2 && l2._curve;
+                                curve22 = i2 && i2._curve,
+                                path21 = curve21 && curve21._path,
+                                path22 = curve22 && curve22._path;
                             res = curve21 === curve22 // equal or both null
                                 ? i1 && i2 ? i1._parameter - i2._parameter : 0
                                 : curve21 && curve22
-                                    ? curve21.getIndex() - curve22.getIndex()
-                                    : curve21 ? 1 : -1;
+                                    ? path21 === path22
+                                        ? curve21.getIndex() - curve22.getIndex()
+                                        : curve21 ? 1 : -1
+                                    : path21._id - path22._id;
                         } else {
                             res = diff;
                         }
