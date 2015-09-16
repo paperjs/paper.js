@@ -1729,7 +1729,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c1p2 = new Point(v1[6], v1[7]),
                 c2p1 = new Point(v2[0], v2[1]),
                 c2p2 = new Point(v2[6], v2[7]),
-                epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+                epsilon = /*#=*/Numerical.EPSILON;
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
             if (c1p1.isClose(c2p1, epsilon))
