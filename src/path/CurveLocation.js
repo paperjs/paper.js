@@ -328,11 +328,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             console.log(c1.getValues(), c2.getValues(), c3.getValues(), c4.getValues());
         }
 
-        function getAngle(tangent) {
-            var a = tangent.getAngleInRadians();
-            return a < -PI ? a + PI_2 : a >= PI ? a - PI_2 : a;
-        }
-
         function isInRange(angle, min, max) {
             return min < max
                 ? angle > min && angle < max
@@ -341,10 +336,10 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         }
 
         // Calculate angles for all four tangents at the intersection point
-        var a1 = getAngle(c1.getTangentAt(tMax, true).negate()),
-            a2 = getAngle(c2.getTangentAt(tMin, true)),
-            a3 = getAngle(c3.getTangentAt(tMax, true).negate()),
-            a4 = getAngle(c4.getTangentAt(tMin, true));
+        var a1 = c1.getTangentAt(tMax, true).negate().getAngleInRadians(),
+            a2 = c2.getTangentAt(tMin, true).getAngleInRadians(),
+            a3 = c3.getTangentAt(tMax, true).negate().getAngleInRadians(),
+            a4 = c4.getTangentAt(tMin, true).getAngleInRadians();
 
         // Count how many times curve2 angles appear between the curve1 angles
         // If each pair of angles split the other two, then the edges cross.
