@@ -522,8 +522,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      *
      * @return {Curve} a reversed version of the curve
      */
-    reverse: function() {
-        return new Curve(this._segment2.reverse(), this._segment1.reverse());
+    reversed: function() {
+        return new Curve(this._segment2.reversed(), this._segment1.reversed());
     },
 
     /**

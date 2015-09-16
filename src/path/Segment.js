@@ -393,10 +393,24 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Returns the reversed the segment, without modifying the segment itself.
+     * Reverses the {@link #handleIn} and {@link #handleOut} vectors of this
+     * segment. Note: the actual segment is modified, no copy is created.
      * @return {Segment} the reversed segment
      */
     reverse: function() {
+        var handleIn = this._handleIn,
+            handleOut = this._handleOut,
+            inX = handleIn._x,
+            inY = handleIn._y;
+        handleIn.set(handleOut._x, handleOut._y);
+        handleOut.set(inX, inY);
+    },
+
+    /**
+     * Returns the reversed the segment, without modifying the segment itself.
+     * @return {Segment} the reversed segment
+     */
+    reversed: function() {
         return new Segment(this._point, this._handleOut, this._handleIn);
     },
 
