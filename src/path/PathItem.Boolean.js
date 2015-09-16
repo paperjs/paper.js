@@ -224,9 +224,12 @@ PathItem.inject(new function() {
                     clearSegments.push(segment);
             }
             // Link the new segment with the intersection on the other curve
-            if (segment._intersection)
-                console.log('Oh dear there was one already: ' + segment._intersection);
-            segment._intersection = loc._intersection;
+            if (segment._intersection) {
+                console.log('Segment already has an intersection: '
+                        + segment._intersection + ', ' + loc._intersection);
+            } else {
+                segment._intersection = loc._intersection;
+            }
             // loc._setCurve(segment.getCurve());
             loc._segment = segment;
             loc._parameter = t;
@@ -542,7 +545,7 @@ PathItem.inject(new function() {
                     // intersection.
                     drawSegment(seg, 'add', i, 'black');
                 } else if (other._path === seg._path) { // Self-intersection
-                    drawSegment(seg, 'self-int', i, 'red');
+                    drawSegment(seg, 'self-int', i, 'purple');
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
@@ -569,12 +572,12 @@ PathItem.inject(new function() {
                         drawSegment(seg, 'exclude-cross', i, 'green');
                         seg = other;
                     } else {
-                        drawSegment(seg, 'exclude-stay', i, 'orange');
+                        drawSegment(seg, 'exclude-stay', i, 'blue');
                     }
                 } else if (operator(seg._winding)) {
                     // Do not switch to the intersecting segment as this segment
                     // is part of the the boolean result.
-                    drawSegment(seg, 'ignore-keep', i, 'black');
+                    drawSegment(seg, 'keep', i, 'black');
                 } else if (operator(other._winding) && inter.isCrossing()) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
@@ -582,7 +585,7 @@ PathItem.inject(new function() {
                     seg = other;
                 } else {
                     // Keep on truckin'
-                    drawSegment(seg, 'stay', i, 'orange');
+                    drawSegment(seg, 'stay', i, 'blue');
                 }
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
@@ -599,9 +602,8 @@ PathItem.inject(new function() {
                 inter = seg && seg._intersection;
                 other = inter && inter._segment;
                 if (seg === start || seg === otherStart) {
-                    drawSegment(seg, 'close', i, 'red');
-                }
-                if (seg._visited && (!other || other._visited)) {
+                    drawSegment(seg, 'done', i, 'red');
+                } else if (seg._visited && (!other || other._visited)) {
                     drawSegment(seg, 'visited', i, 'red');
                 }
                 if (!inter && !operator(seg._winding)) {
