@@ -93,7 +93,7 @@ var Numerical = new function() {
          * collinearity. This value is somewhat arbitrary and was chosen by
          * trial and error.
          */
-        GEOMETRIC_EPSILON: 1e-9,
+        GEOMETRIC_EPSILON: 1e-8,
         /**
          * MACHINE_EPSILON for a double precision (Javascript Number) is
          * 2.220446049250313e-16. (try this in the js console)
