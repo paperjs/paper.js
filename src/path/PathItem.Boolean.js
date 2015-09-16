@@ -149,8 +149,8 @@ PathItem.inject(new function() {
                 path1, path2);
     }
 
-    var scaleFactor = 1; // 1 / 3000;
-    var textAngle = 60;
+    var scaleFactor = 0.25; // 1 / 3000;
+    var textAngle = 33;
     var fontSize = 5;
 
     /**
@@ -543,36 +543,41 @@ PathItem.inject(new function() {
                     // resolving self-Intersections.
                     seg = other;
                 } else if (operation !== 'intersect' && inter._overlap) {
-                    // Switch to the overlapping intersection segment
-                    // if its winding number along the curve is 1, to
-                    // leave the overlapping area.
-                    // NOTE: We cannot check the next (overlapping)
-                    // segment since its winding number will always be 2
-                    drawSegment(seg, 'overlap', i, 'orange');
+                    // Switch to the overlapping intersecting segment if its
+                    // winding number along the curve is 1, meaning we leave the
+                    // overlapping area.
+                    // NOTE: We cannot check the next (overlapping) segment
+                    // since its winding number will always be 2.
                     var curve = other.getCurve();
                     if (getWinding(curve.getPointAt(0.5, true),
                             monoCurves, curve.isHorizontal()) === 1) {
+                        drawSegment(seg, 'overlap-cross', i, 'orange');
                         seg = other;
+                    } else {
+                        drawSegment(seg, 'overlap-stay', i, 'orange');
                     }
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing, and at each intersection within
-                    // the exclusion area even if it is not crossing.
+                    // the exclusion area even if it is not a crossing.
                     if (inter.isCrossing() || path2.contains(seg._point)) {
-                        seg = other;
                         drawSegment(seg, 'exclude-cross', i, 'green');
+                        seg = other;
                     } else {
-                        drawSegment(other, 'exclude-no-cross', i, 'orange');
+                        drawSegment(seg, 'exclude-stay', i, 'orange');
                     }
                 } else if (operator(seg._winding)) {
-                    // Do not switch to the intersecting segment as it is
-                    // contained inside the boolean result.
+                    // Do not switch to the intersecting segment as this segment
+                    // is part of the the boolean result.
                     drawSegment(seg, 'ignore-keep', i, 'black');
                 } else if (operator(other._winding) && inter.isCrossing()) {
-                    seg = other;
+                    // The other segment is part of the boolean result, and we
+                    // are at crossing, switch over.
                     drawSegment(seg, 'cross', i, 'green');
+                    seg = other;
                 } else {
-                    drawSegment(other, 'no-cross', i, 'orange');
+                    // Keep on truckin'
+                    drawSegment(seg, 'stay', i, 'orange');
                 }
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
@@ -588,10 +593,27 @@ PathItem.inject(new function() {
                 seg = seg.getNext();
                 inter = seg && seg._intersection;
                 other = inter && inter._segment;
+                if (seg === start || seg === otherStart) {
+                    drawSegment(seg, 'close', i, 'red');
+                }
+                if (seg._visited && (!other || other._visited)) {
+                    drawSegment(seg, 'visited', i, 'red');
+                }
+                if (!inter && !operator(seg._winding)) {
+                    // TODO: We really should find a way to go backwards perhaps
+                    // and try another path when this happens?
+                    drawSegment(seg, 'discard', i, 'red');
+                    console.error('Excluded segment encountered, aborting #'
+                            + pathCount + '.' +
+                            (path ? path._segments.length + 1 : 1));
+                }
             } while (seg && seg !== start && seg !== otherStart
                     // If we're about to switch, try to see if we can carry on
                     // if the other segment wasn't visited yet.
                     && (!seg._visited || other && !other._visited)
+                    // Intersections are always part of the resulting path, for
+                    // all other segments check the winding contribution to see
+                    // if they are to be kept. If not, the chain has to end here
                     && (inter || operator(seg._winding)));
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.

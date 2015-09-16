@@ -282,7 +282,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return curve && curve.split(this.getParameter(), true);
     },
 
-    isCrossing: function(report) {
+    isCrossing: function(_report) {
         // Implementation based on work by Andy Finnell:
         // http://losingfight.com/blog/2011/07/09/how-to-implement-boolean-operations-on-bezier-paths-part-3/
         // https://bitbucket.org/andyfinnell/vectorboolean
@@ -303,7 +303,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             PI = Math.PI,
-            PI_2 = PI * 2,
             // TODO: Make getCurve() sync work in boolean ops after splitting!!!
             c2 = this._curve,
             c1 = c2.getPrevious(),
@@ -311,7 +310,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             c3 = c4.getPrevious();
         if (!c1 || !c3)
             return this._crossing = false;
-        if (report) {
+        if (_report) {
             new Path.Circle({
                 center: this.getPoint(),
                 radius: 10,
@@ -325,13 +324,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 segments: [c3.getSegment1(), c3.getSegment2(), c4.getSegment2()],
                 strokeColor: 'orange'
             });
-            console.log(c1.getValues(), c2.getValues(), c3.getValues(), c4.getValues());
         }
 
         function isInRange(angle, min, max) {
             return min < max
                 ? angle > min && angle < max
-                // The range wraps around 0:
+                // The range wraps around -PI / PI:
                 : angle > min && angle <= PI || angle >= -PI && angle < max;
         }
 
