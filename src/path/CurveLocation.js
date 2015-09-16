@@ -353,14 +353,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @param {CurveLocation} location
      * @return {Boolean} {@true if the locations are equal}
      */
-    equals: function(loc, _ignoreIntersection) {
+    equals: function(loc, _ignoreOther) {
         return this === loc
             || loc instanceof CurveLocation
                 // Call getCurve() and getParameter() to keep in sync
                 && this.getCurve() === loc.getCurve()
                 && this.getPoint().isClose(loc.getPoint(),
                         /*#=*/Numerical.GEOMETRIC_EPSILON)
-                && (_ignoreIntersection
+                && (_ignoreOther
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(
                                 loc._intersection, true)))
@@ -389,48 +389,35 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     statics: {
         sort: function(locations) {
-            locations.sort(function compare(l1, l2) {
+            function compare(l1, l2, _ignoreOther) {
+                if (!l1 || !l2)
+                    return l1 ? -1 : 0;
                 var curve1 = l1._curve,
                     curve2 = l2._curve,
                     path1 = curve1._path,
                     path2 = curve2._path,
-                    res;
+                    diff;
                 // Sort by path-id, curve, parameter, curve2, parameter2 so we
                 // can easily remove duplicates with calls to equals() after.
                 // NOTE: We don't call getCurve() / getParameter() here, since
                 // this code is used internally in boolean operations where all
                 // this information remains valid during processing.
-                if (path1 === path2) {
-                    if (curve1 === curve2) {
-                        var diff = l1._parameter - l2._parameter;
-                        // TODO: Compare points instead of parameter like in
-                        // equals? or curve time there too? Why was it changed?
-                        if (Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON){
-                            var i1 = l1._intersection,
-                                i2 = l2._intersection,
-                                curve21 = i1 && i1._curve,
-                                curve22 = i2 && i2._curve,
-                                path21 = curve21 && curve21._path,
-                                path22 = curve22 && curve22._path;
-                            res = curve21 === curve22 // equal or both null
-                                ? i1 && i2 ? i1._parameter - i2._parameter : 0
-                                : curve21 && curve22
-                                    ? path21 === path22
-                                        ? curve21.getIndex() - curve22.getIndex()
-                                        : curve21 ? 1 : -1
-                                    : path21._id - path22._id;
-                        } else {
-                            res = diff;
-                        }
-                    } else {
-                        res = curve1.getIndex() - curve2.getIndex();
-                    }
-                } else {
-                    // Sort by path id to group all locs on the same path.
-                    res = path1._id - path2._id;
-                }
-                return res;
-            });
+                return path1 === path2
+                        ? curve1 === curve2
+                            // TODO: Compare points instead of parameter like in
+                            // equals? Or time there too? Why was it changed?
+                            ? Math.abs((diff = l1._parameter - l2._parameter))
+                                < /*#=*/Numerical.CURVETIME_EPSILON
+                                ? _ignoreOther
+                                    ? 0
+                                    : compare(l1._intersection,
+                                            l2._intersection, true)
+                                : diff
+                            : curve1.getIndex() - curve2.getIndex()
+                        // Sort by path id to group all locs on the same path.
+                        : path1._id - path2._id;
+            }
+            locations.sort(compare);
         }
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
