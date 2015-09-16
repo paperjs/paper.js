@@ -402,8 +402,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * curves
      */
     getIntersections: function(curve) {
-        return Curve._filterIntersections(Curve._getIntersections(
-                this.getValues(), curve.getValues(), this, curve, [], {}));
+        return Curve._getIntersections(this.getValues(), curve.getValues(),
+                this, curve, [], {});
     },
 
     // TODO: adjustThroughPoint
@@ -1359,11 +1359,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
             if (!Numerical.isZero(d1) || !Numerical.isZero(d2))
                 debugger;
             */
-            locations.push(
+            CurveLocation.add(locations,
                     new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
                         null, overlap,
                         new CurveLocation(c2, t2, p2 || Curve.getPoint(v2, t2),
-                            null, overlap)));
+                            null, overlap)), true);
         }
     }
 

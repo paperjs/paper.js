@@ -358,8 +358,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             || loc instanceof CurveLocation
                 // Call getCurve() and getParameter() to keep in sync
                 && this.getCurve() === loc.getCurve()
-                && this.getPoint().isClose(loc.getPoint(),
-                        /*#=*/Numerical.GEOMETRIC_EPSILON)
+                && Math.abs(this.getParameter() - loc.getParameter())
+                   < /*#=*/Numerical.CURVETIME_EPSILON
                 && (_ignoreOther
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(
@@ -388,36 +388,55 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     statics: {
-        sort: function(locations) {
-            function compare(l1, l2, _ignoreOther) {
-                if (!l1 || !l2)
-                    return l1 ? -1 : 0;
-                var curve1 = l1._curve,
-                    curve2 = l2._curve,
+        add: function(locations, loc, merge) {
+            // Insert-sort by path-id, curve, parameter so we can easily merge
+            // duplicates with calls to equals() after.
+            // NOTE: We don't call getCurve() / getParameter() here, since this
+            // code is used internally in boolean operations where all this
+            // information remains valid during processing.
+            var l = 0,
+                r = locations.length - 1;
+            while (l <= r) {
+                var m = (l + r) >>> 1,
+                    loc2 = locations[m],
+                    curve1 = loc._curve,
+                    curve2 = loc2._curve,
                     path1 = curve1._path,
-                    path2 = curve2._path,
-                    diff;
-                // Sort by path-id, curve, parameter, curve2, parameter2 so we
-                // can easily remove duplicates with calls to equals() after.
-                // NOTE: We don't call getCurve() / getParameter() here, since
-                // this code is used internally in boolean operations where all
-                // this information remains valid during processing.
-                return path1 === path2
-                        ? curve1 === curve2
-                            // TODO: Compare points instead of parameter like in
-                            // equals? Or time there too? Why was it changed?
-                            ? Math.abs((diff = l1._parameter - l2._parameter))
-                                < /*#=*/Numerical.CURVETIME_EPSILON
-                                ? _ignoreOther
-                                    ? 0
-                                    : compare(l1._intersection,
-                                            l2._intersection, true)
-                                : diff
-                            : curve1.getIndex() - curve2.getIndex()
-                        // Sort by path id to group all locs on the same path.
-                        : path1._id - path2._id;
+                    path2 = curve2._path;
+                    diff =  path1 === path2
+                            ? curve1.getIndex() + loc._parameter
+                                - curve2.getIndex() - loc2._parameter
+                            // Sort by path id to group all locs on same path.
+                            : path1._id - path2._id;
+                // Only compare location with equals() if diff is small enough
+                // NOTE: equals() takes the intersection location into account,
+                // while the above calculation of diff doesn't!
+                if (merge && Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON
+                        && loc.equals(loc2)) {
+                    // Carry over overlap setting!
+                    if (loc._overlap) {
+                        loc2._overlap = loc2._intersection._overlap = true;
+                    }
+                    // We're done, don't insert
+                    return;
+                }
+                if (diff < 0) {
+                    r = m - 1;
+                } else {
+                    l = m + 1;
+                }
             }
-            locations.sort(compare);
+            locations.splice(l, 0, loc);
+        },
+
+        expand: function(locations) {
+            // Create a copy since add() keeps modifying the array and inserting
+            // at sorted indices.
+            var copy = locations.slice();
+            for (var i = 0, l = locations.length; i < l; i++) {
+                this.add(copy, locations[i]._intersection, false);
+            }
+            return copy;
         }
     }
 }, Base.each(Curve.evaluateMethods, function(name) {

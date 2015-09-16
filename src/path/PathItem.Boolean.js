@@ -110,7 +110,7 @@ PathItem.inject(new function() {
             // console.timeEnd('self-intersection');
         }
         // console.timeEnd('intersection');
-        splitPath(Curve._filterIntersections(locations, true));
+        splitPath(CurveLocation.expand(locations));
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y

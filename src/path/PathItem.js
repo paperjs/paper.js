@@ -63,8 +63,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // intersections.
         // NOTE: The hidden argument _matrix is used internally to override the
         // passed path's transformation matrix.
-        return Curve._filterIntersections(this._getIntersections(
-                this !== path ? path : null, _matrix, []));
+        return this._getIntersections(this !== path ? path : null, _matrix, []);
     },
 
     _getIntersections: function(path, matrix, locations, returnFirst) {
