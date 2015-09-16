@@ -288,8 +288,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // https://bitbucket.org/andyfinnell/vectorboolean
         var intersection = this._intersection,
             crossing = this._crossing;
-        if (crossing != null || !intersection)
-            return crossing || false;
+        if (crossing != null || !intersection)
+            return crossing || false;
         // TODO: isTangent() ?
         // TODO: isAtEndPoint() ?
         // -> Return if it's a tangent, or if not at an end point, only end
