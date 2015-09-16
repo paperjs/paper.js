@@ -149,7 +149,7 @@ PathItem.inject(new function() {
                 path1, path2);
     }
 
-    var scaleFactor = 0.25; // 1 / 3000;
+    var scaleFactor = 1; // 1 / 3000;
     var textAngle = 33;
     var fontSize = 5;
 
@@ -167,12 +167,12 @@ PathItem.inject(new function() {
                 if (inter._other)
                     return;
                 var other = inter._intersection;
-                var log = ['CurveLocation', inter._id, 'p', inter.getPath()._id,
+                var log = ['CurveLocation', inter._id, 'id', inter.getPath()._id,
                     'i', inter.getIndex(), 't', inter._parameter,
-                    'o', !!inter._overlap,
-                    'Other', other._id, 'p', other.getPath()._id,
+                    'o', !!inter._overlap, 'p', inter.getPoint(),
+                    'Other', other._id, 'id', other.getPath()._id,
                     'i', other.getIndex(), 't', other._parameter,
-                    'o', !!other._overlap];
+                    'o', !!other._overlap, 'p', other.getPoint()];
                 new Path.Circle({
                     center: inter.point,
                     radius: fontSize / 2 * scaleFactor,
@@ -189,16 +189,20 @@ PathItem.inject(new function() {
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             noHandles = false,
-            clearSegments = [];
+            clearSegments = [],
+            curve,
+            prev,
+            prevT;
 
-        for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
+        for (var i = intersections.length - 1; i >= 0; i--) {
             var loc = intersections[i],
-                t = loc._parameter;
+                t = loc._parameter,
+                locT = t;
             // Check if we are splitting same curve multiple times, but avoid
             // dividing with zero.
-            if (prev && prev._curve === loc._curve && prev._parameter > 0) {
+            if (prev && prev._curve === loc._curve && prevT > 0) {
                 // Scale parameter after previous split.
-                t /= prev._parameter;
+                t /= prevT;
             } else {
                 curve = loc._curve;
                 noHandles = !curve.hasHandles();
@@ -220,10 +224,14 @@ PathItem.inject(new function() {
                     clearSegments.push(segment);
             }
             // Link the new segment with the intersection on the other curve
+            if (segment._intersection)
+                console.log('Oh dear there was one already: ' + segment._intersection);
             segment._intersection = loc._intersection;
             // loc._setCurve(segment.getCurve());
             loc._segment = segment;
+            loc._parameter = t;
             prev = loc;
+            prevT = locT;
         }
         // Clear segment handles if they were part of a curve with no handles,
         // once we are done with the entire curve.
@@ -486,17 +494,14 @@ PathItem.inject(new function() {
             labelSegment(seg, '#' + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
                             + ' ' + (segmentCount++) + '/' + index + ': ' + text
-                    + '   v: ' + !!seg._visited
-                    + '   p: ' + seg._path._id
-                    + '   x: ' + seg._point.x
-                    + '   y: ' + seg._point.y
+                    + '   id: ' + seg._path._id
+                    + '   v: ' + (seg._visited ? 1 : 0)
+                    + '   p: ' + seg._point
                     + '   op: ' + operator(seg._winding)
-                    + '   o: ' + (inter && inter._overlap || 0)
-                    + '   w: ' + seg._winding
+                    + '   ov: ' + (inter && inter._overlap || 0)
+                    + '   wi: ' + seg._winding
                     , color);
         }
-
-
 
         for (var i = 0; i < (window.reportWindings ? segments.length : 0); i++) {
             var seg = segments[i];
@@ -509,11 +514,10 @@ PathItem.inject(new function() {
 
             labelSegment(seg, '#' + pathIndex + '.' + (i + 1)
                     + '   i: ' + !!inter
-                    + '   p: ' + seg._path._id
-                    + '   x: ' + seg._point.x
-                    + '   y: ' + seg._point.y
-                    + '   o: ' + (inter && inter._overlap || 0)
-                    + '   w: ' + seg._winding
+                    + '   id: ' + seg._path._id
+                    + '   pt: ' + seg._point
+                    + '   ov: ' + (inter && inter._overlap || 0)
+                    + '   wi: ' + seg._winding
                     , 'green');
         }
 
@@ -560,7 +564,8 @@ PathItem.inject(new function() {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing, and at each intersection within
                     // the exclusion area even if it is not a crossing.
-                    if (inter.isCrossing() || path2.contains(seg._point)) {
+                    if (inter.isCrossing()
+                            || path2 && path2.contains(seg._point)) {
                         drawSegment(seg, 'exclude-cross', i, 'green');
                         seg = other;
                     } else {
@@ -593,7 +598,7 @@ PathItem.inject(new function() {
                 seg = seg.getNext();
                 inter = seg && seg._intersection;
                 other = inter && inter._segment;
-                if (seg === start || seg === otherStart) {
+                if (seg === start || seg === otherStart) {
                     drawSegment(seg, 'close', i, 'red');
                 }
                 if (seg._visited && (!other || other._visited)) {
