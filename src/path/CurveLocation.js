@@ -395,13 +395,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // code is used internally in boolean operations where all this
             // information remains valid during processing.
             var l = 0,
-                r = locations.length - 1;
+                r = locations.length - 1,
+                curve1 = loc._curve,
+                path1 = curve1._path;
             while (l <= r) {
                 var m = (l + r) >>> 1,
                     loc2 = locations[m],
-                    curve1 = loc._curve,
                     curve2 = loc2._curve,
-                    path1 = curve1._path,
                     path2 = curve2._path;
                     diff =  path1 === path2
                             ? curve1.getIndex() + loc._parameter
@@ -417,8 +417,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     if (loc._overlap) {
                         loc2._overlap = loc2._intersection._overlap = true;
                     }
-                    // We're done, don't insert
-                    return;
+                    // We're done, don't insert, merge with loc2 instead
+                    return loc2;
                 }
                 if (diff < 0) {
                     r = m - 1;
@@ -427,16 +427,17 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 }
             }
             locations.splice(l, 0, loc);
+            return loc;
         },
 
         expand: function(locations) {
             // Create a copy since add() keeps modifying the array and inserting
             // at sorted indices.
-            var copy = locations.slice();
+            var expanded = locations.slice();
             for (var i = 0, l = locations.length; i < l; i++) {
-                this.add(copy, locations[i]._intersection, false);
+                this.add(expanded, locations[i]._intersection, false);
             }
-            return copy;
+            return expanded;
         }
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
