@@ -1755,36 +1755,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             if (c1p2.isClose(c2p2, epsilon))
                 addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
             return locations;
-        },
-
-        _filterIntersections: function(locations, expand) {
-            var last = locations.length - 1;
-            if (last > 0) {
-                CurveLocation.sort(locations);
-                // Filter out duplicate locations, but preserve _overlap among
-                // all duplicated (only one of them will have it defined).
-                var i = last,
-                    loc = locations[i];
-                while(--i >= 0) {
-                    var prev = locations[i];
-                    if (prev.equals(loc)) {
-                        locations.splice(i + 1, 1); // Remove location.
-                        // Preserve _overlap for both linked intersections.
-                        var over = loc._overlap;
-                        if (over) {
-                            prev._overlap = prev._intersection._overlap = over;
-                        }
-                        last--;
-                    }
-                    loc = prev;
-                }
-            }
-            if (expand) {
-                for (var i = last; i >= 0; i--)
-                    locations.push(locations[i]._intersection);
-                CurveLocation.sort(locations);
-            }
-            return locations;
         }
     }};
 });
