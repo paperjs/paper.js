@@ -847,16 +847,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     isClockwise: function() {
         if (this._clockwise !== undefined)
             return this._clockwise;
-        var segments = this._segments,
-            count = segments.length,
-            last = count - 1,
-            sum = 0;
-        // TODO: Check if this works correctly for all open paths.
-        for (var i = 0, l = this._closed ? count : last; i < l; i++) {
-            sum += Curve.getEdgeSum(Curve.getValues(
-                    segments[i], segments[i < last ? i + 1 : 0]));
-        }
-        return sum > 0;
+        return this.getArea() >= 0;
     },
 
     setClockwise: function(clockwise) {
