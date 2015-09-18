@@ -69,11 +69,25 @@ PathItem.inject(new function() {
         return result;
     }
 
+    var scaleFactor = 0.5; // 1 / 3000;
+    var textAngle = 33;
+    var fontSize = 5;
+
+    var segmentOffset;
+    var pathIndices;
+    var pathIndex;
+    var pathCount;
+
     // Boolean operators return true if a curve with the given winding
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
     // split at intersections.
     function computeBoolean(path1, path2, operation) {
+        segmentOffset = {};
+        pathIndices = {};
+        pathIndex = 0;
+        pathCount = 1;
+
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // Note that the result paths might not belong to the same type
@@ -149,10 +163,6 @@ PathItem.inject(new function() {
                 path1, path2);
     }
 
-    var scaleFactor = 1; // 1 / 3000;
-    var textAngle = 33;
-    var fontSize = 5;
-
     /**
      * Private method for splitting a PathItem at the given intersections.
      * The routine works for both self intersections and intersections
@@ -175,8 +185,8 @@ PathItem.inject(new function() {
                     'o', !!other._overlap, 'p', other.getPoint()];
                 new Path.Circle({
                     center: inter.point,
-                    radius: fontSize / 2 * scaleFactor,
-                    strokeColor: 'green',
+                    radius: 2 * scaleFactor,
+                    fillColor: inter.isCrossing() ? 'red' : 'green',
                     strokeScaling: false
                 });
                 console.log(log.map(function(v) {
@@ -443,10 +453,6 @@ PathItem.inject(new function() {
         }
     }
 
-    var segmentOffset = {};
-    var pathIndices = {};
-    var pathIndex = 0;
-
     /**
      * Private method to trace closed contours from a set of segments according
      * to a set of constraints-winding contribution and a custom operator.
@@ -496,11 +502,11 @@ PathItem.inject(new function() {
             var inter = seg._intersection;
             labelSegment(seg, '#' + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
-                            + ' ' + (segmentCount++) + '/' + index + ': ' + text
-                    + '   id: ' + seg._path._id
+                            + ' (' + (index + 1) + '): ' + text
+                    + '   id: ' + seg._path._id + '.' + seg._index
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
-                    + '   op: ' + operator(seg._winding)
+                    + '   op: ' + (operator && operator(seg._winding))
                     + '   ov: ' + (inter && inter._overlap || 0)
                     + '   wi: ' + seg._winding
                     , color);
@@ -517,7 +523,7 @@ PathItem.inject(new function() {
 
             labelSegment(seg, '#' + pathIndex + '.' + (i + 1)
                     + '   i: ' + !!inter
-                    + '   id: ' + seg._path._id
+                    + '   id: ' + seg._path._id + '.' + seg._index
                     + '   pt: ' + seg._point
                     + '   ov: ' + (inter && inter._overlap || 0)
                     + '   wi: ' + seg._winding
@@ -590,8 +596,9 @@ PathItem.inject(new function() {
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
                     console.error('Unable to switch to intersecting segment, '
-                            + 'aborting #' + pathCount + '.' +
-                            (path ? path._segments.length + 1 : 1));
+                            + 'aborting #' + pathCount + '.'
+                            + (path ? path._segments.length + 1 : 1)
+                            + ' id: ' + seg._path._id + '.' + seg._index);
                     break;
                 }
                 // Add the current segment to the path, and mark the added
