@@ -538,6 +538,15 @@ PathItem.inject(new function() {
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
+                } else if (inter._overlap && operation !== 'intersect') {
+                    // Switch to the overlapping intersecting segment if it is
+                    // part of the boolean result.
+                    if (operator(other._originalWinding)) {
+                        drawSegment(seg, 'overlap-cross', i, 'orange');
+                        seg = other;
+                    } else {
+                        drawSegment(seg, 'overlap-stay', i, 'orange');
+                    }
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing.
@@ -546,16 +555,6 @@ PathItem.inject(new function() {
                         seg = other;
                     } else {
                         drawSegment(seg, 'exclude-stay', i, 'blue');
-                    }
-                } else if (inter._overlap
-                        && /^(unite|subtract)$/.test(operation)) {
-                    // Switch to the overlapping intersecting segment if it is
-                    // part of the boolean result.
-                    if (operator(other._originalWinding)) {
-                        drawSegment(seg, 'overlap-cross', i, 'orange');
-                        seg = other;
-                    } else {
-                        drawSegment(seg, 'overlap-stay', i, 'orange');
                     }
                 } else if (operator(seg._winding)) {
                     // Do not switch to the intersecting segment as this segment
