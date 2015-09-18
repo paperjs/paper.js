@@ -402,7 +402,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * curves
      */
     getIntersections: function(curve) {
-        return Curve._getIntersections(this.getValues(), curve.getValues(),
+        return Curve.getIntersections(this.getValues(), curve.getValues(),
                 this, curve, [], {});
     },
 
@@ -1706,7 +1706,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // We need to provide the original left curve reference to the
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
-        _getIntersections: function(v1, v2, c1, c2, locations, param) {
+        getIntersections: function(v1, v2, c1, c2, locations, param) {
             var min = Math.min,
                 max = Math.max;
             // Avoid checking curves if completely out of control bounds.

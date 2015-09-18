@@ -1684,10 +1684,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
-        // Tell _getIntersections to return as soon as some intersections are
+        // Tell getIntersections() to return as soon as some intersections are
         // found, because all we care for here is there are some or none:
-        return this._asPathItem()._getIntersections(item._asPathItem(),
-                _matrix || item._matrix, [], true).length > 0;
+        return this._asPathItem().getIntersections(item._asPathItem(),
+                _matrix || item._matrix, true).length > 0;
     },
 
     /**
