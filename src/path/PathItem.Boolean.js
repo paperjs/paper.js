@@ -415,26 +415,7 @@ PathItem.inject(new function() {
         // Assign the average winding to the entire curve chain.
         var winding = Math.round(windingSum / 3);
         for (var j = chain.length - 1; j >= 0; j--) {
-            var seg = chain[j].segment,
-                inter = seg._intersection,
-                wind = winding;
-            // We need to handle the edge cases of overlapping curves
-            // differently based on the type of operation, and adjust the
-            // winding number accordingly:
-            if (inter && inter._overlap) {
-                switch (operation) {
-                case 'unite':
-                    if (wind === 1)
-                        wind = 2;
-                    break;
-                case 'intersect':
-                    if (wind === 2)
-                        wind = 1;
-                    break;
-                }
-            }
-            seg._originalWinding = winding;
-            seg._winding = wind;
+            chain[j].segment._winding = winding;
         }
     }
 
@@ -551,7 +532,7 @@ PathItem.inject(new function() {
                         && /^(unite|subtract)$/.test(operation)) {
                     // Switch to the overlapping intersecting segment if it is
                     // part of the boolean result.
-                    if (operator(other._originalWinding)) {
+                    if (operator(other._winding)) {
                         drawSegment(seg, 'overlap-cross', i, 'orange');
                         seg = other;
                     } else {
