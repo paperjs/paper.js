@@ -449,6 +449,7 @@ PathItem.inject(new function() {
                     break;
                 }
             }
+            seg._originalWinding = winding;
             seg._winding = wind;
         }
     }
@@ -555,20 +556,6 @@ PathItem.inject(new function() {
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
-                } else if (operation !== 'intersect' && inter._overlap) {
-                    // Switch to the overlapping intersecting segment if its
-                    // winding number along the curve is 1, meaning we leave the
-                    // overlapping area.
-                    // NOTE: We cannot check the next (overlapping) segment
-                    // since its winding number will always be 2.
-                    var curve = other.getCurve();
-                    if (getWinding(curve.getPointAt(0.5, true),
-                            monoCurves, curve.isHorizontal()) === 1) {
-                        drawSegment(seg, 'overlap-cross', i, 'orange');
-                        seg = other;
-                    } else {
-                        drawSegment(seg, 'overlap-stay', i, 'orange');
-                    }
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing, and at each intersection within
@@ -579,6 +566,16 @@ PathItem.inject(new function() {
                         seg = other;
                     } else {
                         drawSegment(seg, 'exclude-stay', i, 'blue');
+                    }
+                } else if (inter._overlap
+                        && /^(unite|subtract)$/.test(operation)) {
+                    // Switch to the overlapping intersecting segment if it is
+                    // part of the boolean result.
+                    if (operator(other._originalWinding)) {
+                        drawSegment(seg, 'overlap-cross', i, 'orange');
+                        seg = other;
+                    } else {
+                        drawSegment(seg, 'overlap-stay', i, 'orange');
                     }
                 } else if (operator(seg._winding)) {
                     // Do not switch to the intersecting segment as this segment
