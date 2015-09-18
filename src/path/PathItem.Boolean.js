@@ -539,10 +539,8 @@ PathItem.inject(new function() {
                     seg = other;
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
-                    // switch at each crossing, and at each intersection within
-                    // the exclusion area even if it is not a crossing.
-                    if (inter.isCrossing()
-                            || path2 && path2.contains(seg._point)) {
+                    // switch at each crossing.
+                    if (inter.isCrossing()) {
                         drawSegment(seg, 'exclude-cross', i, 'green');
                         seg = other;
                     } else {
