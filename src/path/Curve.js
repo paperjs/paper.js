@@ -1709,28 +1709,44 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // #getIntersections() calls as it is required to create the resulting
         // CurveLocation objects.
         getIntersections: function(v1, v2, c1, c2, locations, param) {
-            var min = Math.min,
-                max = Math.max;
             // Avoid checking curves if completely out of control bounds.
-            // Also detect and handle overlaps.
+            // As a little optimization, we can scale the handles with 0.75
+            // before calculating the control bounds and still be sure that the
+            // curve is fully contained.
+            var c1p1x = v1[0], c1p1y = v1[1],
+                c1p2x = v1[6], c1p2y = v1[7],
+                c2p1x = v2[0], c2p1y = v2[1],
+                c2p2x = v2[6], c2p2y = v2[7],
+                c1h1x = (3 * v1[2] + c1p1x) / 4,
+                c1h1y = (3 * v1[3] + c1p1y) / 4,
+                c1h2x = (3 * v1[4] + c1p2x) / 4,
+                c1h2y = (3 * v1[5] + c1p2y) / 4,
+                c2h1x = (3 * v2[2] + c2p1x) / 4,
+                c2h1y = (3 * v2[3] + c2p1y) / 4,
+                c2h2x = (3 * v2[4] + c2p2x) / 4,
+                c2h2y = (3 * v2[5] + c2p2y) / 4,
+                min = Math.min,
+                max = Math.max;
             if (!(
-                    max(v1[0], v1[2], v1[4], v1[6]) >=
-                    min(v2[0], v2[2], v2[4], v2[6]) &&
-                    max(v1[1], v1[3], v1[5], v1[7]) >=
-                    min(v2[1], v2[3], v2[5], v2[7]) &&
-                    min(v1[0], v1[2], v1[4], v1[6]) <=
-                    max(v2[0], v2[2], v2[4], v2[6]) &&
-                    min(v1[1], v1[3], v1[5], v1[7]) <=
-                    max(v2[1], v2[3], v2[5], v2[7])
-                ) || !param.startConnected && !param.endConnected
+                    max(c1p1x, c1h1x, c1h2x, c1p2x) >=
+                    min(c2p1x, c2h1x, c2h2x, c2p2x) &&
+                    min(c1p1x, c1h1x, c1h2x, c1p2x) <=
+                    max(c2p1x, c2h1x, c2h2x, c2p2x) &&
+                    max(c1p1y, c1h1y, c1h2y, c1p2y) >=
+                    min(c2p1y, c2h1y, c2h2y, c2p2y) &&
+                    min(c1p1y, c1h1y, c1h2y, c1p2y) <=
+                    max(c2p1y, c2h1y, c2h2y, c2p2y)
+                )
+                // Also detect and handle overlaps:
+                || !param.startConnected && !param.endConnected
                     && addOverlap(v1, v2, c1, c2, locations, param))
                 return locations;
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                c1p1 = new Point(v1[0], v1[1]),
-                c1p2 = new Point(v1[6], v1[7]),
-                c2p1 = new Point(v2[0], v2[1]),
-                c2p2 = new Point(v2[6], v2[7]),
+                c1p1 = new Point(c1p1x, c1p1y),
+                c1p2 = new Point(c1p2x, c1p2y),
+                c2p1 = new Point(c2p1x, c2p1y),
+                c2p2 = new Point(c2p2x, c2p2y),
                 epsilon = /*#=*/Numerical.EPSILON;
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
