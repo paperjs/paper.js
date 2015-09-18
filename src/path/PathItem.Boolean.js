@@ -49,7 +49,8 @@ PathItem.inject(new function() {
     // paths and remove empty curves, and #reorient() to make sure all paths
     // have correct winding direction.
     function preparePath(path) {
-        return path.clone(false).reduce().reorient().transform(null, true, true);
+        return path.clone(false).reduce().resolveCrossings()
+                .transform(null, true, true);
     }
 
     function finishBoolean(ctor, paths, path1, path2) {
@@ -102,29 +103,9 @@ PathItem.inject(new function() {
         // Split curves at intersections on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
         // console.time('intersection');
-        var locations = _path1._getIntersections(_path2, null, []);
-        // console.timeEnd('inter');
-        if (_path2) {
-            // console.time('self-intersection');
-            // Resolve self-intersections on both source paths and add them to
-            // the locations too:
-            // var self = [];
-            _path1._getIntersections(null, null, locations);
-            _path2._getIntersections(null, null, locations);
-            /*
-            self.forEach(function(inter) {
-                new Path.Circle({
-                    center: inter.point,
-                    radius: fontSize / 2 * scaleFactor,
-                    fillColor: 'red'
-                });
-            });
-            console.log(self);
-            */
-            // console.timeEnd('self-intersection');
-        }
+        var locations = CurveLocation.expand(_path1.getCrossings(_path2));
         // console.timeEnd('intersection');
-        splitPath(CurveLocation.expand(locations));
+        splitPath(locations);
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -535,7 +516,7 @@ PathItem.inject(new function() {
             operator = operators[operation];
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i];
-            if (seg._visited || !operator(seg._winding))
+            if (seg._visited || operator && !operator(seg._winding))
                 continue;
             var path = new Path(Item.NO_INSERT),
                 start = seg,
@@ -551,7 +532,7 @@ PathItem.inject(new function() {
                     // Just add the first segment and all segments that have no
                     // intersection.
                     drawSegment(seg, 'add', i, 'black');
-                } else if (other._path === seg._path) { // Self-intersection
+                } else if (!operator) { // Resolve self-intersections
                     drawSegment(seg, 'self-int', i, 'purple');
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
@@ -610,7 +591,7 @@ PathItem.inject(new function() {
                 } else if (seg._visited && (!other || other._visited)) {
                     drawSegment(seg, 'visited', i, 'red');
                 }
-                if (!inter && !operator(seg._winding)) {
+                if (!inter && operator && !operator(seg._winding)) {
                     // TODO: We really should find a way to go backwards perhaps
                     // and try another path when this happens?
                     drawSegment(seg, 'discard', i, 'red');
@@ -625,7 +606,7 @@ PathItem.inject(new function() {
                     // Intersections are always part of the resulting path, for
                     // all other segments check the winding contribution to see
                     // if they are to be kept. If not, the chain has to end here
-                    && (inter || operator(seg._winding)));
+                    && (inter || !operator || operator(seg._winding)));
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
             if (seg === start || seg === otherStart) {
@@ -733,6 +714,27 @@ PathItem.inject(new function() {
         divide: function(path) {
             return finishBoolean(Group,
                     [this.subtract(path), this.intersect(path)], this, path);
+        },
+
+        resolveCrossings: function() {
+            var locations = this.getCrossings();
+            if (!locations.length)
+                return this.reorient();
+            var reportSegments = window.reportSegments;
+            var reportIntersections = window.reportIntersections;
+            window.reportSegments = false;
+            window.reportIntersections = false;
+            splitPath(CurveLocation.expand(locations));
+            var paths = this._children || [this],
+                segments = [];
+            for (var i = 0, l = paths.length; i < l; i++) {
+                segments.push.apply(segments, paths[i]._segments);
+            }
+            var res = finishBoolean(tracePaths(segments), this, null, false)
+                    .reorient();
+            window.reportSegments = reportSegments;
+            window.reportIntersections = reportIntersections;
+            return res;
         }
     };
 });
