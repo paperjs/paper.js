@@ -151,7 +151,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                 parent._currentPath = undefined;
             // Clockwise state becomes undefined as soon as geometry changes.
             // Also clear cached mono curves used for winding calculations.
-            this._length = this._clockwise = this._monoCurves = undefined;
+            this._length = this._area = this._clockwise = this._monoCurves =
+                    undefined;
             if (flags & /*#=*/ChangeFlag.SEGMENTS) {
                 this._version++; // See CurveLocation
             } else if (this._curves) {
@@ -806,10 +807,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     getLength: function() {
         if (this._length == null) {
-            var curves = this.getCurves();
-            this._length = 0;
+            var curves = this.getCurves(),
+                length = 0;
             for (var i = 0, l = curves.length; i < l; i++)
-                this._length += curves[i].getLength();
+                length += curves[i].getLength();
+            this._length = length;
         }
         return this._length;
     },
@@ -822,11 +824,50 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @bean
      */
     getArea: function() {
-        var curves = this.getCurves();
-        var area = 0;
-        for (var i = 0, l = curves.length; i < l; i++)
-            area += curves[i].getArea();
-        return area;
+        if (this._area == null) {
+            var segments = this._segments,
+                count = segments.length,
+                last = count - 1,
+                area = 0;
+            for (var i = 0, l = this._closed ? count : last; i < l; i++) {
+                area += Curve.getArea(Curve.getValues(
+                        segments[i], segments[i < last ? i + 1 : 0]));
+            }
+            this._area = area;
+        }
+        return this._area;
+    },
+
+    /**
+     * Specifies whether the path is oriented clock-wise.
+     *
+     * @type Boolean
+     * @bean
+     */
+    isClockwise: function() {
+        if (this._clockwise !== undefined)
+            return this._clockwise;
+        var segments = this._segments,
+            count = segments.length,
+            last = count - 1,
+            sum = 0;
+        // TODO: Check if this works correctly for all open paths.
+        for (var i = 0, l = this._closed ? count : last; i < l; i++) {
+            sum += Curve.getEdgeSum(Curve.getValues(
+                    segments[i], segments[i < last ? i + 1 : 0]));
+        }
+        return sum > 0;
+    },
+
+    setClockwise: function(clockwise) {
+        // Only revers the path if its clockwise orientation is not the same
+        // as what it is now demanded to be.
+        // On-the-fly conversion to boolean:
+        if (this.isClockwise() != (clockwise = !!clockwise))
+            this.reverse();
+        // Reverse only flips _clockwise state if it was already set, so let's
+        // always set this here now.
+        this._clockwise = clockwise;
     },
 
     /**
@@ -1221,29 +1262,6 @@ var Path = PathItem.extend(/** @lends Path# */{
             return path;
         }
         return null;
-    },
-
-    /**
-     * Specifies whether the path is oriented clock-wise.
-     *
-     * @type Boolean
-     * @bean
-     */
-    isClockwise: function() {
-        if (this._clockwise !== undefined)
-            return this._clockwise;
-        return Path.isClockwise(this._segments);
-    },
-
-    setClockwise: function(clockwise) {
-        // Only revers the path if its clockwise orientation is not the same
-        // as what it is now demanded to be.
-        // On-the-fly conversion to boolean:
-        if (this.isClockwise() != (clockwise = !!clockwise))
-            this.reverse();
-        // Reverse only flips _clockwise state if it was already set, so let's
-        // always set this here now.
-        this._clockwise = clockwise;
     },
 
     /**
@@ -2684,21 +2702,6 @@ new function() { // PostScript-style drawing commands
 
 // Mess with indentation in order to get more line-space below:
 statics: {
-    /**
-     * Determines whether the segments describe a path in clockwise or counter-
-     * clockwise orientation.
-     *
-     * @private
-     */
-    isClockwise: function(segments) {
-        var sum = 0;
-        // TODO: Check if this works correctly for all open paths.
-        for (var i = 0, l = segments.length; i < l; i++)
-            sum += Curve.getEdgeSum(Curve.getValues(
-                    segments[i], segments[i + 1 < l ? i + 1 : 0]));
-        return sum > 0;
-    },
-
     /**
      * Returns the bounding rectangle of the item excluding stroke width.
      *
