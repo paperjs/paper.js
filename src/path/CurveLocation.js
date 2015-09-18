@@ -282,49 +282,42 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return curve && curve.split(this.getParameter(), true);
     },
 
-    isCrossing: function(_report) {
+    isTangent: function() {
+        var t1 = this.getTangent(),
+            inter = this._intersection,
+            t2 = inter && inter.getTangent();
+        return t1 && t2 ? t1.isCollinear(t2) : false;
+    },
+
+    isCrossing: function() {
         // Implementation based on work by Andy Finnell:
         // http://losingfight.com/blog/2011/07/09/how-to-implement-boolean-operations-on-bezier-paths-part-3/
         // https://bitbucket.org/andyfinnell/vectorboolean
-        var intersection = this._intersection,
-            crossing = this._crossing;
-        if (crossing != null || !intersection)
-            return crossing || false;
-        // TODO: isTangent() ?
-        // TODO: isAtEndPoint() ?
-        // -> Return if it's a tangent, or if not at an end point, only end
-        // point intersections need more checking!
+        var inter = this._intersection;
+        if (!inter)
+            return false;
+        var t = this._parameter,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin;
+        // If the intersection is in the middle of the path, it is either a
+        // tangent or a crossing, no need for the detailed corner check below.
+        // But we do need a check for the edge case of tangents?
+        if (t >= tMin && t <= tMax)
+            return !this.isTangent();
         // Values for getTangentAt() that are almost 0 and 1.
         // NOTE: Even though getTangentAt() has code to support 0 and 1 instead
         // of tMin and tMax, we still need to use this instead, as other issues
         // emerge from switching to 0 and 1 in edge cases.
         // NOTE: VectorBoolean has code that slowly shifts these points inwards
         // until the resulting tangents are not ambiguous. Do we need this too?
-        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            PI = Math.PI,
-            // TODO: Make getCurve() sync work in boolean ops after splitting!!!
-            c2 = this._curve,
+        // TODO: Make getCurve() sync work in boolean ops after splitting!!!
+        var c2 = this._curve,
             c1 = c2.getPrevious(),
-            c4 = intersection._curve,
-            c3 = c4.getPrevious();
+            c4 = inter._curve,
+            c3 = c4.getPrevious(),
+            PI = Math.PI;
         if (!c1 || !c3)
-            return this._crossing = false;
-        if (_report) {
-            new Path.Circle({
-                center: this.getPoint(),
-                radius: 10,
-                strokeColor: 'red'
-            });
-            new Path({
-                segments: [c1.getSegment1(), c1.getSegment2(), c2.getSegment2()],
-                strokeColor: 'red'
-            });
-            new Path({
-                segments: [c3.getSegment1(), c3.getSegment2(), c4.getSegment2()],
-                strokeColor: 'orange'
-            });
-        }
+            return false;
 
         function isInRange(angle, min, max) {
             return min < max
