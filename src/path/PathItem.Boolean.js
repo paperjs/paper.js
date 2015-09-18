@@ -53,11 +53,12 @@ PathItem.inject(new function() {
                 .transform(null, true, true);
     }
 
-    function finishBoolean(ctor, paths, path1, path2) {
-        var result = new ctor(Item.NO_INSERT);
+    function finishBoolean(paths, path1, path2, reduce) {
+        var result = new CompoundPath(Item.NO_INSERT);
         result.addChildren(paths, true);
         // See if the CompoundPath can be reduced to just a simple Path.
-        result = result.reduce();
+        if (reduce)
+            result = result.reduce();
         // Insert the resulting path above whichever of the two paths appear
         // further up in the stack.
         result.insertAbove(path2 && path1.isSibling(path2)
@@ -139,9 +140,8 @@ PathItem.inject(new function() {
                         operation);
             }
         }
-        return finishBoolean(CompoundPath,
-                tracePaths(segments, monoCurves, operation, _path1, _path2),
-                path1, path2);
+        return finishBoolean(tracePaths(segments, operation), path1, path2,
+                true);
     }
 
     /**
@@ -213,6 +213,8 @@ PathItem.inject(new function() {
                 // be set back straight at the end.
                 if (noHandles)
                     clearSegments.push(segment);
+                // TODO: Figure out the right value for t
+                t = 0; // Since it's split (might be 1 also?)
             }
             // Link the new segment with the intersection on the other curve
             if (segment._intersection) {
@@ -221,6 +223,7 @@ PathItem.inject(new function() {
             } else {
                 segment._intersection = loc._intersection;
             }
+            // TODO: Figure out why setCurves doesn't work:
             // loc._setCurve(segment.getCurve());
             loc._segment = segment;
             loc._parameter = t;
@@ -447,9 +450,7 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, monoCurves, operation, path1, path2) {
-        var segmentCount = 0;
-        var pathCount = 1;
+    function tracePaths(segments, operation) {
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
@@ -700,6 +701,8 @@ PathItem.inject(new function() {
          */
         exclude: function(path) {
             return computeBoolean(this, path, 'exclude');
+            // return finishBoolean([this.subtract(path), path.subtract(this)],
+            //         this, path, true);
         },
 
         /**
@@ -710,8 +713,8 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         divide: function(path) {
-            return finishBoolean(Group,
-                    [this.subtract(path), this.intersect(path)], this, path);
+            return finishBoolean([this.subtract(path), this.intersect(path)],
+                    this, path, true);
         },
 
         resolveCrossings: function() {
