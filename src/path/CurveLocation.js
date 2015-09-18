@@ -289,20 +289,23 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return t1 && t2 ? t1.isCollinear(t2) : false;
     },
 
-    isCrossing: function() {
+    isCrossing: function(_report) {
         // Implementation based on work by Andy Finnell:
         // http://losingfight.com/blog/2011/07/09/how-to-implement-boolean-operations-on-bezier-paths-part-3/
         // https://bitbucket.org/andyfinnell/vectorboolean
         var inter = this._intersection;
         if (!inter)
             return false;
-        var t = this._parameter,
+        // TODO: Make getCurve() and getParameter() sync work in boolean ops
+        // before and after splitting!!!
+        var t1 = this._parameter,
+            t2 = inter._parameter,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         // If the intersection is in the middle of the path, it is either a
         // tangent or a crossing, no need for the detailed corner check below.
         // But we do need a check for the edge case of tangents?
-        if (t >= tMin && t <= tMax)
+        if (t1 >= tMin && t1 <= tMax || t2 >= tMin && t2 <= tMax)
             return !this.isTangent();
         // Values for getTangentAt() that are almost 0 and 1.
         // NOTE: Even though getTangentAt() has code to support 0 and 1 instead
@@ -310,7 +313,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // emerge from switching to 0 and 1 in edge cases.
         // NOTE: VectorBoolean has code that slowly shifts these points inwards
         // until the resulting tangents are not ambiguous. Do we need this too?
-        // TODO: Make getCurve() sync work in boolean ops after splitting!!!
         var c2 = this._curve,
             c1 = c2.getPrevious(),
             c4 = inter._curve,
@@ -318,6 +320,24 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             PI = Math.PI;
         if (!c1 || !c3)
             return false;
+
+        if (_report) {
+            new Path.Circle({
+                center: this.getPoint(),
+                radius: 10,
+                strokeColor: 'red'
+            });
+            new Path({
+                segments: [c1.getSegment1(), c1.getSegment2(), c2.getSegment2()],
+                strokeColor: 'red',
+                strokeWidth: 4
+            });
+            new Path({
+                segments: [c3.getSegment1(), c3.getSegment2(), c4.getSegment2()],
+                strokeColor: 'orange',
+                strokeWidth: 4
+            });
+        }
 
         function isInRange(angle, min, max) {
             return min < max
