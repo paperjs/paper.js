@@ -71,7 +71,7 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.5; // 1 / 3000;
+    var scaleFactor = 1.0; // 1 / 3000;
     var textAngle = 33;
     var fontSize = 5;
 
@@ -87,8 +87,6 @@ PathItem.inject(new function() {
     function computeBoolean(path1, path2, operation) {
         segmentOffset = {};
         pathIndices = {};
-        pathIndex = 0;
-        pathCount = 1;
 
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
@@ -220,6 +218,12 @@ PathItem.inject(new function() {
             if (segment._intersection) {
                 console.log('Segment already has an intersection: '
                         + segment._intersection + ', ' + loc._intersection);
+                // Create a chain of possible intersections linked through
+                // _next:
+                var inter = segment._intersection;
+                while (inter._next)
+                    inter = inter._next;
+                inter._next = loc;
             } else {
                 segment._intersection = loc._intersection;
             }
@@ -451,6 +455,8 @@ PathItem.inject(new function() {
      * @return {Path[]} the contours traced
      */
     function tracePaths(segments, operation) {
+        pathIndex = 0;
+        pathCount = 1;
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
@@ -492,6 +498,7 @@ PathItem.inject(new function() {
                     + '   op: ' + (operator && operator(seg._winding))
                     + '   ov: ' + (inter && inter._overlap || 0)
                     + '   wi: ' + seg._winding
+                    + '   mu: ' + !!(inter && inter._next)
                     , color);
         }
 
@@ -516,16 +523,23 @@ PathItem.inject(new function() {
         var paths = [],
             operator = operators[operation];
         for (var i = 0, l = segments.length; i < l; i++) {
-            var seg = segments[i];
-            if (seg._visited || operator && !operator(seg._winding))
+            var seg = segments[i],
+                inter = seg._intersection;
+            // Do not start a chain with already visited segments, intersections
+            // with multiple possibilities (TODO: Is that really a problem?),
+            // and segments that are not going to be part of the resulting
+            // operation.
+            if (seg._visited /* || inter && inter._next*/
+                    || operator && !operator(seg._winding))
                 continue;
             var path = new Path(Item.NO_INSERT),
                 start = seg,
-                inter = seg._intersection,
-                other = inter && inter._segment,
-                otherStart = other,
+                otherStart = null,
                 added = false; // Whether a first segment as added already
             do {
+                var other = inter && inter._segment;
+                if (!otherStart)
+                    otherStart = other;
                 var handleIn = added && seg._handleIn;
                 if (!added || !other || other === start) {
                     // TODO: Is (other === start) check really required?
@@ -574,7 +588,8 @@ PathItem.inject(new function() {
                     console.error('Unable to switch to intersecting segment, '
                             + 'aborting #' + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
-                            + ' id: ' + seg._path._id + '.' + seg._index);
+                            + ', id: ' + seg._path._id + '.' + seg._index
+                            + ', multiple: ' + (!!inter._next));
                     break;
                 }
                 // Add the current segment to the path, and mark the added
@@ -583,6 +598,31 @@ PathItem.inject(new function() {
                 seg._visited = added = true;
                 seg = seg.getNext();
                 inter = seg && seg._intersection;
+                // If there are multiple possible intersections, find the one
+                // that's either connecting back to start or is not visited yet,
+                // and will be part of the boolean result:
+                function check(inter, ignoreOther) {
+                    if (!inter)
+                        return null;
+                    var seg = inter._segment,
+                        next = seg.getNext();
+                    console.log('Multiple'
+                            + ', seg: ' + seg._path._id + '.' + seg._index
+                            + ', next: ' + next._path._id + '.' + next._index
+                            + ', visited:' + !!next._visited
+                            + ', operator:' + (operator && operator(next._winding))
+                            + ', start: ' + (next === start)
+                            + ', next: ' + (!!inter._next));
+                    return next === start || !next._visited
+                                && (!operator || operator(next._winding))
+                            ? inter
+                            // If no match, check the other intersection first,
+                            // then carry on with the next linked intersection.
+                            : !ignoreOther && check(inter._intersection, true)
+                                || check(inter._next);
+                }
+                inter = check(inter) || inter;
+
                 other = inter && inter._segment;
                 if (seg === start || seg === otherStart) {
                     drawSegment(seg, 'done', i, 'red');
