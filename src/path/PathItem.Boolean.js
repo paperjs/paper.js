@@ -601,7 +601,7 @@ PathItem.inject(new function() {
                 // If there are multiple possible intersections, find the one
                 // that's either connecting back to start or is not visited yet,
                 // and will be part of the boolean result:
-                function check(inter, ignoreOther) {
+                function check(inter, prev, ignoreOther) {
                     if (!inter)
                         return null;
                     var seg = inter._segment,
@@ -618,8 +618,8 @@ PathItem.inject(new function() {
                             ? inter
                             // If no match, check the other intersection first,
                             // then carry on with the next linked intersection.
-                            : !ignoreOther && check(inter._intersection, true)
-                                || check(inter._next);
+                            : !ignoreOther && check(inter._intersection, null, true)
+                                || inter._next !== prev && check(inter._next, inter);
                 }
                 inter = check(inter) || inter;
 
