@@ -217,6 +217,10 @@ PathItem.inject(new function() {
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
             if (inter) {
+                var other = inter._curve;
+                console.log('Link'
+                        + ', seg: ' + segment._path._id + '.' + segment._index
+                        + ', other: ' + (other && other._path._id));
                 // Create a chain of possible intersections linked through _next
                 // First find the last intersection in the chain, then link it.
                 while (inter._next)
@@ -500,16 +504,20 @@ PathItem.inject(new function() {
                     , color);
         }
 
-        for (var i = 0; i < (window.reportWindings ? segments.length : 0); i++) {
+        for (var i = 0, j = 0;
+                i < (window.reportWindings ? segments.length : 0);
+                i++, j++) {
             var seg = segments[i];
                 path = seg._path,
                 id = path._id,
                 point = seg.point,
                 inter = seg._intersection;
-            if (!(id in pathIndices))
+            if (!(id in pathIndices)) {
                 pathIndices[id] = ++pathIndex;
+                j = 0;
+            }
 
-            labelSegment(seg, '#' + pathIndex + '.' + (i + 1)
+            labelSegment(seg, '#' + pathIndex + '.' + (j + 1)
                     + '   i: ' + !!inter
                     + '   id: ' + seg._path._id + '.' + seg._index
                     + '   pt: ' + seg._point
@@ -529,10 +537,10 @@ PathItem.inject(new function() {
         function getIntersection(inter, prev, ignoreOther) {
             if (!inter)
                 return null;
-            var next = inter._segment.getNext();
+            var seg = inter._segment,
+                next = inter._segment.getNext();
             if (window.reportSegments) {
-                var seg = inter._segment;
-                console.log('Multiple'
+                console.log('getIntersection()'
                         + ', seg: ' + seg._path._id + '.' +seg._index
                         + ', next: ' + next._path._id + '.' + next._index
                         + ', visited:' + !!next._visited
@@ -540,8 +548,10 @@ PathItem.inject(new function() {
                         + ', start: ' + (next === start)
                         + ', next: ' + (!!inter._next));
             }
-            return next === start || !next._visited
-                        && (!operator || operator(next._winding))
+            // If this intersections brings us back to the beginning it's
+            return next === start || next == otherStart
+                    || !seg._visited && !next._visited && (!operator
+                        || operator(seg._winding) && operator(next._winding))
                     ? inter
                     // If it's no match, check the other intersection first,
                     // then carry on with the next linked intersection.
@@ -564,10 +574,19 @@ PathItem.inject(new function() {
                 var inter = seg._intersection;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
+                if (window.reportSegments && added && inter) {
+                    console.log('Before getIntersection(), seg: '
+                            + seg._path._id + '.' +seg._index);
+                }
                 inter = added && getIntersection(inter) || inter;
                 // A switched intersection means we may have changed the segment
-                if (inter)
+                if (inter) {
                     seg = inter._intersection._segment;
+                    if (window.reportSegments && added) {
+                        console.log('After getIntersection(), seg: '
+                                + seg._path._id + '.' +seg._index);
+                    }
+                }
                 // Point to the other segment in the selected intersection.
                 var other = inter && inter._segment;
                 if (added && (seg === start || seg === otherStart)) {
