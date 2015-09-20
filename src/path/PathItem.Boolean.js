@@ -551,7 +551,8 @@ PathItem.inject(new function() {
                         + ', next vis:' + !!next._visited
                         + ', next start:' + (next === start
                                 || next === otherStart)
-                        + ', seg op:' + (operator && operator(seg._originalWinding))
+                        + ', seg op:' + (operator
+                                && operator(seg._originalWinding))
                         + ', next op:' + (operator && operator(next._winding))
                         + ', next: ' + (!!inter._next));
             }
@@ -561,7 +562,11 @@ PathItem.inject(new function() {
             return !seg._visited && (!next._visited
                         || next === start || next === otherStart)
                     && (!operator
-                        || operator(seg._originalWinding) && operator(next._winding))
+                        // NOTE: We need to use _originalWinding here since an
+                        // overlap crossing might have brought us here, in which
+                        // case operator(seg._winding) might be false.
+                        || operator(seg._originalWinding)
+                            && operator(next._winding))
                     ? inter
                     // If it's no match, check the other intersection first,
                     // then carry on with the next linked intersection.
