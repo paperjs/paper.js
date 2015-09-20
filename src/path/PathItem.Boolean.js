@@ -218,12 +218,12 @@ PathItem.inject(new function() {
                 var other = inter._curve;
                 console.log('Link'
                         + ', seg: ' + segment._path._id + '.' + segment._index
-                        + ', other: ' + (other && other._path._id));
+                        + ', other: ' + other._path._id);
                 // Create a chain of possible intersections linked through _next
                 // First find the last intersection in the chain, then link it.
                 while (inter._next)
                     inter = inter._next;
-                inter._next = loc;
+                inter._next = loc._intersection;
             } else {
                 segment._intersection = loc._intersection;
             }
@@ -426,6 +426,7 @@ PathItem.inject(new function() {
             // differently based on the type of operation, and adjust the
             // winding number accordingly:
             if (inter && inter._overlap) {
+                // Preserve original winding contribution for the overlap
                 switch (operation) {
                 case 'unite':
                     if (wind === 1)
@@ -496,8 +497,9 @@ PathItem.inject(new function() {
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
                     + '   op: ' + (operator && operator(seg._winding))
-                    + '   ov: ' + (inter && inter._overlap || 0)
+                    + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
+                    + '   ow: ' + seg._originalWinding
                     + '   mu: ' + !!(inter && inter._next)
                     , color);
         }
@@ -515,13 +517,17 @@ PathItem.inject(new function() {
                 j = 0;
             }
 
+            var ix = inter && inter._segment;
+            var nx = inter && inter._next && inter._next._segment;
             labelSegment(seg, '#' + pathIndex + '.' + (j + 1)
-                    + '   i: ' + !!inter
                     + '   id: ' + seg._path._id + '.' + seg._index
+                    + '   ix: ' + (ix && ix._path._id + '.' + ix._index || '--')
+                    + '   nx: ' + (nx && nx._path._id + '.' + nx._index || '--')
                     + '   pt: ' + seg._point
-                    + '   ov: ' + (inter && inter._overlap || 0)
+                    + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    , 'green');
+                    + '   ow: ' + seg._originalWinding
+                    , path.strokeColor || path.fillColor || 'black');
         }
 
         var paths = [],
@@ -536,25 +542,34 @@ PathItem.inject(new function() {
             if (!inter)
                 return null;
             var seg = inter._segment,
-                next = inter._segment.getNext();
+                next = seg.getNext();
             if (window.reportSegments) {
                 console.log('getIntersection()'
                         + ', seg: ' + seg._path._id + '.' +seg._index
                         + ', next: ' + next._path._id + '.' + next._index
-                        + ', visited:' + !!next._visited
-                        + ', operator:' + (operator && operator(next._winding))
-                        + ', start: ' + (next === start)
+                        + ', seg vis:' + !!seg._visited
+                        + ', next vis:' + !!next._visited
+                        + ', next start:' + (next === start
+                                || next === otherStart)
+                        + ', seg op:' + (operator && operator(seg._originalWinding))
+                        + ', next op:' + (operator && operator(next._winding))
                         + ', next: ' + (!!inter._next));
             }
-            // If this intersections brings us back to the beginning it's
-            return next === start || next == otherStart
-                    || !seg._visited && !next._visited && (!operator
-                        || operator(seg._winding) && operator(next._winding))
+            // See if this segment and next are both not visited yet, or are
+            // bringing us back to the beginning, and are both part of the
+            // boolean result.
+            return !seg._visited && (!next._visited
+                        || next === start || next === otherStart)
+                    && (!operator
+                        || operator(seg._originalWinding) && operator(next._winding))
                     ? inter
                     // If it's no match, check the other intersection first,
                     // then carry on with the next linked intersection.
                     : !ignoreOther
-                            && getIntersection(inter._intersection, null, true)
+                            // We need to get the intersection on the segment,
+                            // not on inter, since they're only linked up
+                            // through _next there!
+                            && getIntersection(seg._intersection, null, true)
                         || inter._next != prev // Prevent circular loops
                             && getIntersection(inter._next, inter, false);
         }
