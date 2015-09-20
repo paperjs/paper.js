@@ -415,8 +415,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 var m = (l + r) >>> 1,
                     loc2 = locations[m],
                     curve2 = loc2._curve,
-                    path2 = curve2._path;
-                    diff =  path1 === path2
+                    path2 = curve2._path,
+                    diff = path1 === path2
                             ? curve1.getIndex() + loc._parameter
                                 - curve2.getIndex() - loc2._parameter
                             // Sort by path id to group all locs on same path.
