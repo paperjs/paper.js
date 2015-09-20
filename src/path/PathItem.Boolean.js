@@ -573,9 +573,13 @@ PathItem.inject(new function() {
                     : !ignoreOther
                             // We need to get the intersection on the segment,
                             // not on inter, since they're only linked up
-                            // through _next there!
-                            && getIntersection(seg._intersection, null, true)
-                        || inter._next != prev // Prevent circular loops
+                            // through _next there. But do not check that
+                            // intersection in the first call to
+                            // getIntersection() (prev == null), since we'd go
+                            // back to the originating segment.
+                            && (prev || seg._intersection !== inter._intersection)
+                            && getIntersection(seg._intersection, inter, true)
+                        || inter._next !== prev // Prevent circular loops
                             && getIntersection(inter._next, inter, false);
         }
         for (var i = 0, l = segments.length; i < l; i++) {
@@ -591,20 +595,19 @@ PathItem.inject(new function() {
                 var inter = seg._intersection;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
-                if (window.reportSegments && added && inter) {
+                if (inter && added && window.reportSegments) {
                     console.log('Before getIntersection(), seg: '
-                            + seg._path._id + '.' +seg._index);
+                            + inter._segment._path._id + '.'
+                            + inter._segment._index);
                 }
                 inter = added && getIntersection(inter) || inter;
                 // A switched intersection means we may have changed the segment
-                if (inter) {
-                    seg = inter._intersection._segment;
-                    if (window.reportSegments && added) {
-                        console.log('After getIntersection(), seg: '
-                                + seg._path._id + '.' +seg._index);
-                    }
-                }
                 // Point to the other segment in the selected intersection.
+                if (inter && added && window.reportSegments) {
+                    console.log('After getIntersection(), seg: '
+                            + inter._segment._path._id + '.'
+                            + inter._segment._index);
+                }
                 var other = inter && inter._segment;
                 if (added && (seg === start || seg === otherStart)) {
                     // We've come back to the start, bail out as we're done.
