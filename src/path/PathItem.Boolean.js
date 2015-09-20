@@ -418,29 +418,8 @@ PathItem.inject(new function() {
         }
         // Assign the average winding to the entire curve chain.
         var winding = Math.round(windingSum / 3);
-        for (var j = chain.length - 1; j >= 0; j--) {
-            var seg = chain[j].segment,
-                inter = seg._intersection,
-                wind = winding;
-            // We need to handle the edge cases of overlapping curves
-            // differently based on the type of operation, and adjust the
-            // winding number accordingly:
-            if (inter && inter._overlap) {
-                // Preserve original winding contribution for the overlap
-                switch (operation) {
-                case 'unite':
-                    if (wind === 1)
-                        wind = 2;
-                    break;
-                case 'intersect':
-                    if (wind === 2)
-                        wind = 1;
-                    break;
-                }
-            }
-            seg._originalWinding = winding;
-            seg._winding = wind;
-        }
+        for (var j = chain.length - 1; j >= 0; j--)
+            chain[j].segment._winding = winding;
     }
 
     /**
@@ -496,10 +475,9 @@ PathItem.inject(new function() {
                     + '   id: ' + seg._path._id + '.' + seg._index
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
-                    + '   op: ' + (operator && operator(seg._winding))
+                    + '   op: ' + isValid(seg)
                     + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    + '   ow: ' + seg._originalWinding
                     + '   mu: ' + !!(inter && inter._next)
                     , color);
         }
@@ -526,14 +504,28 @@ PathItem.inject(new function() {
                     + '   pt: ' + seg._point
                     + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    + '   ow: ' + seg._originalWinding
                     , path.strokeColor || path.fillColor || 'black');
         }
 
         var paths = [],
-            operator = operators[operation],
             start,
-            otherStart;
+            otherStart,
+            operator = operators[operation],
+            // Adjust winding contributions for specific operations on overlaps:
+            overlapWinding = {
+                unite: { 1: 2 },
+                intersect: { 2: 1 }
+            }[operation];
+
+        function isValid(seg, unadjusted) {
+            if (!operator) // For self-intersection, we're always valid!
+                return true;
+            var winding = seg._winding,
+                inter = seg._intersection;
+            if (inter && !unadjusted && overlapWinding && inter._overlap)
+                winding = overlapWinding[winding] || winding;
+            return operator(winding);
+        }
 
         // If there are multiple possible intersections, find the one
         // that's either connecting back to start or is not visited yet,
@@ -551,36 +543,33 @@ PathItem.inject(new function() {
                         + ', next vis:' + !!next._visited
                         + ', next start:' + (next === start
                                 || next === otherStart)
-                        + ', seg op:' + (operator
-                                && operator(seg._originalWinding))
-                        + ', next op:' + (operator && operator(next._winding))
+                        + ', seg op:' + isValid(seg, true)
+                        + ', next op:' + isValid(next)
                         + ', next: ' + (!!inter._next));
             }
             // See if this segment and next are both not visited yet, or are
             // bringing us back to the beginning, and are both part of the
             // boolean result.
             return !seg._visited && (!next._visited
-                        || next === start || next === otherStart)
-                    && (!operator
-                        // NOTE: We need to use _originalWinding here since an
-                        // overlap crossing might have brought us here, in which
-                        // case operator(seg._winding) might be false.
-                        || operator(seg._originalWinding)
-                            && operator(next._winding))
-                    ? inter
-                    // If it's no match, check the other intersection first,
-                    // then carry on with the next linked intersection.
-                    : !ignoreOther
-                            // We need to get the intersection on the segment,
-                            // not on inter, since they're only linked up
-                            // through _next there. But do not check that
-                            // intersection in the first call to
-                            // getIntersection() (prev == null), since we'd go
-                            // back to the originating segment.
-                            && (prev || seg._intersection !== inter._intersection)
-                            && getIntersection(seg._intersection, inter, true)
-                        || inter._next !== prev // Prevent circular loops
-                            && getIntersection(inter._next, inter, false);
+                    || next === start || next === otherStart)
+                && (!operator // Self-intersection doesn't need isValid() calls
+                    // NOTE: We need to use the unadjusted winding here since an
+                    // overlap crossing might have brought us here, in which
+                    // case isValid(seg, false) might be false.
+                    || isValid(seg, true) && isValid(next))
+                ? inter
+                // If it's no match, check the other intersection first, then
+                // carry on with the next linked intersection.
+                : !ignoreOther
+                        // We need to get the intersection on the segment, not
+                        // on inter, since they're only linked up through _next
+                        // there. But do not check that intersection in the
+                        // first call to getIntersection() (prev == null), since
+                        // we'd go back to the originating segment.
+                        && (prev || seg._intersection !== inter._intersection)
+                        && getIntersection(seg._intersection, inter, true)
+                    || inter._next !== prev // Prevent circular loops
+                        && getIntersection(inter._next, inter, false);
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
@@ -588,7 +577,7 @@ PathItem.inject(new function() {
                 added = false; // Whether a first segment as added already
             // Do not start a chain with already visited segments, and segments
             // that are not going to be part of the resulting operation.
-            if (seg._visited || operator && !operator(seg._winding))
+            if (seg._visited || !isValid(seg))
                 continue;
             start = otherStart = null;
             while (true) {
@@ -617,7 +606,7 @@ PathItem.inject(new function() {
                     // TODO: Do we still need to check other too?
                     drawSegment(seg, 'visited', i, 'red');
                     break;
-                } else if (!inter && operator && !operator(seg._winding)) {
+                } else if (!inter && !isValid(seg)) {
                     // Intersections are always part of the resulting path, for
                     // all other segments check the winding contribution to see
                     // if they are to be kept. If not, the chain has to end here
@@ -648,8 +637,8 @@ PathItem.inject(new function() {
                     seg = other;
                 } else if (inter._overlap && operation !== 'intersect') {
                     // Switch to the overlapping intersecting segment if it is
-                    // part of the boolean result.
-                    if (operator(other._originalWinding)) {
+                    // part of the boolean result. Do not adjust for overlap!
+                    if (isValid(other, true)) {
                         drawSegment(seg, 'overlap-cross', i, 'orange');
                         seg = other;
                     } else {
@@ -660,11 +649,11 @@ PathItem.inject(new function() {
                     // switch at each crossing.
                     drawSegment(seg, 'exclude-cross', i, 'green');
                     seg = other;
-                } else if (operator(seg._winding)) {
+                } else if (isValid(seg)) {
                     // Do not switch to the intersecting segment as this segment
                     // is part of the the boolean result.
                     drawSegment(seg, 'keep', i, 'black');
-                } else if (operator(other._winding)) {
+                } else if (isValid(other)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
                     drawSegment(seg, 'cross', i, 'green');
