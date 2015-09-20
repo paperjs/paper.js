@@ -145,7 +145,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         var locations = this.getIntersections(path);
         for (var i = locations.length - 1; i >= 0; i--) {
             // TODO: An overlap could be either a crossing or a tangent!
-            if (!locations[i].isCrossing() && !locations[i]._overlap)
+            if (!locations[i].isCrossing() && !locations[i]._overlap)
                 locations.splice(i, 1);
         }
         return locations;

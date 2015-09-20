@@ -504,7 +504,7 @@ PathItem.inject(new function() {
                     + '   pt: ' + seg._point
                     + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    , path.strokeColor || path.fillColor || 'black');
+                    , path.strokeColor || path.fillColor || 'black');
         }
 
         var paths = [],
@@ -542,7 +542,7 @@ PathItem.inject(new function() {
                         + ', seg vis:' + !!seg._visited
                         + ', next vis:' + !!next._visited
                         + ', next start:' + (next === start
-                                || next === otherStart)
+                                || next === otherStart)
                         + ', seg op:' + isValid(seg, true)
                         + ', next op:' + isValid(next)
                         + ', next: ' + (!!inter._next));
@@ -551,7 +551,7 @@ PathItem.inject(new function() {
             // bringing us back to the beginning, and are both part of the
             // boolean result.
             return !seg._visited && (!next._visited
-                    || next === start || next === otherStart)
+                    || next === start || next === otherStart)
                 && (!operator // Self-intersection doesn't need isValid() calls
                     // NOTE: We need to use the unadjusted winding here since an
                     // overlap crossing might have brought us here, in which
@@ -677,7 +677,7 @@ PathItem.inject(new function() {
                 seg._visited = added = true;
                 seg = seg.getNext();
             }
-            if (!path || !added)
+            if (!path || !added)
                 continue;
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
@@ -801,7 +801,7 @@ PathItem.inject(new function() {
             window.reportWindings = false;
             window.reportIntersections = false;
             splitPath(CurveLocation.expand(crossings));
-            var paths = this._children || [this],
+            var paths = this._children || [this],
                 segments = [];
             for (var i = 0, l = paths.length; i < l; i++) {
                 segments.push.apply(segments, paths[i]._segments);
