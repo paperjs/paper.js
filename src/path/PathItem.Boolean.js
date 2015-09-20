@@ -99,12 +99,12 @@ PathItem.inject(new function() {
         if (_path2 && /^(subtract|exclude)$/.test(operation)
                 ^ (_path2.isClockwise() !== _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at intersections on both paths. Note that for self
+        // Split curves at crossings on both paths. Note that for self
         // intersection, _path2 will be null and getIntersections() handles it.
         // console.time('intersection');
-        var locations = CurveLocation.expand(_path1.getCrossings(_path2));
+        var crossings = CurveLocation.expand(_path1.getCrossings(_path2));
         // console.timeEnd('intersection');
-        splitPath(locations);
+        splitPath(crossings);
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -123,11 +123,11 @@ PathItem.inject(new function() {
         if (_path2)
             collect(_path2._children || [_path2]);
         // Propagate the winding contribution. Winding contribution of curves
-        // does not change between two intersections.
+        // does not change between two crossings.
         // First, propagate winding contributions for curve chains starting in
-        // all intersections:
-        for (var i = 0, l = locations.length; i < l; i++) {
-            propagateWinding(locations[i]._segment, _path1, _path2, monoCurves,
+        // all crossings:
+        for (var i = 0, l = crossings.length; i < l; i++) {
+            propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
                     operation);
         }
         // Now process the segments that are not part of any intersecting chains
@@ -143,16 +143,14 @@ PathItem.inject(new function() {
     }
 
     /**
-     * Private method for splitting a PathItem at the given intersections.
-     * The routine works for both self intersections and intersections
-     * between PathItems.
+     * Private method for splitting a PathItem at the given locations.
      *
-     * @param {CurveLocation[]} intersections Array of CurveLocation objects
+     * @param {CurveLocation[]} locations Array of CurveLocation objects
      */
-    function splitPath(intersections) {
+    function splitPath(locations) {
         if (window.reportIntersections) {
-            console.log('Intersections', intersections.length / 2);
-            intersections.forEach(function(inter) {
+            console.log('Crossings', locations.length / 2);
+            locations.forEach(function(inter) {
                 if (inter._other)
                     return;
                 var other = inter._intersection;
@@ -165,7 +163,7 @@ PathItem.inject(new function() {
                 new Path.Circle({
                     center: inter.point,
                     radius: 2 * scaleFactor,
-                    fillColor: inter.isCrossing() ? 'red' : 'green',
+                    fillColor: 'red',
                     strokeScaling: false
                 });
                 console.log(log.map(function(v) {
@@ -183,8 +181,8 @@ PathItem.inject(new function() {
             prev,
             prevT;
 
-        for (var i = intersections.length - 1; i >= 0; i--) {
-            var loc = intersections[i],
+        for (var i = locations.length - 1; i >= 0; i--) {
+            var loc = locations[i],
                 t = loc._parameter,
                 locT = t;
             // Check if we are splitting same curve multiple times, but avoid
@@ -560,7 +558,6 @@ PathItem.inject(new function() {
                         || inter._next != prev // Prevent circular loops
                             && getIntersection(inter._next, inter, false);
         }
-
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
                 path = null,
@@ -638,17 +635,13 @@ PathItem.inject(new function() {
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing.
-                    if (inter.isCrossing()) {
-                        drawSegment(seg, 'exclude-cross', i, 'green');
-                        seg = other;
-                    } else {
-                        drawSegment(seg, 'exclude-stay', i, 'blue');
-                    }
+                    drawSegment(seg, 'exclude-cross', i, 'green');
+                    seg = other;
                 } else if (operator(seg._winding)) {
                     // Do not switch to the intersecting segment as this segment
                     // is part of the the boolean result.
                     drawSegment(seg, 'keep', i, 'black');
-                } else if (operator(other._winding) && inter.isCrossing()) {
+                } else if (operator(other._winding)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
                     drawSegment(seg, 'cross', i, 'green');
@@ -786,14 +779,16 @@ PathItem.inject(new function() {
         },
 
         resolveCrossings: function() {
-            var locations = this.getCrossings();
-            if (!locations.length)
+            var crossings = this.getCrossings();
+            if (!crossings.length)
                 return this.reorient();
             var reportSegments = window.reportSegments;
+            var reportWindings = window.reportWindings;
             var reportIntersections = window.reportIntersections;
             window.reportSegments = false;
+            window.reportWindings = false;
             window.reportIntersections = false;
-            splitPath(CurveLocation.expand(locations));
+            splitPath(CurveLocation.expand(crossings));
             var paths = this._children || [this],
                 segments = [];
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -802,6 +797,7 @@ PathItem.inject(new function() {
             var res = finishBoolean(tracePaths(segments), this, null, false)
                     .reorient();
             window.reportSegments = reportSegments;
+            window.reportWindings = reportWindings;
             window.reportIntersections = reportIntersections;
             return res;
         }
