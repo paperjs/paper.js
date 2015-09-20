@@ -155,9 +155,7 @@ var Line = Base.extend(/** @lends Line# */{
                 ccw = v2x * vx + v2y * vy; // ccw = v2.dot(v1);
                 if (ccw > 0) {
                     // ccw = v2.subtract(v1).dot(v1);
-                    v2x -= vx;
-                    v2y -= vy;
-                    ccw = v2x * vx + v2y * vy;
+                    ccw = (v2x - vx) * vx + (v2y - vy) * vy;
                     if (ccw < 0)
                         ccw = 0;
                 }
