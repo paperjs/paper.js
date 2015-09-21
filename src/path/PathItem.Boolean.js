@@ -615,7 +615,7 @@ PathItem.inject(new function() {
                 var inter = seg._intersection;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
-                if (inter && added && window.reportSegments) {
+                if (inter && window.reportSegments) {
                     console.log('-----\n'
                             +'#' + pathCount + '.'
                                 + (path ? path._segments.length + 1 : 1)
@@ -624,12 +624,12 @@ PathItem.inject(new function() {
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
                 }
-                inter = added && (getIntersection(true, inter)
-                        || getIntersection(false, inter)) || inter;
+                inter = getIntersection(true, inter)
+                        || getIntersection(false, inter) || inter;
                 var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.
-                if (inter && added && window.reportSegments) {
+                if (inter && window.reportSegments) {
                     console.log('After getIntersection()'
                             + ', seg: '
                                 + seg._path._id + '.' + seg._index
@@ -702,8 +702,8 @@ PathItem.inject(new function() {
                 }
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
-                    console.error('Unable to switch to intersecting segment, '
-                            + 'aborting #' + pathCount + '.'
+                    console.error('Visited segment encountered, aborting #'
+                            + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
                             + ', id: ' + seg._path._id + '.' + seg._index
                             + ', multiple: ' + (!!inter._next));
