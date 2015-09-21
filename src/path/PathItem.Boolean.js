@@ -215,15 +215,21 @@ PathItem.inject(new function() {
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
             if (inter) {
-                var other = inter._curve;
-                console.log('Link'
-                        + ', seg: ' + segment._path._id + '.' + segment._index
-                        + ', other: ' + other._path._id);
-                // Create a chain of possible intersections linked through _next
-                // First find the last intersection in the chain, then link it.
-                while (inter._next)
-                    inter = inter._next;
-                inter._next = loc._intersection;
+                var other = inter._intersection,
+                    next = loc._next;
+                while (next && next !== other) {
+                    next = next._next;
+                }
+                if (!next) {
+                    console.log('Link'
+                            + ', seg: ' + segment._path._id + '.' + segment._index
+                            + ', other: ' + inter._curve._path._id);
+                    // Create a chain of possible intersections linked through _next
+                    // First find the last intersection in the chain, then link it.
+                    while (inter._next)
+                        inter = inter._next;
+                    inter._next = loc._intersection;
+                }
             } else {
                 segment._intersection = loc._intersection;
             }
