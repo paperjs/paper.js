@@ -71,7 +71,7 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 1.0; // 1 / 3000;
+    var scaleFactor = 0.25; // 1 / 2000;
     var textAngle = 33;
     var fontSize = 5;
 
@@ -440,7 +440,8 @@ PathItem.inject(new function() {
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
-            var key = Math.round(point.x / scaleFactor) + ',' + Math.round(point.y / scaleFactor);
+            var key = Math.round(point.x / (4 * scaleFactor))
+                + ',' + Math.round(point.y  / (4 * scaleFactor));
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var size = fontSize * scaleFactor;
@@ -459,7 +460,7 @@ PathItem.inject(new function() {
             text.rotate(textAngle);
         }
 
-        function drawSegment(seg, text, index, color) {
+        function drawSegment(seg, other, text, index, color) {
             if (!window.reportSegments)
                 return;
             new Path.Circle({
@@ -473,6 +474,7 @@ PathItem.inject(new function() {
                             + (path ? path._segments.length + 1 : 1)
                             + ' (' + (index + 1) + '): ' + text
                     + '   id: ' + seg._path._id + '.' + seg._index
+                    + (other ? ' -> ' + other._path._id + '.' + other._index : '')
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
                     + '   op: ' + isValid(seg)
@@ -590,6 +592,7 @@ PathItem.inject(new function() {
                             + inter._segment._index);
                 }
                 inter = added && getIntersection(inter) || inter;
+                var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.
                 if (inter && added && window.reportSegments) {
@@ -597,14 +600,13 @@ PathItem.inject(new function() {
                             + inter._segment._path._id + '.'
                             + inter._segment._index);
                 }
-                var other = inter && inter._segment;
                 if (added && (seg === start || seg === otherStart)) {
                     // We've come back to the start, bail out as we're done.
-                    drawSegment(seg, 'done', i, 'red');
+                    drawSegment(seg, null, 'done', i, 'red');
                     break;
                 } else if (seg._visited && (!other || other._visited)) {
                     // TODO: Do we still need to check other too?
-                    drawSegment(seg, 'visited', i, 'red');
+                    drawSegment(seg, null, 'visited', i, 'red');
                     break;
                 } else if (!inter && !isValid(seg)) {
                     // Intersections are always part of the resulting path, for
@@ -612,7 +614,7 @@ PathItem.inject(new function() {
                     // if they are to be kept. If not, the chain has to end here
                     // TODO: We really should find a way to go backwards perhaps
                     // and try another path when this happens?
-                    drawSegment(seg, 'discard', i, 'red');
+                    drawSegment(seg, null, 'discard', i, 'red');
                     console.error('Excluded segment encountered, aborting #'
                             + pathCount + '.' +
                             (path ? path._segments.length + 1 : 1));
@@ -629,9 +631,9 @@ PathItem.inject(new function() {
                     // Does that ever occur?
                     // Just add the first segment and all segments that have no
                     // intersection.
-                    drawSegment(seg, 'add', i, 'black');
+                    drawSegment(seg, null, 'add', i, 'black');
                 } else if (!operator) { // Resolve self-intersections
-                    drawSegment(seg, 'self-int', i, 'purple');
+                    drawSegment(seg, other, 'self-int', i, 'purple');
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
@@ -639,28 +641,28 @@ PathItem.inject(new function() {
                     // Switch to the overlapping intersecting segment if it is
                     // part of the boolean result. Do not adjust for overlap!
                     if (isValid(other, true)) {
-                        drawSegment(seg, 'overlap-cross', i, 'orange');
+                        drawSegment(seg, other, 'overlap-cross', i, 'orange');
                         seg = other;
                     } else {
-                        drawSegment(seg, 'overlap-stay', i, 'orange');
+                        drawSegment(seg, null, 'overlap-stay', i, 'orange');
                     }
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing.
-                    drawSegment(seg, 'exclude-cross', i, 'green');
+                    drawSegment(seg, other, 'exclude-cross', i, 'green');
                     seg = other;
                 } else if (isValid(seg)) {
                     // Do not switch to the intersecting segment as this segment
                     // is part of the the boolean result.
-                    drawSegment(seg, 'keep', i, 'black');
+                    drawSegment(seg, null, 'keep', i, 'black');
                 } else if (isValid(other)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
-                    drawSegment(seg, 'cross', i, 'green');
+                    drawSegment(seg, other, 'cross', i, 'green');
                     seg = other;
                 } else {
                     // Keep on truckin'
-                    drawSegment(seg, 'stay', i, 'blue');
+                    drawSegment(seg, null, 'stay', i, 'blue');
                 }
                 if (seg._visited) {
                     // We didn't manage to switch, so stop right here.
