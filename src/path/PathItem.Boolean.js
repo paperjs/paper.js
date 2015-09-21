@@ -538,46 +538,63 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the one
         // that's either connecting back to start or is not visited yet,
         // and will be part of the boolean result:
-        function getIntersection(inter, prev, ignoreOther) {
+        function getIntersection(strict, inter, prev, ignoreOther) {
             if (!inter)
                 return null;
             var seg = inter._segment,
                 next = seg.getNext();
             if (window.reportSegments) {
-                console.log('getIntersection()'
+                console.log('getIntersection(' + strict + ')'
                         + ', seg: ' + seg._path._id + '.' +seg._index
                         + ', next: ' + next._path._id + '.' + next._index
                         + ', seg vis:' + !!seg._visited
                         + ', next vis:' + !!next._visited
                         + ', next start:' + (next === start
                                 || next === otherStart)
+                        + ', seg wi:' + seg._winding
+                        + ', next wi:' + next._winding
                         + ', seg op:' + isValid(seg, true)
                         + ', next op:' + isValid(next)
-                        + ', next: ' + (!!inter._next));
+                        + ', seg ov: ' + (seg._intersection
+                                && seg._intersection._overlap)
+                        + ', next ov: ' + (next._intersection
+                                && next._intersection._overlap)
+                        + ', more: ' + (!!inter._next));
             }
             // See if this segment and next are both not visited yet, or are
             // bringing us back to the beginning, and are both part of the
             // boolean result.
+            // Handling overlaps correctly here is a bit tricky business, and
+            // requires two passes, first with `strict = true`, then `false`:
+            // In strict mode, the current segment and the next segment are both
+            // checked for validity, and only the current one is allowed to be
+            // an overlap (passing true for `unadjusted` in isValid()). If this
+            // pass does not yield a result, the non-strict mode is used, in
+            // which invalid current segments are tolerated, and overlaps for
+            // the next segment are allowed as long as they are valid when not
+            // adjusted.
             return !seg._visited && (!next._visited
                     || next === start || next === otherStart)
                 && (!operator // Self-intersection doesn't need isValid() calls
                     // NOTE: We need to use the unadjusted winding here since an
                     // overlap crossing might have brought us here, in which
                     // case isValid(seg, false) might be false.
-                    || isValid(seg, true) && isValid(next))
+                    || (!strict || isValid(seg, true))
+                        && isValid(next, !strict && inter._overlap))
                 ? inter
                 // If it's no match, check the other intersection first, then
                 // carry on with the next linked intersection.
                 : !ignoreOther
                         // We need to get the intersection on the segment, not
-                        // on inter, since they're only linked up through _next
-                        // there. But do not check that intersection in the
-                        // first call to getIntersection() (prev == null), since
-                        // we'd go back to the originating segment.
+                        // on inter, since multiple solutions are only linked up
+                        // as a chain through _next there. But do not check that
+                        // intersection in the first call to getIntersection()
+                        // (prev == null), since we'd go straight back to the
+                        // originating segment.
                         && (prev || seg._intersection !== inter._intersection)
-                        && getIntersection(seg._intersection, inter, true)
+                        && getIntersection(strict, seg._intersection, inter, true)
                     || inter._next !== prev // Prevent circular loops
-                        && getIntersection(inter._next, inter, false);
+                        && getIntersection(strict, inter._next, inter, false);
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
@@ -593,18 +610,25 @@ PathItem.inject(new function() {
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
                 if (inter && added && window.reportSegments) {
-                    console.log('Before getIntersection(), seg: '
-                            + inter._segment._path._id + '.'
-                            + inter._segment._index);
+                    console.log('-----\n'
+                            +'#' + pathCount + '.'
+                                + (path ? path._segments.length + 1 : 1)
+                            + ', Before getIntersection()'
+                            + ', seg: ' + seg._path._id + '.' + seg._index
+                            + ', other: ' + inter._segment._path._id + '.'
+                                + inter._segment._index);
                 }
-                inter = added && getIntersection(inter) || inter;
+                inter = added && (getIntersection(true, inter)
+                        || getIntersection(false, inter)) || inter;
                 var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.
                 if (inter && added && window.reportSegments) {
-                    console.log('After getIntersection(), seg: '
-                            + inter._segment._path._id + '.'
-                            + inter._segment._index);
+                    console.log('After getIntersection()'
+                            + ', seg: '
+                                + seg._path._id + '.' + seg._index
+                            + ', other: ' + inter._segment._path._id + '.'
+                                + inter._segment._index);
                 }
                 if (added && (seg === start || seg === otherStart)) {
                     // We've come back to the start, bail out as we're done.
