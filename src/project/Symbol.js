@@ -133,7 +133,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
     /**
      * Places in instance of the symbol in the project.
      *
-     * @param [position] The position of the placed symbol
+     * @param {Point} [position] the position of the placed symbol
      * @return {PlacedSymbol}
      */
     place: function(position) {

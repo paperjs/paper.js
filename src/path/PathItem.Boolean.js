@@ -71,7 +71,7 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.25; // 1 / 2000;
+    var scaleFactor = 1 / 10000;
     var textAngle = 33;
     var fontSize = 5;
 
@@ -163,7 +163,7 @@ PathItem.inject(new function() {
                 new Path.Circle({
                     center: inter.point,
                     radius: 2 * scaleFactor,
-                    fillColor: 'red',
+                    strokeColor: 'red',
                     strokeScaling: false
                 });
                 console.log(log.map(function(v) {
@@ -823,15 +823,19 @@ PathItem.inject(new function() {
         },
 
         resolveCrossings: function() {
-            var crossings = this.getCrossings();
-            if (!crossings.length)
-                return this.reorient();
             var reportSegments = window.reportSegments;
             var reportWindings = window.reportWindings;
             var reportIntersections = window.reportIntersections;
             window.reportSegments = false;
             window.reportWindings = false;
             window.reportIntersections = false;
+            var crossings = this.getCrossings();
+            if (!crossings.length) {
+                window.reportSegments = reportSegments;
+                window.reportWindings = reportWindings;
+                window.reportIntersections = reportIntersections;
+                return this.reorient();
+            }
             splitPath(CurveLocation.expand(crossings));
             var paths = this._children || [this],
                 segments = [];
