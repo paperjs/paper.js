@@ -407,31 +407,56 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // NOTE: We don't call getCurve() / getParameter() here, since this
             // code is used internally in boolean operations where all this
             // information remains valid during processing.
-            var l = 0,
-                r = locations.length - 1,
-                curve1 = loc._curve,
-                path1 = curve1._path;
+            var length = locations.length,
+                l = 0,
+                r = length - 1,
+                epsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+                abs = Math.abs;
+
+            function compare(loc1, loc2) {
+                var curve1 = loc1._curve,
+                    curve2 = loc2._curve,
+                    path1 = curve1._path,
+                    path2 = curve2._path;
+                return path1 === path2
+                        ? curve1.getIndex() + loc1._parameter
+                            - curve2.getIndex() - loc2._parameter
+                        // Sort by path id to group all locs on same path.
+                        : path1._id - path2._id;
+            }
+
+            function search(start, dir) {
+                for (var i = start + dir; i >= 0 && i < length; i += dir) {
+                    var loc2 = locations[i];
+                    if (abs(compare(loc, loc2)) >= epsilon)
+                        return null;
+                    if (loc.equals(loc2))
+                        return loc2;
+                }
+            }
+
             while (l <= r) {
                 var m = (l + r) >>> 1,
                     loc2 = locations[m],
-                    curve2 = loc2._curve,
-                    path2 = curve2._path,
-                    diff = path1 === path2
-                            ? curve1.getIndex() + loc._parameter
-                                - curve2.getIndex() - loc2._parameter
-                            // Sort by path id to group all locs on same path.
-                            : path1._id - path2._id;
+                    diff = compare(loc, loc2);
                 // Only compare location with equals() if diff is small enough
                 // NOTE: equals() takes the intersection location into account,
                 // while the above calculation of diff doesn't!
-                if (merge && Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON
-                        && loc.equals(loc2)) {
-                    // Carry over overlap setting!
-                    if (loc._overlap) {
-                        loc2._overlap = loc2._intersection._overlap = true;
+                if (merge && abs(diff) < epsilon) {
+                    // See if the two locations are actually the same, and merge
+                    // if they are. If they aren't, we're not done yet since
+                    // all neighbors with a diff < epsilon are potential merge
+                    // candidates, so check them too.
+                    if (loc2 = loc.equals(loc2) ? loc2
+                            : search(m, -1) || search(m, 1)) {
+                        // Carry over overlap setting!
+                        if (loc._overlap) {
+                            loc2._overlap = loc2._intersection._overlap = true;
+                        }
+                        // We're done, don't insert, merge with the found
+                        // location instead:
+                        return loc2;
                     }
-                    // We're done, don't insert, merge with loc2 instead
-                    return loc2;
                 }
                 if (diff < 0) {
                     r = m - 1;
@@ -439,6 +464,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     l = m + 1;
                 }
             }
+            // We didn't merge with a preexisting location, insert it now.
             locations.splice(l, 0, loc);
             return loc;
         },
