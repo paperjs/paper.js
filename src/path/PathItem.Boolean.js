@@ -71,7 +71,7 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 1 / 10000;
+    var scaleFactor = 0.25; // 1 / 3000;
     var textAngle = 33;
     var fontSize = 5;
 
@@ -215,17 +215,23 @@ PathItem.inject(new function() {
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
             if (inter) {
+                // Prevent circular references that would cause infinite loops
+                // in getIntersection():
+                // See if the location already links back to this intersection,
+                // and do not create another connection if it does.
                 var other = inter._intersection,
                     next = loc._next;
-                while (next && next !== other) {
+                while (next && next !== other)
                     next = next._next;
-                }
                 if (!next) {
-                    console.log('Link'
-                            + ', seg: ' + segment._path._id + '.' + segment._index
-                            + ', other: ' + inter._curve._path._id);
-                    // Create a chain of possible intersections linked through _next
-                    // First find the last intersection in the chain, then link it.
+                    if (window.reportSegments) {
+                        console.log('Link: '
+                                + segment._path._id + '.' + segment._index
+                                + ' -> ' + inter._curve._path._id);
+                    }
+                    // Create a chain of possible intersections linked through
+                    // _next First find the last intersection in the chain, then
+                    // link it.
                     while (inter._next)
                         inter = inter._next;
                     inter._next = loc._intersection;
@@ -727,6 +733,9 @@ PathItem.inject(new function() {
                         path._segments.length, 'length = ', path.getLength(),
                         '#' + pathCount + '.' +
                         (path ? path._segments.length + 1 : 1));
+                paper.project.activeLayer.addChild(path);
+                path.strokeColor = 'red';
+                path.strokeScaling = false;
                 path = null;
             }
             // Add the path to the result, while avoiding stray segments and
