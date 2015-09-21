@@ -1584,11 +1584,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 x * cos - y * sin,
                 x * sin + y * cos);
         }
-        // Solve it for y = 0
+        // Solve it for y = 0. We need to include t = 0, 1 and let addLocation()
+        // do the filtering, to catch important edge cases.
         var roots = [],
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin;
-            count = Curve.solveCubic(rvc, 1, 0, roots, tMin, tMax);
+            count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
         // NOTE: count could be -1 for infinite solutions, but that should only
         // happen with lines, in which case we should not be here.
         for (var i = 0; i < count; i++) {
@@ -1599,9 +1598,21 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 tl = Curve.getParameterOf(vl, pc.x, pc.y);
             if (tl !== null) {
                 var pl = Curve.getPoint(vl, tl);
+                // TODO: Consider passing these as actual arguments so flipping
+                // is less cumbersome:
+                var startConnected = param.startConnected,
+                    endConnected = param.endConnected;
+                if (flip) {
+                    param.endConnected = startConnected;
+                    param.startConnected = endConnected;
+                }
                 addLocation(locations, param,
                         v1, c1, flip ? tl : tc, flip ? pl : pc,
                         v2, c2, flip ? tc : tl, flip ? pc : pl);
+                if (flip) {
+                    param.endConnected = endConnected;
+                    param.startConnected = startConnected;
+                }
             }
         }
     }
