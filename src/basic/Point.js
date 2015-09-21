@@ -460,11 +460,11 @@ var Point = Base.extend(/** @lends Point# */{
             return this.clone();
         angle = angle * Math.PI / 180;
         var point = center ? this.subtract(center) : this,
-            s = Math.sin(angle),
-            c = Math.cos(angle);
+            sin = Math.sin(angle),
+            cos = Math.cos(angle);
         point = new Point(
-            point.x * c - point.y * s,
-            point.x * s + point.y * c
+            point.x * cos - point.y * sin,
+            point.x * sin + point.y * cos
         );
         return center ? point.add(center) : point;
     },

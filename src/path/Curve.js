@@ -1561,8 +1561,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
      * line is on the X axis, and solve the implicit equations for the X axis
      * and the curve.
      */
-    function addCurveLineIntersections(v1, v2, c1, c2, locations,
-            param) {
+    function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
         var flip = Curve.isStraight(v1),
             vc = flip ? v2 : v1,
             vl = flip ? v1 : v2,
@@ -1576,9 +1575,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             sin = Math.sin(angle),
             cos = Math.cos(angle),
             // (rlx1, rly1) = (0, 0)
-            rlx2 = ldx * cos - ldy * sin,
-            // The curve values for the rotated line.
-            rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
             // Calculate the curve values of the rotated curve.
             rvc = [];
         for(var i = 0; i < 8; i += 2) {
@@ -1586,24 +1582,26 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 y = vc[i + 1] - ly1;
             rvc.push(
                 x * cos - y * sin,
-                y * cos + x * sin);
+                x * sin + y * cos);
         }
+        // Solve it for y = 0
         var roots = [],
-            count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin;
+            count = Curve.solveCubic(rvc, 1, 0, roots, tMin, tMax);
         // NOTE: count could be -1 for infinite solutions, but that should only
         // happen with lines, in which case we should not be here.
         for (var i = 0; i < count; i++) {
+            // For each found solution on the rotated curve, get the point on
+            // the real curve and with that the location on the line.
             var tc = roots[i],
-                x = Curve.getPoint(rvc, tc).x;
-            // We do have a point on the infinite line. Check if it falls on
-            // the line *segment*.
-            if (x >= 0 && x <= rlx2) {
-                // Find the parameter of the intersection on the rotated line.
-                var tl = Curve.getParameterOf(rvl, x, 0),
-                    t1 = flip ? tl : tc,
-                    t2 = flip ? tc : tl;
-                addLocation(locations, param, v1, c1, t1, null,
-                        v2, c2, t2, null);
+                pc = Curve.getPoint(vc, tc),
+                tl = Curve.getParameterOf(vl, pc.x, pc.y);
+            if (tl !== null) {
+                var pl = Curve.getPoint(vl, tl);
+                addLocation(locations, param,
+                        v1, c1, flip ? tl : tc, flip ? pl : pc,
+                        v2, c2, flip ? tc : tl, flip ? pc : pl);
             }
         }
     }
