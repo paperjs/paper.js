@@ -32,6 +32,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * supported.
      *
      * @param {PathItem} path the other item to find the intersections with
+     * @param {Function} [include] a callback function that can be used to
+     * filter out undesired locations right while they are collected.
+     * When defined, it shall return {@true to include a location}.
      * @return {CurveLocation[]} the locations of all intersection between the
      * paths
      * @example {@paperscript} // Finding the intersections between two paths
@@ -57,7 +60,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     }
      * }
      */
-    getIntersections: function(path, _matrix, _returnFirst) {
+    getIntersections: function(path, include, _matrix, _returnFirst) {
         // NOTE: For self-intersection, path is null. This means you can also
         // just call path.getIntersections() without an argument to get self
         // intersections.
@@ -103,6 +106,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     var parts = Curve.subdivide(values1, 0.5);
                     Curve.getIntersections(parts[0], parts[1], curve1, curve1,
                         locations, {
+                            include: include,
                             // Only possible if there is only one closed curve:
                             startConnected: length1 === 1 && p1.equals(p2),
                             // After splitting, the end is always connected:
@@ -129,12 +133,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 Curve.getIntersections(
                     values1, values2[j], curve1, curve2, locations,
                     self ? {
+                        include: include,
                         // Do not compare indices here to determine connection,
                         // since one array of curves can contain curves from
                         // separate sup-paths of a compound path.
                         startConnected: curve1.getPrevious() === curve2,
                         endConnected: curve1.getNext() === curve2
-                    } : {}
+                    } : {
+                        include: include
+                    }
                 );
             }
         }
@@ -142,13 +149,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     getCrossings: function(path) {
-        var locations = this.getIntersections(path);
-        for (var i = locations.length - 1; i >= 0; i--) {
+        return this.getIntersections(path, function(inter) {
             // TODO: An overlap could be either a crossing or a tangent!
-            if (!locations[i].isCrossing() && !locations[i]._overlap)
-                locations.splice(i, 1);
-        }
-        return locations;
+            return inter.isCrossing() || inter._overlap;
+        });
     },
 
     _asPathItem: function() {

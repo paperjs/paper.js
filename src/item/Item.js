@@ -1686,7 +1686,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             return false;
         // Tell getIntersections() to return as soon as some intersections are
         // found, because all we care for here is there are some or none:
-        return this._asPathItem().getIntersections(item._asPathItem(),
+        return this._asPathItem().getIntersections(item._asPathItem(), null,
                 _matrix || item._matrix, true).length > 0;
     },
 
