@@ -113,8 +113,9 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     isCollinear: function(line) {
-        return this._vx * line._vy - this._vy * line._vx
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+        // TODO: Optimize:
+        // return Point.isCollinear(this._vx, this._vy, line._vx, line._vy);
+        return this.getVector().isCollinear(line.getVector());
     },
 
     statics: /** @lends Line */{

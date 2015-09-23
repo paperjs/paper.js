@@ -702,7 +702,13 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is collinear}
      */
     isCollinear: function(point) {
-        return Math.abs(this.cross(point)) < /*#=*/Numerical.GEOMETRIC_EPSILON;
+        // NOTE: We use normalized vectors so that the epsilon comparison is
+        // reliable. We could instead scale the epsilon based on the vector
+        // length.
+        // TODO: Optimize by creating a static Point.isCollinear() to be used
+        // in Line.isCollinear() as well.
+        return Math.abs(this.normalize().cross(point.normalize()))
+                < /*#=*/Numerical.GEOMETRIC_EPSILON;
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -716,7 +722,12 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is orthogonal}
      */
     isOrthogonal: function(point) {
-        return Math.abs(this.dot(point)) < /*#=*/Numerical.GEOMETRIC_EPSILON;
+        // NOTE: We use normalized vectors so that the epsilon comparison is
+        // reliable. We could instead scale the epsilon based on the vector
+        // length.
+        // TODO: Optimize
+        return Math.abs(this.normalize().dot(point.normalize()))
+                < /*#=*/Numerical.GEOMETRIC_EPSILON;
     },
 
     /**
