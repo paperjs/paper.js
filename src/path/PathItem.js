@@ -132,15 +132,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 // self intersecting.
                 Curve.getIntersections(
                     values1, values2[j], curve1, curve2, locations,
-                    self ? {
+                    {
                         include: include,
                         // Do not compare indices here to determine connection,
                         // since one array of curves can contain curves from
                         // separate sup-paths of a compound path.
-                        startConnected: curve1.getPrevious() === curve2,
-                        endConnected: curve1.getNext() === curve2
-                    } : {
-                        include: include
+                        startConnected: self && curve1.getPrevious() === curve2,
+                        endConnected: self && curve1.getNext() === curve2
                     }
                 );
             }
