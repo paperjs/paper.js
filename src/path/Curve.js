@@ -299,6 +299,26 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
+     * Checks if the this is the first curve in the {@link Path#curves} array.
+     *
+     * @return {Boolean} {@true if this is the first curve}
+     */
+    isFirst: function() {
+        return this._segment1._index === 0;
+    },
+
+    /**
+     * Checks if the this is the last curve in the {@link Path#curves} array.
+     *
+     * @return {Boolean} {@true if this is the last curve}
+     */
+    isLast: function() {
+        var path = this._path;
+        return path && this._segment1._index === path._curves.length - 1
+                || false;
+    },
+
+    /**
      * Specifies whether the points and handles of the curve are selected.
      *
      * @type Boolean
@@ -877,7 +897,7 @@ statics: {
      * @return {Boolean} {@true if the curve is parametrically linear}
      */
 
-   /**
+    /**
      * Checks if the the two curves describe straight lines that are
      * collinear, meaning they run in parallel.
      *
@@ -889,7 +909,7 @@ statics: {
                 && this.getVector().isCollinear(curve.getVector());
     },
 
-   /**
+    /**
      * Checks if the curve is a straight horizontal line.
      *
      * @return {Boolean} {@true if the line is horizontal}
@@ -899,7 +919,7 @@ statics: {
                 < /*#=*/Numerical.GEOMETRIC_EPSILON;
     },
 
-   /**
+    /**
      * Checks if the curve is a straight vertical line.
      *
      * @return {Boolean} {@true if the line is vertical}

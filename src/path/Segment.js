@@ -393,6 +393,27 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
+     * Checks if the this is the first segment in the {@link Path#segments}
+     * array.
+     *
+     * @return {Boolean} {@true if this is the first segment}
+     */
+    isFirst: function() {
+        return this._index === 0;
+    },
+
+    /**
+     * Checks if the this is the last segment in the {@link Path#segments}
+     * array.
+     *
+     * @return {Boolean} {@true if this is the last segment}
+     */
+    isLast: function() {
+        var path = this._path;
+        return path && this._index === path._segments.length - 1 || false;
+    },
+
+    /**
      * Reverses the {@link #handleIn} and {@link #handleOut} vectors of this
      * segment. Note: the actual segment is modified, no copy is created.
      * @return {Segment} the reversed segment
