@@ -1359,26 +1359,40 @@ new function() { // Scope for intersection using bezier fat-line clipping
             overlap) {
         var loc = null,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin;
+            tMax = 1 - tMin,
+            startConnected = param.startConnected,
+            endConnected = param.endConnected;
         if (t1 == null)
             t1 = Curve.getParameterOf(v1, p1.x, p1.y);
-        if (t1 >= (param.startConnected ? tMin : 0)
-                && t1 <= (param.endConnected ? tMax : 1)) {
+        // Check t1 and t2 against correct bounds, based on start-/endConnected:
+        // - startConnected means the start of c1 connects to the end of c2
+        // - endConneted means the end of c1 connects to the start of c2
+        // - If either c1 or c2 are at the end of the path, exclude their end,
+        //   which connects back to the beginning, but only if it's not part of
+        //   a found overlap. The normal intersection will already be found at
+        //   the beginning, and would be added twice otherwise.
+        if (t1 >= (startConnected ? tMin : 0) &&
+            t1 <= (endConnected || !overlap && c1.isLast() ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
-            var renormalize = param.renormalize;
-            if (renormalize) {
-                var res = renormalize(t1, t2);
-                t1 = res[0];
-                t2 = res[1];
+            if (t2 >= (endConnected ? tMin : 0) &&
+                t2 <= (startConnected || !overlap && c2.isLast() ? tMax : 1)) {
+                // TODO: Don't we need to check the range of t2 as well? Does it
+                // also need startConnected / endConnected values?
+                var renormalize = param.renormalize;
+                if (renormalize) {
+                    var res = renormalize(t1, t2);
+                    t1 = res[0];
+                    t2 = res[1];
+                }
+                var include = param.include,
+                    loc = new CurveLocation(c1, t1,
+                            p1 || Curve.getPoint(v1, t1), null, overlap,
+                            new CurveLocation(c2, t2,
+                                p2 || Curve.getPoint(v2, t2), null, overlap));
+                if (!include || include(loc))
+                    CurveLocation.add(locations, loc, true);
             }
-            var loc = new CurveLocation(c1, t1, p1 || Curve.getPoint(v1, t1),
-                        null, overlap,
-                        new CurveLocation(c2, t2, p2 || Curve.getPoint(v2, t2),
-                            null, overlap)),
-                include = param.include;
-            if (!include || include(loc))
-                CurveLocation.add(locations, loc, true);
         }
     }
 
@@ -1617,21 +1631,16 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 pc = Curve.getPoint(vc, tc),
                 tl = Curve.getParameterOf(vl, pc.x, pc.y);
             if (tl !== null) {
-                var pl = Curve.getPoint(vl, tl);
-                // TODO: Consider passing these as actual arguments so flipping
-                // is less cumbersome:
-                var startConnected = param.startConnected,
-                    endConnected = param.endConnected;
-                if (flip) {
-                    param.endConnected = startConnected;
-                    param.startConnected = endConnected;
-                }
-                addLocation(locations, param,
-                        v1, c1, flip ? tl : tc, flip ? pl : pc,
-                        v2, c2, flip ? tc : tl, flip ? pc : pl);
-                if (flip) {
-                    param.endConnected = endConnected;
-                    param.startConnected = startConnected;
+                var pl = Curve.getPoint(vl, tl)
+                    t1 = flip ? tl : tc,
+                    t2 = flip ? tc : tl;
+                // If the two curves are connected and the 2nd is very short,
+                // (l < Numerical.GEOMETRIC_EPSILON), we need to filter out an
+                // invalid intersection at the beginning of this short curve.
+                if (!param.endConnected || t2 > Numerical.CURVETIME_EPSILON) {
+                    addLocation(locations, param,
+                            v1, c1, t1, flip ? pl : pc,
+                            v2, c2, t2, flip ? pc : pl);
                 }
             }
         }
@@ -1769,6 +1778,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c1p2 = new Point(c1p2x, c1p2y),
                 c2p1 = new Point(c2p1x, c2p1y),
                 c2p2 = new Point(c2p2x, c2p2y),
+                // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
+                // end points to avoid matching them on almost collinear lines.
                 epsilon = /*#=*/Numerical.EPSILON;
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
