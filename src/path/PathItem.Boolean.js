@@ -639,7 +639,6 @@ PathItem.inject(new function() {
                 if (added && (seg === start || seg === otherStart)) {
                     // We've come back to the start, bail out as we're done.
                     drawSegment(seg, null, 'done', i, 'red');
-                    seg._visited = true;
                     break;
                 } else if (seg._visited && (!other || other._visited)) {
                     // TODO: Do we still need to check other too?

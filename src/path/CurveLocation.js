@@ -42,7 +42,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @param {Point} [point]
      */
     initialize: function CurveLocation(curve, parameter, point,
-            _distance, _overlap, _intersection) {
+            _overlap, _distance) {
         // Merge intersections very close to the end of a curve to the
         // beginning of the next curve.
         if (parameter >= 1 - /*#=*/Numerical.CURVETIME_EPSILON) {
@@ -60,15 +60,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._setCurve(curve);
         this._parameter = parameter;
         this._point = point || curve.getPointAt(parameter, true);
-        this._distance = _distance;
         this._overlap = _overlap;
-        this._crossing = null;
-        this._intersection = _intersection;
-        if (_intersection) {
-            _intersection._intersection = this;
-            // TODO: Remove this once debug logging is removed.
-            _intersection._other = true;
-        }
+        this._distance = _distance;
+        this._intersection = null;
     },
 
     _setCurve: function(curve) {

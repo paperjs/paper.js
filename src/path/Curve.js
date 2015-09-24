@@ -1040,7 +1040,7 @@ statics: {
                 step /= 2;
         }
         var pt = Curve.getPoint(values, minT);
-        return new CurveLocation(this, minT, pt, point.getDistance(pt));
+        return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
     },
 
     /**
@@ -1357,11 +1357,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
     function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
             overlap) {
-        var loc = null,
+        var startConnected = param.startConnected,
+            endConnected = param.endConnected,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            startConnected = param.startConnected,
-            endConnected = param.endConnected;
+            tMax = 1 - tMin;
         if (t1 == null)
             t1 = Curve.getParameterOf(v1, p1.x, p1.y);
         // Check t1 and t2 against correct bounds, based on start-/endConnected:
@@ -1372,11 +1371,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
         //   a found overlap. The normal intersection will already be found at
         //   the beginning, and would be added twice otherwise.
         if (t1 >= (startConnected ? tMin : 0) &&
-            t1 <= (endConnected || !overlap && c1.isLast() ? tMax : 1)) {
+            t1 <= (endConnected ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
             if (t2 >= (endConnected ? tMin : 0) &&
-                t2 <= (startConnected || !overlap && c2.isLast() ? tMax : 1)) {
+                t2 <= (startConnected ? tMax : 1)) {
                 // TODO: Don't we need to check the range of t2 as well? Does it
                 // also need startConnected / endConnected values?
                 var renormalize = param.renormalize;
@@ -1385,13 +1384,25 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     t1 = res[0];
                     t2 = res[1];
                 }
-                var include = param.include,
-                    loc = new CurveLocation(c1, t1,
-                            p1 || Curve.getPoint(v1, t1), null, overlap,
-                            new CurveLocation(c2, t2,
-                                p2 || Curve.getPoint(v2, t2), null, overlap));
-                if (!include || include(loc))
+                var loc1 = new CurveLocation(c1, t1,
+                        p1 || Curve.getPoint(v1, t1), overlap),
+                    loc2 = new CurveLocation(c2, t2,
+                        p2 || Curve.getPoint(v2, t2), overlap),
+                    // For self-intersections, detect the case where the second
+                    // curve wrapped around, and flip them so they can get
+                    // matched to a potentially already existing intersection.
+                    flip = loc1.getPath() === loc2.getPath()
+                        && loc1.getIndex() > loc2.getIndex(),
+                    loc = flip ? loc2 : loc1,
+                    include = param.include;
+                // Link the two locations to each other.
+                loc1._intersection = loc2;
+                loc2._intersection = loc1;
+                // TODO: Remove this once debug logging is removed.
+                (flip ? loc1 : loc2)._other = true;
+                if (!include || include(loc)) {
                     CurveLocation.add(locations, loc, true);
+                }
             }
         }
     }
