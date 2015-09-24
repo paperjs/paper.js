@@ -560,7 +560,7 @@ PathItem.inject(new function() {
                         + ', seg wi:' + seg._winding
                         + ', next wi:' + next._winding
                         + ', seg op:' + isValid(seg, true)
-                        + ', next op:' + isValid(next)
+                        + ', next op:' + isValid(next, !strict && inter._overlap)
                         + ', seg ov: ' + (seg._intersection
                                 && seg._intersection._overlap)
                         + ', next ov: ' + (next._intersection
@@ -579,9 +579,9 @@ PathItem.inject(new function() {
             // which invalid current segments are tolerated, and overlaps for
             // the next segment are allowed as long as they are valid when not
             // adjusted.
-            return !seg._visited && (!next._visited
-                    || next === start || next === otherStart)
-                && (!operator // Self-intersection doesn't need isValid() calls
+            return next === start || next === otherStart
+                // Self-intersection (!operator) doesn't need isValid() calls
+                || !seg._visited && !next._visited && (!operator
                     // NOTE: We need to use the unadjusted winding here since an
                     // overlap crossing might have brought us here, in which
                     // case isValid(seg, false) might be false.
@@ -681,7 +681,7 @@ PathItem.inject(new function() {
                         drawSegment(seg, other, 'overlap-cross', i, 'orange');
                         seg = other;
                     } else {
-                        drawSegment(seg, null, 'overlap-stay', i, 'orange');
+                        drawSegment(seg, other, 'overlap-stay', i, 'orange');
                     }
                 } else if (operation === 'exclude') {
                     // We need to handle exclusion separately, as we want to
