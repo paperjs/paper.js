@@ -622,9 +622,12 @@ statics: {
         var txs = [],
             tys = [],
             sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
-            sy = Curve.solveCubic(v, 1, y, tys, 0, 1),
+            sy = sx === 0 ? null : Curve.solveCubic(v, 1, y, tys, 0, 1),
             tx, ty;
-        // sx, sy === -1 means infinite solutions:
+        // sx, sy === -1 means infinite solutions.
+        // sx === -1 && sy === -1 means the curve is a point and there is
+        // an infinite number of solutions.
+        if (sx === -1 && sy === -1) return 0;
         // Loop through all solutions for x and match with solutions for y,
         // to see if we either have a matching pair, or infinite solutions
         // for one or the other.
