@@ -101,20 +101,23 @@ new function() {
         return node;
     }
 
-    function exportRaster(item) {
+    function exportRaster(item, options) {
         var attrs = getTransform(item._matrix, true),
-            size = item.getSize();
+            size = item.getSize(),
+            image = item.getImage();
         // Take into account that rasters are centered:
         attrs.x -= size.width / 2;
         attrs.y -= size.height / 2;
         attrs.width = size.width;
         attrs.height = size.height;
-        attrs.href = item.toDataURL();
+        attrs.href = options.embedImages === false && image && image.src
+                || item.toDataURL();
         return createElement('image', attrs);
     }
 
     function exportPath(item, options) {
-        if (options.matchShapes) {
+        var matchShapes = options.matchShapes;
+        if (matchShapes) {
             var shape = item.toShape(false);
             if (shape)
                 return exportShape(shape, options);
@@ -124,11 +127,11 @@ new function() {
             attrs = getTransform(item._matrix);
         if (segments.length === 0)
             return null;
-        if (item.isPolygon()) {
+        if (matchShapes && !item.hasHandles()) {
             if (segments.length >= 3) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];
-                for(i = 0, l = segments.length; i < l; i++)
+                for(var i = 0, l = segments.length; i < l; i++)
                     parts.push(formatter.point(segments[i]._point));
                 attrs.points = parts.join(' ');
             } else {

@@ -79,7 +79,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Object} props the properties to be applied to the item
      * @param {Point} point the point by which to transform the internal matrix
-     * @returns {Boolean} {@true if the properties were successfully be applied,
+     * @return {Boolean} {@true if the properties were successfully be applied,
      * or if none were provided}
      */
     _initialize: function(props, point) {
@@ -91,7 +91,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project;
         if (!internal)
-            this._id = Item._id = (Item._id || 0) + 1;
+            this._id = UID.get();
         // Inherit the applyMatrix setting from paper.settings.applyMatrix
         this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
         // Handle matrix before everything else, to avoid issues with
@@ -117,9 +117,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT)
-            // Filter out insert and parent property as these were handled above
-            // and don't check for plain object as that's done through hasProps.
-            this._set(props, { insert: true, parent: true }, true);
+            // Filter out insert, parent and project properties as these were
+            // handled above.
+            this._set(props, { insert: true, project: true, parent: true },
+                    // Don't check for plain object as that's done by hasProps.
+                    true);
         return hasProps;
     },
 
@@ -231,7 +233,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Private notifier that is called whenever a change occurs in this item or
      * its sub-elements, such as Segments, Curves, Styles, etc.
      *
-     * @param {ChangeFlag} flags describes what exactly has changed.
+     * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
         var symbol = this._parentSymbol,
@@ -284,8 +286,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Sets those properties of the passed object literal on this item to
      * the values defined in the object literal, if the item has property of the
      * given name (or a setter defined for it).
+     *
      * @param {Object} props
-     * @return {Item} the item itself.
+     * @return {Item} the item itself
      *
      * @example {@paperscript}
      * // Setting properties through an object literal
@@ -826,17 +829,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     setPivot: function(/* point */) {
-        this._pivot = Point.read(arguments);
+        // Clone existing points since we're caching internally.
+        this._pivot = Point.read(arguments, 0, { clone: true, readNull: true });
         // No need for _changed() since the only thing this affects is _position
         this._position = undefined;
     },
 
     _pivot: null,
-
-    // TODO: Keep these around for a bit since it was introduced on the mailing
-    // list, then remove in a while.
-    getRegistration: '#getPivot',
-    setRegistration: '#setPivot'
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
         'internalBounds', 'internalRoughBounds'],
     function(key) {
@@ -892,6 +891,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Scriptographer behaves weirdly then too.
         if (!children || children.length == 0)
             return new Rectangle();
+        // Call _updateBoundsCache() even when the group is currently empty
+        // (or only holds empty / invisible items), so future changes in these
+        // items will cause right handling of _boundsCache.
+        Item._updateBoundsCache(this, cacheItem);
         var x1 = Infinity,
             x2 = -x1,
             y1 = x1,
@@ -945,32 +948,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Do not transform by the internal matrix if there is a internalGetter.
         var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
-        // Set up a boundsCache structure that keeps track of items that keep
-        // cached bounds that depend on this item. We store this in the parent,
-        // for multiple reasons:
-        // The parent receives CHILDREN change notifications for when its
-        // children are added or removed and can thus clear the cache, and we
-        // save a lot of memory, e.g. when grouping 100 items and asking the
-        // group for its bounds. If stored on the children, we would have 100
-        // times the same structure.
         // Note: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
-        var cacheParent = this._parent || this._parentSymbol;
-        if (cacheParent) {
-            // Set-up the parent's boundsCache structure if it does not
-            // exist yet and add the cacheItem to it.
-            var id = cacheItem._id,
-                ref = cacheParent._boundsCache = cacheParent._boundsCache || {
-                    // Use both a hash-table for ids and an array for the list,
-                    // so we can keep track of items that were added already
-                    ids: {},
-                    list: []
-                };
-            if (!ref.ids[id]) {
-                ref.list.push(cacheItem);
-                ref.ids[id] = cacheItem;
-            }
-        }
+        Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
         if (cache && this._bounds && this._bounds[cache])
             return this._bounds[cache].clone();
         // If we're caching bounds on this item, pass it on as cacheItem, so the
@@ -994,8 +974,36 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     statics: {
         /**
+         * Set up a boundsCache structure that keeps track of items that keep
+         * cached bounds that depend on this item. We store this in the parent,
+         * for multiple reasons:
+         * The parent receives CHILDREN change notifications for when its
+         * children are added or removed and can thus clear the cache, and we
+         * save a lot of memory, e.g. when grouping 100 items and asking the
+         * group for its bounds. If stored on the children, we would have 100
+         * times the same structure.
+         */
+        _updateBoundsCache: function(parent, item) {
+            if (parent) {
+                // Set-up the parent's boundsCache structure if it does not
+                // exist yet and add the item to it.
+                var id = item._id,
+                    ref = parent._boundsCache = parent._boundsCache || {
+                        // Use a hash-table for ids and an array for the list,
+                        // so we can keep track of items that were added already
+                        ids: {},
+                        list: []
+                    };
+                if (!ref.ids[id]) {
+                    ref.list.push(item);
+                    ref.ids[id] = item;
+                }
+            }
+        },
+
+        /**
          * Clears cached bounds of all items that the children of this item are
-         * contributing to. See #_getCachedBounds() for an explanation why this
+         * contributing to. See _updateBoundsCache() for an explanation why this
          * information is stored on parents, not the children themselves.
          */
         _clearBoundsCache: function(item) {
@@ -1005,7 +1013,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (cache) {
                 // Erase cache before looping, to prevent circular recursion.
                 item._bounds = item._position = item._boundsCache = undefined;
-                for (var i = 0, list = cache.list, l = list.length; i < l; i++) {
+                for (var i = 0, list = cache.list, l = list.length; i < l; i++){
                     var other = list[i];
                     if (other !== item) {
                         other._bounds = other._position = undefined;
@@ -1120,9 +1128,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._matrix;
     },
 
-    setMatrix: function(matrix) {
+    setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
-        this._matrix.initialize(matrix);
+        var matrix = this._matrix;
+        matrix.initialize.apply(matrix, arguments);
         if (this._applyMatrix) {
             // Directly apply the internal matrix. This will also call
             // _changed() for us.
@@ -1454,7 +1463,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Boolean} [insert=true] specifies whether the copy should be
      * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * original.
+     * original
      * @return {Item} the newly cloned item
      *
      * @example {@paperscript}
@@ -1477,36 +1486,51 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._clone(new this.constructor(Item.NO_INSERT), insert);
     },
 
-    _clone: function(copy, insert) {
+    /**
+     * Clones the item within the same project and places the copy above the
+     * item.
+     *
+     * @param {Boolean} [insert=true] specifies whether the copy should be
+     * inserted into the DOM. When set to {@code true}, it is inserted above the
+     * original
+     * @return {Item} the newly cloned item
+     */
+    _clone: function(copy, insert, includeMatrix) {
+        var keys = ['_locked', '_visible', '_blendMode', '_opacity',
+                '_clipMask', '_guide'],
+            children = this._children;
         // Copy over style
         copy.setStyle(this._style);
-        // If this item has children, clone and append each of them:
-        if (this._children) {
-            // Clone all children and add them to the copy. tell #addChild we're
-            // cloning, as needed by CompoundPath#insertChild().
-            for (var i = 0, l = this._children.length; i < l; i++)
-                copy.addChild(this._children[i].clone(false), true);
+        // Clone all children and add them to the copy. tell #addChild we're
+        // cloning, as needed by CompoundPath#insertChild().
+        for (var i = 0, l = children && children.length; i < l; i++) {
+            copy.addChild(children[i].clone(false), true);
         }
-        // Insert is true by default.
-        if (insert || insert === undefined)
-            copy.insertAbove(this);
         // Only copy over these fields if they are actually defined in 'this',
         // meaning the default value has been overwritten (default is on
         // prototype).
-        var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-                '_clipMask', '_guide', '_applyMatrix'];
         for (var i = 0, l = keys.length; i < l; i++) {
             var key = keys[i];
             if (this.hasOwnProperty(key))
                 copy[key] = this[key];
         }
         // Use Matrix#initialize to easily copy over values.
-        copy._matrix.initialize(this._matrix);
-        // Copy over _data as well.
-        copy._data = this._data ? Base.clone(this._data) : null;
+        if (includeMatrix !== false)
+            copy._matrix.initialize(this._matrix);
+        // In case of Path#toShape(), we can't just set _applyMatrix as
+        // Shape won't allow it. Using the setter instead takes care of it.
+        // NOTE: This will also bake in the matrix that we just initialized,
+        // in case #applyMatrix is true.
+        copy.setApplyMatrix(this._applyMatrix);
+        copy.setPivot(this._pivot);
         // Copy over the selection state, use setSelected so the item
         // is also added to Project#selectedItems if it is selected.
         copy.setSelected(this._selected);
+        // Copy over _data as well.
+        copy._data = this._data ? Base.clone(this._data) : null;
+        // Insert is true by default.
+        if (insert || insert === undefined)
+            copy.insertAbove(this);
         // Clone the name too, but make sure we're not overriding the original
         // in the same parent, by passing true for the unique parameter.
         if (this._name)
@@ -1607,7 +1631,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     }
      * }
      *
-     * @param {Point} point The point to check for.
+     * @param {Point} point The point to check for
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -1632,7 +1656,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // TEST:
     /**
      * @param {Rectangle} rect the rectangle to check against
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     isInside: function(/* rect */) {
         return Rectangle.read(arguments).contains(this.getBounds());
@@ -1655,16 +1679,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // TEST:
     /**
      * @param {Item} item the item to check against
-     * @returns {Boolean}
+     * @return {Boolean}
      */
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
-        // TODO: Optimize getIntersections(): We don't need all intersections
-        // when we're just curious about whether they intersect or not. Pass on
-        // an argument that let's it bail out after the first intersection.
-        return this._asPathItem().getIntersections(item._asPathItem(),
-                _matrix || item._matrix).length > 0;
+        // Tell _getIntersections to return as soon as some intersections are
+        // found, because all we care for here is there are some or none:
+        return this._asPathItem()._getIntersections(item._asPathItem(),
+                _matrix || item._matrix, [], true).length > 0;
     },
 
     /**
@@ -1674,30 +1697,29 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The options object allows you to control the specifics of the hit-test
      * and may contain a combination of the following values:
      *
-     * @option options.tolerance {Number} the tolerance of the hit-test in
-     * points. Can also be controlled through
-     * {@link PaperScope#settings}{@code .hitTolerance}.
+     * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
+     * {Number} the tolerance of the hit-test in points
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc.
-     * @option options.fill {Boolean} hit-test the fill of items.
+     * Shape, Raster, PlacedSymbol, PointText}, etc
+     * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
-     * taking into account the setting of stroke color and width.
+     * taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     * {@link Path} items.
+     * {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
-     * without taking the stroke color or width into account.
-     * @option options.handles {Boolean} hit-test for the handles.
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+     * without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles
+     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments
      * @option options.ends {Boolean} only hit-test for the first or last
-     * segment points of open path items.
+     * segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     * the bounding rectangle of items ({@link Item#bounds}).
+     * the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have
-     * {@link Item#guide} set to {@code true}.
-     * @option options.selected {Boolean} only hit selected items.
+     * {@link Item#guide} set to {@code true}
+     * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point The point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
@@ -1822,9 +1844,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
+     * @param {Object|Function} match the criteria to match against
+     * @return {Boolean} {@true if the item matches all the criteria}
      * @see #getItems(match)
-     * @param {Object} match the criteria to match against.
-     * @return {@true if the item matches all the criteria}
      */
     /**
      * Checks whether the item matches the given criteria. Extended matching is
@@ -1840,11 +1862,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#matches
      * @function
      *
-     * @see #getItems(match)
-     * @param {String} name the name of the state to match against.
+     * @param {String} name the name of the state to match against
      * @param {Object} compare the value, function or regular expression to
-     * compare against.
-     * @return {@true if the item matches the state}
+     * compare against
+     * @return {Boolean} {@true if the item matches the state}
+     * @see #getItems(match)
      */
     matches: function(name, compare) {
         // matchObject() is used to match against objects in a nested manner.
@@ -1864,12 +1886,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
             return true;
         }
-        if (typeof name === 'object') {
+        var type = typeof name;
+        if (type === 'object') {
             // `name` is the match object, not a string
             for (var key in name) {
                 if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
             }
+        } else if (type === 'function') {
+            return name(this);
         } else {
             var value = /^(empty|editable)$/.test(name)
                     // Handle boolean test functions separately, by calling them
@@ -1899,7 +1924,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return true;
     },
 
-
     /**
      * Fetch the descendants (children or children of children) of this item
      * that match the properties in the specified object.
@@ -1918,13 +1942,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * examples.
      *
      * @option match.inside {Rectangle} the rectangle in which the items need to
-     * be fully contained.
+     * be fully contained
      * @option match.overlapping {Rectangle} the rectangle with which the items
-     * need to at least partly overlap.
+     * need to at least partly overlap
      *
+     * @param {Object|Function} match the criteria to match against
+     * @return {Item[]} the list of matching descendant items
      * @see #matches(match)
-     * @param {Object} match the criteria to match against.
-     * @return {Item[]} the list of matching descendant items.
      */
     getItems: function(match) {
         return Item._getItems(this._children, match, this._matrix);
@@ -1941,9 +1965,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
+     * @param {Object|Function} match the criteria to match against
+     * @return {Item} the first descendant item  matching the given criteria
      * @see #getItems(match)
-     * @param {Object} match the criteria to match against.
-     * @return {Item} the first descendant item  matching the given criteria.
      */
     getItem: function(match) {
         return Item._getItems(this._children, match, this._matrix, null, true)
@@ -1955,10 +1979,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // method can be used for Project#layers as well in Project.
         _getItems: function _getItems(children, match, matrix, param,
                 firstOnly) {
-            if (!param) {
+            if (!param && typeof match === 'object') {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
-                // inside // overlapping:
+                // inside / overlapping:
                 var overlapping = match.overlapping,
                     inside = match.inside,
                     // If overlapping is set, we also perform the inside check:
@@ -1966,8 +1990,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     rect =  bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
-                    inside: rect,
-                    overlapping: overlapping && new Path.Rectangle({
+                    inside: !!inside,
+                    overlapping: !!overlapping,
+                    rect: rect,
+                    path: overlapping && new Path.Rectangle({
                         rectangle: rect,
                         insert: false
                     })
@@ -1978,22 +2004,22 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     match = Base.set({}, match,
                             { inside: true, overlapping: true });
             }
-            var items = param.items,
-                inside = param.inside,
-                overlapping = param.overlapping;
-            matrix = inside && (matrix || new Matrix());
+            var items = param && param.items,
+                rect = param && param.rect;
+            matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
                     childMatrix = matrix && matrix.chain(child._matrix),
                     add = true;
-                if (inside) {
+                if (rect) {
                     var bounds = child.getBounds(childMatrix);
                     // Regardless of the setting of inside / overlapping, if the
-                    // bounds don't even overlap, we can skip this child.
-                    if (!inside.intersects(bounds))
+                    // bounds don't even intersect, we can skip this child.
+                    if (!rect.intersects(bounds))
                         continue;
-                    if (!(inside && inside.contains(bounds)) && !(overlapping
-                            && overlapping.intersects(child, childMatrix)))
+                    if (!(param.inside && rect.contains(bounds))
+                            && !(param.overlapping && (bounds.contains(rect)
+                                || param.path.intersects(child, childMatrix))))
                         add = false;
                 }
                 if (add && child.matches(match)) {
@@ -2020,13 +2046,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#exportJSON
      * @function
      *
-     * @option options.asString {Boolean} whether the JSON is returned as a
-     * {@code Object} or a {@code String}.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in JSON data.
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as a
+     * {@code Object} or a {@code String}
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in JSON data
      *
-     * @param {Object} [options={ asString: true, precision: 5 }] the
-     * serialization options
+     * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
      */
 
@@ -2037,7 +2062,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * to this item's {@link Item#children} list. Note that not all type of
      * items can have children.
      *
-     * @param {String} json the JSON data to import from.
+     * @param {String} json the JSON data to import from
      */
     importJSON: function(json) {
         // Try importing into `this`. If another item is returned, try adding
@@ -2055,19 +2080,21 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#exportSVG
      * @function
      *
-     * @option options.asString {Boolean} whether a SVG node or a {@code String}
-     * is to be returned.
-     * @option options.precision {Number} the amount of fractional digits in
-     * numbers used in SVG data.
-     * @option options.matchShapes {Boolean} whether path items should tried to
-     * be converted to shape items, if their geometries can be made to match.
+     * @option [options.asString=false] {Boolean} whether a SVG node or a
+     * {@code String} is to be returned
+     * @option [options.precision=5] {Number} the amount of fractional digits in
+     * numbers used in SVG data
+     * @option [options.matchShapes=false] {Boolean} whether path items should
+     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
+     * polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images
+     * should be embedded as base64 data inlined in the xlink:href attribute,
+     * or kept as a link to their external URL.
      *
-     * @param {Object} [options={ asString: false, precision: 5,
-     * matchShapes: false }] the export options.
+     * @param {Object} [options] the export options
      * @return {SVGElement} the item converted to an SVG node
      */
 
-    // DOCS: Document importSVG('file.svg', callback);
     /**
      * Converts the provided SVG content into Paper.js items and adds them to
      * the this item's children list.
@@ -2077,12 +2104,36 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#importSVG
      * @function
      *
-     * @option options.expandShapes {Boolean} whether imported shape items
-     * should be expanded to path items.
+     * @option [options.expandShapes=false] {Boolean} whether imported shape
+     * items should be expanded to path items
+     * @option [options.onLoad] {Function} the callback function to call once
+     * the SVG content is loaded from the given URL. Only required when loading
+     * from external files.
+     * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
+     * {Boolean} whether imported items should have their transformation
+     * matrices applied to their contents or not
      *
-     * @param {SVGElement|String} svg the SVG content to import
-     * @param {Object} [options={ expandShapes: false }] the import options
-     * @return {Item} the imported Paper.js parent item
+     * @param {SVGElement|String} svg the SVG content to import, either as a SVG
+     * DOM node, a string containing SVG content, or a string describing the URL
+     * of the SVG file to fetch.
+     * @param {Object} [options] the import options
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
+     */
+    /**
+     * Imports the provided external SVG file, converts it into Paper.js items
+     * and adds them to the this item's children list.
+     * Note that the item is not cleared first. You can call
+     * {@link Item#removeChildren()} to do so.
+     *
+     * @name Item#importSVG
+     * @function
+     *
+     * @param {SVGElement|String} svg the URL of the SVG file to fetch.
+     * @param {Function} onLoad the callback function to call once the SVG
+     * content is loaded from the given URL.
+     * @return {Item} the newly created Paper.js item containing the converted
+     * SVG content
      */
 
     /**
@@ -2093,7 +2144,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or {@code null} if adding was not
-     * possible.
+     * possible
      */
     addChild: function(item, _preserve) {
         return this.insertChild(undefined, item, _preserve);
@@ -2107,7 +2158,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} index
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertChild: function(index, item, _preserve) {
         var res = item ? this.insertChildren(index, [item], _preserve) : null;
@@ -2121,7 +2172,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item[]} items The items to be added as children
      * @return {Item[]} the added items, or {@code null} if adding was not
-     * possible.
+     * possible
      */
     addChildren: function(items, _preserve) {
         return this.insertChildren(this._children.length, items, _preserve);
@@ -2135,7 +2186,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} index
      * @param {Item[]} items The items to be appended as children
      * @return {Item[]} the inserted items, or {@code null} if inserted was not
-     * possible.
+     * possible
      */
     insertChildren: function(index, items, _preserve, _proto) {
         // CompoundPath#insertChildren() requires _preserve and _type:
@@ -2200,7 +2251,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertAbove: function(item, _preserve) {
         return item._insertSibling(item._index + 1, this, _preserve);
@@ -2211,7 +2262,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} item the item below which it should be inserted
      * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible.
+     * possible
      */
     insertBelow: function(item, _preserve) {
         return item._insertSibling(item._index, this, _preserve);
@@ -2430,8 +2481,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
     },
 
-    // TODO: Item#isEditable is currently ignored in the documentation, as
-    // locking an item currently has no effect
     /**
      * {@grouptitle Tests}
      * Specifies whether the item has any content or not. The meaning of what
@@ -2452,6 +2501,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * locked or hidden}
      * @ignore
      */
+    // TODO: Item#isEditable is currently ignored in the documentation, as
+    // locking an item currently has no effect
     isEditable: function() {
         var item = this;
         while (item) {
@@ -3023,7 +3074,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Transform the item.
      *
-     * @param {Matrix} matrix the matrix by which the item shall be transformed.
+     * @param {Matrix} matrix the matrix by which the item shall be transformed
      */
     // TODO: Implement flags:
     // @param {String[]} flags Array of any of the following: 'objects',
@@ -3258,11 +3309,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * the frame event:
      *
      * @option event.count {Number} the number of times the frame event was
-     * fired.
+     * fired
      * @option event.time {Number} the total amount of time passed since the
-     * first frame event in seconds.
+     * first frame event in seconds
      * @option event.delta {Number} the time passed in seconds since the last
-     * frame event.
+     * frame event
      *
      * @see View#onFrame
      * @example {@paperscript}
@@ -3810,7 +3861,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     // If native blending is possible, see if the item allows it
                     || (nativeBlend || normalBlend && opacity < 1)
                         && this._canComposite(),
-            pixelRatio = param.pixelRatio,
+            pixelRatio = param.pixelRatio || 1,
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct

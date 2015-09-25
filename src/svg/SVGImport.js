@@ -87,11 +87,20 @@ new function() {
             // items and avoid calling applyAttributes() again.
             project._currentStyle = item._style.clone();
         }
+        if (isRoot) {
+            // Import all defs first, since in SVG they can be in any location.
+            // e.g. Affinity Designer exports defs as last.
+            var defs = node.querySelectorAll('defs');
+            for (var i = 0, l = defs.length; i < l; i++) {
+                importSVG(defs[i], options, false);
+            }
+        }
         // Collect the children in an array and apply them all at once.
         for (var i = 0, l = nodes.length; i < l; i++) {
             var childNode = nodes[i],
                 child;
             if (childNode.nodeType === 1
+                    && childNode.nodeName.toLowerCase() !== 'defs'
                     && (child = importSVG(childNode, options, false))
                     && !(child instanceof Symbol))
                 children.push(child);
@@ -365,7 +374,10 @@ new function() {
     // We need to define style attributes first, and merge in all others after,
     // since transform needs to be applied after fill color, as transformations
     // can affect gradient fills.
-    var attributes = Base.each(SVGStyles, function(entry) {
+    // Use Base.set() to control sequence of attributes and have all entries in
+    // SVGStyles (e.g. 'stroke') before the additional attributes below (e.g.
+    // 'stroke-opacity'). See issue #694.
+    var attributes = Base.set(Base.each(SVGStyles, function(entry) {
         this[entry.attribute] = function(item, value) {
             item[entry.set](convertValue(value, entry.type, entry.fromSVG));
             // When applying gradient colors to shapes, we need to offset
@@ -379,7 +391,7 @@ new function() {
                             item.getPosition(true).negate()));
             }
         };
-    }, {
+    }, {}), {
         id: function(item, value) {
             definitions[value] = item;
             if (item.setName)
@@ -497,8 +509,8 @@ new function() {
      * Converts various SVG styles and attributes into Paper.js styles and
      * attributes and applies them to the passed item.
      *
-     * @param {SVGElement} node an SVG node to read style and attributes from.
-     * @param {Item} item the item to apply the style and attributes to.
+     * @param {SVGElement} node an SVG node to read style and attributes from
+     * @param {Item} item the item to apply the style and attributes to
      */
     function applyAttributes(item, node, isRoot) {
         // SVG attributes can be set both as styles and direct node attributes,
@@ -616,7 +628,7 @@ new function() {
             definitions = {};
             // Now if settings.applyMatrix was set, apply recursively and set
             // #applyMatrix = true on the item and all children.
-            if (applyMatrix && item)
+            if (item && Base.pick(options.applyMatrix, applyMatrix))
                 item.matrix.apply(true, true);
         }
         return item;

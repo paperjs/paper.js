@@ -23,17 +23,16 @@ var Emitter = {
                 this.on(key, value);
             }, this);
         } else {
-            var entry = this._eventTypes[type];
-            if (entry) {
-                var handlers = this._callbacks = this._callbacks || {};
-                handlers = handlers[type] = handlers[type] || [];
-                if (handlers.indexOf(func) === -1) { // Not added yet, add now.
-                    handlers.push(func);
-                    // See if this is the first handler that we're attaching,
-                    // and call install if defined.
-                    if (entry.install && handlers.length == 1)
-                        entry.install.call(this, type);
-                }
+            var types = this._eventTypes,
+                entry = types && types[type],
+                handlers = this._callbacks = this._callbacks || {};
+            handlers = handlers[type] = handlers[type] || [];
+            if (handlers.indexOf(func) === -1) { // Not added yet, add now.
+                handlers.push(func);
+                // See if this is the first handler that we're attaching,
+                // and call install if defined.
+                if (entry && entry.install && handlers.length == 1)
+                    entry.install.call(this, type);
             }
         }
         return this;
@@ -47,16 +46,18 @@ var Emitter = {
             }, this);
             return;
         }
-        var entry = this._eventTypes[type],
+        var types = this._eventTypes,
+            entry = types && types[type],
             handlers = this._callbacks && this._callbacks[type],
             index;
-        if (entry && handlers) {
+        if (handlers) {
             // See if this is the last handler that we're detaching (or if we
             // are detaching all handlers), and call uninstall if defined.
             if (!func || (index = handlers.indexOf(func)) !== -1
                     && handlers.length === 1) {
-                if (entry.uninstall)
+                if (entry && entry.uninstall)
                     entry.uninstall.call(this, type);
+                // Delete handlers entry again, so responds() returns false.
                 delete this._callbacks[type];
             } else if (index !== -1) {
                 // Just remove this one handler
@@ -79,12 +80,15 @@ var Emitter = {
         if (!handlers)
             return false;
         var args = [].slice.call(arguments, 1);
+        // Create a clone of the handlers list so changes caused by on / off
+        // won't throw us off track here:
+        handlers = handlers.slice();
         for (var i = 0, l = handlers.length; i < l; i++) {
             // When the handler function returns false, prevent the default
-            // behaviour and stop propagation of the event by calling stop()
-            if (handlers[i].apply(this, args) === false
-                    && event && event.stop) {
-                event.stop();
+            // behavior and stop propagation of the event by calling stop()
+            if (handlers[i].apply(this, args) === false) {
+                if (event && event.stop)
+                    event.stop();
                 break;
             }
         }
@@ -105,8 +109,9 @@ var Emitter = {
             key = install ? 'install' : 'uninstall';
         for (var type in handlers) {
             if (handlers[type].length > 0) {
-                var entry = this._eventTypes[type],
-                    func = entry[key];
+                var types = this._eventTypes,
+                    entry = types && types[type],
+                    func = entry && entry[key];
                 if (func)
                     func.call(this, type);
             }

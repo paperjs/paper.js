@@ -12,6 +12,30 @@
 
 module('Curve');
 
+test('Curve#getParameterOf()', function() {
+    // For issue #708:
+    var path = new Path.Rectangle({
+        center: new Point(300, 100),
+        size: new Point(100, 100),
+        strokeColor: 'black'
+    });
+
+    for (var pos = 0; pos < path.length; pos += 10) {
+        var point1 = path.getPointAt(pos),
+            point2 = null;
+        for (var i = 0; i < path.curves.length; i++) {
+            var curve = path.curves[i];
+            var parameter = curve.getParameterOf(point1);
+            if (parameter) {
+                point2 = curve.getLocationAt(parameter, true).point;
+                break;
+            }
+        }
+        equals(point1, point2, 'curve.getLocationAt(curve.getParameterOf('
+                + point1 + ')).point;');
+    }
+});
+
 test('Curve#getPointAt()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
@@ -31,6 +55,9 @@ test('Curve#getPointAt()', function() {
         equals(curve.getPointAt(entry[0], true), entry[1],
                 'curve.getPointAt(' + entry[0] + ', true);');
     }
+
+    equals(curve.getPointAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
 });
 
 test('Curve#getTangentAt()', function() {
@@ -49,8 +76,10 @@ test('Curve#getTangentAt()', function() {
 
     for (var i = 0; i < tangents.length; i++) {
         var entry = tangents[i];
-        equals(curve.getTangentAt(entry[0], true), entry[1],
+        equals(curve.getTangentAt(entry[0], true), entry[1].normalize(),
                 'curve.getTangentAt(' + entry[0] + ', true);');
+        equals(curve.getWeightedTangentAt(entry[0], true), entry[1],
+                'curve.getWeightedTangentAt(' + entry[0] + ', true);');
     }
 });
 
@@ -70,8 +99,10 @@ test('Curve#getNormalAt()', function() {
 
     for (var i = 0; i < normals.length; i++) {
         var entry = normals[i];
-        equals(curve.getNormalAt(entry[0], true), entry[1],
+        equals(curve.getNormalAt(entry[0], true), entry[1].normalize(),
                 'curve.getNormalAt(' + entry[0] + ', true);');
+        equals(curve.getWeightedNormalAt(entry[0], true), entry[1],
+                'curve.getWeightedNormalAt(' + entry[0] + ', true);');
     }
 });
 
@@ -132,4 +163,18 @@ test('Curve#getParameterAt()', function() {
                 + ' should be the same value as at offset' + o2,
                 Numerical.TOLERANCE);
     }
+
+    equals(curve.getParameterAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
+});
+
+test('Curve#getLocationAt()', function() {
+    var curve = new Path([
+        [[0, 0], [0, 0], [100, 0]],
+        [[200, 200]],
+    ]).firstCurve;
+
+    equals(curve.getLocationAt(curve.length + 1), null,
+            'Should return null when offset is out of range.');
+//            'Should return null when point is not on the curve.');
 });

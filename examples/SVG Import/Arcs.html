@@ -5,7 +5,9 @@
     <title>Arcs Testing</title>
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        project.importSVG(document.getElementById('svg'));
+        project.importSVG(document.getElementById('svg'), {
+            applyMatrix: false
+        });
     </script>
 </head>
 <body>

@@ -80,13 +80,14 @@ var PathFitter = Base.extend({
         // Parameterize points, and attempt to fit curve
         var uPrime = this.chordLengthParameterize(first, last),
             maxError = Math.max(this.error, this.error * this.error),
-            split;
+            split,
+            parametersInOrder = true;
         // Try 4 iterations
         for (var i = 0; i <= 4; i++) {
             var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
             //  Find max deviation of points to fitted curve
             var max = this.findMaxError(first, last, curve, uPrime);
-            if (max.error < this.error) {
+            if (max.error < this.error && parametersInOrder) {
                 this.addCurve(curve);
                 return;
             }
@@ -94,7 +95,7 @@ var PathFitter = Base.extend({
             // If error not too large, try reparameterization and iteration
             if (max.error >= maxError)
                 break;
-            this.reparameterize(first, last, uPrime, curve);
+            parametersInOrder = this.reparameterize(first, last, uPrime, curve);
             maxError = max.error;
         }
         // Fitting failed -- split at max error point and fit recursively
@@ -170,20 +171,33 @@ var PathFitter = Base.extend({
         // If alpha negative, use the Wu/Barsky heuristic (see text)
         // (if alpha is 0, you get coincident control points that lead to
         // divide by zero in any subsequent NewtonRaphsonRootFind() call.
-        var segLength = pt2.getDistance(pt1);
-        epsilon *= segLength;
-        if (alpha1 < epsilon || alpha2 < epsilon) {
+        var segLength = pt2.getDistance(pt1),
+            eps = epsilon * segLength,
+            handle1,
+            handle2;
+        if (alpha1 < eps || alpha2 < eps) {
             // fall back on standard (probably inaccurate) formula,
             // and subdivide further if needed.
             alpha1 = alpha2 = segLength / 3;
+        } else {
+            // Check if the found control points are in the right order when
+            // projected onto the line through pt1 and pt2.
+            var line = pt2.subtract(pt1);
+            // Control points 1 and 2 are positioned an alpha distance out
+            // on the tangent vectors, left and right, respectively
+            handle1 = tan1.normalize(alpha1);
+            handle2 = tan2.normalize(alpha2);
+            if (handle1.dot(line) - handle2.dot(line) > segLength * segLength) {
+                // Fall back to the Wu/Barsky heuristic above.
+                alpha1 = alpha2 = segLength / 3;
+                handle1 = handle2 = null; // Force recalculation
+            }
         }
 
         // First and last control points of the Bezier curve are
         // positioned exactly at the first and last data points
-        // Control points 1 and 2 are positioned an alpha distance out
-        // on the tangent vectors, left and right, respectively
-        return [pt1, pt1.add(tan1.normalize(alpha1)),
-                pt2.add(tan2.normalize(alpha2)), pt2];
+        return [pt1, pt1.add(handle1 || tan1.normalize(alpha1)),
+                pt2.add(handle2 || tan2.normalize(alpha2)), pt2];
     },
 
     // Given set of points and their parameterization, try to find
@@ -192,6 +206,13 @@ var PathFitter = Base.extend({
         for (var i = first; i <= last; i++) {
             u[i - first] = this.findRoot(curve, this.points[i], u[i - first]);
         }
+        // Detect if the new parameterization has reordered the points.
+        // In that case, we would fit the points of the path in the wrong order.
+        for (var i = 1, l = u.length; i < l; i++) {
+            if (u[i] <= u[i - 1])
+                return false;
+        }
+        return true;
     },
 
     // Use Newton-Raphson iteration to find better root.

@@ -107,10 +107,10 @@ test('Curve list after removing a segment - 2', function() {
     }, 1, 'After removing the last segment, we should be left with one curve');
 });
 
-test('Splitting a straight path should produce linear segments', function() {
+test('Splitting a straight path should produce straight segments', function() {
     var path = new Path.Line([0, 0], [50, 50]);
     var path2 = path.split(0, 0.5);
     equals(function() {
-        return path2.firstSegment.linear;
+        return path2.firstSegment.isStraight();
     }, true);
 });

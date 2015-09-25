@@ -413,7 +413,7 @@
         t = t || s.index;
         if (remove === undefined) { remove = true; }
         var crv = s.curve;
-        var t1 = crv.getNormal(0).normalize(10);
+        var t1 = crv.getNormalAt(0, true).normalize(10);
         var p = s.point.clone().add(t1);
         var cir = new Path.Circle(s.point, 2);
         cir.style.fillColor = c;
@@ -438,12 +438,12 @@
         tc = tc || '#ccc';
         t = t || crv.index;
         if (remove === undefined) { remove = true; }
-        var p = crv.getPoint(0.57);
-        var t1 = crv.getTangent(0.57).normalize(-10);
+        var p = crv.getPointAt(0.57, true);
+        var t1 = crv.getTangentAt(0.57, true).normalize(-10);
         var p2 = p.clone().add(t1);
         var l = new Path.Line(p, p2).rotate(30, p);
         var l2 = new Path.Line(p, p2).rotate(-30, p);
-        p = crv.getPoint(0.43);
+        p = crv.getPointAt(0.43, true);
         var cir = new Path.Circle(p, 8);
         var text = new PointText(p.subtract([0, -4]));
         text.justification = 'center';

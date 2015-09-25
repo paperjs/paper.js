@@ -81,7 +81,7 @@ var Line = Base.extend(/** @lends Line# */{
      * @param {Line} line
      * @param {Boolean} [isInfinite=false]
      * @return {Point} the intersection point of the lines, {@code undefined}
-     * if the two lines are colinear, or {@code null} if they don't intersect.
+     * if the two lines are collinear, or {@code null} if they don't intersect.
      */
     intersect: function(line, isInfinite) {
         return Line.intersect(
@@ -110,6 +110,13 @@ var Line = Base.extend(/** @lends Line# */{
         return Math.abs(Line.getSignedDistance(
                 this._px, this._py, this._vx, this._vy,
                 point.x, point.y, true));
+    },
+
+    isCollinear: function(line) {
+        // TODO: Tests showed that 1e-10 might work well here, but we want to
+        // keep it in sync with Point#isCollinear()
+        return this._vx * line._vy - this._vy * line._vx
+                < /*#=*/Numerical.TOLERANCE;
     },
 
     statics: /** @lends Line */{

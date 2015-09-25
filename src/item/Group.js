@@ -32,7 +32,7 @@ var Group = Item.extend(/** @lends Group# */{
      *
      * @name Group#initialize
      * @param {Item[]} [children] An array of children that will be added to the
-     * newly created group.
+     * newly created group
      *
      * @example {@paperscript}
      * // Create a group containing two paths:
@@ -74,7 +74,7 @@ var Group = Item.extend(/** @lends Group# */{
      *
      * @name Group#initialize
      * @param {Object} object an object literal containing the properties to be
-     * set on the group.
+     * set on the group
      *
      * @example {@paperscript}
      * var path = new Path([100, 100], [100, 200]);

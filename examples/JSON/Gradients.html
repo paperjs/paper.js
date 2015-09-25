@@ -6,15 +6,20 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas1">
-        var path = new Path.Circle(view.center, view.bounds.height * 0.4);
+        var path = new Path.Circle({
+            center: view.center,
+            radius: view.bounds.height * 0.4
+        });
         path.fillColor = {
-            // gradient: [['yellow', 'red', 'black'], true],
             stops: ['yellow', 'red', 'black'],
             radial: true,
             origin: path.position,
             destination: path.bounds.rightCenter
         }
-        path.strokeColor = 'black';
+
+        var symbol = new Symbol(path);
+        symbol.place(view.center);
+
         window._json = project.exportJSON();
         console.log(window._json);
     </script>

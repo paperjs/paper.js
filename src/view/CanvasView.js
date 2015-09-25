@@ -84,15 +84,28 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
     /**
      * Converts the provide size in any of the units allowed in the browser to
-     * pixels, by the use of the context.font property.
+     * pixels.
      */
     getPixelSize: function(size) {
-        var ctx = this._context,
-            prevFont = ctx.font;
-        ctx.font = size + ' serif';
-        size = parseFloat(ctx.font);
-        ctx.font = prevFont;
-        return size;
+        var browser = paper.browser,
+            pixels;
+        if (browser && browser.firefox) {
+            // Firefox doesn't appear to convert  context.font sizes to pixels,
+            // while other browsers do. Workaround:
+            var parent = this._element.parentNode,
+                temp = document.createElement('div');
+            temp.style.fontSize = size;
+            parent.appendChild(temp);
+            pixels = parseFloat(DomElement.getStyles(temp).fontSize);
+            parent.removeChild(temp);
+        } else {
+            var ctx = this._context,
+                prevFont = ctx.font;
+            ctx.font = size + ' serif';
+            pixels = parseFloat(ctx.font);
+            ctx.font = prevFont;
+        }
+        return pixels;
     },
 
     getTextWidth: function(font, lines) {
@@ -109,13 +122,17 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
     },
 
     /**
-     * Updates the view if there are changes.
+     * Updates the view if there are changes. Note that when using built-in
+     * event hanlders for interaction, animation and load events, this method is
+     * invoked for you automatically at the end.
      *
-     * @function
+     * @param {Boolean} [force=false] {@true if the view should be updated even
+     * if no change has happened}
+     * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
+    update: function(force) {
         var project = this._project;
-        if (!project || !project._needsUpdate)
+        if (!project || !force && !project._needsUpdate)
             return false;
         // Initial tests conclude that clearing the canvas using clearRect
         // is always faster than setting canvas.width = canvas.width

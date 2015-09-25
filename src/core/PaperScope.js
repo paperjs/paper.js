@@ -74,14 +74,22 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
 /*#*/ if (__options.environment == 'browser') {
         if (!this.browser) {
-            var browser = proto.browser = {};
+            var agent = navigator.userAgent.toLowerCase(),
+                // Detect basic platforms, only mac internally required for now.
+                platform = (/(win)/.exec(agent)
+                        || /(mac)/.exec(agent)
+                        || /(linux)/.exec(agent)
+                        || [])[0],
+                browser = proto.browser = { platform: platform };
+            if (platform)
+                browser[platform] = true;
             // Use replace() to get all matches, and deal with Chrome/Webkit
             // overlap:
             // TODO: Do we need Mozilla next to Firefox? Other than the
             // different treatment of the Chrome/Webkit overlap
-            // here: { chrome: true, webkit: false }, mozilla missing is the
+            // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
-            navigator.userAgent.toLowerCase().replace(
+            agent.replace(
                 /(opera|chrome|safari|webkit|firefox|msie|trident|atom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
                 function(all, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
@@ -121,9 +129,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @name PaperScope#settings
      * @type Object
      *
-     * @option settings.applyMatrix {Boolean}
-     * @option settings.handleSize {Number}
-     * @option settings.hitTolerance {Number}
+     * @option [settings.applyMatrix=true] {Boolean}
+     * @option [settings.handleSize=4] {Number}
+     * @option [settings.hitTolerance=0] {Number}
      */
 
     /**
@@ -178,14 +186,14 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
     /**
      * Injects the paper scope into any other given scope. Can be used for
-     * examle to inject the currently active PaperScope into the window's global
-     * scope, to emulate PaperScript-style globally accessible Paper classes and
-     * objects.
+     * example to inject the currently active PaperScope into the window's
+     * global scope, to emulate PaperScript-style globally accessible Paper
+     * classes and objects.
      *
      * <b>Please note:</b> Using this method may override native constructors
-     * (e.g. Path, RGBColor). This may cause problems when using Paper.js in
-     * conjunction with other libraries that rely on these constructors. Keep
-     * the library scoped if you encounter issues caused by this.
+     * (e.g. Path). This may cause problems when using Paper.js in conjunction
+     * with other libraries that rely on these constructors. Keep the library
+     * scoped if you encounter issues caused by this.
      *
      * @example
      * paper.install(window);

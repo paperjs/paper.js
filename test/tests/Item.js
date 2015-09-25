@@ -725,14 +725,15 @@ test('Item#pivot', function() {
         applyMatrix: true
     });
 
-    var pivot1 = path1.bounds.topLeft.clone();
-    path1.pivot = pivot1;
-    path1.position = [200, 200];
-    equals(path1.pivot, pivot1, 'Changing position of an item with applyMatrix = false should not change pivot.');
+    var pivot = new Point(100, 100);
 
-    var pivot2 = path2.bounds.topLeft.clone();
-    path2.pivot = pivot2;
-    path2.position = [200, 200];
-    equals(path2.pivot, pivot2, 'Changing position of an item with applyMatrix = true should change pivot.');
+    path1.pivot = pivot;
+    path1.position = [200, 200];
+    equals(path1.pivot, pivot, 'Changing position of an item with applyMatrix = false should not change pivot');
+
+    var difference = new Point(100, 100);
+    path2.pivot = pivot;
+    path2.position = path2.position.add(difference);
+    equals(path2.pivot, pivot.add(difference), 'Changing position of an item with applyMatrix = true should change pivot');
 
 });

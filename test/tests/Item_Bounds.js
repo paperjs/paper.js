@@ -59,6 +59,16 @@ test('group.bounds and position after children were modified', function() {
     equals(group.position, new Point(100, 100), 'group.position after change');
 });
 
+test('group.bounds when containing empty path first', function() {
+    var group = new Group();
+    var path = new Path();
+    group.addChild(path);
+    equals(group.bounds, new Rectangle(0, 0, 0, 0), 'group.bounds with empty path');
+    path.moveTo([75, 75]);
+    path.lineTo([175, 175]);
+    equals(group.bounds, new Rectangle(75, 75, 100, 100), 'group.bounds after adding segments to path');
+});
+
 test('path.bounds when contained in a transformed group', function() {
     var path = new Path([10, 10], [60, 60]);
     var group = new Group([path]);

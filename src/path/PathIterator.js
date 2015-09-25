@@ -21,15 +21,15 @@ var PathIterator = Base.extend({
     /**
      * Creates a path iterator for the given path.
      *
-     * @param {Path} path the path to iterate over.
+     * @param {Path} path the path to iterate over
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
-     * curve subdivision when mapping offsets to curve parameters.
+     * curve subdivision when mapping offsets to curve parameters
      * @param {Number} [tolerance=0.25] the error tolerance at which the
      * recursion is interrupted before the maximum number of iterations is
-     * reached.
+     * reached
      * @param {Matrix} [matrix] the matrix by which to transform the path's
      * coordinates without modifying the actual path.
-     * @return {PathIterator} the newly created path iterator.
+     * @return {PathIterator} the newly created path iterator
      */
     initialize: function(path, maxRecursion, tolerance, matrix) {
         // Instead of relying on path.curves, we only use segments here and
@@ -134,11 +134,6 @@ var PathIterator = Base.extend({
         };
     },
 
-    evaluate: function(offset, type) {
-        var param = this.getParameterAt(offset);
-        return Curve.evaluate(this.curves[param.index], param.value, type);
-    },
-
     drawPart: function(ctx, from, to) {
         from = this.getParameterAt(from);
         to = this.getParameterAt(to);
@@ -151,10 +146,11 @@ var PathIterator = Base.extend({
             ctx.bezierCurveTo.apply(ctx, curve.slice(2));
         }
     }
-}, Base.each(['getPoint', 'getTangent', 'getNormal', 'getCurvature'],
-    function(name, index) {
-        this[name + 'At'] = function(offset) {
-            return this.evaluate(offset, index);
+}, Base.each(Curve.evaluateMethods,
+    function(name) {
+        this[name + 'At'] = function(offset, weighted) {
+            var param = this.getParameterAt(offset);
+            return Curve[name](this.curves[param.index], param.value, weighted);
         };
     }, {})
 );

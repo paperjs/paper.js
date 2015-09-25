@@ -51,6 +51,7 @@ var paper = new function(undefined) {
 
 /*#*/ include('util/Formatter.js');
 /*#*/ include('util/Numerical.js');
+/*#*/ include('util/UID.js');
 
 // Include Paper classes, which are later injected into PaperScope by setting
 // them on the 'this' object, e.g.:
@@ -116,10 +117,7 @@ var paper = new function(undefined) {
 /*#*/     include('tool/ToolEvent.js');
 /*#*/     include('tool/Tool.js');
 
-// Http is used both for PaperScript and SVGImport
-/*#*/     if (__options.paperScript || __options.svg) {
-/*#*/         include('net/Http.js');
-/*#*/     }
+/*#*/     include('net/Http.js');
 /*#*/ }
 
 /*#*/ include('canvas/CanvasProvider.js');

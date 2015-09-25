@@ -26,6 +26,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _boundsGetter: 'getBounds',
     _boundsSelected: true,
     _serializeFields: {
+        crossOrigin: null, // NOTE: Needs to be set before source to work!
         source: null
     },
 
@@ -43,7 +44,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * placed
      *
      * @example {@paperscript height=300} // Creating a raster using a url
-     * var url = 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png';
+     * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
      * var raster = new Raster(url);
      *
      * // If you create a Raster using a url, you can use the onLoad
@@ -67,7 +68,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript height=300}
      * var raster = new Raster({
-     *     source: 'http://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
      *     position: view.center
      * });
      *
@@ -113,6 +114,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
             copy.setImage(copyCanvas);
         }
+        copy._crossOrigin = this._crossOrigin;
         return this._clone(copy, insert);
     },
 
@@ -312,12 +314,12 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @example {@paperscript}
      * var raster = new Raster();
-     * raster.source = 'http://paperjs.org/about/resources/paper-js.gif';
+     * raster.source = 'http://paperjs.org/about/paper-js.gif';
      * raster.position = view.center;
      *
      * @example {@paperscript}
      * var raster = new Raster({
-     *     source: 'http://paperjs.org/about/resources/paper-js.gif',
+     *     source: 'http://paperjs.org/about/paper-js.gif',
      *     position: view.center
      * });
      */
@@ -327,6 +329,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     setSource: function(src) {
         var that = this,
+            crossOrigin = this._crossOrigin,
             image;
 
         function loaded() {
@@ -340,9 +343,10 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
 
 /*#*/ if (__options.environment == 'browser') {
-            // src can be an URL or a DOM ID to load the image from
-            image = document.getElementById(src) || new Image();
-
+        // src can be an URL or a DOM ID to load the image from
+        image = document.getElementById(src) || new Image();
+        if (crossOrigin)
+            image.crossOrigin = crossOrigin;
         // IE has naturalWidth / Height defined, but width / height set to 0
         // when the image is invisible in the document.
         if (image.naturalWidth && image.naturalHeight) {
@@ -350,10 +354,8 @@ var Raster = Item.extend(/** @lends Raster# */{
             // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
         } else {
-            // Trigger the onLoad event on the image once it's loaded
-            DomEvent.add(image, {
-                load: loaded
-            });
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, { load: loaded });
             // A new image created above? Set the source now.
             if (!image.src)
                 image.src = src;
@@ -361,6 +363,8 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.setImage(image);
 /*#*/ } else if (__options.environment == 'node') {
         image = new Image();
+        if (crossOrigin)
+            image.crossOrigin = crossOrigin;
         // If we're running on the server and it's a string,
         // check if it is a data URL
         if (/^data:/.test(src)) {
@@ -394,6 +398,34 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
         this.setImage(image);
 /*#*/ } // __options.environment == 'node'
+    },
+
+    /**
+     * The crossOrigin value to be used when loading the image resource, in
+     * order to support CORS. Note that this needs to be set before setting the
+     * {@link #source} property in order to always work (e.g. when the image is
+     * cached in the browser).
+     *
+     * @bean
+     * @type String
+     *
+     * @example {@paperscript}
+     * var raster = new Raster({
+     *     crossOrigin: 'anonymous',
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
+     *     position: view.center
+     * });
+     *
+     * console.log(view.element.toDataURL('image/png').substring(0, 32));
+     */
+    getCrossOrigin: function() {
+        return this._image && this._image.crossOrigin || this._crossOrigin || '';
+    },
+
+    setCrossOrigin: function(crossOrigin) {
+        this._crossOrigin = crossOrigin;
+        if (this._image)
+            this._image.crossOrigin = crossOrigin;
     },
 
     // DOCS: document Raster#getElement
@@ -464,7 +496,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             return src;
 /*#*/ }
         var canvas = this.getCanvas();
-        return canvas ? canvas.toDataURL() : null;
+        return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
     },
 
     /**
@@ -486,7 +518,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @param {Path|Rectangle|Point} object
      * @return {Color} the average color contained in the area covered by the
-     * specified path, rectangle or point.
+     * specified path, rectangle or point
      */
     getAverageColor: function(object) {
         var bounds, path;

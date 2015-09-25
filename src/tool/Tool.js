@@ -87,9 +87,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     setMinDistance: function(minDistance) {
         this._minDistance = minDistance;
-        if (this._minDistance != null && this._maxDistance != null
-                && this._minDistance > this._maxDistance) {
-            this._maxDistance = this._minDistance;
+        if (minDistance != null && this._maxDistance != null
+                && minDistance > this._maxDistance) {
+            this._maxDistance = minDistance;
         }
     },
 
@@ -106,8 +106,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     setMaxDistance: function(maxDistance) {
         this._maxDistance = maxDistance;
-        if (this._minDistance != null && this._maxDistance != null
-                && this._maxDistance < this._minDistance) {
+        if (this._minDistance != null && maxDistance != null
+                && maxDistance < this._minDistance) {
             this._minDistance = maxDistance;
         }
     },
@@ -123,8 +123,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     },
 
     setFixedDistance: function(distance) {
-        this._minDistance = distance;
-        this._maxDistance = distance;
+        this._minDistance = this._maxDistance = distance;
     },
 
     /**
@@ -290,10 +289,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     return false;
                 // Produce a new point on the way to point if point is further
                 // away than maxDistance
-                var maxDist = maxDistance != null ? maxDistance : 0;
-                if (maxDist != 0) {
-                    if (distance > maxDist) {
-                        point = this._point.add(vector.normalize(maxDist));
+                if (maxDistance != null && maxDistance != 0) {
+                    if (distance > maxDistance) {
+                        point = this._point.add(vector.normalize(maxDistance));
                     } else if (matchMaxDistance) {
                         return false;
                     }
