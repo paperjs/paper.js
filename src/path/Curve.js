@@ -1434,13 +1434,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
             dMin = factor * Math.min(0, d1, d2),
             dMax = factor * Math.max(0, d1, d2),
-            // Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
-            // distance of P from the baseline l of the fat-line, ti is equally
-            // spaced in [0, 1]
-            dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
-            dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
-            dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
-            dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
             tMinNew, tMaxNew,
             tDiff;
         if (q0x === q3x && uMax - uMin < epsilon && recursion >= 3) {
@@ -1450,8 +1443,15 @@ new function() { // Scope for intersection using bezier fat-line clipping
             tMaxNew = tMinNew = (tMax + tMin) / 2;
             tDiff = 0;
         } else {
-            // Get the top and bottom parts of the convex-hull
-            var hull = getConvexHull(dp0, dp1, dp2, dp3),
+            // Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
+            // distance of P from the baseline l of the fat-line, ti is equally
+            // spaced in [0, 1]
+            var dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
+                dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
+                dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
+                dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
+                // Get the top and bottom parts of the convex-hull
+                hull = getConvexHull(dp0, dp1, dp2, dp3),
                 top = hull[0],
                 bottom = hull[1],
                 tMinClip, tMaxClip;
