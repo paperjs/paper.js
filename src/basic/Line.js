@@ -119,28 +119,27 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     statics: /** @lends Line */{
-        intersect: function(apx, apy, avx, avy, bpx, bpy, bvx, bvy, asVector,
+        intersect: function(p1x, p1y, v1x, v1y, p2x, p2y, v2x, v2y, asVector,
                 isInfinite) {
             // Convert 2nd points to vectors if they are not specified as such.
             if (!asVector) {
-                avx -= apx;
-                avy -= apy;
-                bvx -= bpx;
-                bvy -= bpy;
+                v1x -= p1x;
+                v1y -= p1y;
+                v2x -= p2x;
+                v2y -= p2y;
             }
-            var cross = avx * bvy - avy * bvx;
+            var cross = v1x * v2y - v1y * v2x;
             // Avoid divisions by 0, and errors when getting too close to 0
             if (!Numerical.isZero(cross)) {
-                var dx = apx - bpx,
-                    dy = apy - bpy,
-                    ta = (bvx * dy - bvy * dx) / cross,
-                    tb = (avx * dy - avy * dx) / cross;
+                var dx = p1x - p2x,
+                    dy = p1y - p2y,
+                    t1 = (v2x * dy - v2y * dx) / cross,
+                    t2 = (v1x * dy - v1y * dx) / cross;
                 // Check the ranges of t parameters if the line is not allowed
                 // to extend beyond the definition points.
-                if (isInfinite || 0 <= ta && ta <= 1 && 0 <= tb && tb <= 1)
+                if (isInfinite || 0 <= t1 && t1 <= 1 && 0 <= t2 && t2 <= 1)
                     return new Point(
-                                apx + ta * avx,
-                                apy + ta * avy);
+                                p1x + t1 * v1x,
             }
         },
 
