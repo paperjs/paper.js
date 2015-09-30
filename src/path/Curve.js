@@ -1809,28 +1809,30 @@ new function() { // Scope for intersection using bezier fat-line clipping
                                 2 * (bx * bx + by * by) + ax * cx + ay * cy,
                                 bx * cx + by * cy,
                                 roots, 0, 1);
-                    // Select extremum with highest curvature. This is always on
-                    // the loop in case of a self intersection.
-                    for (var i = 0, maxCurvature = 0; i < count; i++) {
-                        var curvature = Math.abs(
-                                c1.getCurvatureAt(roots[i], true));
-                        if (curvature > maxCurvature) {
-                            maxCurvature = curvature;
-                            tSplit = roots[i];
+                    if (count > 0) {
+                        // Select extremum with highest curvature. This is
+                        // always on the loop in case of a self intersection.
+                        for (var i = 0, maxCurvature = 0; i < count; i++) {
+                            var curvature = Math.abs(
+                                    c1.getCurvatureAt(roots[i], true));
+                            if (curvature > maxCurvature) {
+                                maxCurvature = curvature;
+                                tSplit = roots[i];
+                            }
                         }
+                        // Divide the curve in two and then apply the normal
+                        // curve intersection code.
+                        var parts = Curve.subdivide(v1, tSplit);
+                        // After splitting, the end is always connected:
+                        param.endConnected = true;
+                        // Since the curve was split above, we need to adjust
+                        // the parameters for both locations.
+                        param.renormalize = function(t1, t2) {
+                            return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
+                        };
+                        Curve.getIntersections(parts[0], parts[1], c1, c1,
+                                locations, param);
                     }
-                    // Divide the curve in two and then apply the normal curve
-                    // intersection code.
-                    var parts = Curve.subdivide(v1, tSplit);
-                    // After splitting, the end is always connected:
-                    param.endConnected = true;
-                    // Since the curve was split above, we need to adjust the
-                    // parameters for both locations.
-                    param.renormalize = function(t1, t2) {
-                        return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
-                    };
-                    Curve.getIntersections(parts[0], parts[1], c1, c1,
-                            locations, param);
                 }
                 // We're done handling self-intersection, let's jump out.
                 return locations;
