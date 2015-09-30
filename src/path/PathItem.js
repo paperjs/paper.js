@@ -88,37 +88,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 values1 = self ? values2[i] : curve1.getValues(matrix1);
             if (self) {
                 // First check for self-intersections within the same curve
-                var seg1 = curve1.getSegment1(),
-                    seg2 = curve1.getSegment2(),
-                    p1 = seg1._point,
-                    p2 = seg2._point,
-                    h1 = seg1._handleOut,
-                    h2 = seg2._handleIn,
-                    l1 = new Line(p1.subtract(h1), p1.add(h1)),
-                    l2 = new Line(p2.subtract(h2), p1.add(h2));
-                // Check if extended handles of endpoints of this curve
-                // intersects each other. We cannot have a self intersection
-                // within this curve if they don't intersect due to convex-hull
-                // property.
-                if (l1.intersect(l2, false)) {
-                    // Self intersecting is found by dividing the curve in two
-                    // and and then applying the normal curve intersection code.
-                    var parts = Curve.subdivide(values1, 0.5);
-                    Curve.getIntersections(parts[0], parts[1], curve1, curve1,
-                        locations, {
-                            include: include,
-                            // Only possible if there is only one closed curve:
-                            startConnected: length1 === 1 && p1.equals(p2),
-                            // After splitting, the end is always connected:
-                            endConnected: true,
-                            renormalize: function(t1, t2) {
-                                // Since the curve was split above, we need to
-                                // adjust the parameters for both locations.
-                                return [t1 / 2, (1 + t2) / 2];
-                            }
-                        }
-                    );
-                }
+                var p1 = curve1.getSegment1()._point,
+                    p2 = curve1.getSegment2()._point;
+                Curve.getIntersections(values1, null, curve1, curve1,
+                    locations, {
+                        include: include,
+                        // Only possible if there is only one closed curve:
+                        startConnected: length1 === 1 && p1.equals(p2)
+                    }
+                );
             }
             // Check for intersections with other curves. For self intersection,
             // we can start at i + 1 instead of 0
