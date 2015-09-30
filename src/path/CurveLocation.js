@@ -365,6 +365,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             || loc instanceof CurveLocation
                 // Call getCurve() and getParameter() to keep in sync
                 && this.getCurve() === loc.getCurve()
+                // NOTE: We need to compare both by proximity of points
+                // and by parameters, see:
+                // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
                 && (this.getPoint().isClose(loc.getPoint(),
                     /*#=*/Numerical.GEOMETRIC_EPSILON)
                     || Math.abs(this.getParameter() - loc.getParameter())
