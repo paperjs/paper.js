@@ -365,8 +365,10 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             || loc instanceof CurveLocation
                 // Call getCurve() and getParameter() to keep in sync
                 && this.getCurve() === loc.getCurve()
-                && this.getPoint().isClose(loc.getPoint(),
+                && (this.getPoint().isClose(loc.getPoint(),
                     /*#=*/Numerical.GEOMETRIC_EPSILON)
+                    || Math.abs(this.getParameter() - loc.getParameter())
+                        < /*#=*/Numerical.CURVETIME_EPSILON)
                 && (_ignoreOther
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(
