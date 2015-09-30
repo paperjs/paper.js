@@ -88,13 +88,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 values1 = self ? values2[i] : curve1.getValues(matrix1);
             if (self) {
                 // First check for self-intersections within the same curve
-                var p1 = curve1.getSegment1()._point,
-                    p2 = curve1.getSegment2()._point;
                 Curve.getIntersections(values1, null, curve1, curve1,
                     locations, {
                         include: include,
                         // Only possible if there is only one closed curve:
-                        startConnected: length1 === 1 && p1.equals(p2)
+                        startConnected: length1 === 1 &&
+                                curve1.getPoint1().equals(curve1.getPoint2())
                     }
                 );
             }

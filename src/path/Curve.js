@@ -417,16 +417,16 @@ var Curve = Base.extend(/** @lends Curve# */{
      * Returns all intersections between two {@link Curve} objects as an array
      * of {@link CurveLocation} objects.
      *
-     * If the parameter curve is null, the self intersection of the curve is
-     * returned, if it exists.
-     *
-     * @param {Curve} curve the other curve to find the intersections with
-     * @return {CurveLocation[]} the locations of all intersection between the
+     * @param {Curve} curve the other curve to find the intersections with (if
+     * the curve itself or {@code null} is passed, the self intersection of the
+     * curve is returned, if it exists)
+     * @return {CurveLocation[]} the locations of all intersections between the
      * curves
      */
     getIntersections: function(curve) {
-        return Curve.getIntersections(this.getValues(), curve ? curve.getValues() : null,
-                this, curve ? curve : this, [], {});
+        return Curve.getIntersections(this.getValues(),
+                curve && curve !== this ? curve.getValues() : null,
+                this, curve, [], {});
     },
 
     // TODO: adjustThroughPoint
@@ -1756,63 +1756,78 @@ new function() { // Scope for intersection using bezier fat-line clipping
     }
 
     return { statics: /** @lends Curve */{
-        // We need to provide the original left curve reference to the
-        // #getIntersections() calls as it is required to create the resulting
-        // CurveLocation objects.
         getIntersections: function(v1, v2, c1, c2, locations, param) {
-            if (!v2) { // if v2 is null or undefined, search for self intersection
-                // get side of both handles
-                var h1Side = Line.getSide(v1[0], v1[1], v1[6], v1[7], v1[2], v1[3], false);
-                var h2Side = Line.getSide(v1[0], v1[1], v1[6], v1[7], v1[4], v1[5], false);
-                if (h1Side == h2Side) {
-                    var edgeSum = (v1[0] - v1[4]) * (v1[3] - v1[7]) + (v1[2] - v1[6]) * (v1[5] - v1[1]);
-                    // if both handles are on the same side, the curve can only have a self intersection if
-                    // the edge sum and the handles's side have different signs. If the handles are on the
-                    // left side, the edge sum must be negative for a self intersection (and vice versa)
-                    if (Math.sign(edgeSum) == h1Side) return locations;
+            // If v2 is not provided, search for self intersection on v1.
+            if (!v2) {
+                // Get side of both handles
+                var line = new Line(v1[0], v1[1], v1[6], v1[7], false),
+                    side1 = line.getSide(v1[2], v1[3]),
+                    side2 = Line.getSide(v1[4], v1[5]);
+                if (side1 === side2) {
+                    var edgeSum = (v1[0] - v1[4]) * (v1[3] - v1[7])
+                                + (v1[2] - v1[6]) * (v1[5] - v1[1]);
+                    // If both handles are on the same side, the curve can only
+                    // have a self intersection if the edge sum and the
+                    // handles' sides have different signs. If the handles are
+                    // on the left side, the edge sum must be negative for a
+                    // self intersection (and vice-versa).
+                    if (edgeSum * side1 > 0)
+                        return locations;
                 }
-                // As a second condition we check if the curve has an inflection point. If an inflection point
-                // exists, the curve cannot have a self intersection.
-                var ax = v1[6] - 3 * v1[4] + 3 * v1[2] - v1[0];
-                var bx = v1[4] - 2 * v1[2] + v1[0];
-                var cx = v1[2] - v1[0];
-                var ay = v1[7] - 3 * v1[5] + 3 * v1[3] - v1[1];
-                var by = v1[5] - 2 * v1[3] + v1[1];
-                var cy = v1[3] - v1[1];
-                var hasInflectionPoint = (Math.pow(ay * cx - ax * cy, 2) - 4 * (ay * bx - ax * by) * (by * cx - bx * cy) >= 0);
-                if (!hasInflectionPoint) {
-                    // the curve may have a self intersection, find parameter to split curve. We search for the
-                    // parameter where the velocity has an extremum by finding the roots of the cross product
-                    // between the bezier curve's first and second derivative
+                // As a second condition we check if the curve has an inflection
+                // point. If an inflection point exists, the curve cannot have a
+                // self intersection.
+                var ax = v1[6] - 3 * v1[4] + 3 * v1[2] - v1[0],
+                    bx = v1[4] - 2 * v1[2] + v1[0],
+                    cx = v1[2] - v1[0],
+                    ay = v1[7] - 3 * v1[5] + 3 * v1[3] - v1[1],
+                    by = v1[5] - 2 * v1[3] + v1[1],
+                    cy = v1[3] - v1[1],
+                    hasInflection = Math.pow(ay * cx - ax * cy, 2)
+                        - 4 * (ay * bx - ax * by) * (by * cx - bx * cy) >= 0;
+                if (!hasInflection) {
+                    // The curve may have a self intersection, find parameter to
+                    // split curve. We search for the parameter where the
+                    // velocity has an extremum by finding the roots of the
+                    // cross product between the bezier curve's first and second
+                    // derivative.
                     var roots = [],
-                        rootCount = Numerical.solveCubic(ax * ax  + ay * ay, 3 * (ax * bx + ay * by),
-                        (2 * (bx * bx + by * by) + ax * cx + ay * cy), (bx * cx + by * cy), roots, 0, 1);
-                    // Select extremum with smallest curvature. This is always on the loop in case of a self intersection
-                    var tSplit, maxCurvature;
-                    for (var i = 0; i < rootCount; i++) {
-                        var curvature = Math.abs(c1.getCurvatureAt(roots[i], true));
-                        if (!maxCurvature || curvature > maxCurvature) {
+                        rootCount = Numerical.solveCubic(
+                                ax * ax  + ay * ay,
+                                3 * (ax * bx + ay * by),
+                                2 * (bx * bx + by * by) + ax * cx + ay * cy,
+                                bx * cx + by * cy,
+                                roots, 0, 1);
+                    // Select extremum with smallest curvature. This is always
+                    // on the loop in case of a self intersection.
+                    var tSplit;
+                    for (var i = 0, maxCurvature = 0; i < rootCount; i++) {
+                        var curvature = Math.abs(
+                                c1.getCurvatureAt(roots[i], true));
+                        if (curvature > maxCurvature) {
                             maxCurvature = curvature;
                             tSplit = roots[i];
                         }
                     }
-                    // Divide the curve in two and then apply the normal curve intersection code.
+                    // Divide the curve in two and then apply the normal curve
+                    // intersection code.
                     var parts = Curve.subdivide(v1, tSplit);
-                    if (!param) param = {};
-                    // After splitting, the end is always connected:
-                    param.endConnected = true;
-                    // Since the curve was split above, we need to
-                    // adjust the parameters for both locations.
-                    param.renormalize = function(t1, t2) {
-                        return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
-                    };
-                    Curve.getIntersections(parts[0], parts[1], c1, c1, locations, param);
+                    Curve.getIntersections(parts[0], parts[1], c1, c1, locations, {
+                        startConnected: param.startConnected,
+                        // After splitting, the end is always connected:
+                        endConnected: true,
+                        // Since the curve was split above, we need to
+                        // adjust the parameters for both locations.
+                        renormalize: function(t1, t2) {
+                            return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
+                        }
+                    });
                 }
             } else {
-                // Avoid checking curves if completely out of control bounds.
-                // As a little optimization, we can scale the handles with 0.75
-                // before calculating the control bounds and still be sure that the
-                // curve is fully contained.
+                // Avoid checking curves if completely out of control bounds. As
+                // a little optimization, we can scale the handles with 0.75
+                // before calculating the control bounds and still be sure that
+                // the curve is fully contained.
                 var c1p1x = v1[0], c1p1y = v1[1],
                     c1p2x = v1[6], c1p2y = v1[7],
                     c2p1x = v2[0], c2p1y = v2[1],
@@ -1828,18 +1843,18 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     min = Math.min,
                     max = Math.max;
                 if (!(
-                    max(c1p1x, c1h1x, c1h2x, c1p2x) >=
-                    min(c2p1x, c2h1x, c2h2x, c2p2x) &&
-                    min(c1p1x, c1h1x, c1h2x, c1p2x) <=
-                    max(c2p1x, c2h1x, c2h2x, c2p2x) &&
-                    max(c1p1y, c1h1y, c1h2y, c1p2y) >=
-                    min(c2p1y, c2h1y, c2h2y, c2p2y) &&
-                    min(c1p1y, c1h1y, c1h2y, c1p2y) <=
-                    max(c2p1y, c2h1y, c2h2y, c2p2y)
+                        max(c1p1x, c1h1x, c1h2x, c1p2x) >=
+                        min(c2p1x, c2h1x, c2h2x, c2p2x) &&
+                        min(c1p1x, c1h1x, c1h2x, c1p2x) <=
+                        max(c2p1x, c2h1x, c2h2x, c2p2x) &&
+                        max(c1p1y, c1h1y, c1h2y, c1p2y) >=
+                        min(c2p1y, c2h1y, c2h2y, c2p2y) &&
+                        min(c1p1y, c1h1y, c1h2y, c1p2y) <=
+                        max(c2p1y, c2h1y, c2h2y, c2p2y)
                     )
-                        // Also detect and handle overlaps:
+                    // Also detect and handle overlaps:
                     || !param.startConnected && !param.endConnected
-                    && addOverlap(v1, v2, c1, c2, locations, param))
+                        && addOverlap(v1, v2, c1, c2, locations, param))
                     return locations;
                 var straight1 = Curve.isStraight(v1),
                     straight2 = Curve.isStraight(v2),
