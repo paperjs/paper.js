@@ -139,7 +139,8 @@ var Line = Base.extend(/** @lends Line# */{
                 // to extend beyond the definition points.
                 if (isInfinite || 0 <= t1 && t1 <= 1 && 0 <= t2 && t2 <= 1)
                     return new Point(
-                                p1x + t1 * v1x,
+                            p1x + t1 * v1x,
+                            p1y + t1 * v1y);
             }
         },
 
