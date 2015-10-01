@@ -177,22 +177,21 @@ PathItem.inject(new function() {
             tMax = 1 - tMin,
             noHandles = false,
             clearSegments = [],
-            curve,
-            prev,
+            prevCurve,
             prevT;
 
         for (var i = locations.length - 1; i >= 0; i--) {
             var loc = locations[i],
+                curve = loc._curve,
                 t = loc._parameter,
-                locT = t;
-            // Check if we are splitting same curve multiple times, but avoid
-            // dividing with zero.
-            if (prev && prev._curve === loc._curve && prevT > 0) {
-                // Scale parameter after previous split.
-                t /= prevT;
-            } else {
-                curve = loc._curve;
+                origT = t;
+            if (curve !== prevCurve) {
+                // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
+            } else if (prevT > 0) {
+                // Scale parameter when we are splitting same curve multiple
+                // times, but avoid dividing by zero.
+                t /= prevT;
             }
             var segment;
             if (t < tMin) {
@@ -204,8 +203,8 @@ PathItem.inject(new function() {
                 // set the handles on the sub-curves even if the original curve
                 // had no handles.
                 segment = curve.divide(t, true, true)._segment1;
-                // Keep track of segments of once straight curves, so they can
-                // be set back straight at the end.
+                // Keep track of segments of curves without handles, so they can
+                // be cleared again at the end.
                 if (noHandles)
                     clearSegments.push(segment);
             }
@@ -240,8 +239,8 @@ PathItem.inject(new function() {
             loc._segment = segment;
             loc._parameter = segment === curve._segment1 ? 0 : 1;
             loc._version = segment._path._version;
-            prev = loc;
-            prevT = locT;
+            prevCurve = curve;
+            prevT = origT;
         }
         // Clear segment handles if they were part of a curve with no handles,
         // once we are done with the entire curve.
