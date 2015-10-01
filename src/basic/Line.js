@@ -135,12 +135,11 @@ var Line = Base.extend(/** @lends Line# */{
                     dy = p1y - p2y,
                     u1 = (v2x * dy - v2y * dx) / cross,
                     u2 = (v1x * dy - v1y * dx) / cross,
-                    // Compare the u values with EPSILON tolerance over the
-                    // [0, 1] bounds.
+                    // Check the ranges of the u parameters if the line is not
+                    // allowed to extend beyond the definition points, but
+                    // compare with EPSILON tolerance over the [0, 1] bounds.
                     uMin = -/*#=*/Numerical.EPSILON,
                     uMax = 1 + uMin;
-                // Check the ranges of t parameters if the line is not allowed
-                // to extend beyond the definition points.
                 if (isInfinite
                         || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
                     if (!isInfinite) {
