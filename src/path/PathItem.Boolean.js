@@ -203,15 +203,11 @@ PathItem.inject(new function() {
                 // Split the curve at t, passing true for _setHandles to always
                 // set the handles on the sub-curves even if the original curve
                 // had no handles.
-                var newCurve = curve.divide(t, true, true);
-                segment = newCurve._segment1;
-                curve = newCurve.getPrevious();
+                segment = curve.divide(t, true, true)._segment1;
                 // Keep track of segments of once straight curves, so they can
                 // be set back straight at the end.
                 if (noHandles)
                     clearSegments.push(segment);
-                // TODO: Figure out the right value for t
-                t = 0; // Since it's split (might be 1 also?)
             }
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
@@ -240,10 +236,10 @@ PathItem.inject(new function() {
             } else {
                 segment._intersection = loc._intersection;
             }
-            // TODO: Figure out why setCurves doesn't work:
-            // loc._setCurve(segment.getCurve());
+            // TODO: Move setting of these values to CurveLocation
             loc._segment = segment;
-            loc._parameter = t;
+            loc._parameter = segment === curve._segment1 ? 0 : 1;
+            loc._version = segment._path._version;
             prev = loc;
             prevT = locT;
         }

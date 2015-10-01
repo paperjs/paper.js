@@ -497,12 +497,8 @@ var Curve = Base.extend(/** @lends Curve# */{
                 // the end if this curve is a closing curve of a closed path,
                 // as with segment2.index it would be inserted at 0.
                 path.insert(segment1._index + 1, segment);
-                // The way Path#_add handles curves, this curve will always
-                // become the owner of the newly inserted segment.
-                // TODO: I expect this.getNext() to produce the correct result,
-                // but since we're inserting differently in _add (something
-                // linked with CurveLocation#divide()), this is not the case...
-                res = this; // this.getNext();
+                // The newly inserted segment is the start of the next curve:
+                res = this.getNext();
             } else {
                 // otherwise create it from the result of split
                 var end = segment2;
