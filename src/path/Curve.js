@@ -1643,7 +1643,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 pc = Curve.getPoint(vc, tc),
                 tl = Curve.getParameterOf(vl, pc.x, pc.y);
             if (tl !== null) {
-                var pl = Curve.getPoint(vl, tl)
+                var pl = Curve.getPoint(vl, tl),
                     t1 = flip ? tl : tc,
                     t2 = flip ? tc : tl;
                 // If the two curves are connected and the 2nd is very short,
