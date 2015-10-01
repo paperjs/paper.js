@@ -133,14 +133,25 @@ var Line = Base.extend(/** @lends Line# */{
             if (!Numerical.isZero(cross)) {
                 var dx = p1x - p2x,
                     dy = p1y - p2y,
-                    t1 = (v2x * dy - v2y * dx) / cross,
-                    t2 = (v1x * dy - v1y * dx) / cross;
+                    u1 = (v2x * dy - v2y * dx) / cross,
+                    u2 = (v1x * dy - v1y * dx) / cross,
+                    // Compare the u values with EPSILON tolerance over the
+                    // [0, 1] bounds.
+                    uMin = -/*#=*/Numerical.EPSILON,
+                    uMax = 1 + uMin;
                 // Check the ranges of t parameters if the line is not allowed
                 // to extend beyond the definition points.
-                if (isInfinite || 0 <= t1 && t1 <= 1 && 0 <= t2 && t2 <= 1)
+                if (isInfinite
+                        || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
+                    if (!isInfinite) {
+                        // Address the tolerance at the bounds by clipping to
+                        // the actual range.
+                        u1 = u1 < 0 ? 0 : u1 > 1 ? 1 : u1;
+                    }
                     return new Point(
-                            p1x + t1 * v1x,
-                            p1y + t1 * v1y);
+                            p1x + u1 * v1x,
+                            p1y + u1 * v1y);
+                }
             }
         },
 

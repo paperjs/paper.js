@@ -1379,11 +1379,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
         //   which connects back to the beginning, but only if it's not part of
         //   a found overlap. The normal intersection will already be found at
         //   the beginning, and would be added twice otherwise.
-        if (t1 >= (startConnected ? tMin : 0) &&
+        if (t1 !== null && t1 >= (startConnected ? tMin : 0) &&
             t1 <= (endConnected ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2.x, p2.y);
-            if (t2 >= (endConnected ? tMin : 0) &&
+            if (t2 !== null && t2 >= (endConnected ? tMin : 0) &&
                 t2 <= (startConnected ? tMax : 1)) {
                 // TODO: Don't we need to check the range of t2 as well? Does it
                 // also need startConnected / endConnected values?

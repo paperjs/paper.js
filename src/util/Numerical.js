@@ -112,7 +112,7 @@ var Numerical = new function() {
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
         /**
-         * Check if the value is 0, within a tolerance defined by
+         * Checks if the value is 0, within a tolerance defined by
          * Numerical.EPSILON.
          */
         isZero: function(val) {
