@@ -368,10 +368,10 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 // NOTE: We need to compare both by proximity of points
                 // and by parameters, see:
                 // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-                && (this.getPoint().isClose(loc.getPoint(),
-                    /*#=*/Numerical.GEOMETRIC_EPSILON)
-                    || Math.abs(this.getParameter() - loc.getParameter())
-                        < /*#=*/Numerical.CURVETIME_EPSILON)
+                && (Math.abs(this.getParameter() - loc.getParameter())
+                        < /*#=*/Numerical.CURVETIME_EPSILON
+                    || this.getPoint().isClose(loc.getPoint(),
+                        /*#=*/Numerical.GEOMETRIC_EPSILON))
                 && (_ignoreOther
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(

@@ -1874,8 +1874,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c1p2 = new Point(c1p2x, c1p2y),
                 c2p1 = new Point(c2p1x, c2p1y),
                 c2p2 = new Point(c2p2x, c2p2y),
-            // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
-            // end points to avoid matching them on almost collinear lines.
+                // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
+                // end points to avoid matching them on almost collinear lines.
                 epsilon = /*#=*/Numerical.EPSILON;
             // Handle the special case where the first curve's stat-point
             // overlaps with the second curve's start- or end-points.
