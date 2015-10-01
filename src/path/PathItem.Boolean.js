@@ -471,6 +471,13 @@ PathItem.inject(new function() {
             text.pivot = text.globalToLocal(text.point);
             text.scale(scaleFactor);
             text.rotate(textAngle);
+            new Path.Line({
+                from: text.point,
+                to: seg.point,
+                strokeColor: color,
+                strokeScaling: false
+            });
+            return text;
         }
 
         function drawSegment(seg, other, text, index, color) {

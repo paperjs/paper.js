@@ -471,36 +471,32 @@ var Curve = Base.extend(/** @lends Curve# */{
         // Only divide if not at the beginning or end.
         if (parameter >= tMin && parameter <= tMax) {
             var parts = Curve.subdivide(this.getValues(), parameter),
-                setHandles = _setHandles || this.hasHandles(),
                 left = parts[0],
-                right = parts[1];
-
-            // Write back the results:
+                right = parts[1],
+                setHandles = _setHandles || this.hasHandles(),
+                segment1 = this._segment1,
+                segment2 = this._segment2,
+                path = this._path;
             if (setHandles) {
-                this._segment1._handleOut.set(left[2] - left[0],
-                        left[3] - left[1]);
-                // segment2 is the end segment. By inserting newSegment
-                // between segment1 and 2, 2 becomes the end segment.
+                // Adjust the handles on the existing segments. The new segment
+                // will be inserted between the existing segment1 and segment2:
                 // Convert absolute -> relative
-                this._segment2._handleIn.set(right[4] - right[6],
+                segment1._handleOut.set(left[2] - left[0],
+                        left[3] - left[1]);
+                segment2._handleIn.set(right[4] - right[6],
                         right[5] - right[7]);
             }
-
-            // Create the new segment, convert absolute -> relative:
+            // Create the new segment:
             var x = left[6], y = left[7],
                 segment = new Segment(new Point(x, y),
                         setHandles && new Point(left[4] - x, left[5] - y),
                         setHandles && new Point(right[2] - x, right[3] - y));
-
             // Insert it in the segments list, if needed:
-            if (this._path) {
-                // Insert at the end if this curve is a closing curve of a
-                // closed path, since otherwise it would be inserted at 0.
-                if (this._segment1._index > 0 && this._segment2._index === 0) {
-                    this._path.add(segment);
-                } else {
-                    this._path.insert(this._segment2._index, segment);
-                }
+            if (path) {
+                // By inserting at segment1.index + 1, we make sure to insert at
+                // the end if this curve is a closing curve of a closed path,
+                // as with segment2.index it would be inserted at 0.
+                path.insert(segment1._index + 1, segment);
                 // The way Path#_add handles curves, this curve will always
                 // become the owner of the newly inserted segment.
                 // TODO: I expect this.getNext() to produce the correct result,
@@ -509,8 +505,8 @@ var Curve = Base.extend(/** @lends Curve# */{
                 res = this; // this.getNext();
             } else {
                 // otherwise create it from the result of split
-                var end = this._segment2;
-                this._segment2 = segment;
+                var end = segment2;
+                segment2 = segment;
                 res = new Curve(segment, end);
             }
         }

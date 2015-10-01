@@ -374,10 +374,10 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Private method that adds a segment to the segment list. It assumes that
-     * the passed object is a segment already and does not perform any checks.
-     * If a curves list was requested, it will kept in sync with the segments
-     * list automatically.
+     * Private method that adds segments to the segment list. It assumes that
+     * the passed object is an array of segments already and does not perform
+     * any checks. If a curves list was requested, it will be kept in sync with
+     * the segments list automatically.
      */
     _add: function(segs, index) {
         // Local short-cuts:
