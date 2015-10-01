@@ -200,8 +200,9 @@ PathItem.inject(new function() {
             } else if (t > tMax) {
                 segment = curve._segment2;
             } else {
-                // Split the curve at t, passing true for ignoreStraight to not
-                // force the result of splitting straight curves straight.
+                // Split the curve at t, passing true for _setHandles to always
+                // set the handles on the sub-curves even if the original curve
+                // had no handles.
                 var newCurve = curve.divide(t, true, true);
                 segment = newCurve._segment1;
                 curve = newCurve.getPrevious();

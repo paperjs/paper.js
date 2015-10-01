@@ -463,7 +463,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * is within the valid range, {code null} otherwise.
      */
     // TODO: Rename to divideAt()?
-    divide: function(offset, isParameter, ignoreStraight) {
+    divide: function(offset, isParameter, _setHandles) {
         var parameter = this._getParameter(offset, isParameter),
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
@@ -471,7 +471,7 @@ var Curve = Base.extend(/** @lends Curve# */{
         // Only divide if not at the beginning or end.
         if (parameter >= tMin && parameter <= tMax) {
             var parts = Curve.subdivide(this.getValues(), parameter),
-                setHandles = ignoreStraight || this.hasHandles(),
+                setHandles = _setHandles || this.hasHandles(),
                 left = parts[0],
                 right = parts[1];
 
