@@ -650,8 +650,6 @@ PathItem.inject(new function() {
                     // Intersections are always part of the resulting path, for
                     // all other segments check the winding contribution to see
                     // if they are to be kept. If not, the chain has to end here
-                    // TODO: We really should find a way to go backwards perhaps
-                    // and try another path when this happens?
                     drawSegment(seg, null, 'discard', i, 'red');
                     console.error('Excluded segment encountered, aborting #'
                             + pathCount + '.' +
@@ -659,9 +657,7 @@ PathItem.inject(new function() {
                     break;
                 }
                 var handleIn = path && seg._handleIn;
-                if (!path || !other || other === start) {
-                    // TODO: Is (other === start) check really required?
-                    // Does that ever occur?
+                if (!path || !other) {
                     // Just add the first segment and all segments that have no
                     // intersection.
                     drawSegment(seg, null, 'add', i, 'black');
