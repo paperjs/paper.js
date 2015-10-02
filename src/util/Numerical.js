@@ -121,7 +121,7 @@ var Numerical = new function() {
          * Numerical.EPSILON.
          */
         isZero: function(val) {
-            return abs(val) <= EPSILON;
+            return val >= -EPSILON && val <= EPSILON;
         },
 
         /**
@@ -180,7 +180,7 @@ var Numerical = new function() {
          *
          * References:
          *  Kahan W. - "To Solve a Real Cubic Equation"
-         *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+         *  http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          *  Blinn J. - "How to solve a Quadratic Equation"
          *
          * @param {Number} a the quadratic term
@@ -212,8 +212,8 @@ var Numerical = new function() {
                     // We multiply with a factor to normalize the coefficients.
                     // The factor is just the nearest exponent of 10, big enough
                     // to raise all the coefficients to nearly [-1, +1] range.
-                    var mult = pow(10, abs(
-                        Math.floor(Math.log(gmC) * Math.LOG10E)));
+                    var mult = pow(10,
+                            abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
                     if (!isFinite(mult))
                         mult = 0;
                     a *= mult;
