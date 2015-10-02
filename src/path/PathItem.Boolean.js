@@ -607,8 +607,7 @@ PathItem.inject(new function() {
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
-                path = null,
-                added = false; // Whether a first segment as added already
+                path = null;
             // Do not start a chain with already visited segments, and segments
             // that are not going to be part of the resulting operation.
             if (seg._visited || !isValid(seg))
@@ -639,7 +638,7 @@ PathItem.inject(new function() {
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
                 }
-                if (added && (seg === start || seg === otherStart)) {
+                if (seg === start || seg === otherStart) {
                     // We've come back to the start, bail out as we're done.
                     drawSegment(seg, null, 'done', i, 'red');
                     break;
@@ -659,13 +658,8 @@ PathItem.inject(new function() {
                             (path ? path._segments.length + 1 : 1));
                     break;
                 }
-                if (!added) {
-                    path = new Path(Item.NO_INSERT);
-                    start = seg;
-                    otherStart = other;
-                }
-                var handleIn = added && seg._handleIn;
-                if (!added || !other || other === start) {
+                var handleIn = path && seg._handleIn;
+                if (!path || !other || other === start) {
                     // TODO: Is (other === start) check really required?
                     // Does that ever occur?
                     // Just add the first segment and all segments that have no
@@ -712,13 +706,18 @@ PathItem.inject(new function() {
                             + ', multiple: ' + (!!inter._next));
                     break;
                 }
+                if (!path) {
+                    path = new Path(Item.NO_INSERT);
+                    start = seg;
+                    otherStart = other;
+                }
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
-                seg._visited = added = true;
+                seg._visited = true;
                 seg = seg.getNext();
             }
-            if (!path || !added)
+            if (!path)
                 continue;
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
@@ -746,8 +745,10 @@ PathItem.inject(new function() {
             // As an optimization, only check paths with 4 or less segments
             // for their area, and assume that they cover an area when more.
             if (path && (path._segments.length > 4
-                    || !Numerical.isZero(path.getArea())))
+                    || !Numerical.isZero(path.getArea()))) {
                 paths.push(path);
+                path = null;
+            }
             pathCount++;
         }
         return paths;
