@@ -708,7 +708,7 @@ var Point = Base.extend(/** @lends Point# */{
         // TODO: Optimize by creating a static Point.isCollinear() to be used
         // in Line.isCollinear() as well.
         return Math.abs(this.normalize().cross(point.normalize()))
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -727,7 +727,7 @@ var Point = Base.extend(/** @lends Point# */{
         // length.
         // TODO: Optimize
         return Math.abs(this.normalize().dot(point.normalize()))
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     },
 
     /**

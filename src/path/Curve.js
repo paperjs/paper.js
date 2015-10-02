@@ -916,7 +916,7 @@ statics: {
      */
     isHorizontal: function() {
         return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).y)
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     },
 
     /**
@@ -926,7 +926,7 @@ statics: {
      */
     isVertical: function() {
         return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).x)
-                < /*#=*/Numerical.GEOMETRIC_EPSILON;
+                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     }
 }), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here

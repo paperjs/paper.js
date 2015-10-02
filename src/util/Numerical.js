@@ -95,6 +95,12 @@ var Numerical = new function() {
          */
         GEOMETRIC_EPSILON: 1e-7,
         /**
+         * The epsilon to be used when performing "trigonometric" checks, such
+         * as examining cross products to check for collinearity. This value is
+         * somewhat arbitrary and was chosen by trial and error.
+         */
+        TRIGONOMETRIC_EPSILON: 1e-8,
+        /**
          * MACHINE_EPSILON for a double precision (Javascript Number) is
          * 2.220446049250313e-16. (try this in the js console)
          *     (function(){for(var e=1;1<1+e/2;)e/=2;return e}())
