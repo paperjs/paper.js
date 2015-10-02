@@ -60,7 +60,6 @@ var Numerical = new function() {
     var abs = Math.abs,
         sqrt = Math.sqrt,
         pow = Math.pow,
-        TOLERANCE = 1e-6,
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
@@ -69,7 +68,7 @@ var Numerical = new function() {
     }
 
     return /** @lends Numerical */{
-        TOLERANCE: TOLERANCE,
+        TOLERANCE: 1e-6,
         // Precision when comparing against 0
         // References:
         //  http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
@@ -81,6 +80,20 @@ var Numerical = new function() {
          * range (see MACHINE_EPSILON).
          */
         EPSILON: EPSILON,
+        /**
+         * The machine epsilon for a double precision (Javascript Number) is
+         * 2.220446049250313e-16. (try this in the js console:
+         *     (function(){for(var e=1;1<1+e/2;)e/=2;return e}())
+         *
+         * The constant MACHINE_EPSILON here refers to the constants δ and ε
+         * such that, the error introduced by addition, multiplication on a
+         * 64bit float (js Number) will be less than δ and ε. That is to say,
+         * for all X and Y representable by a js Number object, S and P be their
+         * 'exact' sum and product respectively, then
+         * |S - (x+y)| <= δ|S|, and |P - (x*y)| <= ε|P|.
+         * This amounts to about half of the actual machine epsilon.
+         */
+        MACHINE_EPSILON: MACHINE_EPSILON,
         /**
          * The epsilon to be used when handling curve-time parameters. This
          * cannot be smaller, because errors add up to about 1e-7 in the bezier
@@ -100,20 +113,6 @@ var Numerical = new function() {
          * somewhat arbitrary and was chosen by trial and error.
          */
         TRIGONOMETRIC_EPSILON: 1e-8,
-        /**
-         * MACHINE_EPSILON for a double precision (Javascript Number) is
-         * 2.220446049250313e-16. (try this in the js console)
-         *     (function(){for(var e=1;1<1+e/2;)e/=2;return e}())
-         *
-         * Here the constant MACHINE_EPSILON refers to the constants 'δ' and 'ε'
-         * such that, the error introduced by addition, multiplication
-         * on a 64bit float (js Number) will be less than δ and ε. That is to
-         * say, for all X and Y representable by a js Number object, S and P
-         * be their 'exact' sum and product respectively, then
-         * |S - (x+y)| <= δ|S|, and |P - (x*y)| <= ε|P|.
-         * This amounts to about half of the actual MACHINE_EPSILON
-         */
-        MACHINE_EPSILON: MACHINE_EPSILON,
         // Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
