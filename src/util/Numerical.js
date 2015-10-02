@@ -231,10 +231,9 @@ var Numerical = new function() {
             } else {
                 // No real roots if D < 0
                 if (D >= -MACHINE_EPSILON) {
-                    D = D < 0 ? 0 : D;
-                    var R = sqrt(D);
-                    // Try to minimise floating point noise.
-                    if (b >= MACHINE_EPSILON && b <= MACHINE_EPSILON) {
+                    var R = sqrt(D < 0 ? 0 : D);
+                    // Try to minimize floating point noise.
+                    if (b >= -MACHINE_EPSILON && b <= MACHINE_EPSILON) {
                         x1 = abs(a) >= abs(c) ? R / a : -c / R;
                         x2 = -x1;
                     } else {
