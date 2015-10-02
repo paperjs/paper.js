@@ -71,8 +71,8 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.25; // 1 / 3000;
-    var textAngle = 33;
+    var scaleFactor = 0.1; // 1 / 3000;
+    var textAngle = -30;
     var fontSize = 5;
 
     var segmentOffset;
@@ -448,8 +448,8 @@ PathItem.inject(new function() {
 
         function labelSegment(seg, text, color) {
             var point = seg.point;
-            var key = Math.round(point.x / (4 * scaleFactor))
-                + ',' + Math.round(point.y  / (4 * scaleFactor));
+            var key = Math.round(point.x / (10 * scaleFactor))
+                + ',' + Math.round(point.y  / (10 * scaleFactor));
             var offset = segmentOffset[key] || 0;
             segmentOffset[key] = offset + 1;
             var size = fontSize * scaleFactor;
