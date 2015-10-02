@@ -93,7 +93,7 @@ var Numerical = new function() {
          * collinearity. This value is somewhat arbitrary and was chosen by
          * trial and error.
          */
-        GEOMETRIC_EPSILON: 1e-7,
+        GEOMETRIC_EPSILON: 1e-6,
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity. This value is
