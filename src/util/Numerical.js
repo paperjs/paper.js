@@ -231,18 +231,16 @@ var Numerical = new function() {
             } else {
                 // No real roots if D < 0
                 if (D >= -MACHINE_EPSILON) {
-                    var R = sqrt(D < 0 ? 0 : D);
+                    var R = D < 0 ? 0 : sqrt(D);
                     // Try to minimize floating point noise.
-                    if (b >= -MACHINE_EPSILON && b <= MACHINE_EPSILON) {
+                    if (abs(b) < MACHINE_EPSILON) {
                         x1 = abs(a) >= abs(c) ? R / a : -c / R;
                         x2 = -x1;
                     } else {
-                        var q = -(b + (b < 0 ? -1 : 1) * R);
+                        var q = (b < 0 ? R : -R) - b;
                         x1 = q / a;
                         x2 = c / q;
                     }
-                    // Do we actually have two real roots?
-                    // count = D > MACHINE_EPSILON ? 2 : 1;
                 }
             }
             // We need to include EPSILON in the comparisons with min / max,
