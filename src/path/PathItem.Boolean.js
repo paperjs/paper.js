@@ -680,7 +680,11 @@ PathItem.inject(new function() {
                     // switch at each crossing.
                     drawSegment(seg, other, 'exclude-cross', i, 'green');
                     seg = other;
-                } else if (isValid(other)) {
+                } else if (!seg._visited && isValid(seg)) {
+                    // Do not switch to the intersecting segment as this segment
+                    // is part of the the boolean result.
+                    drawSegment(seg, null, 'keep', i, 'black');
+                } else if (!other._visited && isValid(other)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
                     drawSegment(seg, other, 'cross', i, 'green');
