@@ -1879,13 +1879,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
             (straight1 && straight2
                 ? addLineIntersection
                 : straight1 || straight2
-                ? addCurveLineIntersections
-                : addCurveIntersections)(
-                v1, v2, c1, c2, locations, param,
-                // Define the defaults for these parameters of
-                // addCurveIntersections():
-                // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
-                0, 1, 0, 1, 0, false, 0);
+                    ? addCurveLineIntersections
+                    : addCurveIntersections)(
+                        v1, v2, c1, c2, locations, param,
+                        // Define the defaults for these parameters of
+                        // addCurveIntersections():
+                        // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
+                        0, 1, 0, 1, 0, false, 0);
             // Handle the special case where the first curve's end-point
             // overlaps with the second curve's start- or end-points.
             if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
