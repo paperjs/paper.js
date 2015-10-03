@@ -1733,12 +1733,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     v[i][t1 === 0 ? 1 : 7]);
             if (t2 != null) {  // If point is on curve
                 var pair = i === 0 ? [t1, t2] : [t2, t1];
-                if (pairs.length === 1 && pair[0] < pairs[0][0]) {
-                    pairs.unshift(pair);
-                } else if (pairs.length === 0
-                        // TODO: Compare distance of the actual points instead!
+                // Filter out tiny overlaps
+                // TODO: Compare distance of points instead of curve time?
+                if (pairs.length === 0
                         || abs(pair[0] - pairs[0][0]) > timeEpsilon
-                        || abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+                        && abs(pair[1] - pairs[0][1]) > timeEpsilon) {
                     pairs.push(pair);
                 }
             }
@@ -1751,12 +1750,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         if (pairs.length === 2) {
             // create values for overlapping part of each curve
             var p1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
-                p2 = Curve.getPart(v[1], Math.min(pairs[0][1], pairs[1][1]),
-                        Math.max(pairs[0][1], pairs[1][1]));
-            // Reverse values of second curve if necessary
-            if (pairs[0][1] > pairs[1][1]) {
-                p2 = [p2[6], p2[7], p2[4], p2[5], p2[2], p2[3], p2[0], p2[1]];
-            }
+                p2 = Curve.getPart(v[1], pairs[0][1], pairs[1][1]);
             // Check if handles of overlapping paths are similar enough.
             // We could do another check for curve identity here if we find a
             // better criteria.
