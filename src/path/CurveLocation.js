@@ -155,8 +155,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * The index of the curve within the {@link Path#curves} list, if the
-     * curve is part of a {@link Path} item.
+     * The index of the {@link #curve} within the {@link Path#curves} list, if
+     * it is part of a {@link Path} item.
      *
      * @type Index
      * @bean
@@ -167,9 +167,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * The curve parameter, as used by various bezier curve calculations. It is
-     * value between {@code 0} (beginning of the curve) and {@code 1} (end of
-     * the curve).
+     * The curve-time parameter, as used by various bezier curve calculations.
+     * It is value between {@code 0} (beginning of the curve) and {@code 1}
+     * (end of the curve).
      *
      * @type Number
      * @bean
@@ -180,6 +180,19 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return curve && parameter == null
             ? this._parameter = curve.getParameterOf(this._point)
             : parameter;
+    },
+
+
+    /**
+     * The {@link #curve}'s {@link #index} and {@link #parameter} added to one
+     * value that can conveniently be used for sorting and comparing of
+     * locations.
+     *
+     * @type Number
+     * @bean
+     */
+    getIndexParameter: function() {
+        return this.getIndex() + this.getParameter();
     },
 
     /**
@@ -361,16 +374,19 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @return {Boolean} {@true if the locations are equal}
      */
     equals: function(loc, _ignoreOther) {
+        // NOTE: We need to compare both by getIndexParameter() and by proximity
+        // of points, see:
+        // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
+        // Use a relaxed threshold of < 1 for getIndexParameter() difference
+        // when deciding if two locations should be checked for point proximity.
+        // This is necessary to catch equal locations on very small curves.
+        var diff;
         return this === loc
             || loc instanceof CurveLocation
-                // Call getCurve() and getParameter() to keep in sync
-                && this.getCurve() === loc.getCurve()
-                // NOTE: We need to compare both by proximity of points
-                // and by parameters, see:
-                // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-                && (Math.abs(this.getParameter() - loc.getParameter())
+                && ((diff = Math.abs(
+                        this.getIndexParameter() - loc.getIndexParameter()))
                         < /*#=*/Numerical.CURVETIME_EPSILON
-                    || this.getPoint().isClose(loc.getPoint(),
+                    || diff < 1 && this.getPoint().isClose(loc.getPoint(),
                         /*#=*/Numerical.GEOMETRIC_EPSILON))
                 && (_ignoreOther
                     || (!this._intersection && !loc._intersection
@@ -409,17 +425,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             var length = locations.length,
                 l = 0,
                 r = length - 1,
-                epsilon = /*#=*/Numerical.CURVETIME_EPSILON,
                 abs = Math.abs;
 
             function compare(loc1, loc2) {
-                var curve1 = loc1._curve,
-                    curve2 = loc2._curve,
-                    path1 = curve1._path,
-                    path2 = curve2._path;
+                var path1 = loc1.getPath(),
+                    path2 = loc2.getPath();
                 return path1 === path2
-                        ? curve1.getIndex() + loc1._parameter
-                            - curve2.getIndex() - loc2._parameter
+                        ? loc1.getIndexParameter() - loc2.getIndexParameter()
                         // Sort by path id to group all locs on same path.
                         : path1._id - path2._id;
             }
@@ -427,7 +439,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             function search(start, dir) {
                 for (var i = start + dir; i >= 0 && i < length; i += dir) {
                     var loc2 = locations[i];
-                    if (abs(compare(loc, loc2)) >= epsilon)
+                    // See #equals() for details of why `>= 1` is used here.
+                    if (abs(compare(loc, loc2)) >= 1)
                         return null;
                     if (loc.equals(loc2))
                         return loc2;
@@ -438,14 +451,15 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 var m = (l + r) >>> 1,
                     loc2 = locations[m],
                     diff = compare(loc, loc2);
-                // Only compare location with equals() if diff is small enough
+                // Only compare location with equals() if diff is < 1.
+                // See #equals() for details of why `< 1` is used here.
                 // NOTE: equals() takes the intersection location into account,
                 // while the above calculation of diff doesn't!
-                if (merge && abs(diff) < epsilon) {
+                if (merge && abs(diff) < 1) {
                     // See if the two locations are actually the same, and merge
                     // if they are. If they aren't, we're not done yet since
-                    // all neighbors with a diff < epsilon are potential merge
-                    // candidates, so check them too.
+                    // all neighbors with a diff < 1 are potential merge
+                    // candidates, so check them too (see #search() for details)
                     if (loc2 = loc.equals(loc2) ? loc2
                             : search(m, -1) || search(m, 1)) {
                         // Carry over overlap setting!
