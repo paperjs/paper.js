@@ -142,6 +142,19 @@ PathItem.inject(new function() {
                 true);
     }
 
+    function logIntersection(title, inter) {
+        var other = inter._intersection;
+        var log = [title, inter._id, 'id', inter.getPath()._id,
+            'i', inter.getIndex(), 't', inter._parameter,
+            'o', !!inter._overlap, 'p', inter.getPoint(),
+            'Other', other._id, 'id', other.getPath()._id,
+            'i', other.getIndex(), 't', other._parameter,
+            'o', !!other._overlap, 'p', other.getPoint()];
+        console.log(log.map(function(v) {
+            return v == null ? '-' : v
+        }).join(' '));
+    }
+
     /**
      * Private method for splitting a PathItem at the given locations.
      *
@@ -153,22 +166,13 @@ PathItem.inject(new function() {
             locations.forEach(function(inter) {
                 if (inter._other)
                     return;
-                var other = inter._intersection;
-                var log = ['CurveLocation', inter._id, 'id', inter.getPath()._id,
-                    'i', inter.getIndex(), 't', inter._parameter,
-                    'o', !!inter._overlap, 'p', inter.getPoint(),
-                    'Other', other._id, 'id', other.getPath()._id,
-                    'i', other.getIndex(), 't', other._parameter,
-                    'o', !!other._overlap, 'p', other.getPoint()];
+                logIntersection('Intersection', inter);
                 new Path.Circle({
                     center: inter.point,
                     radius: 2 * scaleFactor,
                     strokeColor: 'red',
                     strokeScaling: false
                 });
-                console.log(log.map(function(v) {
-                    return v == null ? '-' : v
-                }).join(' '));
             });
         }
 
@@ -208,6 +212,10 @@ PathItem.inject(new function() {
                 if (noHandles)
                     clearSegments.push(segment);
             }
+            // TODO: Move setting of these values to CurveLocation
+            loc._segment = segment;
+            loc._parameter = segment === curve._segment1 ? 0 : 1;
+            loc._version = segment._path._version;
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
             if (inter) {
@@ -235,10 +243,6 @@ PathItem.inject(new function() {
             } else {
                 segment._intersection = loc._intersection;
             }
-            // TODO: Move setting of these values to CurveLocation
-            loc._segment = segment;
-            loc._parameter = segment === curve._segment1 ? 0 : 1;
-            loc._version = segment._path._version;
             prevCurve = curve;
             prevT = origT;
         }
