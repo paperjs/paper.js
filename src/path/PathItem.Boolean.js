@@ -591,19 +591,19 @@ PathItem.inject(new function() {
                     || (!strict || isValid(seg, true))
                         && isValid(next, !strict && inter._overlap))
                 ? inter
-                // If it's no match, check the other intersection first, then
-                // carry on with the next linked intersection.
-                : !ignoreOther
-                        // We need to get the intersection on the segment, not
-                        // on inter, since multiple solutions are only linked up
-                        // as a chain through _next there. But do not check that
-                        // intersection in the first call to getIntersection()
-                        // (prev == null), since we'd go straight back to the
-                        // originating segment.
-                        && (prev || seg._intersection !== inter._intersection)
-                        && getIntersection(strict, seg._intersection, inter, true)
-                    || inter._next !== prev // Prevent circular loops
-                        && getIntersection(strict, inter._next, inter, false);
+                // If it's no match, check the next linked intersection first,
+                // otherwise carry on with the 'other' intersection location.
+                : inter._next !== prev // Prevent circular loops
+                        && getIntersection(strict, inter._next, inter, false)
+                    // We need to get the intersection on the segment, not
+                    // on inter, since multiple solutions are only linked up
+                    // as a chain through _next there. But do not check that
+                    // intersection in the first call to getIntersection()
+                    // (prev == null), since we'd go straight back to the
+                    // originating segment.
+                    || !ignoreOther
+                    && (prev || seg._intersection !== inter._intersection)
+                    && getIntersection(strict, seg._intersection, inter, true);
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
