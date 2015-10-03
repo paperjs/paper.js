@@ -71,8 +71,8 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.1; // 1 / 3000;
-    var textAngle = -30;
+    var scaleFactor = 0.001;
+    var textAngle = -40;
     var fontSize = 5;
 
     var segmentOffset;
@@ -551,7 +551,14 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the one
         // that's either connecting back to start or is not visited yet,
         // and will be part of the boolean result:
+        var count = 0;
         function getIntersection(strict, inter, prev, ignoreOther) {
+            /*
+            if (!prev)
+                count = 0;
+            if (count++ >= 16)
+                return null;
+            */
             if (!inter)
                 return null;
             var seg = inter._segment,
@@ -735,9 +742,9 @@ PathItem.inject(new function() {
                         path._segments.length, 'length = ', path.getLength(),
                         '#' + pathCount + '.' +
                         (path ? path._segments.length + 1 : 1));
-                paper.project.activeLayer.addChild(path);
-                path.strokeColor = 'red';
-                path.strokeScaling = false;
+                // paper.project.activeLayer.addChild(path);
+                // path.strokeColor = 'red';
+                // path.strokeScaling = false;
                 path = null;
             }
             // Add the path to the result, while avoiding stray segments and
