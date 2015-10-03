@@ -404,6 +404,17 @@ var Curve = Base.extend(/** @lends Curve# */{
         return this._segment2._point.subtract(this._segment1._point);
     },
 
+    /**
+     * Creates a new curve as a sub-curve from this curve, its range defined by
+     * the given parameters. If {@code from} is larger than {@code to}, then
+     * the resulting curve will have its direction reversed.
+     *
+     * @param {Number} from the curve-time parameter at which the sub-curve
+     * starts
+     * @param {Number} to the curve-time parameter at which the sub-curve
+     * ends
+     * @return {Curve} the newly create sub-curve
+     */
     getPart: function(from, to) {
         return new Curve(Curve.getPart(this.getValues(), from, to));
     },
@@ -655,12 +666,21 @@ statics: {
 
     // TODO: Find better name
     getPart: function(v, from, to) {
+        var flip = from > to;
+        if (flip) {
+            var tmp = from;
+            from = to;
+            to = tmp;
+        }
         if (from > 0)
             v = Curve.subdivide(v, from)[1]; // [1] right
         // Interpolate the parameter at 'to' in the new curve and cut there.
         if (to < 1)
             v = Curve.subdivide(v, (to - from) / (1 - from))[0]; // [0] left
-        return v;
+        // Return reversed curve if from / to were flipped:
+        return flip
+                ? [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]]
+                : v;
     },
 
     hasHandles: function(v) {

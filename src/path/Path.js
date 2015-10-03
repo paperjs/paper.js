@@ -1189,7 +1189,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Number} index the index of the curve in the {@link Path#curves}
      * array at which to split
-     * @param {Number} parameter the parameter at which the curve will be split
+     * @param {Number} parameter the curve-time parameter at which the curve
+     * will be split
      * @return {Path} the newly created path after splitting, if any
      */
     split: function(index, parameter) {
