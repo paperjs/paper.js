@@ -37,6 +37,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * When defined, it shall return {@true to include a location}.
      * @return {CurveLocation[]} the locations of all intersection between the
      * paths
+     * @see #getCrossings(path)
      * @example {@paperscript} // Finding the intersections between two paths
      * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
      * path.strokeColor = 'black';
@@ -123,10 +124,19 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         return locations;
     },
 
+    /**
+     * Returns all crossings between two {@link PathItem} items as an array
+     * of {@link CurveLocation} objects. {@link CompoundPath} items are also
+     * supported.
+     * Crossings are intersections where the paths actually are crossing each
+     * other, as opposed to simply touching.
+     *
+     * @param {PathItem} path the other item to find the crossings with
+     * @see #getIntersections(path)
+     */
     getCrossings: function(path) {
         return this.getIntersections(path, function(inter) {
-            // TODO: An overlap could be either a crossing or a tangent!
-            return inter.isCrossing() || inter._overlap;
+            return inter.isCrossing();
         });
     },
 

@@ -13,16 +13,16 @@
 /**
  * @name CurveLocation
  *
- * @class CurveLocation objects describe a location on {@link Curve}
- * objects, as defined by the curve {@link #parameter}, a value between
- * {@code 0} (beginning of the curve) and {@code 1} (end of the curve). If
- * the curve is part of a {@link Path} item, its {@link #index} inside the
+ * @class CurveLocation objects describe a location on {@link Curve} objects,
+ * as defined by the curve-time {@link #parameter}, a value between {@code 0}
+ * (beginning of the curve) and {@code 1} (end of the curve). If the curve is
+ * part of a {@link Path} item, its {@link #index} inside the
  * {@link Path#curves} array is also provided.
  *
  * The class is in use in many places, such as
- * {@link Path#getLocationAt(offset, isParameter)},
+ * {@link Path#getLocationAt(offset)},
  * {@link Path#getLocationOf(point)},
- * {@link Path#getNearestLocation(point),
+ * {@link Path#getNearestLocation(point)},
  * {@link PathItem#getIntersections(path)},
  * etc.
  */
@@ -190,6 +190,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      *
      * @type Number
      * @bean
+     * @private
      */
     getIndexParameter: function() {
         return this.getIndex() + this.getParameter();
@@ -247,22 +248,25 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     /**
      * The tangential vector to the {@link #curve} at the given location.
      *
-     * @name Item#tangent
+     * @name CurveLocation#getTangent
      * @type Point
+     * @bean
      */
 
     /**
      * The normal vector to the {@link #curve} at the given location.
      *
-     * @name Item#normal
+     * @name CurveLocation#getNormal
      * @type Point
+     * @bean
      */
 
     /**
      * The curvature of the {@link #curve} at the given location.
      *
-     * @name Item#curvature
+     * @name CurveLocation#getCurvature
      * @type Number
+     * @bean
      */
 
     /**
@@ -289,13 +293,81 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return curve && curve.split(this.getParameter(), true);
     },
 
-    isTangent: function() {
+    /**
+     * Checks whether tow CurveLocation objects are describing the same location
+     * on a path, by applying the same tolerances as elsewhere when dealing with
+     * curve time parameters.
+     *
+     * @param {CurveLocation} location
+     * @return {Boolean} {@true if the locations are equal}
+     */
+    equals: function(loc, _ignoreOther) {
+        // NOTE: We need to compare both by getIndexParameter() and by proximity
+        // of points, see:
+        // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
+        // Use a relaxed threshold of < 1 for getIndexParameter() difference
+        // when deciding if two locations should be checked for point proximity.
+        // This is necessary to catch equal locations on very small curves.
+        var diff;
+        return this === loc
+            || loc instanceof CurveLocation
+                && ((diff = Math.abs(
+                        this.getIndexParameter() - loc.getIndexParameter()))
+                        < /*#=*/Numerical.CURVETIME_EPSILON
+                    || diff < 1 && this.getPoint().isClose(loc.getPoint(),
+                        /*#=*/Numerical.GEOMETRIC_EPSILON))
+                && (_ignoreOther
+                    || (!this._intersection && !loc._intersection
+                        || this._intersection && this._intersection.equals(
+                                loc._intersection, true)))
+            || false;
+    },
+
+    /**
+     * @return {String} a string representation of the curve location
+     */
+    toString: function() {
+        var parts = [],
+            point = this.getPoint(),
+            f = Formatter.instance;
+        if (point)
+            parts.push('point: ' + point);
+        var index = this.getIndex();
+        if (index != null)
+            parts.push('index: ' + index);
+        var parameter = this.getParameter();
+        if (parameter != null)
+            parts.push('parameter: ' + f.number(parameter));
+        if (this._distance != null)
+            parts.push('distance: ' + f.number(this._distance));
+        return '{ ' + parts.join(', ') + ' }';
+    },
+
+
+    /**
+     * {@grouptitle Tests}
+     * Checks if the location is an intersection with another curve and is
+     * merely touching the other curve, as opposed to crossing it.
+     *
+     * @return {Boolean} {@true if the location is an intersection that is
+     * merely touching another curve}
+     * @see #isCrossing()
+     */
+    isTouching: function() {
         var t1 = this.getTangent(),
             inter = this._intersection,
             t2 = inter && inter.getTangent();
         return t1 && t2 ? t1.isCollinear(t2) : false;
     },
 
+    /**
+     * Checks if the location is an intersection with another curve and is
+     * crossing the other curve, as opposed to just touching it.
+     *
+     * @return {Boolean} {@true if the location is an intersection that is
+     * crossing another curve}
+     * @see #isTouching()
+     */
     isCrossing: function(_report) {
         // Implementation based on work by Andy Finnell:
         // http://losingfight.com/blog/2011/07/09/how-to-implement-boolean-operations-on-bezier-paths-part-3/
@@ -313,7 +385,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // tangent or a crossing, no need for the detailed corner check below.
         // But we do need a check for the edge case of tangents?
         if (t1 >= tMin && t1 <= tMax || t2 >= tMin && t2 <= tMax)
-            return !this.isTangent();
+            return !this.isTouching();
         // Values for getTangentAt() that are almost 0 and 1.
         // NOTE: Even though getTangentAt() has code to support 0 and 1 instead
         // of tMin and tMax, we still need to use this instead, as other issues
@@ -366,53 +438,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     /**
-     * Checks whether tow CurveLocation objects are describing the same location
-     * on a path, by applying the same tolerances as elsewhere when dealing with
-     * curve time parameters.
+     * Checks if the location is an intersection with another curve and is
+     * part of an overlap between the two involved paths.
      *
-     * @param {CurveLocation} location
-     * @return {Boolean} {@true if the locations are equal}
+     * @return {Boolean} {@true if the location is an intersection that is
+     * part of an overlap between the two involved paths}
+     * @see #isCrossing()
+     * @see #isTouching()
      */
-    equals: function(loc, _ignoreOther) {
-        // NOTE: We need to compare both by getIndexParameter() and by proximity
-        // of points, see:
-        // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-        // Use a relaxed threshold of < 1 for getIndexParameter() difference
-        // when deciding if two locations should be checked for point proximity.
-        // This is necessary to catch equal locations on very small curves.
-        var diff;
-        return this === loc
-            || loc instanceof CurveLocation
-                && ((diff = Math.abs(
-                        this.getIndexParameter() - loc.getIndexParameter()))
-                        < /*#=*/Numerical.CURVETIME_EPSILON
-                    || diff < 1 && this.getPoint().isClose(loc.getPoint(),
-                        /*#=*/Numerical.GEOMETRIC_EPSILON))
-                && (_ignoreOther
-                    || (!this._intersection && !loc._intersection
-                        || this._intersection && this._intersection.equals(
-                                loc._intersection, true)))
-            || false;
-    },
-
-    /**
-     * @return {String} a string representation of the curve location
-     */
-    toString: function() {
-        var parts = [],
-            point = this.getPoint(),
-            f = Formatter.instance;
-        if (point)
-            parts.push('point: ' + point);
-        var index = this.getIndex();
-        if (index != null)
-            parts.push('index: ' + index);
-        var parameter = this.getParameter();
-        if (parameter != null)
-            parts.push('parameter: ' + f.number(parameter));
-        if (this._distance != null)
-            parts.push('distance: ' + f.number(this._distance));
-        return '{ ' + parts.join(', ') + ' }';
+    isOverlap: function() {
+        return this._overlap;
     },
 
     statics: {
