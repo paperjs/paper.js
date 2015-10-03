@@ -1677,14 +1677,24 @@ new function() { // Scope for intersection using bezier fat-line clipping
             straight1 = Curve.isStraight(v1),
             straight2 = Curve.isStraight(v2),
             straight =  straight1 && straight2;
+
+        function getLineLengthSquared(v) {
+            var x = v[6] - v[0],
+                y = v[7] - v[1];
+            return x * x + y * y;
+        }
+
         if (straight) {
-            // Linear curves can only overlap if they are collinear, which means
-            // they must be are collinear and any point of curve 1 must be on
-            // curve 2
-            var line1 = new Line(v1[0], v1[1], v1[6], v1[7]),
-                line2 = new Line(v2[0], v2[1], v2[6], v2[7]);
-            if (!line1.isCollinear(line2) || line1.getDistance(line2.getPoint())
-                    > geomEpsilon)
+            // Linear curves can only overlap if they are collinear.
+            // Instead of using the #isCollinear() check, we pick the longer of
+            // the two lines and see how far the starting and end points of the
+            // other line are from this line (assumed as an infinite line).
+            var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
+                l1 = flip ? v2 : v1,
+                l2 = flip ? v1 : v2,
+                line = new Line(l1[0], l1[1], l1[6], l1[7]);
+            if (line.getDistance(new Point(l2[0], l2[1])) > geomEpsilon ||
+                line.getDistance(new Point(l2[6], l2[7])) > geomEpsilon)
                 return false;
         } else if (straight1 ^ straight2) {
             // If one curve is straight, the other curve must be straight, too,
