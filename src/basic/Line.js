@@ -138,14 +138,15 @@ var Line = Base.extend(/** @lends Line# */{
                     // Check the ranges of the u parameters if the line is not
                     // allowed to extend beyond the definition points, but
                     // compare with EPSILON tolerance over the [0, 1] bounds.
-                    uMin = -/*#=*/Numerical.EPSILON,
-                    uMax = 1 + uMin;
+                    epsilon = /*#=*/Numerical.EPSILON,
+                    uMin = -epsilon,
+                    uMax = 1 + epsilon;
                 if (isInfinite
                         || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
                     if (!isInfinite) {
                         // Address the tolerance at the bounds by clipping to
                         // the actual range.
-                        u1 = u1 < 0 ? 0 : u1 > 1 ? 1 : u1;
+                        u1 = u1 <= 0 ? 0 : u1 >= 1 ? 1 : u1;
                     }
                     return new Point(
                             p1x + u1 * v1x,
