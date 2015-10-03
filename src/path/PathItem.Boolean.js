@@ -99,12 +99,17 @@ PathItem.inject(new function() {
         if (_path2 && /^(subtract|exclude)$/.test(operation)
                 ^ (_path2.isClockwise() !== _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at crossings on both paths. Note that for self
-        // intersection, _path2 will be null and getIntersections() handles it.
+        // Split curves at crossings and overlaps on both paths. Note that for
+        // self-intersection, path2 is null and getIntersections() handles it.
         // console.time('intersection');
-        var crossings = CurveLocation.expand(_path1.getCrossings(_path2));
+        var intersections = CurveLocation.expand(
+            _path1.getIntersections(_path2, function(inter) {
+                // Only handle overlaps when not self-intersecting
+                return inter.isCrossing() || _path2 && inter.isOverlap();
+            })
+        );
         // console.timeEnd('intersection');
-        splitPath(crossings);
+        splitPath(intersections);
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -123,12 +128,12 @@ PathItem.inject(new function() {
         if (_path2)
             collect(_path2._children || [_path2]);
         // Propagate the winding contribution. Winding contribution of curves
-        // does not change between two crossings.
+        // does not change between two intersections.
         // First, propagate winding contributions for curve chains starting in
-        // all crossings:
-        for (var i = 0, l = crossings.length; i < l; i++) {
-            propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
-                    operation);
+        // all intersections:
+        for (var i = 0, l = intersections.length; i < l; i++) {
+            propagateWinding(intersections[i]._segment, _path1, _path2,
+                    monoCurves, operation);
         }
         // Now process the segments that are not part of any intersecting chains
         for (var i = 0, l = segments.length; i < l; i++) {
