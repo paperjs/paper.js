@@ -113,9 +113,11 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     isCollinear: function(line) {
-        // TODO: Optimize:
-        // return Point.isCollinear(this._vx, this._vy, line._vx, line._vy);
-        return this.getVector().isCollinear(line.getVector());
+        return Point.isCollinear(this._vx, this._vy, line._vx, line._yy);
+    },
+
+    isOrthogonal: function(line) {
+        return Point.isOrthogonal(this._vx, this._vy, line._vx, line._yy);
     },
 
     statics: /** @lends Line */{
