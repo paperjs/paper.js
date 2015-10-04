@@ -317,6 +317,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         var diff;
         return this === loc
             || loc instanceof CurveLocation
+                && this.getPath() === loc.getPath()
                 && ((diff = Math.abs(
                         this.getIndexParameter() - loc.getIndexParameter()))
                         < /*#=*/Numerical.CURVETIME_EPSILON
