@@ -655,10 +655,6 @@ PathItem.inject(new function() {
                     // We've come back to the start, bail out as we're done.
                     drawSegment(seg, null, 'done', i, 'red');
                     break;
-                } else if (seg._visited && (!other || other._visited)) {
-                    // TODO: Do we still need to check other too?
-                    drawSegment(seg, null, 'visited', i, 'red');
-                    break;
                 } else if (!inter && !isValid(seg)) {
                     // Intersections are always part of the resulting path, for
                     // all other segments check the winding contribution to see
