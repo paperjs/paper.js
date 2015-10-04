@@ -201,7 +201,9 @@ var Numerical = new function() {
                 x1, x2 = Infinity,
                 B = b,
                 D;
-            b /= 2;
+            // a, b, c are expected to be the coefficients of the equation:
+            // Ax² - 2Bx + C == 0, so we take b = -B/2:
+            b /= -2;
             D = b * b - a * c; // Discriminant
             // If the discriminant is very small, we can try to pre-condition
             // the coefficients, so that we may get better accuracy
@@ -228,19 +230,16 @@ var Numerical = new function() {
                 if (abs(B) < EPSILON)
                     return abs(c) < EPSILON ? -1 : 0;
                 x1 = -c / B;
-            } else {
-                // No real roots if D < 0
-                if (D >= -MACHINE_EPSILON) {
-                    var R = D < 0 ? 0 : sqrt(D);
-                    // Try to minimize floating point noise.
-                    if (abs(b) < MACHINE_EPSILON) {
-                        x1 = abs(a) >= abs(c) ? R / a : -c / R;
-                        x2 = -x1;
-                    } else {
-                        var q = (b < 0 ? R : -R) - b;
-                        x1 = q / a;
-                        x2 = c / q;
-                    }
+            } else if (D >= -MACHINE_EPSILON) { // No real roots if D < 0
+                var Q = D < 0 ? 0 : sqrt(D),
+                    R = b + (b < 0 ? -Q : Q);
+                // Try to minimize floating point noise.
+                if (R === 0) {
+                    x1 = c / a;
+                    x2 = -x1;
+                } else {
+                    x1 = R / a;
+                    x2 = c / R;
                 }
             }
             // We need to include EPSILON in the comparisons with min / max,
