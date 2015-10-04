@@ -77,6 +77,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._segment2 = curve._segment2;
     },
 
+    _setSegment: function(segment) {
+        this._setCurve(segment.getCurve());
+        this._segment = segment;
+        this._parameter = segment === this._segment1 ? 0 : 1;
+    },
+
     /**
      * The segment of the curve which is closer to the described location.
      *

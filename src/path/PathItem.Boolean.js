@@ -217,10 +217,7 @@ PathItem.inject(new function() {
                 if (noHandles)
                     clearSegments.push(segment);
             }
-            // TODO: Move setting of these values to CurveLocation
-            loc._segment = segment;
-            loc._parameter = segment === curve._segment1 ? 0 : 1;
-            loc._version = segment._path._version;
+            loc._setSegment(segment);
             // Link the new segment with the intersection on the other curve
             var inter = segment._intersection;
             if (inter) {
