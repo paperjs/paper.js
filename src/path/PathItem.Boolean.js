@@ -512,14 +512,14 @@ PathItem.inject(new function() {
                 path = seg._path,
                 id = path._id,
                 point = seg.point,
-                inter = seg._intersection;
+                inter = seg._intersection,
+                ix = inter && inter._segment,
+                nx = inter && inter._next && inter._next._segment,
+                style = path._parent instanceof CompoundPath ? path._parent : path;
             if (!(id in pathIndices)) {
                 pathIndices[id] = ++pathIndex;
                 j = 0;
             }
-
-            var ix = inter && inter._segment;
-            var nx = inter && inter._next && inter._next._segment;
             labelSegment(seg, '#' + pathIndex + '.' + (j + 1)
                     + '   id: ' + seg._path._id + '.' + seg._index
                     + '   ix: ' + (ix && ix._path._id + '.' + ix._index || '--')
@@ -527,7 +527,7 @@ PathItem.inject(new function() {
                     + '   pt: ' + seg._point
                     + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    , path.strokeColor || path.fillColor || 'black');
+                    , style.strokeColor || style.fillColor || 'black');
         }
 
         var paths = [],
