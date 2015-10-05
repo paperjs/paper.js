@@ -607,11 +607,11 @@ PathItem.inject(new function() {
                         // since an overlap crossing might have brought us here,
                         // in which case isValid(seg, false) might be false.
                         || (!strict || isValid(seg, true))
-                            // Even if next segment is not valid, its to which
-                            // we may switch might be, so count that too!
-                            && (isValid(nextSeg, !strict && inter._overlap)
-                                || nextInter && isValid(nextInter._segment,
-                                    !strict && nextInter._overlap))
+                        // Even if next segment is not valid, its intersection
+                        // to which we may switch might be, so count that too!
+                        && (isValid(nextSeg, !strict && inter._overlap)
+                            || nextInter && isValid(nextInter._segment,
+                                !strict && nextInter._overlap))
                     )
                 ? inter
                 // If it's no match, check the next linked intersection first,
