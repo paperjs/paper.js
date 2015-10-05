@@ -1450,39 +1450,31 @@ new function() { // Scope for intersection using bezier fat-line clipping
             dMax = factor * Math.max(0, d1, d2),
             tMinNew, tMaxNew,
             tDiff;
-        if (q0x === q3x && uMax - uMin < epsilon && recursion >= 3) {
-            // The fat-line of Q has converged to a point, the clipping is not
-            // reliable. Return the value we have even though we will miss the
-            // precision.
-            tMaxNew = tMinNew = (tMax + tMin) / 2;
-            tDiff = 0;
-        } else {
-            // Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
-            // distance of P from the baseline l of the fat-line, ti is equally
-            // spaced in [0, 1]
-            var dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
-                dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
-                dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
-                dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
-                // Get the top and bottom parts of the convex-hull
-                hull = getConvexHull(dp0, dp1, dp2, dp3),
-                top = hull[0],
-                bottom = hull[1],
-                tMinClip, tMaxClip;
-            // Clip the convex-hull with dMin and dMax, taking into account that
-            // there will be no intersections if one of the tvalues are null.
-            if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
-                (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
-                    dMin, dMax)) == null)
-                return;
-            // Clip P with the fat-line for Q
-            v1 = Curve.getPart(v1, tMinClip, tMaxClip);
-            tDiff = tMaxClip - tMinClip;
-            // tMin and tMax are within the range (0, 1). We need to project it
-            // to the original parameter range for v2.
-            tMinNew = tMax * tMinClip + tMin * (1 - tMinClip);
-            tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
-        }
+        // Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
+        // distance of P from the baseline l of the fat-line, ti is equally
+        // spaced in [0, 1]
+        var dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
+            dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
+            dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
+            dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
+            // Get the top and bottom parts of the convex-hull
+            hull = getConvexHull(dp0, dp1, dp2, dp3),
+            top = hull[0],
+            bottom = hull[1],
+            tMinClip, tMaxClip;
+        // Clip the convex-hull with dMin and dMax, taking into account that
+        // there will be no intersections if one of the tvalues are null.
+        if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
+            (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
+                dMin, dMax)) == null)
+            return;
+        // Clip P with the fat-line for Q
+        v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+        tDiff = tMaxClip - tMinClip;
+        // tMin and tMax are within the range (0, 1). We need to project it to
+        // the original parameter range for v2.
+        tMinNew = tMax * tMinClip + tMin * (1 - tMinClip);
+        tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
         // Check if we need to subdivide the curves
         if (oldTDiff > 0.5 && tDiff > 0.5) {
             // Subdivide the curve which has converged the least.
