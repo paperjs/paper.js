@@ -577,8 +577,10 @@ PathItem.inject(new function() {
                         + ', seg wi:' + seg._winding
                         + ', next wi:' + nextSeg._winding
                         + ', seg op:' + isValid(seg, true)
-                        + ', next op:' + (isValid(nextSeg, !strict) || nextInter
-                                && isValid(nextInter._segment, !strict))
+                        + ', next op:' + (isValid(nextSeg,
+                                !strict && inter._overlap)
+                            || nextInter && isValid(nextInter._segment,
+                                !strict && nextInter._overlap))
                         + ', seg ov: ' + (seg._intersection
                                 && seg._intersection._overlap)
                         + ', next ov: ' + (nextSeg._intersection
@@ -607,8 +609,9 @@ PathItem.inject(new function() {
                         || (!strict || isValid(seg, true))
                             // Even if next segment is not valid, its to which
                             // we may switch might be, so count that too!
-                            && (isValid(nextSeg, !strict) || nextInter
-                                && isValid(nextInter._segment, !strict))
+                            && (isValid(nextSeg, !strict && inter._overlap)
+                                || nextInter && isValid(nextInter._segment,
+                                    !strict && nextInter._overlap))
                     )
                 ? inter
                 // If it's no match, check the next linked intersection first,
