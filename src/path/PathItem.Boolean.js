@@ -71,8 +71,8 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.001;
-    var textAngle = -40;
+    var scaleFactor = 0.1;
+    var textAngle = 0;
     var fontSize = 5;
 
     var segmentOffset;
@@ -230,7 +230,7 @@ PathItem.inject(new function() {
                 while (next && next !== other)
                     next = next._next;
                 if (!next) {
-                    if (window.reportSegments) {
+                    if (window.reportIntersections) {
                         console.log('Link: '
                                 + segment._path._id + '.' + segment._index
                                 + ' -> ' + inter._curve._path._id);
@@ -747,9 +747,10 @@ PathItem.inject(new function() {
                         path._segments.length, 'length = ', path.getLength(),
                         '#' + pathCount + '.' +
                         (path ? path._segments.length + 1 : 1));
-                // paper.project.activeLayer.addChild(path);
-                // path.strokeColor = 'red';
-                // path.strokeScaling = false;
+                paper.project.activeLayer.addChild(path);
+                path.strokeColor = 'cyan';
+                path.strokeWidth = 2;
+                path.strokeScaling = false;
                 path = null;
             }
             // Add the path to the result, while avoiding stray segments and
