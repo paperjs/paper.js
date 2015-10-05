@@ -564,26 +564,30 @@ PathItem.inject(new function() {
             if (!inter)
                 return null;
             var seg = inter._segment,
-                next = seg.getNext();
+                nextSeg = seg.getNext(),
+                nextInter = nextSeg._intersection;
             if (window.reportSegments) {
                 console.log('getIntersection(' + strict + ')'
                         + ', seg: ' + seg._path._id + '.' +seg._index
-                        + ', next: ' + next._path._id + '.' + next._index
+                        + ', next: ' + nextSeg._path._id + '.' + nextSeg._index
                         + ', seg vis:' + !!seg._visited
-                        + ', next vis:' + !!next._visited
-                        + ', next start:' + (next === start
-                                || next === otherStart)
+                        + ', next vis:' + !!nextSeg._visited
+                        + ', next start:' + (nextSeg === start
+                                || nextSeg === otherStart)
                         + ', seg wi:' + seg._winding
-                        + ', next wi:' + next._winding
+                        + ', next wi:' + nextSeg._winding
                         + ', seg op:' + isValid(seg, true)
-                        + ', next op:' + isValid(next, !strict && inter._overlap)
+                        + ', next op:' + (isValid(nextSeg,
+                                !strict && inter._overlap)
+                            || nextInter && isValid(nextInter._segment,
+                                !strict && nextInter._overlap))
                         + ', seg ov: ' + (seg._intersection
                                 && seg._intersection._overlap)
-                        + ', next ov: ' + (next._intersection
-                                && next._intersection._overlap)
+                        + ', next ov: ' + (nextSeg._intersection
+                                && nextSeg._intersection._overlap)
                         + ', more: ' + (!!inter._next));
             }
-            // See if this segment and next are both not visited yet, or are
+            // See if this segment and the next are both not visited yet, or are
             // bringing us back to the beginning, and are both part of the
             // boolean result.
             // Handling overlaps correctly here is a bit tricky business, and
@@ -595,14 +599,20 @@ PathItem.inject(new function() {
             // which invalid current segments are tolerated, and overlaps for
             // the next segment are allowed as long as they are valid when not
             // adjusted.
-            return next === start || next === otherStart
-                // Self-intersection (!operator) doesn't need isValid() calls
-                || !seg._visited && !next._visited && (!operator
-                    // NOTE: We need to use the unadjusted winding here since an
-                    // overlap crossing might have brought us here, in which
-                    // case isValid(seg, false) might be false.
-                    || (!strict || isValid(seg, true))
-                        && isValid(next, !strict && inter._overlap))
+            return nextSeg === start || nextSeg === otherStart
+                || !seg._visited && !nextSeg._visited
+                    // Self-intersections (!operator) don't need isValid() calls
+                    && (!operator
+                        // NOTE: We need to use the unadjusted winding here
+                        // since an overlap crossing might have brought us here,
+                        // in which case isValid(seg, false) might be false.
+                        || (!strict || isValid(seg, true))
+                            // Even if next segment is not valid, its to which
+                            // we may switch might be, so count that too!
+                            && (isValid(nextSeg, !strict && inter._overlap)
+                                || nextInter && isValid(nextInter._segment,
+                                    !strict && nextInter._overlap))
+                    )
                 ? inter
                 // If it's no match, check the next linked intersection first,
                 // otherwise carry on with the 'other' intersection location.
@@ -708,7 +718,7 @@ PathItem.inject(new function() {
                             + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
                             + ', id: ' + seg._path._id + '.' + seg._index
-                            + ', multiple: ' + (!!inter._next));
+                            + ', multiple: ' + !!(inter && inter._next));
                     break;
                 }
                 if (!path) {
