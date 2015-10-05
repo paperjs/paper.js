@@ -1501,6 +1501,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
+            // Since we've been chopping up v1 and v2, we need to pass on the
+            // original full curves here again to match the parameter space of
+            // t1 and t2.
+            // TODO: Add two more arguments to addCurveIntersections after param
+            // to pass on the sub-curves.
+            v1 = c1.getValues();
+            v2 = c2.getValues();
             addLocation(locations, param,
                 reverse ? v2 : v1, reverse ? c2 : c1, reverse ? t2 : t1, null,
                 reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t1 : t2, null);
