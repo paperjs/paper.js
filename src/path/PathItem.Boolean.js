@@ -649,8 +649,8 @@ PathItem.inject(new function() {
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
                 }
-                inter = getIntersection(true, inter)
-                        || getIntersection(false, inter) || inter;
+                inter = inter && (getIntersection(true, inter)
+                        || getIntersection(false, inter)) || inter;
                 var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.
@@ -699,10 +699,6 @@ PathItem.inject(new function() {
                     // switch at each crossing.
                     drawSegment(seg, other, 'exclude-cross', i, 'green');
                     seg = other;
-                } else if (!seg._visited && isValid(seg)) {
-                    // Do not switch to the intersecting segment as this segment
-                    // is part of the the boolean result.
-                    drawSegment(seg, null, 'keep', i, 'black');
                 } else if (!other._visited && isValid(other)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
@@ -713,6 +709,7 @@ PathItem.inject(new function() {
                     drawSegment(seg, null, 'stay', i, 'blue');
                 }
                 if (seg._visited) {
+                    // TODO: || !isValid(seg) ?
                     // We didn't manage to switch, so stop right here.
                     console.error('Visited segment encountered, aborting #'
                             + pathCount + '.'

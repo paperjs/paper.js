@@ -483,10 +483,11 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     var loc2 = locations[i];
                     // See #equals() for details of why `>= 1` is used here.
                     if (abs(compare(loc, loc2)) >= 1)
-                        return null;
+                        break;
                     if (loc.equals(loc2))
                         return loc2;
                 }
+                return null;
             }
 
             while (l <= r) {
