@@ -365,8 +365,7 @@
         for (var i = 0, len = children && children.length; i < len; i++) {
             var cCenter = children[i].bounds.center;
             var vec = cCenter.subtract(center);
-            vec = (vec.isClose([0,0], 0.5))? vec : vec.normalize(distance);
-            children[i].translate(vec);
+            children[i].translate(vec.length < 0.5 ? vec : vec.normalize(distance));
         }
     }
 
