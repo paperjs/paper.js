@@ -1443,8 +1443,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
-            d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
-            d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
+            d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
+            d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]),
             factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
             dMin = factor * Math.min(0, d1, d2),
             dMax = factor * Math.max(0, d1, d2),
