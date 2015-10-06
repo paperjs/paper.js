@@ -594,65 +594,68 @@ PathItem.inject(new function() {
         // that's either connecting back to start or is not visited yet,
         // and will be part of the boolean result:
         function getIntersection(inter, strict) {
-            if (!inter)
-                return null;
-            var seg = inter._segment,
-                nextSeg = seg.getNext(),
-                nextInter = nextSeg._intersection;
-            if (window.reportSegments) {
-                console.log('getIntersection(' + strict + ')'
-                        + ', seg: ' + seg._path._id + '.' +seg._index
-                        + ', next: ' + nextSeg._path._id + '.' + nextSeg._index
-                        + ', seg vis:' + !!seg._visited
-                        + ', next vis:' + !!nextSeg._visited
-                        + ', next start:' + (nextSeg === start
-                                || nextSeg === otherStart)
-                        + ', seg wi:' + seg._winding
-                        + ', next wi:' + nextSeg._winding
-                        + ', seg op:' + isValid(seg, true)
-                        + ', next op:' + ((!strict || !isOverlap(seg, nextSeg))
-                                && isValid(nextSeg, true)
-                            || !strict && nextInter
-                                && isValid(nextInter._segment, true))
-                        + ', seg ov: ' + !!(seg._intersection
-                                && seg._intersection._overlap)
-                        + ', next ov: ' + !!(nextSeg._intersection
-                                && nextSeg._intersection._overlap)
-                        + ', more: ' + (!!inter._next));
-            }
-            // See if this segment and the next are both not visited yet, or are
-            // bringing us back to the beginning, and are both part of the
-            // boolean result.
-            // Handling overlaps correctly here is a bit tricky business, and
-            // requires two passes, first with `strict = true`, then `false`:
-            // In strict mode, the current segment and the next segment are both
-            // checked for validity, and only the current one is allowed to be
-            // an overlap (passing true for `unadjusted` in isValid()). If this
-            // pass does not yield a result, the non-strict mode is used, in
-            // which invalid current segments are tolerated, and overlaps for
-            // the next segment are allowed as long as they are valid when not
-            // adjusted.
-            return nextSeg === start || nextSeg === otherStart
-                || !seg._visited && !nextSeg._visited
-                    // Self-intersections (!operator) don't need isValid() calls
-                    && (!operator
-                        // NOTE: We need to use the unadjusted winding here
-                        // since an overlap crossing might have brought us here,
-                        // in which case isValid(seg, false) might be false.
-                        || (!strict || isValid(seg, true))
-                        // Do not consider the nextSeg in strict mode if it is
-                        // part of an overlap, in order to give non-overlapping
-                        // options that might follow the priority over overlaps.
-                        && (!(strict && isOverlap(seg, nextSeg))
-                                && isValid(nextSeg, true)
-                            // If next segment is not valid, its intersection to
-                            // which we may switch might be, so allow that too!
-                            || !strict && nextInter
-                                && isValid(nextInter._segment, true))
-                    )
-                ? inter
+            while (inter) {
+                var seg = inter._segment,
+                    nextSeg = seg.getNext(),
+                    nextInter = nextSeg._intersection;
+                if (window.reportSegments) {
+                    console.log('getIntersection(' + strict + ')'
+                            + ', seg: ' + seg._path._id + '.' + seg._index
+                            + ', next: ' + nextSeg._path._id + '.'
+                                + nextSeg._index
+                            + ', seg vis:' + !!seg._visited
+                            + ', next vis:' + !!nextSeg._visited
+                            + ', next start:' + (nextSeg === start
+                                    || nextSeg === otherStart)
+                            + ', seg wi:' + seg._winding
+                            + ', next wi:' + nextSeg._winding
+                            + ', seg op:' + isValid(seg, true)
+                            + ', next op:'
+                                + (!(strict && isOverlap(seg, nextSeg))
+                                    && isValid(nextSeg, true)
+                                || !strict && nextInter
+                                    && isValid(nextInter._segment, true))
+                            + ', seg ov: ' + !!(seg._intersection
+                                    && seg._intersection._overlap)
+                            + ', next ov: ' + !!(nextSeg._intersection
+                                    && nextSeg._intersection._overlap)
+                            + ', more: ' + (!!inter._next));
+                }
+                // See if this segment and the next are both not visited yet, or
+                // are bringing us back to the beginning, and are both part of
+                // the boolean result.
+                // Handling overlaps correctly here is a bit tricky business,
+                // and requires two passes, first with `strict = true`, then
+                // `false`: In strict mode, the current segment and the next
+                // segment are both checked for validity, and only the current
+                // one is allowed to be an overlap (passing true for
+                // `unadjusted` in isValid()). If this pass does not yield a
+                // result, the non-strict mode is used, in which invalid current
+                // segments are tolerated, and overlaps for the next segment are
+                // allowed as long as they are valid when not adjusted.
+                if (nextSeg === start || nextSeg === otherStart
+                    || !seg._visited && !nextSeg._visited
+                        // Self-intersections (!operator) don't need isValid()
+                        && (!operator
+                            // We need to use the unadjusted winding here since
+                            // an overlap crossing might have brought us here,
+                            // in which case isValid(seg, false) might be false.
+                            || (!strict || isValid(seg, true))
+                            // Do not consider nextSeg in strict mode if it is
+                            // part of an overlap, in order to prioritize non-
+                            // overlapping options that might follow.
+                            && (!(strict && isOverlap(seg, nextSeg))
+                                    && isValid(nextSeg, true)
+                                // If next segment isn't valid, its intersection
+                                // to which we may switch might be:
+                                || !strict && nextInter
+                                    && isValid(nextInter._segment, true))
+                        ))
+                    return inter;
                 // If it's no match, continue with the next linked intersection.
-                : getIntersection(inter._next, strict)
+                inter = inter._next;
+            }
+            return null;
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
