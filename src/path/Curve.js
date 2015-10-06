@@ -1535,10 +1535,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
             p1 = [ 1 / 3, dq1 ],
             p2 = [ 2 / 3, dq2 ],
             p3 = [ 1, dq3 ],
-            // Find signed distance of p1 and p2 from line [ p0, p3 ]
-            getSignedDistance = Line.getSignedDistance,
-            dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-            dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
+            // Find vertical signed distance of p1 and p2 from line [ p0, p3 ]
+            dist1 = dq1 - (dq0 + (dq3 - dq0) / 3),
+            dist2 = dq2 - (dq0 + 2 * (dq3 - dq0) / 3),
             flip = false,
             hull;
         // Check if p1 and p2 are on the same side of the line [ p0, p3 ]
@@ -1553,34 +1552,24 @@ new function() { // Scope for intersection using bezier fat-line clipping
         } else {
             // p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
             // a triangle or a quadrilateral and line [ p0, p3 ] is part of the
-            // hull. Check if the hull is a triangle or a quadrilateral.
-            // Also, if at least one of the distances for p1 or p2, from line
-            // [p0, p3] is zero then hull must at most have 3 vertices.
-            var pmax, cross = 0,
-                distZero = dist1 === 0 || dist2 === 0;
-            if (Math.abs(dist1) > Math.abs(dist2)) {
-                pmax = p1;
-                // apex is dq3 and the other apex point is dq0 vector dqapex ->
-                // dqapex2 or base vector which is already part of the hull.
-                cross = (dq3 - dq2 - (dq3 - dq0) / 3)
-                        * (2 * (dq3 - dq2) - dq3 + dq1) / 3;
-            } else {
-                pmax = p2;
-                // apex is dq0 in this case, and the other apex point is dq3
-                // vector dqapex -> dqapex2 or base vector which is already part
-                // of the hull.
-                cross = (dq1 - dq0 + (dq0 - dq3) / 3)
-                        * (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
+            // hull. Check if the hull is a triangle or a quadrilateral. We have a
+            // triangle if the vertical distance of one of the middle points (p1, p2)
+            // is equal or less than half the vertical distance of the other middle point.
+            else {
+            var distRatio = dist1 / dist2;
+                 hull = [
+                    // p2 is inside, the hull is a triangle.
+                    distRatio >= 2 ? [p0, p1, p3]
+                    // p1 is inside, the hull is a triangle.
+                    : distRatio <= .5 ? [p0, p2, p3]
+                    // Hull is a quadrilateral, we need all lines in correct order.
+                    : [p0, p1, p2, p3],
+                    // Line [p0, p3] is part of the hull.
+                    [p0, p3]
+                ];
             }
-            // Compare cross products of these vectors to determine if the point
-            // is in the triangle [ p3, pmax, p0 ], or if it is a quadrilateral.
-            hull = cross < 0 || distZero
-                    // p2 is inside the triangle, hull is a triangle.
-                    ? [[p0, pmax, p3], [p0, p3]]
-                    // Convex hull is a quadrilateral and we need all lines in
-                    // correct order where line [ p0, p3 ] is part of the hull.
-                    : [[p0, p1, p2, p3], [p0, p3]];
-            flip = dist1 ? dist1 < 0 : dist2 < 0;
+            // flip hull if dist1 is negative or if it is zero and dist2 is negative
+            return (dist1 || dist2) < 0 ? hull.reverse() : hull;
         }
         return flip ? hull.reverse() : hull;
     }
