@@ -567,6 +567,8 @@ PathItem.inject(new function() {
             }[operation];
 
         function isValid(seg, unadjusted) {
+            if (seg._visited)
+                return false;
             if (!operator) // For self-intersection, we're always valid!
                 return true;
             var winding = seg._winding,
@@ -635,34 +637,35 @@ PathItem.inject(new function() {
                 // allowed as long as they are valid when not adjusted.
                 if (nextSeg === start || nextSeg === otherStart
                     || !seg._visited && !nextSeg._visited
-                        // Self-intersections (!operator) don't need isValid()
-                        && (!operator
-                            // We need to use the unadjusted winding here since
-                            // an overlap crossing might have brought us here,
-                            // in which case isValid(seg, false) might be false.
-                            || (!strict || isValid(seg, true))
-                            // Do not consider nextSeg in strict mode if it is
-                            // part of an overlap, in order to prioritize non-
-                            // overlapping options that might follow.
-                            && (!(strict && isOverlap(seg, nextSeg))
-                                    && isValid(nextSeg, true)
-                                // If next segment isn't valid, its intersection
-                                // to which we may switch might be:
-                                || !strict && nextInter
-                                    && isValid(nextInter._segment, true))
-                        ))
+                    // Self-intersections (!operator) don't need isValid() calls
+                    && (!operator
+                        // We need to use the unadjusted winding here since an
+                        // overlap crossing might have brought us here, in which
+                        // case isValid(seg, false) might be false.
+                        || (!strict || isValid(seg, true))
+                        // Do not consider nextSeg in strict mode if it is part
+                        // of an overlap, in order to give non-overlapping
+                        // options that might follow the priority over overlaps.
+                        && (!(strict && isOverlap(seg, nextSeg))
+                            && isValid(nextSeg, true)
+                            // If the next segment isn't valid, its intersection
+                            // to which we may switch might be, so check that.
+                            || !strict && nextInter
+                            && isValid(nextInter._segment, true))
+                    ))
                     return inter;
                 // If it's no match, continue with the next linked intersection.
                 inter = inter._next;
             }
             return null;
         }
+
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
                 path = null;
             // Do not start a chain with already visited segments, and segments
             // that are not going to be part of the resulting operation.
-            if (seg._visited || !isValid(seg))
+            if (!isValid(seg))
                 continue;
             start = otherStart = null;
             while (true) {
@@ -728,7 +731,7 @@ PathItem.inject(new function() {
                     // switch at each crossing.
                     drawSegment(seg, other, 'exclude-cross', i, 'green');
                     seg = other;
-                } else if (!other._visited && isValid(other)) {
+                } else if (isValid(other)) {
                     // The other segment is part of the boolean result, and we
                     // are at crossing, switch over.
                     drawSegment(seg, other, 'cross', i, 'green');
