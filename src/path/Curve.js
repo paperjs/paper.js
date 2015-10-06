@@ -1609,7 +1609,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
         for (var i = 1, l = part.length; i < l; i++) {
             var qx = part[i][0],
                 qy = part[i][1];
-            if (top ? qy >= threshold : qy <= threshold)
+            if (qy == threshold) {
+                return qx;
+            } else if (top ? qy > threshold : qy < threshold)
                 return px + (threshold - py) * (qx - px) / (qy - py);
             px = qx;
             py = qy;
