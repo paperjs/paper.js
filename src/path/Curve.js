@@ -1439,7 +1439,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-            epsilon = /*#=*/Numerical.CURVETIME_EPSILON / 10,
+            epsilon = /*#=*/(Numerical.CURVETIME_EPSILON / 10),
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
