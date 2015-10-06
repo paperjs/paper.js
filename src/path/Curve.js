@@ -1535,38 +1535,37 @@ new function() { // Scope for intersection using bezier fat-line clipping
             p1 = [ 1 / 3, dq1 ],
             p2 = [ 2 / 3, dq2 ],
             p3 = [ 1, dq3 ],
-            // Find vertical signed distance of p1 and p2 from line [ p0, p3 ]
+            // Find vertical signed distance of p1 and p2 from line [p0, p3]
             dist1 = dq1 - (dq0 + (dq3 - dq0) / 3),
             dist2 = dq2 - (dq0 + 2 * (dq3 - dq0) / 3),
             hull;
-        // Check if p1 and p2 are on the same side of the line [ p0, p3 ]
+        // Check if p1 and p2 are on the opposite side of the line [p0, p3]
         if (dist1 * dist2 < 0) {
-            // p1 and p2 lie on different sides of [ p0, p3 ]. The hull is a
-            // quadrilateral and line [ p0, p3 ] is NOT part of the hull so we
-            // are pretty much done here.
-            // The top part includes p1,
-            // we will reverse it later if that is not the case
+            // p1 and p2 lie on different sides of [p0, p3]. The hull is a
+            // quadrilateral and line [p0, p3] is NOT part of the hull so we are
+            // pretty much done here. The top part includes p1, we will reverse
+            // it later if that is not the case.
             hull = [[p0, p1, p3], [p0, p2, p3]];
         } else {
-            // p1 and p2 lie on the same sides of [ p0, p3 ]. The hull can be
-            // a triangle or a quadrilateral and line [ p0, p3 ] is part of the
-            // hull. Check if the hull is a triangle or a quadrilateral. We have a
-            // triangle if the vertical distance of one of the middle points (p1, p2)
-            // is equal or less than half the vertical distance of the other middle point.
+            // p1 and p2 lie on the same sides of [p0, p3]. The hull can be a
+            // triangle or a quadrilateral and line [p0, p3] is part of the
+            // hull. Check if the hull is a triangle or a quadrilateral. We have
+            // a triangle if the vertical distance of one of the middle points
+            // (p1, p2) is equal or less than half the vertical distance of the
+            // other middle point.
             var distRatio = dist1 / dist2;
-                 hull = [
-                    // p2 is inside, the hull is a triangle.
-                    distRatio >= 2 ? [p0, p1, p3]
-                    // p1 is inside, the hull is a triangle.
-                    : distRatio <= .5 ? [p0, p2, p3]
-                    // Hull is a quadrilateral, we need all lines in correct order.
-                    : [p0, p1, p2, p3],
-                    // Line [p0, p3] is part of the hull.
-                    [p0, p3]
-                ];
-            }
+            hull = [
+                // p2 is inside, the hull is a triangle.
+                distRatio >= 2 ? [p0, p1, p3]
+                // p1 is inside, the hull is a triangle.
+                : distRatio <= .5 ? [p0, p2, p3]
+                // Hull is a quadrilateral, we need all lines in correct order.
+                : [p0, p1, p2, p3],
+                // Line [p0, p3] is part of the hull.
+                [p0, p3]
+            ];
         }
-        // flip hull if dist1 is negative or if it is zero and dist2 is negative
+        // Flip hull if dist1 is negative or if it is zero and dist2 is negative
         return (dist1 || dist2) < 0 ? hull.reverse() : hull;
     }
 
