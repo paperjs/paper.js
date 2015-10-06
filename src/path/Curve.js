@@ -1472,8 +1472,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
         var tDiff = tMaxClip - tMinClip,
             // tMin and tMax are within the range (0, 1). We need to project it
             // to the original parameter range for v2.
-            tMinNew = tMax * tMinClip + tMin * (1 - tMinClip),
-            tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
+            tMinNew = tMin + (tMax - tMin) * tMinClip,
+            tMaxNew = tMin + (tMax - tMin) * tMaxClip;
         // Check if we need to subdivide the curves
         if (oldTDiff > 0.5 && tDiff > 0.5) {
             // Subdivide the curve which has converged the least.
