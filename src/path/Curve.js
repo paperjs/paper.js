@@ -615,10 +615,12 @@ statics: {
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
-    getParameterOf: function(v, x, y) {
+    getParameterOf: function(v, point) {
         // Handle beginnings and end separately, as they are not detected
         // sometimes.
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+        var x = point.x,
+            y = point.y,
+            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
             abs = Math.abs;
         if (abs(v[0] - x) < epsilon && abs(v[1] - y) < epsilon)
             return 0;
@@ -979,8 +981,7 @@ statics: {
      * @return {Number} the curve time parameter of the specified point
      */
     getParameterOf: function(/* point */) {
-        var point = Point.read(arguments);
-        return Curve.getParameterOf(this.getValues(), point.x, point.y);
+        return Curve.getParameterOf(this.getValues(), Point.read(arguments));
     },
 
     /**
@@ -1382,7 +1383,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (t1 == null)
-            t1 = Curve.getParameterOf(v1, p1.x, p1.y);
+            t1 = Curve.getParameterOf(v1, p1);
         // Check t1 and t2 against correct bounds, based on start-/endConnected:
         // - startConnected means the start of c1 connects to the end of c2
         // - endConneted means the end of c1 connects to the start of c2
@@ -1393,7 +1394,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         if (t1 !== null && t1 >= (startConnected ? tMin : 0) &&
             t1 <= (endConnected ? tMax : 1)) {
             if (t2 == null)
-                t2 = Curve.getParameterOf(v2, p2.x, p2.y);
+                t2 = Curve.getParameterOf(v2, p2);
             if (t2 !== null && t2 >= (endConnected ? tMin : 0) &&
                 t2 <= (startConnected ? tMax : 1)) {
                 // TODO: Don't we need to check the range of t2 as well? Does it
@@ -1644,7 +1645,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // the real curve and with that the location on the line.
             var tc = roots[i],
                 pc = Curve.getPoint(vc, tc),
-                tl = Curve.getParameterOf(vl, pc.x, pc.y);
+                tl = Curve.getParameterOf(vl, pc);
             if (tl !== null) {
                 var pl = Curve.getPoint(vl, tl),
                     t1 = flip ? tl : tc,
@@ -1712,9 +1713,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
         for (var i = 0, t1 = 0;
                 i < 2 && pairs.length < 2;
                 i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-            var t2 = Curve.getParameterOf(v[i ^ 1],
+            var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
                     v[i][t1 === 0 ? 0 : 6],
-                    v[i][t1 === 0 ? 1 : 7]);
+                    v[i][t1 === 0 ? 1 : 7]));
             if (t2 != null) {  // If point is on curve
                 var pair = i === 0 ? [t1, t2] : [t2, t1];
                 // Filter out tiny overlaps

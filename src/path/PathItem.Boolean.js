@@ -584,12 +584,10 @@ PathItem.inject(new function() {
         function isOverlap(seg1, seg2) {
             var inter = seg2._intersection,
                 overlap = inter && inter._overlap;
-            if (overlap) {
-                var pt = Curve.getPoint(Curve.getValues(seg1, seg2), 0.5);
-                if (Curve.getParameterOf(overlap, pt.x, pt.y) !== null)
-                    return true;
-            }
-            return false;
+            return overlap
+                    ? Curve.getParameterOf(overlap, Curve.getPoint(
+                        Curve.getValues(seg1, seg2), 0.5)) !== null
+                    : false;
         }
 
         // If there are multiple possible intersections, find the one
