@@ -454,7 +454,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @see #isTouching()
      */
     isOverlap: function() {
-        return this._overlap;
+        return !!this._overlap;
     },
 
     statics: {
@@ -505,9 +505,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     // candidates, so check them too (see #search() for details)
                     if (loc2 = loc.equals(loc2) ? loc2
                             : search(m, -1) || search(m, 1)) {
-                        // Carry over overlap setting!
+                        // Carry over overlap!
                         if (loc._overlap) {
-                            loc2._overlap = loc2._intersection._overlap = true;
+                            loc2._overlap = loc2._intersection._overlap = loc._overlap;
                         }
                         // We're done, don't insert, merge with the found
                         // location instead:

@@ -160,10 +160,32 @@ PathItem.inject(new function() {
         }).join(' '));
     }
 
-    /**
-     * Private method for splitting a PathItem at the given locations.
+    /*
+     * Creates linked lists between intersections through their _next property.
      *
-     * @param {CurveLocation[]} locations Array of CurveLocation objects
+     * @private
+     */
+    function linkIntersections(from, to) {
+        // Only create links if they are not the same, to avoid endless
+        // recursions.
+        if (from !== to) {
+            // Loop through the existing linked list until we find an
+            // empty spot, but stop if we find `to`, to avoid adding it
+            // again.
+            while (from._next && from._next !== to)
+                from = from._next;
+            // If we're reached the end of the list, we can add it.
+            if (!from._next)
+                from._next = to;
+        }
+    }
+
+    /**
+     * Splits a path-item at the given locations.
+     *
+     * @param {CurveLocation[]} locations an array of the locations to split the
+     * path-item at.
+     * @private
      */
     function splitPath(locations) {
         if (window.reportIntersections) {
@@ -218,32 +240,24 @@ PathItem.inject(new function() {
                     clearSegments.push(segment);
             }
             loc._setSegment(segment);
-            // Link the new segment with the intersection on the other curve
-            var inter = segment._intersection;
+
+            // Create links from the new segment to the intersection on the
+            // other curve, as well as from there back. If there are multiple
+            // intersections on the same segment, we create linked lists between
+            // the intersections through linkIntersections(), linking both ways.
+            var inter = segment._intersection,
+                dest = loc._intersection;
             if (inter) {
-                // Prevent circular references that would cause infinite loops
-                // in getIntersection():
-                // See if the location already links back to this intersection,
-                // and do not create another connection if it does.
-                var other = inter._intersection,
-                    next = loc._next;
-                while (next && next !== other)
-                    next = next._next;
-                if (!next) {
-                    if (window.reportIntersections) {
-                        console.log('Link: '
-                                + segment._path._id + '.' + segment._index
-                                + ' -> ' + inter._curve._path._id);
-                    }
-                    // Create a chain of possible intersections linked through
-                    // _next First find the last intersection in the chain, then
-                    // link it.
-                    while (inter._next)
-                        inter = inter._next;
-                    inter._next = loc._intersection;
+                linkIntersections(inter, dest);
+                // Each time we add a new link to the linked list, we need to
+                // add links from all the other entries to the new entry.
+                var other = inter;
+                while (other) {
+                    linkIntersections(other._intersection, inter);
+                    other = other._next;
                 }
             } else {
-                segment._intersection = loc._intersection;
+                segment._intersection = dest;
             }
             prevCurve = curve;
             prevT = origT;
@@ -513,21 +527,33 @@ PathItem.inject(new function() {
                 id = path._id,
                 point = seg.point,
                 inter = seg._intersection,
-                ix = inter && inter._segment,
-                nx = inter && inter._next && inter._next._segment,
-                style = path._parent instanceof CompoundPath ? path._parent : path;
+                ix = inter,
+                ixs = ix && ix._segment,
+                n1x = inter && inter._next,
+                n1xs = n1x && n1x._segment,
+                n2x = n1x && n1x._next,
+                n2xs = n2x && n2x._segment,
+                n3x = n2x && n2x._next,
+                n3xs = n3x && n3x._segment,
+                item = path instanceof Path ? path : path._parent;
             if (!(id in pathIndices)) {
                 pathIndices[id] = ++pathIndex;
                 j = 0;
             }
             labelSegment(seg, '#' + pathIndex + '.' + (j + 1)
                     + '   id: ' + seg._path._id + '.' + seg._index
-                    + '   ix: ' + (ix && ix._path._id + '.' + ix._index || '--')
-                    + '   nx: ' + (nx && nx._path._id + '.' + nx._index || '--')
+                    + '   ix: ' + (ixs && ixs._path._id + '.' + ixs._index
+                        + '(' + ix._id + ')' || '--')
+                    + '   n1x: ' + (n1xs && n1xs._path._id + '.' + n1xs._index
+                        + '(' + n1x._id + ')' || '--')
+                    + '   n2x: ' + (n2xs && n2xs._path._id + '.' + n2xs._index
+                        + '(' + n2x._id + ')' || '--')
+                    + '   n3x: ' + (n3xs && n3xs._path._id + '.' + n3xs._index
+                        + '(' + n3x._id + ')' || '--')
                     + '   pt: ' + seg._point
                     + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
-                    , style.strokeColor || style.fillColor || 'black');
+                    , item.strokeColor || item.fillColor || 'black');
         }
 
         var paths = [],
@@ -550,17 +576,26 @@ PathItem.inject(new function() {
             return operator(winding);
         }
 
+        /**
+         * Checks if the curve from seg1 to seg2 is part of an overlap, by
+         * getting a curve-point somewhere along the curve (t = 0.5), and
+         * checking if it is part of the overlap curve.
+         */
+        function isOverlap(seg1, seg2) {
+            var inter = seg2._intersection,
+                overlap = inter && inter._overlap;
+            if (overlap) {
+                var pt = Curve.getPoint(Curve.getValues(seg1, seg2), 0.5);
+                if (Curve.getParameterOf(overlap, pt.x, pt.y) !== null)
+                    return true;
+            }
+            return false;
+        }
+
         // If there are multiple possible intersections, find the one
         // that's either connecting back to start or is not visited yet,
         // and will be part of the boolean result:
-        var count = 0;
-        function getIntersection(strict, inter, prev, ignoreOther) {
-            /*
-            if (!prev)
-                count = 0;
-            if (count++ >= 16)
-                return null;
-            */
+        function getIntersection(inter, strict) {
             if (!inter)
                 return null;
             var seg = inter._segment,
@@ -577,13 +612,13 @@ PathItem.inject(new function() {
                         + ', seg wi:' + seg._winding
                         + ', next wi:' + nextSeg._winding
                         + ', seg op:' + isValid(seg, true)
-                        + ', next op:' + (isValid(nextSeg,
-                                !strict && inter._overlap)
-                            || nextInter && isValid(nextInter._segment,
-                                !strict && nextInter._overlap))
-                        + ', seg ov: ' + (seg._intersection
+                        + ', next op:' + ((!strict || !isOverlap(seg, nextSeg))
+                                && isValid(nextSeg, true)
+                            || !strict && nextInter
+                                && isValid(nextInter._segment, true))
+                        + ', seg ov: ' + !!(seg._intersection
                                 && seg._intersection._overlap)
-                        + ', next ov: ' + (nextSeg._intersection
+                        + ', next ov: ' + !!(nextSeg._intersection
                                 && nextSeg._intersection._overlap)
                         + ', more: ' + (!!inter._next));
             }
@@ -607,26 +642,19 @@ PathItem.inject(new function() {
                         // since an overlap crossing might have brought us here,
                         // in which case isValid(seg, false) might be false.
                         || (!strict || isValid(seg, true))
-                        // Even if next segment is not valid, its intersection
-                        // to which we may switch might be, so count that too!
-                        && (isValid(nextSeg, !strict && inter._overlap)
-                            || nextInter && isValid(nextInter._segment,
-                                !strict && nextInter._overlap))
+                        // Do not consider the nextSeg in strict mode if it is
+                        // part of an overlap, in order to give non-overlapping
+                        // options that might follow the priority over overlaps.
+                        && (!(strict && isOverlap(seg, nextSeg))
+                                && isValid(nextSeg, true)
+                            // If next segment is not valid, its intersection to
+                            // which we may switch might be, so allow that too!
+                            || !strict && nextInter
+                                && isValid(nextInter._segment, true))
                     )
                 ? inter
-                // If it's no match, check the next linked intersection first,
-                // otherwise carry on with the 'other' intersection location.
-                : inter._next !== prev // Prevent circular loops
-                        && getIntersection(strict, inter._next, inter, false)
-                    // We need to get the intersection on the segment, not
-                    // on inter, since multiple solutions are only linked up
-                    // as a chain through _next there. But do not check that
-                    // intersection in the first call to getIntersection()
-                    // (prev == null), since we'd go straight back to the
-                    // originating segment.
-                    || !ignoreOther
-                    && (prev || seg._intersection !== inter._intersection)
-                    && getIntersection(strict, seg._intersection, inter, true);
+                // If it's no match, continue with the next linked intersection.
+                : getIntersection(inter._next, strict)
         }
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
@@ -649,8 +677,8 @@ PathItem.inject(new function() {
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
                 }
-                inter = inter && (getIntersection(true, inter)
-                        || getIntersection(false, inter)) || inter;
+                inter = inter && (getIntersection(inter, true)
+                        || getIntersection(inter, false)) || inter;
                 var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.

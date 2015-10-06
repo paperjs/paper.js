@@ -1733,21 +1733,21 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // We only have to check if the handles are the same, too.
         if (pairs.length === 2) {
             // create values for overlapping part of each curve
-            var p1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
-                p2 = Curve.getPart(v[1], pairs[0][1], pairs[1][1]);
+            var o1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
+                o2 = Curve.getPart(v[1], pairs[0][1], pairs[1][1]);
             // Check if handles of overlapping paths are similar enough.
             // We could do another check for curve identity here if we find a
             // better criteria.
             if (straight ||
-                    abs(p2[2] - p1[2]) < geomEpsilon &&
-                    abs(p2[3] - p1[3]) < geomEpsilon &&
-                    abs(p2[4] - p1[4]) < geomEpsilon &&
-                    abs(p2[5] - p1[5]) < geomEpsilon) {
+                    abs(o2[2] - o1[2]) < geomEpsilon &&
+                    abs(o2[3] - o1[3]) < geomEpsilon &&
+                    abs(o2[4] - o1[4]) < geomEpsilon &&
+                    abs(o2[5] - o1[5]) < geomEpsilon) {
                 // Overlapping parts are identical
                 addLocation(locations, param, v1, c1, pairs[0][0], null,
-                    v2, c2, pairs[0][1], null, true),
+                    v2, c2, pairs[0][1], null, o1),
                 addLocation(locations, param, v1, c1, pairs[1][0], null,
-                    v2, c2, pairs[1][1], null, true);
+                    v2, c2, pairs[1][1], null, o2);
                 return true;
             }
         }
