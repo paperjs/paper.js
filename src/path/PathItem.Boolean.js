@@ -669,13 +669,14 @@ PathItem.inject(new function() {
             if (!isValid(seg))
                 continue;
             start = otherStart = null;
-            while (true) {
+            // Loop until we're back at the start.
+            while (seg !== start && seg !== otherStart) {
                 var inter = seg._intersection;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
                 if (inter && window.reportSegments) {
                     console.log('-----\n'
-                            +'#' + pathCount + '.'
+                            + '#' + pathCount + '.'
                                 + (path ? path._segments.length + 1 : 1)
                             + ', Before getIntersection()'
                             + ', seg: ' + seg._path._id + '.' + seg._index
@@ -693,11 +694,6 @@ PathItem.inject(new function() {
                                 + seg._path._id + '.' + seg._index
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
-                }
-                if (seg === start || seg === otherStart) {
-                    // We've come back to the start, bail out as we're done.
-                    drawSegment(seg, null, 'done', i, 'red');
-                    break;
                 }
                 var handleIn = path && seg._handleIn;
                 if (!path || !other) {
@@ -752,6 +748,9 @@ PathItem.inject(new function() {
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
+                if (seg === start || seg === otherStart) {
+                    drawSegment(seg, null, 'done', i, 'red');
+                }
             }
             if (!path)
                 continue;
@@ -766,7 +765,6 @@ PathItem.inject(new function() {
                             (path ? path._segments.length + 1 : 1));
                 }
             } else {
-                // path.lastSegment._handleOut.set(0, 0);
                 console.error('Boolean operation results in open path, segs =',
                         path._segments.length, 'length = ', path.getLength(),
                         '#' + pathCount + '.' +
