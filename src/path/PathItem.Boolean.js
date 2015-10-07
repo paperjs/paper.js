@@ -53,10 +53,10 @@ PathItem.inject(new function() {
                 .transform(null, true, true);
     }
 
-    function finishBoolean(paths, path1, path2, reduce) {
-        var result = new CompoundPath(Item.NO_INSERT);
+    function finishBoolean(ctor, paths, path1, path2, reduce) {
+        var result = new ctor(Item.NO_INSERT);
         result.addChildren(paths, true);
-        // See if the CompoundPath can be reduced to just a simple Path.
+        // See if the item can be reduced to just a simple Path.
         if (reduce)
             result = result.reduce();
         // Insert the resulting path above whichever of the two paths appear
@@ -143,8 +143,8 @@ PathItem.inject(new function() {
                         operation);
             }
         }
-        return finishBoolean(tracePaths(segments, operation), path1, path2,
-                true);
+        return finishBoolean(CompoundPath, tracePaths(segments, operation),
+                path1, path2, true);
     }
 
     function logIntersection(title, inter) {
@@ -855,7 +855,8 @@ PathItem.inject(new function() {
          */
         exclude: function(path) {
             return computeBoolean(this, path, 'exclude');
-            // return finishBoolean([this.subtract(path), path.subtract(this)],
+            // return finishBoolean(CompoundPath,
+            //         [this.subtract(path), path.subtract(this)],
             //         this, path, true);
         },
 
@@ -867,7 +868,8 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         divide: function(path) {
-            return finishBoolean([this.subtract(path), this.intersect(path)],
+            return finishBoolean(Group,
+                    [this.subtract(path), this.intersect(path)],
                     this, path, true);
         },
 
@@ -891,8 +893,8 @@ PathItem.inject(new function() {
             for (var i = 0, l = paths.length; i < l; i++) {
                 segments.push.apply(segments, paths[i]._segments);
             }
-            var res = finishBoolean(tracePaths(segments), this, null, false)
-                    .reorient();
+            var res = finishBoolean(CompoundPath, tracePaths(segments),
+                    this, null, false).reorient();
             window.reportSegments = reportSegments;
             window.reportWindings = reportWindings;
             window.reportIntersections = reportIntersections;
