@@ -513,7 +513,6 @@ PathItem.inject(new function() {
                 strokeColor: color,
                 strokeScaling: false
             });
-            var inter = seg._intersection;
             labelSegment(seg, '#' + pathCount + '.'
                             + (path ? path._segments.length + 1 : 1)
                             + ' (' + (index + 1) + '): ' + text
@@ -544,7 +543,7 @@ PathItem.inject(new function() {
                 n2xs = n2x && n2x._segment,
                 n3x = n2x && n2x._next,
                 n3xs = n3x && n3x._segment,
-                item = path instanceof Path ? path : path._parent;
+                item = path._parent instanceof CompoundPath ? path._parent : path;
             if (!(id in pathIndices)) {
                 pathIndices[id] = ++pathIndex;
                 j = 0;
