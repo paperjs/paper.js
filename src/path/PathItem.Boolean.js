@@ -697,15 +697,6 @@ PathItem.inject(new function() {
                     // We've come back to the start, bail out as we're done.
                     drawSegment(seg, null, 'done', i, 'red');
                     break;
-                } else if (!inter && !isValid(seg)) {
-                    // Intersections are always part of the resulting path, for
-                    // all other segments check the winding contribution to see
-                    // if they are to be kept. If not, the chain has to end here
-                    drawSegment(seg, null, 'discard', i, 'red');
-                    console.error('Excluded segment encountered, aborting #'
-                            + pathCount + '.' +
-                            (path ? path._segments.length + 1 : 1));
-                    break;
                 }
                 var handleIn = path && seg._handleIn;
                 if (!path || !other) {
