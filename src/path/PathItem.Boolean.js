@@ -595,7 +595,8 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the one
         // that's either connecting back to start or is not visited yet,
         // and will be part of the boolean result:
-        function getIntersection(inter, strict) {
+        function getBestIntersection(inter, strict) {
+            var begin = inter;
             while (inter) {
                 var seg = inter._segment,
                     nextSeg = seg.getNext(),
@@ -681,8 +682,8 @@ PathItem.inject(new function() {
                             + ', other: ' + inter._segment._path._id + '.'
                                 + inter._segment._index);
                 }
-                inter = inter && (getIntersection(inter, true)
-                        || getIntersection(inter, false)) || inter;
+                inter = inter && (getBestIntersection(inter, true)
+                        || getBestIntersection(inter, false)) || inter;
                 var other = inter && inter._segment;
                 // A switched intersection means we may have changed the segment
                 // Point to the other segment in the selected intersection.
