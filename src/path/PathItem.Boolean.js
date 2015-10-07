@@ -166,17 +166,26 @@ PathItem.inject(new function() {
      * @private
      */
     function linkIntersections(from, to) {
-        // Only create links if they are not the same, to avoid endless
-        // recursions.
-        if (from !== to) {
-            // Loop through the existing linked list until we find an
-            // empty spot, but stop if we find `to`, to avoid adding it
-            // again.
-            while (from._next && from._next !== to)
-                from = from._next;
-            // If we're reached the end of the list, we can add it.
-            if (!from._next)
-                from._next = to;
+        // Only create the link if it's not already in the existing chain, to
+        // avoid endless recursions.
+        var prev = from;
+        while (prev) {
+            if (prev === to)
+                return;
+            prev = prev._prev;
+        }
+        // Loop through the existing linked list until we find an
+        // empty spot, but stop if we find `to`, to avoid adding it
+        // again.
+        while (from._next && from._next !== to)
+            from = from._next;
+        // If we're reached the end of the list, we can add it.
+        if (!from._next) {
+            // Go back to beginning of the other chain, and link the two up.
+            while (to._prev)
+                to = to._prev;
+            from._next = to;
+            to._prev = from;
         }
     }
 
