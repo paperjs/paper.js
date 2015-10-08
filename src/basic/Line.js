@@ -182,11 +182,13 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            return Numerical.isZero(vx)
-                    ? vy >= 0 ? px - x : x - px
-                    : Numerical.isZero(vy)
-                        ? vx >= 0 ? y - py : py - y
-                        : (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
+            // Based on the error analysis by @iconexperience outlined in
+            // https://github.com/paperjs/paper.js/issues/799
+            return vx == 0
+                ? vy >= 0 ? px - x : x - px
+                : vy == 0
+                ? vx >= 0 ? y - py : py - y
+                : (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
         }
     }
 });
