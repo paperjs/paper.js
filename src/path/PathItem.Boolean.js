@@ -677,9 +677,9 @@ PathItem.inject(new function() {
             var seg = segments[i],
                 path = null,
                 finished = false;
-            // Do not start a chain with segments that have multiple
-            // intersections or invalid segments.
-            if (seg._intersection && seg._intersection._next || !isValid(seg))
+            // Do not start a chain with segments that have  intersections,
+            // segments that are already visited, or that are invalid.
+            if (seg._intersection || !isValid(seg))
                 continue;
             start = otherStart = null;
             while (!finished) {
