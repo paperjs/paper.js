@@ -566,7 +566,6 @@ PathItem.inject(new function() {
 
         var paths = [],
             start,
-            otherStart,
             operator = operators[operation],
             // Adjust winding contributions for specific operations on overlaps:
             overlapWinding = {
@@ -584,10 +583,6 @@ PathItem.inject(new function() {
             if (inter && !unadjusted && overlapWinding && inter._overlaps)
                 winding = overlapWinding[winding] || winding;
             return operator(winding);
-        }
-
-        function isStart(seg) {
-            return seg === start || seg === otherStart;
         }
 
         /**
@@ -621,7 +616,7 @@ PathItem.inject(new function() {
                                 + nextSeg._index
                             + ', seg vis:' + !!seg._visited
                             + ', next vis:' + !!nextSeg._visited
-                            + ', next start:' + isStart(nextSeg)
+                            + ', next start:' + (nextSeg === start)
                             + ', seg wi:' + seg._winding
                             + ', next wi:' + nextSeg._winding
                             + ', seg op:' + isValid(seg, true)
@@ -648,7 +643,7 @@ PathItem.inject(new function() {
                 // result, the non-strict mode is used, in which invalid current
                 // segments are tolerated, and overlaps for the next segment are
                 // allowed as long as they are valid when not adjusted.
-                if (isStart(nextSeg)
+                if (nextSeg === start
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
@@ -675,14 +670,13 @@ PathItem.inject(new function() {
 
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
-                path = null,
-                finished = false;
+                path = null;
             // Do not start a chain with segments that have  intersections,
             // segments that are already visited, or that are invalid.
             if (seg._intersection || !isValid(seg))
                 continue;
-            start = otherStart = null;
-            while (!finished) {
+            start = null;
+            while (seg !== start) {
                 var inter = seg._intersection;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
@@ -741,9 +735,8 @@ PathItem.inject(new function() {
                     drawSegment(seg, null, 'stay', i, 'blue');
                 }
                 if (seg._visited) {
-                    if (isStart(seg)) {
+                    if (seg === start) {
                         drawSegment(seg, null, 'done', i, 'red');
-                        finished = true;
                     } else {
                         // We didn't manage to switch, so stop right here.
                         console.error('Visited segment encountered, aborting #'
@@ -757,23 +750,21 @@ PathItem.inject(new function() {
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
                     start = seg;
-                    otherStart = other;
                 }
                 // Add the current segment to the path, and mark the added
                 // segment as visited.
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
-                if (isStart(seg)) {
+                if (seg === start) {
                     drawSegment(seg, null, 'done', i, 'red');
-                    finished = true;
                 }
             }
             if (!path)
                 continue;
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
-            if (finished) {
+            if (seg === start) {
                 path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
                 if (window.reportSegments) {
