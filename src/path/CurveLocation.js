@@ -60,9 +60,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._setCurve(curve);
         this._parameter = parameter;
         this._point = point || curve.getPointAt(parameter, true);
-        this._overlap = _overlap;
+        this._overlaps = _overlap ? [_overlap] : null;
         this._distance = _distance;
-        this._intersection = null;
+        this._intersection = this._next = this._prev = null;
     },
 
     _setCurve: function(curve) {
@@ -454,7 +454,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @see #isTouching()
      */
     isOverlap: function() {
-        return !!this._overlap;
+        return !!this._overlaps;
     },
 
     statics: {
@@ -490,6 +490,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 return null;
             }
 
+            function addOverlaps(loc1, loc2) {
+                var overlaps1 = loc1._overlaps,
+                    overlaps2 = loc2._overlaps;
+                if (overlaps1) {
+                    overlaps1.push.apply(overlaps1, overlaps2);
+                } else {
+                    loc1._overlaps = overlaps2.slice();
+                }
+            }
+
             while (l <= r) {
                 var m = (l + r) >>> 1,
                     loc2 = locations[m],
@@ -505,12 +515,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     // candidates, so check them too (see #search() for details)
                     if (loc2 = loc.equals(loc2) ? loc2
                             : search(m, -1) || search(m, 1)) {
-                        // Carry over overlap!
-                        if (loc._overlap) {
-                            loc2._overlap = loc2._intersection._overlap = loc._overlap;
-                        }
                         // We're done, don't insert, merge with the found
-                        // location instead:
+                        // location instead, and carry over overlaps:
+                        if (loc._overlaps) {
+                            addOverlaps(loc2, loc);
+                            addOverlaps(loc2._intersection, loc._intersection);
+                        }
                         return loc2;
                     }
                 }

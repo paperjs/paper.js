@@ -151,10 +151,10 @@ PathItem.inject(new function() {
         var other = inter._intersection;
         var log = [title, inter._id, 'id', inter.getPath()._id,
             'i', inter.getIndex(), 't', inter._parameter,
-            'o', !!inter._overlap, 'p', inter.getPoint(),
+            'o', !!inter._overlaps, 'p', inter.getPoint(),
             'Other', other._id, 'id', other.getPath()._id,
             'i', other.getIndex(), 't', other._parameter,
-            'o', !!other._overlap, 'p', other.getPoint()];
+            'o', !!other._overlaps, 'p', other.getPoint()];
         console.log(log.map(function(v) {
             return v == null ? '-' : v
         }).join(' '));
@@ -167,16 +167,16 @@ PathItem.inject(new function() {
      */
     function linkIntersections(from, to) {
         // Only create the link if it's not already in the existing chain, to
-        // avoid endless recursions.
+        // avoid endless recursions. First walk to the beginning of the chain,
+        // and abort if we find `to`.
         var prev = from;
         while (prev) {
             if (prev === to)
                 return;
             prev = prev._prev;
         }
-        // Loop through the existing linked list until we find an
-        // empty spot, but stop if we find `to`, to avoid adding it
-        // again.
+        // Now walk to the end of the existing chain to find an empty spot, but
+        // stop if we find `to`, to avoid adding it again.
         while (from._next && from._next !== to)
             from = from._next;
         // If we're reached the end of the list, we can add it.
@@ -521,7 +521,7 @@ PathItem.inject(new function() {
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
                     + '   op: ' + isValid(seg)
-                    + '   ov: ' + !!(inter && inter._overlap)
+                    + '   ov: ' + !!(inter && inter._overlaps)
                     + '   wi: ' + seg._winding
                     + '   mu: ' + !!(inter && inter._next)
                     , color);
@@ -559,7 +559,7 @@ PathItem.inject(new function() {
                     + '   n3x: ' + (n3xs && n3xs._path._id + '.' + n3xs._index
                         + '(' + n3x._id + ')' || '--')
                     + '   pt: ' + seg._point
-                    + '   ov: ' + !!(inter && inter._overlap)
+                    + '   ov: ' + !!(inter && inter._overlaps)
                     + '   wi: ' + seg._winding
                     , item.strokeColor || item.fillColor || 'black');
         }
@@ -581,7 +581,7 @@ PathItem.inject(new function() {
                 return true;
             var winding = seg._winding,
                 inter = seg._intersection;
-            if (inter && !unadjusted && overlapWinding && inter._overlap)
+            if (inter && !unadjusted && overlapWinding && inter._overlaps)
                 winding = overlapWinding[winding] || winding;
             return operator(winding);
         }
@@ -591,17 +591,17 @@ PathItem.inject(new function() {
         }
 
         /**
-         * Checks if the curve from seg1 to seg2 is part of an overlap, by
-         * getting a curve-point somewhere along the curve (t = 0.5), and
-         * checking if it is part of the overlap curve.
+         * Checks if the curve from seg1 to seg2 is part of an overlap.
          */
         function isOverlap(seg1, seg2) {
             var inter = seg2._intersection,
-                overlap = inter && inter._overlap;
-            return overlap
-                    ? Curve.getParameterOf(overlap, Curve.getPoint(
-                        Curve.getValues(seg1, seg2), 0.5)) !== null
-                    : false;
+                overlaps = inter && inter._overlaps,
+                values = Curve.getValues(seg1, seg2);
+            for (var i = 0, l = overlaps && overlaps.length; i < l; i++) {
+                if (Curve.getOverlaps(values, overlaps[i]))
+                    return true;
+            }
+            return false;
         }
 
         // If there are multiple possible intersections, find the one
@@ -631,9 +631,9 @@ PathItem.inject(new function() {
                                 || !strict && nextInter
                                     && isValid(nextInter._segment, true))
                             + ', seg ov: ' + !!(seg._intersection
-                                    && seg._intersection._overlap)
+                                    && seg._intersection._overlaps)
                             + ', next ov: ' + !!(nextSeg._intersection
-                                    && nextSeg._intersection._overlap)
+                                    && nextSeg._intersection._overlaps)
                             + ', more: ' + (!!inter._next));
                 }
                 // See if this segment and the next are both not visited yet, or
@@ -717,7 +717,7 @@ PathItem.inject(new function() {
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
-                } else if (inter._overlap && operation !== 'intersect') {
+                } else if (inter._overlaps && operation !== 'intersect') {
                     // Switch to the overlapping intersecting segment if it is
                     // part of the boolean result. Do not adjust for overlap!
                     if (isValid(other, true)) {

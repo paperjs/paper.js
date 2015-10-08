@@ -1671,90 +1671,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
         }
     }
 
-    /**
-     * Code to detect overlaps of intersecting curves by @iconexperience:
-     * https://github.com/paperjs/paper.js/issues/648
-     */
-    function addOverlap(v1, v2, c1, c2, locations, param) {
-        var abs = Math.abs,
-            timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
-            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            straight1 = Curve.isStraight(v1),
-            straight2 = Curve.isStraight(v2),
-            straight =  straight1 && straight2;
-
-        function getLineLengthSquared(v) {
-            var x = v[6] - v[0],
-                y = v[7] - v[1];
-            return x * x + y * y;
-        }
-
-        if (straight) {
-            // Linear curves can only overlap if they are collinear.
-            // Instead of using the #isCollinear() check, we pick the longer of
-            // the two lines and see how far the starting and end points of the
-            // other line are from this line (assumed as an infinite line).
-            var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
-                l1 = flip ? v2 : v1,
-                l2 = flip ? v1 : v2,
-                line = new Line(l1[0], l1[1], l1[6], l1[7]);
-            if (line.getDistance(new Point(l2[0], l2[1])) > geomEpsilon ||
-                line.getDistance(new Point(l2[6], l2[7])) > geomEpsilon)
-                return false;
-        } else if (straight1 ^ straight2) {
-            // If one curve is straight, the other curve must be straight, too,
-            // otherwise they cannot overlap.
-            return false;
-        }
-        var v = [v1, v2],
-            pairs = [];
-        // Iterate through all end points: First p1 and p2 of curve 1,
-        // then p1 and p2 of curve 2
-        for (var i = 0, t1 = 0;
-                i < 2 && pairs.length < 2;
-                i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-            var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
-                    v[i][t1 === 0 ? 0 : 6],
-                    v[i][t1 === 0 ? 1 : 7]));
-            if (t2 != null) {  // If point is on curve
-                var pair = i === 0 ? [t1, t2] : [t2, t1];
-                // Filter out tiny overlaps
-                // TODO: Compare distance of points instead of curve time?
-                if (pairs.length === 0
-                        || abs(pair[0] - pairs[0][0]) > timeEpsilon
-                        && abs(pair[1] - pairs[0][1]) > timeEpsilon) {
-                    pairs.push(pair);
-                }
-            }
-            // If we checked 3 points but found no match, curves cannot overlap
-            if (i === 1 && pairs.length === 0)
-                return false;
-        }
-        // If we found 2 pairs, the end points of v1 & v2 should be the same.
-        // We only have to check if the handles are the same, too.
-        if (pairs.length === 2) {
-            // create values for overlapping part of each curve
-            var o1 = Curve.getPart(v[0], pairs[0][0], pairs[1][0]),
-                o2 = Curve.getPart(v[1], pairs[0][1], pairs[1][1]);
-            // Check if handles of overlapping paths are similar enough.
-            // We could do another check for curve identity here if we find a
-            // better criteria.
-            if (straight ||
-                    abs(o2[2] - o1[2]) < geomEpsilon &&
-                    abs(o2[3] - o1[3]) < geomEpsilon &&
-                    abs(o2[4] - o1[4]) < geomEpsilon &&
-                    abs(o2[5] - o1[5]) < geomEpsilon) {
-                // Overlapping parts are identical
-                addLocation(locations, param, v1, c1, pairs[0][0], null,
-                    v2, c2, pairs[0][1], null, o1),
-                addLocation(locations, param, v1, c1, pairs[1][0], null,
-                    v2, c2, pairs[1][1], null, o2);
-                return true;
-            }
-        }
-        return false;
-    }
-
     return { statics: /** @lends Curve */{
         getIntersections: function(v1, v2, c1, c2, locations, param) {
             var c1p1x = v1[0], c1p1y = v1[1],
@@ -1854,20 +1770,28 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c2s2y = (3 * v2[5] + c2p2y) / 4,
                 min = Math.min,
                 max = Math.max;
-            if (!(
-                    max(c1p1x, c1s1x, c1s2x, c1p2x) >=
+            if (!(  max(c1p1x, c1s1x, c1s2x, c1p2x) >=
                     min(c2p1x, c2s1x, c2s2x, c2p2x) &&
                     min(c1p1x, c1s1x, c1s2x, c1p2x) <=
                     max(c2p1x, c2s1x, c2s2x, c2p2x) &&
                     max(c1p1y, c1s1y, c1s2y, c1p2y) >=
                     min(c2p1y, c2s1y, c2s2y, c2p2y) &&
                     min(c1p1y, c1s1y, c1s2y, c1p2y) <=
-                    max(c2p1y, c2s1y, c2s2y, c2p2y)
-                )
-                // Also detect and handle overlaps:
-                || !param.startConnected && !param.endConnected
-                    && addOverlap(v1, v2, c1, c2, locations, param))
+                    max(c2p1y, c2s1y, c2s2y, c2p2y)))
                 return locations;
+            // Now detect and handle overlaps:
+            if (!param.startConnected && !param.endConnected) {
+                var overlaps = Curve.getOverlaps(v1, v2);
+                if (overlaps) {
+                    for (var i = 0; i < 2; i++) {
+                        var overlap = overlaps[i];
+                        addLocation(locations, param, v1, c1, overlap[0], null,
+                            v2, c2, overlap[1], null, overlap[2]);
+                    }
+                    return locations;
+                }
+            }
+
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
                 c1p1 = new Point(c1p1x, c1p1y),
@@ -1900,6 +1824,90 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
             return locations;
+        },
+
+        /**
+         * Code to detect overlaps of intersecting curves by @iconexperience:
+         * https://github.com/paperjs/paper.js/issues/648
+         */
+        getOverlaps: function(v1, v2) {
+            var abs = Math.abs,
+                timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+                geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                straight1 = Curve.isStraight(v1),
+                straight2 = Curve.isStraight(v2),
+                straight =  straight1 && straight2;
+
+            function getLineLengthSquared(v) {
+                var x = v[6] - v[0],
+                    y = v[7] - v[1];
+                return x * x + y * y;
+            }
+
+            if (straight) {
+                // Linear curves can only overlap if they are collinear. Instead
+                // of using the #isCollinear() check, we pick the longer of the
+                // two lines and see how far the starting and end points of the
+                // other line are from this line (assumed as an infinite line).
+                var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
+                    l1 = flip ? v2 : v1,
+                    l2 = flip ? v1 : v2,
+                    line = new Line(l1[0], l1[1], l1[6], l1[7]);
+                if (line.getDistance(new Point(l2[0], l2[1])) > geomEpsilon ||
+                    line.getDistance(new Point(l2[6], l2[7])) > geomEpsilon)
+                    return null;
+            } else if (straight1 ^ straight2) {
+                // If one curve is straight, the other curve must be straight,
+                // too, otherwise they cannot overlap.
+                return null;
+            }
+            var v = [v1, v2],
+                pairs = [];
+            // Iterate through all end points: First p1 and p2 of curve 1,
+            // then p1 and p2 of curve 2
+            for (var i = 0, t1 = 0;
+                    i < 2 && pairs.length < 2;
+                    i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
+                // TODO: Try with getNearestLocation() instead
+                var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
+                        v[i][t1 === 0 ? 0 : 6],
+                        v[i][t1 === 0 ? 1 : 7]));
+                if (t2 != null) {  // If point is on curve
+                    var pair = i === 0 ? [t1, t2] : [t2, t1];
+                    // Filter out tiny overlaps
+                    // TODO: Compare distance of points instead of curve time?
+                    if (pairs.length === 0
+                            || abs(pair[0] - pairs[0][0]) > timeEpsilon
+                            && abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+                        pairs.push(pair);
+                    }
+                }
+                // If we checked 3 points but found no match, curves cannot
+                // overlap
+                if (i === 1 && pairs.length === 0)
+                    return null;
+            }
+            // If we found 2 pairs, the end points of v1 & v2 should be the same.
+            // We only have to check if the handles are the same, too.
+            if (pairs.length === 2) {
+                // create values for overlapping part of each curve
+                var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
+                    o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+                // Check if handles of overlapping paths are similar enough. We
+                // could do another check for curve identity here if we find a
+                // better criteria.
+                if (straight ||
+                        abs(o2[2] - o1[2]) < geomEpsilon &&
+                        abs(o2[3] - o1[3]) < geomEpsilon &&
+                        abs(o2[4] - o1[4]) < geomEpsilon &&
+                        abs(o2[5] - o1[5]) < geomEpsilon) {
+                    // The overlapping parts are identical
+                    pairs[0][2] = o1;
+                    pairs[1][2] = o2;
+                    return pairs;
+                }
+            }
+            return null;
         }
     }};
 });
