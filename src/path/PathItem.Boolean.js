@@ -597,6 +597,7 @@ PathItem.inject(new function() {
             var inter = seg2._intersection,
                 overlaps = inter && inter._overlaps,
                 values = Curve.getValues(seg1, seg2);
+            return !!overlaps;
             for (var i = 0, l = overlaps && overlaps.length; i < l; i++) {
                 if (Curve.getOverlaps(values, overlaps[i]))
                     return true;
