@@ -673,13 +673,22 @@ PathItem.inject(new function() {
             return null;
         }
 
+        function findStartSegment(inter, next) {
+            while (inter) {
+                var seg = inter._segment;
+                if (isStart(seg))
+                    return seg;
+                inter = inter[next ? '_next' : '_prev'];
+            }
+        }
+
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
                 path = null,
                 finished = false;
-            // Do not start a chain with segments that have multiple
-            // intersections or invalid segments.
-            if (seg._intersection && seg._intersection._next || !isValid(seg))
+            // Do not start a chain with already visited segments, and segments
+            // that are not going to be part of the resulting operation.
+            if (!isValid(seg))
                 continue;
             start = otherStart = null;
             while (!finished) {
@@ -744,7 +753,17 @@ PathItem.inject(new function() {
                     if (isStart(seg)) {
                         drawSegment(seg, null, 'done', i, 'red');
                         finished = true;
-                    } else {
+                    } else if (inter) {
+                        var found = findStartSegment(inter, true)
+                            || findStartSegment(inter, false);
+                        if (found) {
+                            seg = found;
+                            drawSegment(seg, null, 'done multiple', i, 'red');
+                            finished = true;
+                            break;
+                        }
+                    }
+                    if (!finished) {
                         // We didn't manage to switch, so stop right here.
                         console.error('Visited segment encountered, aborting #'
                                 + pathCount + '.'
