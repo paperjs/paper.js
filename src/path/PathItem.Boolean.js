@@ -319,11 +319,12 @@ PathItem.inject(new function() {
             // half of closest top and bottom intercepts.
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
-            // TODO: Don't we need to pass on testContains here?
             if (yTop > -Infinity)
-                windLeft = getWinding(new Point(px, yTop), curves);
+                windLeft = getWinding(new Point(px, yTop), curves, false,
+                        testContains);
             if (yBottom < Infinity)
-                windRight = getWinding(new Point(px, yBottom), curves);
+                windRight = getWinding(new Point(px, yBottom), curves, false,
+                        testContains);
         } else {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon;
