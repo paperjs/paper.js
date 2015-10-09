@@ -803,13 +803,18 @@ PathItem.inject(new function() {
                             (path ? path._segments.length + 1 : 1));
                 }
             } else {
-                console.error('Boolean operation results in open path, segs =',
+                var colors = ['cyan', 'green', 'orange', 'yellow'];
+                var color = new Color(colors[pathCount % (colors.length - 1)]);
+                console.error('%cBoolean operation results in open path',
+                        'background: ' + color.toCSS() + '; color: #fff;',
+                        'segs =',
                         path._segments.length, 'length = ', path.getLength(),
                         '#' + pathCount + '.' +
                         (path ? path._segments.length + 1 : 1));
                 paper.project.activeLayer.addChild(path);
-                path.strokeColor = 'cyan';
-                path.strokeWidth = 2;
+                color.alpha = 0.5;
+                path.strokeColor = color;
+                path.strokeWidth = 3;
                 path.strokeScaling = false;
                 path = null;
             }
