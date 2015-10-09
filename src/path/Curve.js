@@ -615,7 +615,7 @@ statics: {
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
-    getParameterOf: function(v, point) {
+    getParameterOf_: function(v, point) {
         // Handle beginnings and end separately, as they are not detected
         // sometimes.
         var x = point.x,
@@ -661,6 +661,21 @@ statics: {
                 // no fitting ty, there's no solution for this bezier
                 if (sx === -1)
                     break;
+            }
+        }
+        return null;
+    },
+
+    getParameterOf: function(v, point) {
+        var coords = [point.x, point.y],
+            roots = [];
+        for (var c = 0; c < 2; c++) {
+            var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
+            for (var i = 0; i < count; i++) {
+                var t = roots[i],
+                    pt = Curve.getPoint(v, t);
+                if (point.isClose(pt, /*#=*/Numerical.GEOMETRIC_EPSILON))
+                    return t;
             }
         }
         return null;
