@@ -1437,7 +1437,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 // TODO: Remove this once debug logging is removed.
                 (flip ? loc1 : loc2)._other = true;
                 if (!include || include(loc)) {
-                    CurveLocation.add(locations, loc, true);
+                    CurveLocation.insert(locations, loc, true);
                 }
             }
         }

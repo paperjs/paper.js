@@ -455,95 +455,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      */
     isOverlap: function() {
         return !!this._overlaps;
-    },
-
-    statics: {
-        add: function(locations, loc, merge) {
-            // Insert-sort by path-id, curve, parameter so we can easily merge
-            // duplicates with calls to equals() after.
-            // NOTE: We don't call getCurve() / getParameter() here, since this
-            // code is used internally in boolean operations where all this
-            // information remains valid during processing.
-            var length = locations.length,
-                l = 0,
-                r = length - 1,
-                abs = Math.abs;
-
-            function compare(loc1, loc2) {
-                var path1 = loc1.getPath(),
-                    path2 = loc2.getPath();
-                return path1 === path2
-                        ? loc1.getIndexParameter() - loc2.getIndexParameter()
-                        // Sort by path id to group all locs on same path.
-                        : path1._id - path2._id;
-            }
-
-            function search(start, dir) {
-                for (var i = start + dir; i >= 0 && i < length; i += dir) {
-                    var loc2 = locations[i];
-                    // See #equals() for details of why `>= 1` is used here.
-                    if (abs(compare(loc, loc2)) >= 1)
-                        break;
-                    if (loc.equals(loc2))
-                        return loc2;
-                }
-                return null;
-            }
-
-            function addOverlaps(loc1, loc2) {
-                var overlaps1 = loc1._overlaps,
-                    overlaps2 = loc2._overlaps;
-                if (overlaps1) {
-                    overlaps1.push.apply(overlaps1, overlaps2);
-                } else {
-                    loc1._overlaps = overlaps2.slice();
-                }
-            }
-
-            while (l <= r) {
-                var m = (l + r) >>> 1,
-                    loc2 = locations[m],
-                    diff = compare(loc, loc2);
-                // Only compare location with equals() if diff is < 1.
-                // See #equals() for details of why `< 1` is used here.
-                // NOTE: equals() takes the intersection location into account,
-                // while the above calculation of diff doesn't!
-                if (merge && abs(diff) < 1) {
-                    // See if the two locations are actually the same, and merge
-                    // if they are. If they aren't, we're not done yet since
-                    // all neighbors with a diff < 1 are potential merge
-                    // candidates, so check them too (see #search() for details)
-                    if (loc2 = loc.equals(loc2) ? loc2
-                            : search(m, -1) || search(m, 1)) {
-                        // We're done, don't insert, merge with the found
-                        // location instead, and carry over overlaps:
-                        if (loc._overlaps) {
-                            addOverlaps(loc2, loc);
-                            addOverlaps(loc2._intersection, loc._intersection);
-                        }
-                        return loc2;
-                    }
-                }
-                if (diff < 0) {
-                    r = m - 1;
-                } else {
-                    l = m + 1;
-                }
-            }
-            // We didn't merge with a preexisting location, insert it now.
-            locations.splice(l, 0, loc);
-            return loc;
-        },
-
-        expand: function(locations) {
-            // Create a copy since add() keeps modifying the array and inserting
-            // at sorted indices.
-            var expanded = locations.slice();
-            for (var i = 0, l = locations.length; i < l; i++) {
-                this.add(expanded, locations[i]._intersection, false);
-            }
-            return expanded;
-        }
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
@@ -555,4 +466,97 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             return parameter != null && curve && curve[get](parameter, true);
         };
     }
-}, {}));
+}, {}),
+new function() { // Scope for statics
+
+    function compare(loc1, loc2) {
+        var path1 = loc1.getPath(),
+            path2 = loc2.getPath();
+        return path1 === path2
+                ? loc1.getIndexParameter() - loc2.getIndexParameter()
+                // Sort by path id to group all locs on same path.
+                : path1._id - path2._id;
+    }
+
+    function addOverlaps(loc1, loc2) {
+        var overlaps1 = loc1._overlaps,
+            overlaps2 = loc2._overlaps;
+        if (overlaps1) {
+            overlaps1.push.apply(overlaps1, overlaps2);
+        } else {
+            loc1._overlaps = overlaps2.slice();
+        }
+    }
+
+    function insert(locations, loc, merge) {
+        // Insert-sort by path-id, curve, parameter so we can easily merge
+        // duplicates with calls to equals() after.
+        // NOTE: We don't call getCurve() / getParameter() here, since this code
+        // is used internally in boolean operations where all this information
+        // remains valid during processing.
+        var length = locations.length,
+            l = 0,
+            r = length - 1,
+            abs = Math.abs;
+
+        function search(index, dir) {
+            for (var i = index + dir; i >= 0 && i < length; i += dir) {
+                var loc2 = locations[i];
+                // See #equals() for details of why `>= 1` is used here.
+                if (abs(compare(loc, loc2)) >= 1)
+                    break;
+                if (loc.equals(loc2))
+                    return loc2;
+            }
+            return null;
+        }
+
+        while (l <= r) {
+            var m = (l + r) >>> 1,
+                loc2 = locations[m],
+                diff = compare(loc, loc2);
+            // Only compare location with equals() if diff is < 1.
+            // See #equals() for details of why `< 1` is used here.
+            // NOTE: equals() takes the intersection location into account,
+            // while the above calculation of diff doesn't!
+            if (merge && abs(diff) < 1) {
+                // See if the two locations are actually the same, and merge if
+                // they are. If they aren't, we're not done yet since all
+                // neighbors with a diff < 1 are potential merge candidates, so
+                // check them too (see #search() for details)
+                if (loc2 = loc.equals(loc2) ? loc2
+                        : search(m, -1) || search(m, 1)) {
+                    // We're done, don't insert, merge with the found location
+                    // instead, and carry over overlaps:
+                    if (loc._overlaps) {
+                        addOverlaps(loc2, loc);
+                        addOverlaps(loc2._intersection, loc._intersection);
+                    }
+                    return loc2;
+                }
+            }
+            if (diff < 0) {
+                r = m - 1;
+            } else {
+                l = m + 1;
+            }
+        }
+        // We didn't merge with a preexisting location, insert it now.
+        locations.splice(l, 0, loc);
+        return loc;
+    }
+
+    return { statics: {
+        insert: insert,
+
+        expand: function(locations) {
+            // Create a copy since insert() keeps modifying the array and
+            // inserting at sorted indices.
+            var expanded = locations.slice();
+            for (var i = 0, l = locations.length; i < l; i++) {
+                insert(expanded, locations[i]._intersection, false);
+            }
+            return expanded;
+        }
+    }};
+});
