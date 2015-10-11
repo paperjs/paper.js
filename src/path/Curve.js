@@ -678,6 +678,9 @@ statics: {
                     return t;
             }
         }
+        // For very short curves (length ~ 1e-13), the above code will not
+        // necessarily produce any valid roots. As a fall-back, just check the
+        // beginnings and ends at the end so we can still return a valid result.
         return point.isClose(new Point(v[0], v[1]), epsilon) ? 0
             : point.isClose(new Point(v[6], v[7]), epsilon) ? 1
             : null;
