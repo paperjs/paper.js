@@ -1688,97 +1688,23 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
     return { statics: /** @lends Curve */{
         getIntersections: function(v1, v2, c1, c2, locations, param) {
-            var c1p1x = v1[0], c1p1y = v1[1],
-                c1h1x = v1[2], c1h1y = v1[3],
-                c1h2x = v1[4], c1h2y = v1[5],
-                c1p2x = v1[6], c1p2y = v1[7];
-            // If v2 is not provided, search for self intersection on v1.
             if (!v2) {
-                // Read a detailed description of the approach used to handle
-                // self-intersection, developed by @iconexperience here:
-                // https://github.com/paperjs/paper.js/issues/773#issuecomment-144018379
-                // Get the side of both control handles
-                var line = new Line(c1p1x, c1p1y, c1p2x, c1p2y, false),
-                    side1 = line.getSide(c1h1x, c1h1y),
-                    side2 = Line.getSide(c1h2x, c1h2y);
-                if (side1 === side2) {
-                    var edgeSum = (c1p1x - c1h2x) * (c1h1y - c1p2y)
-                                + (c1h1x - c1p2x) * (c1h2y - c1p1y);
-                    // If both handles are on the same side, the curve can only
-                    // have a self intersection if the edge sum and the
-                    // handles' sides have different signs. If the handles are
-                    // on the left side, the edge sum must be negative for a
-                    // self intersection (and vice-versa).
-                    if (edgeSum * side1 > 0)
-                        return locations;
-                }
-                // As a second condition we check if the curve has an inflection
-                // point. If an inflection point exists, the curve cannot have a
-                // self intersection.
-                var ax = c1p2x - 3 * c1h2x + 3 * c1h1x - c1p1x,
-                    bx = c1h2x - 2 * c1h1x + c1p1x,
-                    cx = c1h1x - c1p1x,
-                    ay = c1p2y - 3 * c1h2y + 3 * c1h1y - c1p1y,
-                    by = c1h2y - 2 * c1h1y + c1p1y,
-                    cy = c1h1y - c1p1y,
-                    // Condition for 1 or 2 inflection points:
-                    // (ay*cx-ax*cy)^2 - 4*(ay*bx-ax*by)*(by*cx-bx*cy) >= 0
-                    ac = ay * cx - ax * cy,
-                    ab = ay * bx - ax * by,
-                    bc = by * cx - bx * cy;
-                if (ac * ac - 4 * ab * bc < 0) {
-                    // The curve has no inflection points, so it may have a self
-                    // intersection. Find the right parameter at which to split
-                    // the curve. We search for the parameter where the velocity
-                    // has an extremum by finding the roots of the cross product
-                    // between the bezier curve's first and second derivative.
-                    var roots = [],
-                        tSplit,
-                        count = Numerical.solveCubic(
-                                ax * ax  + ay * ay,
-                                3 * (ax * bx + ay * by),
-                                2 * (bx * bx + by * by) + ax * cx + ay * cy,
-                                bx * cx + by * cy,
-                                roots, 0, 1);
-                    if (count > 0) {
-                        // Select extremum with highest curvature. This is
-                        // always on the loop in case of a self intersection.
-                        for (var i = 0, maxCurvature = 0; i < count; i++) {
-                            var curvature = Math.abs(
-                                    c1.getCurvatureAt(roots[i], true));
-                            if (curvature > maxCurvature) {
-                                maxCurvature = curvature;
-                                tSplit = roots[i];
-                            }
-                        }
-                        // Divide the curve in two and then apply the normal
-                        // curve intersection code.
-                        var parts = Curve.subdivide(v1, tSplit);
-                        // After splitting, the end is always connected:
-                        param.endConnected = true;
-                        // Since the curve was split above, we need to adjust
-                        // the parameters for both locations.
-                        param.renormalize = function(t1, t2) {
-                            return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
-                        };
-                        Curve.getIntersections(parts[0], parts[1], c1, c1,
-                                locations, param);
-                    }
-                }
-                // We're done handling self-intersection, let's jump out.
-                return locations;
+                // If v2 is not provided, search for self intersection on v1.
+                return this.getSelfIntersections(v1, c1, locations, param);
             }
             // Avoid checking curves if completely out of control bounds. As
             // a little optimization, we can scale the handles with 0.75
             // before calculating the control bounds and still be sure that
             // the curve is fully contained.
-            var c2p1x = v2[0], c2p1y = v2[1],
+            var c1p1x = v1[0], c1p1y = v1[1],
+                c1p2x = v1[6], c1p2y = v1[7],
+                c2p1x = v2[0], c2p1y = v2[1],
                 c2p2x = v2[6], c2p2y = v2[7],
                 // 's' stands for scaled handles...
-                c1s1x = (3 * c1h1x + c1p1x) / 4,
-                c1s1y = (3 * c1h1y + c1p1y) / 4,
-                c1s2x = (3 * c1h2x + c1p2x) / 4,
-                c1s2y = (3 * c1h2y + c1p2y) / 4,
+                c1s1x = (3 * v1[2] + c1p1x) / 4,
+                c1s1y = (3 * v1[3] + c1p1y) / 4,
+                c1s2x = (3 * v1[4] + c1p2x) / 4,
+                c1s2y = (3 * v1[5] + c1p2y) / 4,
                 c2s1x = (3 * v2[2] + c2p1x) / 4,
                 c2s1y = (3 * v2[3] + c2p1y) / 4,
                 c2s2x = (3 * v2[4] + c2p2x) / 4,
@@ -1838,6 +1764,85 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
+            return locations;
+        },
+
+        getSelfIntersections: function(v1, c1, locations, param) {
+            // Read a detailed description of the approach used to handle self-
+            // intersection, developed by @iconexperience here:
+            // https://github.com/paperjs/paper.js/issues/773#issuecomment-144018379
+            var p1x = v1[0], p1y = v1[1],
+                h1x = v1[2], h1y = v1[3],
+                h2x = v1[4], h2y = v1[5],
+                p2x = v1[6], p2y = v1[7];
+            // Get the side of both control handles
+            var line = new Line(p1x, p1y, p2x, p2y, false),
+                side1 = line.getSide(h1x, h1y),
+                side2 = Line.getSide(h2x, h2y);
+            if (side1 === side2) {
+                var edgeSum = (p1x - h2x) * (h1y - p2y)
+                            + (h1x - p2x) * (h2y - p1y);
+                // If both handles are on the same side, the curve can only have
+                // a self intersection if the edge sum and the handles' sides
+                // have different signs. If the handles are on the left side,
+                // the edge sum must be negative for a self intersection (and
+                // vice-versa).
+                if (edgeSum * side1 > 0)
+                    return locations;
+            }
+            // As a second condition we check if the curve has an inflection
+            // point. If an inflection point exists, the curve cannot have a
+            // self intersection.
+            var ax = p2x - 3 * h2x + 3 * h1x - p1x,
+                bx = h2x - 2 * h1x + p1x,
+                cx = h1x - p1x,
+                ay = p2y - 3 * h2y + 3 * h1y - p1y,
+                by = h2y - 2 * h1y + p1y,
+                cy = h1y - p1y,
+                // Condition for 1 or 2 inflection points:
+                // (ay*cx-ax*cy)^2 - 4*(ay*bx-ax*by)*(by*cx-bx*cy) >= 0
+                ac = ay * cx - ax * cy,
+                ab = ay * bx - ax * by,
+                bc = by * cx - bx * cy;
+            if (ac * ac - 4 * ab * bc < 0) {
+                // The curve has no inflection points, so it may have a self
+                // intersection. Find the right parameter at which to split the
+                // curve. We search for the parameter where the velocity has an
+                // extremum by finding the roots of the cross product between
+                // the bezier curve's first and second derivative.
+                var roots = [],
+                    tSplit,
+                    count = Numerical.solveCubic(
+                            ax * ax  + ay * ay,
+                            3 * (ax * bx + ay * by),
+                            2 * (bx * bx + by * by) + ax * cx + ay * cy,
+                            bx * cx + by * cy,
+                            roots, 0, 1);
+                if (count > 0) {
+                    // Select extremum with highest curvature. This is always on
+                    // the loop in case of a self intersection.
+                    for (var i = 0, maxCurvature = 0; i < count; i++) {
+                        var curvature = Math.abs(
+                                c1.getCurvatureAt(roots[i], true));
+                        if (curvature > maxCurvature) {
+                            maxCurvature = curvature;
+                            tSplit = roots[i];
+                        }
+                    }
+                    // Divide the curve in two and then apply the normal curve
+                    // intersection code.
+                    var parts = Curve.subdivide(v1, tSplit);
+                    // After splitting, the end is always connected:
+                    param.endConnected = true;
+                    // Since the curve was split above, we need to adjust the
+                    // parameters for both locations.
+                    param.renormalize = function(t1, t2) {
+                        return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
+                    };
+                    Curve.getIntersections(parts[0], parts[1], c1, c1,
+                            locations, param);
+                }
+            }
             return locations;
         },
 
