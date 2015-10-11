@@ -668,17 +668,19 @@ statics: {
 
     getParameterOf: function(v, point) {
         var coords = [point.x, point.y],
-            roots = [];
+            roots = [],
+            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
         for (var c = 0; c < 2; c++) {
             var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
             for (var i = 0; i < count; i++) {
-                var t = roots[i],
-                    pt = Curve.getPoint(v, t);
-                if (point.isClose(pt, /*#=*/Numerical.GEOMETRIC_EPSILON))
+                var t = roots[i];
+                if (point.isClose(Curve.getPoint(v, t), epsilon))
                     return t;
             }
         }
-        return null;
+        return point.isClose(new Point(v[0], v[1]), epsilon) ? 0
+            : point.isClose(new Point(v[6], v[7]), epsilon) ? 1
+            : null;
     },
 
     // TODO: Find better name
