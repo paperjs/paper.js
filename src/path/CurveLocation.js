@@ -43,9 +43,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      */
     initialize: function CurveLocation(curve, parameter, point,
             _overlap, _distance) {
-        // Merge intersections very close to the end of a curve to the
+        // Merge intersections very close to the end of a curve with the
         // beginning of the next curve.
-        if (parameter >= 1 - /*#=*/Numerical.CURVETIME_EPSILON) {
+        if (parameter > /*#=*/(1 - Numerical.CURVETIME_EPSILON)) {
             var next = curve.getNext();
             if (next) {
                 parameter = 0;
