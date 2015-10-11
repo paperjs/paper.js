@@ -165,10 +165,10 @@ PathItem.inject(new function() {
         var other = inter._intersection;
         var log = [title, inter._id, 'id', inter.getPath()._id,
             'i', inter.getIndex(), 't', inter._parameter,
-            'o', !!inter._overlaps, 'p', inter.getPoint(),
+            'o', !!inter._overlap, 'p', inter.getPoint(),
             'Other', other._id, 'id', other.getPath()._id,
             'i', other.getIndex(), 't', other._parameter,
-            'o', !!other._overlaps, 'p', other.getPoint()];
+            'o', !!other._overlap, 'p', other.getPoint()];
         console.log(log.map(function(v) {
             return v == null ? '-' : v
         }).join(' '));
@@ -536,7 +536,7 @@ PathItem.inject(new function() {
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
                     + '   op: ' + isValid(seg)
-                    + '   ov: ' + !!(inter && inter._overlaps)
+                    + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
                     + '   mu: ' + !!(inter && inter._next)
                     , color);
@@ -574,7 +574,7 @@ PathItem.inject(new function() {
                     + '   n3x: ' + (n3xs && n3xs._path._id + '.' + n3xs._index
                         + '(' + n3x._id + ')' || '--')
                     + '   pt: ' + seg._point
-                    + '   ov: ' + !!(inter && inter._overlaps)
+                    + '   ov: ' + !!(inter && inter._overlap)
                     + '   wi: ' + seg._winding
                     , item.strokeColor || item.fillColor || 'black');
         }
@@ -596,27 +596,13 @@ PathItem.inject(new function() {
                 return true;
             var winding = seg._winding,
                 inter = seg._intersection;
-            if (inter && !unadjusted && overlapWinding && inter._overlaps)
+            if (inter && !unadjusted && overlapWinding && inter._overlap)
                 winding = overlapWinding[winding] || winding;
             return operator(winding);
         }
 
         function isStart(seg) {
             return seg === start || seg === otherStart;
-        }
-
-        /**
-         * Checks if the curve from seg1 to seg2 is part of an overlap.
-         */
-        function isOverlap(seg1, seg2) {
-            var inter = seg2._intersection,
-                overlaps = inter && inter._overlaps,
-                values = Curve.getValues(seg1, seg2);
-            for (var i = 0, l = overlaps && overlaps.length; i < l; i++) {
-                if (Curve.getOverlaps(values, overlaps[i]))
-                    return true;
-            }
-            return false;
         }
 
         // If there are multiple possible intersections, find the one
@@ -641,14 +627,14 @@ PathItem.inject(new function() {
                             + ', next wi:' + nextSeg._winding
                             + ', seg op:' + isValid(seg, true)
                             + ', next op:'
-                                + (!(strict && isOverlap(seg, nextSeg))
+                                + (!(strict && nextInter && nextInter._overlap)
                                     && isValid(nextSeg, true)
                                 || !strict && nextInter
                                     && isValid(nextInter._segment, true))
                             + ', seg ov: ' + !!(seg._intersection
-                                    && seg._intersection._overlaps)
+                                    && seg._intersection._overlap)
                             + ', next ov: ' + !!(nextSeg._intersection
-                                    && nextSeg._intersection._overlaps)
+                                    && nextSeg._intersection._overlap)
                             + ', more: ' + (!!inter._next));
                 }
                 // See if this segment and the next are both not visited yet, or
@@ -674,7 +660,7 @@ PathItem.inject(new function() {
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
                         // options that might follow the priority over overlaps.
-                        && (!(strict && isOverlap(seg, nextSeg))
+                        && (!(strict && nextInter && nextInter._overlap)
                             && isValid(nextSeg, true)
                             // If the next segment isn't valid, its intersection
                             // to which we may switch might be, so check that.
@@ -741,7 +727,7 @@ PathItem.inject(new function() {
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
-                } else if (inter._overlaps && operation !== 'intersect') {
+                } else if (inter._overlap && operation !== 'intersect') {
                     // Switch to the overlapping intersecting segment if it is
                     // part of the boolean result. Do not adjust for overlap!
                     if (isValid(other, true)) {

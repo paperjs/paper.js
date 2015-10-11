@@ -60,7 +60,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._setCurve(curve);
         this._parameter = parameter;
         this._point = point || curve.getPointAt(parameter, true);
-        this._overlaps = _overlap ? [_overlap] : null;
+        this._overlap = _overlap;
         this._distance = _distance;
         this._intersection = this._next = this._prev = null;
     },
@@ -454,7 +454,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @see #isTouching()
      */
     isOverlap: function() {
-        return !!this._overlaps;
+        return !!this._overlap;
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
@@ -476,16 +476,6 @@ new function() { // Scope for statics
                 ? loc1.getIndexParameter() - loc2.getIndexParameter()
                 // Sort by path id to group all locs on same path.
                 : path1._id - path2._id;
-    }
-
-    function addOverlaps(loc1, loc2) {
-        var overlaps1 = loc1._overlaps,
-            overlaps2 = loc2._overlaps;
-        if (overlaps1) {
-            overlaps1.push.apply(overlaps1, overlaps2);
-        } else {
-            loc1._overlaps = overlaps2.slice();
-        }
     }
 
     function insert(locations, loc, merge) {
@@ -527,10 +517,9 @@ new function() { // Scope for statics
                 if (loc2 = loc.equals(loc2) ? loc2
                         : search(m, -1) || search(m, 1)) {
                     // We're done, don't insert, merge with the found location
-                    // instead, and carry over overlaps:
-                    if (loc._overlaps) {
-                        addOverlaps(loc2, loc);
-                        addOverlaps(loc2._intersection, loc._intersection);
+                    // instead, and carry over overlap:
+                    if (loc._overlap) {
+                        loc2._overlap = loc2._intersection._overlap = true;
                     }
                     return loc2;
                 }
