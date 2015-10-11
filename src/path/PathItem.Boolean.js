@@ -71,7 +71,7 @@ PathItem.inject(new function() {
         return result;
     }
 
-    var scaleFactor = 0.1;
+    var scaleFactor = 1;
     var textAngle = 0;
     var fontSize = 5;
 
@@ -85,15 +85,29 @@ PathItem.inject(new function() {
     // for each curve in the graph after curves in the operands are
     // split at intersections.
     function computeBoolean(path1, path2, operation) {
+        scaleFactor = Base.pick(window.scaleFactor, scaleFactor);
+        textAngle = Base.pick(window.textAngle, 0);
+
         segmentOffset = {};
         pathIndices = {};
 
+        var reportSegments = window.reportSegments;
+        var reportWindings = window.reportWindings;
+        var reportIntersections = window.reportIntersections;
+        if (path2) {
+            window.reportSegments = false;
+            window.reportWindings = false;
+            window.reportIntersections = false;
+        }
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // Note that the result paths might not belong to the same type
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1),
             _path2 = path2 && path1 !== path2 && preparePath(path2);
+        window.reportSegments = reportSegments;
+        window.reportWindings = reportWindings;
+        window.reportIntersections = reportIntersections;
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && /^(subtract|exclude)$/.test(operation)
@@ -941,31 +955,17 @@ PathItem.inject(new function() {
         },
 
         resolveCrossings: function() {
-            var reportSegments = window.reportSegments;
-            var reportWindings = window.reportWindings;
-            var reportIntersections = window.reportIntersections;
-            window.reportSegments = false;
-            window.reportWindings = false;
-            window.reportIntersections = false;
             var crossings = this.getCrossings();
-            if (!crossings.length) {
-                window.reportSegments = reportSegments;
-                window.reportWindings = reportWindings;
-                window.reportIntersections = reportIntersections;
+            if (!crossings.length)
                 return this.reorient();
-            }
             splitPath(CurveLocation.expand(crossings));
             var paths = this._children || [this],
                 segments = [];
             for (var i = 0, l = paths.length; i < l; i++) {
                 segments.push.apply(segments, paths[i]._segments);
             }
-            var res = finishBoolean(CompoundPath, tracePaths(segments),
+            return finishBoolean(CompoundPath, tracePaths(segments),
                     this, null, false).reorient();
-            window.reportSegments = reportSegments;
-            window.reportWindings = reportWindings;
-            window.reportIntersections = reportIntersections;
-            return res;
         }
     };
 });
