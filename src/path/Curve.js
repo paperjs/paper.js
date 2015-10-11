@@ -1690,7 +1690,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         getIntersections: function(v1, v2, c1, c2, locations, param) {
             if (!v2) {
                 // If v2 is not provided, search for self intersection on v1.
-                return this.getSelfIntersections(v1, c1, locations, param);
+                return Curve.getSelfIntersection(v1, c1, locations, param);
             }
             // Avoid checking curves if completely out of control bounds. As
             // a little optimization, we can scale the handles with 0.75
@@ -1767,7 +1767,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return locations;
         },
 
-        getSelfIntersections: function(v1, c1, locations, param) {
+        getSelfIntersection: function(v1, c1, locations, param) {
             // Read a detailed description of the approach used to handle self-
             // intersection, developed by @iconexperience here:
             // https://github.com/paperjs/paper.js/issues/773#issuecomment-144018379
