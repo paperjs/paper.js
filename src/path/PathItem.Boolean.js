@@ -751,36 +751,62 @@ PathItem.inject(new function() {
                     drawSegment(seg, null, 'stay', i, 'blue');
                 }
                 if (seg._visited) {
-                    if (isStart(seg)) {
+                    finished = isStart(seg);
+                    if (finished) {
                         drawSegment(seg, null, 'done', i, 'red');
-                        finished = true;
-                    } else if (inter) {
+                    }
+                    if (!finished && inter) {
                         var found = findStartSegment(inter, true)
                             || findStartSegment(inter, false);
+                        // This should not happen but due to numerical
+                        // imprecisions we sometimes end up in a dead-end. See
+                        // if we can find a way out by checking all valid
+                        // segments to find one that's close enough.
+                        for (var j = 0; !found && j < l; j++) {
+                            var seg2 = segments[j];
+                            // Do not start a chain with already visited
+                            // segments, and segments that are not going to
+                            // be part of the resulting operation.
+                            if (seg !== seg2
+                                    && seg._point.isClose(seg2._point,
+                                        /*#=*/Numerical.GEOMETRIC_EPSILON)
+                                    && (isStart(seg2) || isValid(seg2))) {
+                                found = seg2;
+                            }
+                        }
                         if (found) {
                             seg = found;
-                            drawSegment(seg, null, 'done multiple', i, 'red');
-                            finished = true;
-                            break;
+                            finished = isStart(seg);
+                            if (window.reportSegments) {
+                                console.log('Switching to: ',
+                                    seg._path._id + '.' + seg._index);
+                            }
+                            if (finished) {
+                                drawSegment(seg, null, 'done inter', i, 'red');
+                            }
                         }
                     }
-                    if (!finished) {
+                    if (finished)
+                        break;
+                    if (!isValid(seg)) {
                         // We didn't manage to switch, so stop right here.
                         console.error('Visited segment encountered, aborting #'
                                 + pathCount + '.'
                                 + (path ? path._segments.length + 1 : 1)
                                 + ', id: ' + seg._path._id + '.' + seg._index
                                 + ', multiple: ' + !!(inter && inter._next));
+                        break;
                     }
-                    break;
                 }
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
                     start = seg;
                     otherStart = other;
                 }
-                // Add the current segment to the path, and mark the added
-                // segment as visited.
+                if (window.reportSegments) {
+                    console.log('Adding', seg._path._id + '.' + seg._index);
+                }
+                // Add the segment to the path, and mark it as visited.
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
