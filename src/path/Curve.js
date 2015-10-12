@@ -1557,8 +1557,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             p2 = [ 2 / 3, dq2 ],
             p3 = [ 1, dq3 ],
             // Find vertical signed distance of p1 and p2 from line [p0, p3]
-            dist1 = dq1 - (dq0 + (dq3 - dq0) / 3),
-            dist2 = dq2 - (dq0 + 2 * (dq3 - dq0) / 3),
+            dist1 = dq1 - (2 * dq0 + dq3) / 3,
+            dist2 = dq2 - (dq0 + 2 * dq3) / 3,
             hull;
         // Check if p1 and p2 are on the opposite side of the line [p0, p3]
         if (dist1 * dist2 < 0) {
