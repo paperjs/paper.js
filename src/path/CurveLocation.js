@@ -316,7 +316,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     && (_ignoreOther
                         || (!this._intersection && !loc._intersection
                             || this._intersection && this._intersection.equals(
-                                    loc._intersection, true)))
+                                    loc._intersection, true)));
         }
         return res;
     },
