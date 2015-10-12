@@ -188,20 +188,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             : parameter;
     },
 
-
-    /**
-     * The {@link #curve}'s {@link #index} and {@link #parameter} added to one
-     * value that can conveniently be used for sorting and comparing of
-     * locations.
-     *
-     * @type Number
-     * @bean
-     * @private
-     */
-    getIndexParameter: function() {
-        return this.getIndex() + this.getParameter();
-    },
-
     /**
      * The point which is defined by the {@link #curve} and
      * {@link #parameter}.
@@ -308,26 +294,31 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @return {Boolean} {@true if the locations are equal}
      */
     equals: function(loc, _ignoreOther) {
-        // NOTE: We need to compare both by getIndexParameter() and by proximity
+        if (this === loc)
+            return true;
+        // NOTE: We need to compare both by (index + parameter) and by proximity
         // of points, see:
         // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-        // Use a relaxed threshold of < 1 for getIndexParameter() difference
-        // when deciding if two locations should be checked for point proximity.
-        // This is necessary to catch equal locations on very small curves.
-        var diff;
-        return this === loc
-            || loc instanceof CurveLocation
-                && this.getPath() === loc.getPath()
-                && ((diff = Math.abs(
-                        this.getIndexParameter() - loc.getIndexParameter()))
-                        < /*#=*/Numerical.CURVETIME_EPSILON
+        if (loc instanceof CurveLocation && this.getPath() === loc.getPath()) {
+            // We need to wrap the diff value around the path beginning / end.
+            var c1 = this.getCurve(),
+                c2 = loc.getCurve();
+                diff = ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
+                            + this.getParameter())
+                     - ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
+                            + loc.getParameter());
+            // Use a relaxed threshold of < 1 for difference when deciding if
+            // two locations should be checked for point proximity. This is
+            // necessary to catch equal locations on very small curves.
+            return (Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON
                     || diff < 1 && this.getPoint().isClose(loc.getPoint(),
                         /*#=*/Numerical.GEOMETRIC_EPSILON))
-                && (_ignoreOther
-                    || (!this._intersection && !loc._intersection
-                        || this._intersection && this._intersection.equals(
-                                loc._intersection, true)))
-            || false;
+                    && (_ignoreOther
+                        || (!this._intersection && !loc._intersection
+                            || this._intersection && this._intersection.equals(
+                                    loc._intersection, true)))
+        }
+        return false;
     },
 
     /**
@@ -473,7 +464,10 @@ new function() { // Scope for statics
         var path1 = loc1.getPath(),
             path2 = loc2.getPath();
         return path1 === path2
-                ? loc1.getIndexParameter() - loc2.getIndexParameter()
+                //Sort by both index and parameter. The two values added
+                // together provides a convenient sorting index.
+                ? (loc1.getIndex() + loc1.getParameter())
+                - (loc2.getIndex() + loc2.getParameter())
                 // Sort by path id to group all locs on same path.
                 : path1._id - path2._id;
     }
@@ -481,9 +475,6 @@ new function() { // Scope for statics
     function insert(locations, loc, merge) {
         // Insert-sort by path-id, curve, parameter so we can easily merge
         // duplicates with calls to equals() after.
-        // NOTE: We don't call getCurve() / getParameter() here, since this code
-        // is used internally in boolean operations where all this information
-        // remains valid during processing.
         var length = locations.length,
             l = 0,
             r = length - 1,
