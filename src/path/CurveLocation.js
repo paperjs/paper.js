@@ -300,7 +300,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // NOTE: We need to compare both by (index + parameter) and by
             // proximity of points, see:
             // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-            // We need to wrap the diff value around the path beginning / end.
+            // We need to wrap the diff value around the path's beginning / end.
             var c1 = this.getCurve(),
                 c2 = loc.getCurve();
                 diff = ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
@@ -488,6 +488,13 @@ new function() { // Scope for statics
                     break;
                 if (loc.equals(loc2))
                     return loc2;
+                // If we reach the beginning/end of the list, also compare with
+                // the location at the other end, as paths are circular lists.
+                if (i === 0 || i === length - 1) {
+                    loc2 = locations[i === 0 ? length - 1 : 0];
+                    if (loc.equals(loc2))
+                        return loc2;
+                }
             }
             return null;
         }
