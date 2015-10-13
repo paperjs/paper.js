@@ -482,11 +482,10 @@ new function() { // Scope for statics
 
         function search(index, dir) {
             for (var i = index + dir; i >= 0 && i < length; i += dir) {
-                var loc2 = locations[i];
-                // See #equals() for details of why `>= 1` is used here.
-                if (abs(compare(loc, loc2)) >= 1)
-                    break;
-                if (loc.equals(loc2))
+                var loc2 = locations[i],
+                    diff = abs(compare(loc, loc2));
+                // See #equals() for details of why `diff < 1` is used here.
+                if (diff < 1 && loc.equals(loc2))
                     return loc2;
                 // If we reach the beginning/end of the list, also compare with
                 // the location at the other end, as paths are circular lists.
@@ -495,6 +494,9 @@ new function() { // Scope for statics
                     if (loc.equals(loc2))
                         return loc2;
                 }
+                // Once we're outside of the range, we can stop searching.
+                if (diff >= 1)
+                    break;
             }
             return null;
         }
