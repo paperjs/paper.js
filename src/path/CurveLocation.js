@@ -482,12 +482,11 @@ new function() { // Scope for statics
             l = 0,
             r = length - 1;
 
-        function check(index, dir) {
+        function check(index) {
             // If we reach the beginning/end of the list, compare with the
             // location at the other end, as paths are circular lists.
-            var i = index + dir,
-                loc2 = locations[i >= 0 && i < length
-                        ? i : (i < 0 ? length - 1 : 0)];
+            var loc2 = locations[index >= 0 && index < length
+                        ? index : (index < 0 ? length - 1 : 0)];
             return loc.equals(loc2) ? loc2 : null;
         }
 
@@ -498,7 +497,7 @@ new function() { // Scope for statics
             // See if the two locations are actually the same, and merge if
             // they are. If they aren't, check the neighbors through check()
             if (merge && (found = loc.equals(loc2) ? loc2
-                    : (check(m, -1) || check(m, 1)))) {
+                    : (check(m - 1) || check(m + 1)))) {
                 // We're done, don't insert, merge with the found location
                 // instead, and carry over overlap:
                 if (loc._overlap) {
