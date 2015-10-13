@@ -303,14 +303,15 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // We need to wrap the diff value around the path's beginning / end.
             var c1 = this.getCurve(),
                 c2 = loc.getCurve();
-                diff = ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
-                            + this.getParameter())
-                     - ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-                            + loc.getParameter());
+                diff = Math.abs(
+                    ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
+                            + this.getParameter()) -
+                    ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
+                            + loc.getParameter()));
             // Use a relaxed threshold of < 1 for difference when deciding if
             // two locations should be checked for point proximity. This is
             // necessary to catch equal locations on very small curves.
-            res = (Math.abs(diff) < /*#=*/Numerical.CURVETIME_EPSILON
+            res = (diff < /*#=*/Numerical.CURVETIME_EPSILON
                     || diff < 1 && this.getPoint().isClose(loc.getPoint(),
                         /*#=*/Numerical.GEOMETRIC_EPSILON))
                     && (_ignoreOther
@@ -463,6 +464,8 @@ new function() { // Scope for statics
     function compare(loc1, loc2) {
         var path1 = loc1.getPath(),
             path2 = loc2.getPath();
+        // NOTE: equals() takes the intersection location into account,
+        // while this calculation of diff doesn't!
         return path1 === path2
                 //Sort by both index and parameter. The two values added
                 // together provides a convenient sorting index.
@@ -504,27 +507,19 @@ new function() { // Scope for statics
         while (l <= r) {
             var m = (l + r) >>> 1,
                 loc2 = locations[m],
-                diff = compare(loc, loc2);
-            // Only compare location with equals() if diff is < 1.
-            // See #equals() for details of why `< 1` is used here.
-            // NOTE: equals() takes the intersection location into account,
-            // while the above calculation of diff doesn't!
-            if (merge && abs(diff) < 1) {
-                // See if the two locations are actually the same, and merge if
-                // they are. If they aren't, we're not done yet since all
-                // neighbors with a diff < 1 are potential merge candidates, so
-                // check them too (see #search() for details)
-                if (loc2 = loc.equals(loc2) ? loc2
-                        : search(m, -1) || search(m, 1)) {
-                    // We're done, don't insert, merge with the found location
-                    // instead, and carry over overlap:
-                    if (loc._overlap) {
-                        loc2._overlap = loc2._intersection._overlap = true;
-                    }
-                    return loc2;
+                found;
+            // See if the two locations are actually the same, and merge if
+            // they are. If they aren't check the other neighbors with search()
+            if (merge && (found = loc.equals(loc2) ? loc2
+                    : (search(m, -1) || search(m, 1)))) {
+                // We're done, don't insert, merge with the found location
+                // instead, and carry over overlap:
+                if (loc._overlap) {
+                    found._overlap = found._intersection._overlap = true;
                 }
+                return found;
             }
-            if (diff < 0) {
+            if (compare(loc, loc2) < 0) {
                 r = m - 1;
             } else {
                 l = m + 1;
