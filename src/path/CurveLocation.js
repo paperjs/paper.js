@@ -480,15 +480,28 @@ new function() { // Scope for statics
         // duplicates with calls to equals() after.
         var length = locations.length,
             l = 0,
-            r = length - 1;
+            r = length - 1,
+            abs = Math.abs;
 
-        function check(index, dir) {
-            // If we reach the beginning/end of the list, compare with the
-            // location at the other end, as paths are circular lists.
-            var i = index + dir,
-                loc2 = locations[i >= 0 && i < length
-                        ? i : (i < 0 ? length - 1 : 0)];
-            return loc.equals(loc2) ? loc2 : null;
+        function search(index, dir) {
+            for (var i = index + dir; i >= 0 && i < length; i += dir) {
+                var loc2 = locations[i],
+                    diff = abs(compare(loc, loc2));
+                // See #equals() for details of why `diff < 1` is used here.
+                if (diff < 1 && loc.equals(loc2))
+                    return loc2;
+                // If we reach the beginning/end of the list, also compare with
+                // the location at the other end, as paths are circular lists.
+                if (i === 0 || i === length - 1) {
+                    loc2 = locations[i === 0 ? length - 1 : 0];
+                    if (loc.equals(loc2))
+                        return loc2;
+                }
+                // Once we're outside of the range, we can stop searching.
+                if (diff >= 1)
+                    break;
+            }
+            return null;
         }
 
         while (l <= r) {
@@ -496,9 +509,9 @@ new function() { // Scope for statics
                 loc2 = locations[m],
                 found;
             // See if the two locations are actually the same, and merge if
-            // they are. If they aren't, check the neighbors through check()
+            // they are. If they aren't check the other neighbors with search()
             if (merge && (found = loc.equals(loc2) ? loc2
-                    : (check(m, -1) || check(m, 1)))) {
+                    : (search(m, -1) || search(m, 1)))) {
                 // We're done, don't insert, merge with the found location
                 // instead, and carry over overlap:
                 if (loc._overlap) {
