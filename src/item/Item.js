@@ -125,79 +125,33 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return hasProps;
     },
 
-    _events: new function() {
-
-        // Flags defining which native events are required by which Paper events
-        // as required for counting amount of necessary natives events.
-        // The mapping is native -> virtual
-        var mouseFlags = {
-            mousedown: {
-                mousedown: 1,
-                mousedrag: 1,
-                click: 1,
-                doubleclick: 1
-            },
-            mouseup: {
-                mouseup: 1,
-                mousedrag: 1,
-                click: 1,
-                doubleclick: 1
-            },
-            mousemove: {
-                mousedrag: 1,
-                mousemove: 1,
-                mouseenter: 1,
-                mouseleave: 1
-            }
-        };
-
-        // Entry for all mouse events in the _events list
-        var mouseEvent = {
-            install: function(type) {
-                // If the view requires counting of installed mouse events,
-                // increase the counters now according to mouseFlags
-                var counters = this.getView()._eventCounters;
-                if (counters) {
-                    for (var key in mouseFlags) {
-                        counters[key] = (counters[key] || 0)
-                                + (mouseFlags[key][type] || 0);
-                    }
-                }
-            },
-            uninstall: function(type) {
-                // If the view requires counting of installed mouse events,
-                // decrease the counters now according to mouseFlags
-                var counters = this.getView()._eventCounters;
-                if (counters) {
-                    for (var key in mouseFlags)
-                        counters[key] -= mouseFlags[key][type] || 0;
-                }
-            }
-        };
-
-        return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+    _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-            function(name) {
-                this[name] = mouseEvent;
-            }, {
-                onFrame: {
-                    install: function() {
-                        this._animateItem(true);
-                    },
-                    uninstall: function() {
-                        this._animateItem(false);
-                    }
+        function(name) {
+            this[name] = {
+                install: function(type) {
+                    this.getView()._installEvent(type);
                 },
 
-                // Only for external sources, e.g. Raster
-                onLoad: {}
-            }
-        );
-    },
+                uninstall: function(type) {
+                    this.getView()._uninstallEvent(type);
+                }
+            };
+        }, {
+            onFrame: {
+                install: function() {
+                    this.getView()._animateItem(this, true);
+                },
 
-    _animateItem: function(animate) {
-        this.getView()._animateItem(this, animate);
-    },
+                uninstall: function() {
+                    this.getView()._animateItem(this, false);
+                }
+            },
+
+            // Only for external sources, e.g. Raster
+            onLoad: {}
+        }
+    ),
 
     _serialize: function(options, dictionary) {
         var props = {},
