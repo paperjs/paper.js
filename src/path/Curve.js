@@ -1087,8 +1087,10 @@ new function() { // Scope for methods that require private functions
                     }
                     // Now normalize x & y
                     var len = Math.sqrt(x * x + y * y);
-                    x /= len;
-                    y /= len;
+                    if (len) {
+                        x /= len;
+                        y /= len;
+                    }
                 }
                 if (type === 3) {
                     // Calculate 2nd derivative, and curvature from there:
