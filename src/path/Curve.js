@@ -1741,26 +1741,14 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                c1p1 = new Point(c1p1x, c1p1y),
-                c1p2 = new Point(c1p2x, c1p2y),
-                c2p1 = new Point(c2p1x, c2p1y),
-                c2p2 = new Point(c2p2x, c2p2y),
+                straight = straight1 && straight2,
                 // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
                 // end points to avoid matching them on almost collinear lines.
-                epsilon = /*#=*/Numerical.EPSILON;
-            // Handle the special case where the first curve's start- or end-
-            // point overlap with the second curve's start- or end-point.
-            if (c1p1.isClose(c2p1, epsilon))
-                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c2p1);
-            if (!param.startConnected && c1p1.isClose(c2p2, epsilon))
-                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c2p2);
-            if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
-                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c2p1);
-            if (c1p2.isClose(c2p2, epsilon))
-                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
+                epsilon = /*#=*/Numerical.EPSILON,
+                before = locations.length;
             // Determine the correct intersection method based on whether one or
             // curves are straight lines:
-            (straight1 && straight2
+            (straight
                 ? addLineIntersection
                 : straight1 || straight2
                     ? addCurveLineIntersections
@@ -1770,6 +1758,24 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         // addCurveIntersections():
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
+            // We're done if we handle lines and found one intersection already:
+            // https://github.com/paperjs/paper.js/issues/805#issuecomment-148503018
+            if (straight && locations.length > before)
+                return locations;
+            // Handle the special case where the first curve's start- or end-
+            // point overlaps with the second curve's start or end-point.
+            var c1p1 = new Point(c1p1x, c1p1y),
+                c1p2 = new Point(c1p2x, c1p2y),
+                c2p1 = new Point(c2p1x, c2p1y),
+                c2p2 = new Point(c2p2x, c2p2y);
+            if (c1p1.isClose(c2p1, epsilon))
+                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c2p1);
+            if (!param.startConnected && c1p1.isClose(c2p2, epsilon))
+                addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c2p2);
+            if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
+                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c2p1);
+            if (c1p2.isClose(c2p2, epsilon))
+                addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
             return locations;
         },
 
