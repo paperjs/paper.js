@@ -492,6 +492,9 @@ new function() { // Scope for statics
                     return loc2;
                 // If we reach the beginning/end of the list, also compare with
                 // the location at the other end, as paths are circular lists.
+                // NOTE: When merging, the locations array will only contain
+                // locations on the same path, so it is fine that check for the
+                // end to address circularity. See PathItem#getIntersections()
                 if (i === 0 || i === length - 1) {
                     loc2 = locations[i === 0 ? length - 1 : 0];
                     if (loc.equals(loc2))

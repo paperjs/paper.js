@@ -1917,11 +1917,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 pairs = null;
             } else if (!straight) {
                 // Straight pairs don't need further checks. If we found 2 pairs
-                // the end points on v1 & v2 should be the same. We only have to
-                // check if the handles are the same, too.
+                // the end points on v1 & v2 should be the same.
                 var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
                     o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
-                // Check that handles of overlapping paths are similar enough.
+                // Check if handles of the overlapping curves are the same too.
                 if (abs(o2[2] - o1[2]) > geomEpsilon ||
                     abs(o2[3] - o1[3]) > geomEpsilon ||
                     abs(o2[4] - o1[4]) > geomEpsilon ||
