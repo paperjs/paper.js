@@ -308,6 +308,10 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                             + this.getParameter()) -
                     ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
                             + loc.getParameter()));
+            // For curves with only one segment, pick the smaller diff between
+            // the two.
+            if (c1 === c2 && diff > 0.5 && c1.isFirst() && c1.isLast())
+                diff = 1 - diff;
             // Use a relaxed threshold of < 1 for difference when deciding if
             // two locations should be checked for point proximity. This is
             // necessary to catch equal locations on very small curves.
