@@ -80,7 +80,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             length1 = curves1.length,
             length2 = self ? length1 : curves2.length,
             values2 = [],
-            lists = [],
+            arrays = [],
             locations,
             path;
         // Cache values for curves2 as we re-iterate them for each in curves1.
@@ -97,7 +97,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             if (path1 !== path) {
                 path = path1;
                 locations = [];
-                lists.push(locations);
+                arrays.push(locations);
             }
             if (self) {
                 // First check for self-intersections within the same curve.
@@ -133,8 +133,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         }
         // Now flatten the list of location arrays to one array and return it.
         locations = [];
-        for (var i = 0, l = lists.length; i < l; i++) {
-            locations.push.apply(locations, lists[i]);
+        for (var i = 0, l = arrays.length; i < l; i++) {
+            locations.push.apply(locations, arrays[i]);
         }
         return locations;
     },
