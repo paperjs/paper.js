@@ -306,7 +306,7 @@ PathItem.inject(new function() {
      * with respect to a given set of monotone curves.
      */
     function getWinding(point, curves, horizontal, testContains) {
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+        var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             px = point.x,

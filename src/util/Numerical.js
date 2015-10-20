@@ -103,14 +103,16 @@ var Numerical = new function() {
         /**
          * The epsilon to be used when performing "geometric" checks, such as
          * point distances and examining cross products to check for
-         * collinearity. This value is somewhat arbitrary and was chosen by
-         * trial and error.
+         * collinearity.
          */
-        GEOMETRIC_EPSILON: 1e-7,
+        GEOMETRIC_EPSILON: 5e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
+        /**
+         * The epsilon to be used when performing winding contribution checks.
+         */
+        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
-         * as examining cross products to check for collinearity. This value is
-         * somewhat arbitrary and was chosen by trial and error.
+         * as examining cross products to check for collinearity.
          */
         TRIGONOMETRIC_EPSILON: 1e-8,
         // Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
