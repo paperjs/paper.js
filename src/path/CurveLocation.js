@@ -460,15 +460,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
-    if (name !== 'getPoint') {
-        var get = name + 'At';
-        this[name] = function() {
-            var parameter = this.getParameter(),
-                curve = this.getCurve();
-            return parameter != null && curve && curve[get](parameter, true);
-        };
-    }
-}, {}),
+    var get = name + 'At';
+    this[name] = function() {
+        var parameter = this.getParameter(),
+            curve = this.getCurve();
+        return parameter != null && curve && curve[get](parameter, true);
+    };
+}, {
+    // Do not override the existing #getPoint():
+    preserve: true
+}),
 new function() { // Scope for statics
 
     function insert(locations, loc, merge) {
