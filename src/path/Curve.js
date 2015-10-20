@@ -613,57 +613,6 @@ statics: {
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
-    getParameterOf_: function(v, point) {
-        // Handle beginnings and end separately, as they are not detected
-        // sometimes.
-        var x = point.x,
-            y = point.y,
-            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            abs = Math.abs;
-        if (abs(v[0] - x) < epsilon && abs(v[1] - y) < epsilon)
-            return 0;
-        if (abs(v[6] - x) < epsilon && abs(v[7] - y) < epsilon)
-            return 1;
-        var txs = [],
-            tys = [],
-            sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
-            // Only solve for y if x actually has some solutions
-            sy = sx !== 0 ? Curve.solveCubic(v, 1, y, tys, 0, 1) : 0,
-            tx, ty;
-        // sx, sy === -1 means infinite solutions.
-        // sx === -1 && sy === -1 means the curve is a point and there really is
-        // an infinite number of solutions. Let's just return t = 0, as they are
-        // all valid and actually end up being the same position.
-        if (sx === -1 && sy === -1)
-            return 0;
-        // Loop through all solutions for x and match with solutions for y,
-        // to see if we either have a matching pair, or infinite solutions
-        // for one or the other.
-        for (var cx = 0;  sx === -1 || cx < sx;) {
-            if (sx === -1 || (tx = txs[cx++]) > 0 && tx < 1) {
-                for (var cy = 0; sy === -1 || cy < sy;) {
-                    if (sy === -1 || (ty = tys[cy++]) > 0 && ty < 1) {
-                        // Handle infinite solutions by assigning root of
-                        // the other polynomial
-                        if (sx === -1) {
-                            tx = ty;
-                        } else if (sy === -1) {
-                            ty = tx;
-                        }
-                        // Use average if we're within curve-time epsilon
-                        if (abs(tx - ty) < /*#=*/Numerical.CURVETIME_EPSILON)
-                            return (tx + ty) * 0.5;
-                    }
-                }
-                // Avoid endless loops here: If sx is infinite and there was
-                // no fitting ty, there's no solution for this bezier
-                if (sx === -1)
-                    break;
-            }
-        }
-        return null;
-    },
-
     getParameterOf: function(v, point) {
         // Before solving cubics, compare the beginning and end of the curve
         // with zero epsilon:
