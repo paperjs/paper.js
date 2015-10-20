@@ -1731,8 +1731,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 if (overlaps) {
                     for (var i = 0; i < 2; i++) {
                         var overlap = overlaps[i];
-                        addLocation(locations, param, v1, c1, overlap[0], null,
-                            v2, c2, overlap[1], null, overlap[2]);
+                        addLocation(locations, param,
+                            v1, c1, overlap[0], null,
+                            v2, c2, overlap[1], null, true);
                     }
                     return locations;
                 }
@@ -1886,6 +1887,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 // too, otherwise they cannot overlap.
                 return null;
             }
+
             var v = [v1, v2],
                 pairs = [];
             // Iterate through all end points: First p1 and p2 of curve 1,
@@ -1901,38 +1903,32 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     var pair = i === 0 ? [t1, t2] : [t2, t1];
                     // Filter out tiny overlaps
                     // TODO: Compare distance of points instead of curve time?
-                    if (pairs.length === 0
-                            || abs(pair[0] - pairs[0][0]) > timeEpsilon
-                            && abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+                    if (pairs.length === 0 ||
+                        abs(pair[0] - pairs[0][0]) > timeEpsilon &&
+                        abs(pair[1] - pairs[0][1]) > timeEpsilon)
                         pairs.push(pair);
-                    }
                 }
                 // If we checked 3 points but found no match, curves cannot
                 // overlap
                 if (i === 1 && pairs.length === 0)
-                    return null;
+                    break;
             }
-            // If we found 2 pairs, the end points of v1 & v2 should be the same.
-            // We only have to check if the handles are the same, too.
-            if (pairs.length === 2) {
-                // create values for overlapping part of each curve
+            if (pairs.length !== 2) {
+                pairs = null;
+            } else if (!straight) {
+                // Straight pairs don't need further checks. If we found 2 pairs
+                // the end points on v1 & v2 should be the same. We only have to
+                // check if the handles are the same, too.
                 var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
                     o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
-                // Check if handles of overlapping paths are similar enough. We
-                // could do another check for curve identity here if we find a
-                // better criteria.
-                if (straight ||
-                        abs(o2[2] - o1[2]) < geomEpsilon &&
-                        abs(o2[3] - o1[3]) < geomEpsilon &&
-                        abs(o2[4] - o1[4]) < geomEpsilon &&
-                        abs(o2[5] - o1[5]) < geomEpsilon) {
-                    // The overlapping parts are identical
-                    pairs[0][2] = o1;
-                    pairs[1][2] = o2;
-                    return pairs;
-                }
+                // Check that handles of overlapping paths are similar enough.
+                if (abs(o2[2] - o1[2]) > geomEpsilon ||
+                    abs(o2[3] - o1[3]) > geomEpsilon ||
+                    abs(o2[4] - o1[4]) > geomEpsilon ||
+                    abs(o2[5] - o1[5]) > geomEpsilon)
+                    pairs = null;
             }
-            return null;
+            return pairs;
         }
     }};
 });
