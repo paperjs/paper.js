@@ -96,16 +96,16 @@ var Numerical = new function() {
         MACHINE_EPSILON: MACHINE_EPSILON,
         /**
          * The epsilon to be used when handling curve-time parameters. This
-         * cannot be smaller, because errors add up to about 1e-7 in the bezier
+         * cannot be smaller, because errors add up to around 8e-7 in the bezier
          * fat-line clipping code as a result of recursive sub-division.
          */
-        CURVETIME_EPSILON: 1e-6,
+        CURVETIME_EPSILON: 8e-7,
         /**
          * The epsilon to be used when performing "geometric" checks, such as
          * point distances and examining cross products to check for
          * collinearity.
          */
-        GEOMETRIC_EPSILON: 5e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
+        GEOMETRIC_EPSILON: 4e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
@@ -114,7 +114,7 @@ var Numerical = new function() {
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity.
          */
-        TRIGONOMETRIC_EPSILON: 1e-8,
+        TRIGONOMETRIC_EPSILON: 1e-7,
         // Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
