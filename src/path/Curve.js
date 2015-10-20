@@ -394,14 +394,12 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
-     * The total direction of the curve as a vector pointing from
-     * {@link #point1} to {@link #point2}.
-     *
-     * @type Point
+     * @type Line
      * @bean
+     * @private
      */
-    getVector: function() {
-        return this._segment2._point.subtract(this._segment1._point);
+    getLine: function() {
+        return new Line(this._segment1._point, this._segment2._point);
     },
 
     /**
@@ -960,7 +958,7 @@ statics: {
      */
     isCollinear: function(curve) {
         return curve && this.isStraight() && curve.isStraight()
-                && this.getVector().isCollinear(curve.getVector());
+                && this.getLine().isCollinear(curve.getLine());
     },
 
     /**
