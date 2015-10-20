@@ -88,15 +88,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             var curve1 = curves1[i],
                 values1 = self ? values2[i] : curve1.getValues(matrix1);
             if (self) {
-                // First check for self-intersections within the same curve
-                Curve.getIntersections(values1, null, curve1, curve1,
-                    locations, {
-                        include: include,
-                        // Only possible if there is only one closed curve:
-                        startConnected: length1 === 1 &&
-                                curve1.getPoint1().equals(curve1.getPoint2())
-                    }
-                );
+                // First check for self-intersections within the same curve.
+                Curve._getSelfIntersection(values1, curve1, locations, {
+                    include: include,
+                    // Only possible if there is only one closed curve:
+                    startConnected: length1 === 1 &&
+                            curve1.getPoint1().equals(curve1.getPoint2())
+                });
             }
             // Check for intersections with other curves. For self intersection,
             // we can start at i + 1 instead of 0
@@ -108,7 +106,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 var curve2 = curves2[j];
                 // Avoid end point intersections on consecutive curves when
                 // self intersecting.
-                Curve.getIntersections(
+                Curve._getIntersections(
                     values1, values2[j], curve1, curve2, locations,
                     {
                         include: include,
