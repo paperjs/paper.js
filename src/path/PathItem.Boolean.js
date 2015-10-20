@@ -164,11 +164,11 @@ PathItem.inject(new function() {
     function logIntersection(title, inter) {
         var other = inter._intersection;
         var log = [title, inter._id, 'id', inter.getPath()._id,
-            'i', inter.getIndex(), 't', inter._parameter,
-            'o', !!inter._overlap, 'p', inter.getPoint(),
+            'i', inter.getIndex(), 't', inter.getParameter(),
+            'o', inter.isOverlap(), 'p', inter.getPoint(),
             'Other', other._id, 'id', other.getPath()._id,
-            'i', other.getIndex(), 't', other._parameter,
-            'o', !!other._overlap, 'p', other.getPoint()];
+            'i', other.getIndex(), 't', other.getParameter(),
+            'o', other.isOverlap(), 'p', other.getPoint()];
         console.log(log.map(function(v) {
             return v == null ? '-' : v
         }).join(' '));
@@ -289,6 +289,21 @@ PathItem.inject(new function() {
         // once we are done with the entire curve.
         for (var i = 0, l = clearSegments.length; i < l; i++) {
             clearSegments[i].clearHandles();
+        }
+
+        if (window.reportIntersections) {
+            console.log('After', locations.length / 2);
+            locations.forEach(function(inter) {
+                if (inter._other)
+                    return;
+                logIntersection('Intersection', inter);
+                new Path.Circle({
+                    center: inter.point,
+                    radius: 2 * scaleFactor,
+                    strokeColor: 'red',
+                    strokeScaling: false
+                });
+            });
         }
     }
 
@@ -536,7 +551,7 @@ PathItem.inject(new function() {
                     + '   v: ' + (seg._visited ? 1 : 0)
                     + '   p: ' + seg._point
                     + '   op: ' + isValid(seg)
-                    + '   ov: ' + !!(inter && inter._overlap)
+                    + '   ov: ' + !!(inter && inter.isOverlap())
                     + '   wi: ' + seg._winding
                     + '   mu: ' + !!(inter && inter._next)
                     , color);
@@ -574,7 +589,7 @@ PathItem.inject(new function() {
                     + '   n3x: ' + (n3xs && n3xs._path._id + '.' + n3xs._index
                         + '(' + n3x._id + ')' || '--')
                     + '   pt: ' + seg._point
-                    + '   ov: ' + !!(inter && inter._overlap)
+                    + '   ov: ' + !!(inter && inter.isOverlap())
                     + '   wi: ' + seg._winding
                     , item.strokeColor || item.fillColor || 'black');
         }
