@@ -1456,7 +1456,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // below when determining which curve converges the least. He also
         // recommended a threshold of 0.5 instead of the initial 0.8
         // See: https://github.com/paperjs/paper.js/issues/565
-        if (++recursion >= 32)
+        if (++recursion >= 24)
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
@@ -1743,7 +1743,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 straight2 = Curve.isStraight(v2),
                 straight = straight1 && straight2,
                 // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
-                // end points to avoid matching them on almost collinear lines.
+                // end points to avoid matching them on almost collinear lines,
+                // see: https://github.com/paperjs/paper.js/issues/777
                 epsilon = /*#=*/Numerical.EPSILON,
                 before = locations.length;
             // Determine the correct intersection method based on whether one or
