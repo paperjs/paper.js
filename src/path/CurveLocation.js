@@ -301,31 +301,33 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @return {Boolean} {@true if the locations are equal}
      */
     equals: function(loc, _ignoreOther) {
-        var res = this === loc;
+        var res = this === loc,
+            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+        // NOTE: We need to compare both by (index + parameter) and by proximity
+        // of points. See:
+        // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
         if (!res && loc instanceof CurveLocation
-                && this.getPath() === loc.getPath()) {
-            // NOTE: We need to compare both by (index + parameter) and by
-            // proximity of points, see:
-            // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
-            // We need to wrap the diff value around the path's beginning / end.
+                && this.getPath() === loc.getPath()
+                && this.getPoint().isClose(loc.getPoint(), epsilon)) {
+            // The position is the same, but it could still be in a different
+            // location on the path. Perform more thorough checks now:
             var c1 = this.getCurve(),
                 c2 = loc.getCurve(),
                 abs = Math.abs,
+                // We need to wrap diff around the path's beginning / end:
                 diff = abs(
                     ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
                             + this.getParameter()) -
                     ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-                            + loc.getParameter())),
-                eps = /*#=*/Numerical.GEOMETRIC_EPSILON;
+                            + loc.getParameter()));
             res = (diff < /*#=*/Numerical.CURVETIME_EPSILON
-                // When the location is close enough, compare the offsets of
+                // If diff isn't close enough, compare the actual offsets of
                 // both locations to determine if they're in the same spot,
                 // taking into account the wrapping around path ends too.
-                || this.getPoint().isClose(loc.getPoint(), eps)
-                // Use GEOMETRIC_EPSILON * 2 when comparing offsets, to
-                // slightly increase tolerance when in the same spot.
-                && ((diff = abs(this.getOffset() - loc.getOffset())) < eps * 2
-                    || abs(this.getPath().getLength() - diff) < eps * 2))
+                // This is necessary in order to handle very short consecutive
+                // curves (length ~< 1e-7), which would lead to diff > 1.
+                || ((diff = abs(this.getOffset() - loc.getOffset())) < epsilon
+                    || abs(this.getPath().getLength() - diff) < epsilon))
                 && (_ignoreOther
                     || (!this._intersection && !loc._intersection
                         || this._intersection && this._intersection.equals(
