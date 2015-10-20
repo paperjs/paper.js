@@ -1300,7 +1300,7 @@ new function() { // Scope for methods that require private functions
                 // Get length of total range
                 rangeLength = Numerical.integrate(ds, a, b,
                         getIterations(a, b));
-            if (abs(offset - rangeLength) < /*#=*/Numerical.GEOMETRIC_EPSILON) {
+            if (abs(offset - rangeLength) < /*#=*/Numerical.EPSILON) {
                 // Matched the end:
                 return forward ? b : a;
             } else if (abs(offset) > rangeLength) {
