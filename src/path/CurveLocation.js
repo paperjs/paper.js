@@ -81,6 +81,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._setCurve(segment.getCurve());
         this._segment = segment;
         this._parameter = segment === this._segment1 ? 0 : 1;
+        // To avoid issues with imprecision in getCurve() / trySegment()
+        this._point = segment._point.clone();
     },
 
     /**
