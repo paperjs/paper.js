@@ -645,6 +645,34 @@ statics: {
              : null;
     },
 
+    getNearestParameter: function(v, point) {
+        var count = 100,
+            minDist = Infinity,
+            minT = 0;
+
+        function refine(t) {
+            if (t >= 0 && t <= 1) {
+                var dist = point.getDistance(Curve.getPoint(v, t), true);
+                if (dist < minDist) {
+                    minDist = dist;
+                    minT = t;
+                    return true;
+                }
+            }
+        }
+
+        for (var i = 0; i <= count; i++)
+            refine(i / count);
+
+        // Now iteratively refine solution until we reach desired precision.
+        var step = 1 / (count * 2);
+        while (step > /*#=*/Numerical.CURVETIME_EPSILON) {
+            if (!refine(minT - step) && !refine(minT + step))
+                step /= 2;
+        }
+        return minT;
+    },
+
     // TODO: Find better name
     getPart: function(v, from, to) {
         var flip = from > to;
@@ -1015,32 +1043,9 @@ statics: {
     getNearestLocation: function(/* point */) {
         var point = Point.read(arguments),
             values = this.getValues(),
-            count = 100,
-            minDist = Infinity,
-            minT = 0;
-
-        function refine(t) {
-            if (t >= 0 && t <= 1) {
-                var dist = point.getDistance(Curve.getPoint(values, t), true);
-                if (dist < minDist) {
-                    minDist = dist;
-                    minT = t;
-                    return true;
-                }
-            }
-        }
-
-        for (var i = 0; i <= count; i++)
-            refine(i / count);
-
-        // Now iteratively refine solution until we reach desired precision.
-        var step = 1 / (count * 2);
-        while (step > /*#=*/Numerical.CURVETIME_EPSILON) {
-            if (!refine(minT - step) && !refine(minT + step))
-                step /= 2;
-        }
-        var pt = Curve.getPoint(values, minT);
-        return new CurveLocation(this, minT, pt, null, point.getDistance(pt));
+            t = Curve.getNearestParameter(values, point),
+            pt = Curve.getPoint(values, t);
+        return new CurveLocation(this, t, pt, null, point.getDistance(pt));
     },
 
     /**
@@ -1861,7 +1866,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             for (var i = 0, t1 = 0;
                     i < 2 && pairs.length < 2;
                     i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-                // TODO: Try with getNearestLocation() instead
                 var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
                         v[i][t1 === 0 ? 0 : 6],
                         v[i][t1 === 0 ? 1 : 7]));
