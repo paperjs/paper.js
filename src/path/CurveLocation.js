@@ -465,20 +465,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 }, {}),
 new function() { // Scope for statics
 
-    function compare(loc1, loc2) {
-        var path1 = loc1.getPath(),
-            path2 = loc2.getPath();
-        // NOTE: equals() takes the intersection location into account,
-        // while this calculation of diff doesn't!
-        return path1 === path2
-                //Sort by both index and parameter. The two values added
-                // together provides a convenient sorting index.
-                ? (loc1.getIndex() + loc1.getParameter())
-                - (loc2.getIndex() + loc2.getParameter())
-                // Sort by path id to group all locs on same path.
-                : path1._id - path2._id;
-    }
-
     function insert(locations, loc, merge) {
         // Insert-sort by path-id, curve, parameter so we can easily merge
         // duplicates with calls to equals() after.
@@ -488,24 +474,19 @@ new function() { // Scope for statics
             abs = Math.abs;
 
         function search(index, dir) {
-            for (var i = index + dir; i >= 0 && i < length; i += dir) {
-                var loc2 = locations[i],
-                    diff = abs(compare(loc, loc2));
-                // See #equals() for details of why `diff < 1` is used here.
-                if (diff < 1 && loc.equals(loc2))
+            // If we reach the beginning/end of the list, also compare with the
+            // location at the other end, as paths are circular lists.
+            // NOTE: When merging, the locations array will only contain
+            // locations on the same path, so it is fine that check for the end
+            // to address circularity. See PathItem#getIntersections()
+            for (var i = index + dir; i >= -1 && i <= length; i += dir) {
+                // Wrap around the actual index, to match the other ends:
+                var loc2 = locations[((i % length) + length) % length];
+                if (loc.equals(loc2))
                     return loc2;
-                // If we reach the beginning/end of the list, also compare with
-                // the location at the other end, as paths are circular lists.
-                // NOTE: When merging, the locations array will only contain
-                // locations on the same path, so it is fine that check for the
-                // end to address circularity. See PathItem#getIntersections()
-                if (i === 0 || i === length - 1) {
-                    loc2 = locations[i === 0 ? length - 1 : 0];
-                    if (loc.equals(loc2))
-                        return loc2;
-                }
-                // Once we're outside of the range, we can stop searching.
-                if (diff >= 1)
+                // Once we're outside of the spot, we can stop searching.
+                if (!loc.getPoint().isClose(loc2.getPoint(),
+                        Numerical.GEOMETRIC_EPSILON))
                     break;
             }
             return null;
@@ -526,7 +507,18 @@ new function() { // Scope for statics
                 }
                 return found;
             }
-            if (compare(loc, loc2) < 0) {
+        var path1 = loc.getPath(),
+            path2 = loc2.getPath(),
+            // NOTE: equals() takes the intersection location into account,
+            // while this calculation of diff doesn't!
+            diff = path1 === path2
+                //Sort by both index and parameter. The two values added
+                // together provides a convenient sorting index.
+                ? (loc.getIndex() + loc.getParameter())
+                - (loc2.getIndex() + loc2.getParameter())
+                // Sort by path id to group all locs on same path.
+                : path1._id - path2._id;
+            if (diff < 0) {
                 r = m - 1;
             } else {
                 l = m + 1;
