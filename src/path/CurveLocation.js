@@ -125,7 +125,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // If the path's segments have changed in the meantime, clear the
             // internal _parameter value and force refetching of the correct
             // curve again here.
-            curve = this._parameter = this._curve = null;
+            curve = this._parameter = this._curve = this._offset = null;
         }
 
         // If path is out of sync, access current curve objects through segment1
@@ -208,8 +208,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      */
     getOffset: function() {
-        var path = this.getPath();
-        return path ? path._getOffset(this) : this.getCurveOffset();
+        var offset = this._offset;
+        if (offset == null) {
+            var path = this.getPath();
+            offset = this._offset = path ? path._getOffset(this)
+                    : this.getCurveOffset();
+        }
+        return offset;
     },
 
     /**
@@ -302,26 +307,27 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
             // We need to wrap the diff value around the path's beginning / end.
             var c1 = this.getCurve(),
-                c2 = loc.getCurve();
-                diff = Math.abs(
+                c2 = loc.getCurve(),
+                abs = Math.abs,
+                diff = abs(
                     ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
                             + this.getParameter()) -
                     ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-                            + loc.getParameter()));
-            // For curves with only one segment, pick the smaller diff between
-            // the two.
-            if (c1 === c2 && diff > 0.5 && c1.isFirst() && c1.isLast())
-                diff = 1 - diff;
-            // Use a relaxed threshold of < 1 for difference when deciding if
-            // two locations should be checked for point proximity. This is
-            // necessary to catch equal locations on very small curves.
+                            + loc.getParameter())),
+                eps = /*#=*/Numerical.GEOMETRIC_EPSILON;
             res = (diff < /*#=*/Numerical.CURVETIME_EPSILON
-                    || diff < 1 && this.getPoint().isClose(loc.getPoint(),
-                        /*#=*/Numerical.GEOMETRIC_EPSILON))
-                    && (_ignoreOther
-                        || (!this._intersection && !loc._intersection
-                            || this._intersection && this._intersection.equals(
-                                    loc._intersection, true)));
+                // When the location is close enough, compare the offsets of
+                // both locations to determine if they're in the same spot,
+                // taking into account the wrapping around path ends too.
+                || this.getPoint().isClose(loc.getPoint(), eps)
+                // Use GEOMETRIC_EPSILON * 2 when comparing offsets, to
+                // slightly increase tolerance when in the same spot.
+                && ((diff = abs(this.getOffset() - loc.getOffset())) < eps * 2
+                    || abs(this.getPath().getLength() - diff) < eps * 2))
+                && (_ignoreOther
+                    || (!this._intersection && !loc._intersection
+                        || this._intersection && this._intersection.equals(
+                                loc._intersection, true)));
         }
         return res;
     },
@@ -480,14 +486,14 @@ new function() { // Scope for statics
             // locations on the same path, so it is fine that check for the end
             // to address circularity. See PathItem#getIntersections()
             for (var i = index + dir; i >= -1 && i <= length; i += dir) {
-                // Wrap around the actual index, to match the other ends:
+                // Wrap the index around, to match the other ends:
                 var loc2 = locations[((i % length) + length) % length];
+                // Once we're outside the spot, we can stop searching.
+                if (!loc.getPoint().isClose(loc2.getPoint(),
+                        /*#=*/Numerical.GEOMETRIC_EPSILON))
+                    break;
                 if (loc.equals(loc2))
                     return loc2;
-                // Once we're outside of the spot, we can stop searching.
-                if (!loc.getPoint().isClose(loc2.getPoint(),
-                        Numerical.GEOMETRIC_EPSILON))
-                    break;
             }
             return null;
         }
