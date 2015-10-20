@@ -120,7 +120,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      */
 
     /**
-     * The font size of text content, as {@Number} in pixels, or as {@String}
+     * The font size of text content, as a number in pixels, or as a string
      * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
      *
      * @name TextItem#fontSize
@@ -130,7 +130,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
 
     /**
      *
-     * The font-family to be used in text content, as one {@String}.
+     * The font-family to be used in text content, as one string.
      * @deprecated use {@link #fontFamily} instead.
      *
      * @name TextItem#font
@@ -159,7 +159,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #getStyle()} instead.
+     * @deprecated use {@link #style} instead.
      */
     getCharacterStyle: '#getStyle',
     setCharacterStyle: '#setStyle',
@@ -167,7 +167,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #getStyle()} instead.
+     * @deprecated use {@link #style} instead.
      */
     getParagraphStyle: '#getStyle',
     setParagraphStyle: '#setStyle'

@@ -161,7 +161,7 @@ test('Curve#getParameterAt()', function() {
         var t2 = curve.getParameterAt(o2);
         equals(t1, t2, 'Curve parameter at offset ' + o1
                 + ' should be the same value as at offset' + o2,
-                Numerical.TOLERANCE);
+                Numerical.CURVETIME_EPSILON);
     }
 
     equals(curve.getParameterAt(curve.length + 1), null,
@@ -177,4 +177,49 @@ test('Curve#getLocationAt()', function() {
     equals(curve.getLocationAt(curve.length + 1), null,
             'Should return null when offset is out of range.');
 //            'Should return null when point is not on the curve.');
+});
+
+test('Curve#isStraight()', function() {
+    equals(function() {
+        return new Curve([100, 100], null, null, [200, 200]).isStraight();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [-50, -50], null, [200, 200]).isStraight();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], null, [200, 200]).isStraight();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], [-50, -50], [200, 200]).isStraight();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], [50, 50], [200, 200]).isStraight();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, [-50, -50], [200, 200]).isStraight();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, [50, 50], [200, 200]).isStraight();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, null, [100, 100]).isStraight();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], [50, 50], null, [100, 100]).isStraight();
+    }, false);
+    equals(function() {
+        return new Curve([100, 100], null, [-50, -50], [100, 100]).isStraight();
+    }, false);
+});
+
+test('Curve#isLinear()', function() {
+    equals(function() {
+        return new Curve([100, 100], [100 / 3, 100 / 3], [-100 / 3, -100 / 3], [200, 200]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, null, [100, 100]).isLinear();
+    }, true);
+    equals(function() {
+        return new Curve([100, 100], null, null, [200, 200]).isLinear();
+    }, false);
 });

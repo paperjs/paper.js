@@ -309,7 +309,7 @@ var Style = Base.extend(new function() {
     /**
      * @private
      * @bean
-     * @deprecated use {@link #getFontFamily()} instead.
+     * @deprecated use {@link #fontFamily} instead.
      */
     getFont: '#getFontFamily',
     setFont: '#setFontFamily',
@@ -582,7 +582,7 @@ var Style = Base.extend(new function() {
      */
 
     /**
-     * The font size of text content, as {@Number} in pixels, or as {@String}
+     * The font size of text content, as a number in pixels, or as a string
      * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
      *
      * @name Style#fontSize
@@ -592,12 +592,12 @@ var Style = Base.extend(new function() {
 
     /**
      *
-     * The font-family to be used in text content, as one {@String}.
-     * @deprecated use {@link #fontFamily} instead.
+     * The font-family to be used in text content, as one string.
      *
      * @name Style#font
      * @default 'sans-serif'
      * @type String
+     * @deprecated use {@link #fontFamily} instead.
      */
 
     /**

@@ -1144,7 +1144,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getApplyMatrix()} instead.
+     * @deprecated use {@link #applyMatrix} instead.
      */
     getTransformContent: '#getApplyMatrix',
     setTransformContent: '#setApplyMatrix',
@@ -1638,10 +1638,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
-        // Tell _getIntersections to return as soon as some intersections are
+        // Tell getIntersections() to return as soon as some intersections are
         // found, because all we care for here is there are some or none:
-        return this._asPathItem()._getIntersections(item._asPathItem(),
-                _matrix || item._matrix, [], true).length > 0;
+        return this._asPathItem().getIntersections(item._asPathItem(), null,
+                _matrix || item._matrix, true).length > 0;
     },
 
     /**
@@ -1652,7 +1652,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * and may contain a combination of the following values:
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     * {Number} the tolerance of the hit-test in points
+     * {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
      * Shape, Raster, PlacedSymbol, PointText}, etc
@@ -2616,6 +2616,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     isAncestor: function(item) {
         return item ? item.isDescendant(this) : false;
+    },
+
+    /**
+     * Checks if the item is an a sibling of the specified item.
+     *
+     * @param {Item} item the item to check against
+     * @return {Boolean} {@true if the item is aa sibling of the specified item}
+     */
+    isSibling: function(item) {
+        return this._parent === item._parent;
     },
 
     /**

@@ -48,30 +48,30 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     /**
-     * The starting point of the line
+     * The starting point of the line.
      *
-     * @name Line#point
      * @type Point
+     * @bean
      */
     getPoint: function() {
         return new Point(this._px, this._py);
     },
 
     /**
-     * The vector of the line
+     * The direction of the line as a vector.
      *
-     * @name Line#vector
      * @type Point
+     * @bean
      */
     getVector: function() {
         return new Point(this._vx, this._vy);
     },
 
     /**
-     * The length of the line
+     * The length of the line.
      *
-     * @name Line#length
      * @type Number
+     * @bean
      */
     getLength: function() {
         return this.getVector().getLength();
@@ -113,35 +113,47 @@ var Line = Base.extend(/** @lends Line# */{
     },
 
     isCollinear: function(line) {
-        // TODO: Tests showed that 1e-10 might work well here, but we want to
-        // keep it in sync with Point#isCollinear()
-        return this._vx * line._vy - this._vy * line._vx
-                < /*#=*/Numerical.TOLERANCE;
+        return Point.isCollinear(this._vx, this._vy, line._vx, line._vy);
+    },
+
+    isOrthogonal: function(line) {
+        return Point.isOrthogonal(this._vx, this._vy, line._vx, line._vy);
     },
 
     statics: /** @lends Line */{
-        intersect: function(apx, apy, avx, avy, bpx, bpy, bvx, bvy, asVector,
+        intersect: function(p1x, p1y, v1x, v1y, p2x, p2y, v2x, v2y, asVector,
                 isInfinite) {
             // Convert 2nd points to vectors if they are not specified as such.
             if (!asVector) {
-                avx -= apx;
-                avy -= apy;
-                bvx -= bpx;
-                bvy -= bpy;
+                v1x -= p1x;
+                v1y -= p1y;
+                v2x -= p2x;
+                v2y -= p2y;
             }
-            var cross = avx * bvy - avy * bvx;
+            var cross = v1x * v2y - v1y * v2x;
             // Avoid divisions by 0, and errors when getting too close to 0
             if (!Numerical.isZero(cross)) {
-                var dx = apx - bpx,
-                    dy = apy - bpy,
-                    ta = (bvx * dy - bvy * dx) / cross,
-                    tb = (avx * dy - avy * dx) / cross;
-                // Check the ranges of t parameters if the line is not allowed
-                // to extend beyond the definition points.
-                if (isInfinite || 0 <= ta && ta <= 1 && 0 <= tb && tb <= 1)
+                var dx = p1x - p2x,
+                    dy = p1y - p2y,
+                    u1 = (v2x * dy - v2y * dx) / cross,
+                    u2 = (v1x * dy - v1y * dx) / cross,
+                    // Check the ranges of the u parameters if the line is not
+                    // allowed to extend beyond the definition points, but
+                    // compare with EPSILON tolerance over the [0, 1] bounds.
+                    epsilon = /*#=*/Numerical.EPSILON,
+                    uMin = -epsilon,
+                    uMax = 1 + epsilon;
+                if (isInfinite
+                        || uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
+                    if (!isInfinite) {
+                        // Address the tolerance at the bounds by clipping to
+                        // the actual range.
+                        u1 = u1 <= 0 ? 0 : u1 >= 1 ? 1 : u1;
+                    }
                     return new Point(
-                                apx + ta * avx,
-                                apy + ta * avy);
+                            p1x + u1 * v1x,
+                            p1y + u1 * v1y);
+                }
             }
         },
 
@@ -157,9 +169,7 @@ var Line = Base.extend(/** @lends Line# */{
                 ccw = v2x * vx + v2y * vy; // ccw = v2.dot(v1);
                 if (ccw > 0) {
                     // ccw = v2.subtract(v1).dot(v1);
-                    v2x -= vx;
-                    v2y -= vy;
-                    ccw = v2x * vx + v2y * vy;
+                    ccw = (v2x - vx) * vx + (v2y - vy) * vy;
                     if (ccw < 0)
                         ccw = 0;
                 }
@@ -172,11 +182,13 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            return Numerical.isZero(vx)
-                    ? vy >= 0 ? px - x : x - px
-                    : Numerical.isZero(vy)
-                        ? vx >= 0 ? y - py : py - y
-                        : (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
+            // Based on the error analysis by @iconexperience outlined in
+            // https://github.com/paperjs/paper.js/issues/799
+            return vx === 0
+                ? vy >= 0 ? px - x : x - px
+                : vy === 0
+                ? vx >= 0 ? y - py : py - y
+                : (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
         }
     }
 });

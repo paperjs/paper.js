@@ -92,7 +92,7 @@
                 text.content = 'ring.' + operation + '(square)';
             }
             result.selected = true;
-            result.fillColor = colors[curIndex % operations.length];
+            result.fillColor = colors[curIndex % colors.length];
             result.moveBelow(text);
 
             // If the result is a group, color each of its children differently:

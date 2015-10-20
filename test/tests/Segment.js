@@ -43,7 +43,7 @@ test('new Segment(size)', function() {
 
 test('segment.reverse()', function() {
     var segment = new Segment(new Point(10, 10), new Point(5, 5), new Point(15, 15));
-    segment = segment.reverse();
+    segment.reverse();
     equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 15, y: 15 }, handleOut: { x: 5, y: 5 } }');
 });
 

@@ -269,7 +269,7 @@
         // // annotatePath(pathB)
         // // pathB.translate([ 300, 0 ]);
         // // pathB.segments.filter(function(a) { return a._ixPair; }).map(
-        // //    function(a) { a._ixPair.getIntersection()._segment.selected = true; });
+        // //    function(a) { a._ixPair.intersection._segment.selected = true; });
 
         // console.time('unite');
         // var nup = unite(pathA, pathB);
@@ -360,14 +360,12 @@
 
     function disperse(path, distance) {
         distance = distance || 10;
-        if (! path instanceof CompoundPath || ! path instanceof Group) { return; }
         var center = path.bounds.center;
         var children = path.children, i ,len;
-        for (var i = 0, len = children.length; i < len; i++) {
+        for (var i = 0, len = children && children.length; i < len; i++) {
             var cCenter = children[i].bounds.center;
             var vec = cCenter.subtract(center);
-            vec = (vec.isClose([0,0], 0.5))? vec : vec.normalize(distance);
-            children[i].translate(vec);
+            children[i].translate(vec.length < 0.5 ? vec : vec.normalize(distance));
         }
     }
 
