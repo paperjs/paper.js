@@ -119,7 +119,7 @@ PathItem.inject(new function() {
         var intersections = CurveLocation.expand(
             _path1.getIntersections(_path2, function(inter) {
                 // Only handle overlaps when not self-intersecting
-                return inter.isCrossing() || _path2 && inter.isOverlap();
+                return _path2 && inter.isOverlap() || inter.isCrossing();
             })
         );
         // console.timeEnd('intersection');
@@ -161,9 +161,9 @@ PathItem.inject(new function() {
                 path1, path2, true);
     }
 
-    function logIntersection(title, inter) {
+    function logIntersection(inter) {
         var other = inter._intersection;
-        var log = [title, inter._id, 'id', inter.getPath()._id,
+        var log = ['Intersection', inter._id, 'id', inter.getPath()._id,
             'i', inter.getIndex(), 't', inter.getParameter(),
             'o', inter.isOverlap(), 'p', inter.getPoint(),
             'Other', other._id, 'id', other.getPath()._id,
@@ -216,7 +216,7 @@ PathItem.inject(new function() {
             locations.forEach(function(inter) {
                 if (inter._other)
                     return;
-                logIntersection('Intersection', inter);
+                logIntersection(inter);
                 new Path.Circle({
                     center: inter.point,
                     radius: 2 * scaleFactor,
@@ -292,17 +292,11 @@ PathItem.inject(new function() {
         }
 
         if (window.reportIntersections) {
-            console.log('After', locations.length / 2);
+            console.log('Split Crossings');
             locations.forEach(function(inter) {
-                if (inter._other)
-                    return;
-                logIntersection('Intersection', inter);
-                new Path.Circle({
-                    center: inter.point,
-                    radius: 2 * scaleFactor,
-                    strokeColor: 'red',
-                    strokeScaling: false
-                });
+                if (!inter._other) {
+                    logIntersection(inter);
+                }
             });
         }
     }

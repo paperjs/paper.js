@@ -365,10 +365,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @see #isCrossing()
      */
     isTouching: function() {
-        var t1 = this.getTangent(),
-            inter = this._intersection,
-            t2 = inter && inter.getTangent();
-        return t1 && t2 ? t1.isCollinear(t2) : false;
+        var inter = this._intersection;
+        if (inter && this.getTangent().isCollinear(inter.getTangent())) {
+            // Only consider two straight curves as touching if their lines
+            // don't intersect.
+            var curve1 = this.getCurve(),
+                curve2 = inter.getCurve();
+            return !(curve1.isStraight() && curve2.isStraight()
+                    && curve1.getLine().intersect(curve2.getLine()));
+        }
+        return false;
     },
 
     /**
