@@ -611,7 +611,7 @@ PathItem.inject(new function() {
                 return true;
             var winding = seg._winding,
                 inter = seg._intersection;
-            if (inter && !unadjusted && overlapWinding && inter._overlap)
+            if (inter && !unadjusted && overlapWinding && inter.isOverlap())
                 winding = overlapWinding[winding] || winding;
             return operator(winding);
         }
@@ -641,15 +641,15 @@ PathItem.inject(new function() {
                             + ', seg wi:' + seg._winding
                             + ', next wi:' + nextSeg._winding
                             + ', seg op:' + isValid(seg, true)
-                            + ', next op:'
-                                + (!(strict && nextInter && nextInter._overlap)
-                                    && isValid(nextSeg, true)
+                            + ', next op:' + (!(strict && nextInter
+                                && nextInter.isOverlap())
+                                && isValid(nextSeg, true)
                                 || !strict && nextInter
                                     && isValid(nextInter._segment, true))
                             + ', seg ov: ' + !!(seg._intersection
-                                    && seg._intersection._overlap)
+                                && seg._intersection.isOverlap())
                             + ', next ov: ' + !!(nextSeg._intersection
-                                    && nextSeg._intersection._overlap)
+                                && nextSeg._intersection.isOverlap())
                             + ', more: ' + (!!inter._next));
                 }
                 // See if this segment and the next are both not visited yet, or
@@ -675,7 +675,7 @@ PathItem.inject(new function() {
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
                         // options that might follow the priority over overlaps.
-                        && (!(strict && nextInter && nextInter._overlap)
+                        && (!(strict && nextInter && nextInter.isOverlap())
                             && isValid(nextSeg, true)
                             // If the next segment isn't valid, its intersection
                             // to which we may switch might be, so check that.
@@ -742,7 +742,7 @@ PathItem.inject(new function() {
                     // Switch to the intersecting segment, as we need to
                     // resolving self-Intersections.
                     seg = other;
-                } else if (inter._overlap && operation !== 'intersect') {
+                } else if (inter.isOverlap() && operation !== 'intersect') {
                     // Switch to the overlapping intersecting segment if it is
                     // part of the boolean result. Do not adjust for overlap!
                     if (isValid(other, true)) {
