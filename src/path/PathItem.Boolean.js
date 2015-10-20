@@ -737,10 +737,10 @@ PathItem.inject(new function() {
                     // Just add the first segment and all segments that have no
                     // intersection.
                     drawSegment(seg, null, 'add', i, 'black');
-                } else if (!operator) { // Resolve self-intersections
-                    drawSegment(seg, other, 'self-int', i, 'purple');
-                    // Switch to the intersecting segment, as we need to
-                    // resolving self-Intersections.
+                } else if (isValid(other)) {
+                    // The other segment is part of the boolean result, and we
+                    // are at crossing, switch over.
+                    drawSegment(seg, other, 'cross', i, 'green');
                     seg = other;
                 } else if (inter.isOverlap() && operation !== 'intersect') {
                     // Switch to the overlapping intersecting segment if it is
@@ -755,11 +755,6 @@ PathItem.inject(new function() {
                     // We need to handle exclusion separately, as we want to
                     // switch at each crossing.
                     drawSegment(seg, other, 'exclude-cross', i, 'green');
-                    seg = other;
-                } else if (isValid(other)) {
-                    // The other segment is part of the boolean result, and we
-                    // are at crossing, switch over.
-                    drawSegment(seg, other, 'cross', i, 'green');
                     seg = other;
                 } else {
                     // Keep on truckin'
