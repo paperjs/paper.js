@@ -366,8 +366,7 @@ PathItem.inject(new function() {
         // contribution for the curve-chain starting with this segment. Once we
         // have enough confidence in the winding contribution, we can propagate
         // it until the next intersection or end of a curve chain.
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            chain = [],
+        var chain = [],
             start = segment,
             totalLength = 0,
             windingSum = 0;
@@ -390,10 +389,6 @@ PathItem.inject(new function() {
                 var node = chain[k],
                     curveLength = node.length;
                 if (length <= curveLength) {
-                    // If the selected location on the curve falls onto its
-                    // beginning or end, use the curve's center instead.
-                    if (length < epsilon || curveLength - length < epsilon)
-                        length = curveLength / 2;
                     var curve = node.curve,
                         path = curve._path,
                         parent = path._parent,
