@@ -1753,7 +1753,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Get the side of both control handles
             var line = new Line(p1x, p1y, p2x, p2y, false),
                 side1 = line.getSide(h1x, h1y),
-                side2 = Line.getSide(h2x, h2y);
+                side2 = line.getSide(h2x, h2y);
             if (side1 === side2) {
                 var edgeSum = (p1x - h2x) * (h1y - p2y)
                             + (h1x - p2x) * (h2y - p1y);
