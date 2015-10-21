@@ -384,7 +384,7 @@ PathItem.inject(new function() {
         // winding than equally dividing the curve chain, with the same
         // (amortised) time.
         for (var i = 0; i < 3; i++) {
-            // Try the points at 1/4, 2/4 and 3/4 of the total length:
+            // Sample the points at 1/4, 2/4 and 3/4 of the total length:
             var length = totalLength * (i + 1) / 4;
             for (var k = 0, m = chain.length; k < m; k++) {
                 var node = chain[k],

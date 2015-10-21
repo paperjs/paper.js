@@ -1383,8 +1383,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 t2 = Curve.getParameterOf(v2, p2);
             if (t2 !== null && t2 >= (endConnected ? tMin : 0) &&
                 t2 <= (startConnected ? tMax : 1)) {
-                // TODO: Don't we need to check the range of t2 as well? Does it
-                // also need startConnected / endConnected values?
                 var renormalize = param.renormalize;
                 if (renormalize) {
                     var res = renormalize(t1, t2);
@@ -1405,8 +1403,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 // Link the two locations to each other.
                 loc1._intersection = loc2;
                 loc2._intersection = loc1;
-                // TODO: Remove this once debug logging is removed.
-                (flip ? loc1 : loc2)._other = true;
                 if (!include || include(loc)) {
                     CurveLocation.insert(locations, loc, true);
                 }
