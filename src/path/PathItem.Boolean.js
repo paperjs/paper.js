@@ -444,14 +444,14 @@ PathItem.inject(new function() {
                 intersect: { 2: 1 }
             }[operation];
 
-        function isValid(seg, unadjusted) {
+        function isValid(seg, adjusted) {
             if (seg._visited)
                 return false;
             if (!operator) // For self-intersection, we're always valid!
                 return true;
             var winding = seg._winding,
                 inter = seg._intersection;
-            if (inter && !unadjusted && overlapWinding && inter.isOverlap())
+            if (inter && adjusted && overlapWinding && inter.isOverlap())
                 winding = overlapWinding[winding] || winding;
             return operator(winding);
         }
@@ -486,19 +486,19 @@ PathItem.inject(new function() {
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
-                        // We need to use the unadjusted winding here since an
+                        // Do not use the overlap-adjusted winding here since an
                         // overlap crossing might have brought us here, in which
-                        // case isValid(seg, false) might be false.
-                        || (!strict || isValid(seg, true))
+                        // case isValid(seg) might be false.
+                        || (!strict || isValid(seg))
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
                         // options that might follow the priority over overlaps.
                         && (!(strict && nextInter && nextInter.isOverlap())
-                            && isValid(nextSeg, true)
+                            && isValid(nextSeg)
                             // If the next segment isn't valid, its intersection
                             // to which we may switch might be, so check that.
                             || !strict && nextInter
-                            && isValid(nextInter._segment, true))
+                            && isValid(nextInter._segment))
                     ))
                     return inter;
                 // If it's no match, continue with the next linked intersection.
@@ -522,7 +522,7 @@ PathItem.inject(new function() {
                 finished = false;
             // Do not start a chain with already visited segments, and segments
             // that are not going to be part of the resulting operation.
-            if (!isValid(seg))
+            if (!isValid(seg, true))
                 continue;
             start = otherStart = null;
             while (!finished) {
@@ -536,8 +536,7 @@ PathItem.inject(new function() {
                 var other = inter && inter._segment;
                 // If we are at a crossing and the other segment is part of the
                 // boolean result, switch to it.
-                // Do not adjust winding when checking overlaps.
-                if (other && isValid(other, inter.isOverlap()))
+                if (other && isValid(other))
                     seg = other;
                 // If the new segment is visited already, check if we're back
                 // at the start.
@@ -566,14 +565,12 @@ PathItem.inject(new function() {
                 seg = seg.getNext();
                 finished = isStart(seg);
             }
-            if (!path)
-                continue;
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
             if (finished) {
                 path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
-            } else {
+            } else if (path) {
                 // This path wasn't finished and is hence invalid.
                 // Report the error to the console for the time being.
                 console.error('Boolean operation resulted in open path',
@@ -861,7 +858,8 @@ CompoundPath.inject(/** @lends CompoundPath# */{
      * - The holes have opposite winding direction.
      * - Islands have to have the same winding direction as the first child.
      */
-    // NOTE: Does NOT handle self-intersecting CompoundPaths.
+    // NOTE: Does NOT handle self-intersecting CompoundPaths on itself, but
+    // the boolean code above resolves these before calling reorient().
     reorient: function() {
         var children = this.removeChildren().sort(function(a, b) {
             return b.getBounds().getArea() - a.getBounds().getArea();
