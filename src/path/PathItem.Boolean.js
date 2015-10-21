@@ -472,15 +472,15 @@ PathItem.inject(new function() {
                 // See if this segment and the next are both not visited yet, or
                 // are bringing us back to the beginning, and are both part of
                 // the boolean result.
-                // Handling overlaps correctly here is a bit tricky business,
-                // and requires two passes, first with `strict = true`, then
-                // `false`: In strict mode, the current segment and the next
-                // segment are both checked for validity, and only the current
-                // one is allowed to be an overlap (passing true for
-                // `unadjusted` in isValid()). If this pass does not yield a
-                // result, the non-strict mode is used, in which invalid current
-                // segments are tolerated, and overlaps for the next segment are
-                // allowed as long as they are valid when not adjusted.
+                // Handling overlaps correctly here is tricky, requiring two
+                // passes, first with strict = true, then false:
+                // In strict mode, the current and the next segment are both
+                // checked for validity, and only the current one is allowed to
+                // be an overlap (passing true for unadjusted in isValid()).
+                // If this pass does not yield a result, the non-strict mode is
+                // used, in which invalid current segments are tolerated, and
+                // overlaps for the next segment are allowed as long as they are
+                // valid when not adjusted.
                 if (isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
@@ -538,6 +538,8 @@ PathItem.inject(new function() {
                 // Do not adjust winding when checking overlaps.
                 if (other && isValid(other, inter.isOverlap()))
                     seg = other;
+                // If the new segment is visited already, check if we're back
+                // at the start.
                 if (seg._visited) {
                     finished = isStart(seg);
                     if (!finished && inter) {
@@ -580,9 +582,9 @@ PathItem.inject(new function() {
             }
             // Add the path to the result, while avoiding stray segments and
             // paths that are incomplete or cover no area.
-            // As an optimization, only check paths with 4 or less segments
+            // As an optimization, only check paths with 8 or less segments
             // for their area, and assume that they cover an area when more.
-            if (path && (path._segments.length > 4
+            if (path && (path._segments.length > 8
                     || !Numerical.isZero(path.getArea()))) {
                 paths.push(path);
                 path = null;
