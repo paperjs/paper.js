@@ -136,7 +136,8 @@ PathItem.inject(new function() {
     }
 
     /*
-     * Creates linked lists between intersections through their _next property.
+     * Creates linked lists between intersections through their _next and _prev
+     * properties.
      *
      * @private
      */
