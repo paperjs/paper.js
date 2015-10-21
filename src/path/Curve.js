@@ -1656,7 +1656,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
     return { statics: /** @lends Curve */{
         _getIntersections: function(v1, v2, c1, c2, locations, param) {
             if (!v2) {
-                // If v2 is not provided, search for self intersection on v1.
+                // If v2 is not provided, search for a self-intersection on v1.
                 return Curve._getSelfIntersection(v1, c1, locations, param);
             }
             // Avoid checking curves if completely out of control bounds. As
@@ -1822,8 +1822,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
         },
 
         /**
-         * Code to detect overlaps of intersecting curves by @iconexperience:
-         * https://github.com/paperjs/paper.js/issues/648
+         * Code to detect overlaps of intersecting based on work by
+         * @iconexperience: https://github.com/paperjs/paper.js/issues/648
          */
         getOverlaps: function(v1, v2) {
             var abs = Math.abs,
@@ -1860,7 +1860,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var v = [v1, v2],
                 pairs = [];
             // Iterate through all end points: First p1 and p2 of curve 1,
-            // then p1 and p2 of curve 2
+            // then p1 and p2 of curve 2.
             for (var i = 0, t1 = 0;
                     i < 2 && pairs.length < 2;
                     i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
@@ -1876,16 +1876,16 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         abs(pair[1] - pairs[0][1]) > timeEpsilon)
                         pairs.push(pair);
                 }
-                // If we checked 3 points but found no match, curves cannot
-                // overlap
+                // If we checked 3 points but found no match,
+                // curves cannot overlap.
                 if (i === 1 && pairs.length === 0)
                     break;
             }
             if (pairs.length !== 2) {
                 pairs = null;
             } else if (!straight) {
-                // Straight pairs don't need further checks. If we found 2 pairs
-                // the end points on v1 & v2 should be the same.
+                // Straight pairs don't need further checks. If we found
+                // 2 pairs, the end points on v1 & v2 should be the same.
                 var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
                     o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
                 // Check if handles of the overlapping curves are the same too.
