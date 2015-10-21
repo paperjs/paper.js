@@ -93,12 +93,13 @@ var Line = Base.extend(/** @lends Line# */{
     // DOCS: document Line#getSide(point)
     /**
      * @param {Point} point
+     * @param {Boolean} [isInfinite=false]
      * @return {Number}
      */
-    getSide: function(point) {
+    getSide: function(point, isInfinite) {
         return Line.getSide(
                 this._px, this._py, this._vx, this._vy,
-                point.x, point.y, true);
+                point.x, point.y, true, isInfinite);
     },
 
     // DOCS: document Line#getDistance(point)
@@ -157,22 +158,26 @@ var Line = Base.extend(/** @lends Line# */{
             }
         },
 
-        getSide: function(px, py, vx, vy, x, y, asVector) {
+        getSide: function(px, py, vx, vy, x, y, asVector, isInfinite) {
             if (!asVector) {
                 vx -= px;
                 vy -= py;
             }
             var v2x = x - px,
                 v2y = y - py,
-                ccw = v2x * vy - v2y * vx; // ccw = v2.cross(v1);
-            if (ccw === 0) {
-                ccw = v2x * vx + v2y * vy; // ccw = v2.dot(v1);
-                if (ccw > 0) {
-                    // ccw = v2.subtract(v1).dot(v1);
-                    ccw = (v2x - vx) * vx + (v2y - vy) * vy;
-                    if (ccw < 0)
-                        ccw = 0;
-                }
+                // ccw = v2.cross(v1);
+                ccw = v2x * vy - v2y * vx;
+            if (ccw === 0 && !isInfinite) {
+                // If the point is on the infinite line, check if it's on the
+                // finite line too: Project v2 onto v1 and determine ccw based
+                // on which side of the finite line the point lies. Calculate
+                // the 'u' value of the point on the line, and use it for ccw:
+                // u = v2.dot(v1) / v1.dot(v1)
+                ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy);
+                // If the 'u' value is within the line range, set ccw to 0,
+                // otherwise its already correct sign is all we need.
+                if (ccw >= 0 && ccw <= 1)
+                    ccw = 0;
             }
             return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
         },
