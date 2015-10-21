@@ -1422,7 +1422,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-            epsilon = /*#=*/(Numerical.CURVETIME_EPSILON / 10),
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
@@ -1479,7 +1478,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     parts[1], v1, c2, c1, locations, param,
                     t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
+        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew)
+                < /*#=*/Numerical.CLIPPING_EPSILON) {
             // We have isolated the intersection with sufficient precision
             var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
                 t2 = uMin + (uMax - uMin) / 2;
