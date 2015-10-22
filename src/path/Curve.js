@@ -59,7 +59,6 @@ var Curve = Base.extend(/** @lends Curve# */{
      */
     initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
         var count = arguments.length,
-            values,
             seg1, seg2,
             point1, point2,
             handle1, handle2;
