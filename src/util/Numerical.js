@@ -69,15 +69,14 @@ var Numerical = new function() {
 
     return /** @lends Numerical */{
         TOLERANCE: 1e-6,
-        // Precision when comparing against 0
-        // References:
-        //  http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
-        //  http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
         /**
          * A very small absolute value used to check if a value is very close to
          * zero. The value should be large enough to offset any floating point
          * noise, but small enough to be meaningful in computation in a nominal
          * range (see MACHINE_EPSILON).
+         *
+         * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+         * http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          */
         EPSILON: EPSILON,
         /**
@@ -96,16 +95,15 @@ var Numerical = new function() {
         MACHINE_EPSILON: MACHINE_EPSILON,
         /**
          * The epsilon to be used when handling curve-time parameters. This
-         * cannot be smaller, because errors add up to around 8e-7 in the bezier
+         * cannot be smaller, because errors add up to around 2e-7 in the bezier
          * fat-line clipping code as a result of recursive sub-division.
          */
         CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases!
         /**
          * The epsilon to be used when performing "geometric" checks, such as
-         * point distances and examining cross products to check for
-         * collinearity.
+         * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases!
+        GEOMETRIC_EPSILON: 2e-7,
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
@@ -116,10 +114,16 @@ var Numerical = new function() {
          */
         TRIGONOMETRIC_EPSILON: 1e-7,
         /**
-         * The epsilon to be used in the fatline clipping code.
+         * The epsilon to be used in the fat-line clipping code.
          */
         CLIPPING_EPSILON: 1e-7,
-        // Kappa, see: http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+        /**
+         * Kappa is the value which which to scale the curve handles when
+         * drawing a circle with bezier curves.
+         *
+         * http://whizkidtech.redprince.net/bezier/circle/
+         * http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+         */
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
         /**
