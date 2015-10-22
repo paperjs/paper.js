@@ -467,8 +467,7 @@ new function() { // Scope for statics
         // duplicates with calls to equals() after.
         var length = locations.length,
             l = 0,
-            r = length - 1,
-            abs = Math.abs;
+            r = length - 1;
 
         function search(index, dir) {
             // If we reach the beginning/end of the list, also compare with the
