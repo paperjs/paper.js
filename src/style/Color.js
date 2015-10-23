@@ -578,7 +578,7 @@ var Color = Base.extend(new function() {
                                     ? 'gray'
                                     : 'rgb';
                         // Convert to array and parse in one loop, for efficiency
-                        var properties = types[type];
+                        var properties = types[type],
                             parsers = componentParsers[type];
                         this._components = components = [];
                         for (var i = 0, l = properties.length; i < l; i++) {
