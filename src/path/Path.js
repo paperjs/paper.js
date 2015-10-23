@@ -1680,22 +1680,6 @@ var Path = PathItem.extend(/** @lends Path# */{
     // See #getLocationOf(), #getNearestLocation(), #getNearestPoint()
     beans: false,
 
-    _getOffset: function(location) {
-        var index = location && location.getIndex();
-        if (index != null) {
-            var curves = this.getCurves(),
-                offset = 0;
-            for (var i = 0; i < index; i++)
-                offset += curves[i].getLength();
-            var curve = curves[index],
-                parameter = location.getParameter();
-            if (parameter > 0)
-                offset += curve.getPartLength(0, parameter);
-            return offset;
-        }
-        return null;
-    },
-
     /**
      * {@grouptitle Positions on Paths and Curves}
      *

@@ -212,9 +212,15 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     getOffset: function() {
         var offset = this._offset;
         if (offset == null) {
-            var path = this.getPath();
-            offset = this._offset = path ? path._getOffset(this)
-                    : this.getCurveOffset();
+            offset = 0;
+            var path = this.getPath(),
+                index = this.getIndex();
+            if (path && index != null) {
+                var curves = path.getCurves();
+                for (var i = 0; i < index; i++)
+                    offset += curves[i].getLength();
+            }
+            this._offset = offset += this.getCurveOffset();
         }
         return offset;
     },
