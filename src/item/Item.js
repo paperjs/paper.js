@@ -1941,7 +1941,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     inside = match.inside,
                     // If overlapping is set, we also perform the inside check:
                     bounds = overlapping || inside,
-                    rect =  bounds && Rectangle.read([bounds]);
+                    rect = bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
                     inside: !!inside,
@@ -3945,7 +3945,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (this._drawSelected)
                 this._drawSelected(ctx, mx, selectedItems);
             if (this._boundsSelected) {
-                var half = size / 2;
+                var half = size / 2,
                     coords = mx._transformCorners(this.getInternalBounds());
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.
