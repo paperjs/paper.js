@@ -648,7 +648,7 @@ statics: {
         if (!Curve.hasHandles(v)) {
             var p1x = v[0], p1y = v[1],
                 p2x = v[6], p2y = v[7],
-                vx = p2x - p1x, vy = p2y - p1x;
+                vx = p2x - p1x, vy = p2y - p1y;
             // Line has zero length, avoid divisions by zero.
             if (vx === 0 && vy === 0)
                 return 0;
