@@ -111,6 +111,10 @@ test('Curve list after removing a segment - 2', function() {
     equals(function() {
         return path.curves.length;
     }, 2, 'After adding a new segment at the end, we should have two curves again');
+
+    equals(function() {
+        return path.curves[1].segment1 === path.curves[0].segment2;
+    }, true, "The newly created curve's first segment needs to be the same as the previous curve's second segment");
 });
 
 test('Splitting a straight path should produce segments without handles', function() {
