@@ -417,7 +417,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             var total = this._countCurves(),
                 // If we're adding a new segment to the end of an open path,
                 // we need to step one index down to get its curve.
-                from = index === total ? index - 1 : index,
+                from = index + amount - 1 === total ? index - 1 : index,
                 start = from,
                 to = Math.min(from + amount, total);
             if (segs._curves) {
@@ -1367,13 +1367,13 @@ var Path = PathItem.extend(/** @lends Path# */{
                 last2 = path.getLastSegment();
                 if (first1 && first1._point.equals(last2._point)) {
                     first1.setHandleIn(last2._handleIn);
-                    // Prepend all segments from path except the last one
+                    // Prepend all segments from path except the last one.
                     this._add(segments.slice(0, segments.length - 1), 0);
                 } else {
                     this._add(segments.slice());
                 }
             }
-            if (path.closed)
+            if (path._closed)
                 this._add([segments[0]]);
             path.remove();
         }

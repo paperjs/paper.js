@@ -104,17 +104,23 @@ test('Curve list after removing a segment - 2', function() {
 
     equals(function() {
         return path.curves.length;
-    }, 1, 'After removing the last segment, we should be left with one curve');
+    }, 1, 'After removing the last segment, we should be left with one curve.');
 
-    path.addSegment([4, 4]);
+    path.addSegment([3, 3]);
 
     equals(function() {
         return path.curves.length;
-    }, 2, 'After adding a new segment at the end, we should have two curves again');
+    }, 2, 'After adding a new segment at the end, we should have two curves again.');
 
     equals(function() {
         return path.curves[1].segment1 === path.curves[0].segment2;
-    }, true, "The newly created curve's first segment needs to be the same as the previous curve's second segment");
+    }, true, "The newly created curve's first segment needs to be the same as the previous curve's second segment.");
+
+    path.addSegments([[4, 4], [5, 5]]);
+
+    equals(function() {
+        return path.curves.length;
+    }, 4, 'After adding tow new segments at the end, we should have four curves now.');
 });
 
 test('Splitting a straight path should produce segments without handles', function() {
