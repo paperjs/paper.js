@@ -1747,7 +1747,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // It may be that through imprecision of getLength, that the end of the
         // last curve was missed:
-        if (offset <= this.getLength())
+        if (curves.length > 0 && offset <= this.getLength())
             return new CurveLocation(curves[curves.length - 1], 1);
         return null;
     },
