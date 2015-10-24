@@ -385,7 +385,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             curves = this._curves,
             amount = segs.length,
             append = index == null,
-            from = append ? segments.length : index;
+            index = append ? segments.length : index;
         // Scan through segments to add first, convert if necessary and set
         // _path and _index references on them.
         for (var i = 0; i < amount; i++) {
@@ -395,7 +395,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             if (segment._path)
                 segment = segs[i] = segment.clone();
             segment._path = this;
-            segment._index = from + i;
+            segment._index = index + i;
             // If parts of this segment are selected, adjust the internal
             // _selectedSegmentState now
             if (segment._selectionState)
@@ -406,9 +406,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             segments.push.apply(segments, segs);
         } else {
             // Insert somewhere else
-            segments.splice.apply(segments, [from, 0].concat(segs));
+            segments.splice.apply(segments, [index, 0].concat(segs));
             // Adjust the indices of the segments above.
-            for (var i = from + amount, l = segments.length; i < l; i++)
+            for (var i = index + amount, l = segments.length; i < l; i++)
                 segments[i]._index = i;
         }
         // Keep the curves list in sync all the time in case it was requested
@@ -417,7 +417,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             var total = this._countCurves(),
                 // If we're adding a new segment to the end of an open path,
                 // we need to step one index down to get its curve.
-                start = from === total ? from - 1 : from,
+                from = index === total ? index - 1 : index,
+                start = from,
                 to = Math.min(from + amount, total);
             if (segs._curves) {
                 // Reuse removed curves.
