@@ -44,13 +44,15 @@ PathItem.inject(new function() {
         }
     };
 
-    // Creates a cloned version of the path that we can modify freely, with its
-    // matrix applied to its geometry. Calls #reduce() to simplify compound
-    // paths and remove empty curves, and #reorient() to make sure all paths
-    // have correct winding direction.
+    /*
+     * Creates a clone of the path that we can modify freely, with its matrix
+     * applied to its geometry. Calls #reduce() to simplify compound paths and
+     * remove empty curves, #resolveCrossings() to resolve self- intersection
+     * and #reorient() to make sure all paths have correct winding direction.
+     */
     function preparePath(path, resolve) {
         var res = path.clone(false).reduce().transform(null, true, true);
-        return resolve ? res.resolveCrossings() : res;
+        return resolve ? res.resolveCrossings().reorient() : res;
     }
 
     function finishBoolean(ctor, paths, path1, path2, reduce) {
@@ -716,7 +718,7 @@ PathItem.inject(new function() {
         resolveCrossings: function() {
             var crossings = this.getCrossings();
             if (!crossings.length)
-                return this.reorient();
+                return this;
             divideLocations(CurveLocation.expand(crossings));
             var paths = this._children || [this],
                 segments = [];
@@ -724,7 +726,7 @@ PathItem.inject(new function() {
                 segments.push.apply(segments, paths[i]._segments);
             }
             return finishBoolean(CompoundPath, tracePaths(segments),
-                    this, null, false).reorient();
+                    this, null, false);
         }
     };
 });
