@@ -114,3 +114,17 @@ test('Splitting a straight path should produce segments without handles', functi
         return !path1.lastSegment.hasHandles() && !path2.firstSegment.hasHandles();
     }, true);
 });
+
+test('Splitting a path with one curve in the middle result in two paths of the same length with one curve each', function() {
+    var path1 = new Path.Line([0, 0], [100, 100]);
+    var path2 = path1.split(path1.getLocationAt(path1.length / 2));
+    equals(function() {
+        return path1.curves.length;
+    }, 1);
+    equals(function() {
+        return path2.curves.length;
+    }, 1);
+    equals(function() {
+        return path1.length === path2.length;
+    }, true);
+});
