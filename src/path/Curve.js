@@ -645,6 +645,20 @@ statics: {
     },
 
     getNearestParameter: function(v, point) {
+        if (!this.hasHandles(v)) {
+            var p1x = v[0], p1y = v[1],
+                p2x = v[6], p2y = v[7],
+                v12x = p2x - p1x, v12y = p2y - p1x,
+                t = ((point.x - p1x) * v12x + (point.y - p1y) * v12y) /
+                      (v12x * v12x + v12y * v12y);
+            if (t <= 0) return 0;
+            if (t >= 1) return 1;
+            if (!t) return 0.5;
+            var roots = [];
+            if (Numerical.solveCubic(2, -3, 0, t, roots, 0, 1) === 1)
+                return roots[0];
+        }
+
         var count = 100,
             minDist = Infinity,
             minT = 0;
