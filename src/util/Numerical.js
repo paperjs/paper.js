@@ -318,7 +318,7 @@ var Numerical = new function() {
                 qd = (tmp + b1) * x + c2;
                 q = c2 * x + d;
                 // Get a good initial approximation.
-                t = q /a;
+                t = q / a;
                 r = pow(abs(t), 1/3);
                 s = t < 0 ? -1 : 1;
                 t = -qd / a;
@@ -337,10 +337,6 @@ var Numerical = new function() {
                         // Newton's. Divide by ec to avoid x0 crossing over a
                         // root.
                         x0 = qd === 0 ? x : x - q / qd / ec;
-                        if (x0 === x) {
-                            x = x0;
-                            break;
-                        }
                     } while (s * x0 > s * x);
                     // Adjust the coefficients for the quadratic.
                     if (abs(a) * x * x > abs(d / x)) {
