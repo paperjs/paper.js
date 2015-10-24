@@ -334,7 +334,8 @@ new function() { // Injection scope for PostScript-like drawing functions
         moveTo: function(/* point */) {
             var current = getCurrentPath(this),
                 // Reuse current path if nothing was added yet
-                path = current && current.isEmpty() ? current : new Path();
+                path = current && current.isEmpty() ? current
+                        : new Path(Item.NO_INSERT);
             if (path !== current)
                 this.addChild(path);
             path.moveTo.apply(path, arguments);

@@ -1241,10 +1241,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // will happen below.
                 path = this;
             } else {
+                path = new Path(Item.NO_INSERT);
                 // Pass true for _preserve, in case of CompoundPath, to avoid
-                // reversing of path direction, which would mess with segs!
+                // reversing of path direction, which would mess with segments!
+                path.insertAbove(this, true);
                 // Use _clone to copy over all other attributes, including style
-                path = this._clone(new Path().insertAbove(this, true));
+                this._clone(path);
             }
             path._add(segs, 0);
             // Add dividing segment again. In case of a closed path, that's the
