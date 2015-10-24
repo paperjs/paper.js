@@ -48,9 +48,9 @@ PathItem.inject(new function() {
     // matrix applied to its geometry. Calls #reduce() to simplify compound
     // paths and remove empty curves, and #reorient() to make sure all paths
     // have correct winding direction.
-    function preparePath(path) {
-        return path.clone(false).reduce().resolveCrossings()
-                .transform(null, true, true);
+    function preparePath(path, resolve) {
+        var res = path.clone(false).reduce().transform(null, true, true);
+        return resolve ? res.resolveCrossings() : res;
     }
 
     function finishBoolean(ctor, paths, path1, path2, reduce) {
@@ -76,12 +76,15 @@ PathItem.inject(new function() {
     // for each curve in the graph after curves in the operands are
     // split at intersections.
     function computeBoolean(path1, path2, operation) {
+        // If path1 is open, delegate to computeOpenBoolean()
+        if (!path1._children && !path1._closed)
+            return computeOpenBoolean(path1, path2, operation);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // Note that the result paths might not belong to the same type
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-        var _path1 = preparePath(path1),
-            _path2 = path2 && path1 !== path2 && preparePath(path2);
+        var _path1 = preparePath(path1, true),
+            _path2 = path2 && path1 !== path2 && preparePath(path2, true);
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && /^(subtract|exclude)$/.test(operation)
@@ -89,15 +92,13 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings and overlaps on both paths. Note that for
         // self-intersection, path2 is null and getIntersections() handles it.
-        // console.time('intersection');
         var intersections = CurveLocation.expand(
             _path1.getIntersections(_path2, function(inter) {
                 // Only handle overlaps when not self-intersecting
                 return _path2 && inter.isOverlap() || inter.isCrossing();
             })
         );
-        // console.timeEnd('intersection');
-        splitPath(intersections);
+        divideLocations(intersections);
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -135,6 +136,49 @@ PathItem.inject(new function() {
                 path1, path2, true);
     }
 
+    function computeOpenBoolean(path1, path2, operation) {
+        // Only support subtract and intersect operations between an open
+        // and a closed path. Assume that compound-paths are closed.
+        // TODO: Should we complain about not supported operations?
+        if (!path2 || !path2._children && !path2._closed
+                || !/^(subtract|intersect)$/.test(operation))
+            return null;
+        var _path1 = preparePath(path1, false),
+            _path2 = preparePath(path2, false),
+            intersections = _path1.getIntersections(_path2, function(inter) {
+                return inter.isOverlap() || inter.isCrossing();
+            }),
+            sub = operation === 'subtract',
+            paths = [];
+
+        function addPath(path) {
+            // Simple see if the point halfway across the open path is inside
+            // path2, and include / exclude the path based on the operation.
+            if (_path2.contains(path.getPointAt(path.getLength() / 2)) ^ sub) {
+                paths.unshift(path);
+                return true;
+            }
+        }
+
+        // Now loop backwards through all intersections, split the path and
+        // check the new path that was split off for inclusion.
+        for (var i = intersections.length - 1; i >= 0; i--) {
+            var path = intersections[i].split();
+            if (path) {
+                // See if we can add the path, and if so, clear the first handle
+                // at the split, because it might have been a curve.
+                if (addPath(path))
+                    path.getFirstSegment().setHandleIn(0, 0);
+                // Clear the other side of the split too, which is always the
+                // end of the remaining _path1.
+                _path1.getLastSegment().setHandleOut(0, 0);
+            }
+        }
+        // At the end, check what's left from our path after all the splitting.
+        addPath(_path1);
+        return finishBoolean(Group, paths, path1, path2);
+    }
+
     /*
      * Creates linked lists between intersections through their _next and _prev
      * properties.
@@ -166,14 +210,13 @@ PathItem.inject(new function() {
     }
 
     /**
-     * Splits a path-item at the given locations.
+     * Divides the path-items at the given locations.
      *
      * @param {CurveLocation[]} locations an array of the locations to split the
      * path-item at.
      * @private
      */
-    function splitPath(locations) {
-        // TODO: Make public in API, since useful!
+    function divideLocations(locations) {
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             noHandles = false,
@@ -210,7 +253,6 @@ PathItem.inject(new function() {
                     clearSegments.push(segment);
             }
             loc._setSegment(segment);
-
             // Create links from the new segment to the intersection on the
             // other curve, as well as from there back. If there are multiple
             // intersections on the same segment, we create linked lists between
@@ -675,7 +717,7 @@ PathItem.inject(new function() {
             var crossings = this.getCrossings();
             if (!crossings.length)
                 return this.reorient();
-            splitPath(CurveLocation.expand(crossings));
+            divideLocations(CurveLocation.expand(crossings));
             var paths = this._children || [this],
                 segments = [];
             for (var i = 0, l = paths.length; i < l; i++) {

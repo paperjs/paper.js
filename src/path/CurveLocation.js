@@ -289,13 +289,20 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     // DOCS: divide(), split()
 
     divide: function() {
-        var curve = this.getCurve();
-        return curve && curve.divide(this.getParameter(), true);
+        var curve = this.getCurve(),
+            res = null;
+        if (curve) {
+            res = curve.divide(this.getParameter(), true);
+            // Change to the newly inserted segment, also adjusting _parameter.
+            if (res)
+                this._setSegment(res._segment1);
+        }
+        return res;
     },
 
     split: function() {
         var curve = this.getCurve();
-        return curve && curve.split(this.getParameter(), true);
+        return curve ? curve.split(this.getParameter(), true) : null;
     },
 
     /**
