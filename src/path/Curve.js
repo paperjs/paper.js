@@ -649,7 +649,7 @@ statics: {
             var p1x = v[0], p1y = v[1],
                 p2x = v[6], p2y = v[7],
                 vx = p2x - p1x, vy = p2y - p1x;
-            // Line has zero length, avoid divisions by zero
+            // Line has zero length, avoid divisions by zero.
             if (vx === 0 && vy === 0)
                 return 0;
             // Project the point onto the line and calculate its linear
@@ -657,17 +657,15 @@ statics: {
             // u = (point - p1).dot(v) / v.dot(v)
             var u = ((point.x - p1x) * vx + (point.y - p1y) * vy) /
                 (vx * vx + vy * vy);
-            if (u < /*#=*/Numerical.EPSILON)
-                return 0;
-            if (u > /*#=*/(1 - Numerical.EPSILON))
-                return 1;
             // Now translate the linear u to the curve-time t:
             // B(t) = (1-t)^3 P0 + 3(1-t)^2 t P1 + 3(1-t)t^2 P2 + t^3 P3
             // This case is linear, so B(t) = u, with: P0 = P1 = 0, P2 = P3 = 1
             // -> u = 3(1-t)t^2 + t^3
             // -> 2 * t^3 - 3 * t^2 + u = 0
             // We can calculate t from u using the trigonometric method:
-            return 0.5 - Math.cos((Math.acos(2 * u - 1) + Math.PI * 4) / 3);
+            return u < /*#=*/Numerical.EPSILON ? 0
+                 : u > /*#=*/(1 - Numerical.EPSILON) ? 1
+                 : 0.5 - Math.cos((Math.acos(2 * u - 1) + Math.PI * 4) / 3);
         }
 
         var count = 100,
