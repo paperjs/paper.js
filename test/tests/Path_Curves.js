@@ -100,11 +100,17 @@ test('Curve list after removing a segment - 2', function() {
 
     equals(function() {
         return path.segments[2].remove();
-    }, true, 'Removing the paths last segment should be succesfull.');
+    }, true, 'Removing the paths last segment should be successful.');
 
     equals(function() {
         return path.curves.length;
     }, 1, 'After removing the last segment, we should be left with one curve');
+
+    path.addSegment([4, 4]);
+
+    equals(function() {
+        return path.curves.length;
+    }, 2, 'After adding a new segment at the end, we should have two curves again');
 });
 
 test('Splitting a straight path should produce segments without handles', function() {

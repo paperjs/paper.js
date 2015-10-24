@@ -414,8 +414,11 @@ var Path = PathItem.extend(/** @lends Path# */{
         // Keep the curves list in sync all the time in case it was requested
         // already.
         if (curves) {
-            var start = from,
-                to = Math.min(from + amount, this._countCurves());
+            var total = this._countCurves(),
+                // If we're adding a new segment to the end of an open path,
+                // we need to step one index down to get its curve.
+                start = from === total ? from - 1 : from,
+                to = Math.min(from + amount, total);
             if (segs._curves) {
                 // Reuse removed curves.
                 curves.splice.apply(curves, [from, 0].concat(segs._curves));
