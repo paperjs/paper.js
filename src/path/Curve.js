@@ -645,6 +645,18 @@ statics: {
     },
 
     getNearestParameter: function(v, point) {
+        if (!this.hasHandles(v)) {
+            var p1x = v[0], p1y = v[1],
+                p2x = v[6], p2y = v[7],
+                v12x = p2x - p1x, v12y = p2y - p1x,
+                t = ((point.x - p1x) * v12x + (point.y - p1y) * v12y) /
+                      (v12x * v12x + v12y * v12y),
+                epsilon = /*#=*/Numerical.EPSILON;
+            if (t < epsilon) return 0;
+            if (t + epsilon > 1) return 1;
+            return 0.5 - Math.cos(Math.acos(2 * t - 1) / 3 + Math.PI * 4 / 3) || 0.5;
+        }
+
         var count = 100,
             minDist = Infinity,
             minT = 0;
