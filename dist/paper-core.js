@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.24 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.25 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Aug 21 16:39:41 2015 +0200
+ * Date: Sun Oct 25 11:23:38 2015 +0100
  *
  ***
  *
@@ -581,7 +581,7 @@ var Emitter = {
 			handlers = handlers[type] = handlers[type] || [];
 			if (handlers.indexOf(func) === -1) {
 				handlers.push(func);
-				if (entry && entry.install && handlers.length == 1)
+				if (entry && entry.install && handlers.length === 1)
 					entry.install.call(this, type);
 			}
 		}
@@ -746,7 +746,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: '0.9.24',
+	version: "0.9.25",
 
 	getView: function() {
 		return this.project && this.project.getView();
@@ -929,18 +929,26 @@ var Numerical = new function() {
 	var abs = Math.abs,
 		sqrt = Math.sqrt,
 		pow = Math.pow,
-		TOLERANCE = 1e-6,
 		EPSILON = 1e-12,
 		MACHINE_EPSILON = 1.12e-16;
 
+	function clip(value, min, max) {
+		return value < min ? min : value > max ? max : value;
+	}
+
 	return {
-		TOLERANCE: TOLERANCE,
+		TOLERANCE: 1e-6,
 		EPSILON: EPSILON,
 		MACHINE_EPSILON: MACHINE_EPSILON,
+		CURVETIME_EPSILON: 4e-7,
+		GEOMETRIC_EPSILON: 2e-7,
+		WINDING_EPSILON: 2e-7,
+		TRIGONOMETRIC_EPSILON: 1e-7,
+		CLIPPING_EPSILON: 1e-7,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
-			return abs(val) <= EPSILON;
+			return val >= -EPSILON && val <= EPSILON;
 		},
 
 		integrate: function(f, a, b, n) {
@@ -978,16 +986,18 @@ var Numerical = new function() {
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
 			var count = 0,
+				eMin = min - EPSILON,
+				eMax = max + EPSILON,
 				x1, x2 = Infinity,
 				B = b,
 				D;
-			b /= 2;
+			b /= -2;
 			D = b * b - a * c;
 			if (D !== 0 && abs(D) < MACHINE_EPSILON) {
 				var gmC = pow(abs(a * b * c), 1 / 3);
 				if (gmC < 1e-8) {
-					var mult = pow(10, abs(
-						Math.floor(Math.log(gmC) * Math.LOG10E)));
+					var mult = pow(10,
+							abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
 					if (!isFinite(mult))
 						mult = 0;
 					a *= mult;
@@ -1000,25 +1010,22 @@ var Numerical = new function() {
 				if (abs(B) < EPSILON)
 					return abs(c) < EPSILON ? -1 : 0;
 				x1 = -c / B;
-			} else {
-				if (D >= -MACHINE_EPSILON) {
-					D = D < 0 ? 0 : D;
-					var R = sqrt(D);
-					if (b >= MACHINE_EPSILON && b <= MACHINE_EPSILON) {
-						x1 = abs(a) >= abs(c) ? R / a : -c / R;
-						x2 = -x1;
-					} else {
-						var q = -(b + (b < 0 ? -1 : 1) * R);
-						x1 = q / a;
-						x2 = c / q;
-					}
+			} else if (D >= -MACHINE_EPSILON) {
+				var Q = D < 0 ? 0 : sqrt(D),
+					R = b + (b < 0 ? -Q : Q);
+				if (R === 0) {
+					x1 = c / a;
+					x2 = -x1;
+				} else {
+					x1 = R / a;
+					x2 = c / R;
 				}
 			}
-			if (isFinite(x1) && (min == null || x1 >= min && x1 <= max))
-				roots[count++] = x1;
+			if (isFinite(x1) && (min == null || x1 > eMin && x1 < eMax))
+				roots[count++] = min == null ? x1 : clip(x1, min, max);
 			if (x2 !== x1
-					&& isFinite(x2) && (min == null || x2 >= min && x2 <= max))
-				roots[count++] = x2;
+					&& isFinite(x2) && (min == null || x2 > eMin && x2 < eMax))
+				roots[count++] = min == null ? x2 : clip(x2, min, max);
 			return count;
 		},
 
@@ -1071,8 +1078,8 @@ var Numerical = new function() {
 			}
 			var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
 			if (isFinite(x) && (count === 0 || x !== roots[count - 1])
-					&& (min == null || x >= min && x <= max))
-				roots[count++] = x;
+					&& (min == null || x > min - EPSILON && x < max + EPSILON))
+				roots[count++] = min == null ? x : clip(x, min, max);
 			return count;
 		}
 	};
@@ -1259,11 +1266,11 @@ var Point = Base.extend({
 			return this.clone();
 		angle = angle * Math.PI / 180;
 		var point = center ? this.subtract(center) : this,
-			s = Math.sin(angle),
-			c = Math.cos(angle);
+			sin = Math.sin(angle),
+			cos = Math.cos(angle);
 		point = new Point(
-			point.x * c - point.y * s,
-			point.x * s + point.y * c
+			point.x * cos - point.y * sin,
+			point.x * sin + point.y * cos
 		);
 		return center ? point.add(center) : point;
 	},
@@ -1305,18 +1312,22 @@ var Point = Base.extend({
 		return Rectangle.read(arguments).contains(this);
 	},
 
-	isClose: function(point, tolerance) {
+	isClose: function() {
+		var point = Point.read(arguments),
+			tolerance = Base.read(arguments);
 		return this.getDistance(point) < tolerance;
 	},
 
-	isCollinear: function(point) {
-		return Math.abs(this.cross(point)) < 0.000001;
+	isCollinear: function() {
+		var point = Point.read(arguments);
+		return Point.isCollinear(this.x, this.y, point.x, point.y);
 	},
 
 	isColinear: '#isCollinear',
 
-	isOrthogonal: function(point) {
-		return Math.abs(this.dot(point)) < 0.000001;
+	isOrthogonal: function() {
+		var point = Point.read(arguments);
+		return Point.isOrthogonal(this.x, this.y, point.x, point.y);
 	},
 
 	isZero: function() {
@@ -1338,16 +1349,12 @@ var Point = Base.extend({
 	},
 
 	project: function() {
-		var point = Point.read(arguments);
-		if (point.isZero()) {
-			return new Point(0, 0);
-		} else {
-			var scale = this.dot(point) / point.dot(point);
-			return new Point(
-				point.x * scale,
-				point.y * scale
-			);
-		}
+		var point = Point.read(arguments),
+			scale = point.isZero() ? 0 : this.dot(point) / point.dot(point);
+		return new Point(
+			point.x * scale,
+			point.y * scale
+		);
 	},
 
 	statics: {
@@ -1371,6 +1378,18 @@ var Point = Base.extend({
 
 		random: function() {
 			return new Point(Math.random(), Math.random());
+		},
+
+		isCollinear: function(x1, y1, x2, y2) {
+			return Math.abs(x1 * y2 - y1 * x2)
+					<= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
+						* 1e-7;
+		},
+
+		isOrthogonal: function(x1, y1, x2, y2) {
+			return Math.abs(x1 * x2 + y1 * y2)
+					<= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
+						* 1e-7;
 		}
 	}
 }, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
@@ -1922,7 +1941,8 @@ var LinkedRectangle = Rectangle.extend({
 			this._owner[this._setter](this);
 		return this;
 	}
-}, new function() {
+},
+new function() {
 	var proto = Rectangle.prototype;
 
 	return Base.each(['x', 'y', 'width', 'height'], function(key) {
@@ -2255,7 +2275,7 @@ var Matrix = Base.extend({
 	_transformBounds: function(bounds, dest, _dontNotify) {
 		var coords = this._transformCorners(bounds),
 			min = coords.slice(0, 2),
-			max = coords.slice();
+			max = min.slice();
 		for (var i = 2; i < 8; i++) {
 			var val = coords[i],
 				j = i & 1;
@@ -2417,10 +2437,10 @@ var Line = Base.extend({
 				true, isInfinite);
 	},
 
-	getSide: function(point) {
+	getSide: function(point, isInfinite) {
 		return Line.getSide(
 				this._px, this._py, this._vx, this._vy,
-				point.x, point.y, true);
+				point.x, point.y, true, isInfinite);
 	},
 
 	getDistance: function(point) {
@@ -2429,29 +2449,45 @@ var Line = Base.extend({
 				point.x, point.y, true));
 	},
 
+	isCollinear: function(line) {
+		return Point.isCollinear(this._vx, this._vy, line._vx, line._vy);
+	},
+
+	isOrthogonal: function(line) {
+		return Point.isOrthogonal(this._vx, this._vy, line._vx, line._vy);
+	},
+
 	statics: {
-		intersect: function(apx, apy, avx, avy, bpx, bpy, bvx, bvy, asVector,
+		intersect: function(p1x, p1y, v1x, v1y, p2x, p2y, v2x, v2y, asVector,
 				isInfinite) {
 			if (!asVector) {
-				avx -= apx;
-				avy -= apy;
-				bvx -= bpx;
-				bvy -= bpy;
+				v1x -= p1x;
+				v1y -= p1y;
+				v2x -= p2x;
+				v2y -= p2y;
 			}
-			var cross = avx * bvy - avy * bvx;
+			var cross = v1x * v2y - v1y * v2x;
 			if (!Numerical.isZero(cross)) {
-				var dx = apx - bpx,
-					dy = apy - bpy,
-					ta = (bvx * dy - bvy * dx) / cross,
-					tb = (avx * dy - avy * dx) / cross;
-				if (isInfinite || 0 <= ta && ta <= 1 && 0 <= tb && tb <= 1)
+				var dx = p1x - p2x,
+					dy = p1y - p2y,
+					u1 = (v2x * dy - v2y * dx) / cross,
+					u2 = (v1x * dy - v1y * dx) / cross,
+					epsilon = 1e-12,
+					uMin = -epsilon,
+					uMax = 1 + epsilon;
+				if (isInfinite
+						|| uMin < u1 && u1 < uMax && uMin < u2 && u2 < uMax) {
+					if (!isInfinite) {
+						u1 = u1 <= 0 ? 0 : u1 >= 1 ? 1 : u1;
+					}
 					return new Point(
-								apx + ta * avx,
-								apy + ta * avy);
+							p1x + u1 * v1x,
+							p1y + u1 * v1y);
+				}
 			}
 		},
 
-		getSide: function(px, py, vx, vy, x, y, asVector) {
+		getSide: function(px, py, vx, vy, x, y, asVector, isInfinite) {
 			if (!asVector) {
 				vx -= px;
 				vy -= py;
@@ -2459,15 +2495,10 @@ var Line = Base.extend({
 			var v2x = x - px,
 				v2y = y - py,
 				ccw = v2x * vy - v2y * vx;
-			if (ccw === 0) {
-				ccw = v2x * vx + v2y * vy;
-				if (ccw > 0) {
-					v2x -= vx;
-					v2y -= vy;
-					ccw = v2x * vx + v2y * vy;
-					if (ccw < 0)
-						ccw = 0;
-				}
+			if (ccw === 0 && !isInfinite) {
+				ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy);
+				if (ccw >= 0 && ccw <= 1)
+					ccw = 0;
 			}
 			return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
 		},
@@ -2477,11 +2508,9 @@ var Line = Base.extend({
 				vx -= px;
 				vy -= py;
 			}
-			return Numerical.isZero(vx)
-					? vy >= 0 ? px - x : x - px
-					: Numerical.isZero(vy)
-						? vx >= 0 ? y - py : py - y
-						: (vx * (y - py) - vy * (x - px)) / Math.sqrt(vx * vx + vy * vy);
+			return vx === 0 ? vy > 0 ? x - px : px - x
+				 : vy === 0 ? vx < 0 ? y - py : py - y
+				 : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
 		}
 	}
 });
@@ -2783,70 +2812,32 @@ var Item = Base.extend(Emitter, {
 		return hasProps;
 	},
 
-	_events: new function() {
-
-		var mouseFlags = {
-			mousedown: {
-				mousedown: 1,
-				mousedrag: 1,
-				click: 1,
-				doubleclick: 1
-			},
-			mouseup: {
-				mouseup: 1,
-				mousedrag: 1,
-				click: 1,
-				doubleclick: 1
-			},
-			mousemove: {
-				mousedrag: 1,
-				mousemove: 1,
-				mouseenter: 1,
-				mouseleave: 1
-			}
-		};
-
-		var mouseEvent = {
-			install: function(type) {
-				var counters = this.getView()._eventCounters;
-				if (counters) {
-					for (var key in mouseFlags) {
-						counters[key] = (counters[key] || 0)
-								+ (mouseFlags[key][type] || 0);
-					}
-				}
-			},
-			uninstall: function(type) {
-				var counters = this.getView()._eventCounters;
-				if (counters) {
-					for (var key in mouseFlags)
-						counters[key] -= mouseFlags[key][type] || 0;
-				}
-			}
-		};
-
-		return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+	_events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
 			'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-			function(name) {
-				this[name] = mouseEvent;
-			}, {
-				onFrame: {
-					install: function() {
-						this._animateItem(true);
-					},
-					uninstall: function() {
-						this._animateItem(false);
-					}
+		function(name) {
+			this[name] = {
+				install: function(type) {
+					this.getView()._installEvent(type);
 				},
 
-				onLoad: {}
-			}
-		);
-	},
+				uninstall: function(type) {
+					this.getView()._uninstallEvent(type);
+				}
+			};
+		}, {
+			onFrame: {
+				install: function() {
+					this.getView()._animateItem(this, true);
+				},
 
-	_animateItem: function(animate) {
-		this.getView()._animateItem(this, animate);
-	},
+				uninstall: function() {
+					this.getView()._animateItem(this, false);
+				}
+			},
+
+			onLoad: {}
+		}
+	),
 
 	_serialize: function(options, dictionary) {
 		var props = {},
@@ -3452,8 +3443,8 @@ var Item = Base.extend(Emitter, {
 	intersects: function(item, _matrix) {
 		if (!(item instanceof Item))
 			return false;
-		return this._asPathItem().getIntersections(item._asPathItem(),
-				_matrix || item._matrix).length > 0;
+		return this._asPathItem().getIntersections(item._asPathItem(), null,
+				_matrix || item._matrix, true).length > 0;
 	},
 
 	hitTest: function() {
@@ -3476,7 +3467,7 @@ var Item = Base.extend(Emitter, {
 			tolerancePadding = options._tolerancePadding = new Size(
 						Path._getPenPadding(1, totalMatrix.inverted())
 					).multiply(
-						Math.max(options.tolerance, 0.000001)
+						Math.max(options.tolerance, 1e-6)
 					);
 		point = matrix._inverseTransform(point);
 
@@ -3599,7 +3590,7 @@ var Item = Base.extend(Emitter, {
 				var overlapping = match.overlapping,
 					inside = match.inside,
 					bounds = overlapping || inside,
-					rect =	bounds && Rectangle.read([bounds]);
+					rect = bounds && Rectangle.read([bounds]);
 				param = {
 					items: [],
 					inside: !!inside,
@@ -3903,6 +3894,10 @@ var Item = Base.extend(Emitter, {
 		return item ? item.isDescendant(this) : false;
 	},
 
+	isSibling: function(item) {
+		return this._parent === item._parent;
+	},
+
 	isGroupedWith: function(item) {
 		var parent = this._parent;
 		while (parent) {
@@ -4178,7 +4173,7 @@ var Item = Base.extend(Emitter, {
 			if (this._drawSelected)
 				this._drawSelected(ctx, mx, selectedItems);
 			if (this._boundsSelected) {
-				var half = size / 2;
+				var half = size / 2,
 					coords = mx._transformCorners(this.getInternalBounds());
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++)
@@ -4557,7 +4552,6 @@ var Shape = Item.extend({
 	}
 },
 new function() {
-
 	function getCornerCenter(that, point, expand) {
 		var radius = that._radius;
 		if (!radius.isZero()) {
@@ -4902,7 +4896,7 @@ var Raster = Item.extend({
 		if (/^data:/.test(src))
 			return src;
 		var canvas = this.getCanvas();
-		return canvas ? canvas.toDataURL() : null;
+		return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
 	},
 
 	drawImage: function(image ) {
@@ -5133,7 +5127,7 @@ var Segment = Base.extend({
 			point, handleIn, handleOut;
 		if (count === 0) {
 		} else if (count === 1) {
-			if (arg0.point) {
+			if ('point' in arg0) {
 				point = arg0.point;
 				handleIn = arg0.handleIn;
 				handleOut = arg0.handleOut;
@@ -5157,8 +5151,9 @@ var Segment = Base.extend({
 	},
 
 	_serialize: function(options) {
-		return Base.serialize(this.isStraight() ? this._point
-				: [this._point, this._handleIn, this._handleOut],
+		return Base.serialize(this.hasHandles()
+				? [this._point, this._handleIn, this._handleOut]
+				: this._point,
 				options, true);
 	},
 
@@ -5209,33 +5204,13 @@ var Segment = Base.extend({
 	},
 
 	hasHandles: function() {
-		return !this.isStraight();
+		return !this._handleIn.isZero() || !this._handleOut.isZero();
 	},
 
-	isStraight: function() {
-		return this._handleIn.isZero() && this._handleOut.isZero();
+	clearHandles: function() {
+		this._handleIn.set(0, 0);
+		this._handleOut.set(0, 0);
 	},
-
-	isLinear: function() {
-		return Segment.isLinear(this, this.getNext());
-	},
-
-	isCollinear: function(segment) {
-		return Segment.isCollinear(this, this.getNext(),
-				segment, segment.getNext());
-	},
-
-	isColinear: '#isCollinear',
-
-	isOrthogonal: function() {
-		return Segment.isOrthogonal(this.getPrevious(), this, this.getNext());
-	},
-
-	isOrthogonalArc: function() {
-		return Segment.isOrthogonalArc(this, this.getNext());
-	},
-
-	isArc: '#isOrthogonalArc',
 
 	_selectionState: 0,
 
@@ -5309,7 +5284,25 @@ var Segment = Base.extend({
 				|| this._path._closed && segments[segments.length - 1]) || null;
 	},
 
+	isFirst: function() {
+		return this._index === 0;
+	},
+
+	isLast: function() {
+		var path = this._path;
+		return path && this._index === path._segments.length - 1 || false;
+	},
+
 	reverse: function() {
+		var handleIn = this._handleIn,
+			handleOut = this._handleOut,
+			inX = handleIn._x,
+			inY = handleIn._y;
+		handleIn.set(handleOut._x, handleOut._y);
+		handleOut.set(inX, inY);
+	},
+
+	reversed: function() {
 		return new Segment(this._point, this._handleOut, this._handleIn);
 	},
 
@@ -5390,46 +5383,6 @@ var Segment = Base.extend({
 			}
 		}
 		return coords;
-	},
-
-   statics: {
-
-		isLinear: function(seg1, seg2) {
-			var l = seg2._point.subtract(seg1._point);
-			return l.isCollinear(seg1._handleOut)
-					&& l.isCollinear(seg2._handleIn);
-		},
-
-		isCollinear: function(seg1, seg2, seg3, seg4) {
-			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
-					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
-					&& seg2._point.subtract(seg1._point).isCollinear(
-						seg4._point.subtract(seg3._point));
-		},
-
-		isOrthogonal: function(seg1, seg2, seg3) {
-			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
-				&& seg2._handleOut.isZero() && seg3._handleIn.isZero()
-				&& seg2._point.subtract(seg1._point).isOrthogonal(
-						seg3._point.subtract(seg2._point));
-		},
-
-		isOrthogonalArc: function(seg1, seg2) {
-			var handle1 = seg1._handleOut,
-				handle2 = seg2._handleIn,
-				kappa = 0.5522847498307936;
-			if (handle1.isOrthogonal(handle2)) {
-				var pt1 = seg1._point,
-					pt2 = seg2._point,
-					corner = new Line(pt1, handle1, true).intersect(
-							new Line(pt2, handle2, true), true);
-				return corner && Numerical.isZero(handle1.getLength() /
-						corner.subtract(pt1).getLength() - kappa)
-					&& Numerical.isZero(handle2.getLength() /
-						corner.subtract(pt2).getLength() - kappa);
-			}
-			return false;
-		},
 	}
 });
 
@@ -5508,40 +5461,86 @@ var Curve = Base.extend({
 	_class: 'Curve',
 
 	initialize: function Curve(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) {
-		var count = arguments.length;
+		var count = arguments.length,
+			seg1, seg2,
+			point1, point2,
+			handle1, handle2;
 		if (count === 3) {
 			this._path = arg0;
-			this._segment1 = arg1;
-			this._segment2 = arg2;
+			seg1 = arg1;
+			seg2 = arg2;
 		} else if (count === 0) {
-			this._segment1 = new Segment();
-			this._segment2 = new Segment();
+			seg1 = new Segment();
+			seg2 = new Segment();
 		} else if (count === 1) {
-			this._segment1 = new Segment(arg0.segment1);
-			this._segment2 = new Segment(arg0.segment2);
-		} else if (count === 2) {
-			this._segment1 = new Segment(arg0);
-			this._segment2 = new Segment(arg1);
-		} else {
-			var point1, handle1, handle2, point2;
-			if (count === 4) {
-				point1 = arg0;
-				handle1 = arg1;
-				handle2 = arg2;
-				point2 = arg3;
-			} else if (count === 8) {
-				point1 = [arg0, arg1];
-				point2 = [arg6, arg7];
-				handle1 = [arg2 - arg0, arg3 - arg1];
-				handle2 = [arg4 - arg6, arg5 - arg7];
+			if ('segment1' in arg0) {
+				seg1 = new Segment(arg0.segment1);
+				seg2 = new Segment(arg0.segment2);
+			} else if ('point1' in arg0) {
+				point1 = arg0.point1;
+				handle1 = arg0.handle1;
+				handle2 = arg0.handle2;
+				point2 = arg0.point2;
+			} else if (Array.isArray(arg0)) {
+				point1 = [arg0[0], arg0[1]];
+				point2 = [arg0[6], arg0[7]];
+				handle1 = [arg0[2] - arg0[0], arg0[3] - arg0[1]];
+				handle2 = [arg0[4] - arg0[6], arg0[5] - arg0[7]];
 			}
-			this._segment1 = new Segment(point1, null, handle1);
-			this._segment2 = new Segment(point2, handle2, null);
+		} else if (count === 2) {
+			seg1 = new Segment(arg0);
+			seg2 = new Segment(arg1);
+		} else if (count === 4) {
+			point1 = arg0;
+			handle1 = arg1;
+			handle2 = arg2;
+			point2 = arg3;
+		} else if (count === 8) {
+			point1 = [arg0, arg1];
+			point2 = [arg6, arg7];
+			handle1 = [arg2 - arg0, arg3 - arg1];
+			handle2 = [arg4 - arg6, arg5 - arg7];
 		}
+		this._segment1 = seg1 || new Segment(point1, null, handle1);
+		this._segment2 = seg2 || new Segment(point2, handle2, null);
+	},
+
+	_serialize: function(options) {
+		return Base.serialize(this.hasHandles()
+				? [this.getPoint1(), this.getHandle1(), this.getHandle2(),
+					this.getPoint2()]
+				: [this.getPoint1(), this.getPoint2()],
+				options, true);
 	},
 
 	_changed: function() {
 		this._length = this._bounds = undefined;
+	},
+
+	clone: function() {
+		return new Curve(this._segment1, this._segment2);
+	},
+
+	toString: function() {
+		var parts = [ 'point1: ' + this._segment1._point ];
+		if (!this._segment1._handleOut.isZero())
+			parts.push('handle1: ' + this._segment1._handleOut);
+		if (!this._segment2._handleIn.isZero())
+			parts.push('handle2: ' + this._segment2._handleIn);
+		parts.push('point2: ' + this._segment2._point);
+		return '{ ' + parts.join(', ') + ' }';
+	},
+
+	remove: function() {
+		var removed = false;
+		if (this._path) {
+			var segment2 = this._segment2,
+				handleOut = segment2._handleOut;
+			removed = segment2.remove();
+			if (removed)
+				this._segment1._handleOut.set(handleOut.x, handleOut.y);
+		}
+		return removed;
 	},
 
 	getPoint1: function() {
@@ -5608,6 +5607,16 @@ var Curve = Base.extend({
 				|| this._path._closed && curves[curves.length - 1]) || null;
 	},
 
+	isFirst: function() {
+		return this._segment1._index === 0;
+	},
+
+	isLast: function() {
+		var path = this._path;
+		return path && this._segment1._index === path._curves.length - 1
+				|| false;
+	},
+
 	isSelected: function() {
 		return this.getPoint1().isSelected()
 				&& this.getHandle2().isSelected()
@@ -5635,16 +5644,17 @@ var Curve = Base.extend({
 	},
 
 	getLength: function() {
-		if (this._length == null) {
-			this._length = this.isLinear()
-				? this._segment2._point.getDistance(this._segment1._point)
-				: Curve.getLength(this.getValues(), 0, 1);
-		}
+		if (this._length == null)
+			this._length = Curve.getLength(this.getValues(), 0, 1);
 		return this._length;
 	},
 
 	getArea: function() {
 		return Curve.getArea(this.getValues());
+	},
+
+	getLine: function() {
+		return new Line(this._segment1._point, this._segment2._point);
 	},
 
 	getPart: function(from, to) {
@@ -5655,27 +5665,10 @@ var Curve = Base.extend({
 		return Curve.getLength(this.getValues(), from, to);
 	},
 
-	hasHandles: function() {
-		return !this._segment1._handleOut.isZero()
-				|| !this._segment2._handleIn.isZero();
-	},
-
-	isLinear: function() {
-		return Segment.isLinear(this._segment1, this._segment2);
-	},
-
-	isCollinear: function(curve) {
-		return Ssegment.isCollinear(this._segment1, this._segment2,
-				curve._segment1, curve._segment2);
-	},
-
-	isOrthogonalArc: function() {
-		return Segment.isOrthogonalArc(this._segment1, this._segment2);
-	},
-
 	getIntersections: function(curve) {
-		return Curve.filterIntersections(Curve.getIntersections(
-				this.getValues(), curve.getValues(), this, curve, []));
+		return Curve._getIntersections(this.getValues(),
+				curve && curve !== this ? curve.getValues() : null,
+				this, curve, [], {});
 	},
 
 	_getParameter: function(offset, isParameter) {
@@ -5688,39 +5681,35 @@ var Curve = Base.extend({
 						: this.getParameterAt(offset, 0);
 	},
 
-	divide: function(offset, isParameter, ignoreLinear) {
+	divide: function(offset, isParameter, _setHandles) {
 		var parameter = this._getParameter(offset, isParameter),
-			tolerance = 0.000001,
+			tMin = 4e-7,
+			tMax = 1 - tMin,
 			res = null;
-		if (parameter > tolerance && parameter < 1 - tolerance) {
+		if (parameter >= tMin && parameter <= tMax) {
 			var parts = Curve.subdivide(this.getValues(), parameter),
-				isLinear = ignoreLinear ? false : this.isLinear(),
 				left = parts[0],
-				right = parts[1];
-
-			if (!isLinear) {
-				this._segment1._handleOut.set(left[2] - left[0],
+				right = parts[1],
+				setHandles = _setHandles || this.hasHandles(),
+				segment1 = this._segment1,
+				segment2 = this._segment2,
+				path = this._path;
+			if (setHandles) {
+				segment1._handleOut.set(left[2] - left[0],
 						left[3] - left[1]);
-				this._segment2._handleIn.set(right[4] - right[6],
+				segment2._handleIn.set(right[4] - right[6],
 						right[5] - right[7]);
 			}
-
 			var x = left[6], y = left[7],
 				segment = new Segment(new Point(x, y),
-						!isLinear && new Point(left[4] - x, left[5] - y),
-						!isLinear && new Point(right[2] - x, right[3] - y));
-
-			if (this._path) {
-				if (this._segment1._index > 0 && this._segment2._index === 0) {
-					this._path.add(segment);
-				} else {
-					this._path.insert(this._segment2._index, segment);
-				}
-				res = this;
+						setHandles && new Point(left[4] - x, left[5] - y),
+						setHandles && new Point(right[2] - x, right[3] - y));
+			if (path) {
+				path.insert(segment1._index + 1, segment);
+				res = this.getNext();
 			} else {
-				var end = this._segment2;
 				this._segment2 = segment;
-				res = new Curve(segment, end);
+				res = new Curve(segment, segment2);
 			}
 		}
 		return res;
@@ -5733,34 +5722,13 @@ var Curve = Base.extend({
 			: null;
 	},
 
-	reverse: function() {
-		return new Curve(this._segment2.reverse(), this._segment1.reverse());
+	reversed: function() {
+		return new Curve(this._segment2.reversed(), this._segment1.reversed());
 	},
 
-	remove: function() {
-		var removed = false;
-		if (this._path) {
-			var segment2 = this._segment2,
-				handleOut = segment2._handleOut;
-			removed = segment2.remove();
-			if (removed)
-				this._segment1._handleOut.set(handleOut.x, handleOut.y);
-		}
-		return removed;
-	},
-
-	clone: function() {
-		return new Curve(this._segment1, this._segment2);
-	},
-
-	toString: function() {
-		var parts = [ 'point1: ' + this._segment1._point ];
-		if (!this._segment1._handleOut.isZero())
-			parts.push('handle1: ' + this._segment1._handleOut);
-		if (!this._segment2._handleIn.isZero())
-			parts.push('handle2: ' + this._segment2._handleIn);
-		parts.push('point2: ' + this._segment2._point);
-		return '{ ' + parts.join(', ') + ' }';
+	clearHandles: function() {
+		this._segment1._handleOut.set(0, 0);
+		this._segment2._handleIn.set(0, 0);
 	},
 
 statics: {
@@ -5811,57 +5779,92 @@ statics: {
 		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 	},
 
-	getParameterOf: function(v, x, y) {
-		var tolerance = 0.000001;
-		if (Math.abs(v[0] - x) < tolerance && Math.abs(v[1] - y) < tolerance)
-			return 0;
-		if (Math.abs(v[6] - x) < tolerance && Math.abs(v[7] - y) < tolerance)
-			return 1;
-		var txs = [],
-			tys = [],
-			sx = Curve.solveCubic(v, 0, x, txs, 0, 1),
-			sy = Curve.solveCubic(v, 1, y, tys, 0, 1),
-			tx, ty;
-		for (var cx = 0;  sx === -1 || cx < sx;) {
-			if (sx === -1 || (tx = txs[cx++]) > 0 && tx < 1) {
-				for (var cy = 0; sy === -1 || cy < sy;) {
-					if (sy === -1 || (ty = tys[cy++]) > 0 && ty < 1) {
-						if (sx === -1) {
-							tx = ty;
-						} else if (sy === -1) {
-							ty = tx;
-						}
-						if (Math.abs(tx - ty) < tolerance)
-							return (tx + ty) * 0.5;
-					}
-				}
-				if (sx === -1)
-					break;
+	getParameterOf: function(v, point) {
+		var p1 = new Point(v[0], v[1]),
+			p2 = new Point(v[6], v[7]),
+			epsilon = 1e-12,
+			t = point.isClose(p1, epsilon) ? 0
+			  : point.isClose(p2, epsilon) ? 1
+			  : null;
+		if (t !== null)
+			return t;
+		var coords = [point.x, point.y],
+			roots = [],
+			geomEpsilon = 2e-7;
+		for (var c = 0; c < 2; c++) {
+			var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
+			for (var i = 0; i < count; i++) {
+				t = roots[i];
+				if (point.isClose(Curve.getPoint(v, t), geomEpsilon))
+					return t;
 			}
 		}
-		return null;
+		return point.isClose(p1, geomEpsilon) ? 0
+			 : point.isClose(p2, geomEpsilon) ? 1
+			 : null;
+	},
+
+	getNearestParameter: function(v, point) {
+		if (Curve.isStraight(v)) {
+			var p1x = v[0], p1y = v[1],
+				p2x = v[6], p2y = v[7],
+				vx = p2x - p1x, vy = p2y - p1y,
+				det = vx * vx + vy * vy;
+			if (det === 0)
+				return 0;
+			var u = ((point.x - p1x) * vx + (point.y - p1y) * vy) / det;
+			return u < 1e-12 ? 0
+				 : u > 0.999999999999 ? 1
+				 : Curve.getParameterOf(v,
+					new Point(p1x + u * vx, p1y + u * vy));
+		}
+
+		var count = 100,
+			minDist = Infinity,
+			minT = 0;
+
+		function refine(t) {
+			if (t >= 0 && t <= 1) {
+				var dist = point.getDistance(Curve.getPoint(v, t), true);
+				if (dist < minDist) {
+					minDist = dist;
+					minT = t;
+					return true;
+				}
+			}
+		}
+
+		for (var i = 0; i <= count; i++)
+			refine(i / count);
+
+		var step = 1 / (count * 2);
+		while (step > 4e-7) {
+			if (!refine(minT - step) && !refine(minT + step))
+				step /= 2;
+		}
+		return minT;
 	},
 
 	getPart: function(v, from, to) {
+		var flip = from > to;
+		if (flip) {
+			var tmp = from;
+			from = to;
+			to = tmp;
+		}
 		if (from > 0)
 			v = Curve.subdivide(v, from)[1];
 		if (to < 1)
 			v = Curve.subdivide(v, (to - from) / (1 - from))[0];
-		return v;
+		return flip
+				? [v[6], v[7], v[4], v[5], v[2], v[3], v[0], v[1]]
+				: v;
 	},
 
 	hasHandles: function(v) {
 		var isZero = Numerical.isZero;
 		return !(isZero(v[0] - v[2]) && isZero(v[1] - v[3])
 				&& isZero(v[4] - v[6]) && isZero(v[5] - v[7]));
-	},
-
-	isLinear: function(v) {
-		var p1x = v[0], p1y = v[1],
-			p2x = v[6], p2y = v[7],
-			l = new Point(p2x - p1x, p2y - p1y);
-		return l.isCollinear(new Point(v[2] - p1x, v[3] - p1y))
-				&& l.isCollinear(new Point(v[4] - p2x, v[5] - p2y));
 	},
 
 	isFlatEnough: function(v, tolerance) {
@@ -5879,21 +5882,14 @@ statics: {
 
 	getArea: function(v) {
 		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7];
-		return (  3.0 * c1y * p1x - 1.5 * c1y * c2x
-				- 1.5 * c1y * p2x - 3.0 * p1y * c1x
-				- 1.5 * p1y * c2x - 0.5 * p1y * p2x
-				+ 1.5 * c2y * p1x + 1.5 * c2y * c1x
-				- 3.0 * c2y * p2x + 0.5 * p2y * p1x
-				+ 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
-	},
-
-	getEdgeSum: function(v) {
-		return	  (v[0] - v[2]) * (v[3] + v[1])
-				+ (v[2] - v[4]) * (v[5] + v[3])
-				+ (v[4] - v[6]) * (v[7] + v[5]);
+			p2x = v[6], p2y = v[7],
+			h1x = (v[2] + p1x) / 2,
+			h1y = (v[3] + p1y) / 2,
+			h2x = (v[4] + v[6]) / 2,
+			h2y = (v[5] + v[7]) / 2;
+		return 6 * ((p1x - h1x) * (h1y + p1y)
+				  + (h1x - h2x) * (h2y + h1y)
+				  + (h2x - p2x) * (p2y + h2y)) / 10;
 	},
 
 	getBounds: function(v) {
@@ -5919,7 +5915,7 @@ statics: {
 			b = 2 * (v0 + v2) - 4 * v1,
 			c = v1 - v0,
 			count = Numerical.solveQuadratic(a, b, c, roots),
-			tMin = 0.000001,
+			tMin = 4e-7,
 			tMax = 1 - tMin;
 		add(v3, 0);
 		for (var i = 0; i < count; i++) {
@@ -5941,14 +5937,72 @@ statics: {
 				this._bounds = {};
 			var bounds = this._bounds[name];
 			if (!bounds) {
-				bounds = this._bounds[name] = Path[name]([this._segment1,
-						this._segment2], false, this._path.getStyle());
+				var path = this._path;
+				bounds = this._bounds[name] = Path[name](
+						[this._segment1, this._segment2], false,
+						path && path.getStyle());
 			}
 			return bounds.clone();
 		};
 	},
 {
 
+}), Base.each({
+	isStraight: function(l, h1, h2) {
+		if (h1.isZero() && h2.isZero()) {
+			return true;
+		} else if (l.isZero()) {
+			return false;
+		} else if (h1.isCollinear(l) && h2.isCollinear(l)) {
+			var div = l.dot(l),
+				p1 = l.dot(h1) / div,
+				p2 = l.dot(h2) / div;
+			return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+		}
+		return false;
+	},
+
+	isLinear: function(l, h1, h2) {
+		var third = l.divide(3);
+		return h1.equals(third) && h2.negate().equals(third);
+	}
+}, function(test, name) {
+	this[name] = function() {
+		var seg1 = this._segment1,
+			seg2 = this._segment2;
+		return test(seg2._point.subtract(seg1._point),
+				seg1._handleOut, seg2._handleIn);
+	};
+
+	this.statics[name] = function(v) {
+		var p1x = v[0], p1y = v[1],
+			p2x = v[6], p2y = v[7];
+		return test(new Point(p2x - p1x, p2y - p1y),
+				new Point(v[2] - p1x, v[3] - p1y),
+				new Point(v[4] - p2x, v[5] - p2y));
+	};
+}, {
+	statics: {},
+
+	hasHandles: function() {
+		return !this._segment1._handleOut.isZero()
+				|| !this._segment2._handleIn.isZero();
+	},
+
+	isCollinear: function(curve) {
+		return curve && this.isStraight() && curve.isStraight()
+				&& this.getLine().isCollinear(curve.getLine());
+	},
+
+	isHorizontal: function() {
+		return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).y)
+				< 1e-7;
+	},
+
+	isVertical: function() {
+		return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).x)
+				< 1e-7;
+	}
 }), {
 	beans: false,
 
@@ -5957,8 +6011,7 @@ statics: {
 	},
 
 	getParameterOf: function() {
-		var point = Point.read(arguments);
-		return Curve.getParameterOf(this.getValues(), point.x, point.y);
+		return Curve.getParameterOf(this.getValues(), Point.read(arguments));
 	},
 
 	getLocationAt: function(offset, isParameter) {
@@ -5981,32 +6034,9 @@ statics: {
 	getNearestLocation: function() {
 		var point = Point.read(arguments),
 			values = this.getValues(),
-			count = 100,
-			minDist = Infinity,
-			minT = 0;
-
-		function refine(t) {
-			if (t >= 0 && t <= 1) {
-				var dist = point.getDistance(Curve.getPoint(values, t), true);
-				if (dist < minDist) {
-					minDist = dist;
-					minT = t;
-					return true;
-				}
-			}
-		}
-
-		for (var i = 0; i <= count; i++)
-			refine(i / count);
-
-		var step = 1 / (count * 2);
-		while (step > 0.000001) {
-			if (!refine(minT - step) && !refine(minT + step))
-				step /= 2;
-		}
-		var pt = Curve.getPoint(values, minT);
-		return new CurveLocation(this, minT, pt, null, null, null,
-				point.getDistance(pt));
+			t = Curve.getNearestParameter(values, point),
+			pt = Curve.getPoint(values, t);
+		return new CurveLocation(this, t, pt, null, point.getDistance(pt));
 	},
 
 	getNearestPoint: function() {
@@ -6064,11 +6094,12 @@ new function() {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
-			tolerance = 0.000001,
+			tMin = 4e-7,
+			tMax = 1 - tMin,
 			x, y;
 
-		if (type === 0 && (t < tolerance || t > 1 - tolerance)) {
-			var isZero = t < tolerance;
+		if (type === 0 && (t < tMin || t > tMax)) {
+			var isZero = t < tMin;
 			x = isZero ? p1x : p2x;
 			y = isZero ? p1y : p2y;
 		} else {
@@ -6083,10 +6114,10 @@ new function() {
 				x = ((ax * t + bx) * t + cx) * t + p1x;
 				y = ((ay * t + by) * t + cy) * t + p1y;
 			} else {
-				if (t < tolerance) {
+				if (t < tMin) {
 					x = cx;
 					y = cy;
-				} else if (t > 1 - tolerance) {
+				} else if (t > tMax) {
 					x = 3 * (p2x - c2x);
 					y = 3 * (p2y - c2y);
 				} else {
@@ -6094,14 +6125,15 @@ new function() {
 					y = (3 * ay * t + 2 * by) * t + cy;
 				}
 				if (normalized) {
-					if (x === 0 && y === 0
-							&& (t < tolerance || t > 1 - tolerance)) {
+					if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
 						x = c2x - c1x;
 						y = c2y - c1y;
 					}
 					var len = Math.sqrt(x * x + y * y);
-					x /= len;
-					y /= len;
+					if (len) {
+						x /= len;
+						y /= len;
+					}
 				}
 				if (type === 3) {
 					var x2 = 6 * ax * t + 2 * bx,
@@ -6115,18 +6147,14 @@ new function() {
 		return type === 2 ? new Point(y, -x) : new Point(x, y);
 	}
 
-	return {
-		statics: true,
+	return { statics: {
 
 		getLength: function(v, a, b) {
 			if (a === undefined)
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			var isZero = Numerical.isZero;
-			if (a === 0 && b === 1
-					&& isZero(v[0] - v[2]) && isZero(v[1] - v[3])
-					&& isZero(v[6] - v[4]) && isZero(v[7] - v[5])) {
+			if (a === 0 && b === 1 && Curve.isStraight(v)) {
 				var dx = v[6] - v[0],
 					dy = v[7] - v[1];
 				return Math.sqrt(dx * dx + dy * dy);
@@ -6140,15 +6168,14 @@ new function() {
 				start = offset < 0 ? 1 : 0
 			if (offset === 0)
 				return start;
-			var tolerance = 0.000001,
-				abs = Math.abs,
+			var abs = Math.abs,
 				forward = offset > 0,
 				a = forward ? start : 0,
 				b = forward ? 1 : start,
 				ds = getLengthIntegrand(v),
 				rangeLength = Numerical.integrate(ds, a, b,
 						getIterations(a, b));
-			if (abs(offset - rangeLength) < tolerance) {
+			if (abs(offset - rangeLength) < 1e-12) {
 				return forward ? b : a;
 			} else if (abs(offset) > rangeLength) {
 				return null;
@@ -6161,8 +6188,8 @@ new function() {
 				start = t;
 				return length - offset;
 			}
-			return Numerical.findRoot(f, ds, start + guess, a, b, 16,
-					tolerance);
+			return Numerical.findRoot(f, ds, start + guess, a, b, 32,
+					1e-12);
 		},
 
 		getPoint: function(v, t) {
@@ -6188,24 +6215,55 @@ new function() {
 		getCurvature: function(v, t) {
 			return evaluate(v, t, 3, false).x;
 		}
-	};
-}, new function() {
-	function addLocation(locations, include, curve1, t1, point1, curve2, t2,
-			point2) {
-		var loc = new CurveLocation(curve1, t1, point1, curve2, t2, point2);
-		if (!include || include(loc))
-			locations.push(loc);
+	}};
+},
+new function() {
+
+	function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
+			overlap) {
+		var startConnected = param.startConnected,
+			endConnected = param.endConnected,
+			tMin = 4e-7,
+			tMax = 1 - tMin;
+		if (t1 == null)
+			t1 = Curve.getParameterOf(v1, p1);
+		if (t1 !== null && t1 >= (startConnected ? tMin : 0) &&
+			t1 <= (endConnected ? tMax : 1)) {
+			if (t2 == null)
+				t2 = Curve.getParameterOf(v2, p2);
+			if (t2 !== null && t2 >= (endConnected ? tMin : 0) &&
+				t2 <= (startConnected ? tMax : 1)) {
+				var renormalize = param.renormalize;
+				if (renormalize) {
+					var res = renormalize(t1, t2);
+					t1 = res[0];
+					t2 = res[1];
+				}
+				var loc1 = new CurveLocation(c1, t1,
+						p1 || Curve.getPoint(v1, t1), overlap),
+					loc2 = new CurveLocation(c2, t2,
+						p2 || Curve.getPoint(v2, t2), overlap),
+					flip = loc1.getPath() === loc2.getPath()
+						&& loc1.getIndex() > loc2.getIndex(),
+					loc = flip ? loc2 : loc1,
+					include = param.include;
+				loc1._intersection = loc2;
+				loc2._intersection = loc1;
+				if (!include || include(loc)) {
+					CurveLocation.insert(locations, loc, true);
+				}
+			}
+		}
 	}
 
-	function addCurveIntersections(v1, v2, curve1, curve2, locations, include,
+	function addCurveIntersections(v1, v2, c1, c2, locations, param,
 			tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
-		if (recursion > 32)
+		if (++recursion >= 24)
 			return;
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
-			tolerance = 0.000001,
 			getSignedDistance = Line.getSignedDistance,
-			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]) || 0,
-			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]) || 0,
+			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
+			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]),
 			factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
 			dMin = factor * Math.min(0, d1, d2),
 			dMax = factor * Math.max(0, d1, d2),
@@ -6213,61 +6271,51 @@ new function() {
 			dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
 			dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
 			dp3 = getSignedDistance(q0x, q0y, q3x, q3y, v1[6], v1[7]),
-			tMinNew, tMaxNew, tDiff;
-		if (q0x === q3x && uMax - uMin < tolerance && recursion > 3) {
-			tMaxNew = tMinNew = (tMax + tMin) / 2;
-			tDiff = 0;
-		} else {
-			var hull = getConvexHull(dp0, dp1, dp2, dp3),
-				top = hull[0],
-				bottom = hull[1],
-				tMinClip, tMaxClip;
-			tMinClip = clipConvexHull(top, bottom, dMin, dMax);
-			top.reverse();
-			bottom.reverse();
-			tMaxClip = clipConvexHull(top, bottom, dMin, dMax);
-			if (tMinClip == null || tMaxClip == null)
-				return;
-			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
-			tDiff = tMaxClip - tMinClip;
-			tMinNew = tMax * tMinClip + tMin * (1 - tMinClip);
-			tMaxNew = tMax * tMaxClip + tMin * (1 - tMaxClip);
-		}
+			hull = getConvexHull(dp0, dp1, dp2, dp3),
+			top = hull[0],
+			bottom = hull[1],
+			tMinClip,
+			tMaxClip;
+		if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
+			(tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
+				dMin, dMax)) == null)
+			return;
+		v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+		var tDiff = tMaxClip - tMinClip,
+			tMinNew = tMin + (tMax - tMin) * tMinClip,
+			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
 		if (oldTDiff > 0.5 && tDiff > 0.5) {
 			if (tMaxNew - tMinNew > uMax - uMin) {
 				var parts = Curve.subdivide(v1, 0.5),
 					t = tMinNew + (tMaxNew - tMinNew) / 2;
 				addCurveIntersections(
-					v2, parts[0], curve2, curve1, locations, include,
-					uMin, uMax, tMinNew, t, tDiff, !reverse, ++recursion);
+					v2, parts[0], c2, c1, locations, param,
+					uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
 				addCurveIntersections(
-					v2, parts[1], curve2, curve1, locations, include,
+					v2, parts[1], c2, c1, locations, param,
 					uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
 			} else {
 				var parts = Curve.subdivide(v2, 0.5),
 					t = uMin + (uMax - uMin) / 2;
 				addCurveIntersections(
-					parts[0], v1, curve2, curve1, locations, include,
-					uMin, t, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
+					parts[0], v1, c2, c1, locations, param,
+					uMin, t, tMinNew, tMaxNew, tDiff, !reverse, recursion);
 				addCurveIntersections(
-					parts[1], v1, curve2, curve1, locations, include,
+					parts[1], v1, c2, c1, locations, param,
 					t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
 			}
-		} else if (Math.max(uMax - uMin, tMaxNew - tMinNew) < tolerance) {
+		} else if (Math.max(uMax - uMin, tMaxNew - tMinNew)
+				< 1e-7) {
 			var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
 				t2 = uMin + (uMax - uMin) / 2;
-			if (reverse) {
-				addLocation(locations, include,
-						curve2, t2, Curve.getPoint(v2, t2),
-						curve1, t1, Curve.getPoint(v1, t1));
-			} else {
-				addLocation(locations, include,
-						curve1, t1, Curve.getPoint(v1, t1),
-						curve2, t2, Curve.getPoint(v2, t2));
-			}
-		} else if (tDiff > 0) {
-			addCurveIntersections(v2, v1, curve2, curve1, locations, include,
-					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, ++recursion);
+			v1 = c1.getValues();
+			v2 = c2.getValues();
+			addLocation(locations, param,
+				reverse ? v2 : v1, reverse ? c2 : c1, reverse ? t2 : t1, null,
+				reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t1 : t2, null);
+		} else if (tDiff > 1e-12) {
+			addCurveIntersections(v2, v1, c2, c1, locations, param,
+					uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
 		}
 	}
 
@@ -6276,32 +6324,21 @@ new function() {
 			p1 = [ 1 / 3, dq1 ],
 			p2 = [ 2 / 3, dq2 ],
 			p3 = [ 1, dq3 ],
-			getSignedDistance = Line.getSignedDistance,
-			dist1 = getSignedDistance(0, dq0, 1, dq3, 1 / 3, dq1),
-			dist2 = getSignedDistance(0, dq0, 1, dq3, 2 / 3, dq2),
-			flip = false,
+			dist1 = dq1 - (2 * dq0 + dq3) / 3,
+			dist2 = dq2 - (dq0 + 2 * dq3) / 3,
 			hull;
 		if (dist1 * dist2 < 0) {
 			hull = [[p0, p1, p3], [p0, p2, p3]];
-			flip = dist1 < 0;
 		} else {
-			var pmax, cross = 0,
-				distZero = dist1 === 0 || dist2 === 0;
-			if (Math.abs(dist1) > Math.abs(dist2)) {
-				pmax = p1;
-				cross = (dq3 - dq2 - (dq3 - dq0) / 3)
-						* (2 * (dq3 - dq2) - dq3 + dq1) / 3;
-			} else {
-				pmax = p2;
-				cross = (dq1 - dq0 + (dq0 - dq3) / 3)
-						* (-2 * (dq0 - dq1) + dq0 - dq2) / 3;
-			}
-			hull = cross < 0 || distZero
-					? [[p0, pmax, p3], [p0, p3]]
-					: [[p0, p1, p2, p3], [p0, p3]];
-			flip = dist1 ? dist1 < 0 : dist2 < 0;
+			var distRatio = dist1 / dist2;
+			hull = [
+				distRatio >= 2 ? [p0, p1, p3]
+				: distRatio <= .5 ? [p0, p2, p3]
+				: [p0, p1, p2, p3],
+				[p0, p3]
+			];
 		}
-		return flip ? hull.reverse() : hull;
+		return (dist1 || dist2) < 0 ? hull.reverse() : hull;
 	}
 
 	function clipConvexHull(hullTop, hullBottom, dMin, dMax) {
@@ -6320,17 +6357,18 @@ new function() {
 		for (var i = 1, l = part.length; i < l; i++) {
 			var qx = part[i][0],
 				qy = part[i][1];
-			if (top ? qy >= threshold : qy <= threshold)
-				return px + (threshold - py) * (qx - px) / (qy - py);
+			if (top ? qy >= threshold : qy <= threshold) {
+				return qy === threshold ? qx
+						: px + (threshold - py) * (qx - px) / (qy - py);
+			}
 			px = qx;
 			py = qy;
 		}
 		return null;
 	}
 
-	function addCurveLineIntersections(v1, v2, curve1, curve2, locations,
-			include) {
-		var flip = Curve.isLinear(v1),
+	function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
+		var flip = Curve.isStraight(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
 			lx1 = vl[0], ly1 = vl[1],
@@ -6340,113 +6378,221 @@ new function() {
 			angle = Math.atan2(-ldy, ldx),
 			sin = Math.sin(angle),
 			cos = Math.cos(angle),
-			rlx2 = ldx * cos - ldy * sin,
-			rvl = [0, 0, 0, 0, rlx2, 0, rlx2, 0],
 			rvc = [];
 		for(var i = 0; i < 8; i += 2) {
 			var x = vc[i] - lx1,
 				y = vc[i + 1] - ly1;
 			rvc.push(
 				x * cos - y * sin,
-				y * cos + x * sin);
+				x * sin + y * cos);
 		}
 		var roots = [],
 			count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
 		for (var i = 0; i < count; i++) {
 			var tc = roots[i],
-				x = Curve.getPoint(rvc, tc).x;
-			if (x >= 0 && x <= rlx2) {
-				var tl = Curve.getParameterOf(rvl, x, 0),
+				pc = Curve.getPoint(vc, tc),
+				tl = Curve.getParameterOf(vl, pc);
+			if (tl !== null) {
+				var pl = Curve.getPoint(vl, tl),
 					t1 = flip ? tl : tc,
 					t2 = flip ? tc : tl;
-				addLocation(locations, include,
-						curve1, t1, Curve.getPoint(v1, t1),
-						curve2, t2, Curve.getPoint(v2, t2));
+				if (!param.endConnected || t2 > Numerical.CURVETIME_EPSILON) {
+					addLocation(locations, param,
+							v1, c1, t1, flip ? pl : pc,
+							v2, c2, t2, flip ? pc : pl);
+				}
 			}
 		}
 	}
 
-	function addLineIntersection(v1, v2, curve1, curve2, locations, include) {
-		var point = Line.intersect(
+	function addLineIntersection(v1, v2, c1, c2, locations, param) {
+		var pt = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
-		if (point) {
-			var x = point.x,
-				y = point.y;
-			addLocation(locations, include,
-					curve1, Curve.getParameterOf(v1, x, y), point,
-					curve2, Curve.getParameterOf(v2, x, y), point);
+		if (pt) {
+			addLocation(locations, param, v1, c1, null, pt, v2, c2, null, pt);
 		}
 	}
 
 	return { statics: {
-		getIntersections: function(v1, v2, c1, c2, locations, include) {
-			var linear1 = Curve.isLinear(v1),
-				linear2 = Curve.isLinear(v2),
-				c1p1 = c1.getPoint1(),
-				c1p2 = c1.getPoint2(),
-				c2p1 = c2.getPoint1(),
-				c2p2 = c2.getPoint2(),
-				tolerance = 0.000001;
-			if (c1p1.isClose(c2p1, tolerance))
-				addLocation(locations, include, c1, 0, c1p1, c2, 0, c1p1);
-			if (c1p1.isClose(c2p2, tolerance))
-				addLocation(locations, include, c1, 0, c1p1, c2, 1, c1p1);
-			(linear1 && linear2
+		_getIntersections: function(v1, v2, c1, c2, locations, param) {
+			if (!v2) {
+				return Curve._getSelfIntersection(v1, c1, locations, param);
+			}
+			var c1p1x = v1[0], c1p1y = v1[1],
+				c1p2x = v1[6], c1p2y = v1[7],
+				c2p1x = v2[0], c2p1y = v2[1],
+				c2p2x = v2[6], c2p2y = v2[7],
+				c1s1x = (3 * v1[2] + c1p1x) / 4,
+				c1s1y = (3 * v1[3] + c1p1y) / 4,
+				c1s2x = (3 * v1[4] + c1p2x) / 4,
+				c1s2y = (3 * v1[5] + c1p2y) / 4,
+				c2s1x = (3 * v2[2] + c2p1x) / 4,
+				c2s1y = (3 * v2[3] + c2p1y) / 4,
+				c2s2x = (3 * v2[4] + c2p2x) / 4,
+				c2s2y = (3 * v2[5] + c2p2y) / 4,
+				min = Math.min,
+				max = Math.max;
+			if (!(	max(c1p1x, c1s1x, c1s2x, c1p2x) >=
+					min(c2p1x, c2s1x, c2s2x, c2p2x) &&
+					min(c1p1x, c1s1x, c1s2x, c1p2x) <=
+					max(c2p1x, c2s1x, c2s2x, c2p2x) &&
+					max(c1p1y, c1s1y, c1s2y, c1p2y) >=
+					min(c2p1y, c2s1y, c2s2y, c2p2y) &&
+					min(c1p1y, c1s1y, c1s2y, c1p2y) <=
+					max(c2p1y, c2s1y, c2s2y, c2p2y)))
+				return locations;
+			if (!param.startConnected && !param.endConnected) {
+				var overlaps = Curve.getOverlaps(v1, v2);
+				if (overlaps) {
+					for (var i = 0; i < 2; i++) {
+						var overlap = overlaps[i];
+						addLocation(locations, param,
+							v1, c1, overlap[0], null,
+							v2, c2, overlap[1], null, true);
+					}
+					return locations;
+				}
+			}
+
+			var straight1 = Curve.isStraight(v1),
+				straight2 = Curve.isStraight(v2),
+				straight = straight1 && straight2,
+				epsilon = 1e-12,
+				before = locations.length;
+			(straight
 				? addLineIntersection
-				: linear1 || linear2
+				: straight1 || straight2
 					? addCurveLineIntersections
 					: addCurveIntersections)(
-						v1, v2, c1, c2, locations, include,
+						v1, v2, c1, c2, locations, param,
 						0, 1, 0, 1, 0, false, 0);
-			if (c1p2.isClose(c2p1, tolerance))
-				addLocation(locations, include, c1, 1, c1p2, c2, 0, c1p2);
-			if (c1p2.isClose(c2p2, tolerance))
-				addLocation(locations, include, c1, 1, c1p2, c2, 1, c1p2);
+			if (straight && locations.length > before)
+				return locations;
+			var c1p1 = new Point(c1p1x, c1p1y),
+				c1p2 = new Point(c1p2x, c1p2y),
+				c2p1 = new Point(c2p1x, c2p1y),
+				c2p2 = new Point(c2p2x, c2p2y);
+			if (c1p1.isClose(c2p1, epsilon))
+				addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c2p1);
+			if (!param.startConnected && c1p1.isClose(c2p2, epsilon))
+				addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c2p2);
+			if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
+				addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c2p1);
+			if (c1p2.isClose(c2p2, epsilon))
+				addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
 			return locations;
 		},
 
-		filterIntersections: function(locations, _expand) {
-			var last = locations.length - 1,
-				tMax = 1 - 0.000001;
-			for (var i = last; i >= 0; i--) {
-				var loc = locations[i],
-					next = loc._curve.getNext(),
-					next2 = loc._curve2.getNext();
-				if (next && loc._parameter >= tMax) {
-					loc._parameter = 0;
-					loc._curve = next;
-				}
-				if (next2 && loc._parameter2 >= tMax) {
-					loc._parameter2 = 0;
-					loc._curve2 = next2;
-				}
+		_getSelfIntersection: function(v1, c1, locations, param) {
+			var p1x = v1[0], p1y = v1[1],
+				h1x = v1[2], h1y = v1[3],
+				h2x = v1[4], h2y = v1[5],
+				p2x = v1[6], p2y = v1[7];
+			var line = new Line(p1x, p1y, p2x, p2y, false),
+				side1 = line.getSide(new Point(h1x, h1y), true),
+				side2 = line.getSide(new Point(h2x, h2y), true);
+			if (side1 === side2) {
+				var edgeSum = (p1x - h2x) * (h1y - p2y)
+							+ (h1x - p2x) * (h2y - p1y);
+				if (edgeSum * side1 > 0)
+					return locations;
 			}
-
-			function compare(loc1, loc2) {
-				var path1 = loc1.getPath(),
-					path2 = loc2.getPath();
-				return path1 === path2
-						? (loc1.getIndex() + loc1.getParameter())
-								- (loc2.getIndex() + loc2.getParameter())
-						: path1._id - path2._id;
-			}
-
-			if (last > 0) {
-				locations.sort(compare);
-				for (var i = last; i > 0; i--) {
-					if (locations[i].equals(locations[i - 1])) {
-						locations.splice(i, 1);
-						last--;
+			var ax = p2x - 3 * h2x + 3 * h1x - p1x,
+				bx = h2x - 2 * h1x + p1x,
+				cx = h1x - p1x,
+				ay = p2y - 3 * h2y + 3 * h1y - p1y,
+				by = h2y - 2 * h1y + p1y,
+				cy = h1y - p1y,
+				ac = ay * cx - ax * cy,
+				ab = ay * bx - ax * by,
+				bc = by * cx - bx * cy;
+			if (ac * ac - 4 * ab * bc < 0) {
+				var roots = [],
+					tSplit,
+					count = Numerical.solveCubic(
+							ax * ax	 + ay * ay,
+							3 * (ax * bx + ay * by),
+							2 * (bx * bx + by * by) + ax * cx + ay * cy,
+							bx * cx + by * cy,
+							roots, 0, 1);
+				if (count > 0) {
+					for (var i = 0, maxCurvature = 0; i < count; i++) {
+						var curvature = Math.abs(
+								c1.getCurvatureAt(roots[i], true));
+						if (curvature > maxCurvature) {
+							maxCurvature = curvature;
+							tSplit = roots[i];
+						}
 					}
+					var parts = Curve.subdivide(v1, tSplit);
+					param.endConnected = true;
+					param.renormalize = function(t1, t2) {
+						return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
+					};
+					Curve._getIntersections(parts[0], parts[1], c1, c1,
+							locations, param);
 				}
-			}
-			if (_expand) {
-				for (var i = last; i >= 0; i--)
-					locations.push(locations[i].getIntersection());
-				locations.sort(compare);
 			}
 			return locations;
+		},
+
+		getOverlaps: function(v1, v2) {
+			var abs = Math.abs,
+				timeEpsilon = 4e-7,
+				geomEpsilon = 2e-7,
+				straight1 = Curve.isStraight(v1),
+				straight2 = Curve.isStraight(v2),
+				straight =	straight1 && straight2;
+
+			function getLineLengthSquared(v) {
+				var x = v[6] - v[0],
+					y = v[7] - v[1];
+				return x * x + y * y;
+			}
+
+			if (straight) {
+				var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
+					l1 = flip ? v2 : v1,
+					l2 = flip ? v1 : v2,
+					line = new Line(l1[0], l1[1], l1[6], l1[7]);
+				if (line.getDistance(new Point(l2[0], l2[1])) > geomEpsilon ||
+					line.getDistance(new Point(l2[6], l2[7])) > geomEpsilon)
+					return null;
+			} else if (straight1 ^ straight2) {
+				return null;
+			}
+
+			var v = [v1, v2],
+				pairs = [];
+			for (var i = 0, t1 = 0;
+					i < 2 && pairs.length < 2;
+					i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
+				var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
+						v[i][t1 === 0 ? 0 : 6],
+						v[i][t1 === 0 ? 1 : 7]));
+				if (t2 != null) {
+					var pair = i === 0 ? [t1, t2] : [t2, t1];
+					if (pairs.length === 0 ||
+						abs(pair[0] - pairs[0][0]) > timeEpsilon &&
+						abs(pair[1] - pairs[0][1]) > timeEpsilon)
+						pairs.push(pair);
+				}
+				if (i === 1 && pairs.length === 0)
+					break;
+			}
+			if (pairs.length !== 2) {
+				pairs = null;
+			} else if (!straight) {
+				var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
+					o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+				if (abs(o2[2] - o1[2]) > geomEpsilon ||
+					abs(o2[3] - o1[3]) > geomEpsilon ||
+					abs(o2[4] - o1[4]) > geomEpsilon ||
+					abs(o2[5] - o1[5]) > geomEpsilon)
+					pairs = null;
+			}
+			return pairs;
 		}
 	}};
 });
@@ -6455,58 +6601,82 @@ var CurveLocation = Base.extend({
 	_class: 'CurveLocation',
 	beans: true,
 
-	initialize: function CurveLocation(curve, parameter, point, _curve2,
-			_parameter2, _point2, _distance) {
+	initialize: function CurveLocation(curve, parameter, point,
+			_overlap, _distance) {
+		if (parameter > 0.9999996) {
+			var next = curve.getNext();
+			if (next) {
+				parameter = 0;
+				curve = next;
+			}
+		}
 		this._id = UID.get(CurveLocation);
+		this._setCurve(curve);
+		this._parameter = parameter;
+		this._point = point || curve.getPointAt(parameter, true);
+		this._overlap = _overlap;
+		this._distance = _distance;
+		this._intersection = this._next = this._prev = null;
+	},
+
+	_setCurve: function(curve) {
 		var path = curve._path;
 		this._version = path ? path._version : 0;
 		this._curve = curve;
-		this._parameter = parameter;
-		this._point = point || curve.getPointAt(parameter, true);
-		this._curve2 = _curve2;
-		this._parameter2 = _parameter2;
-		this._point2 = _point2;
-		this._distance = _distance;
+		this._segment = null;
 		this._segment1 = curve._segment1;
 		this._segment2 = curve._segment2;
 	},
 
-	getSegment: function(_preferFirst) {
-		if (!this._segment) {
-			var curve = this.getCurve(),
-				parameter = this.getParameter();
-			if (parameter === 1) {
-				this._segment = curve._segment2;
-			} else if (parameter === 0 || _preferFirst) {
-				this._segment = curve._segment1;
-			} else if (parameter == null) {
-				return null;
-			} else {
-				this._segment = curve.getPartLength(0, parameter)
+	_setSegment: function(segment) {
+		this._setCurve(segment.getCurve());
+		this._segment = segment;
+		this._parameter = segment === this._segment1 ? 0 : 1;
+		this._point = segment._point.clone();
+	},
+
+	getSegment: function() {
+		var curve = this.getCurve(),
+			segment = this._segment;
+		if (!segment) {
+			var parameter = this.getParameter();
+			if (parameter === 0) {
+				segment = curve._segment1;
+			} else if (parameter === 1) {
+				segment = curve._segment2;
+			} else if (parameter != null) {
+				segment = curve.getPartLength(0, parameter)
 					< curve.getPartLength(parameter, 1)
 						? curve._segment1
 						: curve._segment2;
 			}
+			this._segment = segment;
 		}
-		return this._segment;
+		return segment;
 	},
 
 	getCurve: function() {
 		var curve = this._curve,
-			path = curve && curve._path;
+			path = curve && curve._path,
+			that = this;
 		if (path && path._version !== this._version) {
-			curve = null;
-			this._parameter = null;
+			curve = this._parameter = this._curve = this._offset = null;
 		}
-		if (!curve) {
-			curve = this._segment1.getCurve();
-			if (curve.getParameterOf(this._point) == null)
-				curve = this._segment2.getPrevious().getCurve();
-			this._curve = curve;
-			path = curve._path;
-			this._version = path ? path._version : 0;
+
+		function trySegment(segment) {
+			var curve = segment && segment.getCurve();
+			if (curve && (that._parameter = curve.getParameterOf(that._point))
+					!= null) {
+				that._setCurve(curve);
+				that._segment = segment;
+				return curve;
+			}
 		}
-		return curve;
+
+		return curve
+			|| trySegment(this._segment)
+			|| trySegment(this._segment1)
+			|| trySegment(this._segment2.getPrevious());
 	},
 
 	getPath: function() {
@@ -6532,8 +6702,19 @@ var CurveLocation = Base.extend({
 	},
 
 	getOffset: function() {
-		var path = this.getPath();
-		return path ? path._getOffset(this) : this.getCurveOffset();
+		var offset = this._offset;
+		if (offset == null) {
+			offset = 0;
+			var path = this.getPath(),
+				index = this.getIndex();
+			if (path && index != null) {
+				var curves = path.getCurves();
+				for (var i = 0; i < index; i++)
+					offset += curves[i].getLength();
+			}
+			this._offset = offset += this.getCurveOffset();
+		}
+		return offset;
 	},
 
 	getCurveOffset: function() {
@@ -6543,13 +6724,7 @@ var CurveLocation = Base.extend({
 	},
 
 	getIntersection: function() {
-		var intersection = this._intersection;
-		if (!intersection && this._curve2) {
-			this._intersection = intersection = new CurveLocation(this._curve2,
-					this._parameter2, this._point2 || this._point, this);
-			intersection._intersection = this;
-		}
-		return intersection;
+		return this._intersection;
 	},
 
 	getDistance: function() {
@@ -6557,25 +6732,44 @@ var CurveLocation = Base.extend({
 	},
 
 	divide: function() {
-		var curve = this.getCurve();
-		return curve && curve.divide(this.getParameter(), true);
+		var curve = this.getCurve(),
+			res = null;
+		if (curve) {
+			res = curve.divide(this.getParameter(), true);
+			if (res)
+				this._setSegment(res._segment1);
+		}
+		return res;
 	},
 
 	split: function() {
 		var curve = this.getCurve();
-		return curve && curve.split(this.getParameter(), true);
+		return curve ? curve.split(this.getParameter(), true) : null;
 	},
 
-	equals: function(loc) {
-		var abs = Math.abs,
-			tolerance = 0.000001;
-		return this === loc
-				|| loc instanceof CurveLocation
-					&& this.getCurve() === loc.getCurve()
-					&& abs(this.getParameter() - loc.getParameter()) < tolerance
-					&& this._curve2 === loc._curve2
-					&& abs(this._parameter2 - loc._parameter2) < tolerance
-				|| false;
+	equals: function(loc, _ignoreOther) {
+		var res = this === loc,
+			epsilon = 2e-7;
+		if (!res && loc instanceof CurveLocation
+				&& this.getPath() === loc.getPath()
+				&& this.getPoint().isClose(loc.getPoint(), epsilon)) {
+			var c1 = this.getCurve(),
+				c2 = loc.getCurve(),
+				abs = Math.abs,
+				diff = abs(
+					((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
+							+ this.getParameter()) -
+					((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
+							+ loc.getParameter()));
+			res = (diff < 4e-7
+				|| ((diff = abs(this.getOffset() - loc.getOffset())) < epsilon
+					|| abs(this.getPath().getLength() - diff) < epsilon))
+				&& (_ignoreOther
+					|| (!this._intersection && !loc._intersection
+						|| this._intersection && this._intersection.equals(
+								loc._intersection, true)));
+		}
+		return res;
 	},
 
 	toString: function() {
@@ -6593,17 +6787,123 @@ var CurveLocation = Base.extend({
 		if (this._distance != null)
 			parts.push('distance: ' + f.number(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
+	},
+
+	isTouching: function() {
+		var inter = this._intersection;
+		if (inter && this.getTangent().isCollinear(inter.getTangent())) {
+			var curve1 = this.getCurve(),
+				curve2 = inter.getCurve();
+			return !(curve1.isStraight() && curve2.isStraight()
+					&& curve1.getLine().intersect(curve2.getLine()));
+		}
+		return false;
+	},
+
+	isCrossing: function() {
+		var inter = this._intersection;
+		if (!inter)
+			return false;
+		var t1 = this.getParameter(),
+			t2 = inter.getParameter(),
+			tMin = 4e-7,
+			tMax = 1 - tMin;
+		if (t1 >= tMin && t1 <= tMax || t2 >= tMin && t2 <= tMax)
+			return !this.isTouching();
+		var c2 = this.getCurve(),
+			c1 = c2.getPrevious(),
+			c4 = inter.getCurve(),
+			c3 = c4.getPrevious(),
+			PI = Math.PI;
+		if (!c1 || !c3)
+			return false;
+
+		function isInRange(angle, min, max) {
+			return min < max
+				? angle > min && angle < max
+				: angle > min && angle <= PI || angle >= -PI && angle < max;
+		}
+
+		var a1 = c1.getTangentAt(tMax, true).negate().getAngleInRadians(),
+			a2 = c2.getTangentAt(tMin, true).getAngleInRadians(),
+			a3 = c3.getTangentAt(tMax, true).negate().getAngleInRadians(),
+			a4 = c4.getTangentAt(tMin, true).getAngleInRadians();
+
+		return (isInRange(a3, a1, a2) ^ isInRange(a4, a1, a2))
+			&& (isInRange(a3, a2, a1) ^ isInRange(a4, a2, a1));
+	},
+
+	isOverlap: function() {
+		return !!this._overlap;
 	}
 }, Base.each(Curve.evaluateMethods, function(name) {
-	if (name !== 'getPoint') {
-		var get = name + 'At';
-		this[name] = function() {
-			var parameter = this.getParameter(),
-				curve = this.getCurve();
-			return parameter != null && curve && curve[get](parameter, true);
-		};
+	var get = name + 'At';
+	this[name] = function() {
+		var parameter = this.getParameter(),
+			curve = this.getCurve();
+		return parameter != null && curve && curve[get](parameter, true);
+	};
+}, {
+	preserve: true
+}),
+new function() {
+
+	function insert(locations, loc, merge) {
+		var length = locations.length,
+			l = 0,
+			r = length - 1;
+
+		function search(index, dir) {
+			for (var i = index + dir; i >= -1 && i <= length; i += dir) {
+				var loc2 = locations[((i % length) + length) % length];
+				if (!loc.getPoint().isClose(loc2.getPoint(),
+						2e-7))
+					break;
+				if (loc.equals(loc2))
+					return loc2;
+			}
+			return null;
+		}
+
+		while (l <= r) {
+			var m = (l + r) >>> 1,
+				loc2 = locations[m],
+				found;
+			if (merge && (found = loc.equals(loc2) ? loc2
+					: (search(m, -1) || search(m, 1)))) {
+				if (loc._overlap) {
+					found._overlap = found._intersection._overlap = true;
+				}
+				return found;
+			}
+		var path1 = loc.getPath(),
+			path2 = loc2.getPath(),
+			diff = path1 === path2
+				? (loc.getIndex() + loc.getParameter())
+				- (loc2.getIndex() + loc2.getParameter())
+				: path1._id - path2._id;
+			if (diff < 0) {
+				r = m - 1;
+			} else {
+				l = m + 1;
+			}
+		}
+		locations.splice(l, 0, loc);
+		return loc;
 	}
-}, {}));
+
+	return { statics: {
+		insert: insert,
+
+		expand: function(locations) {
+			var expanded = locations.slice();
+			for (var i = 0, l = locations.length; i < l; i++) {
+				insert(expanded, locations[i]._intersection, false);
+			}
+			return expanded;
+		}
+	}};
+});
 
 var PathItem = Item.extend({
 	_class: 'PathItem',
@@ -6611,60 +6911,64 @@ var PathItem = Item.extend({
 	initialize: function PathItem() {
 	},
 
-	getIntersections: function(path, _matrix, _expand) {
-		if (this === path)
-			path = null;
-		var locations = [],
-			curves1 = this.getCurves(),
-			curves2 = path ? path.getCurves() : curves1,
+	getIntersections: function(path, include, _matrix, _returnFirst) {
+		var self = this === path || !path,
 			matrix1 = this._matrix.orNullIfIdentity(),
-			matrix2 = path ? (_matrix || path._matrix).orNullIfIdentity()
-				: matrix1,
-			length1 = curves1.length,
-			length2 = path ? curves2.length : length1,
-			values2 = [],
-			tMin = 0.000001,
-			tMax = 1 - tMin;
-		if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
+			matrix2 = self ? matrix1
+				: (_matrix || path._matrix).orNullIfIdentity();
+		if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
 			return [];
+		var curves1 = this.getCurves(),
+			curves2 = self ? curves1 : path.getCurves(),
+			length1 = curves1.length,
+			length2 = self ? length1 : curves2.length,
+			values2 = [],
+			arrays = [],
+			locations,
+			path;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {
 			var curve1 = curves1[i],
-				values1 = path ? curve1.getValues(matrix1) : values2[i];
-			if (!path) {
-				var seg1 = curve1.getSegment1(),
-					seg2 = curve1.getSegment2(),
-					h1 = seg1._handleOut,
-					h2 = seg2._handleIn;
-				if (new Line(seg1._point.subtract(h1), h1.multiply(2), true)
-						.intersect(new Line(seg2._point.subtract(h2),
-						h2.multiply(2), true), false)) {
-					var parts = Curve.subdivide(values1);
-					Curve.getIntersections(
-						parts[0], parts[1], curve1, curve1, locations,
-						function(loc) {
-							if (loc._parameter <= tMax) {
-								loc._parameter /= 2;
-								loc._parameter2 = 0.5 + loc._parameter2 / 2;
-								return true;
-							}
-						}
-					);
-				}
+				values1 = self ? values2[i] : curve1.getValues(matrix1),
+				path1 = curve1.getPath();
+			if (path1 !== path) {
+				path = path1;
+				locations = [];
+				arrays.push(locations);
 			}
-			for (var j = path ? 0 : i + 1; j < length2; j++) {
-				Curve.getIntersections(
-					values1, values2[j], curve1, curves2[j], locations,
-					!path && (j === i + 1 || j === length2 - 1 && i === 0)
-						&& function(loc) {
-							var t = loc._parameter;
-							return t >= tMin && t <= tMax;
-						}
+			if (self) {
+				Curve._getSelfIntersection(values1, curve1, locations, {
+					include: include,
+					startConnected: length1 === 1 &&
+							curve1.getPoint1().equals(curve1.getPoint2())
+				});
+			}
+			for (var j = self ? i + 1 : 0; j < length2; j++) {
+				if (_returnFirst && locations.length)
+					return locations;
+				var curve2 = curves2[j];
+				Curve._getIntersections(
+					values1, values2[j], curve1, curve2, locations,
+					{
+						include: include,
+						startConnected: self && curve1.getPrevious() === curve2,
+						endConnected: self && curve1.getNext() === curve2
+					}
 				);
 			}
 		}
-		return Curve.filterIntersections(locations, _expand);
+		locations = [];
+		for (var i = 0, l = arrays.length; i < l; i++) {
+			locations.push.apply(locations, arrays[i]);
+		}
+		return locations;
+	},
+
+	getCrossings: function(path) {
+		return this.getIntersections(path, function(inter) {
+			return inter.isCrossing();
+		});
 	},
 
 	_asPathItem: function() {
@@ -6840,14 +7144,14 @@ var Path = PathItem.extend({
 			var parent = this._parent;
 			if (parent)
 				parent._currentPath = undefined;
-			this._length = this._clockwise = undefined;
+			this._length = this._area = this._clockwise = this._monoCurves =
+					undefined;
 			if (flags & 16) {
 				this._version++;
 			} else if (this._curves) {
 			   for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed();
 			}
-			this._monoCurves = undefined;
 		} else if (flags & 32) {
 			this._bounds = undefined;
 		}
@@ -6977,24 +7281,6 @@ var Path = PathItem.extend({
 		return this._segments.length === 0;
 	},
 
-	isLinear: function() {
-		var segments = this._segments;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			if (!segments[i].isLinear())
-				return false;
-		}
-		return true;
-	},
-
-	hasHandles: function() {
-		var segments = this._segments;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			if (segments[i].hasHandles())
-				return true;
-		}
-		return false;
-	},
-
 	_transformContent: function(matrix) {
 		var coords = new Array(6);
 		for (var i = 0, l = this._segments.length; i < l; i++)
@@ -7024,12 +7310,11 @@ var Path = PathItem.extend({
 			for (var i = index + amount, l = segments.length; i < l; i++)
 				segments[i]._index = i;
 		}
-		if (curves || segs._curves) {
-			if (!curves)
-				curves = this._curves = [];
-			var from = index > 0 ? index - 1 : index,
+		if (curves) {
+			var total = this._countCurves(),
+				from = index + amount - 1 === total ? index - 1 : index,
 				start = from,
-				to = Math.min(from + amount, this._countCurves());
+				to = Math.min(from + amount, total);
 			if (segs._curves) {
 				curves.splice.apply(curves, [from, 0].concat(segs._curves));
 				start += segs._curves.length;
@@ -7134,22 +7419,57 @@ var Path = PathItem.extend({
 
 	clear: '#removeSegments',
 
+	hasHandles: function() {
+		var segments = this._segments;
+		for (var i = 0, l = segments.length; i < l; i++) {
+			if (segments[i].hasHandles())
+				return true;
+		}
+		return false;
+	},
+
+	clearHandles: function() {
+		var segments = this._segments;
+		for (var i = 0, l = segments.length; i < l; i++)
+			segments[i].clearHandles();
+	},
+
 	getLength: function() {
 		if (this._length == null) {
-			var curves = this.getCurves();
-			this._length = 0;
+			var curves = this.getCurves(),
+				length = 0;
 			for (var i = 0, l = curves.length; i < l; i++)
-				this._length += curves[i].getLength();
+				length += curves[i].getLength();
+			this._length = length;
 		}
 		return this._length;
 	},
 
 	getArea: function() {
-		var curves = this.getCurves();
-		var area = 0;
-		for (var i = 0, l = curves.length; i < l; i++)
-			area += curves[i].getArea();
-		return area;
+		if (this._area == null) {
+			var segments = this._segments,
+				count = segments.length,
+				last = count - 1,
+				area = 0;
+			for (var i = 0, l = this._closed ? count : last; i < l; i++) {
+				area += Curve.getArea(Curve.getValues(
+						segments[i], segments[i < last ? i + 1 : 0]));
+			}
+			this._area = area;
+		}
+		return this._area;
+	},
+
+	isClockwise: function() {
+		if (this._clockwise !== undefined)
+			return this._clockwise;
+		return this.getArea() >= 0;
+	},
+
+	setClockwise: function(clockwise) {
+		if (this.isClockwise() != (clockwise = !!clockwise))
+			this.reverse();
+		this._clockwise = clockwise;
 	},
 
 	isFullySelected: function() {
@@ -7203,7 +7523,8 @@ var Path = PathItem.extend({
 		var curves = this.getCurves();
 		for (var i = curves.length - 1; i >= 0; i--) {
 			var curve = curves[i];
-			if (curve.isLinear() && curve.getLength() === 0)
+			if (!curve.hasHandles() && (curve.getLength() === 0
+					|| curve.isCollinear(curve.getNext())))
 				curve.remove();
 		}
 		return this;
@@ -7228,14 +7549,15 @@ var Path = PathItem.extend({
 			index = arg.index;
 			parameter = arg.parameter;
 		}
-		var tolerance = 0.000001;
-		if (parameter >= 1 - tolerance) {
+		var tMin = 4e-7,
+			tMax = 1 - tMin;
+		if (parameter >= tMax) {
 			index++;
 			parameter--;
 		}
 		var curves = this.getCurves();
 		if (index >= 0 && index < curves.length) {
-			if (parameter > tolerance) {
+			if (parameter >= tMin) {
 				curves[index++].divide(parameter, true);
 			}
 			var segs = this.removeSegments(index, this._segments.length, true),
@@ -7244,25 +7566,15 @@ var Path = PathItem.extend({
 				this.setClosed(false);
 				path = this;
 			} else {
-				path = this._clone(new Path().insertAbove(this, true));
+				path = new Path(Item.NO_INSERT);
+				path.insertAbove(this, true);
+				this._clone(path);
 			}
 			path._add(segs, 0);
 			this.addSegment(segs[0]);
 			return path;
 		}
 		return null;
-	},
-
-	isClockwise: function() {
-		if (this._clockwise !== undefined)
-			return this._clockwise;
-		return Path.isClockwise(this._segments);
-	},
-
-	setClockwise: function(clockwise) {
-		if (this.isClockwise() != (clockwise = !!clockwise))
-			this.reverse();
-		this._clockwise = clockwise;
 	},
 
 	reverse: function() {
@@ -7305,7 +7617,7 @@ var Path = PathItem.extend({
 					this._add(segments.slice());
 				}
 			}
-			if (path.closed)
+			if (path._closed)
 				this._add([segments[0]]);
 			path.remove();
 		}
@@ -7330,15 +7642,43 @@ var Path = PathItem.extend({
 			topCenter;
 
 		function isCollinear(i, j) {
-			return segments[i].isCollinear(segments[j]);
+			var seg1 = segments[i],
+				seg2 = seg1.getNext(),
+				seg3 = segments[j],
+				seg4 = seg3.getNext();
+			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+					&& seg3._handleOut.isZero() && seg4._handleIn.isZero()
+					&& seg2._point.subtract(seg1._point).isCollinear(
+						seg4._point.subtract(seg3._point));
 		}
 
 		function isOrthogonal(i) {
-			return segments[i].isOrthogonal();
+			var seg2 = segments[i],
+				seg1 = seg2.getPrevious(),
+				seg3 = seg2.getNext();
+			return seg1._handleOut.isZero() && seg2._handleIn.isZero()
+					&& seg2._handleOut.isZero() && seg3._handleIn.isZero()
+					&& seg2._point.subtract(seg1._point).isOrthogonal(
+						seg3._point.subtract(seg2._point));
 		}
 
 		function isArc(i) {
-			return segments[i].isOrthogonalArc();
+			var seg1 = segments[i],
+				seg2 = seg1.getNext(),
+				handle1 = seg1._handleOut,
+				handle2 = seg2._handleIn,
+				kappa = 0.5522847498307936;
+			if (handle1.isOrthogonal(handle2)) {
+				var pt1 = seg1._point,
+					pt2 = seg2._point,
+					corner = new Line(pt1, handle1, true).intersect(
+							new Line(pt2, handle2, true), true);
+				return corner && Numerical.isZero(handle1.getLength() /
+						corner.subtract(pt1).getLength() - kappa)
+					&& Numerical.isZero(handle2.getLength() /
+						corner.subtract(pt2).getLength() - kappa);
+			}
+			return false;
 		}
 
 		function getDistance(i, j) {
@@ -7515,22 +7855,6 @@ var Path = PathItem.extend({
 {
 	beans: false,
 
-	_getOffset: function(location) {
-		var index = location && location.getIndex();
-		if (index != null) {
-			var curves = this.getCurves(),
-				offset = 0;
-			for (var i = 0; i < index; i++)
-				offset += curves[i].getLength();
-			var curve = curves[index],
-				parameter = location.getParameter();
-			if (parameter > 0)
-				offset += curve.getPartLength(0, parameter);
-			return offset;
-		}
-		return null;
-	},
-
 	getLocationOf: function() {
 		var point = Point.read(arguments),
 			curves = this.getCurves();
@@ -7563,7 +7887,7 @@ var Path = PathItem.extend({
 				return curve.getLocationAt(offset - start);
 			}
 		}
-		if (offset <= this.getLength())
+		if (curves.length > 0 && offset <= this.getLength())
 			return new CurveLocation(curves[curves.length - 1], 1);
 		return null;
 	},
@@ -7586,7 +7910,8 @@ var Path = PathItem.extend({
 	getNearestPoint: function() {
 		return this.getNearestLocation.apply(this, arguments).getPoint();
 	}
-}), new function() {
+}),
+new function() {
 
 	function drawHandles(ctx, segments, matrix, size) {
 		var half = size / 2;
@@ -7750,8 +8075,8 @@ var Path = PathItem.extend({
 			drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
 		}
 	};
-}, new function() {
-
+},
+new function() {
 	function getFirstControlPoints(rhs) {
 		var n = rhs.length,
 			x = [],
@@ -7843,7 +8168,8 @@ var Path = PathItem.extend({
 			}
 		}
 	};
-}, new function() {
+},
+new function() {
 	function getCurrentSegment(that) {
 		var segments = that._segments;
 		if (segments.length === 0)
@@ -7929,7 +8255,6 @@ var Path = PathItem.extend({
 					x = pt.x,
 					y = pt.y,
 					abs = Math.abs,
-					epsilon = 1e-12,
 					rx = abs(radius.width),
 					ry = abs(radius.height),
 					rxSq = rx * rx,
@@ -7945,7 +8270,7 @@ var Path = PathItem.extend({
 				}
 				factor = (rxSq * rySq - rxSq * ySq - rySq * xSq) /
 						(rxSq * ySq + rySq * xSq);
-				if (abs(factor) < epsilon)
+				if (abs(factor) < 1e-12)
 					factor = 0;
 				if (factor < 0)
 					throw new Error(
@@ -8075,14 +8400,6 @@ var Path = PathItem.extend({
 	},
 
 statics: {
-	isClockwise: function(segments) {
-		var sum = 0;
-		for (var i = 0, l = segments.length; i < l; i++)
-			sum += Curve.getEdgeSum(Curve.getValues(
-					segments[i], segments[i + 1 < l ? i + 1 : 0]));
-		return sum > 0;
-	},
-
 	getBounds: function(segments, closed, style, matrix, strokePadding) {
 		var first = segments[0];
 		if (!first)
@@ -8427,6 +8744,13 @@ var CompoundPath = PathItem.extend({
 	},
 
 	insertChildren: function insertChildren(index, items, _preserve) {
+		for (var i = items.length - 1; i >= 0; i--) {
+			var item = items[i];
+			if (item instanceof CompoundPath) {
+				items.splice.apply(items, [i, 1].concat(item.removeChildren()));
+				item.remove();
+			}
+		}
 		items = insertChildren.base.call(this, index, items, _preserve, Path);
 		for (var i = 0, l = !_preserve && items && items.length; i < l; i++) {
 			var item = items[i];
@@ -8448,15 +8772,20 @@ var CompoundPath = PathItem.extend({
 	},
 
 	reduce: function reduce() {
-		if (this._children.length === 0) {
+		var children = this._children;
+		for (var i = children.length - 1; i >= 0; i--) {
+			var path = children[i].reduce();
+			if (path.isEmpty())
+				children.splice(i, 1);
+		}
+		if (children.length === 0) {
 			var path = new Path(Item.NO_INSERT);
 			path.insertAbove(this);
 			path.setStyle(this._style);
 			this.remove();
 			return path;
-		} else {
-			return reduce.base.call(this);
 		}
+		return reduce.base.call(this);
 	},
 
 	isClockwise: function() {
@@ -8514,7 +8843,7 @@ var CompoundPath = PathItem.extend({
 			var child = children[i],
 				mx = child._matrix;
 			paths.push(child.getPathData(_matrix && !mx.isIdentity()
-					? _matrix.chain(mx) : mx, _precision));
+					? _matrix.chain(mx) : _matrix, _precision));
 		}
 		return paths.join(' ');
 	}
@@ -8562,7 +8891,8 @@ var CompoundPath = PathItem.extend({
 						: matrix.chain(mx));
 		}
 	}
-}, new function() {
+},
+new function() {
 	function getCurrentPath(that, check) {
 		var children = that._children;
 		if (check && children.length === 0)
@@ -8573,7 +8903,8 @@ var CompoundPath = PathItem.extend({
 	var fields = {
 		moveTo: function() {
 			var current = getCurrentPath(this),
-				path = current && current.isEmpty() ? current : new Path();
+				path = current && current.isEmpty() ? current
+						: new Path(Item.NO_INSERT);
 			if (path !== current)
 				this.addChild(path);
 			path.moveTo.apply(path, arguments);
@@ -8623,24 +8954,40 @@ PathItem.inject(new function() {
 		}
 	};
 
-	function computeBoolean(path1, path2, operation) {
-		var operator = operators[operation];
-		function preparePath(path) {
-			return path.clone(false).reduce().reorient().transform(null, true,
-					true);
-		}
+	function preparePath(path, resolve) {
+		var res = path.clone(false).reduce().transform(null, true, true);
+		return resolve ? res.resolveCrossings().reorient() : res;
+	}
 
-		var _path1 = preparePath(path1),
-			_path2 = path2 && path1 !== path2 && preparePath(path2);
+	function finishBoolean(ctor, paths, path1, path2, reduce) {
+		var result = new ctor(Item.NO_INSERT);
+		result.addChildren(paths, true);
+		if (reduce)
+			result = result.reduce();
+		result.insertAbove(path2 && path1.isSibling(path2)
+				&& path1.getIndex() < path2.getIndex()
+					? path2 : path1);
+		result.setStyle(path1._style);
+		return result;
+	}
+
+	function computeBoolean(path1, path2, operation) {
+		if (!path1._children && !path1._closed)
+			return computeOpenBoolean(path1, path2, operation);
+		var _path1 = preparePath(path1, true),
+			_path2 = path2 && path1 !== path2 && preparePath(path2, true);
 		if (_path2 && /^(subtract|exclude)$/.test(operation)
 				^ (_path2.isClockwise() !== _path1.isClockwise()))
 			_path2.reverse();
-		splitPath(_path1.getIntersections(_path2, null, true));
+		var intersections = CurveLocation.expand(
+			_path1.getIntersections(_path2, function(inter) {
+				return _path2 && inter.isOverlap() || inter.isCrossing();
+			})
+		);
+		divideLocations(intersections);
 
-		var chain = [],
-			segments = [],
-			monoCurves = [],
-			tolerance = 0.000001;
+		var segments = [],
+			monoCurves = [];
 
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
@@ -8653,114 +9000,121 @@ PathItem.inject(new function() {
 		collect(_path1._children || [_path1]);
 		if (_path2)
 			collect(_path2._children || [_path2]);
-		segments.sort(function(a, b) {
-			var _a = a._intersection,
-				_b = b._intersection;
-			return !_a && !_b || _a && _b ? 0 : _a ? -1 : 1;
-		});
+		for (var i = 0, l = intersections.length; i < l; i++) {
+			propagateWinding(intersections[i]._segment, _path1, _path2,
+					monoCurves, operation);
+		}
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
-			if (segment._winding != null)
-				continue;
-			chain.length = 0;
-			var startSeg = segment,
-				totalLength = 0,
-				windingSum = 0;
-			do {
-				var length = segment.getCurve().getLength();
-				chain.push({ segment: segment, length: length });
-				totalLength += length;
-				segment = segment.getNext();
-			} while (segment && !segment._intersection && segment !== startSeg);
-			for (var j = 0; j < 3; j++) {
-				var length = totalLength * (j + 1) / 4;
-				for (var k = 0, m = chain.length; k < m; k++) {
-					var node = chain[k],
-						curveLength = node.length;
-					if (length <= curveLength) {
-						if (length < tolerance
-								|| curveLength - length < tolerance)
-							length = curveLength / 2;
-						var curve = node.segment.getCurve(),
-							pt = curve.getPointAt(length),
-							hor = curve.isLinear() && Math.abs(curve
-									.getTangentAt(0.5, true).y) < tolerance,
-							path = curve._path;
-						if (path._parent instanceof CompoundPath)
-							path = path._parent;
-						windingSum += operation === 'subtract' && _path2
-							&& (path === _path1 && _path2._getWinding(pt, hor)
-							|| path === _path2 && !_path1._getWinding(pt, hor))
-							? 0
-							: getWinding(pt, monoCurves, hor);
-						break;
-					}
-					length -= curveLength;
-				}
+			if (segment._winding == null) {
+				propagateWinding(segment, _path1, _path2, monoCurves,
+						operation);
 			}
-			var winding = Math.round(windingSum / 3);
-			for (var j = chain.length - 1; j >= 0; j--)
-				chain[j].segment._winding = winding;
 		}
-		var result = new CompoundPath(Item.NO_INSERT);
-		result.insertAbove(path1);
-		result.addChildren(tracePaths(segments, operator), true);
-		result = result.reduce();
-		result.setStyle(path1._style);
-		return result;
+		return finishBoolean(CompoundPath, tracePaths(segments, operation),
+				path1, path2, true);
 	}
 
-	function splitPath(intersections) {
-		var tMin = 0.000001,
+	function computeOpenBoolean(path1, path2, operation) {
+		if (!path2 || !path2._children && !path2._closed
+				|| !/^(subtract|intersect)$/.test(operation))
+			return null;
+		var _path1 = preparePath(path1, false),
+			_path2 = preparePath(path2, false),
+			intersections = _path1.getIntersections(_path2, function(inter) {
+				return inter.isOverlap() || inter.isCrossing();
+			}),
+			sub = operation === 'subtract',
+			paths = [];
+
+		function addPath(path) {
+			if (_path2.contains(path.getPointAt(path.getLength() / 2)) ^ sub) {
+				paths.unshift(path);
+				return true;
+			}
+		}
+
+		for (var i = intersections.length - 1; i >= 0; i--) {
+			var path = intersections[i].split();
+			if (path) {
+				if (addPath(path))
+					path.getFirstSegment().setHandleIn(0, 0);
+				_path1.getLastSegment().setHandleOut(0, 0);
+			}
+		}
+		addPath(_path1);
+		return finishBoolean(Group, paths, path1, path2);
+	}
+
+	function linkIntersections(from, to) {
+		var prev = from;
+		while (prev) {
+			if (prev === to)
+				return;
+			prev = prev._prev;
+		}
+		while (from._next && from._next !== to)
+			from = from._next;
+		if (!from._next) {
+			while (to._prev)
+				to = to._prev;
+			from._next = to;
+			to._prev = from;
+		}
+	}
+
+	function divideLocations(locations) {
+		var tMin = 4e-7,
 			tMax = 1 - tMin,
-			linearHandles;
+			noHandles = false,
+			clearSegments = [],
+			prevCurve,
+			prevT;
 
-		function resetLinear() {
-			for (var i = 0, l = linearHandles.length; i < l; i++)
-				linearHandles[i].set(0, 0);
-		}
-
-		for (var i = intersections.length - 1, curve, prev; i >= 0; i--) {
-			var loc = intersections[i],
-				t = loc._parameter;
-			if (prev && prev._curve === loc._curve && prev._parameter > 0) {
-				t /= prev._parameter;
-			} else {
-				curve = loc._curve;
-				if (linearHandles)
-					resetLinear();
-				linearHandles = curve.isLinear() ? [
-						curve._segment1._handleOut,
-						curve._segment2._handleIn
-					] : null;
+		for (var i = locations.length - 1; i >= 0; i--) {
+			var loc = locations[i],
+				curve = loc._curve,
+				t = loc._parameter,
+				origT = t;
+			if (curve !== prevCurve) {
+				noHandles = !curve.hasHandles();
+			} else if (prevT > 0) {
+				t /= prevT;
 			}
-			var newCurve,
-				segment;
-			if (newCurve = curve.divide(t, true, true)) {
-				segment = newCurve._segment1;
-				curve = newCurve.getPrevious();
-				if (linearHandles)
-					linearHandles.push(segment._handleOut, segment._handleIn);
+			var segment;
+			if (t < tMin) {
+				segment = curve._segment1;
+			} else if (t > tMax) {
+				segment = curve._segment2;
 			} else {
-				segment = t < tMin
-					? curve._segment1
-					: t > tMax
-						? curve._segment2
-						: curve.getPartLength(0, t) < curve.getPartLength(t, 1)
-							? curve._segment1
-							: curve._segment2;
+				segment = curve.divide(t, true, true)._segment1;
+				if (noHandles)
+					clearSegments.push(segment);
 			}
-			segment._intersection = loc.getIntersection();
-			loc._segment = segment;
-			prev = loc;
+			loc._setSegment(segment);
+			var inter = segment._intersection,
+				dest = loc._intersection;
+			if (inter) {
+				linkIntersections(inter, dest);
+				var other = inter;
+				while (other) {
+					linkIntersections(other._intersection, inter);
+					other = other._next;
+				}
+			} else {
+				segment._intersection = dest;
+			}
+			prevCurve = curve;
+			prevT = origT;
 		}
-		if (linearHandles)
-			resetLinear();
+		for (var i = 0, l = clearSegments.length; i < l; i++) {
+			clearSegments[i].clearHandles();
+		}
 	}
 
 	function getWinding(point, curves, horizontal, testContains) {
-		var tolerance = 0.000001,
-			tMin = tolerance,
+		var epsilon = 2e-7,
+			tMin = 4e-7,
 			tMax = 1 - tMin,
 			px = point.x,
 			py = point.y,
@@ -8771,8 +9125,8 @@ PathItem.inject(new function() {
 		if (horizontal) {
 			var yTop = -Infinity,
 				yBottom = Infinity,
-				yBefore = py - tolerance,
-				yAfter = py + tolerance;
+				yBefore = py - epsilon,
+				yAfter = py + epsilon;
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var values = curves[i].values;
 				if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
@@ -8789,12 +9143,14 @@ PathItem.inject(new function() {
 			yTop = (yTop + py) / 2;
 			yBottom = (yBottom + py) / 2;
 			if (yTop > -Infinity)
-				windLeft = getWinding(new Point(px, yTop), curves);
+				windLeft = getWinding(new Point(px, yTop), curves, false,
+						testContains);
 			if (yBottom < Infinity)
-				windRight = getWinding(new Point(px, yBottom), curves);
+				windRight = getWinding(new Point(px, yBottom), curves, false,
+						testContains);
 		} else {
-			var xBefore = px - tolerance,
-				xAfter = px + tolerance;
+			var xBefore = px - epsilon,
+				xAfter = px + epsilon;
 			var startCounted = false,
 				prevCurve,
 				prevT;
@@ -8814,7 +9170,7 @@ PathItem.inject(new function() {
 						var x = Curve.getPoint(values, t).x,
 							slope = Curve.getTangent(values, t).y,
 							counted = false;
-						if (Numerical.isZero(slope) && !Curve.isLinear(values)
+						if (Numerical.isZero(slope) && !Curve.isStraight(values)
 								|| t < tMin && slope * Curve.getTangent(
 									curve.previous.values, 1).y < 0
 								|| t > tMax && slope * Curve.getTangent(
@@ -8842,81 +9198,157 @@ PathItem.inject(new function() {
 		return Math.max(abs(windLeft), abs(windRight));
 	}
 
-	function tracePaths(segments, operator, selfOp) {
+	function propagateWinding(segment, path1, path2, monoCurves, operation) {
+		var epsilon = 2e-7,
+			chain = [],
+			start = segment,
+			totalLength = 0,
+			windingSum = 0;
+		do {
+			var curve = segment.getCurve(),
+				length = curve.getLength();
+			chain.push({ segment: segment, curve: curve, length: length });
+			totalLength += length;
+			segment = segment.getNext();
+		} while (segment && !segment._intersection && segment !== start);
+		for (var i = 0; i < 3; i++) {
+			var length = totalLength * (i + 1) / 4;
+			for (var k = 0, m = chain.length; k < m; k++) {
+				var node = chain[k],
+					curveLength = node.length;
+				if (length <= curveLength) {
+					if (length < epsilon || curveLength - length < epsilon)
+						length = curveLength / 2;
+					var curve = node.curve,
+						path = curve._path,
+						parent = path._parent,
+						pt = curve.getPointAt(length),
+						hor = curve.isHorizontal();
+					if (parent instanceof CompoundPath)
+						path = parent;
+					windingSum += operation === 'subtract' && path2
+						&& (path === path1 && path2._getWinding(pt, hor)
+						|| path === path2 && !path1._getWinding(pt, hor))
+						? 0
+						: getWinding(pt, monoCurves, hor);
+					break;
+				}
+				length -= curveLength;
+			}
+		}
+		var winding = Math.round(windingSum / 3);
+		for (var j = chain.length - 1; j >= 0; j--)
+			chain[j].segment._winding = winding;
+	}
+
+	function tracePaths(segments, operation) {
 		var paths = [],
-			tMin = 0.000001,
-			tMax = 1 - tMin;
-		for (var i = 0, seg, startSeg, l = segments.length; i < l; i++) {
-			seg = startSeg = segments[i];
-			if (seg._visited || !operator(seg._winding))
+			start,
+			otherStart,
+			operator = operators[operation],
+			overlapWinding = {
+				unite: { 1: 2 },
+				intersect: { 2: 1 }
+			}[operation];
+
+		function isValid(seg, adjusted) {
+			if (seg._visited)
+				return false;
+			if (!operator)
+				return true;
+			var winding = seg._winding,
+				inter = seg._intersection;
+			if (inter && adjusted && overlapWinding && inter.isOverlap())
+				winding = overlapWinding[winding] || winding;
+			return operator(winding);
+		}
+
+		function isStart(seg) {
+			return seg === start || seg === otherStart;
+		}
+
+		function findBestIntersection(inter, strict) {
+			if (!inter._next)
+				return inter;
+			while (inter) {
+				var seg = inter._segment,
+					nextSeg = seg.getNext(),
+					nextInter = nextSeg._intersection;
+				if (isStart(nextSeg)
+					|| !seg._visited && !nextSeg._visited
+					&& (!operator
+						|| (!strict || isValid(seg))
+						&& (!(strict && nextInter && nextInter.isOverlap())
+							&& isValid(nextSeg)
+							|| !strict && nextInter
+							&& isValid(nextInter._segment))
+					))
+					return inter;
+				inter = inter._next;
+			}
+			return null;
+		}
+
+		function findStartSegment(inter, next) {
+			while (inter) {
+				var seg = inter._segment;
+				if (isStart(seg))
+					return seg;
+				inter = inter[next ? '_next' : '_prev'];
+			}
+		}
+
+		for (var i = 0, l = segments.length; i < l; i++) {
+			var seg = segments[i],
+				path = null,
+				finished = false;
+			if (!isValid(seg, true))
 				continue;
-			var path = new Path(Item.NO_INSERT),
-				inter = seg._intersection,
-				startInterSeg = inter && inter._segment,
-				added = false,
-				dir = 1;
-			do {
-				var handleIn = dir > 0 ? seg._handleIn : seg._handleOut,
-					handleOut = dir > 0 ? seg._handleOut : seg._handleIn,
-					interSeg;
-				if (added && (!operator(seg._winding) || selfOp)
-						&& (inter = seg._intersection)
-						&& (interSeg = inter._segment)
-						&& interSeg !== startSeg) {
-					if (selfOp) {
-						seg._visited = interSeg._visited;
-						seg = interSeg;
-						dir = 1;
-					} else {
-						var c1 = seg.getCurve();
-						if (dir > 0)
-							c1 = c1.getPrevious();
-						var t1 = c1.getTangentAt(dir < 1 ? tMin : tMax, true),
-							c4 = interSeg.getCurve(),
-							c3 = c4.getPrevious(),
-							t3 = c3.getTangentAt(tMax, true),
-							t4 = c4.getTangentAt(tMin, true),
-							w3 = t1.cross(t3),
-							w4 = t1.cross(t4);
-						if (w3 * w4 !== 0) {
-							var curve = w3 < w4 ? c3 : c4,
-								nextCurve = operator(curve._segment1._winding)
-									? curve
-									: w3 < w4 ? c4 : c3,
-								nextSeg = nextCurve._segment1;
-							dir = nextCurve === c3 ? -1 : 1;
-							if (nextSeg._visited && seg._path !== nextSeg._path
-										|| !operator(nextSeg._winding)) {
-								dir = 1;
-							} else {
-								seg._visited = interSeg._visited;
-								seg = interSeg;
-								if (nextSeg._visited)
-									dir = 1;
-							}
-						} else {
-							dir = 1;
+			start = otherStart = null;
+			while (!finished) {
+				var inter = seg._intersection,
+					handleIn = path && seg._handleIn;
+				inter = inter && (findBestIntersection(inter, true)
+						|| findBestIntersection(inter, false)) || inter;
+				var other = inter && inter._segment;
+				if (other && isValid(other))
+					seg = other;
+				if (seg._visited) {
+					finished = isStart(seg);
+					if (!finished && inter) {
+						var found = findStartSegment(inter, true)
+							|| findStartSegment(inter, false);
+						if (found) {
+							seg = found;
+							finished = true;
 						}
 					}
-					handleOut = dir > 0 ? seg._handleOut : seg._handleIn;
+					break;
 				}
-				path.add(new Segment(seg._point, added && handleIn, handleOut));
-				added = true;
+				if (!path) {
+					path = new Path(Item.NO_INSERT);
+					start = seg;
+					otherStart = other;
+				}
+				path.add(new Segment(seg._point, handleIn, seg._handleOut));
 				seg._visited = true;
-				seg = dir > 0 ? seg.getNext() : seg. getPrevious();
-			} while (seg && !seg._visited
-					&& seg !== startSeg && seg !== startInterSeg
-					&& (seg._intersection || operator(seg._winding)));
-			if (seg && (seg === startSeg || seg === startInterSeg)) {
-				path.firstSegment.setHandleIn((seg === startInterSeg
-						? startInterSeg : seg)._handleIn);
-				path.setClosed(true);
-			} else {
-				path.lastSegment._handleOut.set(0, 0);
+				seg = seg.getNext();
+				finished = isStart(seg);
 			}
-			if (path._segments.length >
-					(path._closed ? path.isLinear() ? 2 : 0 : 1))
+			if (finished) {
+				path.firstSegment.setHandleIn(seg._handleIn);
+				path.setClosed(true);
+			} else if (path) {
+				console.error('Boolean operation resulted in open path',
+						'segments =', path._segments.length,
+						'length =', path.getLength());
+				path = null;
+			}
+			if (path && (path._segments.length > 8
+					|| !Numerical.isZero(path.getArea()))) {
 				paths.push(path);
+				path = null;
+			}
 		}
 		return paths;
 	}
@@ -8944,7 +9376,23 @@ PathItem.inject(new function() {
 		},
 
 		divide: function(path) {
-			return new Group([this.subtract(path), this.intersect(path)]);
+			return finishBoolean(Group,
+					[this.subtract(path), this.intersect(path)],
+					this, path, true);
+		},
+
+		resolveCrossings: function() {
+			var crossings = this.getCrossings();
+			if (!crossings.length)
+				return this;
+			divideLocations(CurveLocation.expand(crossings));
+			var paths = this._children || [this],
+				segments = [];
+			for (var i = 0, l = paths.length; i < l; i++) {
+				segments.push.apply(segments, paths[i]._segments);
+			}
+			return finishBoolean(CompoundPath, tracePaths(segments),
+					this, null, false);
 		}
 	};
 });
@@ -8980,24 +9428,24 @@ Path.inject({
 				y1 = v[3],
 				y2 = v[5],
 				y3 = v[7];
-			if (Curve.isLinear(v)) {
+			if (Curve.isStraight(v)) {
 				insertCurve(v);
 			} else {
 				var a = 3 * (y1 - y2) - y0 + y3,
 					b = 2 * (y0 + y2) - 4 * y1,
 					c = y1 - y0,
-					tolerance = 0.000001,
-					roots = [];
-				var count = Numerical.solveQuadratic(a, b, c, roots, tolerance,
-						1 - tolerance);
-				if (count === 0) {
+					tMin = 4e-7,
+					tMax = 1 - tMin,
+					roots = [],
+					n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
+				if (n === 0) {
 					insertCurve(v);
 				} else {
 					roots.sort();
 					var t = roots[0],
 						parts = Curve.subdivide(v, t);
 					insertCurve(parts[0]);
-					if (count > 1) {
+					if (n > 1) {
 						t = (roots[1] - t) / (1 - t);
 						parts = Curve.subdivide(parts[1], t);
 						insertCurve(parts[0]);
@@ -9112,7 +9560,7 @@ var PathIterator = Base.extend({
 		function computeParts(curve, index, minT, maxT) {
 			if ((maxT - minT) > minDifference
 					&& !Curve.isFlatEnough(curve, tolerance || 0.25)) {
-				var split = Curve.subdivide(curve),
+				var split = Curve.subdivide(curve, 0.5),
 					halfT = (minT + maxT) / 2;
 				computeParts(split[0], index, minT, halfT);
 				computeParts(split[1], index, halfT, maxT);
@@ -9120,7 +9568,7 @@ var PathIterator = Base.extend({
 				var x = curve[6] - curve[0],
 					y = curve[7] - curve[1],
 					dist = Math.sqrt(x * x + y * y);
-				if (dist > 0.000001) {
+				if (dist > 1e-6) {
 					length += dist;
 					parts.push({
 						offset: length,
@@ -9366,7 +9814,7 @@ var PathFitter = Base.extend({
 			pt2 = this.evaluate(1, curve2, u),
 			diff = pt.subtract(point),
 			df = pt1.dot(pt1) + diff.dot(pt2);
-		if (Math.abs(df) < 0.000001)
+		if (Math.abs(df) < 1e-6)
 			return u;
 		return u - diff.dot(pt1) / df;
 	},
@@ -9801,7 +10249,7 @@ var Color = Base.extend(new function() {
 								: 'gray' in arg
 									? 'gray'
 									: 'rgb';
-						var properties = types[type];
+						var properties = types[type],
 							parsers = componentParsers[type];
 						this._components = components = [];
 						for (var i = 0, l = properties.length; i < l; i++) {
@@ -10003,7 +10451,8 @@ var Color = Base.extend(new function() {
 			}
 		}
 	});
-}, new function() {
+},
+new function() {
 	var operators = {
 		add: function(a, b) {
 			return a + b;
@@ -10038,24 +10487,6 @@ var Color = Base.extend(new function() {
 	}, {
 	});
 });
-
-Base.each(Color._types, function(properties, type) {
-	var ctor = this[Base.capitalize(type) + 'Color'] = function(arg) {
-			var argType = arg != null && typeof arg,
-				components = argType === 'object' && arg.length != null
-					? arg
-					: argType === 'string'
-						? null
-						: arguments;
-			return components
-					? new Color(type, components)
-					: new Color(arg);
-		};
-	if (type.length == 3) {
-		var acronym = type.toUpperCase();
-		Color[acronym] = this[acronym + 'Color'] = ctor;
-	}
-}, Base.exports);
 
 var Gradient = Base.extend({
 	_class: 'Gradient',
@@ -10681,19 +11112,29 @@ var View = Base.extend(Emitter, {
 		return true;
 	},
 
-	_events: {
-		onFrame: {
-			install: function() {
-				this.play();
-			},
+	_events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove'],
+		function(name) {
+			this[name] = {
+				install: function(type) {
+					this._installEvent(type);
+				},
 
-			uninstall: function() {
-				this.pause();
+				uninstall: function(type) {
+					this._uninstallEvent(type);
+				}
+			};
+		}, {
+			onFrame: {
+				install: function() {
+					this.play();
+				},
+
+				uninstall: function() {
+					this.pause();
+				}
 			}
-		},
-
-		onResize: {}
-	},
+		}
+	),
 
 	_animate: false,
 	_time: 0,
@@ -10888,7 +11329,8 @@ var View = Base.extend(Emitter, {
 			return new CanvasView(project, element);
 		}
 	}
-}, new function() {
+},
+new function() {
 	var tool,
 		prevFocus,
 		tempFocus,
@@ -11011,10 +11453,49 @@ var View = Base.extend(Emitter, {
 		load: updateFocus
 	});
 
+	var mouseFlags = {
+		mousedown: {
+			mousedown: 1,
+			mousedrag: 1,
+			click: 1,
+			doubleclick: 1
+		},
+		mouseup: {
+			mouseup: 1,
+			mousedrag: 1,
+			click: 1,
+			doubleclick: 1
+		},
+		mousemove: {
+			mousedrag: 1,
+			mousemove: 1,
+			mouseenter: 1,
+			mouseleave: 1
+		}
+	};
+
 	return {
 		_viewEvents: viewEvents,
 
 		_handleEvent: function() {},
+
+		_installEvent: function(type) {
+			var counters = this._eventCounters;
+			if (counters) {
+				for (var key in mouseFlags) {
+					counters[key] = (counters[key] || 0)
+							+ (mouseFlags[key][type] || 0);
+				}
+			}
+		},
+
+		_uninstallEvent: function(type) {
+			var counters = this._eventCounters;
+			if (counters) {
+				for (var key in mouseFlags)
+					counters[key] -= mouseFlags[key][type] || 0;
+			}
+		},
 
 		statics: {
 			updateFocus: updateFocus
@@ -11105,8 +11586,8 @@ var CanvasView = View.extend({
 		project._needsUpdate = false;
 		return true;
 	}
-}, new function() {
-
+},
+new function() {
 	var downPoint,
 		lastPoint,
 		overPoint,
@@ -11551,8 +12032,7 @@ var Tool = PaperScopeItem.extend({
 	},
 
 	setFixedDistance: function(distance) {
-		this._minDistance = distance;
-		this._maxDistance = distance;
+		this._minDistance = this._maxDistance = distance;
 	},
 
 	_updateEvent: function(type, point, minDistance, maxDistance, start,
