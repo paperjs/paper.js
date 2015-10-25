@@ -286,7 +286,7 @@ function asyncTest(testName, expected) {
         var project = new Project();
         expected(function() {
             project.remove();
-            start();
+            QUnit.start();
         });
     });
 }

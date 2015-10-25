@@ -475,7 +475,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      */
 
     /**
-     * The area of the rectangle in square points.
+     * The area of the rectangle.
      *
      * @type Number
      * @bean
@@ -857,7 +857,8 @@ var LinkedRectangle = Rectangle.extend({
             this._owner[this._setter](this);
         return this;
     }
-}, new function() {
+},
+new function() {
     var proto = Rectangle.prototype;
 
     return Base.each(['x', 'y', 'width', 'height'], function(key) {

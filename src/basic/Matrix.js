@@ -534,12 +534,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * Returns the 'transformed' bounds rectangle by transforming each corner
      * point and finding the new bounding box to these points. This is not
-     * really the transformed reactangle!
+     * really the transformed rectangle!
      */
     _transformBounds: function(bounds, dest, _dontNotify) {
         var coords = this._transformCorners(bounds),
             min = coords.slice(0, 2),
-            max = coords.slice();
+            max = min.slice();
         for (var i = 2; i < 8; i++) {
             var val = coords[i],
                 j = i & 1;

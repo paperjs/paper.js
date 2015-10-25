@@ -58,7 +58,7 @@ var PathIterator = Base.extend({
                     // appears to offer a good trade-off between speed and
                     // precision for display purposes.
                     && !Curve.isFlatEnough(curve, tolerance || 0.25)) {
-                var split = Curve.subdivide(curve),
+                var split = Curve.subdivide(curve, 0.5),
                     halfT = (minT + maxT) / 2;
                 // Recursively subdivide and compute parts again.
                 computeParts(split[0], index, minT, halfT);

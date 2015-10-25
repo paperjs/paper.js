@@ -149,27 +149,29 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return true;
     },
 
-    /**
-     * @namespace
-     * @ignore
-     */
-    _events: {
-        /**
-         * @namespace
-         * @ignore
-         */
-        onFrame: {
-            install: function() {
-                this.play();
-            },
+    _events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove'],
+        function(name) {
+            this[name] = {
+                install: function(type) {
+                    this._installEvent(type);
+                },
 
-            uninstall: function() {
-                this.pause();
+                uninstall: function(type) {
+                    this._uninstallEvent(type);
+                }
+            };
+        }, {
+            onFrame: {
+                install: function() {
+                    this.play();
+                },
+
+                uninstall: function() {
+                    this.pause();
+                }
             }
-        },
-
-        onResize: {}
-    },
+        }
+    ),
 
     // These are default values for event related properties on the prototype.
     // Writing item._count++ does not change the defaults, it creates / updates
@@ -673,8 +675,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
             return new CanvasView(project, element);
         }
     }
-}, new function() {
-    // Injection scope for mouse events on the browser
+},
+new function() { // Injection scope for mouse events on the browser
 /*#*/ if (__options.environment == 'browser') {
     var tool,
         prevFocus,
@@ -828,11 +830,57 @@ var View = Base.extend(Emitter, /** @lends View# */{
         load: updateFocus
     });
 
+    // Flags defining which native events are required by which Paper events
+    // as required for counting amount of necessary natives events.
+    // The mapping is native -> virtual
+    var mouseFlags = {
+        mousedown: {
+            mousedown: 1,
+            mousedrag: 1,
+            click: 1,
+            doubleclick: 1
+        },
+        mouseup: {
+            mouseup: 1,
+            mousedrag: 1,
+            click: 1,
+            doubleclick: 1
+        },
+        mousemove: {
+            mousedrag: 1,
+            mousemove: 1,
+            mouseenter: 1,
+            mouseleave: 1
+        }
+    };
+
     return {
         _viewEvents: viewEvents,
 
         // To be defined in subclasses
         _handleEvent: function(/* type, point, event */) {},
+
+        _installEvent: function(type) {
+            // If the view requires counting of installed mouse events,
+            // increase the counters now according to mouseFlags
+            var counters = this._eventCounters;
+            if (counters) {
+                for (var key in mouseFlags) {
+                    counters[key] = (counters[key] || 0)
+                            + (mouseFlags[key][type] || 0);
+                }
+            }
+        },
+
+        _uninstallEvent: function(type) {
+            // If the view requires counting of installed mouse events,
+            // decrease the counters now according to mouseFlags
+            var counters = this._eventCounters;
+            if (counters) {
+                for (var key in mouseFlags)
+                    counters[key] -= mouseFlags[key][type] || 0;
+            }
+        },
 
         statics: {
             /**

@@ -125,79 +125,33 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return hasProps;
     },
 
-    _events: new function() {
-
-        // Flags defining which native events are required by which Paper events
-        // as required for counting amount of necessary natives events.
-        // The mapping is native -> virtual
-        var mouseFlags = {
-            mousedown: {
-                mousedown: 1,
-                mousedrag: 1,
-                click: 1,
-                doubleclick: 1
-            },
-            mouseup: {
-                mouseup: 1,
-                mousedrag: 1,
-                click: 1,
-                doubleclick: 1
-            },
-            mousemove: {
-                mousedrag: 1,
-                mousemove: 1,
-                mouseenter: 1,
-                mouseleave: 1
-            }
-        };
-
-        // Entry for all mouse events in the _events list
-        var mouseEvent = {
-            install: function(type) {
-                // If the view requires counting of installed mouse events,
-                // increase the counters now according to mouseFlags
-                var counters = this.getView()._eventCounters;
-                if (counters) {
-                    for (var key in mouseFlags) {
-                        counters[key] = (counters[key] || 0)
-                                + (mouseFlags[key][type] || 0);
-                    }
-                }
-            },
-            uninstall: function(type) {
-                // If the view requires counting of installed mouse events,
-                // decrease the counters now according to mouseFlags
-                var counters = this.getView()._eventCounters;
-                if (counters) {
-                    for (var key in mouseFlags)
-                        counters[key] -= mouseFlags[key][type] || 0;
-                }
-            }
-        };
-
-        return Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+    _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-            function(name) {
-                this[name] = mouseEvent;
-            }, {
-                onFrame: {
-                    install: function() {
-                        this._animateItem(true);
-                    },
-                    uninstall: function() {
-                        this._animateItem(false);
-                    }
+        function(name) {
+            this[name] = {
+                install: function(type) {
+                    this.getView()._installEvent(type);
                 },
 
-                // Only for external sources, e.g. Raster
-                onLoad: {}
-            }
-        );
-    },
+                uninstall: function(type) {
+                    this.getView()._uninstallEvent(type);
+                }
+            };
+        }, {
+            onFrame: {
+                install: function() {
+                    this.getView()._animateItem(this, true);
+                },
 
-    _animateItem: function(animate) {
-        this.getView()._animateItem(this, animate);
-    },
+                uninstall: function() {
+                    this.getView()._animateItem(this, false);
+                }
+            },
+
+            // Only for external sources, e.g. Raster
+            onLoad: {}
+        }
+    ),
 
     _serialize: function(options, dictionary) {
         var props = {},
@@ -1190,7 +1144,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getApplyMatrix()} instead.
+     * @deprecated use {@link #applyMatrix} instead.
      */
     getTransformContent: '#getApplyMatrix',
     setTransformContent: '#setApplyMatrix',
@@ -1684,11 +1638,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     intersects: function(item, _matrix) {
         if (!(item instanceof Item))
             return false;
-        // TODO: Optimize getIntersections(): We don't need all intersections
-        // when we're just curious about whether they intersect or not. Pass on
-        // an argument that let's it bail out after the first intersection.
-        return this._asPathItem().getIntersections(item._asPathItem(),
-                _matrix || item._matrix).length > 0;
+        // Tell getIntersections() to return as soon as some intersections are
+        // found, because all we care for here is there are some or none:
+        return this._asPathItem().getIntersections(item._asPathItem(), null,
+                _matrix || item._matrix, true).length > 0;
     },
 
     /**
@@ -1699,7 +1652,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * and may contain a combination of the following values:
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     * {Number} the tolerance of the hit-test in points
+     * {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
      * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
      * Shape, Raster, PlacedSymbol, PointText}, etc
@@ -1988,7 +1941,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     inside = match.inside,
                     // If overlapping is set, we also perform the inside check:
                     bounds = overlapping || inside,
-                    rect =  bounds && Rectangle.read([bounds]);
+                    rect = bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
                     inside: !!inside,
@@ -2663,6 +2616,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     isAncestor: function(item) {
         return item ? item.isDescendant(this) : false;
+    },
+
+    /**
+     * Checks if the item is an a sibling of the specified item.
+     *
+     * @param {Item} item the item to check against
+     * @return {Boolean} {@true if the item is aa sibling of the specified item}
+     */
+    isSibling: function(item) {
+        return this._parent === item._parent;
     },
 
     /**
@@ -3982,7 +3945,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (this._drawSelected)
                 this._drawSelected(ctx, mx, selectedItems);
             if (this._boundsSelected) {
-                var half = size / 2;
+                var half = size / 2,
                     coords = mx._transformCorners(this.getInternalBounds());
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.

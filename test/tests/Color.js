@@ -85,27 +85,6 @@ test('Creating Colors', function() {
             'Gray Color from array');
 });
 
-test('Deprecated Colors Constructors', function() {
-
-    equals(new paper.RgbColor('#ff0000'), new Color(1, 0, 0),
-            'Color from hex code');
-
-    equals(new paper.RgbColor(1, 0, 1),
-            new Color(1, 0, 1), 'Color from rgb object literal');
-
-    equals(new paper.GrayColor(0.2),
-            new Color(0.2), 'Color from gray object literal');
-
-    equals(new paper.HsbColor(0, 1, 1),
-            new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
-
-    equals(new paper.RgbColor([1, 0, 0]), new Color(1, 0, 0),
-            'Rgb Color from array');
-
-    equals(new paper.GrayColor([1]), new Color(1),
-            'Gray Color from array');
-});
-
 test('Get gray from RGB Color', function() {
     var color = new Color(1, 0.5, 0.2);
     equals(color.gray, 0.6152);

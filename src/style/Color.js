@@ -578,7 +578,7 @@ var Color = Base.extend(new function() {
                                     ? 'gray'
                                     : 'rgb';
                         // Convert to array and parse in one loop, for efficiency
-                        var properties = types[type];
+                        var properties = types[type],
                             parsers = componentParsers[type];
                         this._components = components = [];
                         for (var i = 0, l = properties.length; i < l; i++) {
@@ -1112,7 +1112,8 @@ var Color = Base.extend(new function() {
             }
         }
     });
-}, new function() {
+},
+new function() {
     var operators = {
         add: function(a, b) {
             return a + b;
@@ -1283,23 +1284,3 @@ var Color = Base.extend(new function() {
          */
     });
 });
-
-// Expose Color.RGB, etc. constructors, as well as RgbColor, RGBColor, etc.for
-// backward compatibility.
-Base.each(Color._types, function(properties, type) {
-    var ctor = this[Base.capitalize(type) + 'Color'] = function(arg) {
-            var argType = arg != null && typeof arg,
-                components = argType === 'object' && arg.length != null
-                    ? arg
-                    : argType === 'string'
-                        ? null
-                        : arguments;
-            return components
-                    ? new Color(type, components)
-                    : new Color(arg);
-        };
-    if (type.length == 3) {
-        var acronym = type.toUpperCase();
-        Color[acronym] = this[acronym + 'Color'] = ctor;
-    }
-}, Base.exports);

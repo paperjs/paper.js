@@ -32,10 +32,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * supported.
      *
      * @param {PathItem} path the other item to find the intersections with
-     * @param {Boolean} [sorted=false] specifies whether the returned
-     * {@link CurveLocation} objects should be sorted by path and offset
+     * @param {Function} [include] a callback function that can be used to
+     * filter out undesired locations right while they are collected.
+     * When defined, it shall return {@true to include a location}.
      * @return {CurveLocation[]} the locations of all intersection between the
      * paths
+     * @see #getCrossings(path)
      * @example {@paperscript} // Finding the intersections between two paths
      * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
      * path.strokeColor = 'black';
@@ -59,80 +61,98 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     }
      * }
      */
-    getIntersections: function(path, _matrix, _expand) {
+    getIntersections: function(path, include, _matrix, _returnFirst) {
         // NOTE: For self-intersection, path is null. This means you can also
         // just call path.getIntersections() without an argument to get self
         // intersections.
         // NOTE: The hidden argument _matrix is used internally to override the
         // passed path's transformation matrix.
-        if (this === path)
-            path = null;
-        var locations = [],
-            curves1 = this.getCurves(),
-            curves2 = path ? path.getCurves() : curves1,
+        var self = this === path || !path, // self-intersections?
             matrix1 = this._matrix.orNullIfIdentity(),
-            matrix2 = path ? (_matrix || path._matrix).orNullIfIdentity()
-                : matrix1,
-            length1 = curves1.length,
-            length2 = path ? curves2.length : length1,
-            values2 = [],
-            tMin = /*#=*/Numerical.TOLERANCE,
-            tMax = 1 - tMin;
+            matrix2 = self ? matrix1
+                : (_matrix || path._matrix).orNullIfIdentity();
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.
-        if (path && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
+        if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
             return [];
+        var curves1 = this.getCurves(),
+            curves2 = self ? curves1 : path.getCurves(),
+            length1 = curves1.length,
+            length2 = self ? length1 : curves2.length,
+            values2 = [],
+            arrays = [],
+            locations,
+            path;
+        // Cache values for curves2 as we re-iterate them for each in curves1.
         for (var i = 0; i < length2; i++)
             values2[i] = curves2[i].getValues(matrix2);
         for (var i = 0; i < length1; i++) {
             var curve1 = curves1[i],
-                values1 = path ? curve1.getValues(matrix1) : values2[i];
-            if (!path) {
-                // First check for self-intersections within the same curve
-                var seg1 = curve1.getSegment1(),
-                    seg2 = curve1.getSegment2(),
-                    h1 = seg1._handleOut,
-                    h2 = seg2._handleIn;
-                // Check if extended handles of endpoints of this curve
-                // intersects each other. We cannot have a self intersection
-                // within this curve if they don't intersect due to convex-hull
-                // property.
-                if (new Line(seg1._point.subtract(h1), h1.multiply(2), true)
-                        .intersect(new Line(seg2._point.subtract(h2),
-                        h2.multiply(2), true), false)) {
-                    // Self intersecting is found by dividing the curve in two
-                    // and and then applying the normal curve intersection code.
-                    var parts = Curve.subdivide(values1);
-                    Curve.getIntersections(
-                        parts[0], parts[1], curve1, curve1, locations,
-                        function(loc) {
-                            if (loc._parameter <= tMax) {
-                                // Since the curve was split above, we need to
-                                // adjust the parameters for both locations.
-                                loc._parameter /= 2;
-                                loc._parameter2 = 0.5 + loc._parameter2 / 2;
-                                return true;
-                            }
-                        }
-                    );
-                }
+                values1 = self ? values2[i] : curve1.getValues(matrix1),
+                path1 = curve1.getPath();
+            // NOTE: Due to the nature of Curve._getIntersections(), we need to
+            // use separate location arrays per path1, to make sure the
+            // circularity checks are not getting confused by locations on
+            // separate paths. We are flattening the separate arrays at the end.
+            if (path1 !== path) {
+                path = path1;
+                locations = [];
+                arrays.push(locations);
+            }
+            if (self) {
+                // First check for self-intersections within the same curve.
+                Curve._getSelfIntersection(values1, curve1, locations, {
+                    include: include,
+                    // Only possible if there is only one closed curve:
+                    startConnected: length1 === 1 &&
+                            curve1.getPoint1().equals(curve1.getPoint2())
+                });
             }
             // Check for intersections with other curves. For self intersection,
             // we can start at i + 1 instead of 0
-            for (var j = path ? 0 : i + 1; j < length2; j++) {
-                Curve.getIntersections(
-                    values1, values2[j], curve1, curves2[j], locations,
-                    // Avoid end point intersections on consecutive curves when
-                    // self intersecting.
-                    !path && (j === i + 1 || j === length2 - 1 && i === 0)
-                        && function(loc) {
-                            var t = loc._parameter;
-                            return t >= tMin && t <= tMax;
-                        }
+            for (var j = self ? i + 1 : 0; j < length2; j++) {
+                // There might be already one location from the above
+                // self-intersection check:
+                if (_returnFirst && locations.length)
+                    return locations;
+                var curve2 = curves2[j];
+                // Avoid end point intersections on consecutive curves when
+                // self intersecting.
+                Curve._getIntersections(
+                    values1, values2[j], curve1, curve2, locations,
+                    {
+                        include: include,
+                        // Do not compare indices here to determine connection,
+                        // since one array of curves can contain curves from
+                        // separate sup-paths of a compound path.
+                        startConnected: self && curve1.getPrevious() === curve2,
+                        endConnected: self && curve1.getNext() === curve2
+                    }
                 );
             }
         }
-        return Curve.filterIntersections(locations, _expand);
+        // Now flatten the list of location arrays to one array and return it.
+        locations = [];
+        for (var i = 0, l = arrays.length; i < l; i++) {
+            locations.push.apply(locations, arrays[i]);
+        }
+        return locations;
+    },
+
+    /**
+     * Returns all crossings between two {@link PathItem} items as an array
+     * of {@link CurveLocation} objects. {@link CompoundPath} items are also
+     * supported.
+     * Crossings are intersections where the paths actually are crossing each
+     * other, as opposed to simply touching.
+     *
+     * @param {PathItem} path the other item to find the crossings with
+     * @see #getIntersections(path)
+     */
+    getCrossings: function(path) {
+        return this.getIntersections(path, function(inter) {
+            return inter.isCrossing();
+        });
     },
 
     _asPathItem: function() {

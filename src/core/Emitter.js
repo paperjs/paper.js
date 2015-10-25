@@ -31,7 +31,7 @@ var Emitter = {
                 handlers.push(func);
                 // See if this is the first handler that we're attaching,
                 // and call install if defined.
-                if (entry && entry.install && handlers.length == 1)
+                if (entry && entry.install && handlers.length === 1)
                     entry.install.call(this, type);
             }
         }

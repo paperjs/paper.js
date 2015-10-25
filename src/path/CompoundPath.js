@@ -102,6 +102,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     insertChildren: function insertChildren(index, items, _preserve) {
+        // Convert CompoundPath items in the children list by adding their
+        // children to the list and removing their parent.
+        for (var i = items.length - 1; i >= 0; i--) {
+            var item = items[i];
+            if (item instanceof CompoundPath) {
+                items.splice.apply(items, [i, 1].concat(item.removeChildren()));
+                item.remove();
+            }
+        }
         // Pass on 'path' for _type, to make sure that only paths are added as
         // children.
         items = insertChildren.base.call(this, index, items, _preserve, Path);
@@ -131,16 +140,23 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this._children[i].smooth();
     },
 
+    // DOCS: reduce()
+    // TEST: reduce()
     reduce: function reduce() {
-        if (this._children.length === 0) { // Replace with a simple empty Path
+        var children = this._children;
+        for (var i = children.length - 1; i >= 0; i--) {
+            var path = children[i].reduce();
+            if (path.isEmpty())
+                children.splice(i, 1);
+        }
+        if (children.length === 0) { // Replace with a simple empty Path
             var path = new Path(Item.NO_INSERT);
             path.insertAbove(this);
             path.setStyle(this._style);
             this.remove();
             return path;
-        } else {
-            return reduce.base.call(this);
         }
+        return reduce.base.call(this);
     },
 
     /**
@@ -220,8 +236,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The area of the path in square points. Self-intersecting paths can
-     * contain sub-areas that cancel each other out.
+     * The area that the path's geometry is covering. Self-intersecting paths
+     * can contain sub-areas that cancel each other out.
      *
      * @type Number
      * @bean
@@ -245,7 +261,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             var child = children[i],
                 mx = child._matrix;
             paths.push(child.getPathData(_matrix && !mx.isIdentity()
-                    ? _matrix.chain(mx) : mx, _precision));
+                    ? _matrix.chain(mx) : _matrix, _precision));
         }
         return paths.join(' ');
     }
@@ -298,7 +314,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                         : matrix.chain(mx));
         }
     }
-}, new function() { // Injection scope for PostScript-like drawing functions
+},
+new function() { // Injection scope for PostScript-like drawing functions
     /**
      * Helper method that returns the current path and checks if a moveTo()
      * command is required first.
@@ -317,7 +334,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         moveTo: function(/* point */) {
             var current = getCurrentPath(this),
                 // Reuse current path if nothing was added yet
-                path = current && current.isEmpty() ? current : new Path();
+                path = current && current.isEmpty() ? current
+                        : new Path(Item.NO_INSERT);
             if (path !== current)
                 this.addChild(path);
             path.moveTo.apply(path, arguments);

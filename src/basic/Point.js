@@ -460,11 +460,11 @@ var Point = Base.extend(/** @lends Point# */{
             return this.clone();
         angle = angle * Math.PI / 180;
         var point = center ? this.subtract(center) : this,
-            s = Math.sin(angle),
-            c = Math.cos(angle);
+            sin = Math.sin(angle),
+            cos = Math.cos(angle);
         point = new Point(
-            point.x * c - point.y * s,
-            point.x * s + point.y * c
+            point.x * cos - point.y * sin,
+            point.x * sin + point.y * cos
         );
         return center ? point.add(center) : point;
     },
@@ -690,7 +690,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Number} tolerance the maximum distance allowed
      * @return {Boolean} {@true if it is within the given distance}
      */
-    isClose: function(point, tolerance) {
+    isClose: function(/* point, tolerance */) {
+        var point = Point.read(arguments),
+            tolerance = Base.read(arguments);
         return this.getDistance(point) < tolerance;
     },
 
@@ -701,10 +703,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is collinear}
      */
-    isCollinear: function(point) {
-        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
-        // conversion test.
-        return Math.abs(this.cross(point)) < /*#=*/Numerical.TOLERANCE;
+    isCollinear: function(/* point */) {
+        var point = Point.read(arguments);
+        return Point.isCollinear(this.x, this.y, point.x, point.y);
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -717,10 +718,9 @@ var Point = Base.extend(/** @lends Point# */{
      * @param {Point} point the vector to check against
      * @return {Boolean} {@true it is orthogonal}
      */
-    isOrthogonal: function(point) {
-        // NOTE: Numerical.EPSILON is too small, breaking shape-path-shape
-        // conversion test.
-        return Math.abs(this.dot(point)) < /*#=*/Numerical.TOLERANCE;
+    isOrthogonal: function(/* point */) {
+        var point = Point.read(arguments);
+        return Point.isOrthogonal(this.x, this.y, point.x, point.y);
     },
 
     /**
@@ -766,23 +766,19 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * Returns the projection of the point on another point.
+     * Returns the projection of the point onto another point.
      * Both points are interpreted as vectors.
      *
      * @param {Point} point
-     * @return {Point} the projection of the point on another point
+     * @return {Point} the projection of the point onto another point
      */
     project: function(/* point */) {
-        var point = Point.read(arguments);
-        if (point.isZero()) {
-            return new Point(0, 0);
-        } else {
-            var scale = this.dot(point) / point.dot(point);
-            return new Point(
-                point.x * scale,
-                point.y * scale
-            );
-        }
+        var point = Point.read(arguments),
+            scale = point.isZero() ? 0 : this.dot(point) / point.dot(point);
+        return new Point(
+            point.x * scale,
+            point.y * scale
+        );
     },
 
     /**
@@ -919,6 +915,23 @@ var Point = Base.extend(/** @lends Point# */{
          */
         random: function() {
             return new Point(Math.random(), Math.random());
+        },
+
+        isCollinear: function(x1, y1, x2, y2) {
+            // NOTE: We use normalized vectors so that the epsilon comparison is
+            // reliable. We could instead scale the epsilon based on the vector
+            // length. But instead of normalizing the vectors before calculating
+            // the cross product, we can scale the epsilon accordingly.
+            return Math.abs(x1 * y2 - y1 * x2)
+                    <= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
+                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
+        },
+
+        isOrthogonal: function(x1, y1, x2, y2) {
+            // See Point.isCollinear()
+            return Math.abs(x1 * x2 + y1 * y2)
+                    <= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
+                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
         }
     }
 }, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
