@@ -657,8 +657,8 @@ PathItem.inject(new function() {
         /**
          * {@grouptitle Boolean Path Operations}
          *
-         * Merges the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
+         * Merges the geometry of the specified path with this path's geometry
+         * and returns the result as a new path item.
          *
          * @param {PathItem} path the path to unite with
          * @return {PathItem} the resulting path item
@@ -689,14 +689,12 @@ PathItem.inject(new function() {
             return computeBoolean(this, path, 'subtract');
         },
 
-        // Compound boolean operators combine the basic boolean operations such
-        // as union, intersection, subtract etc.
         /**
          * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new group item.
+         * this path's geometry and returns the result as a new path item.
          *
          * @param {PathItem} path the path to exclude the intersection of
-         * @return {Group} the resulting group item
+         * @return {PathItem} the resulting group item
          */
         exclude: function(path) {
             return computeBoolean(this, path, 'exclude');
@@ -704,7 +702,9 @@ PathItem.inject(new function() {
 
         /**
          * Splits the geometry of this path along the geometry of the specified
-         * path returns the result as a new group item.
+         * path returns the result as a new group item. This is equivalent to
+         * calling {@link #subtract(path)} and {@link #subtract(path)} and
+         * putting the results into a new group.
          *
          * @param {PathItem} path the path to divide by
          * @return {Group} the resulting group item
