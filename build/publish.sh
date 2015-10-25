@@ -41,8 +41,8 @@ cd $PAPER_DIR/build
 cd $PAPER_DIR
 echo "Commiting Version"
 # Update versions
-update_version 'package.json'
-update_version 'component.json'
+update_version './package.json'
+update_version './component.json'
 # Add changed json configuration files
 git add -u src/options.js # Commit as well, since it was manually bumped.
 git add -u package.json
