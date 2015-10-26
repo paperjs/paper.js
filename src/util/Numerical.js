@@ -121,8 +121,7 @@ var Numerical = new function() {
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.
          *
-         * http://whizkidtech.redprince.net/bezier/circle/
-         * http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+         * http://whizkidtech.redprince.net/bezier/circle/kappa/
          */
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
