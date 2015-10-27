@@ -312,10 +312,10 @@ var Numerical = new function() {
                 // iteration) and solve the quadratic.
                 x = -(b / a) / 3;
                 // Evaluate q, q', b1 and c2 at x
-                tmp = a * x,
-                b1 = tmp + b,
-                c2 = b1 * x + c,
-                qd = (tmp + b1) * x + c2,
+                tmp = a * x;
+                b1 = tmp + b;
+                c2 = b1 * x + c;
+                qd = (tmp + b1) * x + c2;
                 q = c2 * x + d;
                 // Get a good initial approximation.
                 t = q /a;
@@ -329,10 +329,10 @@ var Numerical = new function() {
                     do {
                         x = x0;
                         // Evaluate q, q', b1 and c2 at x
-                        tmp = a * x,
-                        b1 = tmp + b,
-                        c2 = b1 * x + c,
-                        qd = (tmp + b1) * x + c2,
+                        tmp = a * x;
+                        b1 = tmp + b;
+                        c2 = b1 * x + c;
+                        qd = (tmp + b1) * x + c2;
                         q = c2 * x + d;
                         // Newton's. Divide by ec to avoid x0 crossing over a
                         // root.

@@ -1173,7 +1173,7 @@ new function() { // // Scope to inject various curve evaluation methods
         statics: {
             evaluateMethods: methods
         }
-    })
+    });
 },
 new function() { // Scope for methods that require private functions
 
@@ -1308,7 +1308,7 @@ new function() { // Scope for methods that require private functions
 
         getParameterAt: function(v, offset, start) {
             if (start === undefined)
-                start = offset < 0 ? 1 : 0
+                start = offset < 0 ? 1 : 0;
             if (offset === 0)
                 return start;
             // See if we're going forward or backward, and handle cases
@@ -1557,7 +1557,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 // p2 is inside, the hull is a triangle.
                 distRatio >= 2 ? [p0, p1, p3]
                 // p1 is inside, the hull is a triangle.
-                : distRatio <= .5 ? [p0, p2, p3]
+                : distRatio <= 0.5 ? [p0, p2, p3]
                 // Hull is a quadrilateral, we need all lines in correct order.
                 : [p0, p1, p2, p3],
                 // Line [p0, p3] is part of the hull.

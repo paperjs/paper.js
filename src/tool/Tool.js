@@ -289,7 +289,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     return false;
                 // Produce a new point on the way to point if point is further
                 // away than maxDistance
-                if (maxDistance != null && maxDistance != 0) {
+                if (maxDistance != null && maxDistance !== 0) {
                     if (distance > maxDistance) {
                         point = this._point.add(vector.normalize(maxDistance));
                     } else if (matchMaxDistance) {

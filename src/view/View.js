@@ -55,7 +55,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
         function getSize(name) {
             return element[name] || parseInt(element.getAttribute(name), 10);
-        };
+        }
 
         function getCanvasSize() {
             // Try visible size first, since that will help handling previously
@@ -67,7 +67,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
                     // Reading the attributes should still work.
                     ? new Size(getSize('width'), getSize('height'))
                     : size;
-        };
+        }
 
         // If the element has the resize attribute, listen to resize events and
         // update its coordinate space accordingly

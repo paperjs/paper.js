@@ -1206,7 +1206,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             if (typeof arg === 'number')
                 arg = this.getLocationAt(arg);
             if (!arg)
-                return null
+                return null;
             // split(location)
             index = arg.index;
             parameter = arg.parameter;

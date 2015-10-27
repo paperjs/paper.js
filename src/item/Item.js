@@ -843,7 +843,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var children = this._children;
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
-        if (!children || children.length == 0)
+        if (!children || children.length === 0)
             return new Rectangle();
         // Call _updateBoundsCache() even when the group is currently empty
         // (or only holds empty / invisible items), so future changes in these
@@ -880,8 +880,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Scale to new Size, if size changes and avoid divisions by 0:
         if (rect.width != bounds.width || rect.height != bounds.height) {
             matrix.scale(
-                    bounds.width != 0 ? rect.width / bounds.width : 1,
-                    bounds.height != 0 ? rect.height / bounds.height : 1);
+                    bounds.width !== 0 ? rect.width / bounds.width : 1,
+                    bounds.height !== 0 ? rect.height / bounds.height : 1);
         }
         // Translate to bounds center:
         center = bounds.getCenter();

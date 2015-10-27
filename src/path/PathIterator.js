@@ -101,7 +101,7 @@ var PathIterator = Base.extend({
         var i, j = this.index;
         for (;;) {
             i = j;
-            if (j == 0 || this.parts[--j].offset < offset)
+            if (j === 0 || this.parts[--j].offset < offset)
                 break;
         }
         // Find the part that succeeds the given offset, then interpolate
