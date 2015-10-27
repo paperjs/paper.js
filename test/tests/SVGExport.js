@@ -103,3 +103,12 @@ test('Export SVG polyline', function() {
     }));
 });
 
+test('Export SVG path defaults to precision 5', function() {
+    var path = new Path('M0.123456789,1.9l0.8,1.1');
+    equals(path.exportSVG({}).getAttribute('d'), 'M0.12346,1.9l0.8,1.1');
+});
+
+test('Export SVG path at precision 0', function() {
+    var path = new Path('M0.123456789,1.9l0.8,1.1');
+    equals(path.exportSVG({ precision: 0 }).getAttribute('d'), 'M0,2l1,1');
+});

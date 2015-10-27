@@ -20,7 +20,7 @@ var Formatter = Base.extend(/** @lends Formatter# */{
      * @param {Number} [precision=5] the amount of fractional digits
      */
     initialize: function(precision) {
-        this.precision = precision || 5;
+        this.precision = precision == null ? 5 : precision;
         this.multiplier = Math.pow(10, this.precision);
     },
 
