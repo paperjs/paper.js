@@ -417,7 +417,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             var total = this._countCurves(),
                 // If we're adding a new segment to the end of an open path,
                 // we need to step one index down to get its curve.
-                from = Math.max(index + amount - 1 === total ? index - 1 : index, 0),
+                from = index > 0 && index + amount - 1 === total ? index - 1
+                    : index,
                 start = from,
                 to = Math.min(from + amount, total);
             if (segs._curves) {

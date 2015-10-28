@@ -99,23 +99,23 @@ test('Curve list after removing a segment - 2', function() {
     }, 2, 'After creating a path with three segments, we should have two curves. By accessing path.curves we also make sure the curves are created internally.');
 
     equals(function() {
-        return path.segments[2].remove();
-    }, true, 'Removing the paths last segment should be successful.');
+        return path.lastSegment.remove();
+    }, true, 'Removing the last segment should be successful.');
 
     equals(function() {
         return path.curves.length;
     }, 1, 'After removing the last segment, we should be left with one curve.');
 
     equals(function() {
-        return path.segments[1].remove();
-    }, true, 'Removing the paths last segment should be successful.');
+        return path.lastSegment.remove();
+    }, true, 'Removing last segment should be successful.');
 
     equals(function() {
         return path.curves.length;
     }, 0, 'After removing the last segment, we should be left with no curves.');
 
     equals(function() {
-        return path.segments[0].remove();
+        return path.lastSegment.remove();
     }, true, 'Removing the final remaining segment should be successful.');
 
     equals(function() {
@@ -127,13 +127,13 @@ test('Curve list after removing a segment - 2', function() {
 
     equals(function() {
         return path.curves.length;
-    }, 1, 'After adding two new segments at the end, we should have one curve again.');
+    }, 1, 'After adding two new segments, we should have one curve again.');
 
     path.addSegment([2, 2]);
 
     equals(function() {
         return path.curves.length;
-    }, 2, 'After adding a new segment at the end, we should have two curves again.');
+    }, 2, 'After adding a new segment, we should have two curves again.');
 
     equals(function() {
         return path.curves[1].segment1 === path.curves[0].segment2;
@@ -143,7 +143,7 @@ test('Curve list after removing a segment - 2', function() {
 
     equals(function() {
         return path.curves.length;
-    }, 4, 'After adding tow new segments at the end, we should have four curves now.');
+    }, 4, 'After adding two new segments at the end, we should have four curves now.');
 });
 
 test('Splitting a straight path should produce segments without handles', function() {
