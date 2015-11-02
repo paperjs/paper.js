@@ -615,11 +615,15 @@ PathItem.inject(new function() {
                 path.firstSegment.setHandleIn(seg._handleIn);
                 path.setClosed(true);
             } else if (path) {
-                // This path wasn't finished and is hence invalid.
-                // Report the error to the console for the time being.
-                console.error('Boolean operation resulted in open path',
-                        'segments =', path._segments.length,
-                        'length =', path.getLength());
+                var length = path.getLength();
+                // Only complain about open paths if they are long enough.
+                if (length >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
+                    // This path wasn't finished and is hence invalid.
+                    // Report the error to the console for the time being.
+                    console.error('Boolean operation resulted in open path',
+                            'segments =', path._segments.length,
+                            'length =', length);
+                }
                 path = null;
             }
             // Add the path to the result, while avoiding stray segments and
