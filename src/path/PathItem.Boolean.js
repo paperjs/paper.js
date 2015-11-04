@@ -76,7 +76,7 @@ PathItem.inject(new function() {
     // Boolean operators return true if a curve with the given winding
     // contribution contributes to the final result or not. They are called
     // for each curve in the graph after curves in the operands are
-    // split at intersections.
+    // split at crossings.
     function computeBoolean(path1, path2, operation) {
         // If path1 is open, delegate to computeOpenBoolean()
         if (!path1._children && !path1._closed)
@@ -92,15 +92,10 @@ PathItem.inject(new function() {
         if (_path2 && /^(subtract|exclude)$/.test(operation)
                 ^ (_path2.isClockwise() !== _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at crossings and overlaps on both paths. Note that for
-        // self-intersection, path2 is null and getIntersections() handles it.
-        var intersections = CurveLocation.expand(
-            _path1.getIntersections(_path2, function(inter) {
-                // Only handle overlaps when not self-intersecting
-                return _path2 && inter.isOverlap() || inter.isCrossing();
-            })
-        );
-        divideLocations(intersections);
+        // Split curves at crossings on both paths. Note that for self-
+        // intersection, path2 is null and getIntersections() handles it.
+        var crossings = CurveLocation.expand(_path1.getCrossings(_path2));
+        divideLocations(crossings);
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
@@ -119,12 +114,12 @@ PathItem.inject(new function() {
         if (_path2)
             collect(_path2._children || [_path2]);
         // Propagate the winding contribution. Winding contribution of curves
-        // does not change between two intersections.
+        // does not change between two crossings.
         // First, propagate winding contributions for curve chains starting in
-        // all intersections:
-        for (var i = 0, l = intersections.length; i < l; i++) {
-            propagateWinding(intersections[i]._segment, _path1, _path2,
-                    monoCurves, operation);
+        // all crossings:
+        for (var i = 0, l = crossings.length; i < l; i++) {
+            propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
+                    operation);
         }
         // Now process the segments that are not part of any intersecting chains
         for (var i = 0, l = segments.length; i < l; i++) {
@@ -147,9 +142,7 @@ PathItem.inject(new function() {
             return null;
         var _path1 = preparePath(path1, false),
             _path2 = preparePath(path2, false),
-            intersections = _path1.getIntersections(_path2, function(inter) {
-                return inter.isOverlap() || inter.isCrossing();
-            }),
+            crossings = _path1.getCrossings(_path2),
             sub = operation === 'subtract',
             paths = [];
 
@@ -162,10 +155,10 @@ PathItem.inject(new function() {
             }
         }
 
-        // Now loop backwards through all intersections, split the path and
-        // check the new path that was split off for inclusion.
-        for (var i = intersections.length - 1; i >= 0; i--) {
-            var path = intersections[i].split();
+        // Now loop backwards through all crossings, split the path and check
+        // the new path that was split off for inclusion.
+        for (var i = crossings.length - 1; i >= 0; i--) {
+            var path = crossings[i].split();
             if (path) {
                 // See if we can add the path, and if so, clear the first handle
                 // at the split, because it might have been a curve.
@@ -504,9 +497,9 @@ PathItem.inject(new function() {
             return seg === start || seg === otherStart;
         }
 
-        // If there are multiple possible intersections, find the one
-        // that's either connecting back to start or is not visited yet,
-        // and will be part of the boolean result:
+        // If there are multiple possible intersections, find the one that's
+        // either connecting back to start or is not visited yet, and will be
+        // part of the boolean result:
         function findBestIntersection(inter, strict) {
             if (!inter._next)
                 return inter;

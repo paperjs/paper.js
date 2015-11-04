@@ -151,7 +151,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
     getCrossings: function(path) {
         return this.getIntersections(path, function(inter) {
-            return inter.isCrossing();
+            // Check overlap first since it's the cheaper test between the two.
+            return inter.isOverlap() || inter.isCrossing();
         });
     },
 
