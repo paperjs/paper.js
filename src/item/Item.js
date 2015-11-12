@@ -1541,16 +1541,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             topLeft = bounds.getTopLeft().floor(),
             bottomRight = bounds.getBottomRight().ceil(),
             size = new Size(bottomRight.subtract(topLeft)),
-            canvas = CanvasProvider.getCanvas(size.multiply(scale)),
-            ctx = canvas.getContext('2d'),
-            matrix = new Matrix().scale(scale).translate(topLeft.negate());
-        ctx.save();
-        matrix.applyToContext(ctx);
-        // See Project#draw() for an explanation of new Base()
-        this.draw(ctx, new Base({ matrices: [matrix] }));
-        ctx.restore();
-        var raster = new Raster(Item.NO_INSERT);
-        raster.setCanvas(canvas);
+            raster = new Raster(Item.NO_INSERT);
+        if (!size.isZero()) {
+            var canvas = CanvasProvider.getCanvas(size.multiply(scale)),
+                ctx = canvas.getContext('2d'),
+                matrix = new Matrix().scale(scale).translate(topLeft.negate());
+            ctx.save();
+            matrix.applyToContext(ctx);
+            // See Project#draw() for an explanation of new Base()
+            this.draw(ctx, new Base({ matrices: [matrix] }));
+            ctx.restore();
+            raster.setCanvas(canvas);
+        }
         raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale));
