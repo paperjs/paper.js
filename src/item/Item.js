@@ -1551,14 +1551,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // See Project#draw() for an explanation of new Base()
             this.draw(ctx, new Base({ matrices: [matrix] }));
             ctx.restore();
+            // NOTE: We don't need to release the canvas since it belongs to the
+            // raster now!
             raster.setCanvas(canvas);
         }
         raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale));
         raster.insertAbove(this);
-        // NOTE: We don't need to release the canvas since it now belongs to the
-        // Raster!
         return raster;
     },
 
