@@ -1596,9 +1596,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     _contains: function(point) {
-        if (this._children) {
-            for (var i = this._children.length - 1; i >= 0; i--) {
-                if (this._children[i].contains(point))
+        var children = this._children;
+        if (children) {
+            for (var i = children.length - 1; i >= 0; i--) {
+                if (children[i].contains(point))
                     return true;
             }
             return false;
