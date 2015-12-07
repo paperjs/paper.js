@@ -326,75 +326,121 @@ PathItem.inject(new function() {
         } else {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon;
-            // Find the winding number for right side of the curve, inclusive of
-            // the curve itself, while tracing along its +-x direction.
-            var startCounted = false,
-                prevCurve,
-                prevT;
-            for (var i = 0, l = curves.length; i < l; i++) {
-                var curve = curves[i],
-                    values = curve.values,
-                    winding = curve.winding;
-                // Since the curves are monotone in y direction, we can just
-                // compare the endpoints of the curve to determine if the
-                // ray from query point along +-x direction will intersect
-                // the monotone curve. Results in quite significant speedup.
-                if (winding && (winding === 1
+            var loopStartIndex,
+                loopEndIndex = 0;
+            do {
+                // Determine beginning and end of loop and the first and last curve with
+                // non-zero winding within the loop
+                loopStartIndex = loopEndIndex; // index of first curve in loop
+                loopEndIndex = loopStartIndex + 1; // index after last curve in loop
+                var curve,
+                    firstWindCrv = null, // first curve in loop with winding != 0
+                    lastWindCrv; // last curve in loop with winding != 0
+                for (var i = loopStartIndex, l = curves.length; i < l; i++) {
+                    curve = curves[i];
+                    if (curve.winding) {
+                        if (!firstWindCrv)
+                            firstWindCrv = curve;
+                        lastWindCrv = curve;
+                    }
+                    if (curve.next !== curves[i + 1]) {
+                        loopEndIndex = i + 1;
+                        break;
+                    }
+                }
+                // walk through single loop of curves
+                var startCounted = false,
+                    prevWindCurve, // non-horizontal curve before current curve
+                    nextWindCurve, // non-horizontal curve after current curve
+                    prevT = null;
+                curve = null;
+                for (var curveIndex = loopStartIndex; curveIndex < loopEndIndex; curveIndex++) {
+                    if (!curve) {
+                        prevWindCurve = lastWindCrv;
+                        nextWindCurve = firstWindCrv;
+                    } else if (curve.winding) {
+                        prevWindCurve = curve;
+                    }
+                    curve = curves[curveIndex];
+                    if (curve === nextWindCurve) {
+                        nextWindCurve = curve.next;
+                        while (nextWindCurve && !nextWindCurve.winding) {
+                            nextWindCurve = nextWindCurve.next;
+                        }
+                    }
+                    var values = curve.values,
+                        winding = curve.winding;
+                    // Since the curves are monotone in y direction, we can just
+                    // compare the endpoints of the curve to determine if the
+                    // ray from query point along +-x direction will intersect
+                    // the monotone curve. Results in quite significant speedup.
+                    if (winding && (winding == 1
                         && py >= values[1] && py <= values[7]
                         || py >= values[7] && py <= values[1])
-                    && Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
-                    var t = roots[0];
-                    // Due to numerical precision issues, two consecutive curves
-                    // may register an intercept twice, at t = 1 and 0, if y is
-                    // almost equal to one of the endpoints of the curves.
-                    // But since curves may contain more than one loop of curves
-                    // and the end point on the last curve of a loop would not
-                    // be registered as a double, we need to filter these cases:
-                    if (!( // = the following conditions will be excluded:
-                        // Detect and exclude intercepts at 'end' of loops
-                        // if the start of the loop was already counted.
-                        // This also works for the last curve: [i + 1] == null
-                        t > tMax && startCounted && curve.next !== curves[i + 1]
-                        // Detect 2nd case of a consecutive intercept, but make
-                        // sure we're still on the same loop.
-                        || t < tMin && prevT > tMax
-                            && curve.previous === prevCurve)) {
-                        var x = Curve.getPoint(values, t).x,
-                            slope = Curve.getTangent(values, t).y,
-                            counted = false;
-                        // Take care of cases where the curve and the preceding
-                        // curve merely touches the ray towards +-x direction,
-                        // but proceeds to the same side of the ray.
-                        // This essentially is not a crossing.
-                        if (Numerical.isZero(slope) && !Curve.isStraight(values)
-                                // Does the slope over curve beginning change?
-                                || t < tMin && slope * Curve.getTangent(
-                                    curve.previous.values, 1).y < 0
-                                // Does the slope over curve end change?
-                                || t > tMax && slope * Curve.getTangent(
-                                    curve.next.values, 0).y < 0) {
-                            if (testContains && x >= xBefore && x <= xAfter) {
-                                ++windLeft;
-                                ++windRight;
+                        && Curve.solveCubic(values, 1, py, roots, 0, 1) == 1) {
+                        var t = roots[0];
+                        // Due to numerical precision issues, two consecutive curves
+                        // may register an intercept twice, at t = 1 and 0, if y is
+                        // almost equal to one of the endpoints of the curves.
+                        // But since curves may contain more than one loop of curves
+                        // and the end point on the last curve of a loop would not
+                        // be registered as a double, we need to filter these cases:
+                        if (!( // = the following conditions will be excluded:
+                                // Detect and exclude intercepts at 'end' of loops
+                                // if the start of the loop was already counted.
+                            t > tMax && startCounted && curve === lastWindCrv
+                                // Detect 2nd case of a consecutive intercept
+                            || t < tMin && prevT > tMax)) {
+                            var x = Curve.getPoint(values, t).x,
+                                slope = Curve.getTangent(values, t).y,
+                                counted = false;
+                            // Take care of cases where the curve and the preceding
+                            // curve merely touches the ray towards +-x direction,
+                            // but proceeds to the same side of the ray.
+                            // This essentially is not a crossing.
+                            if (Numerical.isZero(slope) && !Curve.isStraight(values)
+                                    // Does the slope over curve beginning change?
+                                || t < tMin && prevWindCurve && slope * Curve.getTangent(
+                                    prevWindCurve.values, 1).y < 0
+                                    // Does the slope over curve end change?
+                                || t > tMax && nextWindCurve && slope * Curve.getTangent(
+                                    nextWindCurve.values, 0).y < 0) {
+                                if (testContains && x >= xBefore && x <= xAfter) {
+                                    ++windLeft;
+                                    ++windRight;
+                                    counted = true;
+                                }
+                            } else if (x <= xBefore) {
+                                windLeft += winding;
+                                counted = true;
+                            } else if (x >= xAfter) {
+                                windRight += winding;
                                 counted = true;
                             }
-                        } else if (x <= xBefore) {
-                            windLeft += winding;
-                            counted = true;
-                        } else if (x >= xAfter) {
-                            windRight += winding;
-                            counted = true;
+                            // mark the start of the path as counted
+                            if (curve === firstWindCrv)
+                                startCounted = t < tMin && counted;
                         }
-                        // Detect the beginning of a new loop by comparing with
-                        // the previous curve, and set startCounted accordingly.
-                        // This also works for the first loop where i - 1 == -1
-                        if (curve.previous !== curves[i - 1])
-                            startCounted = t < tMin && counted;
+                        prevT = t;
+                    } else if (!winding) {
+                        // if the point is on a horizontal curve and winding changes between
+                        // before and after the curve, we treat this as a 'touch point'
+                        if (testContains && py == values[1] &&
+                            (xAfter >= values[0] && xBefore <= values[6] ||
+                            xAfter >= values[6] && xBefore <= values[0]) &&
+                            prevWindCurve && nextWindCurve &&
+                            prevWindCurve.winding * nextWindCurve.winding < 0) {
+                            ++windLeft;
+                            ++windRight;
+                        }
+                        // we keep the value for prevT to avoid double counting of intersections
+                        // at the end of a curve and the start of the next curve, even if
+                        // any number of horizontal curves is between both curves
+                    } else {
+                        prevT = null;
                     }
-                    prevCurve = curve;
-                    prevT = t;
                 }
-            }
+            } while (loopEndIndex < curves.length);
         }
         return Math.max(abs(windLeft), abs(windRight));
     }
