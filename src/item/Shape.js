@@ -270,10 +270,16 @@ var Shape = Item.extend(/** @lends Shape# */{
     },
 
     _getBounds: function(getter, matrix) {
-        var rect = new Rectangle(this._size).setCenter(0, 0);
-        if (getter !== 'getBounds' && this.hasStroke())
-            rect = rect.expand(this.getStrokeWidth());
-        return matrix ? matrix._transformBounds(rect) : rect;
+        var rect = new Rectangle(this._size).setCenter(0, 0),
+            expandStrokeWidth = getter !== 'getBounds' && this.hasStroke()
+                && this.getStrokeWidth();
+        if (expandStrokeWidth && this.getStrokeScaling(true))
+            rect = rect.expand(expandStrokeWidth);
+        if (matrix)
+            rect = matrix._transformBounds(rect);
+        if (expandStrokeWidth && !this.getStrokeScaling(true))
+            rect = rect.expand(expandStrokeWidth);
+        return rect;
     }
 },
 new function() { // Scope for _contains() and _hitTestSelf() code.
