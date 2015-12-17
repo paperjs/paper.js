@@ -77,6 +77,19 @@ test('path.bounds when contained in a transformed group', function() {
     equals(path.bounds, new Rectangle(110, 110, 50, 50), 'path.bounds after group translation');
 });
 
+test('shape.strokeBounds when scale with strokeScaling is false', function(){
+    var shape = new Shape.Rectangle({
+        point: [5, 5],
+        size: [20, 20],
+        strokeScaling: false,
+        strokeColor: 'black',
+        strokeWidth: 10
+    });
+    equals(shape.getStrokeBounds(), new Rectangle(0, 0, 30, 30), 'shape.strokeBounds before scaling');
+    shape.scale(2, 2, [5, 5]);
+    equals(shape.getStrokeBounds(), new Rectangle(0, 0, 50, 50), 'shape.strokeBounds after scaling');
+});
+
 test('text.bounds', function() {
     var text = new PointText(new Point(50, 100));
     text.fillColor = 'black';
