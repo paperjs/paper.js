@@ -15,103 +15,115 @@
  * @namespace
  */
 var Key = new function() {
-    // TODO: cancel, clear, page-down, page-up, comma, minus, period, slash, ...
+    var keyLookup = {
+            // Unify different naming scheme, e.g. Gecko, IE, ...
+            ' ': 'space',
+            'Spacebar': 'space',
+            'Win': 'meta',
+            'Del': 'delete',
+            'Esc': 'escape',
+        },
 
-    var specialKeys = {
-        8: 'backspace',
-        9: 'tab',
-        13: 'enter',
-        16: 'shift',
-        17: 'control',
-        18: 'option',
-        19: 'pause',
-        20: 'caps-lock',
-        27: 'escape',
-        32: 'space',
-        35: 'end',
-        36: 'home',
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down',
-        46: 'delete',
-        91: 'command',
-        93: 'command', // WebKit right command button
-        224: 'command' // Gecko command button
-    },
+        charLookup = {
+            'tab': '\t',
+            'space': ' ',
+            'enter': '\r'
+        },
 
-    // Mark the special keys that still can be interpreted as chars too
-    specialChars = {
-        9: true, // tab
-        13: true, // enter
-        32: true // space
-    },
+        // Only keypress reliable gets char-codes that are actually representing
+        // characters with all modifiers taken into account across all browsers.
+        // So we need to perform a little trickery here to use these codes with
+        // onKeyDown/Up:
+        // - keydown is used to store the downKey and handle modifiers and
+        //   special keys such as arrows, space, etc.
+        // - keypress then fires the actual onKeyDown event and maps the downKey
+        //   to the keypress charCode so keyup can do the right thing.
+        keyMap = {}, // Map for currently pressed keys
+        charMap = {}, // key -> char mappings for pressed keys
+        metaFixMap, // Keys that will not receive keyup events due to Mac bug
+        downKey, // The last key from keydown
 
-    // Use new Base() to convert into a Base object, for #toString()
-    modifiers = new Base({
-        shift: false,
-        control: false,
-        option: false,
-        command: false,
-        capsLock: false,
-        space: false
-    }),
+        // Use new Base() to convert into a Base object, for #toString()
+        modifiers = new Base({
+            shift: false,
+            control: false,
+            alt: false, // WAS: option
+            meta: false, // WAS: command
+            capsLock: false,
+            space: false
+        }).inject({
+            // Short-cut to modifiers.alt for backward compatibility
+            option: {
+                get: function() {
+                    return this.alt;
+                }
+            },
 
-    // Since only keypress gets proper keyCodes that are actually representing
-    // characters, we need to perform a little trickery here to use these codes
-    // in onKeyDown/Up: keydown is used to store the downCode and handle
-    // modifiers and special keys such as arrows, space, etc, keypress fires the
-    // actual onKeyDown event and maps the keydown keyCode to the keypress
-    // charCode so keyup can do the right.
-    charCodeMap = {}, // keyCode -> charCode mappings for pressed keys
-    keyMap = {}, // Map for currently pressed keys
-    commandFixMap, // Keys that will not receive keyup events due to Mac bug
-    downCode; // The last keyCode from keydown
+            // Platform independent short-cut to modifiers.control / meta,
+            // based on whichever key is used for commands.
+            command: {
+                get: function() {
+                    var browser = paper.browser;
+                    return browser.mac ? this.meta : this.control;
+                }
+            }
+        });
 
-    function handleKey(down, keyCode, charCode, event) {
-        var character = charCode ? String.fromCharCode(charCode) : '',
-            specialKey = specialKeys[keyCode],
-            key = specialKey || character.toLowerCase(),
-            type = down ? 'keydown' : 'keyup',
+    function getKey(event) {
+        var key = event.key || event.keyIdentifier;
+        key = /^U\+/.test(key)
+                // Expand keyIdentifier Unicode format.
+                ? String.fromCharCode(parseInt(key.substr(2), 16))
+                // Use short version for arrow keys: ArrowLeft -> Left
+                : /^Arrow[A-Z]/.test(key) ? key.substr(5)
+                // This is far from ideal, but what else can we do?
+                : key === 'Unidentified' ? String.fromCharCode(event.keyCode)
+                : key;
+        return keyLookup[key] ||
+                // Hyphenate camel-cased special keys, lower-case normal ones:
+                (key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
+    }
+
+    function handleKey(down, key, character, event) {
+        var type = down ? 'keydown' : 'keyup',
             view = View._focused,
             scope = view && view.isVisible() && view._scope,
             tool = scope && scope.tool,
             name;
         keyMap[key] = down;
-        // Link the keyCode from keydown with the charCode form keypress,
-        // so keyup can retrieve the charCode again.
-        // Use delete instead of setting to null, so charCodeMap only contains
-        // keyCodes that are currently pressed, allowing the use of `keyCode in
-        // charCodeMap` checks and enumeration over pressed keys, e.g. in the
-        // window blur event.
+        // Link the key from keydown with the charCode form keypress, so keyup
+        // can retrieve the charCode again.
+        // Use delete instead of setting to null, so charMap only contains keys
+        // that are currently pressed, allowing the use of `key in charMap`
+        // checks and enumeration over pressed keys, e.g. in the blur event.
         if (down) {
-            charCodeMap[keyCode] = charCode;
+            charMap[key] = character;
         } else {
-            delete charCodeMap[keyCode];
+            delete charMap[key];
         }
         // Detect modifiers and mark them as pressed / released
-        if (specialKey && (name = Base.camelize(specialKey)) in modifiers) {
+        if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
             modifiers[name] = down;
             var browser = paper.browser;
-            if (name === 'command' && browser && browser.mac) {
+            if (name === 'meta' && browser && browser.mac) {
                 // Fix a strange behavior on Mac where no keyup events are
-                // received for any keys pressed while the command key is down.
+                // received for any keys pressed while the meta key is down.
                 // Keep track of the normal keys being pressed and trigger keyup
-                // events for all these keys when command is released:
+                // events for all these keys when meta is released:
                 if (down) {
-                    commandFixMap = {};
+                    metaFixMap = {};
                 } else {
-                    for (var code in commandFixMap) {
+                    for (var k in metaFixMap) {
                         // Make sure it wasn't released already in the meantime:
-                        if (code in charCodeMap)
-                            handleKey(false, code, commandFixMap[code], event);
+                        if (k in charMap)
+                            handleKey(false, k, metaFixMap[k], event);
                     }
-                    commandFixMap = null;
+                    metaFixMap = null;
                 }
             }
-        } else if (down && commandFixMap) {
-            // A normal key, add it to commandFixMap if that's defined.
-            commandFixMap[keyCode] = charCode;
+        } else if (down && metaFixMap) {
+            // A normal key, add it to metaFixMap if that's defined.
+            metaFixMap[key] = character;
         }
         if (tool && tool.responds(type)) {
             // Update global reference to this scope.
@@ -125,57 +137,79 @@ var Key = new function() {
 
     DomEvent.add(document, {
         keydown: function(event) {
-            var code = event.which || event.keyCode;
-            // If the keyCode is in keys, it needs to be handled by keydown and
-            // not in keypress after (arrows for example wont be triggering
-            // a keypress, but space would).
-            // The same applies when pressing the command / meta key, as we
-            // won't get a keypress event for these combos.
-            if (code in specialKeys || modifiers.command) {
-                handleKey(true, code,
-                        // No char code for special keys (except the ones listed
-                        // in specialChars, or when pressing command modifier),
-                        // but mark as pressed by setting to 0.
-                        code in specialChars || modifiers.command ? code : 0,
-                        event);
-                // Do not set downCode as we handled it already. Space would
+            var key = getKey(event),
+                browser = paper.browser,
+                // Chrome doesn't fire keypress events for command keys, so we
+                // need to handle this in a way that works across platforms.
+                fixCommand = browser.chrome && (browser.mac && event.metaKey
+                        || !browser.mac && event.ctrlKey);
+            // Directly handle any special keys (key.length > 1) in keydown, as
+            // not all of them will receive keypress events.
+            if (key.length > 1 || fixCommand) {
+                handleKey(true, key, charLookup[key] ||
+                        (key.length > 1 ? '' : key), event);
+                // Do not set downKey as we handled it already. E.g. space would
                 // be handled twice otherwise, once here, once in keypress.
             } else {
-                downCode = code;
+                downKey = key;
             }
         },
 
         keypress: function(event) {
-            if (downCode != null) {
-                handleKey(true, downCode, event.which || event.keyCode, event);
-                downCode = null;
+            if (downKey) {
+                handleKey(true, downKey, String.fromCharCode(event.charCode),
+                        event);
+                downKey = null;
             }
         },
 
         keyup: function(event) {
-            var code = event.which || event.keyCode;
-            if (code in charCodeMap)
-                handleKey(false, code, charCodeMap[code], event);
+            var key = getKey(event);
+            if (key in charMap)
+                handleKey(false, key, charMap[key], event);
         }
     });
 
     DomEvent.add(window, {
         blur: function(event) {
             // Emit key-up events for all currently pressed keys.
-            for (var code in charCodeMap)
-                handleKey(false, code, charCodeMap[code], event);
+            for (var key in charMap)
+                handleKey(false, key, charMap[key], event);
         }
     });
 
     return /** @lends Key */{
+        /**
+         * The current state of the keyboard modifiers.
+         *
+         * @property
+         * @type Object
+         *
+         * @option modifiers.shift {Boolean} {@true if the shift key is
+         * pressed}.
+         * @option modifiers.control {Boolean} {@true if the control key is
+         * pressed}.
+         * @option modifiers.alt {Boolean} {@true if the alt/option key is
+         * pressed}.
+         * @option modifiers.meta {Boolean} {@true if the meta/windows/command
+         * key is pressed}.
+         * @option modifiers.capsLock {Boolean} {@true if the caps-lock
+         * key is active}.
+         * @option modifiers.space {Boolean} {@true if the space key is
+         * pressed}.
+         * @option modifiers.option {Boolean} {@true if the alt/option key is
+         * pressed}. This is the same as {@code modifiers.alt}
+         * @option modifiers.command {Boolean} {@true if the meta key is
+         * pressed on Mac, or the control key is pressed on Windows and Linux}.
+         */
         modifiers: modifiers,
 
         /**
          * Checks whether the specified key is pressed.
          *
-         * @param {String} key One of: 'backspace', 'enter', 'shift', 'control',
-         * 'option', 'pause', 'caps-lock', 'escape', 'space', 'end', 'home',
-         * 'left', 'up', 'right', 'down', 'delete', 'command'
+         * @param {String} Any character or special key descriptor, e.g.:
+         * {@strings enter, space, shift, control, alt, meta, caps-lock, left,
+         * up, right, down, escape, delete, ...}
          * @return {Boolean} {@true if the key is pressed}
          *
          * @example

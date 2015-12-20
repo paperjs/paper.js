@@ -38,14 +38,18 @@ var KeyEvent = Event.extend(/** @lends KeyEvent# */{
      */
 
     /**
-     * The string character of the key that caused this key event.
+     * The character representation of the key that caused this key event,
+     * taking into account the current key-modifiers (e.g. shift, control,
+     * caps-lock, etc.)
      *
      * @name KeyEvent#character
      * @type String
      */
 
     /**
-     * The key that caused this key event.
+     * The key that caused this key event, either as a lower-case character or
+     * special key descriptor, e.g.: {@strings enter, space, shift, control,
+     * alt, meta, caps-lock, left, up, right, down, escape, delete, ...}
      *
      * @name KeyEvent#key
      * @type String
