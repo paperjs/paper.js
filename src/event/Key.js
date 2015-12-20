@@ -16,7 +16,7 @@
  */
 var Key = new function() {
     var keyLookup = {
-            // Unify different naming scheme, e.g. Gecko, IE, ...
+            // Unify different key identifier naming schemes, e.g. on Gecko, IE:
             '\t': 'tab',
             ' ': 'space',
             'Spacebar': 'space',
@@ -25,6 +25,7 @@ var Key = new function() {
             'Esc': 'escape',
         },
 
+        // To find corresponding characters for special keys in keydown events:
         charLookup = {
             'tab': '\t',
             'space': ' ',
@@ -137,14 +138,14 @@ var Key = new function() {
     DomEvent.add(document, {
         keydown: function(event) {
             var key = getKey(event),
-                browser = paper.browser,
-                // Chrome doesn't fire keypress events for command keys, so we
-                // need to handle this in a way that works across platforms.
-                fixCommand = browser.chrome && (browser.mac && event.metaKey
-                        || !browser.mac && event.ctrlKey);
+                browser = paper.browser;
             // Directly handle any special keys (key.length > 1) in keydown, as
             // not all of them will receive keypress events.
-            if (key.length > 1 || fixCommand) {
+            // Chrome doesn't fire keypress events for command and alt keys,
+            // so we need to handle this in a way that works across all OSes.
+            if (key.length > 1 || browser.chrome && (event.altKey
+                        || browser.mac && event.metaKey
+                        || !browser.mac && event.ctrlKey)) {
                 handleKey(true, key, charLookup[key] ||
                         (key.length > 1 ? '' : key), event);
                 // Do not set downKey as we handled it already. E.g. space would
