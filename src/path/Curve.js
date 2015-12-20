@@ -1472,33 +1472,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // to the original parameter range for v2.
             tMinNew = tMin + (tMax - tMin) * tMinClip,
             tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-        // Check if we need to subdivide the curves
-        if (oldTDiff > 0.5 && tDiff > 0.5) {
-            // Subdivide the curve which has converged the least.
-            if (tMaxNew - tMinNew > uMax - uMin) {
-                var parts = Curve.subdivide(v1, 0.5),
-                    t = tMinNew + (tMaxNew - tMinNew) / 2;
-                addCurveIntersections(
-                    v2, parts[0], c2, c1, locations, param,
-                    uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
-                addCurveIntersections(
-                    v2, parts[1], c2, c1, locations, param,
-                    uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
-            } else {
-                var parts = Curve.subdivide(v2, 0.5),
-                    t = uMin + (uMax - uMin) / 2;
-                addCurveIntersections(
-                    parts[0], v1, c2, c1, locations, param,
-                    uMin, t, tMinNew, tMaxNew, tDiff, !reverse, recursion);
-                addCurveIntersections(
-                    parts[1], v1, c2, c1, locations, param,
-                    t, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
-            }
-        } else if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-                < /*#=*/Numerical.CLIPPING_EPSILON) {
+        if (Math.max(uMax - uMin, tMaxNew - tMinNew)
+            < /*#=*/Numerical.CLIPPING_EPSILON) {
             // We have isolated the intersection with sufficient precision
-            var t1 = tMinNew + (tMaxNew - tMinNew) / 2,
-                t2 = uMin + (uMax - uMin) / 2;
+            var t1 = (tMinNew + tMaxNew) / 2,
+                t2 = (uMin + uMax) / 2;
             // Since we've been chopping up v1 and v2, we need to pass on the
             // original full curves here again to match the parameter space of
             // t1 and t2.
@@ -1509,6 +1487,28 @@ new function() { // Scope for intersection using bezier fat-line clipping
             addLocation(locations, param,
                 reverse ? v2 : v1, reverse ? c2 : c1, reverse ? t2 : t1, null,
                 reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t1 : t2, null);
+        // Check if we need to subdivide the curves
+        } else if (oldTDiff > 0.5 && tDiff > 0.5) {
+            // Subdivide the curve which has converged the least.
+            if (tMaxNew - tMinNew > uMax - uMin) {
+                var parts = Curve.subdivide(v1, 0.5),
+                    t = (tMinNew + tMaxNew) / 2;
+                addCurveIntersections(
+                    v2, parts[0], c2, c1, locations, param,
+                    uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
+                addCurveIntersections(
+                    v2, parts[1], c2, c1, locations, param,
+                    uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
+            } else {
+                var parts = Curve.subdivide(v2, 0.5),
+                    u = (uMin + uMax) / 2;
+                addCurveIntersections(
+                    parts[0], v1, c2, c1, locations, param,
+                    uMin, u, tMinNew, tMaxNew, tDiff, !reverse, recursion);
+                addCurveIntersections(
+                    parts[1], v1, c2, c1, locations, param,
+                    u, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
+            }
         } else if (tDiff > /*#=*/Numerical.EPSILON) { // Iterate
             addCurveIntersections(v2, v1, c2, c1, locations, param,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
