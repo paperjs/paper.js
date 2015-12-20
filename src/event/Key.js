@@ -17,8 +17,8 @@
 var Key = new function() {
     var keyLookup = {
             // Unify different naming scheme, e.g. Gecko, IE, ...
-            ' ': 'space',
             '\t': 'tab',
+            ' ': 'space',
             'Spacebar': 'space',
             'Win': 'meta',
             'Del': 'delete',
@@ -91,8 +91,8 @@ var Key = new function() {
             tool = scope && scope.tool,
             name;
         keyMap[key] = down;
-        // Link the key from keydown with the charCode form keypress, so keyup
-        // can retrieve the charCode again.
+        // Link the key from keydown with the character form keypress, so keyup
+        // can retrieve the character again.
         // Use delete instead of setting to null, so charMap only contains keys
         // that are currently pressed, allowing the use of `key in charMap`
         // checks and enumeration over pressed keys, e.g. in the blur event.
