@@ -112,10 +112,10 @@ var Group = Item.extend(/** @lends Group# */{
         // looked for yet).
         if (clipItem === undefined) {
             clipItem = null;
-            for (var i = 0, l = this._children.length; i < l; i++) {
-                var child = this._children[i];
-                if (child._clipMask) {
-                    clipItem = child;
+            var children = this._children;
+            for (var i = 0, l = children.length; i < l; i++) {
+                if (children[i]._clipMask) {
+                    clipItem = children[i];
                     break;
                 }
             }
@@ -187,8 +187,9 @@ var Group = Item.extend(/** @lends Group# */{
             clipItem.draw(ctx, param.extend({ clip: true }));
         }
         if (draw) {
-            for (var i = 0, l = this._children.length; i < l; i++) {
-                var item = this._children[i];
+            var children = this._children;
+            for (var i = 0, l = children.length; i < l; i++) {
+                var item = children[i];
                 if (item !== clipItem)
                     item.draw(ctx, param);
             }
