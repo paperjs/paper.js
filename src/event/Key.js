@@ -210,7 +210,7 @@ var Key = new function() {
         /**
          * Checks whether the specified key is pressed.
          *
-         * @param {String} Any character or special key descriptor, e.g.:
+         * @param {String} key any character or special key descriptor, e.g.:
          * {@strings enter, space, shift, control, alt, meta, caps-lock, left,
          * up, right, down, escape, delete, ...}
          * @return {Boolean} {@true if the key is pressed}
