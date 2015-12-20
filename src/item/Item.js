@@ -2808,8 +2808,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * miterLimit imposes a limit on the ratio of the miter length to the
      * {@link Item#strokeWidth}.
      *
-     * @property
      * @name Item#miterLimit
+     * @property
      * @default 10
      * @type Number
      */
@@ -2818,8 +2818,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The winding-rule with which the shape gets filled. Please note that only
      * modern browsers support winding-rules other than {@code 'nonzero'}.
      *
-     * @property
      * @name Item#windingRule
+     * @property
      * @default 'nonzero'
      * @type String('nonzero', 'evenodd')
      */
