@@ -18,6 +18,7 @@ var Key = new function() {
     var keyLookup = {
             // Unify different naming scheme, e.g. Gecko, IE, ...
             ' ': 'space',
+            '\t': 'tab',
             'Spacebar': 'space',
             'Win': 'meta',
             'Del': 'delete',
@@ -155,8 +156,12 @@ var Key = new function() {
 
         keypress: function(event) {
             if (downKey) {
-                handleKey(true, downKey, String.fromCharCode(event.charCode),
-                        event);
+                var code = event.charCode;
+                // Try event.charCode if its above 32 and fall back onto the
+                // key value if it's a single character, empty otherwise.
+                handleKey(true, downKey, code >= 32
+                        ? String.fromCharCode(code)
+                        : downKey.length > 1 ? '' : downKey, event);
                 downKey = null;
             }
         },
