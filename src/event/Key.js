@@ -146,8 +146,8 @@ var Key = new function() {
             if (key.length > 1 || browser.chrome && (event.altKey
                         || browser.mac && event.metaKey
                         || !browser.mac && event.ctrlKey)) {
-                handleKey(true, key, charLookup[key] ||
-                        (key.length > 1 ? '' : key), event);
+                handleKey(true, key, charLookup[key]
+                        || (key.length > 1 ? '' : key), event);
                 // Do not set downKey as we handled it already. E.g. space would
                 // be handled twice otherwise, once here, once in keypress.
             } else {
