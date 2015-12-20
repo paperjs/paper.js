@@ -367,7 +367,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     _transformContent: function(matrix) {
-        var coords = new Array(6), segments = this._segments;
+        var segments = this._segments,
+            coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++)
             segments[i]._transformCoordinates(matrix, coords, true);
         return true;
