@@ -162,7 +162,7 @@ new function() { // Item based mouse handling:
         var item = target,
             mouseEvent;
 
-        function call(obj) {
+        function call(obj, type) {
             if (obj.responds(type)) {
                 // Only produce the event object if we really need it, and then
                 // reuse it if we're bubbling.
@@ -177,17 +177,20 @@ new function() { // Item based mouse handling:
                     event.preventDefault();
                     return true;
                 }
+            } else if (type === 'doubleclick') {
+                // If obj doesn't respond to doubleclick, fall back to click:
+                return call(obj, 'click');
             }
         }
 
         // Bubble up the DOM and find a parent that responds to this event.
         while (item) {
-            if (call(item))
+            if (call(item, type))
                 return true;
             item = item.getParent();
         }
         // Also call event handler on view, if installed.
-        if (call(view))
+        if (call(view, type))
             return true;
         return false;
     }
@@ -249,8 +252,8 @@ new function() { // Item based mouse handling:
                 }
                 if (!stopped && item && item === downItem) {
                     clickTime = Date.now();
-                    callEvent(this, dblClick && downItem.responds('doubleclick')
-                            ? 'doubleclick' : 'click', event, downPoint, item);
+                    callEvent(this, dblClick ? 'doubleclick' : 'click', event,
+                            downPoint, item);
                     dblClick = false;
                 }
                 downItem = dragItem = null;
