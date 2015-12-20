@@ -1473,10 +1473,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
             tMinNew = tMin + (tMax - tMin) * tMinClip,
             tMaxNew = tMin + (tMax - tMin) * tMaxClip;
         if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-            < /*#=*/Numerical.CLIPPING_EPSILON) {
+                < /*#=*/Numerical.CLIPPING_EPSILON) {
             // We have isolated the intersection with sufficient precision
-            var t1 = (tMinNew + tMaxNew) / 2,
-                t2 = (uMin + uMax) / 2;
+            var t = (tMinNew + tMaxNew) / 2,
+                u = (uMin + uMax) / 2;
             // Since we've been chopping up v1 and v2, we need to pass on the
             // original full curves here again to match the parameter space of
             // t1 and t2.
@@ -1485,9 +1485,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
             v1 = c1.getValues();
             v2 = c2.getValues();
             addLocation(locations, param,
-                reverse ? v2 : v1, reverse ? c2 : c1, reverse ? t2 : t1, null,
-                reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t1 : t2, null);
-        // Check if we need to subdivide the curves
+                reverse ? v2 : v1, reverse ? c2 : c1, reverse ? u : t, null,
+                reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t : u, null);
         } else if (oldTDiff > 0.5 && tDiff > 0.5) {
             // Subdivide the curve which has converged the least.
             if (tMaxNew - tMinNew > uMax - uMin) {
