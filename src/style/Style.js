@@ -68,11 +68,12 @@
  *
  */
 var Style = Base.extend(new function() {
-    // windingRule / resolution / fillOverprint / strokeOverprint are currently
+    // fillRule / resolution / fillOverprint / strokeOverprint are currently
     // not supported.
     var defaults = {
         // Paths
         fillColor: undefined,
+        fillRule: 'nonzero',
         strokeColor: undefined,
         strokeWidth: 1,
         strokeCap: 'butt',
@@ -81,7 +82,6 @@ var Style = Base.extend(new function() {
         miterLimit: 10,
         dashOffset: 0,
         dashArray: [],
-        windingRule: 'nonzero',
         // Shadows
         shadowColor: undefined,
         shadowBlur: 0,
@@ -96,9 +96,8 @@ var Style = Base.extend(new function() {
         leading: null,
         // Paragraphs
         justification: 'left'
-    };
-
-    var flags = {
+    },
+    flags = {
         strokeWidth: /*#=*/Change.STROKE,
         strokeCap: /*#=*/Change.STROKE,
         strokeJoin: /*#=*/Change.STROKE,
@@ -111,19 +110,20 @@ var Style = Base.extend(new function() {
         font: /*#=*/Change.GEOMETRY, // deprecated, links to fontFamily
         leading: /*#=*/Change.GEOMETRY,
         justification: /*#=*/Change.GEOMETRY
+    },
+    item = {
+        // Enforce creation of beans, as bean getters have hidden parameters,
+        // see _dontMerge argument below.
+        beans: true
+    },
+    fields = {
+        _defaults: defaults,
+        // Override default fillColor for text items
+        _textDefaults: new Base(defaults, {
+            fillColor: new Color() // black
+        }),
+        beans: true
     };
-
-    // Enforce creation of beans, as bean getters have hidden parameters,
-    // see _dontMerge argument below.
-    var item = { beans: true },
-        fields = {
-            _defaults: defaults,
-            // Override default fillColor for text items
-            _textDefaults: new Base(defaults, {
-                fillColor: new Color() // black
-            }),
-            beans: true
-        };
 
     Base.each(defaults, function(value, key) {
         var isColor = /Color$/.test(key),
@@ -225,6 +225,19 @@ var Style = Base.extend(new function() {
         item[set] = function(value) {
             this._style[set](value);
         };
+    });
+
+    // Create aliases for deprecated properties. The lookup table contains the
+    // part after 'get' / 'set':
+    // TODO: Remove once deprecated long enough, after December 2016.
+    Base.each({
+        Font: 'FontFamily',
+        WindingRule: 'FillRule'
+    }, function(value, key) {
+        var get = 'get' + key,
+            set = 'set' + key
+        fields[get] = item[get] = '#get' + value;
+        fields[set] = item[set] = '#set' + value;
     });
 
     Item.inject(item);
@@ -506,6 +519,16 @@ var Style = Base.extend(new function() {
      *
      * // Set the fill color of the circle to RGB red:
      * circle.fillColor = new Color(1, 0, 0);
+     */
+
+    /**
+     * The fill-rule with which the shape gets filled. Please note that only
+     * modern browsers support fill-rules other than {@code 'nonzero'}.
+     *
+     * @name Style#fillRule
+     * @property
+     * @default 'nonzero'
+     * @type String('nonzero', 'evenodd')
      */
 
     /**

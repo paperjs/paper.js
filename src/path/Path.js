@@ -2198,7 +2198,7 @@ new function() { // Scope for drawing
                 // or stroke, there is no need to continue.
                 this._setStyles(ctx);
                 if (hasFill) {
-                    ctx.fill(style.getWindingRule());
+                    ctx.fill(style.getFillRule());
                     // If shadowColor is defined, clear it after fill, so it
                     // won't be applied to both fill and stroke. If the path is
                     // only stroked, we don't have to clear it.
