@@ -297,7 +297,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             this._setStyles(ctx);
             var style = this._style;
             if (style.hasFill()) {
-                ctx.fill(style.getWindingRule());
+                ctx.fill(style.getFillRule());
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (style.hasStroke())

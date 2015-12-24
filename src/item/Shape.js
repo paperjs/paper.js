@@ -255,7 +255,7 @@ var Shape = Item.extend(/** @lends Shape# */{
         if (!dontPaint && (hasFill || hasStroke)) {
             this._setStyles(ctx);
             if (hasFill) {
-                ctx.fill(style.getWindingRule());
+                ctx.fill(style.getFillRule());
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (hasStroke)

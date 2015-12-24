@@ -2816,16 +2816,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * The winding-rule with which the shape gets filled. Please note that only
-     * modern browsers support winding-rules other than {@code 'nonzero'}.
-     *
-     * @name Item#windingRule
-     * @property
-     * @default 'nonzero'
-     * @type String('nonzero', 'evenodd')
-     */
-
-    /**
      * {@grouptitle Fill Style}
      *
      * The fill color of the item.
@@ -2846,6 +2836,59 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * // Set the fill color of the circle to RGB red:
      * circle.fillColor = new Color(1, 0, 0);
+     */
+
+    /**
+     * The fill-rule with which the shape gets filled. Please note that only
+     * modern browsers support fill-rules other than {@code 'nonzero'}.
+     *
+     * @name Item#fillRule
+     * @property
+     * @default 'nonzero'
+     * @type String('nonzero', 'evenodd')
+     */
+
+    /**
+     * {@grouptitle Shadow Style}
+     *
+     * The shadow color.
+     *
+     * @property
+     * @name Style#shadowColor
+     * @type Color
+     *
+     * @example {@paperscript}
+     * // Creating a circle with a black shadow:
+     *
+     * var circle = new Path.Circle({
+     *     center: [80, 50],
+     *     radius: 35,
+     *     fillColor: 'white',
+     *     // Set the shadow color of the circle to RGB black:
+     *     shadowColor: new Color(0, 0, 0),
+     *     // Set the shadow blur radius to 12:
+     *     shadowBlur: 12,
+     *     // Offset the shadow by { x: 5, y: 5 }
+     *     shadowOffset: new Point(5, 5)
+     * });
+     */
+
+    /**
+     * The shadow's blur radius.
+     *
+     * @property
+     * @default 0
+     * @name Style#shadowBlur
+     * @type Number
+     */
+
+    /**
+     * The shadow's offset.
+     *
+     * @property
+     * @default 0
+     * @name Style#shadowOffset
+     * @type Point
      */
 
     // TODO: Find a better name than selectedColor. It should also be used for

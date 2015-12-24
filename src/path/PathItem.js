@@ -298,12 +298,12 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         var ctx = CanvasProvider.getContext(1, 1);
         // Use dontFinish to tell _draw to only produce geometries for hit-test.
         this._draw(ctx, new Base({ dontFinish: true }));
-        var res = ctx.isPointInPath(point.x, point.y, this.getWindingRule());
+        var res = ctx.isPointInPath(point.x, point.y, this.getFillRule());
         CanvasProvider.release(ctx);
         return res;
 /*#*/ } else { // !__options.nativeContains && __options.booleanOperations
         var winding = this._getWinding(point, false, true);
-        return !!(this.getWindingRule() === 'evenodd' ? winding & 1 : winding);
+        return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
     }
 
