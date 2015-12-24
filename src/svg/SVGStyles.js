@@ -13,6 +13,7 @@
 var SVGStyles = Base.each({
     // Fill
     fillColor: ['fill', 'color'],
+    fillRule: ['fill-rule', 'string'],
     // Stroke
     strokeColor: ['stroke', 'color'],
     strokeWidth: ['stroke-width', 'number'],
