@@ -39,9 +39,10 @@ function compareItem(actual, expected, message, options, properties) {
         QUnit.notStrictEqual(actual.id, 'not ' + expected.id, message + '.id');
     QUnit.strictEqual(actual.constructor, expected.constructor,
             message + '.constructor');
-    // When item was cloned and had a name, the name will be versioned
-    equals(options && options.cloned && actual.name ? actual.name + ' 1'
-            : actual.name, expected.name,
+    equals(actual.name,
+            // When item was cloned and had a name, the name will be versioned
+            options && options.cloned && expected.name
+                ? expected.name + ' 1' : expected.name,
             message + '.name');
     compareProperties(actual, expected, ['children', 'bounds', 'position',
             'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',

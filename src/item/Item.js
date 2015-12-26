@@ -309,7 +309,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._name;
     },
 
-    setName: function(name, unique) {
+    setName: function(name) {
         // Note: Don't check if the name has changed and bail out if it has not,
         // because setName is used internally also to update internal structures
         // when an item is moved from one parent to another.
@@ -326,12 +326,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var parent = this._parent;
         if (name && parent) {
             var children = parent._children,
-                namedChildren = parent._namedChildren,
-                orig = name,
-                i = 1;
-            // If unique is true, make sure we're not overriding other names
-            while (unique && children[name])
-                name = orig + ' ' + (i++);
+                namedChildren = parent._namedChildren;
             (namedChildren[name] = namedChildren[name] || []).push(this);
             children[name] = this;
         }
@@ -1437,59 +1432,80 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * }
      */
     clone: function(insert) {
-        return this._clone(new this.constructor(Item.NO_INSERT), insert);
-    },
-
-    /**
-     * Clones the item within the same project and places the copy above the
-     * item.
-     *
-     * @param {Boolean} [insert=true] specifies whether the copy should be
-     * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * original
-     * @return {Item} the newly cloned item
-     */
-    _clone: function(copy, insert, includeMatrix) {
-        var keys = ['_locked', '_visible', '_blendMode', '_opacity',
-                '_clipMask', '_guide'],
-            children = this._children;
-        // Copy over style
-        copy.setStyle(this._style);
-        // Clone all children and add them to the copy. tell #addChild we're
-        // cloning, as needed by CompoundPath#insertChild().
-        for (var i = 0, l = children && children.length; i < l; i++) {
-            copy.addChild(children[i].clone(false), true);
-        }
-        // Only copy over these fields if they are actually defined in 'this',
-        // meaning the default value has been overwritten (default is on
-        // prototype).
-        for (var i = 0, l = keys.length; i < l; i++) {
-            var key = keys[i];
-            if (this.hasOwnProperty(key))
-                copy[key] = this[key];
-        }
-        // Use Matrix#initialize to easily copy over values.
-        if (includeMatrix !== false)
-            copy._matrix.initialize(this._matrix);
-        // In case of Path#toShape(), we can't just set _applyMatrix as
-        // Shape won't allow it. Using the setter instead takes care of it.
-        // NOTE: This will also bake in the matrix that we just initialized,
-        // in case #applyMatrix is true.
-        copy.setApplyMatrix(this._applyMatrix);
-        copy.setPivot(this._pivot);
-        // Copy over the selection state, use setSelected so the item
-        // is also added to Project#selectedItems if it is selected.
-        copy.setSelected(this._selected);
-        // Copy over _data as well.
-        copy._data = this._data ? Base.clone(this._data) : null;
+        var copy = new this.constructor(Item.NO_INSERT);
+        copy.copyAttributes(this);
+        copy.copyContent(this);
         // Insert is true by default.
         if (insert || insert === undefined)
             copy.insertAbove(this);
-        // Clone the name too, but make sure we're not overriding the original
-        // in the same parent, by passing true for the unique parameter.
-        if (this._name)
-            copy.setName(this._name, true);
+        // Make sure we're not overriding the original name in the same parent
+        var name = this._name,
+            parent = this._parent;
+        if (name && parent) {
+            var children = parent._children,
+                orig = name,
+                i = 1;
+            while (children[name])
+                name = orig + ' ' + (i++);
+            if (name !== orig)
+                copy.setName(name);
+        }
         return copy;
+    },
+
+    /**
+     * Copies the content of the specified item over to this item.
+     *
+     * @param {Item} source the item to copy the content from
+     */
+    copyContent: function(source) {
+        var children = source._children;
+        // Clone all children and add them to the copy. tell #addChild we're
+        // cloning, as needed by CompoundPath#insertChild().
+        for (var i = 0, l = children && children.length; i < l; i++) {
+            this.addChild(children[i].clone(false), true);
+        }
+    },
+
+    /**
+     * Copies all attributes of the specified item over to this item. This
+     * includes its style, visibility, matrix, pivot, blend-mode, opacity,
+     * selection state, data, name, etc.
+     *
+     * @param {Item} source the item to copy the attributes from
+     */
+    copyAttributes: function(source, _preConcatenate) {
+        // Copy over style
+        this.setStyle(source._style);
+        // Only copy over these fields if they are actually defined in 'source',
+        // meaning the default value has been overwritten (default is on
+        // prototype).
+        var keys = ['_locked', '_visible', '_blendMode', '_opacity',
+                '_clipMask', '_guide'];
+        for (var i = 0, l = keys.length; i < l; i++) {
+            var key = keys[i];
+            if (source.hasOwnProperty(key))
+                this[key] = source[key];
+        }
+        // Use Matrix#initialize to easily copy over values.
+        this._matrix[_preConcatenate ? 'preConcatenate' : 'initialize'](
+                source._matrix);
+        // We can't just set _applyMatrix as many item types won't allow it,
+        // e.g. creating a Shape in Path#toShape().
+        // Using the setter instead takes care of it.
+        // NOTE: This will also bake in the matrix that we just initialized,
+        // in case #applyMatrix is true.
+        this.setApplyMatrix(source._applyMatrix);
+        this.setPivot(source._pivot);
+        // Copy over the selection state, use setSelected so the item
+        // is also added to Project#selectedItems if it is selected.
+        this.setSelected(source._selected);
+        // Copy over data and name as well.
+        var data = source._data,
+            name = source._name;
+        this._data = data ? Base.clone(data) : null;
+        if (name)
+            this.setName(name);
     },
 
     /**
@@ -2299,7 +2315,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (this._children && this._children.length === 1) {
             var child = this._children[0].reduce();
             child.insertAbove(this);
-            child.setStyle(this._style);
+            child.copyAttributes(this);
             this.remove();
             return child;
         }

@@ -67,9 +67,7 @@ PathItem.inject(new function() {
                 && path1.getIndex() < path2.getIndex()
                     ? path2 : path1);
         // Copy over the left-hand item's style and we're done.
-        // TODO: Consider using Item#_clone() for this, but find a way to not
-        // clone children / name (content).
-        result.setStyle(path1._style);
+        result.copyAttributes(path1);
         return result;
     }
 
@@ -861,9 +859,7 @@ PathItem.inject(new function() {
                 item = new CompoundPath(Item.NO_INSERT);
                 item.setChildren(paths);
                 item = item.reduce();
-                // TODO: Consider using Item#_clone() for this, but find a way to
-                // not clone children / name (content).
-                item.setStyle(this._style);
+                item.copyAttributes(this);
                 this.replaceWith(item);
             }
             return item;

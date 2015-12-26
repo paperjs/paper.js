@@ -101,21 +101,20 @@ var Raster = Item.extend(/** @lends Raster# */{
         return this.getSource() === item.getSource();
     },
 
-    clone: function(insert) {
-        var copy = new Raster(Item.NO_INSERT),
-            image = this._image,
-            canvas = this._canvas;
+    copyContent: function(source) {
+        var image = source._image,
+            canvas = source._canvas;
         if (image) {
-            copy.setImage(image);
+            this.setImage(image);
         } else if (canvas) {
             // If the Raster contains a Canvas object, we need to create a new
             // one and draw this raster's canvas on it.
-            var copyCanvas = CanvasProvider.getCanvas(this._size);
+            var copyCanvas = CanvasProvider.getCanvas(source._size);
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            copy.setImage(copyCanvas);
+            this.setImage(copyCanvas);
         }
-        copy._crossOrigin = this._crossOrigin;
-        return this._clone(copy, insert);
+        // TODO: Shouldn't this be copied with attributes instead of content?
+        this._crossOrigin = source._crossOrigin;
     },
 
     /**

@@ -84,6 +84,10 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
         return this._symbol === item._symbol;
     },
 
+    copyContent: function(source) {
+        this.setSymbol(source._symbol);
+    },
+
     /**
      * The symbol that the placed symbol refers to.
      *
@@ -99,15 +103,10 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
         this._changed(/*#=*/Change.GEOMETRY);
     },
 
-    clone: function(insert) {
-        var copy = new PlacedSymbol(Item.NO_INSERT);
-        copy.setSymbol(this._symbol);
-        return this._clone(copy, insert);
-    },
-
     isEmpty: function() {
         return this._symbol._definition.isEmpty();
     },
+
 
     _getBounds: function(getter, matrix, cacheItem) {
         var definition = this.symbol._definition;

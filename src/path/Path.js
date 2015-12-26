@@ -131,13 +131,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                 && Base.equals(this._segments, item._segments);
     },
 
-    clone: function(insert) {
-        var copy = new Path(Item.NO_INSERT);
-        copy.setSegments(this._segments);
-        copy._closed = this._closed;
-        if (this._clockwise !== undefined)
-            copy._clockwise = this._clockwise;
-        return this._clone(copy, insert);
+    copyContent: function(source) {
+        this.setSegments(source._segments);
+        this._closed = source._closed;
+        var clockwise = source._clockwise;
+        if (clockwise !== undefined)
+            this._clockwise = clockwise;
     },
 
     _changed: function _changed(flags) {
@@ -1247,8 +1246,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Pass true for _preserve, in case of CompoundPath, to avoid
                 // reversing of path direction, which would mess with segments!
                 path.insertAbove(this, true);
-                // Use _clone to copy over all other attributes, including style
-                this._clone(path);
+                path.copyAttributes(this);
             }
             path._add(segs, 0);
             // Add dividing segment again. In case of a closed path, that's the
@@ -1496,14 +1494,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 
         if (type) {
             var center = this.getPosition(true),
-                shape = this._clone(new type({
+                shape = new type({
                     center: center,
                     size: size,
                     radius: radius,
                     insert: false
-                }), insert, false);
+                });
+            // Pass `true` to preconcatenate the matrix to the center-transform.
+            shape.copyAttributes(this, true);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
+            shape.insertAbove(this);
             return shape;
         }
         return null;

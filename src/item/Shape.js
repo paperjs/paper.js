@@ -39,12 +39,10 @@ var Shape = Item.extend(/** @lends Shape# */{
             && Base.equals(this._radius, item._radius);
     },
 
-    clone: function(insert) {
-        var copy = new Shape(Item.NO_INSERT);
-        copy.setType(this._type);
-        copy.setSize(this._size);
-        copy.setRadius(this._radius);
-        return this._clone(copy, insert);
+    copyContent: function(source) {
+        this.setType(source._type);
+        this.setSize(source._size);
+        this.setRadius(source._radius);
     },
 
     /**
@@ -169,17 +167,20 @@ var Shape = Item.extend(/** @lends Shape# */{
      * @see Path#toShape(insert)
      */
     toPath: function(insert) {
-        var path = this._clone(new Path[Base.capitalize(this._type)]({
+        // TODO: Move to Path.createTYPE creators instead of fake constructors.
+        var path = new Path[Base.capitalize(this._type)]({
             center: new Point(),
             size: this._size,
             radius: this._radius,
             insert: false
-        }), insert);
+        });
+        path.copyAttributes(this);
         // The created path will inherit #applyMatrix from this Shape, hence it
         // will always be false.
         // Respect the setting of paper.settings.applyMatrix for new paths:
         if (paper.settings.applyMatrix)
             path.setApplyMatrix(true);
+        path.insertAbove(this);
         return path;
     },
 

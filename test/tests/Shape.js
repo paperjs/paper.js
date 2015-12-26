@@ -50,6 +50,6 @@ test('shape.toPath().toShape()', function() {
     };
 
     Base.each(shapes, function(shape, name) {
-        equals(shape, shape.toPath().toShape(), name + '.toPath().toShape()');
+        equals(shape.toPath().toShape(), shape, name + '.toPath().toShape()');
     });
 });
