@@ -1482,6 +1482,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * selection state, data, name, etc.
      *
      * @param {Item} source the item to copy the attributes from
+     * @param {Boolean} excludeMatrix whether to exclude the transformation
+     * matrix when copying all attributes
      */
     copyAttributes: function(source, excludeMatrix) {
         // Copy over style
