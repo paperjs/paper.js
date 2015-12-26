@@ -47,12 +47,12 @@ PathItem.inject(new function() {
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
-     * remove empty curves, #resolveCrossings() to resolve self- intersection
-     * and #reorient() to make sure all paths have correct winding direction.
+     * remove empty curves, #resolveCrossings() to resolve self-intersection
+     * make sure all paths have correct winding direction.
      */
     function preparePath(path, resolve) {
         var res = path.clone(false).reduce().transform(null, true, true);
-        return resolve ? res.resolveCrossings().reorient() : res;
+        return resolve ? res.resolveCrossings() : res;
     }
 
     function finishBoolean(ctor, paths, path1, path2, reduce) {
@@ -758,18 +758,116 @@ PathItem.inject(new function() {
                     this, path, true);
         },
 
+        /*
+         * Resolves all crossings of a path item, first by splitting the path or
+         * compound-path in each self-intersection and tracing the result, then
+         * fixing the orientation of the resulting sub-paths by making sure that
+         * all sub-paths are of different winding direction than the first path,
+         * except for when individual sub-paths are disjoint, i.e. islands,
+         * which are reoriented so that:
+         * - The holes have opposite winding direction.
+         * - Islands have to have the same winding direction as the first child.
+         * If possible, the existing path / compound-path is modified if the
+         * amount of resulting paths allows so, otherwise a new path /
+         * compound-path is created, replacing the current one.
+         */
         resolveCrossings: function() {
-            var crossings = this.getCrossings();
-            if (!crossings.length)
-                return this;
-            divideLocations(CurveLocation.expand(crossings));
-            var paths = this._children || [this],
-                segments = [];
-            for (var i = 0, l = paths.length; i < l; i++) {
-                segments.push.apply(segments, paths[i]._segments);
+            var children = this._children,
+                // Support both path and compound-path items
+                paths = children || [this],
+                crossings = this.getCrossings();
+            // First resolve all self-intersections
+            if (crossings.length) {
+                divideLocations(CurveLocation.expand(crossings));
+                // Resolve self-intersections through tracePaths()
+                paths = tracePaths(Base.each(paths, function(path) {
+                    this.push.apply(this, path._segments);
+                }, []));
             }
-            return finishBoolean(CompoundPath, tracePaths(segments),
-                    this, null, false);
+            // By now, all paths are non-overlapping, but might be fully
+            // contained inside each other.
+            // Next we adjust their orientation based on on further checks:
+            var length = paths.length,
+                item;
+            if (length > 1) {
+                // First order the paths by the area of their bounding boxes.
+                paths = paths.slice().sort(function (a, b) {
+                    return b.getBounds().getArea() - a.getBounds().getArea();
+                });
+                var first = paths[0],
+                    clockwise = first.isClockwise(),
+                    items = [first],
+                    excluded = {},
+                    isNonZero = this.getFillRule() === 'nonzero',
+                    windings = isNonZero && Base.each(paths, function(path) {
+                        this.push(path.isClockwise() ? 1 : -1);
+                    }, []);
+                // Walk through paths, from largest to smallest.
+                // The first, largest path can be skipped.
+                for (var i = 1; i < length; i++) {
+                    var path = paths[i],
+                        point = path.getInteriorPoint(),
+                        isOverlapping = false,
+                        exclude = false,
+                        counter = 0;
+                    for (var j = i - 1; j >= 0; j--) {
+                        if (paths[j].contains(point)) {
+                            if (isNonZero && !isOverlapping) {
+                                windings[i] += windings[j];
+                                // Remove path if rule is nonzero and winding
+                                // changes from nonzero to zero or from zero to
+                                // nonzero between containing path and path.
+                                if (windings[i] && windings[j]) {
+                                    exclude = excluded[i] = true;
+                                    break;
+                                }
+                            }
+                            isOverlapping = true;
+                            // Increase counter for containing paths only if
+                            // path will not be excluded.
+                            if (!excluded[j])
+                                counter++;
+                        }
+                    }
+                    if (!exclude) {
+                        // Set correct orientation and add to final items.
+                        path.setClockwise((counter % 2 === 0) == clockwise);
+                        items.push(path);
+                    }
+                }
+                // Replace paths with the processed items list:
+                paths = items;
+                length = items.length;
+            } else if (length === 1) {
+                // TODO: Is this really required? We don't do the same for
+                // compound-paths:
+                // Paths that are not part of compound paths should never be
+                // counter- clockwise for boolean operations.
+                paths[0].setClockwise(true);
+            }
+            // First try to recycle the current path / compound-path, if the
+            // amount of paths do not require a conversion.
+            if (length > 1 && children) {
+                if (paths !== children)
+                    this.setChildren(paths);
+                item = this;
+            } else if (length === 1 && !children) {
+                if (paths[0] !== this)
+                    this.setSegments(paths[0].removeSegments());
+                item = this;
+            }
+            // Otherwise create a new compound-path and see if we can reduce it,
+            // and attempt to replace this item with it.
+            if (!item) {
+                item = new CompoundPath(Item.NO_INSERT);
+                item.setChildren(paths);
+                item = item.reduce();
+                // TODO: Consider using Item#_clone() for this, but find a way to
+                // not clone children / name (content).
+                item.setStyle(this._style);
+                this.replaceWith(item);
+            }
+            return item;
         }
     };
 });
@@ -912,13 +1010,6 @@ Path.inject(/** @lends Path# */{
             point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
         }
         return point;
-    },
-
-    reorient: function() {
-        // Paths that are not part of compound paths should never be counter-
-        // clockwise for boolean operations.
-        this.setClockwise(true);
-        return this;
     }
 });
 
@@ -934,37 +1025,5 @@ CompoundPath.inject(/** @lends CompoundPath# */{
         for (var i = 0, l = children.length; i < l; i++)
             monoCurves.push.apply(monoCurves, children[i]._getMonoCurves());
         return monoCurves;
-    },
-
-    /*
-     * Fixes the orientation of a CompoundPath's child paths by first ordering
-     * them according to their area, and then making sure that all children are
-     * of different winding direction than the first child, except for when
-     * some individual contours are disjoint, i.e. islands, they are reoriented
-     * so that:
-     * - The holes have opposite winding direction.
-     * - Islands have to have the same winding direction as the first child.
-     */
-    // NOTE: Does NOT handle self-intersecting CompoundPaths on itself, but
-    // the boolean code above resolves these before calling reorient().
-    reorient: function() {
-        var children = this.removeChildren().sort(function(a, b) {
-            return b.getBounds().getArea() - a.getBounds().getArea();
-        });
-        if (children.length > 0) {
-            this.addChildren(children);
-            var clockwise = children[0].isClockwise();
-            // Skip the first child
-            for (var i = 1, l = children.length; i < l; i++) {
-                var point = children[i].getInteriorPoint(),
-                    counters = 0;
-                for (var j = i - 1; j >= 0; j--) {
-                    if (children[j].contains(point))
-                        counters++;
-                }
-                children[i].setClockwise(counters % 2 === 0 && clockwise);
-            }
-        }
-        return this;
     }
 });
