@@ -153,6 +153,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         if (children.length === 0) { // Replace with a simple empty Path
             var path = new Path(Item.NO_INSERT);
             path.insertAbove(this);
+            // TODO: Consider using Item#_clone() for this, but find a way to
+            // not clone children / name (content).
             path.setStyle(this._style);
             this.remove();
             return path;
