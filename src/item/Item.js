@@ -2323,16 +2323,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the reduced item
      */
     reduce: function() {
-        if (this._children && this._children.length === 1) {
-            var child = this._children[0].reduce();
-            // make sure that reduced item has same parent as original
-            if (this.parent) {
+        var children = this._children;
+        if (children && children.length === 1) {
+            var child = children[0].reduce();
+            // Make sure the reduced item has the same parent as the original.
+            if (this._parent) {
                 child.insertAbove(this);
+                this.remove();
             } else {
                 child.remove();
             }
             child.copyAttributes(this);
-            this.remove();
             return child;
         }
         return this;
