@@ -1432,9 +1432,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * }
      */
     clone: function(insert) {
-        var copy = new this.constructor(Item.NO_INSERT);
-        copy.copyAttributes(this);
+        var copy = new this.constructor(Item.NO_INSERT),
+            children = this._children;
+        // On items with children, for performance reasons due to the way that
+        // styles are currently "flattened" into existing children, we need to
+        // clone attributes first, then content.
+        // For all other items, it's the other way around, since applying
+        // attributes might have an impact on their content.
+        if (children)
+            copy.copyAttributes(this);
         copy.copyContent(this);
+        if (!children)
+            copy.copyAttributes(this);
         // Insert is true by default.
         if (insert || insert === undefined)
             copy.insertAbove(this);
@@ -1474,7 +1483,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Item} source the item to copy the attributes from
      */
-    copyAttributes: function(source, _preConcatenate) {
+    copyAttributes: function(source, excludeMatrix) {
         // Copy over style
         this.setStyle(source._style);
         // Only copy over these fields if they are actually defined in 'source',
@@ -1488,8 +1497,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 this[key] = source[key];
         }
         // Use Matrix#initialize to easily copy over values.
-        this._matrix[_preConcatenate ? 'preConcatenate' : 'initialize'](
-                source._matrix);
+        if (!excludeMatrix)
+            this._matrix.initialize(source._matrix);
         // We can't just set _applyMatrix as many item types won't allow it,
         // e.g. creating a Shape in Path#toShape().
         // Using the setter instead takes care of it.

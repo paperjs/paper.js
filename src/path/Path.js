@@ -1500,8 +1500,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                     radius: radius,
                     insert: false
                 });
-            // Pass `true` to preconcatenate the matrix to the center-transform.
+            // Pass `true` to exclude the matrix, so we can preconcatenate after
             shape.copyAttributes(this, true);
+            shape._matrix.preConcatenate(this._matrix);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
             shape.insertAbove(this);

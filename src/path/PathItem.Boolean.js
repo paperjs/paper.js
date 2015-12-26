@@ -66,8 +66,8 @@ PathItem.inject(new function() {
         result.insertAbove(path2 && path1.isSibling(path2)
                 && path1.getIndex() < path2.getIndex()
                     ? path2 : path1);
-        // Copy over the left-hand item's style and we're done.
-        result.copyAttributes(path1);
+        // Copy over the input path attributes, excluding matrix and we're done.
+        result.copyAttributes(path1, true);
         return result;
     }
 
