@@ -769,8 +769,7 @@ PathItem.inject(new function() {
                             if (isNonZero && !isOverlapping) {
                                 windings[i] += windings[j];
                                 // Remove path if rule is nonzero and winding
-                                // changes from nonzero to zero or from zero to
-                                // nonzero between containing path and path.
+                                // of path and containing path is not zero.
                                 if (windings[i] && windings[j]) {
                                     exclude = excluded[i] = true;
                                     break;
