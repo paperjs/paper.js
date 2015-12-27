@@ -272,14 +272,17 @@ var Shape = Item.extend(/** @lends Shape# */{
 
     _getBounds: function(getter, matrix) {
         var rect = new Rectangle(this._size).setCenter(0, 0),
-            expandStrokeWidth = getter !== 'getBounds' && this.hasStroke()
-                && this.getStrokeWidth();
-        if (expandStrokeWidth && this.getStrokeScaling(true))
-            rect = rect.expand(expandStrokeWidth);
+            strokeWidth = getter === 'getStrokeBounds' && this.hasStroke()
+                && this.getStrokeWidth(),
+            scaling = strokeWidth && this.getStrokeScaling();
+        // If we're getting the strokeBounds, include the stroke width before
+        // or after transforming the rect, based on strokeScaling.
+        if (strokeWidth && scaling)
+            rect = rect.expand(strokeWidth);
         if (matrix)
             rect = matrix._transformBounds(rect);
-        if (expandStrokeWidth && !this.getStrokeScaling(true))
-            rect = rect.expand(expandStrokeWidth);
+        if (strokeWidth && !scaling)
+            rect = rect.expand(strokeWidth);
         return rect;
     }
 },

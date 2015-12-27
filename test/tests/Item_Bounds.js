@@ -77,7 +77,7 @@ test('path.bounds when contained in a transformed group', function() {
     equals(path.bounds, new Rectangle(110, 110, 50, 50), 'path.bounds after group translation');
 });
 
-test('shape.strokeBounds when scale with strokeScaling is false', function(){
+test('shape.strokeBounds when scaled with strokeScaling set to false', function(){
     var shape = new Shape.Rectangle({
         point: [5, 5],
         size: [20, 20],
@@ -85,9 +85,9 @@ test('shape.strokeBounds when scale with strokeScaling is false', function(){
         strokeColor: 'black',
         strokeWidth: 10
     });
-    equals(shape.getStrokeBounds(), new Rectangle(0, 0, 30, 30), 'shape.strokeBounds before scaling');
+    equals(shape.strokeBounds, new Rectangle(0, 0, 30, 30), 'shape.strokeBounds before scaling');
     shape.scale(2, 2, [5, 5]);
-    equals(shape.getStrokeBounds(), new Rectangle(0, 0, 50, 50), 'shape.strokeBounds after scaling');
+    equals(shape.strokeBounds, new Rectangle(0, 0, 50, 50), 'shape.strokeBounds after scaling');
 });
 
 test('text.bounds', function() {
