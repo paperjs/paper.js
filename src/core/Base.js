@@ -37,6 +37,17 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
+     * The class of the object as a constructor function.
+     * The same as {@link #constructor}.
+     *
+     * @beans
+     */
+    getClass: function() {
+        // This is mainly here to create symmetry with the the #getItems() API.
+        return this.constructor;
+    },
+
+    /**
      * The class name of the object as a string, if the prototype defines a
      * `_class` value.
      *

@@ -352,20 +352,28 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * Fetch items contained within the project whose properties match the
      * criteria in the specified object.
-     * Extended matching is possible by providing a compare function or
-     * regular expression. Matching points, colors only work as a comparison
-     * of the full object, not partial matching (e.g. only providing the x-
-     * coordinate to match all points with that x-value). Partial matching
-     * does work for {@link Item#data}.
+     * Extended matching of properties is possible by providing a comparator
+     * function or regular expression. Matching points, colors only work as a
+     * comparison of the full object, not partial matching (e.g. only providing
+     * the x- coordinate to match all points with that x-value). Partial
+     * matching does work for {@link Item#data}.
      * Matching items against a rectangular area is also possible, by setting
      * either {@code match.inside} or {@code match.overlapping} to a rectangle
      * describing the area in which the items either have to be fully or partly
      * contained.
      *
+     * @option [match.recursive=true] {Boolean} whether to loop recursively
+     *     through all children, or stop at the current level
+     * @option match.match {Function} a match function to be called for each
+     *     item, allowing the definition of more flexible item checks that are
+     *     not bound to properties. If no other match properties are defined,
+     *     this function can also be passed instead of the {@code match} object
+     * @option match.class {Function} the constructor function of the item type
+     *     to match against
      * @option match.inside {Rectangle} the rectangle in which the items need to
-     * be fully contained
+     *     be fully contained
      * @option match.overlapping {Rectangle} the rectangle with which the items
-     * need to at least partly overlap
+     *     need to at least partly overlap
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({
@@ -434,7 +442,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * // Select the fetched path:
      * items[0].selected = true;
      *
-     * @example {@paperscript} // Fetch items using a comparing function:
+     * @example {@paperscript} // Fetch items using a comparator function:
      *
      * // Create a circle shaped path:
      * var path1 = new Path.Circle({
@@ -461,7 +469,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * // Select the fetched item:
      * items[0].selected = true;
      *
-     * @example {@paperscript} // Fetch items using a comparing function (2):
+     * @example {@paperscript} // Fetch items using a comparator function (2):
      *
      * // Create a rectangle shaped path (4 segments):
      * var path1 = new Path.Rectangle({

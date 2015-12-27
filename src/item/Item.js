@@ -1879,6 +1879,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
         } else if (type === 'function') {
             return name(this);
+        } else if (name === 'match') {
+            return compare(this);
         } else {
             var value = /^(empty|editable)$/.test(name)
                     // Handle boolean test functions separately, by calling them
@@ -1886,21 +1888,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     ? this['is' + Base.capitalize(name)]()
                     // Support legacy Item#type property to match hyphenated
                     // class-names.
+                    // TODO: Remove after December 2016.
                     : name === 'type'
                         ? Base.hyphenate(this._class)
                         : this[name];
             if (/^(constructor|class)$/.test(name)) {
-                if (!(this instanceof compare))
-                    return false;
-            } else if (compare instanceof RegExp) {
-                if (!compare.test(value))
-                    return false;
+                if (typeof compare === 'function') {
+                    return this instanceof compare;
+                } else {
+                    // Compare further with the _class property value instead.
+                    value = this._class;
+                }
+            }
+            if (compare instanceof RegExp) {
+                return compare.test(value);
             } else if (typeof compare === 'function') {
-                if (!compare(value))
-                    return false;
+                return !!compare(value);
             } else if (Base.isPlainObject(compare)) {
-                if (!matchObject(compare, value))
-                    return false;
+                return matchObject(compare, value);
             } else if (!Base.equals(value, compare)) {
                 return false;
             }
@@ -1925,10 +1930,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
+     * @option [match.recursive=true] {Boolean} whether to loop recursively
+     *     through all children, or stop at the current level
+     * @option match.match {Function} a match function to be called for each
+     *     item, allowing the definition of more flexible item checks that are
+     *     not bound to properties. If no other match properties are defined,
+     *     this function can also be passed instead of the {@code match} object
+     * @option match.class {Function} the constructor function of the item type
+     *     to match against
      * @option match.inside {Rectangle} the rectangle in which the items need to
-     * be fully contained
+     *     be fully contained
      * @option match.overlapping {Rectangle} the rectangle with which the items
-     * need to at least partly overlap
+     *     need to at least partly overlap
      *
      * @param {Object|Function} match the criteria to match against
      * @return {Item[]} the list of matching descendant items
@@ -1967,14 +1980,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
                 // inside / overlapping:
-                var obj = typeof match === 'object' && match || {},
-                    overlapping = obj.overlapping,
-                    inside = obj.inside,
+                var obj = typeof match === 'object' && match,
+                    overlapping = obj && obj.overlapping,
+                    inside = obj && obj.inside,
                     // If overlapping is set, we also perform the inside check:
                     bounds = overlapping || inside,
                     rect = bounds && Rectangle.read([bounds]);
                 param = {
                     items: [], // The list to contain the results.
+                    recursive: obj && obj.recursive !== false,
                     inside: !!inside,
                     overlapping: !!overlapping,
                     rect: rect,
@@ -1983,14 +1997,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                         insert: false
                     })
                 };
-                // Create a copy of the match object that doesn't contain the
-                // `inside` and `overlapping` properties.
-                if (bounds)
-                    match = Base.set({}, match,
-                            { inside: true, overlapping: true });
+                if (obj) {
+                    // Create a copy of the match object that doesn't contain
+                    // these special properties:
+                    match = Base.set({}, match, {
+                        recursive: true, inside: true, overlapping: true
+                    });
+                }
             }
-            var items = param && param.items,
-                rect = param && param.rect;
+            var items = param.items,
+                rect = param.rect;
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
@@ -2016,9 +2032,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     if (firstOnly)
                         break;
                 }
-                _getItems(child._children, match,
-                        childMatrix, param,
-                        firstOnly);
+                if (param.recursive !== false) {
+                    _getItems(child._children, match,
+                            childMatrix, param,
+                            firstOnly);
+                }
                 if (firstOnly && items.length > 0)
                     break;
             }
