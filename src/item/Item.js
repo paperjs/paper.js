@@ -1877,6 +1877,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 if (name.hasOwnProperty(key) && !this.matches(key, name[key]))
                     return false;
             }
+            return true;
         } else if (type === 'function') {
             return name(this);
         } else if (name === 'match') {
@@ -1892,13 +1893,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     : name === 'type'
                         ? Base.hyphenate(this._class)
                         : this[name];
-            if (/^(constructor|class)$/.test(name)) {
-                if (typeof compare === 'function') {
+            if (name === 'class') {
+                if (typeof compare === 'function')
                     return this instanceof compare;
-                } else {
-                    // Compare further with the _class property value instead.
-                    value = this._class;
-                }
+                // Compare further with the _class property value instead.
+                value = this._class;
             }
             if (compare instanceof RegExp) {
                 return compare.test(value);
@@ -1906,11 +1905,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 return !!compare(value);
             } else if (Base.isPlainObject(compare)) {
                 return matchObject(compare, value);
-            } else if (!Base.equals(value, compare)) {
-                return false;
             }
+            return Base.equals(value, compare);
         }
-        return true;
     },
 
     /**

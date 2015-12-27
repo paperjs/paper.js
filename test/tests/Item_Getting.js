@@ -46,7 +46,7 @@ test('Project#getItems()', function() {
     var layer = new Layer();
 
     var matches = paper.project.getItems({
-        type: 'layer'
+        class: Layer
     });
     equals(function() {
         return matches.length == 1 && matches[0] == layer;
@@ -61,20 +61,20 @@ test('Project#getItems()', function() {
 
     var path = new Path();
     var matches = paper.project.getItems({
-        type: 'path'
+        class: Path
     });
     equals(function() {
         return matches.length == 1 && matches[0] == path;
     }, true);
 
+    var group = new Group();
     var matches = paper.project.getItems({
-        constructor: Path
+        className: 'Group'
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === path;
+        return matches.length == 1 && matches[0] === group
     }, true);
 
-    var group = new Group();
     var matches = paper.project.getItems({
         type: 'group'
     });
@@ -84,7 +84,7 @@ test('Project#getItems()', function() {
 
     var raster = new Raster();
     var matches = paper.project.getItems({
-        type: 'raster'
+        class: Raster
     });
     equals(function() {
         return matches.length == 1 && matches[0] === raster
@@ -107,7 +107,7 @@ test('Project#getItems()', function() {
     equals(function() {
         return paper.project.getItems({
             selected: true,
-            type: 'raster'
+            class: Raster
         }).length;
     }, 1);
 });
