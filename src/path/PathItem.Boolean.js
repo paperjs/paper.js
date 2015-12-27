@@ -213,7 +213,7 @@ PathItem.inject(new function() {
         var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             noHandles = false,
-            clearSegments = [],
+            clearCurves = [],
             prevCurve,
             prevT;
 
@@ -239,11 +239,12 @@ PathItem.inject(new function() {
                 // Split the curve at t, passing true for _setHandles to always
                 // set the handles on the sub-curves even if the original curve
                 // had no handles.
-                segment = curve.divide(t, true, true)._segment1;
-                // Keep track of segments of curves without handles, so they can
-                // be cleared again at the end.
+                var newCurve = curve.divide(t, true, true);
+                // Keep track of curves without handles, so they can be cleared
+                // again at the end.
                 if (noHandles)
-                    clearSegments.push(segment);
+                    clearCurves.push(curve, newCurve);
+                segment = newCurve._segment1;
             }
             loc._setSegment(segment);
             // Create links from the new segment to the intersection on the
@@ -269,8 +270,8 @@ PathItem.inject(new function() {
         }
         // Clear segment handles if they were part of a curve with no handles,
         // once we are done with the entire curve.
-        for (var i = 0, l = clearSegments.length; i < l; i++) {
-            clearSegments[i].clearHandles();
+        for (var i = 0, l = clearCurves.length; i < l; i++) {
+            clearCurves[i].clearHandles();
         }
     }
 
