@@ -13,9 +13,9 @@
 /**
  * @name PathItem
  *
- * @class The PathItem class is the base for any items that describe paths
- * and offer standardised methods for drawing and path manipulation, such as
- * {@link Path} and {@link CompoundPath}.
+ * @class The PathItem class is the base for any items that describe paths and
+ *     offer standardised methods for drawing and path manipulation, such as
+ *     {@link Path} and {@link CompoundPath}.
  *
  * @extends Item
  */
@@ -33,10 +33,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @param {PathItem} path the other item to find the intersections with
      * @param {Function} [include] a callback function that can be used to
-     * filter out undesired locations right while they are collected.
-     * When defined, it shall return {@true to include a location}.
+     *     filter out undesired locations right while they are collected. When
+     *     defined, it shall return {@true to include a location}.
      * @return {CurveLocation[]} the locations of all intersection between the
-     * paths
+     *     paths
      * @see #getCrossings(path)
      * @example {@paperscript} // Finding the intersections between two paths
      * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
@@ -147,7 +147,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @param {PathItem} path the other item to find the crossings with
      * @param {Boolean} includeOverlaps whether to also count overlaps as
-     * crossings
+     *     crossings
      * @see #getIntersections(path)
      */
     getCrossings: function(path, includeOverlaps) {
@@ -504,7 +504,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @function
      * @param {Point} to the point where the arc should end
      * @param {Boolean} [clockwise=true] specifies whether the arc should be
-     *        drawn in clockwise direction
+     *     drawn in clockwise direction
      *
      * @example {@paperscript}
      * var path = new Path();
@@ -546,13 +546,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     // DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
     /**
-     * Closes the path. When closed, Paper.js connects the first and
-     * last segment of the path with an additional curve.
+     * Closes the path. When closed, Paper.js connects the first and last
+     * segment of the path with an additional curve.
      *
      * @name PathItem#closePath
      * @function
      * @param {Boolean} join controls whether the method should attempt to merge
-     * the first segment with the last if they lie in the same location
+     *     the first segment with the last if they lie in the same location
      * @see Path#closed
      */
 
@@ -560,8 +560,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * {@grouptitle Relative Drawing Commands}
      *
      * If called on a {@link CompoundPath}, a new {@link Path} is created as a
-     * child and a point is added as its first segment relative to the
-     * position of the last segment of the current path.
+     * child and a point is added as its first segment relative to the position
+     * of the last segment of the current path.
      *
      * @name PathItem#moveBy
      * @function
@@ -574,7 +574,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @name PathItem#lineBy
      * @function
      * @param {Point} to the vector which is added to the position of the last
-     * segment of the path, to get to the position of the new segment
+     *     segment of the path, to get to the position of the new segment
      *
      * @example {@paperscript}
      * var path = new Path();
