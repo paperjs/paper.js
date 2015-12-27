@@ -140,19 +140,20 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     /**
-     * Returns all crossings between two {@link PathItem} items as an array
-     * of {@link CurveLocation} objects. {@link CompoundPath} items are also
-     * supported.
-     * Crossings are intersections where the paths actually are crossing each
-     * other, as opposed to simply touching.
+     * Returns all crossings between two {@link PathItem} items as an array of
+     * {@link CurveLocation} objects. {@link CompoundPath} items are also
+     * supported. Crossings are intersections where the paths actually are
+     * crossing each other, as opposed to simply touching.
      *
      * @param {PathItem} path the other item to find the crossings with
+     * @param {Boolean} includeOverlaps whether to also count overlaps as
+     * crossings
      * @see #getIntersections(path)
      */
-    getCrossings: function(path) {
+    getCrossings: function(path, includeOverlaps) {
         return this.getIntersections(path, function(inter) {
             // Check overlap first since it's the cheaper test between the two.
-            return inter.isOverlap() || inter.isCrossing();
+            return includeOverlaps && inter.isOverlap() || inter.isCrossing();
         });
     },
 
