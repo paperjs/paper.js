@@ -762,9 +762,10 @@ new function() { // Injection scope for mouse events on the browser
                 // bizarre workaround for an issue of Chrome on Windows:
                 // TODO: Remove again after Dec 2016 once it is fixed in Chrome.
                 var offset = DomEvent.getOffset(event, view._element),
-                    min = 1 << 25;
-                if (offset.x < -min)
-                    offset.x += min;
+                    x = offset.x,
+                    abs = Math.abs(x),
+                    max = 1 << 25;
+                offset.x = abs - max < abs ? (abs - max) * (x < 0 ? -1 : 1) : x;
                 handleMouseMove(view, view.viewToProject(offset), event);
             }
         },
