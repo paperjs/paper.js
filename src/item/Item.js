@@ -1746,8 +1746,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     );
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
-
-        if (!this._children && !this.getInternalRoughBounds()
+        // If the matrix is non-reversible, point will now be `null`:
+        if (!point || !this._children && !this.getInternalRoughBounds()
                 .expand(tolerancePadding.multiply(2))._containsPoint(point))
             return null;
         // Filter for type, guides and selected items if that's required.
