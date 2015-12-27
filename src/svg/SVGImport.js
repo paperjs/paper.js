@@ -532,8 +532,9 @@ new function() {
     var definitions = {};
     function getDefinition(value) {
         // When url() comes from a style property, '#'' seems to be missing on
-        // WebKit, so let's make it optional here:
-        var match = value && value.match(/\((?:#|)([^)']+)/);
+        // WebKit. We also get variations of quotes or no quotes, single or
+        // double, so handle it all with one regular expression:
+        var match = value && value.match(/\((?:["'#]*)([^"')]+)/);
         return match && definitions[match[1]];
     }
 
