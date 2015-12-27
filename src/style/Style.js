@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -523,7 +523,7 @@ var Style = Base.extend(new function() {
 
     /**
      * The fill-rule with which the shape gets filled. Please note that only
-     * modern browsers support fill-rules other than {@code 'nonzero'}.
+     * modern browsers support fill-rules other than `'nonzero'`.
      *
      * @name Style#fillRule
      * @property
@@ -605,8 +605,8 @@ var Style = Base.extend(new function() {
      */
 
     /**
-     * The font size of text content, as a number in pixels, or as a string
-     * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
+     * The font size of text content, as a number in pixels, or as a string with
+     * optional units `'px'`, `'pt'` and `'em'`.
      *
      * @name Style#fontSize
      * @default 10

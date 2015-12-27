@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -701,8 +701,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @return {Segment[]} an array containing the removed segments
      */
     /**
-     * Removes the segments from the specified {@code from} index to the
-     * {@code to} index from the path's {@link #segments} array.
+     * Removes the segments from the specified `from` index to the `to` index
+     * from the path's {@link #segments} array.
      *
      * @param {Number} from the beginning index, inclusive
      * @param {Number} [to=segments.length] the ending index, exclusive
@@ -862,9 +862,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Specifies whether an path is selected and will also return {@code true}
-     * if the path is partially selected, i.e. one or more of its segments is
-     * selected.
+     * Specifies whether an path is selected and will also return `true` if the
+     * path is partially selected, i.e. one or more of its segments is selected.
      *
      * Paper.js draws the visual outlines of selected items on top of your
      * project. This can be useful for debugging, as it allows you to see the
@@ -903,7 +902,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     /**
      * Specifies whether the path and all its segments are selected. Cannot be
-     * {@code true} on an empty path.
+     * `true` on an empty path.
      *
      * @type Boolean
      * @bean
@@ -981,7 +980,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Converts the curves in a path to straight lines with an even distribution
      * of points. The distance between the produced segments is as close as
-     * possible to the value specified by the {@code maxDistance} parameter.
+     * possible to the value specified by the `maxDistance` parameter.
      *
      * @param {Number} maxDistance the maximum distance between the points
      *
@@ -1396,10 +1395,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * and inherits all settings from it, similar to {@link Item#clone()}.
      *
      * @param {Boolean} [insert=true] specifies whether the new shape should be
-     * inserted into the DOM. When set to {@code true}, it is inserted above the
+     * inserted into the DOM. When set to `true`, it is inserted above the
      * path item
      * @return {Shape} the newly created shape item with the same geometry as
-     * this path item if it can be matched, {@code null} otherwise
+     * this path item if it can be matched, `null` otherwise
      * @see Shape#toPath(insert)
      */
     toShape: function(insert) {
@@ -1694,7 +1693,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * {@grouptitle Positions on Paths and Curves}
      *
      * Returns the curve location of the specified point if it lies on the
-     * path, {@code null} otherwise.
+     * path, `null` otherwise.
      *
      * @param {Point} point the point on the path
      * @return {CurveLocation} the curve location of the specified point
@@ -1712,7 +1711,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     /**
      * Returns the length of the path from its beginning up to up to the
-     * specified point if it lies on the path, {@code null} otherwise.
+     * specified point if it lies on the path, `null` otherwise.
      *
      * @param {Point} point the point on the path
      * @return {Number} the length of the path up to the specified point
@@ -1725,7 +1724,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Returns the curve location of the specified offset on the path.
      *
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {CurveLocation} the curve location at the specified offset
@@ -1761,7 +1760,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getPointAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the point at the given offset
@@ -1824,7 +1823,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getTangentAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the normalized tangent vector at the given offset
@@ -1891,7 +1890,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getNormalAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the normal vector at the given offset
@@ -1958,7 +1957,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getWeightedTangentAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the weighted tangent vector at the given offset
@@ -1969,7 +1968,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getWeightedNormalAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Point} the weighted normal vector at the given offset
@@ -1983,7 +1982,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @name Path#getCurvatureAt
      * @function
-     * @param {Number} offset the offset on the path, where {@code 0} is at
+     * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
      * @param {Boolean} [isParameter=false]
      * @return {Number} the normal vector at the given offset

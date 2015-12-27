@@ -3,7 +3,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -241,9 +241,9 @@ var Point = Base.extend(/** @lends Point# */{
 
     /**
      * The length of the vector that is represented by this point's coordinates.
-     * Each point can be interpreted as a vector that points from the origin
-     * ({@code x = 0}, {@code y = 0}) to the point's location.
-     * Setting the length changes the location but keeps the vector's angle.
+     * Each point can be interpreted as a vector that points from the origin (`x
+     * = 0`, `y = 0`) to the point's location. Setting the length changes the
+     * location but keeps the vector's angle.
      *
      * @type Number
      * @bean
@@ -357,10 +357,10 @@ var Point = Base.extend(/** @lends Point# */{
     /**
      * The quadrant of the {@link #angle} of the point.
      *
-     * Angles between 0 and 90 degrees are in quadrant {@code 1}. Angles between
-     * 90 and 180 degrees are in quadrant {@code 2}, angles between 180 and 270
-     * degrees are in quadrant {@code 3} and angles between 270 and 360 degrees
-     * are in quadrant {@code 4}.
+     * Angles between 0 and 90 degrees are in quadrant `1`. Angles between 90
+     * and 180 degrees are in quadrant `2`, angles between 180 and 270 degrees
+     * are in quadrant `3` and angles between 270 and 360 degrees are in
+     * quadrant `4`.
      *
      * @type Number
      * @bean
@@ -423,14 +423,14 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * Normalize modifies the {@link #length} of the vector to {@code 1} without
-     * changing its angle and returns it as a new point. The optional
-     * {@code length} parameter defines the length to normalize to.
-     * The object itself is not modified!
+     * Normalize modifies the {@link #length} of the vector to `1` without
+     * changing its angle and returns it as a new point. The optional `length`
+     * parameter defines the length to normalize to. The object itself is not
+     * modified!
      *
      * @param {Number} [length=1] The length of the normalized vector
      * @return {Point} the normalized vector of the vector that is represented
-     * by this point's coordinates
+     *     by this point's coordinates
      */
     normalize: function(length) {
         if (length === undefined)
@@ -901,7 +901,7 @@ var Point = Base.extend(/** @lends Point# */{
 
         /**
          * Returns a point object with random {@link #x} and {@link #y} values
-         * between {@code 0} and {@code 1}.
+         * between `0` and `1`.
          *
          * @return {Point} the newly created point object
          * @static

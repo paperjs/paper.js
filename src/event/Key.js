@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -190,21 +190,21 @@ var Key = new function() {
          * @type Object
          *
          * @option modifiers.shift {Boolean} {@true if the shift key is
-         * pressed}.
+         *     pressed}.
          * @option modifiers.control {Boolean} {@true if the control key is
-         * pressed}.
+         *     pressed}.
          * @option modifiers.alt {Boolean} {@true if the alt/option key is
-         * pressed}.
+         *     pressed}.
          * @option modifiers.meta {Boolean} {@true if the meta/windows/command
-         * key is pressed}.
-         * @option modifiers.capsLock {Boolean} {@true if the caps-lock
-         * key is active}.
+         *     key is pressed}.
+         * @option modifiers.capsLock {Boolean} {@true if the caps-lock key is
+         *     active}.
          * @option modifiers.space {Boolean} {@true if the space key is
-         * pressed}.
+         *     pressed}.
          * @option modifiers.option {Boolean} {@true if the alt/option key is
-         * pressed}. This is the same as {@code modifiers.alt}
-         * @option modifiers.command {Boolean} {@true if the meta key is
-         * pressed on Mac, or the control key is pressed on Windows and Linux}.
+         *     pressed}. This is the same as `modifiers.alt`
+         * @option modifiers.command {Boolean} {@true if the meta key is pressed
+         *     on Mac, or the control key is pressed on Windows and Linux}.
          */
         modifiers: modifiers,
 
@@ -212,8 +212,8 @@ var Key = new function() {
          * Checks whether the specified key is pressed.
          *
          * @param {String} key any character or special key descriptor, e.g.:
-         * {@strings enter, space, shift, control, alt, meta, caps-lock, left,
-         * up, right, down, escape, delete, ...}
+         *     {@strings enter, space, shift, control, alt, meta, caps-lock,
+         *     left, up, right, down, escape, delete, ...}
          * @return {Boolean} {@true if the key is pressed}
          *
          * @example

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -72,8 +72,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     },
 
     /**
-     * The ramp-point of the gradient stop as a value between {@code 0} and
-     * {@code 1}.
+     * The ramp-point of the gradient stop as a value between `0` and `1`.
      *
      * @type Number
      * @bean

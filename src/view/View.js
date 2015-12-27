@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -296,7 +296,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The ratio between physical pixels and device-independent pixels (DIPs)
      * of the underlying canvas / device.
-     * It is {@code 1} for normal displays, and {@code 2} or more for
+     * It is `1` for normal displays, and `2` or more for
      * high-resolution displays.
      *
      * @type Number
@@ -309,8 +309,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * The resoltuion of the underlying canvas / device in pixel per inch (DPI).
-     * It is {@code 72} for normal displays, and {@code 144} for high-resolution
-     * displays with a pixel-ratio of {@code 2}.
+     * It is `72` for normal displays, and `144` for high-resolution
+     * displays with a pixel-ratio of `2`.
      *
      * @type Number
      * @bean
@@ -580,7 +580,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#on
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: {@code frame, resize}
+     * following properties: `frame, resize`
      * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -635,7 +635,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#off
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: {@code frame, resize}
+     * following properties: `frame, resize`
      * @return {View} this view itself, so calls can be chained
      */
 

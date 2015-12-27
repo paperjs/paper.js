@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -292,14 +292,14 @@ var Color = Base.extend(new function() {
          * Creates a RGB Color object.
          *
          * @name Color#initialize
-         * @param {Number} red the amount of red in the color as a value
-         * between {@code 0} and {@code 1}
+         * @param {Number} red the amount of red in the color as a value between
+         *     `0` and `1`
          * @param {Number} green the amount of green in the color as a value
-         * between {@code 0} and {@code 1}
+         *     between `0` and `1`
          * @param {Number} blue the amount of blue in the color as a value
-         * between {@code 0} and {@code 1}
-         * @param {Number} [alpha] the alpha of the color as a value between
-         * {@code 0} and {@code 1}
+         *     between `0` and `1`
+         * @param {Number} [alpha] the alpha of the color as a value between `0`
+         *     and `1`
          *
          * @example {@paperscript}
          * // Creating a RGB Color:
@@ -316,9 +316,9 @@ var Color = Base.extend(new function() {
          *
          * @name Color#initialize
          * @param {Number} gray the amount of gray in the color as a value
-         * between {@code 0} and {@code 1}
-         * @param {Number} [alpha] the alpha of the color as a value between
-         * {@code 0} and {@code 1}
+         *     between `0` and `1`
+         * @param {Number} [alpha] the alpha of the color as a value between `0`
+         *     and `1`
          *
          * @example {@paperscript}
          * // Creating a gray Color:
@@ -334,35 +334,33 @@ var Color = Base.extend(new function() {
          * Creates a HSB, HSL or gradient Color object from the properties of
          * the provided object:
          *
-         * <b>HSB Color</b>:<br>
-         * {@code hue: Number} — the hue of the color as a value in
-         * degrees between {@code 0} and {@code 360}<br>
-         * {@code saturation: Number} — the saturation of the color as a
-         * value between {@code 0} and {@code 1}<br>
-         * {@code brightness: Number} — the brightness of the color as a
-         * value between {@code 0} and {@code 1}<br>
-         * {@code alpha: Number} — the alpha of the color as a value between
-         * {@code 0} and {@code 1}
+         * @option hsb.hue {Number} the hue of the color as a value in degrees
+         *     between `0` and `360`
+         * @option hsb.saturation {Number} the saturation of the color as a
+         *     value between `0` and `1`
+         * @option hsb.brightness {Number} the brightness of the color as a
+         *     value between `0` and `1`
+         * @option hsb.alpha {Number} the alpha of the color as a value between
+         *     `0` and `1`
          *
-         * <b>HSL Color</b>:<br>
-         * {@code hue: Number} — the hue of the color as a value in
-         * degrees between {@code 0} and {@code 360}<br>
-         * {@code saturation: Number} — the saturation of the color as a
-         * value between {@code 0} and {@code 1}<br>
-         * {@code lightness: Number} — the lightness of the color as a
-         * value between {@code 0} and {@code 1}<br>
-         * {@code alpha: Number} — the alpha of the color as a value between
-         * {@code 0} and {@code 1}
+         * @option hsl.hue {Number} the hue of the color as a value in degrees
+         *     between `0` and `360`
+         * @option hsl.saturation {Number} the saturation of the color as a
+         *     value between `0` and `1`
+         * @option hsl.lightness {Number} the lightness of the color as a value
+         *     between `0` and `1`<br>
+         * @option hsl.alpha {Number} the alpha of the color as a value between
+         *     `0` and `1`
          *
-         * <b>Gradient Color</b>:<br>
-         * {@code gradient: Gradient} — the gradient object that describes the
-         *  color stops and type of gradient to be used.<br>
-         * {@code origin: Point} — the origin point of the gradient<br>
-         * {@code destination: Point} — the destination point of the gradient
-         * {@code stops: Array of GradientStop} — the gradient stops describing
-         * the gradient, as an alternative to providing a gradient object<br>
-         * {@code radial: Boolean} — controls whether the gradient is radial,
-         * as an alternative to providing a gradient object<br>
+         * @option gradient.gradient {Gradient} the gradient object that
+         *     describes the color stops and type of gradient to be used
+         * @option gradient.origin {Point} the origin point of the gradient
+         * @option gradient.destination {Point} the destination point of the
+         *     gradient
+         * @option gradient.stops {GradientStop[]} the gradient stops describing
+         *     the gradient, as an alternative to providing a gradient object
+         * @option gradient.radial {Boolean} controls whether the gradient is
+         *     radial, as an alternative to providing a gradient object
          *
          * @name Color#initialize
          * @param {Object} object an object describing the components and
@@ -707,7 +705,7 @@ var Color = Base.extend(new function() {
         },
 
         /**
-         * The color's alpha value as a number between {@code 0} and {@code 1}.
+         * The color's alpha value as a number between `0` and `1`.
          * All colors of the different subclasses support alpha values.
          *
          * @type Number
@@ -879,8 +877,7 @@ var Color = Base.extend(new function() {
         /**
          * {@grouptitle RGB Components}
          *
-         * The amount of red in the color as a value between {@code 0} and
-         * {@code 1}.
+         * The amount of red in the color as a value between `0` and `1`.
          *
          * @name Color#red
          * @property
@@ -895,8 +892,7 @@ var Color = Base.extend(new function() {
          * circle.fillColor.red = 1;
          */
         /**
-         * The amount of green in the color as a value between {@code 0} and
-         * {@code 1}.
+         * The amount of green in the color as a value between `0` and `1`.
          *
          * @name Color#green
          * @property
@@ -913,8 +909,7 @@ var Color = Base.extend(new function() {
          * circle.fillColor.green = 1;
          */
         /**
-         * The amount of blue in the color as a value between {@code 0} and
-         * {@code 1}.
+         * The amount of blue in the color as a value between `0` and `1`.
          *
          * @name Color#blue
          * @property
@@ -934,8 +929,7 @@ var Color = Base.extend(new function() {
         /**
          * {@grouptitle Gray Components}
          *
-         * The amount of gray in the color as a value between {@code 0} and
-         * {@code 1}.
+         * The amount of gray in the color as a value between `0` and `1`.
          *
          * @name Color#gray
          * @property
@@ -945,8 +939,7 @@ var Color = Base.extend(new function() {
         /**
          * {@grouptitle HSB Components}
          *
-         * The hue of the color as a value in degrees between {@code 0} and
-         * {@code 360}.
+         * The hue of the color as a value in degrees between `0` and `360`.
          *
          * @name Color#hue
          * @property
@@ -971,16 +964,14 @@ var Color = Base.extend(new function() {
          * }
          */
         /**
-         * The saturation of the color as a value between {@code 0} and
-         * {@code 1}.
+         * The saturation of the color as a value between `0` and `1`.
          *
          * @name Color#saturation
          * @property
          * @type Number
          */
         /**
-         * The brightness of the color as a value between {@code 0} and
-         * {@code 1}.
+         * The brightness of the color as a value between `0` and `1`.
          *
          * @name Color#brightness
          * @property
@@ -990,8 +981,8 @@ var Color = Base.extend(new function() {
         /**
          * {@grouptitle HSL Components}
          *
-         * The lightness of the color as a value between {@code 0} and
-         * {@code 1}.
+         * The lightness of the color as a value between `0` and `1`.
+         *
          * Note that all other components are shared with HSB.
          *
          * @name Color#lightness

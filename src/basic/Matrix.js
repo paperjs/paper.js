@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -591,11 +591,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     /**
      * Attempts to decompose the affine transformation described by this matrix
-     * into {@code scaling}, {@code rotation} and {@code shearing}, and returns
-     * an object with these properties if it succeeded, {@code null} otherwise.
+     * into `scaling`, `rotation` and `shearing`, and returns an object with
+     * these properties if it succeeded, `null` otherwise.
      *
-     * @return {Object} the decomposed matrix, or {@code null} if decomposition
-     * is not possible
+     * @return {Object} the decomposed matrix, or `null` if decomposition is not
+     *     possible
      */
     decompose: function() {
         // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
@@ -730,11 +730,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     /**
      * Creates the inversion of the transformation of the matrix and returns it
-     * as a new insteance. If the matrix is not invertible (in which case
-     * {@link #isSingular()} returns true), {@code null } is returned.
+     * as a new insteance. If the matrix is not invertible (in which case {@link
+     * #isSingular()} returns true), `null` is returned.
      *
-     * @return {Matrix} the inverted matrix, or {@code null }, if the matrix is
-     * singular
+     * @return {Matrix} the inverted matrix, or `null`, if the matrix is
+     *     singular
      */
     inverted: function() {
         var det = this._getDeterminant();

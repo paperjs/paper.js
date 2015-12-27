@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -80,8 +80,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * @param {Line} line
      * @param {Boolean} [isInfinite=false]
-     * @return {Point} the intersection point of the lines, {@code undefined}
-     * if the two lines are collinear, or {@code null} if they don't intersect.
+     * @return {Point} the intersection point of the lines, `undefined` if the
+     *     two lines are collinear, or `null` if they don't intersect.
      */
     intersect: function(line, isInfinite) {
         return Line.intersect(

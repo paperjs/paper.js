@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -50,9 +50,9 @@ Base.inject(/** @lends Base# */{
      * Exports (serializes) this object to a JSON data object or string.
      *
      * @option [options.asString=true] {Boolean} whether the JSON is returned as
-     * a {@code Object} or a {@code String}
+     *     a `Object` or a `String`
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in JSON data
+     *     numbers used in JSON data
      *
      * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
@@ -169,13 +169,13 @@ Base.inject(/** @lends Base# */{
          * Size, Rectangle) and also higher classes such as Color and Segment.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
+         *     or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Number} length the amount of elements that can be read
-         * @param {Object} options {@code options.readNull} controls whether
-         * null is returned or converted. {@code options.clone} controls whether
-         * passed objects should be cloned if they are already provided in the
-         * required type
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
          */
         read: function(list, start, options, length) {
             // See if it's called directly on Base, and if so, read value and
@@ -234,12 +234,12 @@ Base.inject(/** @lends Base# */{
          * separately.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
+         *     or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {Object} options {@code options.readNull} controls whether
-         * null is returned or converted. {@code options.clone} controls whether
-         * passed objects should be cloned if they are already provided in the
-         * required type
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
          */
         readAll: function(list, start, options) {
             var res = [],
@@ -286,9 +286,9 @@ Base.inject(/** @lends Base# */{
 
         /**
          * @return the named value if the list provides an arguments object,
-         * {@code null} if the named value is {@code null} or {@code undefined},
-         * and {@code undefined} if there is no arguments object
-         * If no name is provided, it returns the whole arguments object
+         *     `null` if the named value is `null` or `undefined`, and
+         *     `undefined` if there is no arguments object If no name is
+         *     provided, it returns the whole arguments object
          */
         getNamed: function(list, name) {
             var arg = list[0];
@@ -301,8 +301,8 @@ Base.inject(/** @lends Base# */{
 
         /**
          * Checks if the argument list has a named argument with the given name.
-         * If name is {@code null}, it returns {@code true} if there are any
-         * named arguments.
+         * If name is `null`, it returns `true` if there are any named
+         * arguments.
          */
         hasNamed: function(list, name) {
             return !!this.getNamed(list, name);

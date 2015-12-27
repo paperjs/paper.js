@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -498,21 +498,21 @@ Base.exports.PaperScript = (function() {
     }
 
    /**
-     * Loads, compiles and executes PaperScript code in the HTML document.
-     * Note that this method is executed automatically for all scripts in the
+     * Loads, compiles and executes PaperScript code in the HTML document. Note
+     * that this method is executed automatically for all scripts in the
      * document through a window load event. You can optionally call it earlier
      * (e.g. from a DOM ready event), or you can mark scripts to be ignored by
-     * setting the attribute {@code ignore="true"} or
-     * {@code data-paper-ignore="true"}, and call the
-     * {@code PaperScript.load(script)} method for each script separately when
-     * needed.
+     * setting the attribute `ignore="true"` or `data-paper-ignore="true"`, and
+     * call the `PaperScript.load(script)` method for each script separately
+     * when needed.
      *
      * @name PaperScript.load
      * @function
      * @param {HTMLScriptElement} [script=null] the script to load. If none is
-     * provided, all scripts of the HTML document are iterated over and loaded
-     * @return {PaperScope} the scope produced for the passed {@code script}, or
-     * {@code undefined} of multiple scripts area loaded
+     *     provided, all scripts of the HTML document are iterated over and
+     *     loaded
+     * @return {PaperScope} the scope produced for the passed `script`, or
+     *     `undefined` of multiple scripts area loaded
      */
     function load(script) {
         return script ? loadScript(script) : loadAll();

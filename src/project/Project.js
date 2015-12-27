@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -304,35 +304,34 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * and may contain a combination of the following values:
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     * {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
-     * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc
+     *     and its sub-classes: {@code Group, Layer, Path, CompoundPath, Shape,
+     *     Raster, PlacedSymbol, PointText}, etc
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
-     * taking into account the setting of stroke color and width
+     *     taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     * {@link Path} items
+     *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
-     * without taking the stroke color or width into account
-     * @option options.handles {Boolean} hit-test for the handles
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+     *     without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles ({@link
+     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
-     * segment points of open path items
+     *     segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     * the bounding rectangle of items ({@link Item#bounds})
+     *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     * the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have
-     * {@link Item#guide} set to {@code true}
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.guides {Boolean} hit-test items that have {@link
+     *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     * tolerance: true }]
-     * @return {HitResult} a hit result object that contains more
-     * information about what exactly was hit or {@code null} if nothing was
-     * hit
+     *     tolerance: true }]
+     * @return {HitResult} a hit result object that contains more information
+     *     about what exactly was hit or `null` if nothing was hit
      */
     hitTest: function(/* point, options */) {
         // We don't need to do this here, but it speeds up things since we won't
@@ -352,22 +351,23 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * Fetch items contained within the project whose properties match the
      * criteria in the specified object.
+     *
      * Extended matching of properties is possible by providing a comparator
      * function or regular expression. Matching points, colors only work as a
      * comparison of the full object, not partial matching (e.g. only providing
      * the x- coordinate to match all points with that x-value). Partial
      * matching does work for {@link Item#data}.
+     *
      * Matching items against a rectangular area is also possible, by setting
-     * either {@code match.inside} or {@code match.overlapping} to a rectangle
-     * describing the area in which the items either have to be fully or partly
-     * contained.
+     * either `match.inside` or `match.overlapping` to a rectangle describing
+     * the area in which the items either have to be fully or partly contained.
      *
      * @option [match.recursive=true] {Boolean} whether to loop recursively
      *     through all children, or stop at the current level
      * @option match.match {Function} a match function to be called for each
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
-     *     this function can also be passed instead of the {@code match} object
+     *     this function can also be passed instead of the `match` object
      * @option match.class {Function} the constructor function of the item type
      *     to match against
      * @option match.inside {Rectangle} the rectangle in which the items need to
@@ -607,16 +607,16 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * {@grouptitle Importing / Exporting JSON and SVG}
      *
-     * Exports (serializes) the project with all its layers and child items to
-     * a JSON data object or string.
+     * Exports (serializes) the project with all its layers and child items to a
+     * JSON data object or string.
      *
      * @name Project#exportJSON
      * @function
      *
      * @option [options.asString=true] {Boolean} whether the JSON is returned as
-     * a {@code Object} or a {@code String}
+     *     a `Object` or a `String`
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in JSON data
+     *     numbers used in JSON data
      *
      * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
@@ -645,15 +645,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @function
      *
      * @option [options.asString=false] {Boolean} whether a SVG node or a
-     * {@code String} is to be returned
+     *     `String` is to be returned
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in SVG data
+     *     numbers used in SVG data
      * @option [options.matchShapes=false] {Boolean} whether path items should
-     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
-     * polyline, polygon), if their geometries match
-     * @option [options.embedImages=true] {Boolean} whether raster images
-     * should be embedded as base64 data inlined in the xlink:href attribute,
-     * or kept as a link to their external URL.
+     *     tried to be converted to SVG shape items (rect, circle, ellipse,
+     *     line, polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images should
+     *     be embedded as base64 data inlined in the xlink:href attribute, or
+     *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the project converted to an SVG node

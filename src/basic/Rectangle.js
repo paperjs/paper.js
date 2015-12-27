@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -721,16 +721,16 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     /**
-     * Adds a point to this rectangle. The resulting rectangle is the
-     * smallest rectangle that contains both the original rectangle and the
-     * specified point.
+     * Adds a point to this rectangle. The resulting rectangle is the smallest
+     * rectangle that contains both the original rectangle and the specified
+     * point.
      *
      * After adding a point, a call to {@link #contains(point)} with the added
-     * point as an argument does not necessarily return {@code true}.
-     * The {@link Rectangle#contains(point)} method does not return {@code true}
-     * for points on the right or bottom edges of a rectangle. Therefore, if the
-     * added point falls on the left or bottom edge of the enlarged rectangle,
-     * {@link Rectangle#contains(point)} returns {@code false} for that point.
+     * point as an argument does not necessarily return `true`. The {@link
+     * Rectangle#contains(point)} method does not return `true` for points on
+     * the right or bottom edges of a rectangle. Therefore, if the added point
+     * falls on the left or bottom edge of the enlarged rectangle, {@link
+     * Rectangle#contains(point)} returns `false` for that point.
      *
      * @param {Point} point
      */
@@ -779,9 +779,9 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @param {Number} amount
      */
     /**
-     * Scales the rectangle in horizontal direction by the specified
-     * {@code hor} amount and in vertical direction by the specified {@code ver}
-     * amount from its center.
+     * Scales the rectangle in horizontal direction by the specified `hor`
+     * amount and in vertical direction by the specified `ver` amount from its
+     * center.
      *
      * @name Rectangle#scale
      * @function

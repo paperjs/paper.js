@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -125,9 +125,9 @@ var Group = Item.extend(/** @lends Group# */{
     },
 
     /**
-     * Specifies whether the group item is to be clipped.
-     * When setting to {@code true}, the first child in the group is
-     * automatically defined as the clipping mask.
+     * Specifies whether the group item is to be clipped. When setting to
+     * `true`, the first child in the group is automatically defined as the
+     * clipping mask.
      *
      * @type Boolean
      * @bean

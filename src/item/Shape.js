@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -160,10 +160,10 @@ var Shape = Item.extend(/** @lends Shape# */{
      * inherits all settings from it, similar to {@link Item#clone()}.
      *
      * @param {Boolean} [insert=true] specifies whether the new path should be
-     * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * shape item
+     *     inserted into the DOM. When set to `true`, it is inserted above the
+     *     shape item
      * @return {Shape} the newly created path item with the same geometry as
-     * this shape item
+     *     this shape item
      * @see Path#toShape(insert)
      */
     toPath: function(insert) {

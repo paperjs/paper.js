@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -13,15 +13,15 @@
 /**
  * @name Tool
  *
- * @class The Tool object refers to a script that the user can interact with
- * by using the mouse and keyboard and can be accessed through the global
- * {@code tool} variable. All its properties are also available in the paper
- * scope.
+ * @class The Tool object refers to a script that the user can interact with by
+ *     using the mouse and keyboard and can be accessed through the global
+ *     `tool` variable. All its properties are also available in the paper
+ *     scope.
  *
- * The global {@code tool} variable only exists in scripts that contain mouse
- * handler functions ({@link #onMouseMove}, {@link #onMouseDown},
- * {@link #onMouseDrag}, {@link #onMouseUp}) or a keyboard handler
- * function ({@link #onKeyDown}, {@link #onKeyUp}).
+ * The global `tool` variable only exists in scripts that contain mouse handler
+ * functions ({@link #onMouseMove}, {@link #onMouseDown}, {@link #onMouseDrag},
+ * {@link #onMouseUp}) or a keyboard handler function ({@link #onKeyDown},
+ * {@link #onKeyUp}).
  *
  * @classexample
  * var path;
@@ -227,10 +227,10 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * The function to be called when the user presses a key on the keyboard.
      * The function receives a {@link KeyEvent} object which contains
      * information about the keyboard event.
-     * If the function returns {@code false}, the keyboard event will be
-     * prevented from bubbling up. This can be used for example to stop the
-     * window from scrolling, when you need the user to interact with arrow
-     * keys.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
      *
      * @name Tool#onKeyDown
      * @property
@@ -261,10 +261,10 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * The function to be called when the user releases a key on the keyboard.
      * The function receives a {@link KeyEvent} object which contains
      * information about the keyboard event.
-     * If the function returns {@code false}, the keyboard event will be
-     * prevented from bubbling up. This can be used for example to stop the
-     * window from scrolling, when you need the user to interact with arrow
-     * keys.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
      *
      * @name Tool#onKeyUp
      * @property

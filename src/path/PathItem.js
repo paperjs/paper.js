@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -402,8 +402,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     // DOCS: Document PathItem#curveTo() 'paramater' param.
     /**
      * Draws a curve from the position of the last segment point in the path
-     * that goes through the specified {@code through} point, to the specified
-     * {@code to} point by adding one segment to the path.
+     * that goes through the specified `through` point, to the specified `to`
+     * point by adding one segment to the path.
      *
      * @name PathItem#curveTo
      * @function
@@ -437,8 +437,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
     /**
      * Draws an arc from the position of the last segment point in the path that
-     * goes through the specified {@code through} point, to the specified
-     * {@code to} point by adding one or more segments to the path.
+     * goes through the specified `through` point, to the specified `to` point
+     * by adding one or more segments to the path.
      *
      * @name PathItem#arcTo
      * @function

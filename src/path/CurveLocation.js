@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -13,11 +13,11 @@
 /**
  * @name CurveLocation
  *
- * @class CurveLocation objects describe a location on {@link Curve} objects,
- * as defined by the curve-time {@link #parameter}, a value between {@code 0}
- * (beginning of the curve) and {@code 1} (end of the curve). If the curve is
- * part of a {@link Path} item, its {@link #index} inside the
- * {@link Path#curves} array is also provided.
+ * @class CurveLocation objects describe a location on {@link Curve} objects, as
+ *     defined by the curve-time {@link #parameter}, a value between `0`
+ *     (beginning of the curve) and `1` (end of the curve). If the curve is part
+ *     of a {@link Path} item, its {@link #index} inside the {@link Path#curves}
+ *     array is also provided.
  *
  * The class is in use in many places, such as
  * {@link Path#getLocationAt(offset)},
@@ -176,8 +176,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     /**
      * The curve-time parameter, as used by various bezier curve calculations.
-     * It is value between {@code 0} (beginning of the curve) and {@code 1}
-     * (end of the curve).
+     * It is value between `0` (beginning of the curve) and `1` (end of the
+     * curve).
      *
      * @type Number
      * @bean
@@ -429,7 +429,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             c1 = t1 <= tMin ? c2.getPrevious() : c2,
             c4 = inter.getCurve(),
             c3 = t2 <= tMin ? c4.getPrevious() : c4;
-        // If t1, t2 are at the end, then step to the next curve.
+        // If t1 / t2 are at the end, then step to the next curve.
         if (t1 >= tMax)
             c2 = c2.getNext();
         if (t2 >= tMax)

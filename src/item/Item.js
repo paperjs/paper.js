@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -436,8 +436,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _locked: false,
 
     /**
-     * Specifies whether the item is visible. When set to {@code false}, the
-     * item won't be drawn.
+     * Specifies whether the item is visible. When set to `false`, the item
+     * won't be drawn.
      *
      * @name Item#visible
      * @type Boolean
@@ -498,7 +498,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _blendMode: 'normal',
 
     /**
-     * The opacity of the item as a value between {@code 0} and {@code 1}.
+     * The opacity of the item as a value between `0` and `1`.
      *
      * @name Item#opacity
      * @type Number
@@ -527,8 +527,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     // TODO: Implement guides
     /**
-     * Specifies whether the item functions as a guide. When set to
-     * {@code true}, the item will be drawn at the end as a guide.
+     * Specifies whether the item functions as a guide. When set to `true`, the
+     * item will be drawn at the end as a guide.
      *
      * @name Item#guide
      * @type Boolean
@@ -538,9 +538,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _guide: false,
 
     /**
-     * Specifies whether the item is selected. This will also return
-     * {@code true} for {@link Group} items if they are partially selected, e.g.
-     * groups containing selected or partially selected paths.
+     * Specifies whether the item is selected. This will also return `true` for
+     * {@link Group} items if they are partially selected, e.g. groups
+     * containing selected or partially selected paths.
      *
      * Paper.js draws the visual outlines of selected items on top of your
      * project. This can be useful for debugging, as it allows you to see the
@@ -760,9 +760,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * The item's pivot point specified in the item coordinate system, defining
      * the point around which all transformations are hinging. This is also the
-     * reference point for {@link #position}. By default, it is set to
-     * {@code null}, meaning the {@link Rectangle#center} of the item's
-     * {@link #bounds} rectangle is used as pivot.
+     * reference point for {@link #position}. By default, it is set to `null`,
+     * meaning the {@link Rectangle#center} of the item's {@link #bounds}
+     * rectangle is used as pivot.
      *
      * @type Point
      * @bean
@@ -1330,7 +1330,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * The first item contained within this item. This is a shortcut for
-     * accessing {@code item.children[0]}.
+     * accessing `item.children[0]`.
      *
      * @type Item
      * @bean
@@ -1341,7 +1341,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * The last item contained within this item.This is a shortcut for
-     * accessing {@code item.children[item.children.length - 1]}.
+     * accessing `item.children[item.children.length - 1]`.
      *
      * @type Item
      * @bean
@@ -1411,8 +1411,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * item.
      *
      * @param {Boolean} [insert=true] specifies whether the copy should be
-     * inserted into the DOM. When set to {@code true}, it is inserted above the
-     * original
+     *     inserted into the DOM. When set to `true`, it is inserted above the
+     *     original
      * @return {Item} the newly cloned item
      *
      * @example {@paperscript}
@@ -1538,8 +1538,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * is not removed after rasterization.
      *
      * @param {Number} [resolution=view.resolution] the resolution of the raster
-     * in pixels per inch (DPI). If not specified, the value of
-     * {@code view.resolution} is used.
+     *     in pixels per inch (DPI). If not specified, the value of
+     *     `view.resolution` is used.
      * @return {Raster} the newly created raster item
      *
      * @example {@paperscript}
@@ -1675,42 +1675,41 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Perform a hit-test on the item (and its children, if it is a
-     * {@link Group} or {@link Layer}) at the location of the specified point.
+     * Perform a hit-test on the item (and its children, if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point.
      *
      * The options object allows you to control the specifics of the hit-test
      * and may contain a combination of the following values:
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     * {Number} the tolerance of the hit-test
+     *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
-     * and its sub-classes: {@code Group, Layer, Path, CompoundPath,
-     * Shape, Raster, PlacedSymbol, PointText}, etc
+     *     and its sub-classes: {@code Group, Layer, Path, CompoundPath, Shape,
+     *     Raster, PlacedSymbol, PointText}, etc
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
-     * taking into account the setting of stroke color and width
+     *     taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     * {@link Path} items
+     *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
-     * without taking the stroke color or width into account
-     * @option options.handles {Boolean} hit-test for the handles
-     * ({@link Segment#handleIn} / {@link Segment#handleOut}) of path segments
+     *     without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles ({@link
+     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments
      * @option options.ends {Boolean} only hit-test for the first or last
-     * segment points of open path items
+     *     segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     * the bounding rectangle of items ({@link Item#bounds})
+     *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     * the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have
-     * {@link Item#guide} set to {@code true}
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.guides {Boolean} hit-test items that have {@link
+     *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point The point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     * tolerance: 2 }]
-     * @return {HitResult} a hit result object that contains more
-     * information about what exactly was hit or {@code null} if nothing was
-     * hit
+     *     tolerance: 2 }]
+     * @return {HitResult} a hit result object that contains more information
+     *     about what exactly was hit or `null` if nothing was hit
      */
     hitTest: function(/* point, options */) {
         return this._hitTest(
@@ -1912,17 +1911,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * Fetch the descendants (children or children of children) of this item
-     * that match the properties in the specified object.
-     * Extended matching is possible by providing a compare function or
-     * regular expression. Matching points, colors only work as a comparison
-     * of the full object, not partial matching (e.g. only providing the x-
-     * coordinate to match all points with that x-value). Partial matching
-     * does work for {@link Item#data}.
+     * that match the properties in the specified object. Extended matching is
+     * possible by providing a compare function or regular expression. Matching
+     * points, colors only work as a comparison of the full object, not partial
+     * matching (e.g. only providing the x- coordinate to match all points with
+     * that x-value). Partial matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either {@code match.inside} or {@code match.overlapping} to a rectangle
-     * describing the area in which the items either have to be fully or partly
-     * contained.
+     * either `match.inside` or `match.overlapping` to a rectangle describing
+     * the area in which the items either have to be fully or partly contained.
      *
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
@@ -1932,7 +1929,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option match.match {Function} a match function to be called for each
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
-     *     this function can also be passed instead of the {@code match} object
+     *     this function can also be passed instead of the `match` object
      * @option match.class {Function} the constructor function of the item type
      *     to match against
      * @option match.inside {Rectangle} the rectangle in which the items need to
@@ -2050,10 +2047,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#exportJSON
      * @function
      *
-     * @option [options.asString=true] {Boolean} whether the JSON is returned as a
-     * {@code Object} or a {@code String}
+     * @option [options.asString=true] {Boolean} whether the JSON is returned as
+     *     a `Object` or a `String`
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in JSON data
+     *     numbers used in JSON data
      *
      * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
@@ -2085,15 +2082,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      *
      * @option [options.asString=false] {Boolean} whether a SVG node or a
-     * {@code String} is to be returned
+     *     `String` is to be returned
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in SVG data
+     *     numbers used in SVG data
      * @option [options.matchShapes=false] {Boolean} whether path items should
-     * tried to be converted to SVG shape items (rect, circle, ellipse, line,
-     * polyline, polygon), if their geometries match
-     * @option [options.embedImages=true] {Boolean} whether raster images
-     * should be embedded as base64 data inlined in the xlink:href attribute,
-     * or kept as a link to their external URL.
+     *     tried to be converted to SVG shape items (rect, circle, ellipse,
+     *     line, polyline, polygon), if their geometries match
+     * @option [options.embedImages=true] {Boolean} whether raster images should
+     *     be embedded as base64 data inlined in the xlink:href attribute, or
+     *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement} the item converted to an SVG node
@@ -2101,68 +2098,63 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * Converts the provided SVG content into Paper.js items and adds them to
-     * the this item's children list.
-     * Note that the item is not cleared first. You can call
-     * {@link Item#removeChildren()} to do so.
+     * the this item's children list. Note that the item is not cleared first.
+     * You can call {@link Item#removeChildren()} to do so.
      *
      * @name Item#importSVG
      * @function
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
-     * items should be expanded to path items
+     *     items should be expanded to path items
      * @option [options.onLoad] {Function} the callback function to call once
-     * the SVG content is loaded from the given URL. Only required when loading
-     * from external files.
+     *     the SVG content is loaded from the given URL. Only required when
+     *     loading from external files.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
-     * {Boolean} whether imported items should have their transformation
-     * matrices applied to their contents or not
+     *     {Boolean} whether imported items should have their transformation
+     *     matrices applied to their contents or not
      *
      * @param {SVGElement|String} svg the SVG content to import, either as a SVG
-     * DOM node, a string containing SVG content, or a string describing the URL
-     * of the SVG file to fetch.
+     *     DOM node, a string containing SVG content, or a string describing the
+     *     URL of the SVG file to fetch.
      * @param {Object} [options] the import options
      * @return {Item} the newly created Paper.js item containing the converted
-     * SVG content
+     *     SVG content
      */
     /**
      * Imports the provided external SVG file, converts it into Paper.js items
-     * and adds them to the this item's children list.
-     * Note that the item is not cleared first. You can call
-     * {@link Item#removeChildren()} to do so.
+     * and adds them to the this item's children list. Note that the item is not
+     * cleared first. You can call {@link Item#removeChildren()} to do so.
      *
      * @name Item#importSVG
      * @function
      *
      * @param {SVGElement|String} svg the URL of the SVG file to fetch.
      * @param {Function} onLoad the callback function to call once the SVG
-     * content is loaded from the given URL.
+     *     content is loaded from the given URL.
      * @return {Item} the newly created Paper.js item containing the converted
-     * SVG content
+     *     SVG content
      */
 
     /**
-     * {@grouptitle Hierarchy Operations}
-     * Adds the specified item as a child of this item at the end of the
-     * its children list. You can use this function for groups, compound
-     * paths and layers.
+     * {@grouptitle Hierarchy Operations} Adds the specified item as a child of
+     * this item at the end of the its children list. You can use this function
+     * for groups, compound paths and layers.
      *
      * @param {Item} item the item to be added as a child
-     * @return {Item} the added item, or {@code null} if adding was not
-     * possible
+     * @return {Item} the added item, or `null` if adding was not possible
      */
     addChild: function(item, _preserve) {
         return this.insertChild(undefined, item, _preserve);
     },
 
     /**
-     * Inserts the specified item as a child of this item at the specified
-     * index in its {@link #children} list. You can use this function for
-     * groups, compound paths and layers.
+     * Inserts the specified item as a child of this item at the specified index
+     * in its {@link #children} list. You can use this function for groups,
+     * compound paths and layers.
      *
      * @param {Number} index
      * @param {Item} item the item to be inserted as a child
-     * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible
+     * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertChild: function(index, item, _preserve) {
         var res = item ? this.insertChildren(index, [item], _preserve) : null;
@@ -2170,13 +2162,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Adds the specified items as children of this item at the end of the
-     * its children list. You can use this function for groups, compound
-     * paths and layers.
+     * Adds the specified items as children of this item at the end of the its
+     * children list. You can use this function for groups, compound paths and
+     * layers.
      *
      * @param {Item[]} items The items to be added as children
-     * @return {Item[]} the added items, or {@code null} if adding was not
-     * possible
+     * @return {Item[]} the added items, or `null` if adding was not possible
      */
     addChildren: function(items, _preserve) {
         return this.insertChildren(this._children.length, items, _preserve);
@@ -2189,8 +2180,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {Number} index
      * @param {Item[]} items The items to be appended as children
-     * @return {Item[]} the inserted items, or {@code null} if inserted was not
-     * possible
+     * @return {Item[]} the inserted items, or `null` if inserted was not
+     *     possible
      */
     insertChildren: function(index, items, _preserve, _proto) {
         // CompoundPath#insertChildren() requires _preserve and _type:
@@ -2254,8 +2245,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Inserts this item above the specified item.
      *
      * @param {Item} item the item above which it should be inserted
-     * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible
+     * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
         return item._insertSibling(item._index + 1, this, _preserve);
@@ -2265,8 +2255,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Inserts this item below the specified item.
      *
      * @param {Item} item the item below which it should be inserted
-     * @return {Item} the inserted item, or {@code null} if inserting was not
-     * possible
+     * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
         return item._insertSibling(item._index, this, _preserve);
@@ -2448,8 +2437,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item[]} an array containing the removed items
      */
     /**
-     * Removes the children from the specified {@code from} index to the
-     * {@code to} index from the parent's {@link #children} array.
+     * Removes the children from the specified `from` index to the `to` index
+     * from the parent's {@link #children} array.
      *
      * @name Item#removeChildren
      * @function
@@ -2893,7 +2882,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * The fill-rule with which the shape gets filled. Please note that only
-     * modern browsers support fill-rules other than {@code 'nonzero'}.
+     * modern browsers support fill-rules other than `'nonzero'`.
      *
      * @name Item#fillRule
      * @property
@@ -2907,7 +2896,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The shadow color.
      *
      * @property
-     * @name Style#shadowColor
+     * @name Item#shadowColor
      * @type Color
      *
      * @example {@paperscript}
@@ -2931,7 +2920,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @property
      * @default 0
-     * @name Style#shadowBlur
+     * @name Item#shadowBlur
      * @type Number
      */
 
@@ -2940,7 +2929,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @property
      * @default 0
-     * @name Style#shadowOffset
+     * @name Item#shadowOffset
      * @type Point
      */
 
@@ -3367,16 +3356,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     /**
      * {@grouptitle Event Handlers}
+     *
      * Item level handler function to be called on each frame of an animation.
      * The function receives an event object which contains information about
      * the frame event:
      *
      * @option event.count {Number} the number of times the frame event was
-     * fired
+     *     fired
      * @option event.time {Number} the total amount of time passed since the
-     * first frame event in seconds
+     *     first frame event in seconds
      * @option event.delta {Number} the time passed in seconds since the last
-     * frame event
+     *     frame event
      *
      * @see View#onFrame
      * @example {@paperscript}
@@ -4073,24 +4063,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * {@grouptitle Remove On Event}
      *
-     * Removes the item when the events specified in the passed object literal
+     * Removes the item when the events specified in the passed options object
      * occur.
-     * The object literal can contain the following values:
-     * Remove the item when the next {@link Tool#onMouseMove} event is
-     * fired: {@code object.move = true}
      *
-     * Remove the item when the next {@link Tool#onMouseDrag} event is
-     * fired: {@code object.drag = true}
+     * @option options.move {Boolean) remove the item when the next {@link
+     *     Tool#onMouseMove} event is fired.
      *
-     * Remove the item when the next {@link Tool#onMouseDown} event is
-     * fired: {@code object.down = true}
+     * @option options.drag {Boolena) remove the item when the next {@link
+     *     Tool#onMouseDrag} event is fired.
      *
-     * Remove the item when the next {@link Tool#onMouseUp} event is
-     * fired: {@code object.up = true}
+     * @option options.down {Boolean) remove the item when the next {@link
+     *     Tool#onMouseDown} event is fired.
+     *
+     * @option options.up {Boolean) remove the item when the next {@link
+     *     Tool#onMouseUp} event is fired.
      *
      * @name Item#removeOn
      * @function
-     * @param {Object} object
+     * @param {Object} options
      *
      * @example {@paperscript height=200}
      * // Click and drag below:

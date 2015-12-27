@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -13,11 +13,11 @@
 /**
  * @name TextItem
  *
- * @class The TextItem type allows you to create typography. Its
- * functionality is inherited by different text item types such as
- * {@link PointText}, and {@link AreaText} (coming soon). They each add a
- * layer of functionality that is unique to their type, but share the
- * underlying properties and functions that they inherit from TextItem.
+ * @class The TextItem type allows you to create typography. Its functionality
+ *     is inherited by different text item types such as {@link PointText}, and
+ *     {@link AreaText} (coming soon). They each add a layer of functionality
+ *     that is unique to their type, but share the underlying properties and
+ *     functions that they inherit from TextItem.
  *
  * @extends Item
  */
@@ -119,8 +119,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      */
 
     /**
-     * The font size of text content, as a number in pixels, or as a string
-     * with optional units {@code 'px'}, {@code 'pt'} and {@code 'em'}.
+     * The font size of text content, as a number in pixels, or as a string with
+     * optional units `'px'`, `'pt'` and `'em'`.
      *
      * @name TextItem#fontSize
      * @default 10

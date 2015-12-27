@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -496,7 +496,7 @@ var Size = Base.extend(/** @lends Size# */{
 
         /**
          * Returns a size object with random {@link #width} and {@link #height}
-         * values between {@code 0} and {@code 1}.
+         * values between `0` and `1`.
          *
          * @return {Size} the newly created size object
          * @static

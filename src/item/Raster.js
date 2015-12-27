@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -34,14 +34,14 @@ var Raster = Item.extend(/** @lends Raster# */{
     // TODO: Have PlacedSymbol & Raster inherit from a shared class?
     /**
      * Creates a new raster item from the passed argument, and places it in the
-     * active layer. {@code object} can either be a DOM Image, a Canvas, or a
-     * string describing the URL to load the image from, or the ID of a DOM
-     * element to get the image from (either a DOM Image or a Canvas).
+     * active layer. `object` can either be a DOM Image, a Canvas, or a string
+     * describing the URL to load the image from, or the ID of a DOM element to
+     * get the image from (either a DOM Image or a Canvas).
      *
      * @param {HTMLImageElement|HTMLCanvasElement|String} [source] the source of
-     * the raster
+     *     the raster
      * @param {Point} [position] the center position at which the raster item is
-     * placed
+     *     placed
      *
      * @example {@paperscript height=300} // Creating a raster using a url
      * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
@@ -250,7 +250,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * The Canvas object of the raster. If the raster was created from an image,
      * accessing its canvas causes the raster to try and create one and draw the
      * image into it. Depending on security policies, this might fail, in which
-     * case {@code null} is returned instead.
+     * case `null` is returned instead.
      *
      * @type Canvas
      * @bean
@@ -476,7 +476,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     /**
-     * Returns a Base 64 encoded {@code data:} URL representation of the raster.
+     * Returns a Base 64 encoded `data:` URL representation of the raster.
      *
      * @return {String}
      */
