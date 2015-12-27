@@ -289,6 +289,7 @@ PathItem.inject(new function() {
             py = point.y,
             windLeft = 0,
             windRight = 0,
+            length = curves.length,
             roots = [],
             abs = Math.abs;
         // Absolutely horizontal curves may return wrong results, since
@@ -301,16 +302,15 @@ PathItem.inject(new function() {
                 yAfter = py + epsilon;
             // Find the closest top and bottom intercepts for the same vertical
             // line.
-            for (var i = 0, l = curves.length; i < l; i++) {
-                var values = curves[i].values;
-                if (Curve.solveCubic(values, 0, px, roots, 0, 1) > 0) {
-                    for (var j = roots.length - 1; j >= 0; j--) {
-                        var y = Curve.getPoint(values, roots[j]).y;
-                        if (y < yBefore && y > yTop) {
-                            yTop = y;
-                        } else if (y > yAfter && y < yBottom) {
-                            yBottom = y;
-                        }
+            for (var i = 0; i < length; i++) {
+                var values = curves[i].values,
+                    count = Curve.solveCubic(values, 0, px, roots, 0, 1);
+                for (var j = count - 1; j >= 0; j--) {
+                    var y = Curve.getPoint(values, roots[j]).y;
+                    if (y < yBefore && y > yTop) {
+                        yTop = y;
+                    } else if (y > yAfter && y < yBottom) {
+                        yBottom = y;
                     }
                 }
             }
@@ -328,14 +328,11 @@ PathItem.inject(new function() {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon,
                 start,
-                end = 0,
-                length = curves.length;
+                end = 0;
             while (end < length) {
-                // Determine beginning and end of loop and the first and last
-                // curve with non-zero winding within the loop.
-                start = end; // index of first curve in loop
-                end = start + 1; // index after last curve in loop
-                // References to the first and last curve with non-zero winding:
+                start = end;
+                // Determine the beginning and end of the loop, along with the
+                // first and last curve with non-zero winding within the loop:
                 var firstCurve = null,
                     lastCurve;
                 for (var i = start; i < length; i++) {
@@ -376,10 +373,10 @@ PathItem.inject(new function() {
                     // compare the endpoints of the curve to determine if the
                     // ray from query point along +-x direction will intersect
                     // the monotone curve. Results in quite significant speedup.
-                    if (winding && (winding == 1
+                    if (winding && (winding === 1
                             && py >= values[1] && py <= values[7]
                             || py >= values[7] && py <= values[1])
-                        && Curve.solveCubic(values, 1, py, roots, 0, 1) == 1) {
+                        && Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
                         var t = roots[0];
                         // Due to numerical precision issues, two consecutive
                         // curves may register an intercept twice, at t = 1 and
@@ -433,7 +430,7 @@ PathItem.inject(new function() {
                         // If the point is on a horizontal curve and winding
                         // changes between before and after the curve, we treat
                         // this as a 'touch point'.
-                        if (testContains && py == values[1]
+                        if (testContains && py === values[1]
                                 && (values[0] < xAfter && values[6] > xBefore
                                 ||  values[6] < xAfter && values[0] > xBefore)
                                 && prevCurve && nextCurve
@@ -839,7 +836,7 @@ PathItem.inject(new function() {
                     }
                     if (!exclude) {
                         // Set correct orientation and add to final items.
-                        path.setClockwise((counter % 2 === 0) == clockwise);
+                        path.setClockwise((counter % 2 === 0) === clockwise);
                         items.push(path);
                     }
                 }
@@ -1000,20 +997,21 @@ Path.inject(/** @lends Path# */{
             var curves = this._getMonoCurves(),
                 roots = [],
                 y = point.y,
-                xIntercepts = [];
+                intercepts = [];
             for (var i = 0, l = curves.length; i < l; i++) {
                 var values = curves[i].values;
                 if ((curves[i].winding === 1
                         && y >= values[1] && y <= values[7]
-                        || y >= values[7] && y <= values[1])
-                        && Curve.solveCubic(values, 1, y, roots, 0, 1) > 0) {
-                    for (var j = roots.length - 1; j >= 0; j--)
-                        xIntercepts.push(Curve.getPoint(values, roots[j]).x);
+                        || y >= values[7] && y <= values[1])) {
+                    var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
+                    for (var j = count - 1; j >= 0; j--) {
+                        intercepts.push(Curve.getPoint(values, roots[j]).x);
+                    }
                 }
-                if (xIntercepts.length > 1)
+                if (intercepts.length > 1)
                     break;
             }
-            point.x = (xIntercepts[0] + xIntercepts[1]) / 2;
+            point.x = (intercepts[0] + intercepts[1]) / 2;
         }
         return point;
     }
