@@ -21,6 +21,7 @@ function testIntersection(intersections, results) {
         equals(inter.point, new Point(values.point), name + '.point');
         equals(inter.index, values.index, name + '.index');
         equals(inter.parameter, values.parameter || 0, name + '.parameter');
+        equals(inter.isCrossing(), values.crossing || false, name + '.isCrossing()');
     }
 }
 
@@ -31,8 +32,8 @@ test('path.getIntersections(); #565', function() {
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 354.13635, y: 220.81369 }, index: 0, parameter: 0.46725 },
-        { point: { x: 390.24772, y: 224.27351 }, index: 0, parameter: 0.71605 }
+        { point: { x: 354.13635, y: 220.81369 }, index: 0, parameter: 0.46725, crossing: true },
+        { point: { x: 390.24772, y: 224.27351 }, index: 0, parameter: 0.71605, crossing: true }
     ]);
 
     // Alternative pair of curves that has the same issue
@@ -41,7 +42,7 @@ test('path.getIntersections(); #565', function() {
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 335.62744, y: 338.15939 }, index: 0, parameter: 0.26516 }
+        { point: { x: 335.62744, y: 338.15939 }, index: 0, parameter: 0.26516, crossing: true }
     ]);
 });
 
@@ -52,8 +53,8 @@ test('path.getIntersections(); #568', function() {
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 547.96568, y: 396.66339 }, index: 0, parameter: 0.07024 },
-        { point: { x: 504.79973, y: 383.37886 }, index: 0, parameter: 0.48077 }
+        { point: { x: 547.96568, y: 396.66339 }, index: 0, parameter: 0.07024, crossing: true },
+        { point: { x: 504.79973, y: 383.37886 }, index: 0, parameter: 0.48077, crossing: true }
     ]);
 
     var curve1 = new Curve(new Point(0, 0), new Point(20, 40) , new Point (-30, -50), new Point(50, 50));
@@ -61,7 +62,7 @@ test('path.getIntersections(); #568', function() {
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 50, y: 50 }, index: 0, parameter: 1 }
+        { point: { x: 50, y: 50 }, index: 0, parameter: 1, crossing: false }
     ]);
 });
 
@@ -73,7 +74,7 @@ test('path.getIntersections(); #570', function() {
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     var ints = curve1.getIntersections(curve2);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 311.16035, y: 406.29853 }, index: 0, parameter: 1 }
+        { point: { x: 311.16035, y: 406.29853 }, index: 0, parameter: 1, crossing: false }
     ]);
 });
 
@@ -84,17 +85,27 @@ test('path.getIntersections(); #571', function() {
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
     testIntersection(curve1.getIntersections(curve2), [
-        { point: { x: 352.39945, y: 330.44135 }, index: 0, parameter: 0.41159 },
-        { point: { x: 420.12359, y: 275.83519 }, index: 0, parameter: 1 }
+        { point: { x: 352.39945, y: 330.44135 }, index: 0, parameter: 0.41159, crossing: true },
+        { point: { x: 420.12359, y: 275.83519 }, index: 0, parameter: 1, crossing: false }
     ]);
 });
 
 
 test('path.getIntersections(); overlapping circles', function() {
-    var c1 = new Path.Circle(new paper.Point(50, 50), 50);
-    var c2 = new Path.Circle(new paper.Point(100, 100), 50);
-    testIntersection(c1.getIntersections(c2), [
-        { point: { x: 100, y: 50 }, index: 2 },
-        { point: { x: 50, y: 100 }, index: 3 }
+    var path1 = new Path.Circle(new paper.Point(50, 50), 50);
+    var path2 = new Path.Circle(new paper.Point(100, 100), 50);
+    testIntersection(path1.getIntersections(path2), [
+        { point: { x: 100, y: 50 }, index: 2, crossing: true },
+        { point: { x: 50, y: 100 }, index: 3, crossing: true }
+    ]);
+});
+
+
+test('path.getIntersections(); circle and square (existing segments overlaps on curves)', function() {
+    var path1 = new Path.Circle(new Point(110, 110), 80);
+    var path2 = new Path.Rectangle(new Point(110, 110), [100, 100]);
+    testIntersection(path1.getIntersections(path2), [
+        { point: { x: 190, y: 110 }, index: 2, parameter: 0, crossing: true },
+        { point: { x: 110, y: 190 }, index: 3, parameter: 0, crossing: true }
     ]);
 });
