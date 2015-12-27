@@ -445,8 +445,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             // Pick the with the intersection inside:
             var c = t1Inside ? c2 : c4;
             if (c.isStraight()) {
-                // Now pick the other two potential intersecting  curves, and
-                // check against each if it is straight:
+                // Now pick the other two potential intersecting curves,
+                // and check against each if they are straight:
                 var l = c.getLine(),
                     ca = t1Inside ? c3 : c1,
                     cb = t1Inside ? c4 : c2;
@@ -472,17 +472,17 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // NOTE: We handle t*Inside here simply by picking t1 / t2 instead of
         // tMin / tMax. E.g. if t1Inside is true, c1 will be the same as c2,
         // and the code will doe the right thing.
-        // The incomings tangents a1 & a3 are inverted, so that all angles
+        // The incomings tangents v1 & v3 are inverted, so that all angles
         // are pointing outwards in the right direction from the intersection.
         var v2 = c2.getTangentAt(t1Inside ? t1 : tMin, true),
             v1 = (t1Inside ? v2 : c1.getTangentAt(tMax, true)).negate(),
             v4 = c4.getTangentAt(t2Inside ? t2 : tMin, true),
             v3 = (t2Inside ? v4 : c3.getTangentAt(tMax, true)).negate(),
+            // NOTE: For shorter API calls we work with angles in degrees here:
             a1 = v1.getAngle(),
             a2 = v2.getAngle(),
             a3 = v3.getAngle(),
             a4 = v4.getAngle();
-        // NOTE: For shorter API calls we work with angles in degrees here
         // Count how many times curve2 angles appear between the curve1 angles
         // If each pair of angles split the other two, then the edges cross.
         // Use t*Inside to decide which angle pair to check against.
