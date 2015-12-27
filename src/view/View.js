@@ -757,8 +757,16 @@ new function() { // Injection scope for mouse events on the browser
             // event, to give items the change to receive a mouseleave, etc.
             var view = View._focused,
                 target = DomEvent.getRelatedTarget(event);
-            if (view && (!target || target.nodeName === 'HTML'))
-                handleMouseMove(view, viewToProject(view, event), event);
+            if (view && (!target || target.nodeName === 'HTML')) {
+                // See https://github.com/paperjs/paper.js/issues/800 for this
+                // bizarre workaround for an issue of Chrome on Windows:
+                // TODO: Remove again after Dec 2016 once it is fixed in Chrome.
+                var offset = DomEvent.getOffset(event, view._element),
+                    min = 1 << 25;
+                if (offset.x < -min)
+                    offset.x += min;
+                handleMouseMove(view, view.viewToProject(offset), event);
+            }
         },
 
         scroll: updateFocus
