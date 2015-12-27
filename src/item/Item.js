@@ -2001,8 +2001,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     // bounds don't even intersect, we can skip this child.
                     if (!rect.intersects(bounds))
                         continue;
-                    if (!(param.inside && rect.contains(bounds))
-                            && !(param.overlapping && (bounds.contains(rect)
+                    if (!(rect.contains(bounds)
+                            // First check the bounds, if the rect is fully
+                            // contained, we are always overlapping, and don't
+                            // need to perform further checks, otherwise perform
+                            // a proper #intersects() check:
+                            || param.overlapping && (bounds.contains(rect)
                                 || param.path.intersects(child, childMatrix))))
                         add = false;
                 }

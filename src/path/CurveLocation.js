@@ -434,7 +434,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             c2 = c2.getNext();
         if (t2 >= tMax)
             c4 = c4.getNext();
-        if (!c1 || !c3 || !c2 || !c4)
+        if (!c1 || !c2 || !c3 || !c4)
             return false;
         // Before performing any detailed angle range checks, we need to handle
         // a rare edge case where the intersection occurs in the middle of a
