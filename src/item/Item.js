@@ -1963,12 +1963,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // method can be used for Project#layers as well in Project.
         _getItems: function _getItems(children, match, matrix, param,
                 firstOnly) {
-            if (!param && typeof match === 'object') {
+            if (!param) {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
                 // inside / overlapping:
-                var overlapping = match.overlapping,
-                    inside = match.inside,
+                var obj = typeof match === 'object' && match || {},
+                    overlapping = obj.overlapping,
+                    inside = obj.inside,
                     // If overlapping is set, we also perform the inside check:
                     bounds = overlapping || inside,
                     rect = bounds && Rectangle.read([bounds]);
