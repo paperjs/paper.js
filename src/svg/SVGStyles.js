@@ -43,7 +43,7 @@ var SVGStyles = Base.each({
     }],
     // Item
     opacity: ['opacity', 'number'],
-    blendMode: ['mix-blend-mode', 'string']
+    blendMode: ['mix-blend-mode', 'style']
 }, function(entry, key) {
     var part = Base.capitalize(key),
         lookup = entry[2];

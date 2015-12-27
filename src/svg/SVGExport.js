@@ -284,7 +284,8 @@ new function() {
 
     function applyStyle(item, node, isRoot) {
         var attrs = {},
-            parent = !isRoot && item.getParent();
+            parent = !isRoot && item.getParent(),
+            style = [];
 
         if (item._name != null)
             attrs.id = item._name;
@@ -306,22 +307,24 @@ new function() {
                     if (alpha < 1)
                         attrs[entry.attribute + '-opacity'] = alpha;
                 }
-                attrs[entry.attribute] = value == null
-                    ? 'none'
-                    : type === 'number'
-                        ? formatter.number(value)
-                        : type === 'color'
-                            ? value.gradient
-                                ? exportGradient(value, item)
+                if (type === 'style') {
+                    style.push(entry.attribute + ': ' + value)
+                } else {
+                    attrs[entry.attribute] = value == null ? 'none'
+                            : type === 'number' ? formatter.number(value)
+                            : type === 'color' ? value.gradient
                                 // true for noAlpha, see above
+                                ? exportGradient(value, item)
                                 : value.toCSS(true)
-                            : type === 'array'
-                                ? value.join(',')
-                                : type === 'lookup'
-                                    ? entry.toSVG[value]
-                                    : value;
+                            : type === 'array' ? value.join(',')
+                            : type === 'lookup' ? entry.toSVG[value]
+                            : value;
+                }
             }
         });
+
+        if (style.length)
+            attrs.style = style.join(';');
 
         if (attrs.opacity === 1)
             delete attrs.opacity;
