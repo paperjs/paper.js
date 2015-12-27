@@ -448,10 +448,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 // Now pick the other two potential intersecting curves,
                 // and check against each if they are straight:
                 var l = c.getLine(),
-                    ca = t1Inside ? c3 : c1,
-                    cb = t1Inside ? c4 : c2;
-                return ca.isStraight() && l.intersect(ca.getLine()) ||
-                       cb.isStraight() && l.intersect(cb.getLine());
+                    l1 = t1Inside ? c3 : c1,
+                    l2 = t1Inside ? c4 : c2,
+                    straight1 = l1.isStraight(),
+                    straight2 = l2.isStraight();
+                if (straight1 || straight2) {
+                    return straight1 && l.intersect(l1.getLine()) ||
+                           straight2 && l.intersect(l2.getLine());
+                }
             }
         }
 
