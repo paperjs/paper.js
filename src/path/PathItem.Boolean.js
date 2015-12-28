@@ -622,8 +622,11 @@ PathItem.inject(new function() {
                 var other = inter && inter._segment;
                 // If we are at a crossing and the other segment is part of the
                 // boolean result, switch to it.
-                if (other && isValid(other))
+                if (other && isValid(other)) {
+                    if (operation === 'intersect')
+                        seg._visited = true;
                     seg = other;
+                }
                 // If the new segment is visited already, check if we're back
                 // at the start.
                 if (seg._visited) {
@@ -649,7 +652,9 @@ PathItem.inject(new function() {
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
-                finished = isStart(seg);
+                if (isStart(seg)) {
+                    finished = seg._visited = true;
+                }
             }
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
