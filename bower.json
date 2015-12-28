@@ -25,8 +25,8 @@
   ],
   "devDependencies": {
     "straps": "~1.7.2",
-    "acorn": "~0.4.0",
-    "stats.js": "r11"
+    "acorn": "~0.5.0",
+    "stats.js": "r14"
   },
   "keywords": [
     "vector",
