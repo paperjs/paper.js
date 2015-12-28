@@ -265,7 +265,7 @@ var Shape = Item.extend(/** @lends Shape# */{
     },
 
     _canComposite: function() {
-        // A path with only a fill  or a stroke can be directly blended, but if
+        // A path with only a fill or a stroke can be directly blended, but if
         // it has both, it needs to be drawn into a separate canvas first.
         return !(this.hasFill() && this.hasStroke());
     },

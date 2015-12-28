@@ -185,7 +185,7 @@ var Numerical = new function() {
 
         /**
          * Solve a quadratic equation in a numerically robust manner;
-         * given a quadratic equation  ax² + bx + c = 0, find the values of x.
+         * given a quadratic equation ax² + bx + c = 0, find the values of x.
          *
          * References:
          *  Kahan W. - "To Solve a Real Cubic Equation"

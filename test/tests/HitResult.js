@@ -672,7 +672,7 @@ test('hit-testing compound-paths', function() {
         children: [path1, path2],
         fillColor: 'blue'
     });
-    // When hit-testing a side, we should  get a result on the torus
+    // When hit-testing a side, we should get a result on the torus
     equals(function() {
         var result = paper.project.hitTest(center.add([75, 0]), {
             fill: true

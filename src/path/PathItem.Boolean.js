@@ -518,7 +518,7 @@ PathItem.inject(new function() {
      * contours
      * @param {Function} the operator function that receives as argument the
      * winding number contribution of a curve and returns a boolean value
-     * indicating whether the curve should be  included in the final contour or
+     * indicating whether the curve should be included in the final contour or
      * not
      * @return {Path[]} the contours traced
      */
@@ -911,7 +911,7 @@ Path.inject(/** @lends Path# */{
             prevCurve = curve;
         }
 
-        // Handle bezier curves. We need to chop them into smaller curves  with
+        // Handle bezier curves. We need to chop them into smaller curves with
         // defined orientation, by solving the derivative curve for y extrema.
         function handleCurve(v) {
             // Filter out curves of zero length.

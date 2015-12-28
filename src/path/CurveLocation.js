@@ -32,7 +32,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     // See #getSegment() below.
     beans: true,
 
-    // DOCS: CurveLocation class description: add these back when the  mentioned
+    // DOCS: CurveLocation class description: add these back when the mentioned
     // functioned have been added: {@link Path#split(location)}
     /**
      * Creates a new CurveLocation object.

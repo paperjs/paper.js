@@ -1957,7 +1957,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * examples.
      *
      * @param {Object|Function} match the criteria to match against
-     * @return {Item} the first descendant item  matching the given criteria
+     * @return {Item} the first descendant item matching the given criteria
      * @see #getItems(match)
      */
     getItem: function(match) {
@@ -3107,7 +3107,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#skew
      * @function
-     * @param {Point} skew  the horziontal and vertical skew angles in degrees
+     * @param {Point} skew the horziontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear
      */

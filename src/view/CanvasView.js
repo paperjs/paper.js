@@ -90,7 +90,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         var browser = paper.browser,
             pixels;
         if (browser && browser.firefox) {
-            // Firefox doesn't appear to convert  context.font sizes to pixels,
+            // Firefox doesn't appear to convert context.font sizes to pixels,
             // while other browsers do. Workaround:
             var parent = this._element.parentNode,
                 temp = document.createElement('div');

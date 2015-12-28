@@ -1460,7 +1460,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
 
         // See if actually have any curves in the path. Differentiate
-        // between straight objects (line, polyline, rect, and  polygon) and
+        // between straight objects (line, polyline, rect, and polygon) and
         // objects with curves(circle, ellipse, roundedRectangle).
         if (!this.hasHandles() && segments.length === 4
                 && isCollinear(0, 2) && isCollinear(1, 3) && isOrthogonal(1)) {

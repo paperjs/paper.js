@@ -791,7 +791,7 @@ statics: {
             // in getStrokeBounds()
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
-        // Only add strokeWidth to bounds for points which lie  within 0 < t < 1
+        // Only add strokeWidth to bounds for points which lie within 0 < t < 1
         // The corner cases for cap and join are handled in getStrokeBounds()
         add(v3, 0);
         for (var i = 0; i < count; i++) {
