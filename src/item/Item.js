@@ -786,7 +786,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     _pivot: null,
 }, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
-        'internalBounds', 'internalRoughBounds'],
+        'internalBounds', 'internalHandleBounds', 'internalRoughBounds'],
     function(key) {
         // Produce getters for bounds properties. These handle caching, matrices
         // and redirect the call to the private _getBounds, which can be
