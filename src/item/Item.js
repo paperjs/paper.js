@@ -1323,9 +1323,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return this._children;
     },
 
-    setChildren: function(items) {
+    setChildren: function(items, _preserve) {
         this.removeChildren();
-        this.addChildren(items);
+        this.addChildren(items, _preserve);
     },
 
     /**

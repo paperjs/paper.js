@@ -808,13 +808,19 @@ PathItem.inject(new function() {
                 for (var i = 0; i < length; i++) {
                     var path = paths[i],
                         point = path.getInteriorPoint(),
-                        isOverlapping = false,
-                        exclude = false,
-                        clockwise = path.isClockwise();
+                        isContained = false,
+                        exclude = false;
                     for (var j = i - 1; j >= 0; j--) {
+                        // We run through the paths from largest to smallest,
+                        // meaning that for any current path, all potentially
+                        // containing paths have already been processed and
+                        // their orientation has been fixed. Since we want to
+                        // achieve alternating orientation of contained paths,
+                        // all we have to do is to find one include path that
+                        // contains the current path, and then set the
+                        // orientation to the opposite of the containing path.
                         if (paths[j].contains(point)) {
-                            if (isNonZero && !isOverlapping) {
-                                isOverlapping = true;
+                            if (isNonZero && !isContained) {
                                 windings[i] += windings[j];
                                 // Remove path if rule is nonzero and winding
                                 // of path and containing path is not zero.
@@ -823,15 +829,15 @@ PathItem.inject(new function() {
                                     break;
                                 }
                             }
+                            isContained = true;
                             if (!excluded[j]) {
-                                // Toggle orientation from the overlapping path.
-                                clockwise = !paths[j].isClockwise();
+                                // Set opposite orientation of containing path.
+                                path.setClockwise(!paths[j].isClockwise());
                                 break;
                             }
                         }
                     }
                     if (!exclude) {
-                        path.setClockwise(clockwise);
                         items.push(path);
                     }
                 }
@@ -842,8 +848,11 @@ PathItem.inject(new function() {
             // First try to recycle the current path / compound-path, if the
             // amount of paths do not require a conversion.
             if (length > 1 && children) {
-                if (paths !== children)
-                    this.setChildren(paths);
+                if (paths !== children) {
+                    // TODO: Fix automatic child-orientation in CompoundPath,
+                    // and stop passing true for _preserve.
+                    this.setChildren(paths, true); // Preserve orientation
+                }
                 item = this;
             } else if (length === 1 && !children) {
                 if (paths[0] !== this)
@@ -854,7 +863,7 @@ PathItem.inject(new function() {
             // and attempt to replace this item with it.
             if (!item) {
                 item = new CompoundPath(Item.NO_INSERT);
-                item.setChildren(paths);
+                item.addChildren(paths, true); // Preserve orientation
                 item = item.reduce();
                 item.copyAttributes(this);
                 this.replaceWith(item);
