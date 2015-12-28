@@ -12,7 +12,7 @@
 
 module('HitResult');
 
-test('hit-testing options', function() {
+test('Hit-testing options', function() {
     var defaultOptions = {
         type: null,
         tolerance: paper.settings.hitTolerance,
@@ -296,7 +296,7 @@ test('hit-testing stroke on segment point of a path', function() {
     equals(error == null, true, description);
 });
 
-test('Hit testing a point that is extremely close to a curve', function() {
+test('hit-testing a point that is extremely close to a curve', function() {
     var path = new Path.Rectangle([0, 0], [100, 100]);
     // A point whose x value is extremely close to 0:
     var point = new Point(2.842 / Math.pow(10, 14), 0);
@@ -492,7 +492,7 @@ test('hitting path with a text item in the project', function() {
 
 });
 
-test('Check hit-testing of items that come after a transformed group.', function() {
+test('hit-testing of items that come after a transformed group.', function() {
     paper.project.currentStyle.fillColor = 'black';
     var point1 = new Point(100, 100);
     var point2 = new Point(140, 100);
@@ -556,7 +556,7 @@ test('Check hit-testing of items that come after a transformed group.', function
     }, path1, 'After moving group before path1, hit-testing path1 for point1 should give us path1.');
 });
 
-test('Check hit-testing of placed symbols.', function() {
+test('hit-testing of placed symbols.', function() {
     var point = new Point(100, 100);
 
     var path = new Path.Circle([0, 0], 20);
@@ -570,7 +570,7 @@ test('Check hit-testing of placed symbols.', function() {
 
 });
 
-test('Hit testing the corner of a rectangle with miter stroke.', function() {
+test('hit-testing the corner of a rectangle with miter stroke.', function() {
     var rect = new Path.Rectangle({
         rectangle: [100, 100, 300, 200],
         fillColor: '#f00',
@@ -583,7 +583,7 @@ test('Hit testing the corner of a rectangle with miter stroke.', function() {
     }, true);
 });
 
-test('Hit testing invisible items.', function() {
+test('hit-testing invisible items.', function() {
     var point = new Point(0, 0);
     var circle1 = new Path.Circle({
         center: point.subtract([25, 0]),
@@ -607,7 +607,7 @@ test('Hit testing invisible items.', function() {
     }, true);
 });
 
-test('Hit testing guides.', function() {
+test('hit-testing guides.', function() {
     var point = new Point(0, 0);
     var circle1 = new Path.Circle({
         center: point.subtract([25, 0]),
@@ -641,7 +641,7 @@ test('Hit testing guides.', function() {
     }, true);
 });
 
-test('Hit testing fill with tolerance', function() {
+test('hit-testing fill with tolerance', function() {
     var path = new Path.Rectangle({
         from: [50, 50],
         to: [200, 200],
@@ -658,7 +658,7 @@ test('Hit testing fill with tolerance', function() {
     }, true);
 });
 
-test('Hit testing compound-paths', function() {
+test('hit-testing compound-paths', function() {
     var center = new Point(100, 100);
     var path1 = new Path.Circle({
         center: center,

@@ -214,3 +214,69 @@ test('Path#contains() (complex shape)', function() {
     testPoint(path, new Point(431, 104), false);
 });
 
+
+test('Path#contains() (straight curves with zero-winding)', function() {
+    var pathPoints = [
+        [140, 100],
+        [140, 10],
+        [100, 10],
+        [100, 20],
+        [120, 20],
+        [120, 40],
+        [100, 40],
+        [100, 60],
+        [200, 60],
+        [120, 60],
+        [120, 100],
+        [300, 100],
+        [50, 100]
+    ];
+
+    var path1 = new Path({
+        segments: pathPoints,
+        closed: true,
+        fillRule: 'evenodd'
+    });
+
+    var hitPoints = [
+        [[30,10], false],
+        [[110,10], true],
+        [[30,20], false],
+        [[110,20], true],
+        [[130,20], true],
+        [[170,20], false],
+        [[110,50], true],
+        [[30,60], false],
+        [[110,60], true],
+        [[130,60], true],
+        [[150,60], false],
+        [[230,60], false],
+        [[10,100], false],
+        [[60,100], false],
+        [[130,100], true],
+        [[170,100], false],
+        [[370,100], false]
+    ];
+
+    for (var i = 0; i < hitPoints.length; i++) {
+        var entry = hitPoints[i];
+        testPoint(path1, new Point(entry[0]), entry[1]);
+    }
+
+    // Now test the x-y-reversed shape
+
+    for (var i = 0; i < pathPoints.length; i++) {
+        pathPoints[i].reverse();
+    }
+
+    var path1 = new Path({
+        segments: pathPoints,
+        closed: true,
+        fillRule: 'evenodd'
+    });
+
+    for (var i = 0; i < hitPoints.length; i++) {
+        var entry = hitPoints[i];
+        testPoint(path1, new Point(entry[0].reverse()), entry[1]);
+    }
+})
