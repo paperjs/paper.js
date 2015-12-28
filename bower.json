@@ -27,6 +27,7 @@
     "straps": "~1.7.2",
     "acorn": "~0.5.0",
     "qunit": "~1.20.0",
+    "resemblejs": "~2.0.1",
     "stats.js": "r14"
   },
   "keywords": [

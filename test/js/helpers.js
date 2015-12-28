@@ -21,6 +21,15 @@ QUnit.begin(function() {
         QUnit.config.hidepassed = true;
         document.getElementById('qunit-tests').className += ' hidepass';
     }
+    resemble.outputSettings({
+        errorColor: {
+            red: 255,
+            green: 51,
+            blue: 0
+        },
+        errorType: 'flat',
+        transparency: 1
+    });
 });
 
 // Register a jsDump parser for Base.
@@ -48,26 +57,71 @@ function compareProperties(actual, expected, properties, message, options) {
 }
 
 function compareItem(actual, expected, message, options, properties) {
-    if (options && options.cloned)
-        QUnit.notStrictEqual(actual.id, 'not ' + expected.id, message + '.id');
-    QUnit.strictEqual(actual.constructor, expected.constructor,
-            message + '.constructor');
-    equals(actual.name,
-            // When item was cloned and had a name, the name will be versioned
-            options && options.cloned && expected.name
-                ? expected.name + ' 1' : expected.name,
-            message + '.name');
-    compareProperties(actual, expected, ['children', 'bounds', 'position',
-            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
-            'selected', 'fullySelected', 'clipMask', 'guide'],
-            message, options);
-    if (properties)
-        compareProperties(actual, expected, properties, message, options);
-    // Style
-    compareProperties(actual.style, expected.style, ['fillColor', 'strokeColor',
-            'strokeCap', 'strokeJoin', 'dashArray', 'dashOffset', 'miterLimit',
-            'fontSize', 'font', 'leading', 'justification'],
-            message + '.style', options);
+
+    function getImageTag(raster) {
+        return '<img width="' + raster.with + '" height="' + raster.height
+                + '" src="'+ raster.source + '">'
+    }
+
+    if (options && options.rasterize) {
+        var resolution = options.rasterize == true ? 72 : options.rasterize;
+        var raster1 = actual && actual.rasterize(resolution, false),
+            raster2 = expected && expected.rasterize(resolution, false);
+        if (!raster1 || !raster2) {
+            QUnit.pushFailure('Unable to compare rasterized items: ' +
+                    (!raster1 ? 'actual' : 'expected') + ' item is null',
+                    QUnit.stack(2));
+        } else {
+            // Use resemble.js to compare the two rasterized items.
+            var id = QUnit.config.current.testId,
+                result;
+            resemble(raster1.getImageData())
+                .compareTo(raster2.getImageData())
+                // When working with imageData, this call is synchronous:
+                .onComplete(function(data) { result = data; });
+            var identical = result ? 100 - result.misMatchPercentage : 0,
+                ok = identical == 100.0;
+            QUnit.push(ok, identical.toFixed(1) + '% identical',
+                    '100.0% identical', message);
+            if (!ok && result) {
+                var output = document.getElementById('qunit-test-output-' + id),
+                    bounds = result.diffBounds;
+                output.querySelector('.test-expected td').innerHTML =
+                        getImageTag(raster1);
+                var el = output.querySelector('.test-actual td');
+                el.innerHTML = getImageTag(raster2) + '<br>' +
+                        el.innerHTML.replace(/<\/?pre>|"/g, '');
+                output.querySelector('.test-diff td').innerHTML =
+                        getImageTag({
+                            source: result.getImageDataUrl(),
+                            width: bounds.right - bounds.left,
+                            height: bounds.bottom - bounds.top
+                        });
+            }
+        }
+    } else {
+        if (options && options.cloned)
+            QUnit.notStrictEqual(actual.id, expected.id,
+                    'not ' + message + '.id');
+        QUnit.strictEqual(actual.constructor, expected.constructor,
+                message + '.constructor');
+        // When item is cloned and has a name, the name will be versioned:
+        equals(actual.name,
+                options && options.cloned && expected.name
+                    ? expected.name + ' 1' : expected.name,
+                message + '.name');
+        compareProperties(actual, expected, ['children', 'bounds', 'position',
+                'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+                'selected', 'fullySelected', 'clipMask', 'guide'],
+                message, options);
+        if (properties)
+            compareProperties(actual, expected, properties, message, options);
+        // Style
+        compareProperties(actual.style, expected.style, ['fillColor',
+                'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
+                'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
+                'justification'], message + '.style', options);
+    }
 }
 
 // A list of comparator functions, based on `expected` type. See equals() for

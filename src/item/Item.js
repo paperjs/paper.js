@@ -1564,6 +1564,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * raster.scale(5);
      */
     rasterize: function(resolution, insert) {
+        // TODO: Switch to options object for more descriptive call signature.
         var bounds = this.getStrokeBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
             // Floor top-left corner and ceil bottom-right corner, to never

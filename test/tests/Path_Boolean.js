@@ -27,7 +27,14 @@ test('path.unite(); #609', function() {
     path2.closePath();
 
     var result = path1.unite(path2);
-    equals(result.pathData, 'M150,150c0,27.61424 -22.38576,50 -50,50c-27.61424,0 -50,-22.38576 -50,-50c0,-27.61424 22.38576,-50 50,-50c27.61424,0 50,22.38576 50,50z', 'result.pathData');
+    result.fillColor = 'blue';
+
+    var expected = new Path({
+        pathData: 'M150,150c0,27.61424 -22.38576,50 -50,50c-27.61424,0 -50,-22.38576 -50,-50c0,-27.61424 22.38576,-50 50,-50c27.61424,0 50,22.38576 50,50z',
+        fillColor: 'blue'
+    });
+
+    equals(result, expected, 'path1.unite(path2);', { rasterize: true });
 });
 
 test('ring.subtract(square); #610', function() {
@@ -50,6 +57,12 @@ test('ring.subtract(square); #610', function() {
 
     var ring = outer.subtract(inner);
     var result = ring.subtract(square);
+    result.fillColor = 'blue';
 
-    equals(result.pathData, 'M-132,0c0,-69.53737 53.7698,-126.51614 122,-131.62689l0,32.12064c-50.53323,5.01724 -90,47.65277 -90,99.50625c0,51.85348 39.46677,94.489 90,99.50625l0,32.12064c-68.2302,-5.11075 -122,-62.08951 -122,-131.62689z');
+    var expected = new Path({
+        pathData: 'M-132,0c0,-69.53737 53.7698,-126.51614 122,-131.62689l0,32.12064c-50.53323,5.01724 -90,47.65277 -90,99.50625c0,51.85348 39.46677,94.489 90,99.50625l0,32.12064c-68.2302,-5.11075 -122,-62.08951 -122,-131.62689z',
+        fillColor: 'blue'
+    });
+
+    equals(result, expected, 'ring.subtract(square);', { rasterize: true });
 });
