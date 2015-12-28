@@ -1540,6 +1540,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} [resolution=view.resolution] the resolution of the raster
      *     in pixels per inch (DPI). If not specified, the value of
      *     `view.resolution` is used.
+     * @param {Boolean} [insert=true] specifies whether the raster should be
+     *     inserted into the scene graph. When set to `true`, it is inserted
+     *     above the original
      * @return {Raster} the newly created raster item
      *
      * @example {@paperscript}
@@ -1560,7 +1563,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * circle.scale(5);
      * raster.scale(5);
      */
-    rasterize: function(resolution) {
+    rasterize: function(resolution, insert) {
         var bounds = this.getStrokeBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
             // Floor top-left corner and ceil bottom-right corner, to never
@@ -1585,7 +1588,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale));
-        raster.insertAbove(this);
+        if (insert != false) // No double-equal!
+            raster.insertAbove(this);
         return raster;
     },
 
