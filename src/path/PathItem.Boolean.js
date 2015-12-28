@@ -623,7 +623,9 @@ PathItem.inject(new function() {
                 // If we are at a crossing and the other segment is part of the
                 // boolean result, switch to it.
                 if (other && isValid(other)) {
-                    if (operation === 'intersect')
+                    // We need to mark overlap segments as visited when
+                    // processing intersection.
+                    if (inter.isOverlap() && operation === 'intersect')
                         seg._visited = true;
                     seg = other;
                 }
