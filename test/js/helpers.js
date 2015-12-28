@@ -17,8 +17,7 @@ delete window.history;
 window.history = {};
 
 QUnit.begin(function() {
-    if (/hidepassed/.test(document.location.href)) {
-        QUnit.config.hidepassed = true;
+    if (QUnit.urlParams.hidepassed) {
         document.getElementById('qunit-tests').className += ' hidepass';
     }
     resemble.outputSettings({
@@ -63,33 +62,55 @@ function compareItem(actual, expected, message, options, properties) {
                 + '" src="'+ raster.source + '">'
     }
 
+    function rasterize(item, group, resolution) {
+        var raster = null;
+        if (group) {
+            group.addChild(item);
+            raster = group.rasterize(resolution, false);
+            item.remove();
+        }
+        return raster;
+    }
+
     if (options && options.rasterize) {
-        var resolution = options.rasterize == true ? 72 : options.rasterize;
-        var raster1 = actual && actual.rasterize(resolution, false),
-            raster2 = expected && expected.rasterize(resolution, false);
-        if (!raster1 || !raster2) {
+        // In order to properly compare pixel by pixel, we need to put each item
+        // into a group with a white background of the united dimensions of the
+        // bounds of both items before rasterizing.
+        var resolution = options.rasterize == true ? 72 : options.rasterize,
+            group = actual && expected && new Group({
+                insert: false,
+                children: [
+                    new Shape.Rectangle({
+                        rectangle: actual.bounds.unite(expected.bounds),
+                        fillColor: 'white'
+                    })
+                ]
+            }),
+            actual = rasterize(actual, group, resolution),
+            expected = rasterize(expected, group, resolution);
+        if (!actual || !expected) {
             QUnit.pushFailure('Unable to compare rasterized items: ' +
-                    (!raster1 ? 'actual' : 'expected') + ' item is null',
+                    (!actual ? 'actual' : 'expected') + ' item is null',
                     QUnit.stack(2));
         } else {
             // Use resemble.js to compare the two rasterized items.
             var id = QUnit.config.current.testId,
                 result;
-            resemble(raster1.getImageData())
-                .compareTo(raster2.getImageData())
+            resemble(actual.getImageData())
+                .compareTo(expected.getImageData())
                 // When working with imageData, this call is synchronous:
                 .onComplete(function(data) { result = data; });
             var identical = result ? 100 - result.misMatchPercentage : 0,
-                ok = identical == 100.0;
-            QUnit.push(ok, identical.toFixed(1) + '% identical',
-                    '100.0% identical', message);
+                ok = identical == 100;
+            QUnit.push(ok, identical.toFixed(2) + '% identical',
+                    '100.00% identical', message);
             if (!ok && result) {
                 var output = document.getElementById('qunit-test-output-' + id),
                     bounds = result.diffBounds;
                 output.querySelector('.test-expected td').innerHTML =
-                        getImageTag(raster1);
+                        getImageTag(expected);
                 var el = output.querySelector('.test-actual td');
-                el.innerHTML = getImageTag(raster2) + '<br>' +
+                el.innerHTML = getImageTag(actual) + '<br>' +
                         el.innerHTML.replace(/<\/?pre>|"/g, '');
                 output.querySelector('.test-diff td').innerHTML =
                         getImageTag({
