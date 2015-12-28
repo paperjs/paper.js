@@ -10,6 +10,19 @@
  * All rights reserved.
  */
 
+// Until window.history.pushState() works when running locally, we need to trick
+// qunit into thinking that the feature is not present. This appears to work...
+// TODO: Ideally we should fix this in QUnit instead.
+delete window.history;
+window.history = {};
+
+QUnit.begin(function() {
+    if (/hidepassed/.test(document.location.href)) {
+        QUnit.config.hidepassed = true;
+        document.getElementById('qunit-tests').className += ' hidepass';
+    }
+});
+
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
     // Just compare the string representation of classes inheriting from Base,
