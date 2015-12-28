@@ -797,28 +797,27 @@ PathItem.inject(new function() {
                 item;
             if (length > 1) {
                 // First order the paths by the area of their bounding boxes.
+                // Make a clone of paths as it may still be the children array.
                 paths = paths.slice().sort(function (a, b) {
                     return b.getBounds().getArea() - a.getBounds().getArea();
                 });
-                var first = paths[0],
-                    clockwise = first.isClockwise(),
-                    items = [first],
+                var items = [],
                     excluded = {},
                     isNonZero = this.getFillRule() === 'nonzero',
                     windings = isNonZero && Base.each(paths, function(path) {
                         this.push(path.isClockwise() ? 1 : -1);
                     }, []);
                 // Walk through paths, from largest to smallest.
-                // The first, largest path can be skipped.
-                for (var i = 1; i < length; i++) {
+                for (var i = 0; i < length; i++) {
                     var path = paths[i],
                         point = path.getInteriorPoint(),
                         isOverlapping = false,
                         exclude = false,
-                        counter = 0;
+                        clockwise = path.isClockwise();
                     for (var j = i - 1; j >= 0; j--) {
                         if (paths[j].contains(point)) {
                             if (isNonZero && !isOverlapping) {
+                                isOverlapping = true;
                                 windings[i] += windings[j];
                                 // Remove path if rule is nonzero and winding
                                 // of path and containing path is not zero.
@@ -827,28 +826,21 @@ PathItem.inject(new function() {
                                     break;
                                 }
                             }
-                            isOverlapping = true;
-                            // Increase counter for containing paths only if
-                            // path will not be excluded.
-                            if (!excluded[j])
-                                counter++;
+                            if (!excluded[j]) {
+                                // Toggle orientation from the overlapping path.
+                                clockwise = !paths[j].isClockwise();
+                                break;
+                            }
                         }
                     }
                     if (!exclude) {
-                        // Set correct orientation and add to final items.
-                        path.setClockwise((counter % 2 === 0) === clockwise);
+                        path.setClockwise(clockwise);
                         items.push(path);
                     }
                 }
                 // Replace paths with the processed items list:
                 paths = items;
                 length = items.length;
-            } else if (length === 1) {
-                // TODO: Is this really required? We don't do the same for
-                // compound-paths:
-                // Paths that are not part of compound paths should never be
-                // counter- clockwise for boolean operations.
-                paths[0].setClockwise(true);
             }
             // First try to recycle the current path / compound-path, if the
             // amount of paths do not require a conversion.
