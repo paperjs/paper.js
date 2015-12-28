@@ -183,7 +183,7 @@ new function() { // Item based mouse handling:
             }
         }
 
-        // Bubble up the DOM and find a parent that responds to this event.
+        // Bubble up the parents and call this event until we're told to stop.
         while (item) {
             if (call(item, type))
                 return true;
