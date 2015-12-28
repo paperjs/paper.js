@@ -803,15 +803,17 @@ PathItem.inject(new function() {
                 paths = paths.slice().sort(function (a, b) {
                     return b.getBounds().getArea() - a.getBounds().getArea();
                 });
-                var items = [],
+                var first = paths[0],
+                    clockwise = first.isClockwise(),
+                    items = [first],
                     excluded = {},
-                    clockwise = paths[0].isClockwise(),
                     isNonZero = this.getFillRule() === 'nonzero',
                     windings = isNonZero && Base.each(paths, function(path) {
                         this.push(path.isClockwise() ? 1 : -1);
                     }, []);
                 // Walk through paths, from largest to smallest.
-                for (var i = 0; i < length; i++) {
+                // The first, largest child can be skipped.
+                for (var i = 1; i < length; i++) {
                     var path = paths[i],
                         point = path.getInteriorPoint(),
                         isContained = false,
