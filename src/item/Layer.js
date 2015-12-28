@@ -70,7 +70,7 @@ var Layer = Group.extend(/** @lends Layer# */{
         // Call the group constructor but don't insert yet!
         props.insert = false;
         Group.call(this, props);
-        if (insert || insert === undefined) {
+        if (insert != false) { // No double-equal!
             this._project.addChild(this);
             // When inserted, also activate the layer by default.
             this.activate();

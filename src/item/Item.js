@@ -1445,7 +1445,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (!children)
             copy.copyAttributes(this);
         // Insert is true by default.
-        if (insert || insert === undefined)
+        if (insert != false) // No double-equal!
             copy.insertAbove(this);
         // Make sure we're not overriding the original name in the same parent
         var name = this._name,
