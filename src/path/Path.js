@@ -1504,7 +1504,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             shape._matrix.preConcatenate(this._matrix);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
-            shape.insertAbove(this);
+            if (insert)
+                shape.insertAbove(this);
             return shape;
         }
         return null;

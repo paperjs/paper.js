@@ -180,7 +180,8 @@ var Shape = Item.extend(/** @lends Shape# */{
         // Respect the setting of paper.settings.applyMatrix for new paths:
         if (paper.settings.applyMatrix)
             path.setApplyMatrix(true);
-        path.insertAbove(this);
+        if (insert)
+            path.insertAbove(this);
         return path;
     },
 
