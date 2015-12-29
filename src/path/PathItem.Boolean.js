@@ -487,8 +487,9 @@ PathItem.inject(new function() {
                     var curve = node.curve,
                         path = curve._path,
                         parent = path._parent,
-                        pt = curve.getPointAt(length),
-                        hor = curve.isHorizontal();
+                        t = curve.getParameterAt(length),
+                        pt = curve.getPointAt(t, true),
+                        hor = Numerical.isZero(curve.getTangentAt(t, true).y);
                     if (parent instanceof CompoundPath)
                         path = parent;
                     // While subtracting, we need to omit this curve if this
