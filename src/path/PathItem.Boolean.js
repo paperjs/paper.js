@@ -281,7 +281,7 @@ PathItem.inject(new function() {
      * Private method that returns the winding contribution of the given point
      * with respect to a given set of monotone curves.
      */
-    function getWinding(point, curves, horizontal, testContains) {
+    function getWinding(point, curves, horizontal) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
@@ -319,11 +319,9 @@ PathItem.inject(new function() {
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
             if (yTop > -Infinity)
-                windLeft = getWinding(new Point(px, yTop), curves, false,
-                        testContains);
+                windLeft = getWinding(new Point(px, yTop), curves);
             if (yBottom < Infinity)
-                windRight = getWinding(new Point(px, yBottom), curves, false,
-                        testContains);
+                windRight = getWinding(new Point(px, yBottom), curves);
         } else {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon,
@@ -408,7 +406,7 @@ PathItem.inject(new function() {
                                     || t > tMax && nextCurve
                                         && slope * Curve.getTangent(
                                             nextCurve.values, 0).y < 0) {
-                                if (testContains && x > xBefore && x < xAfter) {
+                                if (x > xBefore && x < xAfter) {
                                     ++windLeft;
                                     ++windRight;
                                     counted = true;
@@ -430,7 +428,7 @@ PathItem.inject(new function() {
                         // If the point is on a horizontal curve and winding
                         // changes between before and after the curve, we treat
                         // this as a 'touch point'.
-                        if (testContains && py === values[1]
+                        if (py === values[1]
                                 && (values[0] < xAfter && values[6] > xBefore
                                 ||  values[6] < xAfter && values[0] > xBefore)
                                 && prevCurve && nextCurve
@@ -489,12 +487,13 @@ PathItem.inject(new function() {
                         parent = path._parent,
                         t = curve.getParameterAt(length),
                         pt = curve.getPointAt(t, true),
-                        hor = Numerical.isZero(curve.getTangentAt(t, true).y);
+                        hor = Math.abs(curve.getTangentAt(t, true).y)
+                                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
                     if (parent instanceof CompoundPath)
                         path = parent;
-                    // While subtracting, we need to omit this curve if this
-                    // curve is contributing to the second operand and is
-                    // outside the first operand.
+                    // While subtracting, we need to omit this curve if it is
+                    // contributing to the second operand and is outside the
+                    // first operand.
                     windingSum += operation === 'subtract' && path2
                         && (path === path1 && path2._getWinding(pt, hor)
                         || path === path2 && !path1._getWinding(pt, hor))
@@ -698,14 +697,10 @@ PathItem.inject(new function() {
          * direction
          * @param {Boolean} horizontal whether we need to consider this point as
          * part of a horizontal curve
-         * @param {Boolean} testContains whether we need to consider this point
-         * as part of stationary points on the curve itself, used when checking
-         * the winding about a point
          * @return {Number} the winding number
          */
-        _getWinding: function(point, horizontal, testContains) {
-            return getWinding(point, this._getMonoCurves(),
-                    horizontal, testContains);
+        _getWinding: function(point, horizontal) {
+            return getWinding(point, this._getMonoCurves(), horizontal);
         },
 
         /**

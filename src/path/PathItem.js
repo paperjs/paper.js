@@ -307,7 +307,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // handle bounds, which is the fastest rough bounding box to calculate
         // for a quick check before calculating the actual winding.
         var winding = point.isInside(this.getInternalHandleBounds())
-                && this._getWinding(point, false, true);
+                && this._getWinding(point);
         return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
     }
