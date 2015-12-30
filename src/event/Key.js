@@ -19,10 +19,12 @@ var Key = new function() {
             // Unify different key identifier naming schemes, e.g. on Gecko, IE:
             '\t': 'tab',
             ' ': 'space',
+            '\b': 'backspace',
+            '\x7f': 'delete',
             'Spacebar': 'space',
-            'Win': 'meta',
             'Del': 'delete',
-            'Esc': 'escape',
+            'Win': 'meta',
+            'Esc': 'escape'
         },
 
         // To find corresponding characters for special keys in keydown events:
