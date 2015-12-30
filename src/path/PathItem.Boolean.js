@@ -807,7 +807,6 @@ PathItem.inject(new function() {
                     return b.getBounds().getArea() - a.getBounds().getArea();
                 });
                 var first = paths[0],
-                    clockwise = first.isClockwise(),
                     items = [first],
                     excluded = {},
                     isNonZero = this.getFillRule() === 'nonzero',
@@ -820,8 +819,9 @@ PathItem.inject(new function() {
                     var path = paths[i],
                         point = path.getInteriorPoint(),
                         isContained = false,
+                        container = null,
                         exclude = false;
-                    for (var j = i - 1; j >= 0; j--) {
+                    for (var j = i - 1; j >= 0 && !container; j--) {
                         // We run through the paths from largest to smallest,
                         // meaning that for any current path, all potentially
                         // containing paths have already been processed and
@@ -841,15 +841,17 @@ PathItem.inject(new function() {
                                 }
                             }
                             isContained = true;
-                            if (!excluded[j]) {
-                                // Set opposite orientation of containing path.
-                                clockwise = !paths[j].isClockwise();
-                                break;
-                            }
+                            // If the containing path is not excluded, we're
+                            // done searching for the orientation defining path.
+                            container = !excluded[j] && paths[j];
                         }
                     }
                     if (!exclude) {
-                        path.setClockwise(clockwise);
+                        // Set to the opposite orientation of containing path,
+                        // or the same orientation as the first path if the path
+                        // is not contained in any other path.
+                        path.setClockwise(container ? !container.isClockwise()
+                                : first.isClockwise());
                         items.push(path);
                     }
                 }
