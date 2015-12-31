@@ -512,6 +512,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
+    // NOTE: (For easier searching): This loop produces:
+    // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+    // getWeightedNormalAt, getCurvatureAt
     var get = name + 'At';
     this[name] = function() {
         var parameter = this.getParameter(),

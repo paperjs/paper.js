@@ -1164,6 +1164,9 @@ new function() { // // Scope to inject various curve evaluation methods
     // the need to create a Curve object first, as required by the code that
     // finds path intersections.
     function(name) {
+        // NOTE: (For easier searching): This loop produces:
+        // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+        // getWeightedNormalAt, getCurvatureAt
         this[name + 'At'] = function(offset, isParameter) {
             var values = this.getValues();
             return Curve[name](values, isParameter ? offset

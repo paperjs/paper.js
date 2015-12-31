@@ -1679,6 +1679,9 @@ var Path = PathItem.extend(/** @lends Path# */{
     // TODO: contains(item)
 }, Base.each(Curve.evaluateMethods,
     function(name) {
+        // NOTE: (For easier searching): This loop produces:
+        // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+        // getWeightedNormalAt, getCurvatureAt
         this[name + 'At'] = function(offset, isParameter) {
             var loc = this.getLocationAt(offset, isParameter);
             return loc && loc[name]();
