@@ -760,7 +760,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @function
      * @param {Number} hor the amount to expand the rectangle in horizontal
      * direction
-     * @param {Number} ver the amount to expand the rectangle in horizontal
+     * @param {Number} ver the amount to expand the rectangle in vertical
      * direction
      */
     expand: function(/* amount */) {
