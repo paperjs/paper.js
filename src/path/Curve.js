@@ -1727,10 +1727,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
             var straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
                 straight = straight1 && straight2,
-                // NOTE: Use smaller Numerical.EPSILON to compare beginnings and
-                // end points to avoid matching them on almost collinear lines,
-                // see: https://github.com/paperjs/paper.js/issues/777
-                epsilon = /*#=*/Numerical.EPSILON,
                 before = locations.length;
             // Determine the correct intersection method based on whether one or
             // curves are straight lines:
