@@ -152,7 +152,7 @@ var Key = new function() {
                         charLookup[key] || (key.length > 1 ? '' : key), event);
             } else {
                 // If it wasn't handled yet, store the downKey so keypress can
-                // compare and handle buggy edge cases, known to happen ifn
+                // compare and handle buggy edge cases, known to happen in
                 // Chrome on Ubuntu.
                 downKey = key;
             }
@@ -167,9 +167,9 @@ var Key = new function() {
                     character = code >= 32 ? String.fromCharCode(code)
                         : key.length > 1 ? '' : key;
                 if (key !== downKey) {
-                    // This shouldn't ever happen, but it does in Chrome on
-                    // Ubuntu. Luckily for us in the cases where it does happen,
-                    // character is actually the key we want! See #881
+                    // This shouldn't happen, but it does in Chrome on Ubuntu.
+                    // In these cases, character is actually the key we want!
+                    // See #881
                     key = character;
                 }
                 handleKey(true, key, character, event);
