@@ -170,7 +170,7 @@ var Key = new function() {
                     // This shouldn't happen, but it does in Chrome on Ubuntu.
                     // In these cases, character is actually the key we want!
                     // See #881
-                    key = character;
+                    key = character.toLowerCase();
                 }
                 handleKey(true, key, character, event);
                 downKey = null;
