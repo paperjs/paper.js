@@ -57,11 +57,6 @@ function compareProperties(actual, expected, properties, message, options) {
 
 function compareItem(actual, expected, message, options, properties) {
 
-    function getImageTag(raster) {
-        return '<img width="' + raster.with + '" height="' + raster.height
-                + '" src="'+ raster.source + '">'
-    }
-
     function rasterize(item, group, resolution) {
         var raster = null;
         if (group) {
@@ -70,6 +65,11 @@ function compareItem(actual, expected, message, options, properties) {
             item.remove();
         }
         return raster;
+    }
+
+    function getImageTag(raster) {
+        return '<img width="' + raster.width + '" height="' + raster.height
+                + '" src="' + raster.source + '">'
     }
 
     if (options && options.rasterize) {
@@ -95,29 +95,29 @@ function compareItem(actual, expected, message, options, properties) {
         } else {
             // Use resemble.js to compare the two rasterized items.
             var id = QUnit.config.current.testId,
+                index = QUnit.config.current.assertions.length + 1,
                 result;
             resemble(actual.getImageData())
                 .compareTo(expected.getImageData())
                 // When working with imageData, this call is synchronous:
                 .onComplete(function(data) { result = data; });
             var identical = result ? 100 - result.misMatchPercentage : 0,
-                ok = identical == 100;
-            QUnit.push(ok, identical.toFixed(2) + '% identical',
-                    '100.00% identical', message);
+                ok = identical == 100,
+                text = identical.toFixed(2) + '% identical'
+            QUnit.push(ok, text, '100.00% identical', message);
             if (!ok && result) {
-                var output = document.getElementById('qunit-test-output-' + id),
+                // Get the right entry for this unit test and assertion, and
+                // replace the results with images
+                var entry = document.getElementById('qunit-test-output-' + id)
+                        .querySelector('li:nth-child(' + (index) + ')'),
                     bounds = result.diffBounds;
-                output.querySelector('.test-expected td').innerHTML =
+                entry.querySelector('.test-expected td').innerHTML =
                         getImageTag(expected);
-                var el = output.querySelector('.test-actual td');
-                el.innerHTML = getImageTag(actual) + '<br>' +
-                        el.innerHTML.replace(/<\/?pre>|"/g, '');
-                output.querySelector('.test-diff td').innerHTML =
-                        getImageTag({
-                            source: result.getImageDataUrl(),
-                            width: bounds.right - bounds.left,
-                            height: bounds.bottom - bounds.top
-                        });
+                entry.querySelector('.test-actual td').innerHTML =
+                        getImageTag(actual);
+                entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
+                        + '</pre><br>'
+                        + '<img src="' + result.getImageDataUrl() + '">';
             }
         }
     } else {
