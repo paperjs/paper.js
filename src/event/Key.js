@@ -38,14 +38,14 @@ var Key = new function() {
         // characters with all modifiers taken into account across all browsers.
         // So we need to perform a little trickery here to use these codes with
         // onKeyDown/Up:
-        // - keydown is used to store the downKey and handle modifiers and
-        //   special keys such as arrows, space, etc.
-        // - keypress then fires the actual onKeyDown event and maps the downKey
-        //   to the keypress charCode so keyup can do the right thing.
+        // - keydown is used to handle modifiers and special keys such as
+        //   arrows, space, control, etc, for which events are fired right away.
+        // - keypress fires the actual onKeyDown event for all other keys.
+        // - keyup handles the onKeyUp events for both.
         keyMap = {}, // Map for currently pressed keys
         charMap = {}, // key -> char mappings for pressed keys
         metaFixMap, // Keys that will not receive keyup events due to Mac bug
-        handled, // If the event was handled in 'keydown' or not
+        downKey; // The key from the keydown event, if it wasn't handled already
 
         // Use new Base() to convert into a Base object, for #toString()
         modifiers = new Base({
@@ -145,23 +145,35 @@ var Key = new function() {
             // not all of them will receive keypress events.
             // Chrome doesn't fire keypress events for command and alt keys,
             // so we need to handle this in a way that works across all OSes.
-            handled = key.length > 1 || browser.chrome && (event.altKey
+            if (key.length > 1 || browser.chrome && (event.altKey
                         || browser.mac && event.metaKey
-                        || !browser.mac && event.ctrlKey);
-            if (handled) {
+                        || !browser.mac && event.ctrlKey)) {
                 handleKey(true, key,
                         charLookup[key] || (key.length > 1 ? '' : key), event);
+            } else {
+                // If it wasn't handled yet, store the downKey so keypress can
+                // compare and handle buggy edge cases, known to happen ifn
+                // Chrome on Ubuntu.
+                downKey = key;
             }
         },
 
         keypress: function(event) {
-            if (!handled) {
+            if (downKey) {
                 var key = getKey(event),
-                    code = event.charCode;
-                // Try event.charCode if its above 32 and fall back onto the
-                // key value if it's a single character, empty otherwise.
-                handleKey(true, key, code >= 32 ? String.fromCharCode(code)
-                        : key.length > 1 ? '' : key, event);
+                    code = event.charCode,
+                    // Try event.charCode if its above 32 and fall back onto the
+                    // key value if it's a single character, empty otherwise.
+                    character = code >= 32 ? String.fromCharCode(code)
+                        : key.length > 1 ? '' : key;
+                if (key !== downKey) {
+                    // This shouldn't ever happen, but it does in Chrome on
+                    // Ubuntu. Luckily for us in the cases where it does happen,
+                    // character is actually the key we want! See #881
+                    key = character;
+                }
+                handleKey(true, key, character, event);
+                downKey = null;
             }
         },
 
