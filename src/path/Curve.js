@@ -1462,6 +1462,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
             bottom = hull[1],
             tMinClip,
             tMaxClip;
+        // Stop iteration if all points and control points are exactly collinear.
+        if (d1 == 0 && d2 == 0 && dp0 == 0 && dp1 == 0 && dp2 == 0 && dp3 == 0)
+            return;
         // Clip the convex-hull with dMin and dMax, taking into account that
         // there will be no intersections if one of the tvalues are null.
         if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
