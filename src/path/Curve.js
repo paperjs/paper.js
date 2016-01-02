@@ -1462,13 +1462,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
             bottom = hull[1],
             tMinClip,
             tMaxClip;
-        // Stop iteration if all points and control points are exactly collinear.
-        if (d1 == 0 && d2 == 0 && dp0 == 0 && dp1 == 0 && dp2 == 0 && dp3 == 0)
-            return;
-        // Clip the convex-hull with dMin and dMax, taking into account that
-        // there will be no intersections if one of the tvalues are null.
-        if ((tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null ||
-            (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
+        // Stop iteration if all points and control points are collinear.
+        if (d1 === 0 && d2 === 0
+                && dp0 === 0 && dp1 === 0 && dp2 === 0 && dp3 === 0
+            // Clip the convex-hull with dMin and dMax, taking into account that
+            // there will be no intersections if one of the tvalues are null.
+            || (tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null
+            || (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
                 dMin, dMax)) == null)
             return;
         // tMin and tMax are within the range (0, 1). We need to project it
@@ -1490,7 +1490,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 reverse ? v2 : v1, reverse ? c2 : c1, reverse ? u : t, null,
                 reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t : u, null);
         } else {
-            // Clip P with the fat-line for Q
+            // Apply the result of the clipping to curve 1:
             var v1Clip = Curve.getPart(v1, tMinClip, tMaxClip),
                 tDiff = tMaxClip - tMinClip;
             if (oldTDiff > 0.5 && tDiff > 0.5) {
@@ -1518,9 +1518,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 addCurveIntersections(v2, v1Clip, c2, c1, locations, param,
                     uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
             } else {
-                // P has converged to a point. Since we cannot construct a fat-
-                // line from a point, we dismiss this clipping so we can
-                // continue with clipping Q.
+                // Curve 1 has converged to a point. Since we cannot construct a
+                // fat-line from a point, we dismiss this clipping so we can
+                // continue clipping curve 2.
                 addCurveIntersections(v2, v1, c2, c1, locations, param,
                     uMin, uMax, tMin, tMax, tDiff, !reverse, recursion);
             }
