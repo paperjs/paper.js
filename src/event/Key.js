@@ -45,7 +45,7 @@ var Key = new function() {
         keyMap = {}, // Map for currently pressed keys
         charMap = {}, // key -> char mappings for pressed keys
         metaFixMap, // Keys that will not receive keyup events due to Mac bug
-        downKey, // The last key from keydown
+        handled, // If the event was handled in 'keydown' or not
 
         // Use new Base() to convert into a Base object, for #toString()
         modifiers = new Base({
@@ -145,27 +145,23 @@ var Key = new function() {
             // not all of them will receive keypress events.
             // Chrome doesn't fire keypress events for command and alt keys,
             // so we need to handle this in a way that works across all OSes.
-            if (key.length > 1 || browser.chrome && (event.altKey
+            handled = key.length > 1 || browser.chrome && (event.altKey
                         || browser.mac && event.metaKey
-                        || !browser.mac && event.ctrlKey)) {
-                handleKey(true, key, charLookup[key]
-                        || (key.length > 1 ? '' : key), event);
-                // Do not set downKey as we handled it already. E.g. space would
-                // be handled twice otherwise, once here, once in keypress.
-            } else {
-                downKey = key;
+                        || !browser.mac && event.ctrlKey);
+            if (handled) {
+                handleKey(true, key,
+                        charLookup[key] || (key.length > 1 ? '' : key), event);
             }
         },
 
         keypress: function(event) {
-            if (downKey) {
-                var code = event.charCode;
+            if (!handled) {
+                var key = getKey(event),
+                    code = event.charCode;
                 // Try event.charCode if its above 32 and fall back onto the
                 // key value if it's a single character, empty otherwise.
-                handleKey(true, downKey, code >= 32
-                        ? String.fromCharCode(code)
-                        : downKey.length > 1 ? '' : downKey, event);
-                downKey = null;
+                handleKey(true, key, code >= 32 ? String.fromCharCode(code)
+                        : key.length > 1 ? '' : key, event);
             }
         },
 
