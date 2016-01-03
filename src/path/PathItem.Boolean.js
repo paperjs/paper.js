@@ -527,7 +527,7 @@ PathItem.inject(new function() {
             start,
             otherStart,
             operator = operators[operation],
-            // Adjust winding contributions for specific operations on overlaps:
+            // Adjust winding contributions for unite operation on overlaps:
             overlapWinding = operation === 'unite' && { 1: 2 };
 
         function isValid(seg, adjusted) {
@@ -543,7 +543,7 @@ PathItem.inject(new function() {
         }
 
         function isStart(seg) {
-            return seg && (seg === start || seg === otherStart);
+            return seg === start || seg === otherStart;
         }
 
         // If there are multiple possible intersections, find the one that's
