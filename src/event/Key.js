@@ -67,7 +67,8 @@ var Key = new function() {
             // based on whichever key is used for commands.
             command: {
                 get: function() {
-                    return paper.browser.mac ? this.meta : this.control;
+                var browser = paper.browser;
+                    return browser && browser.mac ? this.meta : this.control;
                 }
             }
         });
@@ -107,7 +108,8 @@ var Key = new function() {
         // Detect modifiers and mark them as pressed / released
         if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
             modifiers[name] = down;
-            if (name === 'meta' && paper.browser.mac) {
+            var browser = paper.browser;
+            if (name === 'meta' && browser && browser.mac) {
                 // Fix a strange behavior on Mac where no keyup events are
                 // received for any keys pressed while the meta key is down.
                 // Keep track of the normal keys being pressed and trigger keyup
