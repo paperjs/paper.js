@@ -543,7 +543,7 @@ PathItem.inject(new function() {
         }
 
         function isStart(seg) {
-            return seg === start || seg === otherStart;
+            return seg && (seg === start || seg === otherStart);
         }
 
         // If there are multiple possible intersections, find the one that's
@@ -568,7 +568,7 @@ PathItem.inject(new function() {
                 // used, in which invalid current segments are tolerated, and
                 // overlaps for the next segment are allowed as long as they are
                 // valid when not adjusted.
-                if (isStart(nextSeg)
+                if (isStart(seg) || isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
@@ -593,56 +593,47 @@ PathItem.inject(new function() {
             return null;
         }
 
-        function findStartSegment(inter, next) {
-            while (inter) {
-                var seg = inter._segment;
-                if (isStart(seg))
-                    return seg;
-                inter = inter[next ? '_next' : '_prev'];
-            }
-        }
-
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
                 path = null,
-                finished = false;
+                finished = false,
+                handleIn;
             // Do not start a chain with already visited segments, and segments
             // that are not going to be part of the resulting operation.
             if (!isValid(seg, true))
                 continue;
             start = otherStart = null;
             while (!finished) {
-                var inter = seg._intersection,
-                    handleIn = path && seg._handleIn;
+                var inter = seg._intersection;
+                handleIn = path && seg._handleIn;
                 // Once we started a chain, see if there are multiple
                 // intersections, and if so, pick the best one:
                 inter = inter && (findBestIntersection(inter, true)
                         || findBestIntersection(inter, false)) || inter;
                 // Get a reference to the other segment on the intersection.
                 var other = inter && inter._segment;
-                // If we are at a crossing and the other segment is part of the
-                // boolean result, switch to it.
-                if (other && isValid(other)) {
-                    // We need to mark overlap segments as visited when
-                    // processing intersection.
-                    if (inter.isOverlap() && operation === 'intersect')
-                        seg._visited = true;
-                    seg = other;
-                }
-                // If the new segment is visited already, check if we're back
-                // at the start.
-                if (seg._visited) {
-                    finished = isStart(seg);
-                    if (!finished && inter) {
-                        // See if any of the intersections is the start segment,
-                        // and if so finish the path.
-                        var found = findStartSegment(inter, true)
-                            || findStartSegment(inter, false);
-                        if (found) {
-                            seg = found;
-                            finished = true;
-                        }
+                if (isStart(seg)) {
+                    finished = true;
+                } else if (other) {
+                    if (isStart(other)) {
+                        finished = true;
+                        // Switch the segment, but do not update handleIn
+                        seg = other;
+                    } else if (isValid(other)) {
+                        // We are at a crossing and the other segment is part of
+                        // the boolean result, switch over.
+                        // We need to mark overlap segments as visited when
+                        // processing intersection.
+                        if (inter.isOverlap() && operation === 'intersect')
+                            seg._visited = true;
+                        seg = other;
                     }
+                }
+                // Bail out if we're done, or if we encounter an already visited
+                // next segment.
+                if (finished || seg._visited) {
+                    // It doesn't hurt to set again to share some code.
+                    seg._visited = true;
                     break;
                 }
                 if (!path) {
@@ -654,14 +645,11 @@ PathItem.inject(new function() {
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
-                if (isStart(seg)) {
-                    finished = seg._visited = true;
-                }
             }
             // Finish with closing the paths if necessary, correctly linking up
             // curves etc.
             if (finished) {
-                path.firstSegment.setHandleIn(seg._handleIn);
+                path.firstSegment.setHandleIn(handleIn);
                 path.setClosed(true);
             } else if (path) {
                 var length = path.getLength();
