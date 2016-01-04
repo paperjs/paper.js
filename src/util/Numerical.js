@@ -103,7 +103,7 @@ var Numerical = new function() {
          * The epsilon to be used when performing "geometric" checks, such as
          * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 4e-7,
+        GEOMETRIC_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases!
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
