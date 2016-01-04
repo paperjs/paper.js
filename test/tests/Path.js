@@ -268,3 +268,28 @@ test('Simplifying a path with three segments of the same position should not thr
         return path.segments.length;
     }, 1);
 });
+
+test('Path#interpolate', function() {
+    var path = new Path.Ellipse(),
+        path0 = new Path.Ellipse({
+            point: [0, 0],
+            size: [10, 10]
+        }),
+        path1 = new Path.Ellipse({
+            point: [10, 10],
+            size: [20, 20]
+        }),
+        expected = new Path.Ellipse({
+            point: [5, 5],
+            size: [15, 15]
+        });
+
+    path.interpolate(path0, path1, 0);
+    equals( path.exportJSON(), path0.exportJSON() );
+
+    path.interpolate(path0, path1, 1);
+    equals( path.exportJSON(), path1.exportJSON() );
+
+    path.interpolate(path0, path1, 0.5);
+    equals( path.exportJSON(), expected.exportJSON() );
+});

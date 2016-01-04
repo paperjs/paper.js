@@ -74,4 +74,33 @@ test('segment.selected', function() {
     path.segments[0].point.selected = false;
     equals(function() {
         return path.segments[0].point.selected;
-    }, false);});
+    }, false);
+});
+
+test('segment.interpolate', function() {
+    var segment = new Segment(),
+        segment0 = new Segment({
+            point: [10, 10],
+            handleIn: [-10, -10],
+            handleOut: [10, 10]
+        }),
+        segment1 = new Segment({
+            point: [110, 110],
+            handleIn: [-10, 10],
+            handleOut: [10, -10]
+        }),
+        expected = new Segment({
+            point: [60, 60],
+            handleIn: [-10, 0],
+            handleOut: [10, 0]
+        });
+
+    segment.interpolate(segment0, segment1, 0);
+    equals(segment.toString(), segment0.toString());
+
+    segment.interpolate(segment0, segment1, 1);
+    equals(segment.toString(), segment1.toString());
+
+    segment.interpolate(segment0, segment1, 0.5);
+    equals(segment.toString(), expected.toString());
+});
