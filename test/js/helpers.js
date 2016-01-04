@@ -31,6 +31,12 @@ QUnit.begin(function() {
     });
 });
 
+var errorHandler = console.error;
+console.error = function() {
+    QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
+    errorHandler.apply(this, arguments);
+}
+
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
     // Just compare the string representation of classes inheriting from Base,
@@ -77,8 +83,12 @@ function compareItem(actual, expected, message, options, properties) {
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
         var resolution = options.rasterize == true ? 72 : options.rasterize,
-            bounds = actual.strokeBounds.unite(expected.strokeBounds),
-            group = actual && expected && new Group({
+            bounds = actual.strokeBounds.unite(expected.strokeBounds);
+        if (bounds.isEmpty()) {
+            QUnit.push(true, 'empty', 'empty', message);
+            return;
+        }
+        var group = actual && expected && new Group({
                 insert: false,
                 children: [
                     new Shape.Rectangle({
