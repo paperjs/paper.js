@@ -17,7 +17,7 @@ function createPath(str) {
     return new ctor(str)
 }
 
-function compareBoolean(actual, expected, message) {
+function compareBoolean(actual, expected, message, options) {
     expected = typeof expected === 'string'
             ? createPath(expected)
             : expected;
@@ -26,8 +26,10 @@ function compareBoolean(actual, expected, message) {
             message = getFunctionMessage(actual);
         actual = actual();
     }
+    actual.strokeColor = expected.strokeColor = 're';
+    actual.strokeWidth = expected.strokeWidth = 1;
     actual.fillColor = expected.fillColor = 'blue';
-    equals(actual, expected, message, { rasterize: true });
+    equals(actual, expected, message, options || { rasterize: true });
 }
 
 test('#541', function() {
@@ -292,6 +294,9 @@ test('#878', function() {
             [300, 300]],
         closed:true
     });
+
+    compareBoolean(function() { return p1.unite(p2); },
+        'M431.9,480l-35.62956,-12.89652c-19.34292,-41.22209 -96.27044,-167.10348 -96.27044,-167.10348c0,0 -48.3459,51.18977 -91.9573,98.97235l-80.0427,-28.97235l-48,110z');
 
     compareBoolean(function() { return p1.subtract(p2); },
         'M431.9,480l-35.62956,-12.89652c3.78718,8.07094 5.3669,12.89652 3.72956,12.89652z M208.0427,398.97235l-80.0427,-28.97235l-48,110l60,0c-4.6672,0 29.87455,-39.20895 68.0427,-81.02765z');

@@ -77,11 +77,12 @@ function compareItem(actual, expected, message, options, properties) {
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
         var resolution = options.rasterize == true ? 72 : options.rasterize,
+            bounds = actual.strokeBounds.unite(expected.strokeBounds),
             group = actual && expected && new Group({
                 insert: false,
                 children: [
                     new Shape.Rectangle({
-                        rectangle: actual.bounds.unite(expected.bounds),
+                        rectangle: bounds,
                         fillColor: 'white'
                     })
                 ]
