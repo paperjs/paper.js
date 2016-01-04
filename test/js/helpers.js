@@ -83,7 +83,13 @@ function compareItem(actual, expected, message, options, properties) {
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
         var resolution = options.rasterize == true ? 72 : options.rasterize,
-            bounds = actual.strokeBounds.unite(expected.strokeBounds);
+            actualBounds = actual.strokeBounds,
+            expecedBounds = expected.strokeBounds,
+            bounds = actualBounds.isEmpty()
+                    ? expecedBounds
+                    : expecedBounds.isEmpty()
+                    ? actualBounds
+                    : actualBounds.unite(expecedBounds);
         if (bounds.isEmpty()) {
             QUnit.push(true, 'empty', 'empty', message);
             return;
