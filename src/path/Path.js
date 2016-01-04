@@ -1030,7 +1030,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         var curves = this.getCurves();
         for (var i = curves.length - 1; i >= 0; i--) {
             var curve = curves[i];
-            if (!curve.hasHandles() && (curve.getLength() === 0
+            if (!curve.hasHandles()
+                && (curve.getLength() < /*#=*/Numerical.GEOMETRIC_EPSILON
                     || curve.isCollinear(curve.getNext())))
                 curve.remove();
         }
