@@ -182,7 +182,6 @@ test('#859', function() {
         'M230,360l96.05,1.95c0.3523,0.26298 0.70509,0.52535 1.05835,0.78713l-27.10835,17.26287l27.98162,-13.9599c0.29878,-0.67424 0.57885,-1.35439 0.84036,-2.04026c6.22144,4.55915 12.57473,8.94859 18.92802,13.30016l-87.75,22.7z');
 });
 
-
 test('#839', function() {
     var p1 =  new Path({segments:[
                     [522, 352, 0, 0, 0, 0],
@@ -196,7 +195,6 @@ test('#839', function() {
     compareBoolean(function() { return p1.subtract(p2); },
         'M522,352l-22,48l-20,0l-32,48l-98,0l0,-96z M250,448l-150,0l0,-96l150,0z');
 })
-
 
 test('#865', function() {
     // https://github.com/paperjs/paper.js/issues/865
@@ -236,6 +234,34 @@ test('#865', function() {
     executeTest( 0.0000001);
     executeTest(-0.000000001);
     executeTest( 0.000000001);
+});
+
+test('#870', function() {
+    var path1 = new Path.Rectangle({
+        point: [50, 50],
+        size: [150, 50]
+    });
+
+    var path2 = new Path.Rectangle({
+        point: [70, 50],
+        size: [150, 50]
+    });
+
+    compareBoolean(function() { return path1.intersect(path2); },
+        'M70,50l130,0l0,50l-130,0z');
+
+    var path1 = new Path.Rectangle({
+        point: [50, 150],
+        size: [50, 100]
+    });
+
+    var path2 = new Path.Rectangle({
+        point: [50, 175],
+        size: [50, 100]
+    });
+
+    compareBoolean(function() { return path1.intersect(path2); },
+        'M50,250l0,-75l50,0l0,75z');
 });
 
 test('#875', function() {
