@@ -148,7 +148,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         for (var i = children.length - 1; i >= 0; i--) {
             var path = children[i].reduce();
             if (path.isEmpty())
-                children.splice(i, 1);
+                path.remove();
         }
         if (children.length === 0) { // Replace with a simple empty Path
             var path = new Path(Item.NO_INSERT);
