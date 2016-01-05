@@ -1032,7 +1032,10 @@ var Path = PathItem.extend(/** @lends Path# */{
             var curve = curves[i];
             if (!curve.hasHandles()
                 && (curve.getLength() < /*#=*/Numerical.GEOMETRIC_EPSILON
-                    || curve.isCollinear(curve.getNext())))
+                    // Pass true for sameDir, as we can only remove straight
+                    // curves if they point in the same direction as the next
+                    // curve, not 180° in the opposite direction.
+                    || curve.isCollinear(curve.getNext(), true)))
                 curve.remove();
         }
         return this;

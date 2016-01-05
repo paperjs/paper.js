@@ -949,9 +949,9 @@ statics: {
      * @param {Curve} curve the other curve to check against
      * @return {Boolean} {@true if the two lines are collinear}
      */
-    isCollinear: function(curve) {
+    isCollinear: function(curve, sameDir) {
         return curve && this.isStraight() && curve.isStraight()
-                && this.getLine().isCollinear(curve.getLine());
+                && this.getLine().isCollinear(curve.getLine(), sameDir);
     },
 
     /**
