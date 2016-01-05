@@ -1383,8 +1383,10 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
     function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
             overlap) {
-        var startConnected = param.startConnected,
-            endConnected = param.endConnected,
+        // Do not exclude connecting points between two curves if they were part
+        // of overlap checks. They could be self-overlapping.
+        var excludeStart = !overlap && param.startConnected,
+            excludeEnd = !overlap && param.endConnected,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (t1 == null)
@@ -1396,12 +1398,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
         //   which connects back to the beginning, but only if it's not part of
         //   a found overlap. The normal intersection will already be found at
         //   the beginning, and would be added twice otherwise.
-        if (t1 !== null && t1 >= (startConnected ? tMin : 0) &&
-            t1 <= (endConnected ? tMax : 1)) {
+        if (t1 !== null && t1 >= (excludeStart ? tMin : 0) &&
+            t1 <= (excludeEnd ? tMax : 1)) {
             if (t2 == null)
                 t2 = Curve.getParameterOf(v2, p2);
-            if (t2 !== null && t2 >= (endConnected ? tMin : 0) &&
-                t2 <= (startConnected ? tMax : 1)) {
+            if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
+                t2 <= (excludeStart ? tMax : 1)) {
                 var renormalize = param.renormalize;
                 if (renormalize) {
                     var res = renormalize(t1, t2);
@@ -1717,17 +1719,15 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     max(c2p1y, c2s1y, c2s2y, c2p2y)))
                 return locations;
             // Now detect and handle overlaps:
-            if (!param.startConnected && !param.endConnected) {
-                var overlaps = Curve.getOverlaps(v1, v2);
-                if (overlaps) {
-                    for (var i = 0; i < 2; i++) {
-                        var overlap = overlaps[i];
-                        addLocation(locations, param,
-                            v1, c1, overlap[0], null,
-                            v2, c2, overlap[1], null, true);
-                    }
-                    return locations;
+            var overlaps = Curve.getOverlaps(v1, v2);
+            if (overlaps) {
+                for (var i = 0; i < 2; i++) {
+                    var overlap = overlaps[i];
+                    addLocation(locations, param,
+                        v1, c1, overlap[0], null,
+                        v2, c2, overlap[1], null, true);
                 }
+                return locations;
             }
 
             var straight1 = Curve.isStraight(v1),
@@ -1856,7 +1856,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
                 straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                straight =  straight1 && straight2;
+                straightBoth =  straight1 && straight2;
 
             function getLineLengthSquared(v) {
                 var x = v[6] - v[0],
@@ -1864,19 +1864,29 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 return x * x + y * y;
             }
 
-            if (straight) {
-                // Linear curves can only overlap if they are collinear. Instead
-                // of using the #isCollinear() check, we pick the longer of the
-                // two lines and see how far the starting and end points of the
-                // other line are from this line (assumed as an infinite line).
-                var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
-                    l1 = flip ? v2 : v1,
-                    l2 = flip ? v1 : v2,
-                    line = new Line(l1[0], l1[1], l1[6], l1[7]);
-                if (line.getDistance(new Point(l2[0], l2[1])) > geomEpsilon ||
-                    line.getDistance(new Point(l2[6], l2[7])) > geomEpsilon)
-                    return null;
-            } else if (straight1 ^ straight2) {
+            // Linear curves can only overlap if they are collinear. Instead
+            // of using the #isCollinear() check, we pick the longer of the
+            // two lines and see how far the starting and end points of the
+            // other line are from this line (assumed as an infinite line).
+            var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
+                l1 = flip ? v2 : v1,
+                l2 = flip ? v1 : v2,
+                line = new Line(l1[0], l1[1], l1[6], l1[7]);
+            if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
+                line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
+                if (!straightBoth &&
+                    line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
+                    line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
+                    line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
+                    line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
+                    straight1 = straight2 = straightBoth = true;
+                }
+            } else if (straightBoth) {
+                // If both curves are straight and not within geometric epsilon
+                // of each other, there can't be a solution.
+                return null;
+            }
+            if (straight1 ^ straight2) {
                 // If one curve is straight, the other curve must be straight,
                 // too, otherwise they cannot overlap.
                 return null;
@@ -1908,7 +1918,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             }
             if (pairs.length !== 2) {
                 pairs = null;
-            } else if (!straight) {
+            } else if (!straightBoth) {
                 // Straight pairs don't need further checks. If we found
                 // 2 pairs, the end points on v1 & v2 should be the same.
                 var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
