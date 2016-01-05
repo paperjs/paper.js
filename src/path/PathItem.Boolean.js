@@ -401,14 +401,17 @@ PathItem.inject(new function() {
                             // the ray. This essentially is not a crossing.
                             if (Numerical.isZero(slope)
                                     && !Curve.isStraight(values)
+                                    // NOTE: We include 0 in the checks, since
+                                    // even following a horizontal tangent is a
+                                    // tip that is only touched, not crossed.
                                     // Does the slope over the beginning change?
                                     || t < tMin && prevCurve
                                         && slope * Curve.getTangent(
-                                            prevCurve.values, 1).y < 0
+                                            prevCurve.values, 1).y <= 0
                                     // Does the slope over the end change?
                                     || t > tMax && nextCurve
                                         && slope * Curve.getTangent(
-                                            nextCurve.values, 0).y < 0) {
+                                            nextCurve.values, 0).y <= 0) {
                                 if (x > xBefore && x < xAfter) {
                                     ++windLeft;
                                     ++windRight;
