@@ -104,7 +104,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 Curve._getSelfIntersection(values1, curve1, locations, {
                     include: include,
                     // Only possible if there is only one closed curve:
-                    startConnected: length1 === 1 &&
+                    excludeStart: length1 === 1 &&
                             curve1.getPoint1().equals(curve1.getPoint2())
                 });
             }
@@ -125,8 +125,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                         // Do not compare indices here to determine connection,
                         // since one array of curves can contain curves from
                         // separate sup-paths of a compound path.
-                        startConnected: self && curve1.getPrevious() === curve2,
-                        endConnected: self && curve1.getNext() === curve2
+                        excludeStart: self && curve1.getPrevious() === curve2,
+                        excludeEnd: self && curve1.getNext() === curve2
                     }
                 );
             }

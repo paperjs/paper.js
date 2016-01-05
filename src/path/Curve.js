@@ -1385,14 +1385,14 @@ new function() { // Scope for intersection using bezier fat-line clipping
             overlap) {
         // Do not exclude connecting points between two curves if they were part
         // of overlap checks. They could be self-overlapping.
-        var excludeStart = !overlap && param.startConnected,
-            excludeEnd = !overlap && param.endConnected,
+        var excludeStart = !overlap && param.excludeStart,
+            excludeEnd = !overlap && param.excludeEnd,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (t1 == null)
             t1 = Curve.getParameterOf(v1, p1);
-        // Check t1 and t2 against correct bounds, based on start-/endConnected:
-        // - startConnected means the start of c1 connects to the end of c2
+        // Check t1 and t2 against correct bounds, based on excludeStart/End:
+        // - excludeStart means the start of c1 connects to the end of c2
         // - endConneted means the end of c1 connects to the start of c2
         // - If either c1 or c2 are at the end of the path, exclude their end,
         //   which connects back to the beginning, but only if it's not part of
@@ -1665,7 +1665,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 // If the two curves are connected and the 2nd is very short,
                 // (l < Numerical.GEOMETRIC_EPSILON), we need to filter out an
                 // invalid intersection at the beginning of this short curve.
-                if (!param.endConnected || t2 > Numerical.CURVETIME_EPSILON) {
+                if (!param.excludeEnd || t2 > Numerical.CURVETIME_EPSILON) {
                     addLocation(locations, param,
                             v1, c1, t1, flip ? pl : pc,
                             v2, c2, t2, flip ? pc : pl);
@@ -1758,9 +1758,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c2p2 = new Point(c2p2x, c2p2y);
             if (c1p1.isClose(c2p1, epsilon))
                 addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c2p1);
-            if (!param.startConnected && c1p1.isClose(c2p2, epsilon))
+            if (!param.excludeStart && c1p1.isClose(c2p2, epsilon))
                 addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c2p2);
-            if (!param.endConnected && c1p2.isClose(c2p1, epsilon))
+            if (!param.excludeEnd && c1p2.isClose(c2p1, epsilon))
                 addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c2p1);
             if (c1p2.isClose(c2p2, epsilon))
                 addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
@@ -1832,8 +1832,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     // Divide the curve in two and then apply the normal curve
                     // intersection code.
                     var parts = Curve.subdivide(v1, tSplit);
-                    // After splitting, the end is always connected:
-                    param.endConnected = true;
+                    // After splitting, the end is always connected, so exclude:
+                    param.excludeEnd = true;
                     // Since the curve was split above, we need to adjust the
                     // parameters for both locations.
                     param.renormalize = function(t1, t2) {
