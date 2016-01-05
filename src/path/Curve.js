@@ -1868,12 +1868,20 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // of using the #isCollinear() check, we pick the longer of the
             // two lines and see how far the starting and end points of the
             // other line are from this line (assumed as an infinite line).
+            // But even if the curves are not straight, they might just have
+            // tiny handles within the geometric epsilon distance, so we check
+            // against that too first.
             var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
                 l1 = flip ? v2 : v1,
                 l2 = flip ? v1 : v2,
                 line = new Line(l1[0], l1[1], l1[6], l1[7]);
+            // See if the starting and end point of curve two are very close to
+            // the picked line. Note that the the picked line might not actually
+            // be a line, so we have to perform more checks after.
             if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
                 line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
+                // If not both curves are straight, check against both of their
+                // handles, and set them all straight if they are very close.
                 if (!straightBoth &&
                     line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
                     line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
@@ -1882,8 +1890,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     straight1 = straight2 = straightBoth = true;
                 }
             } else if (straightBoth) {
-                // If both curves are straight and not within geometric epsilon
-                // of each other, there can't be a solution.
+                // If both curves are straight and not very close to each other,
+                // there can't be a solution.
                 return null;
             }
             if (straight1 ^ straight2) {
