@@ -77,10 +77,9 @@ PathItem.inject(new function() {
         var _path1 = preparePath(path1, true),
             _path2 = path2 && path1 !== path2 && preparePath(path2, true),
             // Retrieve the operator lookup table for winding numbers.
-            lookup = operators[operation],
-            // Create the operator structure, holding the lookup table and a
-            // simple boolean check for an operation, e.g. `if (operator.unite)`
-            operator = { lookup: lookup };
+            operator = operators[operation];
+        // Add a simple boolean property to check for a given operation,
+        // e.g. `if (operator.unite)`
         operator[operation] = true;
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
@@ -129,7 +128,7 @@ PathItem.inject(new function() {
             // If there are any valid segments that are not part of overlaps,
             // prefer these to start tracing boolean paths from. But if all
             // segments are part of overlaps, we need to start there.
-            if (!(inter && inter.isOverlap()) && lookup[segment._winding])
+            if (!(inter && inter.isOverlap()) && operator[segment._winding])
                 startInOverlaps = false;
         }
         return finishBoolean(CompoundPath,
@@ -532,8 +531,7 @@ PathItem.inject(new function() {
             otherStart;
 
         function isValid(seg) {
-            return !seg._visited
-                    && (!operator || operator.lookup[seg._winding]);
+            return !seg._visited && (!operator || operator[seg._winding]);
         }
 
         function isStart(seg) {
