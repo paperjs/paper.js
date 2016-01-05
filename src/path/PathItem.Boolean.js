@@ -26,11 +26,17 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
+    // Set up lookup tables for each operator, to decide if a given segment is
+    // to be considered a part of the solution, or to be discarded, based on its
+    // winding contribution, as calculated by propagateWinding().
+    // Boolean operators return true if a segment with the given winding
+    // contribution contributes to the final result or not. They are applied to
+    // for each segment after the paths are split at crossings.
     var operators = {
         unite:     { 0: true, 1: true },
         intersect: { 2: true },
         subtract:  { 1: true },
-        exclude:   { 1 : true }
+        exclude:   { 1: true }
     };
 
     /*
@@ -60,10 +66,6 @@ PathItem.inject(new function() {
         return result;
     }
 
-    // Boolean operators return true if a curve with the given winding
-    // contribution contributes to the final result or not. They are called
-    // for each curve in the graph after curves in the operands are
-    // split at crossings.
     function computeBoolean(path1, path2, operation) {
         // If path1 is open, delegate to computeOpenBoolean()
         if (!path1._children && !path1._closed)
@@ -74,8 +76,7 @@ PathItem.inject(new function() {
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1, true),
             _path2 = path2 && path1 !== path2 && preparePath(path2, true),
-            // Retrieve the operator lookup table to decide if a given winding
-            // number is to be considered part of the solution.
+            // Retrieve the operator lookup table for winding numbers.
             lookup = operators[operation],
             // Create the operator structure, holding the lookup table and a
             // simple boolean check for an operation, e.g. `if (operator.unite)`
