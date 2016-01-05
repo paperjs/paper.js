@@ -1384,7 +1384,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
     function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
             overlap) {
         // Do not exclude connecting points between two curves if they were part
-        // of overlap checks. They could be self-overlapping.
+        // of overlap checks, as they could be self-overlapping.
         var excludeStart = !overlap && param.excludeStart,
             excludeEnd = !overlap && param.excludeEnd,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
@@ -1858,30 +1858,31 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 straight2 = Curve.isStraight(v2),
                 straightBoth =  straight1 && straight2;
 
-            function getLineLengthSquared(v) {
+            // Linear curves can only overlap if they are collinear. Instead of
+            // using the #isCollinear() check, we pick the longer of the two
+            // curves treated as lines, and see how far the starting and end
+            // points of the other line are from this line (assumed as an
+            // infinite line). But even if the curves are not straight, they
+            // might just have tiny handles within the geometric epsilon
+            // distance, so we have to check for that too.
+
+            function getEndDistanceSquared(v) {
                 var x = v[6] - v[0],
                     y = v[7] - v[1];
                 return x * x + y * y;
             }
 
-            // Linear curves can only overlap if they are collinear. Instead
-            // of using the #isCollinear() check, we pick the longer of the
-            // two lines and see how far the starting and end points of the
-            // other line are from this line (assumed as an infinite line).
-            // But even if the curves are not straight, they might just have
-            // tiny handles within the geometric epsilon distance, so we check
-            // against that too first.
-            var flip = getLineLengthSquared(v1) < getLineLengthSquared(v2),
+            var flip = getEndDistanceSquared(v1) < getEndDistanceSquared(v2),
                 l1 = flip ? v2 : v1,
                 l2 = flip ? v1 : v2,
                 line = new Line(l1[0], l1[1], l1[6], l1[7]);
             // See if the starting and end point of curve two are very close to
-            // the picked line. Note that the the picked line might not actually
-            // be a line, so we have to perform more checks after.
+            // the picked line. Note that the curve for the picked line might
+            // not actually be a line, so we have to perform more checks after.
             if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
                 line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
                 // If not both curves are straight, check against both of their
-                // handles, and set them all straight if they are very close.
+                // handles, and treat them as straight if they are very close.
                 if (!straightBoth &&
                     line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
                     line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
