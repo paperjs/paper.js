@@ -27,21 +27,10 @@
  */
 PathItem.inject(new function() {
     var operators = {
-        unite: function(w) {
-            return w === 1 || w === 0;
-        },
-
-        intersect: function(w) {
-            return w === 2;
-        },
-
-        subtract: function(w) {
-            return w === 1;
-        },
-
-        exclude: function(w) {
-            return w === 1;
-        }
+        unite:     { 0: true, 1: true },
+        intersect: { 2: true },
+        subtract:  { 1: true },
+        exclude:   { 1 : true }
     };
 
     /*
@@ -84,10 +73,17 @@ PathItem.inject(new function() {
         // Note that the result paths might not belong to the same type
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1, true),
-            _path2 = path2 && path1 !== path2 && preparePath(path2, true);
+            _path2 = path2 && path1 !== path2 && preparePath(path2, true),
+            // Retrieve the operator lookup table to decide if a given winding
+            // number is to be considered part of the solution.
+            lookup = operators[operation],
+            // Create the operator structure, holding the lookup table and a
+            // simple boolean check for an operation, e.g. `if (operator.unite)`
+            operator = { lookup: lookup };
+        operator[operation] = true;
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
-        if (_path2 && /^(subtract|exclude)$/.test(operation)
+        if (_path2 && (operator.subtract || operator.exclude)
                 ^ (_path2.isClockwise() !== _path1.isClockwise()))
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
@@ -99,7 +95,8 @@ PathItem.inject(new function() {
 
         var segments = [],
             // Aggregate of all curves in both operands, monotonic in y
-            monoCurves = [];
+            monoCurves = [],
+            startInOverlaps = true;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -119,36 +116,42 @@ PathItem.inject(new function() {
         // all crossings:
         for (var i = 0, l = crossings.length; i < l; i++) {
             propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
-                    operation);
+                    operator);
         }
         // Now process the segments that are not part of any intersecting chains
         for (var i = 0, l = segments.length; i < l; i++) {
-            var segment = segments[i];
+            var segment = segments[i],
+                inter = segment._intersection;
             if (segment._winding == null) {
-                propagateWinding(segment, _path1, _path2, monoCurves,
-                        operation);
+                propagateWinding(segment, _path1, _path2, monoCurves, operator);
             }
+            // If there are any valid segments that are not part of overlaps,
+            // prefer these to start tracing boolean paths from. But if all
+            // segments are part of overlaps, we need to start there.
+            if (!(inter && inter.isOverlap()) && lookup[segment._winding])
+                startInOverlaps = false;
         }
-        return finishBoolean(CompoundPath, tracePaths(segments, operation),
+        return finishBoolean(CompoundPath,
+                tracePaths(segments, operator, startInOverlaps),
                 path1, path2, true);
     }
 
-    function computeOpenBoolean(path1, path2, operation) {
+    function computeOpenBoolean(path1, path2, operator) {
         // Only support subtract and intersect operations between an open
         // and a closed path. Assume that compound-paths are closed.
         // TODO: Should we complain about not supported operations?
         if (!path2 || !path2._children && !path2._closed
-                || !/^(subtract|intersect)$/.test(operation))
+                || !operator.subtract && !operator.intersect)
             return null;
         var _path1 = preparePath(path1, false),
             _path2 = preparePath(path2, false),
             crossings = _path1.getCrossings(_path2, true),
-            sub = operation === 'subtract',
+            sub = operator.subtract,
             paths = [];
 
         function addPath(path) {
             // Simple see if the point halfway across the open path is inside
-            // path2, and include / exclude the path based on the operation.
+            // path2, and include / exclude the path based on the operator.
             if (_path2.contains(path.getPointAt(path.getLength() / 2)) ^ sub) {
                 paths.unshift(path);
                 return true;
@@ -449,7 +452,7 @@ PathItem.inject(new function() {
         return Math.max(abs(windLeft), abs(windRight));
     }
 
-    function propagateWinding(segment, path1, path2, monoCurves, operation) {
+    function propagateWinding(segment, path1, path2, monoCurves, operator) {
         // Here we try to determine the most probable winding number
         // contribution for the curve-chain starting with this segment. Once we
         // have enough confidence in the winding contribution, we can propagate
@@ -494,7 +497,7 @@ PathItem.inject(new function() {
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
-                    windingSum += operation === 'subtract' && path2
+                    windingSum += operator.subtract && path2
                         && (path === path1 && path2._getWinding(pt, hor)
                         || path === path2 && !path1._getWinding(pt, hor))
                         ? 0
@@ -522,24 +525,14 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, operation) {
+    function tracePaths(segments, operator, startInOverlaps) {
         var paths = [],
             start,
-            otherStart,
-            operator = operators[operation],
-            // Adjust winding contributions for unite operation on overlaps:
-            overlapWinding = operation === 'unite' && { 1: 2 };
+            otherStart;
 
-        function isValid(seg, adjusted) {
-            if (seg._visited)
-                return false;
-            if (!operator) // For self-intersection, we're always valid!
-                return true;
-            var winding = seg._winding,
-                inter = seg._intersection;
-            if (inter && adjusted && overlapWinding && inter.isOverlap())
-                winding = overlapWinding[winding] || winding;
-            return operator(winding);
+        function isValid(seg) {
+            return !seg._visited
+                    && (!operator || operator.lookup[seg._winding]);
         }
 
         function isStart(seg) {
@@ -563,18 +556,14 @@ PathItem.inject(new function() {
                 // passes, first with strict = true, then false:
                 // In strict mode, the current and the next segment are both
                 // checked for validity, and only the current one is allowed to
-                // be an overlap (passing true for unadjusted in isValid()).
+                // be an overlap.
                 // If this pass does not yield a result, the non-strict mode is
                 // used, in which invalid current segments are tolerated, and
-                // overlaps for the next segment are allowed as long as they are
-                // valid when not adjusted.
+                // overlaps for the next segment are allowed.
                 if (isStart(seg) || isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
-                        // Do not use the overlap-adjusted winding here since an
-                        // overlap crossing might have brought us here, in which
-                        // case isValid(seg) might be false.
                         || (!strict || isValid(seg))
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
@@ -594,23 +583,26 @@ PathItem.inject(new function() {
         }
 
         for (var i = 0, l = segments.length; i < l; i++) {
-            var seg = segments[i],
-                path = null,
+            var path = null,
                 finished = false,
+                seg = segments[i],
+                inter = seg._intersection,
                 handleIn;
-            // Do not start a chain with already visited segments, and segments
-            // that are not going to be part of the resulting operation.
-            if (!isValid(seg, true))
+            // Do not start paths with invalid segments (segments that were
+            // already visited, or that are not going to be part of the result).
+            // Also don't start in overlaps, unless all segments are part of
+            // overlaps, in which case we have no other choice.
+            if (!isValid(seg) || !startInOverlaps
+                    && inter && seg._winding && inter.isOverlap())
                 continue;
             start = otherStart = null;
-            while (!finished) {
-                var inter = seg._intersection;
+            while (true) {
                 handleIn = path && seg._handleIn;
-                // Once we started a chain, see if there are multiple
+                // For each segment we encounter, see if there are multiple
                 // intersections, and if so, pick the best one:
                 inter = inter && (findBestIntersection(inter, true)
                         || findBestIntersection(inter, false)) || inter;
-                // Get a reference to the other segment on the intersection.
+                // Get the reference to the other segment on the intersection.
                 var other = inter && inter._segment;
                 if (isStart(seg)) {
                     finished = true;
@@ -624,7 +616,7 @@ PathItem.inject(new function() {
                         // the boolean result, switch over.
                         // We need to mark overlap segments as visited when
                         // processing intersection.
-                        if (inter.isOverlap() && operation === 'intersect')
+                        if (operator && operator.intersect && inter.isOverlap())
                             seg._visited = true;
                         seg = other;
                     }
@@ -645,10 +637,11 @@ PathItem.inject(new function() {
                 path.add(new Segment(seg._point, handleIn, seg._handleOut));
                 seg._visited = true;
                 seg = seg.getNext();
+                inter = seg._intersection;
             }
-            // Finish with closing the paths if necessary, correctly linking up
-            // curves etc.
             if (finished) {
+                // Finish with closing the paths, and carrying over the last
+                // handleIn to the first segment.
                 path.firstSegment.setHandleIn(handleIn);
                 path.setClosed(true);
             } else if (path) {
