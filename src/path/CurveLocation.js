@@ -317,8 +317,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         var res = this === loc,
             epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
         // NOTE: We need to compare both by (index + parameter) and by proximity
-        // of points. See:
-        // https://github.com/paperjs/paper.js/issues/784#issuecomment-143161586
+        // of points. See: #784#issuecomment-143161586
         if (!res && loc instanceof CurveLocation
                 && this.getPath() === loc.getPath()
                 && this.getPoint().isClose(loc.getPoint(), epsilon)) {

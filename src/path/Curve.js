@@ -1437,8 +1437,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // NOTE: @iconexperience determined that more than 20 recursions are
         // needed sometimes, depending on the tDiff threshold values further
         // below when determining which curve converges the least. He also
-        // recommended a threshold of 0.5 instead of the initial 0.8
-        // See: https://github.com/paperjs/paper.js/issues/565
+        // recommended a threshold of 0.5 instead of the initial 0.8, see: #565
         if (++recursion >= 24)
             return;
         // Let P be the first curve and Q be the second
@@ -1747,7 +1746,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
                         0, 1, 0, 1, 0, false, 0);
             // We're done if we handle lines and found one intersection already:
-            // https://github.com/paperjs/paper.js/issues/805#issuecomment-148503018
+            // #805#issuecomment-148503018
             if (straight && locations.length > before)
                 return locations;
             // Handle the special case where the first curve's start- or end-
@@ -1770,7 +1769,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         _getSelfIntersection: function(v1, c1, locations, param) {
             // Read a detailed description of the approach used to handle self-
             // intersection, developed by @iconexperience here:
-            // https://github.com/paperjs/paper.js/issues/773#issuecomment-144018379
+            // #773#issuecomment-144018379
             var p1x = v1[0], p1y = v1[1],
                 h1x = v1[2], h1y = v1[3],
                 h2x = v1[4], h2y = v1[5],
@@ -1848,7 +1847,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
         /**
          * Code to detect overlaps of intersecting based on work by
-         * @iconexperience: https://github.com/paperjs/paper.js/issues/648
+         * @iconexperience in #648
          */
         getOverlaps: function(v1, v2) {
             var abs = Math.abs,

@@ -414,7 +414,7 @@ test('Selected edge-cases from @hari\'s boolean-test suite', function() {
 
 test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function() {
     // Test all of @iconexperience's isolated cases in one batch.
-    // Read more in https://github.com/paperjs/paper.js/issues/784
+    // Read more in #784
     var paths = [[
         [
             [450, 230, 0, 0, 0, 0],
@@ -776,7 +776,7 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
         compareBoolean(path1.intersect(path2), result[1], 'path1.intersect(path2); // Test ' + (i + 1));
     }
 
-    // https://github.com/paperjs/paper.js/issues/784#issuecomment-144653463
+    // #784#issuecomment-144653463
     var path1 = new Path({
         segments: [
             [400, 300, 0, 0, 0, 0],
@@ -805,7 +805,7 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
         'M400,300l-3.5759,86.76021l-16.26693,-25.2069l0,0l-11.19918,27.83126l-16.84048,-17.16458l1.75482,-25.27995l24.8115,12.3302l-14.79357,-22.92381z M352.1175,372.22z');
 
 
-    // https://github.com/paperjs/paper.js/issues/784#issuecomment-144993215
+    // #784#issuecomment-144993215
     var path1 = new Path({
         segments: [
             [428.65986693122585, 123.24312916360232, 0, 0, 0, 0],
@@ -818,7 +818,7 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
     compareBoolean(function() { return path1.unite(); },
         'M428.65987,123.24313c0,0 18.24445,159.97772 20.21157,166.76806c-3.05664,-6.18082 -73.53131,-139.25432 -73.53131,-139.25432z M448.97323,290.23336c0,0 0,0 0,0c0.22704,0.04317 -0.06896,-0.00471 0,0c-0.02659,-0.00506 -0.06063,-0.08007 -0.1018,-0.22217c0.07286,0.14733 0.10741,0.22256 0.1018,0.22217z');
 
-    // https://github.com/paperjs/paper.js/issues/784#issuecomment-168605018
+    // #784#issuecomment-168605018
     var path1 = new CompoundPath();
     path1.setChildren([
         new Path({

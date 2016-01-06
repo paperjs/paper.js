@@ -758,8 +758,8 @@ new function() { // Injection scope for mouse events on the browser
             var view = View._focused,
                 target = DomEvent.getRelatedTarget(event);
             if (view && (!target || target.nodeName === 'HTML')) {
-                // See https://github.com/paperjs/paper.js/issues/800 for this
-                // bizarre workaround for an issue of Chrome on Windows:
+                // See #800 for this bizarre workaround for an issue of Chrome
+                // on Windows:
                 // TODO: Remove again after Dec 2016 once it is fixed in Chrome.
                 var offset = DomEvent.getOffset(event, view._element),
                     x = offset.x,

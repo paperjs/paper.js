@@ -187,8 +187,7 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            // Based on the error analysis by @iconexperience outlined in
-            // https://github.com/paperjs/paper.js/issues/799
+            // Based on the error analysis by @iconexperience outlined in #799
             return vx === 0 ? vy > 0 ? x - px : px - x
                  : vy === 0 ? vx < 0 ? y - py : py - y
                  : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
