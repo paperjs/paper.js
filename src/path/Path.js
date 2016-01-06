@@ -2066,23 +2066,41 @@ var Path = PathItem.extend(/** @lends Path# */{
     smooth: function(options) {
         // Helper method to pick the right from / to indices.
         // Supports numbers and segment objects.
+        // For numbers, the `to` index is exclusive, while for segments and
+        // curves, it is inclusive, handled by the `offset` parameter.
         function getIndex(value, _default) {
-            return value == null
+            var index = value == null
                     ? _default
                     : typeof value === 'number'
                         ? value
                         : value.getIndex
                             ? value.getIndex()
                             : _default;
+            // Handle negative values based on whether a path is open or not:
+            // Closed paths are wrapped around the end (allowing values to be
+            // negative), while open paths stay within the open range.
+            return index < 0 && closed
+                    ? index % length
+                    : (Math.min(index, length - 1) % length + length) % length;
         }
 
         var opts = options || {},
             type = opts.type,
             segments = this._segments,
             length = segments.length,
+            range = opts.from !== undefined || opts.to !== undefined,
             from = getIndex(opts.from, 0),
-            to = getIndex(opts.to, length - 1);
-
+            to = getIndex(opts.to, length - 1),
+            closed = this._closed;
+        if (from > to) {
+            if (closed) {
+                from -= length;
+            } else {
+                var tmp = from;
+                from = to;
+                to = tmp;
+            }
+        }
         if (!type || type === 'continuous') {
             // Continuous smoothing approach based on work by Lubos Brieda,
             // Particle In Cell Consulting LLC, but further simplified by
@@ -2090,28 +2108,28 @@ var Path = PathItem.extend(/** @lends Path# */{
             // to process x and y coordinates simultaneously. Also added
             // handling of closed paths.
             // https://www.particleincell.com/2012/bezier-splines/
-            var closed = this._closed,
-                n = length - 1,
-                // Add overlapping ends for closed paths.
-                overlap = 0;
-            if (length <= 2)
-                return;
-            if (closed) {
-                // Overlap by up to 4 points since a current segment is affected
-                // by 4 neighbors.
-                overlap = Math.min(length, 4);
-                n += Math.min(length, overlap) * 2;
+            var min = Math.min,
+                amount = to - from + 1,
+                n = amount - 1;
+            // Overlap by up to 4 points on closed paths since a current segment
+            // is affected by its 4 neighbors on both sides (?).
+            var loop = closed && !range,
+                padding = loop ? min(amount, 4) : 1,
+                paddingLeft = padding,
+                paddingRight = padding,
+                knots = [];
+            if (!closed) {
+                // If the path is open and a range is defined, try using a
+                // padding of 1 on either side.
+                paddingLeft = min(1, from);
+                paddingRight = min(1, length - to - 1);
             }
-            var knots = [];
-            for (var i = 0; i < length; i++)
-                knots[i + overlap] = segments[i]._point;
-            if (closed) {
-                // Add the last points again at the beginning, and the first
-                // ones at the end.
-                for (var i = 0; i < overlap; i++) {
-                    knots[i] = knots[i + length];
-                    knots[i + length + overlap] = knots[i + overlap];
-                }
+            // Set up the knots array now, taking the paddings into account.
+            n += paddingLeft + paddingRight;
+            if (n <= 1)
+                return;
+            for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+                knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
             }
 
             // Right-hand side vectors, with left most segment added.
@@ -2148,7 +2166,6 @@ var Path = PathItem.extend(/** @lends Path# */{
 
             var px = [],
                 py = [];
-
             px[n_1] = rx[n_1] / b[n_1];
             py[n_1] = ry[n_1] / b[n_1];
             for (var i = n - 2; i >= 0; i--) {
@@ -2159,21 +2176,23 @@ var Path = PathItem.extend(/** @lends Path# */{
             py[n] = (3 * knots[n]._y - py[n_1]) / 2;
 
             // Now update the segments
-            n -= overlap;
-            for (var i = overlap; i <= n; i++) {
-                var segment = segments[i - overlap],
+            for (var i = paddingLeft, max = n - paddingRight, j = from;
+                    i <= max; i++, j++) {
+                var segment = segments[j < 0 ? j + length : j],
                     pt = segment._point,
                     hx = px[i] - pt._x,
                     hy = py[i] - pt._y;
-                if (closed || i < n)
+                if (loop || i < max)
                     segment.setHandleOut(hx, hy);
-                if (closed || i > 0)
+                if (loop || i > paddingLeft)
                     segment.setHandleIn(-hx, -hy);
             }
         } else {
             // All other smoothing methods are handled directly on the segments:
-            for (var i = from; i <= to; i++)
-                segments[i].smooth(opts);
+            for (var i = from; i <= to; i++) {
+                segments[i < 0 ? i + length : i].smooth(opts,
+                        i === from, i === to);
+            }
         }
     }
 }),

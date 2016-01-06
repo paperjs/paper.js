@@ -389,7 +389,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      *
      * @see PathItem#smooth(options)
      */
-    smooth: function(options) {
+    smooth: function(options, _first, _last) {
+        // _first = _last = false;
         var opts = options || {},
             type = opts.type,
             factor = opts.factor,
@@ -408,14 +409,14 @@ var Segment = Base.extend(/** @lends Segment# */{
             // Using these factors produces different types of splines:
             // 0.0: the standard, uniform Catmull-Rom spline
             // 0.5: the centripetal Catmull-Rom spline, guaranteeing no self-
-            // intersections
-            // 1.0: the chordal Catmull-Rom spline.
+            //      intersections
+            // 1.0: the chordal Catmull-Rom spline
             var a = factor === undefined ? 0.5 : factor,
                 d1_a = Math.pow(d1, a),
                 d1_2a = d1_a * d1_a,
                 d2_a = Math.pow(d2, a),
                 d2_2a = d2_a * d2_a;
-            if (prev) {
+            if (!_first && prev) {
                 var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
                     N = 3 * d2_a * (d2_a + d1_a);
                 this.setHandleIn(N !== 0
@@ -424,7 +425,7 @@ var Segment = Base.extend(/** @lends Segment# */{
                         (d2_2a * p0._y + A * p1._y - d1_2a * p2._y) / N - p1._y)
                     : new Point());
             }
-            if (next) {
+            if (!_last && next) {
                 var A = 2 * d1_2a + 3 * d1_a * d2_a + d2_2a,
                     N = 3 * d1_a * (d1_a + d2_a);
                 this.setHandleOut(N !== 0
@@ -442,8 +443,10 @@ var Segment = Base.extend(/** @lends Segment# */{
                 var vector = p0.subtract(p2),
                     t = factor === undefined ? 0.4 : factor,
                     k = t * d1 / (d1 + d2);
-                this.setHandleIn(vector.multiply(k));
-                this.setHandleOut(vector.multiply(k - t));
+                if (!_first)
+                    this.setHandleIn(vector.multiply(k));
+                if (!_last)
+                    this.setHandleOut(vector.multiply(k - t));
             }
         } else {
             throw new Error('Smoothing method \'' + type + '\' not supported.');
