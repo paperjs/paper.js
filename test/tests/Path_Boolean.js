@@ -406,7 +406,7 @@ test('Selected edge-cases from @hari\'s boolean-test suite', function() {
 test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function() {
     // Test all of @iconexperience's isolated cases in one batch.
     // Read more in https://github.com/paperjs/paper.js/issues/784
-    var data = [[
+    var paths = [[
         [
             [450, 230, 0, 0, 0, 0],
             [362.46932779553646, 264.4394368330295, 0, 0, 0, 0],
@@ -758,8 +758,8 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
         ['M570,290l5.8176,33.58557l-28.17314,-14.439c-14.32289,2.0978 -28.17688,4.12693 -28.17688,4.12693l19.08162,-8.78834l-16.12739,-8.26544l27.9654,2.81326z', 'M538.5492,304.48516l11.83801,-5.45218l9.61279,0.96702l15.8176,23.58557z'],
         ['', '']
     ];
-    for (var i = 0; i < data.length; i++) {
-        var entry = data[i],
+    for (var i = 0; i < paths.length; i++) {
+        var entry = paths[i],
             result = results[i],
             path1 = new Path({ segments: entry[0], closed: true }),
             path2 = new Path({ segments: entry[1], closed: true });
@@ -837,4 +837,25 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
     });
     compareBoolean(function() { return path1.unite(path2); },
         'M401.77543,286.98036l8.85044,-79.00432c-0.16499,-0.13413 -0.57872,-0.39645 -1.46198,-0.71738l51.21444,-32.82196z M410.62615,207.97354c0,0 0,0 0,0z');
+});
+
+test('PathItem#resolveCrossings()', function() {
+    var paths = [
+        'M100,300l0,-50l50,-50l-50,0l150,0l-150,0l50,0l-50,0l100,0l-100,0l0,-100l200,0l0,200z',
+        'M50,300l0,-150l50,25l0,-75l200,0l0,200z M100,200l50,0l-50,-25z',
+        'M330.1,388.5l-65,65c0,0 -49.1,-14.5 -36.6,-36.6c12.5,-22.1 92.4,25.1 92.4,25.1c0,0 -33.3,-73.3 -23.2,-85.9c10,-12.8 32.4,32.4 32.4,32.4z',
+        'M570,290l5.8176000300452415,33.58556812220928l-28.17314339506561,-14.439003967264455l31.189735425395614,-4.568209255479985c-5.7225406635552645e-9,-3.907138079739525e-8 -59.366611385062015,8.695139599513823 -59.366611385062015,8.695139599513823z'
+    ];
+    var results = [
+        'M100,300l0,-50l50,-50l-50,0l0,-100l200,0l0,200z',
+        'M50,300l0,-150l50,25l0,-75l200,0l0,200z M100,200l50,0l-50,-25z',
+        'M291.85631,426.74369l-26.75631,26.75631c0,0 -49.1,-14.5 -36.6,-36.6c7.48773,-13.23831 39.16013,-1.61018 63.35631,9.84369z M330.1,388.5l-22.09831,22.09831c-8.06306,-21.54667 -15.93643,-47.46883 -10.30169,-54.49831c10,-12.8 32.4,32.4 32.4,32.4z M320.9,442c0,0 -12.84682,-7.58911 -29.04369,-15.25631l16.14539,-16.14539c6.38959,17.07471 12.89831,31.40169 12.89831,31.40169z',
+        'M570,290l5.8176,33.58557l-28.17314,-14.439c-14.32289,2.0978 -28.17688,4.12693 -28.17688,4.12693z'
+    ];
+    for (var i = 0; i < paths.length; i++) {
+        var path = createPath(paths[i]),
+            result = createPath(results[i]);
+        path.fillRule = 'evenodd';
+        compareBoolean(path.resolveCrossings(), result, 'path.resolveCrossings(); // Test ' + (i + 1));
+    }
 });
