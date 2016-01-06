@@ -536,7 +536,7 @@ PathItem.inject(new function() {
      * @return {Path[]} the contours traced
      */
     function tracePaths(segments, operator, overlapsOnly) {
-          var paths = [],
+        var paths = [],
             start,
             otherStart;
 
