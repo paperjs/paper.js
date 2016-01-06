@@ -152,8 +152,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
     getCrossings: function(path, includeOverlaps) {
         return this.getIntersections(path, function(inter) {
+            // TODO: Only return overlaps that are actually crossings! For this
+            // we need proper overlap range detection first.
             // Check overlap first since it's the cheaper test between the two.
-            return includeOverlaps && inter.isOverlap() || inter.isCrossing();
+            return includeOverlaps && inter._overlap || inter.isCrossing();
         });
     },
 

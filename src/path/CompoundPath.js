@@ -143,10 +143,10 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     // DOCS: reduce()
     // TEST: reduce()
-    reduce: function reduce() {
+    reduce: function reduce(options) {
         var children = this._children;
         for (var i = children.length - 1; i >= 0; i--) {
-            var path = children[i].reduce();
+            var path = children[i].reduce(options);
             if (path.isEmpty())
                 path.remove();
         }

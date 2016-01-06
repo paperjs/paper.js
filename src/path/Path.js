@@ -756,6 +756,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                     ? from - 1
                     : from,
                 curves = curves.splice(index, amount);
+            // Unlink the removed curves from the path.
+            for (var i = curves.length - 1; i >= 0; i--)
+                curves[i]._path = null;
             // Return the removed curves as well, if we're asked to include
             // them, but exclude the first curve, since that's shared with the
             // previous segment and does not connect the returned segments.
@@ -1026,18 +1029,20 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Reduces the path by removing curves that have a length of 0,
      * and unnecessary segments between two collinear curves.
      */
-    reduce: function() {
-        var curves = this.getCurves();
+    reduce: function(options) {
+        var curves = this.getCurves(),
+            simplify = options && options.simplify,
+            // When not simplifying, only remove curves if their length is
+            // absolutely 0.
+            tolerance = simplify ? /*#=*/Numerical.GEOMETRIC_EPSILON : 0;
         for (var i = curves.length - 1; i >= 0; i--) {
             var curve = curves[i];
-            if (!curve.hasHandles()
-                && (curve.getLength() < /*#=*/Numerical.GEOMETRIC_EPSILON
-                    // Pass true for sameDir, as we can only remove straight
-                    // curves if they point in the same direction as the next
-                    // curve, not 180° in the opposite direction.
-                    // NOTE: sameDir is temporarily deactivate until overlaps
-                    // are handled properly.
-                    || curve.isCollinear(curve.getNext(), false)))
+            // When simplifying, compare curves with isCollinear() will remove
+            // any collinear neighboring curves regardless of their orientation.
+            // This serves as a reliable way to remove linear overlaps but only
+            // as long as the lines are truly overlapping.
+            if (!curve.hasHandles() && (curve.getLength() < tolerance
+                    || simplify && curve.isCollinear(curve.getNext())))
                 curve.remove();
         }
         return this;

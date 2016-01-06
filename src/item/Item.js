@@ -2336,10 +2336,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @return {Item} the reduced item
      */
-    reduce: function() {
+    reduce: function(options) {
         var children = this._children;
         if (children && children.length === 1) {
-            var child = children[0].reduce();
+            var child = children[0].reduce(options);
             // Make sure the reduced item has the same parent as the original.
             if (this._parent) {
                 child.insertAbove(this);

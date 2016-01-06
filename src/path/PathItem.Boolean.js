@@ -46,7 +46,8 @@ PathItem.inject(new function() {
      * make sure all paths have correct winding direction.
      */
     function preparePath(path, resolve) {
-        var res = path.clone(false).reduce().transform(null, true, true);
+        var res = path.clone(false).reduce({ simplify: true })
+                .transform(null, true, true);
         return resolve ? res.resolveCrossings() : res;
     }
 
@@ -55,7 +56,7 @@ PathItem.inject(new function() {
         result.addChildren(paths, true);
         // See if the item can be reduced to just a simple Path.
         if (reduce)
-            result = result.reduce();
+            result = result.reduce({ simplify: true });
         // Insert the resulting path above whichever of the two paths appear
         // further up in the stack.
         result.insertAbove(path2 && path1.isSibling(path2)
@@ -88,15 +89,14 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
-        var crossings = CurveLocation.expand(_path1.getCrossings(_path2,
+        var crossings = divideLocations(CurveLocation.expand(
                 // Only handle overlaps when not self-intersecting
-                !!_path2));
-        divideLocations(crossings);
-
-        var segments = [],
-            // Aggregate of all curves in both operands, monotonic in y
+                _path1.getCrossings(_path2, !!_path2))),
+            segments = [],
+            // Aggregate of all curves in both operands, monotonic in y.
             monoCurves = [],
-            startInOverlaps = true;
+            // Keep track if all encountered segments are overlaps.
+            overlapsOnly = true;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -125,14 +125,14 @@ PathItem.inject(new function() {
             if (segment._winding == null) {
                 propagateWinding(segment, _path1, _path2, monoCurves, operator);
             }
-            // If there are any valid segments that are not part of overlaps,
-            // prefer these to start tracing boolean paths from. But if all
-            // segments are part of overlaps, we need to start there.
-            if (!(inter && inter.isOverlap()) && operator[segment._winding])
-                startInOverlaps = false;
+            // See if there are any valid segments that aren't part of overlaps.
+            // This information is used further down to determine where to start
+            // tracing the path, and how to treat encountered invalid segments.
+            if (!(inter && inter._overlap) && operator[segment._winding])
+                overlapsOnly = false;
         }
         return finishBoolean(CompoundPath,
-                tracePaths(segments, operator, startInOverlaps),
+                tracePaths(segments, operator, overlapsOnly),
                 path1, path2, true);
     }
 
@@ -214,8 +214,9 @@ PathItem.inject(new function() {
      * path-item at.
      * @private
      */
-    function divideLocations(locations) {
-        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+    function divideLocations(locations, include) {
+        var results = include && [],
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             noHandles = false,
             clearCurves = [],
@@ -226,7 +227,13 @@ PathItem.inject(new function() {
             var loc = locations[i],
                 curve = loc._curve,
                 t = loc._parameter,
-                origT = t;
+                origT = t,
+                segment;
+            if (include) {
+                if (!include(loc))
+                    continue;
+                results.unshift(loc);
+            }
             if (curve !== prevCurve) {
                 // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
@@ -235,7 +242,6 @@ PathItem.inject(new function() {
                 // times, but avoid dividing by zero.
                 t /= prevT;
             }
-            var segment;
             if (t < tMin) {
                 segment = curve._segment1;
             } else if (t > tMax) {
@@ -278,6 +284,7 @@ PathItem.inject(new function() {
         for (var i = 0, l = clearCurves.length; i < l; i++) {
             clearCurves[i].clearHandles();
         }
+        return results || locations;
     }
 
     /**
@@ -528,13 +535,13 @@ PathItem.inject(new function() {
      * not
      * @return {Path[]} the contours traced
      */
-    function tracePaths(segments, operator, startInOverlaps) {
-        var paths = [],
+    function tracePaths(segments, operator, overlapsOnly) {
+          var paths = [],
             start,
             otherStart;
 
         function isValid(seg) {
-            return !seg._visited && (!operator || operator[seg._winding]);
+            return !!(!seg._visited && (!operator || operator[seg._winding]));
         }
 
         function isStart(seg) {
@@ -570,7 +577,7 @@ PathItem.inject(new function() {
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
                         // options that might follow the priority over overlaps.
-                        && (!(strict && nextInter && nextInter.isOverlap())
+                        && (!(strict && nextInter && nextInter._overlap)
                             && isValid(nextSeg)
                             // If the next segment isn't valid, its intersection
                             // to which we may switch might be, so check that.
@@ -594,8 +601,8 @@ PathItem.inject(new function() {
             // already visited, or that are not going to be part of the result).
             // Also don't start in overlaps, unless all segments are part of
             // overlaps, in which case we have no other choice.
-            if (!isValid(seg) || !startInOverlaps
-                    && inter && seg._winding && inter.isOverlap())
+            if (!isValid(seg) || !overlapsOnly
+                    && inter && seg._winding && inter._overlap)
                 continue;
             start = otherStart = null;
             while (true) {
@@ -618,7 +625,7 @@ PathItem.inject(new function() {
                         // the boolean result, switch over.
                         // We need to mark overlap segments as visited when
                         // processing intersection.
-                        if (operator && operator.intersect && inter.isOverlap())
+                        if (operator && operator.intersect && inter._overlap)
                             seg._visited = true;
                         seg = other;
                     }
@@ -630,6 +637,11 @@ PathItem.inject(new function() {
                     seg._visited = true;
                     break;
                 }
+                // If there are only valid overlap segments and we encounter
+                // and invalid segment, bail out immediately. Otherwise we need
+                // to be more tolerant due to complex situations of crossing.
+                if (overlapsOnly && !isValid(seg))
+                    break;
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
                     start = seg;
@@ -763,12 +775,60 @@ PathItem.inject(new function() {
         resolveCrossings: function() {
             var children = this._children,
                 // Support both path and compound-path items
-                paths = children || [this],
-                crossings = this.getCrossings();
-            // First resolve all self-intersections
-            if (crossings.length) {
-                divideLocations(CurveLocation.expand(crossings));
-                // Resolve self-intersections through tracePaths()
+                paths = children || [this];
+
+            function hasOverlap(seg) {
+                var inter = seg && seg._intersection;
+                return inter && inter._overlap;
+            }
+
+            // First collect all overlaps and crossings while taking not of the
+            // existence of both.
+            var hasOverlaps = false,
+                hasCrossings = false,
+                intersections = this.getIntersections(null, function(inter) {
+                    return inter._overlap && (hasOverlaps = true)
+                            || inter.isCrossing() && (hasCrossings = true);
+                });
+            intersections = CurveLocation.expand(intersections);
+            if (hasOverlaps) {
+                // First divide in all overlaps, and then remove the inside of
+                // the resulting overlap ranges.
+                var overlaps = divideLocations(intersections, function(inter) {
+                    return inter._overlap;
+                });
+                for (var i = overlaps.length - 1; i >= 0; i--) {
+                    var seg = overlaps[i]._segment,
+                        prev = seg.getPrevious(),
+                        next = seg.getNext();
+                    if (seg._path && hasOverlap(prev) && hasOverlap(next)) {
+                        seg.remove();
+                        prev._handleOut.set(0, 0);
+                        next._handleIn.set(0, 0);
+                        var curve = prev.getCurve();
+                        if (curve.isStraight() && curve.getLength() === 0)
+                            prev.remove();
+                    }
+                }
+            }
+            if (hasCrossings) {
+                // Split any remaining intersections that are still part of
+                // valid paths after the removal of overlaps.
+                divideLocations(intersections, function(inter) {
+                    // Check both involved curves to see if they're still valid,
+                    // meaning they are still part of their paths.
+                    var curve1 = inter.getCurve(),
+                        curve2 = inter._intersection.getCurve(true),
+                        seg = inter._segment;
+                    if (curve1 && curve2 && curve1._path && curve2._path) {
+                        return true;
+                    } else if (seg) {
+                        // Remove all intersections that were involved in the
+                        // handling of overlaps, to not confuse tracePaths().
+                        seg._intersection = null;
+                    }
+                });
+                // Finally resolve self-intersections through tracePaths()
                 paths = tracePaths(Base.each(paths, function(path) {
                     this.push.apply(this, path._segments);
                 }, []));

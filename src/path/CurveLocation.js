@@ -507,7 +507,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @see #isCrossing()
      * @see #isTouching()
      */
-    isOverlap: function() {
+    hasOverlap: function() {
         return !!this._overlap;
     }
 }, Base.each(Curve.evaluateMethods, function(name) {
@@ -597,7 +597,7 @@ new function() { // Scope for statics
             // Create a copy since insert() keeps modifying the array and
             // inserting at sorted indices.
             var expanded = locations.slice();
-            for (var i = 0, l = locations.length; i < l; i++) {
+            for (var i = locations.length - 1; i >= 0; i--) {
                 insert(expanded, locations[i]._intersection, false);
             }
             return expanded;
