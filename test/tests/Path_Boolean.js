@@ -107,7 +107,6 @@ test('#610', function() {
 });
 
 test('#719', function() {
-    // https://github.com/paperjs/paper.js/issues/719
     var radius = 50;
     var circle = new Path.Circle([0, 0], radius);
     var arc = new Path.Arc([0, -radius], [radius, 0], [0, radius]);
@@ -122,7 +121,6 @@ test('#719', function() {
 });
 
 test('#784', function() {
-    // https://github.com/paperjs/paper.js/issues/784
     var path1 = createPath('M495.9,1693.5c-42.2-203.5-64.5-304.9-78-299.9 c-1.7,0.6-0.3,6.7,5.3,22.5l209.4-74.8l75.8,303.9L495.9,1693.5z');
     var path2 = createPath('M632.6,1341.2l-209.4,74.9c95.4,267,135.6,201-60.1-144.5l202.9-85.7 L632.6,1341.2z');
     compareBoolean(function() { return path1.unite(path2); },
@@ -135,7 +133,6 @@ test('#784', function() {
 });
 
 test('#854', function() {
-    // https://github.com/paperjs/paper.js/issues/854
     var p = new Path({
         segments:[
             [110, 60],
@@ -198,7 +195,6 @@ test('#839', function() {
 })
 
 test('#865', function() {
-    // https://github.com/paperjs/paper.js/issues/865
     function executeTest(offset) {
         var p1 = new Path({
             segments:[
@@ -266,7 +262,6 @@ test('#870', function() {
 });
 
 test('#875', function() {
-    // https://github.com/paperjs/paper.js/issues/875
     var cp = new Path({segments:[
         [158.7, 389.3, 0, 0, -4.95, 4.95],
         [158.7, 407.2, -4.95, -4.95, 4.95, 4.95],
@@ -282,7 +277,6 @@ test('#875', function() {
 });
 
 test('#877', function() {
-    // https://github.com/paperjs/paper.js/issues/877
     var cp = new CompoundPath();
     cp.addChild(new Path.Circle(100, 60, 50));
     cp.addChild(new Path.Circle(100, 60, 30));
@@ -304,7 +298,6 @@ test('#877', function() {
 });
 
 test('#878', function() {
-    // https://github.com/paperjs/paper.js/issues/878
     var p1 = new Path({
         segments:[
             [431.90000000000003, 479.99999999999994],
@@ -327,6 +320,22 @@ test('#878', function() {
 
     compareBoolean(function() { return p1.subtract(p2); },
         'M431.9,480l-35.62956,-12.89652c3.78718,8.07094 5.3669,12.89652 3.72956,12.89652z M208.0427,398.97235l-80.0427,-28.97235l-48,110l60,0c-4.6672,0 29.87455,-39.20895 68.0427,-81.02765z');
+});
+
+test('#885', function() {
+    var p1 = new paper.Path.Rectangle(100, 100, 100, 100);
+    var p2 = p1.clone();
+    compareBoolean(function() { return p1.unite(p2); }, p1);
+});
+
+test('#889', function() {
+    var cp = new CompoundPath([
+        new Path({segments:[[340.26, 358.4],  [576, 396.8], [345.78, 396.8]], closed:true}),
+        new Path({segments:[ [691.2, 685.76], [672, 550.4, 0, 0, 10, 0], [729.6, 608, 0, -20, 0, 0], ], closed:true})
+    ]);
+    var p = new Path({segments:[[739, 418], [637, 704], [205, 704],[204.30709922574619, 356.553500194953]], closed:true});
+    compareBoolean(function() { return cp.subtract(p); },
+        'M340.26,358.4l235.74,38.4l-21.47738,0l-212.24889,-24.39148z M691.2,685.76l-13.57151,-95.67911l11.09506,-31.10967c17.43794,12.2938 40.87645,34.99446 40.87645,49.02878z');
 });
 
 test('frame.intersect(rect);', function() {
