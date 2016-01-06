@@ -1445,7 +1445,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (!children)
             copy.copyAttributes(this);
         // Insert is true by default.
-        if (insert != false) // No double-equal!
+        if (insert === undefined || insert)
             copy.insertAbove(this);
         // Make sure we're not overriding the original name in the same parent
         var name = this._name,
@@ -1589,7 +1589,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
                 // Take resolution into account and scale back to original size.
                 .scale(1 / scale));
-        if (insert != false) // No double-equal!
+        if (insert === undefined || insert)
             raster.insertAbove(this);
         return raster;
     },
