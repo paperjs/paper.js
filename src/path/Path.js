@@ -2062,68 +2062,10 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this.getNearestLocation.apply(this, arguments).getPoint();
     },
 
-    /**
-     * TODO: continuous:
-     * Smooths the path by adjusting its curve handles so that the first and
-     * second derivatives of all involved curves are continuous across their
-     * boundaries.
-     */
-    /**
-     * Smooths the path without changing the amount of segments in the path
-     * or moving their locations, by only smoothing and adjusting the angle and
-     * length of their handles.
-     * This works for open paths as well as closed paths.
-     *
-     * @param {Object} [options] TODO
-     * TODO: controls the amount of smoothing as a factor by which to scale each
-     * handle.
-     *
-     * @see Segment#smooth(options)
-     *
-     * @example {@paperscript}
-     * // Smoothing a closed shape:
-     *
-     * // Create a rectangular path with its top-left point at
-     * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
-     * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
-     * path.strokeColor = 'black';
-     *
-     * // Select the path, so we can see its handles:
-     * path.fullySelected = true;
-     *
-     * // Create a copy of the path and move it 100pt to the right:
-     * var copy = path.clone();
-     * copy.position.x += 100;
-     *
-     * // Smooth the segments of the copy:
-     * copy.smooth();
-     *
-     * @example {@paperscript height=220}
-     * var path = new Path();
-     * path.strokeColor = 'black';
-     *
-     * path.add(new Point(30, 50));
-     *
-     * var y = 5;
-     * var x = 3;
-     *
-     * for (var i = 0; i < 28; i++) {
-     *     y *= -1.1;
-     *     x *= 1.1;
-     *     path.lineBy(x, y);
-     * }
-     *
-     * // Create a copy of the path and move it 100pt down:
-     * var copy = path.clone();
-     * copy.position.y += 120;
-     *
-     * // Set its stroke color to red:
-     * copy.strokeColor = 'red';
-     *
-     * // Smooth the segments of the copy:
-     * copy.smooth();
-     */
+    // NOTE: Documentation is in PathItem.js
     smooth: function(options) {
+        // Helper method to pick the right from / to indices.
+        // Supports numbers and segment objects.
         function getIndex(value, _default) {
             return value == null
                     ? _default
@@ -2172,7 +2114,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 }
             }
 
-            // Right-hand side vectors, with left most segment added
+            // Right-hand side vectors, with left most segment added.
             var a = [0],
                 b = [2],
                 c = [1],
@@ -2229,7 +2171,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                     segment.setHandleIn(-hx, -hy);
             }
         } else {
-            // AlL other smoothing methods are handled directly on the segments:
+            // All other smoothing methods are handled directly on the segments:
             for (var i = from; i <= to; i++)
                 segments[i].smooth(opts);
         }

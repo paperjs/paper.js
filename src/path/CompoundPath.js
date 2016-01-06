@@ -154,7 +154,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         return reduce.base.call(this);
     },
 
-    // TODO: Docs
+    // NOTE: Documentation is in PathItem.js
     smooth: function(options) {
         var children = this._children;
         for (var i = 0, l = children.length; i < l; i++)

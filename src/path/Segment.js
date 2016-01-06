@@ -405,15 +405,15 @@ var Segment = Base.extend(/** @lends Segment# */{
             // Implementation of by Catmull-Rom splines with factor parameter
             // based on work by @nicholaswmin:
             // https://github.com/nicholaswmin/VectorTests
-            // Using these factor values produces different types of splines:
+            // Using these factors produces different types of splines:
             // 0.0: the standard, uniform Catmull-Rom spline
             // 0.5: the centripetal Catmull-Rom spline, guaranteeing no self-
             // intersections
             // 1.0: the chordal Catmull-Rom spline.
-            var alpha = factor === undefined ? 0.5 : factor,
-                d1_a = Math.pow(d1, alpha),
+            var a = factor === undefined ? 0.5 : factor,
+                d1_a = Math.pow(d1, a),
                 d1_2a = d1_a * d1_a,
-                d2_a = Math.pow(d2, alpha),
+                d2_a = Math.pow(d2, a),
                 d2_2a = d2_a * d2_a;
             if (prev) {
                 var A = 2 * d2_2a + 3 * d2_a * d1_a + d1_2a,
