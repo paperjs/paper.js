@@ -13,7 +13,6 @@
 /**
  * @name SegmentPoint
  * @class An internal version of Point that notifies its segment of each change
- * Note: This prototype is not exported.
  *
  * @private
  */

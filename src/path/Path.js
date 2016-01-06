@@ -2290,7 +2290,7 @@ new function() { // Path Smoothing
     }
 
     return {
-        // Note: Documentation for smooth() is in PathItem
+        // NOTE: Documentation for smooth() is in PathItem
         smooth: function() {
             // This code is based on the work by Oleg V. Polikarpotchkin,
             // http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
@@ -2401,7 +2401,7 @@ new function() { // PostScript-style drawing commands
     }
 
     return {
-        // Note: Documentation for these methods is found in PathItem, as they
+        // NOTE: Documentation for these methods is found in PathItem, as they
         // are considered abstract methods of PathItem and need to be defined in
         // all implementing classes.
         moveTo: function(/* point */) {

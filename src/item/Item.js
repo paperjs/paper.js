@@ -310,7 +310,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     setName: function(name) {
-        // Note: Don't check if the name has changed and bail out if it has not,
+        // NOTE: Don't check if the name has changed and bail out if it has not,
         // because setName is used internally also to update internal structures
         // when an item is moved from one parent to another.
 
@@ -422,7 +422,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // See #getPosition() below.
     beans: true,
 
-    // Note: These properties have their getter / setters produced in the
+    // NOTE: These properties have their getter / setters produced in the
     // injection scope above.
 
     /**
@@ -832,7 +832,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * bounding types.
      */
     _getBounds: function(getter, matrix, cacheItem) {
-        // Note: We cannot cache these results here, since we do not get
+        // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
         // But cacheName is used in sub-classes such as PlacedSymbol and Raster.
         var children = this._children;
@@ -897,7 +897,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Do not transform by the internal matrix if there is a internalGetter.
         var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
-        // Note: This needs to happen before returning cached values, since even
+        // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
         if (cache && this._bounds && this._bounds[cache])
@@ -1382,7 +1382,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     equals: function(item) {
-        // Note: We do not compare name and selected state.
+        // NOTE: We do not compare name and selected state.
         // TODO: Consider not comparing locked and visible also?
         return item === this || item && this._class === item._class
                 && this._style.equals(item._style)

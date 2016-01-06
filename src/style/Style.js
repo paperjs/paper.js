@@ -165,7 +165,7 @@ var Style = Base.extend(new function() {
                             value._owner = owner;
                         }
                     }
-                    // Note: We do not convert the values to Colors in the
+                    // NOTE: We do not convert the values to Colors in the
                     // setter. This only happens once the getter is called.
                     this._values[key] = value;
                     // Notify the owner of the style change STYLE is always set,

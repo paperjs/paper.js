@@ -76,7 +76,7 @@ var Curve = Base.extend(/** @lends Curve# */{
             seg2 = new Segment();
         } else if (count === 1) {
             // new Segment(segment);
-            // Note: This copies from existing segments through bean getters
+            // NOTE: This copies from existing segments through bean getters
             if ('segment1' in arg0) {
                 seg1 = new Segment(arg0.segment1);
                 seg2 = new Segment(arg0.segment2);
@@ -766,7 +766,7 @@ statics: {
      * Private helper for both Curve.getBounds() and Path.getBounds(), which
      * finds the 0-crossings of the derivative of a bezier curve polynomial, to
      * determine potential extremas when finding the bounds of a curve.
-     * Note: padding is only used for Path.getBounds().
+     * NOTE: padding is only used for Path.getBounds().
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
         // Code ported and further optimised from:
@@ -809,7 +809,7 @@ statics: {
     }
 }}, Base.each(
     ['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
-    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+    // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
     // the need to create a Curve object first, as required by the code that
@@ -1158,7 +1158,7 @@ new function() { // // Scope to inject various curve evaluation methods
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
-    // Note: Although Curve.getBounds() exists, we are using Path.getBounds() to
+    // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without
     // the need to create a Curve object first, as required by the code that

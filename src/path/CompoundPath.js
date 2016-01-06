@@ -329,7 +329,7 @@ new function() { // Injection scope for PostScript-like drawing functions
     }
 
     var fields = {
-        // Note: Documentation for these methods is found in PathItem, as they
+        // NOTE: Documentation for these methods is found in PathItem, as they
         // are considered abstract methods of PathItem and need to be defined in
         // all implementing classes.
         moveTo: function(/* point */) {

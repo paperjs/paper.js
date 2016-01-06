@@ -475,7 +475,7 @@ Base.inject(/** @lends Base# */{
             return Base.deserialize(
                     typeof json === 'string' ? JSON.parse(json) : json,
                     // Provide our own create function to handle target and
-                    // insertion
+                    // insertion.
                     function(type, args) {
                         // If a target is provided and its of the right type,
                         // import right into it.
@@ -483,8 +483,8 @@ Base.inject(/** @lends Base# */{
                                 ? target
                                 : Base.create(type.prototype),
                             isTarget = obj === target;
-                        // Note: We don't set insert false for layers since
-                        // we want these to be created on the fly in the active
+                        // NOTE: We don't set insert false for layers since we
+                        // want these to be created on the fly in the active
                         // project into which we're importing (except for if
                         // it's a preexisting target layer).
                         if (args.length === 1 && obj instanceof Item
@@ -494,7 +494,7 @@ Base.inject(/** @lends Base# */{
                                 arg.insert = false;
                         }
                         type.apply(obj, args);
-                        // Clear target to only use it once
+                        // Clear target to only use it once.
                         if (isTarget)
                             target = null;
                         return obj;

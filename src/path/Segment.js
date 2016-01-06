@@ -118,7 +118,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         if (count === 0) {
             // Nothing
         } else if (count === 1) {
-            // Note: This copies from existing segments through accessors.
+            // NOTE: This copies from existing segments through accessors.
             if ('point' in arg0) {
                 point = arg0.point;
                 handleIn = arg0.handleIn;
@@ -415,7 +415,8 @@ var Segment = Base.extend(/** @lends Segment# */{
 
     /**
      * Reverses the {@link #handleIn} and {@link #handleOut} vectors of this
-     * segment. Note: the actual segment is modified, no copy is created.
+     * segment, modifying the actual segment without creating a copy.
+     *
      * @return {Segment} the reversed segment
      */
     reverse: function() {

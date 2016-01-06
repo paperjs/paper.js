@@ -524,7 +524,6 @@ var Size = Base.extend(/** @lends Size# */{
  * @class An internal version of Size that notifies its owner of each change
  * through setting itself again on the setter that corresponds to the getter
  * that produced this LinkedSize.
- * Note: This prototype is not exported.
  *
  * @private
  */

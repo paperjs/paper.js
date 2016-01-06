@@ -948,7 +948,6 @@ var Point = Base.extend(/** @lends Point# */{
  * @class An internal version of Point that notifies its owner of each change
  * through setting itself again on the setter that corresponds to the getter
  * that produced this LinkedPoint.
- * Note: This prototype is not exported.
  *
  * @ignore
  */
