@@ -704,9 +704,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true it is collinear}
      */
     isCollinear: function(/* point */) {
-        var point = Point.read(arguments),
-            sameDir = Base.read(arguments);
-        return Point.isCollinear(this.x, this.y, point.x, point.y, sameDir);
+        var point = Point.read(arguments);
+        return Point.isCollinear(this.x, this.y, point.x, point.y);
     },
 
     // TODO: Remove version with typo after a while (deprecated June 2015)
@@ -918,16 +917,14 @@ var Point = Base.extend(/** @lends Point# */{
             return new Point(Math.random(), Math.random());
         },
 
-        isCollinear: function(x1, y1, x2, y2, sameDir) {
+        isCollinear: function(x1, y1, x2, y2) {
             // NOTE: We use normalized vectors so that the epsilon comparison is
             // reliable. We could instead scale the epsilon based on the vector
             // length. But instead of normalizing the vectors before calculating
             // the cross product, we can scale the epsilon accordingly.
-            var d2 = x2 * x2 + y2 * y2;
             return Math.abs(x1 * y2 - y1 * x2)
-                    <= Math.sqrt((x1 * x1 + y1 * y1) * d2)
-                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON
-                    && (!sameDir || (x1 * x2 + y1 * y2) / d2 >= 0);
+                    <= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
+                        * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
         },
 
         isOrthogonal: function(x1, y1, x2, y2) {
