@@ -2073,8 +2073,10 @@ var Path = PathItem.extend(/** @lends Path# */{
                     ? _default
                     : typeof value === 'number'
                         ? value
+                        // Support both Segment and Curve through getIndex()
                         : value.getIndex
                             ? value.getIndex()
+                                + (_default && value instanceof Curve ? 1 : 0)
                             : _default;
             // Handle negative values based on whether a path is open or not:
             // Closed paths are wrapped around the end (allowing values to be
