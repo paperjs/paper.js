@@ -708,12 +708,6 @@ statics: {
                 : v;
     },
 
-    hasHandles: function(v) {
-        var isZero = Numerical.isZero;
-        return !(isZero(v[0] - v[2]) && isZero(v[1] - v[3])
-                && isZero(v[4] - v[6]) && isZero(v[5] - v[7]));
-    },
-
     isFlatEnough: function(v, tolerance) {
         // Thanks to Kaspar Fischer and Roger Willcocks for the following:
         // http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
@@ -1221,13 +1215,23 @@ new function() { // Scope for methods that require private functions
             p2x = v[6], p2y = v[7],
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
+            isZero = Numerical.isZero,
             x, y;
-
+        // If the curve handles are almost zero, reset the control points to the
+        // anchors.
+        if (isZero(c1x - p1x) && isZero(c1y - p1y)) {
+            c1x = p1x;
+            c1y = p1y;
+        }
+        if (isZero(c2x - p2x) && isZero(c2y - p2y)) {
+            c2x = p2x;
+            c2y = p2y;
+        }
         // Handle special case at beginning / end of curve
         if (type === 0 && (t < tMin || t > tMax)) {
-            var isZero = t < tMin;
-            x = isZero ? p1x : p2x;
-            y = isZero ? p1y : p2y;
+            var zero = t < tMin;
+            x = zero ? p1x : p2x;
+            y = zero ? p1y : p2y;
         } else {
             // Calculate the polynomial coefficients.
             var cx = 3 * (c1x - p1x),
