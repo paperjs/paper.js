@@ -822,13 +822,18 @@ PathItem.inject(new function() {
                 }
             }
             if (hasCrossings) {
-                // Split any remaining intersections that are still part of
+                // Divide any remaining intersections that are still part of
                 // valid paths after the removal of overlaps.
                 divideLocations(intersections, function(inter) {
                     // Check both involved curves to see if they're still valid,
                     // meaning they are still part of their paths.
                     var curve1 = inter.getCurve(),
-                        curve2 = inter._intersection.getCurve(true),
+                        // Do not call getCurve() on the other intersection yet,
+                        // as it too is in the intersections array and will be
+                        // divided later. But do check if its current curve is
+                        // still valid. This is required by some very rare edge
+                        // cases, related to intersections on the same curve.
+                        curve2 = inter._intersection._curve,
                         seg = inter._segment;
                     if (curve1 && curve2 && curve1._path && curve2._path) {
                         return true;
