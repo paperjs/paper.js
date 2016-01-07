@@ -434,7 +434,7 @@ PathItem.inject(new function() {
                         // changes between before and after the curve, we treat
                         // this as a 'touch point'.
                         if (prevWinding && nextWinding
-                            && py === values[1]
+                            && abs(py - values[1]) < epsilon
                             && (values[0] < xAfter && values[6] > xBefore
                                 ||  values[6] < xAfter && values[0] > xBefore)
                             && prevWinding.winding * nextWinding.winding < 0) {
@@ -937,7 +937,10 @@ Path.inject(/** @lends Path# */{
         function insertCurve(v) {
             var y0 = v[1],
                 y1 = v[7],
-                winding = y0 === y1
+                // Look at the slope of the line between the mono-curve's anchor
+                // points with some tolerance to decide if it is horizontal.
+                winding = Math.abs((y0 - y1) / (v[0] - v[6]))
+                        < /*#=*/Numerical.GEOMETRIC_EPSILON
                     ? 0 // Horizontal
                     : y0 > y1
                         ? -1 // Decreasing
