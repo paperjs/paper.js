@@ -757,7 +757,10 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {CanvasRenderingContext2D} ctx
      */
     applyToContext: function(ctx) {
-        ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
+        if (!this.isIdentity()) {
+            ctx.transform(this._a, this._c, this._b, this._d,
+                    this._tx, this._ty);
+        }
     }
 }, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
     // Create getters and setters for all internal attributes.
