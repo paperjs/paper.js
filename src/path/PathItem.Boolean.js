@@ -92,9 +92,8 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(CurveLocation.expand(
-                // Only handle overlaps when not self-intersecting
-                _path1.getCrossings(_path2, !!_path2))),
+        var crossings = divideLocations(
+                CurveLocation.expand(_path1.getCrossings(_path2))),
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y.
             monoCurves = [],
@@ -156,7 +155,7 @@ PathItem.inject(new function() {
             return null;
         var _path1 = preparePath(path1, false),
             _path2 = preparePath(path2, false),
-            crossings = _path1.getCrossings(_path2, true),
+            crossings = _path1.getCrossings(_path2),
             sub = operator.subtract,
             paths = [];
 
