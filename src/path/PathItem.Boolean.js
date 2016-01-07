@@ -350,22 +350,13 @@ PathItem.inject(new function() {
                 end = 0;
             while (end < length) {
                 start = end;
-                // Determine the beginning and end of the loop, along with the
-                // first and last curve with non-zero winding within the loop:
-                var firstCurve = null,
-                    lastCurve;
-                for (var i = start; i < length; i++) {
-                    var curve = curves[i];
-                    if (curve.winding) {
-                        if (!firstCurve)
-                            firstCurve = curve;
-                        lastCurve = curve;
-                    }
-                    if (curve.next !== curves[i + 1]) {
-                        end = i + 1;
-                        break;
-                    }
-                }
+                // The first curve of a loop holds information about its length
+                // and the first / last curve with non-zero winding.
+                // Retrieve and use it here (See _getMonoCurve()).
+                var curve = curves[start],
+                    firstWinding = curve.firstWinding,
+                    lastWinding = curve.lastWinding;
+                end = start + curve.length;
                 // Walk through one single loop of curves.
                 var startCounted = false,
                     prevCurve, // non-horizontal curve before the current curve.
@@ -374,8 +365,8 @@ PathItem.inject(new function() {
                     curve = null;
                 for (var i = start; i < end; i++) {
                     if (!curve) {
-                        prevCurve = lastCurve;
-                        nextCurve = firstCurve;
+                        prevCurve = lastWinding;
+                        nextCurve = firstWinding;
                     } else if (curve.winding) {
                         prevCurve = curve;
                     }
@@ -407,17 +398,16 @@ PathItem.inject(new function() {
                         if (!( // = the following conditions will be excluded:
                             // Detect and exclude intercepts at 'end' of loops
                             // if the start of the loop was already counted.
-                            t > tMax && startCounted && curve === lastCurve
+                            t > tMax && startCounted && curve === lastWinding
                             // Detect 2nd case of a consecutive intercept
                             || t < tMin && prevT > tMax)) {
                             var x = Curve.getPoint(values, t).x,
-                                slope = Curve.getTangent(values, t).y,
                                 counted = false;
                             // Take care of cases where the curve and the
                             // preceding curve merely touches the ray towards
                             // +-x direction, but proceeds to the same side of
                             // the ray. This essentially is not a crossing.
-                            if (Numerical.isZero(slope)
+                            if (Numerical.isZero(Curve.getTangent(values, t).y)
                                     && !Curve.isStraight(values)
                                     // Does the winding over the edges change?
                                     || t < tMin && prevCurve
@@ -437,7 +427,7 @@ PathItem.inject(new function() {
                                 counted = true;
                             }
                             // Mark the start of the path as counted.
-                            if (curve === firstCurve) {
+                            if (curve === firstWinding) {
                                 startCounted = t < tMin && counted;
                             }
                         }
@@ -942,19 +932,22 @@ Path.inject(/** @lends Path# */{
      */
     _getMonoCurves: function() {
         var monoCurves = this._monoCurves,
-            prevCurve;
+            prevCurve,
+            firstWinding = null,
+            lastWinding;
 
         // Insert curve values into a cached array
         function insertCurve(v) {
             var y0 = v[1],
                 y1 = v[7],
+                winding = y0 === y1
+                    ? 0 // Horizontal
+                    : y0 > y1
+                        ? -1 // Decreasing
+                        : 1, // Increasing
                 curve = {
                     values: v,
-                    winding: y0 === y1
-                        ? 0 // Horizontal
-                        : y0 > y1
-                            ? -1 // Decreasing
-                            : 1, // Increasing
+                    winding: winding,
                     // Add a reference to neighboring curves.
                     previous: prevCurve,
                     next: null // Always set it for hidden class optimization.
@@ -963,6 +956,12 @@ Path.inject(/** @lends Path# */{
                 prevCurve.next = curve;
             monoCurves.push(curve);
             prevCurve = curve;
+            // Keep track of the first and last curves with winding numbers.
+            if (winding) {
+                if (!firstWinding)
+                    firstWinding = curve;
+                lastWinding = curve;
+            }
         }
 
         // Handle bezier curves. We need to chop them into smaller curves with
@@ -1034,6 +1033,11 @@ Path.inject(/** @lends Path# */{
                     last = monoCurves[monoCurves.length - 1];
                 first.previous = last;
                 last.next = first;
+                // Add information about the loop length and the first / last
+                // curve with non-zero winding (Used in getWinding()).
+                first.length = monoCurves.length;
+                first.firstWinding = firstWinding;
+                first.lastWinding = lastWinding;
             }
         }
         return monoCurves;
