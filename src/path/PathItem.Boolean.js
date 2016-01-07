@@ -303,8 +303,6 @@ PathItem.inject(new function() {
      */
     function getWinding(point, curves, horizontal) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
             px = point.x,
             py = point.y,
             windLeft = 0,
@@ -350,103 +348,57 @@ PathItem.inject(new function() {
             while (end < length) {
                 start = end;
                 // The first curve of a loop holds information about its length
-                // and the first / last curve with non-zero winding.
+                // and the last curve with non-zero winding.
                 // Retrieve and use it here (See _getMonoCurve()).
                 var curve = curves[start],
-                    firstWinding = curve.firstWinding,
-                    lastWinding = curve.lastWinding;
+                    last = curve.last,
+                    // Get the values of to the end x coordinate and winding of
+                    // the last non-horizontal curve, which will be the previous
+                    // non-horizontal curve for the first curve of the loop.
+                    prevWinding = last.winding,
+                    prevEnd = last.values[6];
                 end = start + curve.length;
-                // Walk through one single loop of curves.
-                var startCounted = false,
-                    prevWinding, // The previous non-horizontal curve.
-                    nextWinding, // The next non-horizontal curve (with winding)
-                    prevT = null,
-                    curve = null;
                 for (var i = start; i < end; i++) {
-                    if (!curve) {
-                        prevWinding = lastWinding;
-                        nextWinding = firstWinding;
-                    } else if (curve.winding) {
-                        prevWinding = curve;
-                    }
-                    curve = curves[i];
-                    if (curve === nextWinding) {
-                        // Each time we've reached the next curve with winding,
-                        // search for the next one after.
-                        nextWinding = curve.next;
-                        while (nextWinding && !nextWinding.winding) {
-                            nextWinding = nextWinding.next;
-                        }
-                    }
-                    var values = curve.values,
-                        winding = curve.winding;
+                    var curve = curves[i],
+                        winding = curve.winding,
+                        values = curve.values,
+                        yStart = values[1],
+                        yEnd = values[7];
                     // Since the curves are monotone in y direction, we can just
                     // compare the endpoints of the curve to determine if the
                     // ray from query point along +-x direction will intersect
-                    // the monotone curve. Results in quite significant speedup.
-                    if (winding && (winding === 1
-                            && py >= values[1] && py <= values[7]
-                            || py >= values[7] && py <= values[1])
-                        && Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
-                        var t = roots[0];
-                        // Due to numerical precision issues, two consecutive
-                        // curves may register an intercept twice, at t = 1 and
-                        // 0, if y is almost equal to one of the endpoints of
-                        // the curves. But since curves may contain more than
-                        // one loop of curves and the end point on the last
-                        // curve of a loop would not be registered as a double,
-                        // we need to filter these cases:
-                        if (!( // = the following conditions will be excluded:
-                            // Detect and exclude intercepts at 'end' of loops
-                            // if the start of the loop was already counted.
-                            t > tMax && startCounted && curve === lastWinding
-                            // Detect 2nd case of a consecutive intercept
-                            || t < tMin && prevT > tMax)) {
-                            var x = Curve.getPoint(values, t).x,
-                                counted = false;
-                            // Take care of cases where the ray merely touches
-                            // the connecting point between two neighboring mono
-                            // curves, but does not cross either of them.
-                            if (t < tMin && prevWinding
-                                    && winding * prevWinding.winding < 0
-                                || t > tMax && nextWinding
-                                    && winding * nextWinding.winding < 0) {
+                    // the monotone curve.
+                    if (winding && (py >= yStart && py <= yEnd
+                            || py >= yEnd && py <= yStart)) {
+                        if (py === yStart) {
+                            var x = values[0];
+                            if (winding * prevWinding < 0) {
                                 if (x > xBefore && x < xAfter) {
                                     ++windLeft;
                                     ++windRight;
-                                    counted = true;
+                                } else if (x < xBefore) {
+                                    windLeft += winding;
+                                } else if (x > xAfter) {
+                                    windRight += winding;
                                 }
-                            } else if (x <= xBefore) {
+                            } else if (x < xBefore && prevEnd > xBefore) {
                                 windLeft += winding;
-                                counted = true;
-                            } else if (x >= xAfter) {
+                            } else if (x > xAfter && prevEnd < xAfter) {
                                 windRight += winding;
-                                counted = true;
                             }
-                            // Mark the start of the path as counted.
-                            if (curve === firstWinding) {
-                                startCounted = t < tMin && counted;
+                        } else if (Curve.solveCubic(values, 1, py, roots, 0, 1)
+                                === 1) {
+                            var x = Curve.getPoint(values, roots[0]).x;
+                            if (x < xBefore) {
+                                windLeft += winding;
+                            } else if (x > xAfter) {
+                                windRight += winding;
                             }
                         }
-                        prevT = t;
-                    } else if (!winding) {
-                        // If the point is on a horizontal curve and winding
-                        // changes between before and after the curve, we treat
-                        // this as a 'touch point'.
-                        if (prevWinding && nextWinding
-                            && abs(py - values[1]) < epsilon
-                            && (values[0] < xAfter && values[6] > xBefore
-                                ||  values[6] < xAfter && values[0] > xBefore)
-                            && prevWinding.winding * nextWinding.winding < 0) {
-                            ++windLeft;
-                            ++windRight;
-                        }
-                        // We keep the value for prevT to avoid double counting
-                        // of intersections at the end of a curve and the start
-                        // of the next curve, even if any number of horizontal
-                        // curves is between both curves.
-                    } else {
-                        prevT = null;
+                        // Update previous winding and end coordinate whenever
+                        // we encountered a non-horizontal curve.
+                        prevWinding = winding;
+                        prevEnd = values[6];
                     }
                 }
             }
@@ -929,9 +881,7 @@ Path.inject(/** @lends Path# */{
      */
     _getMonoCurves: function() {
         var monoCurves = this._monoCurves,
-            prevCurve,
-            firstWinding = null,
-            lastWinding;
+            last;
 
         // Insert curve values into a cached array
         function insertCurve(v) {
@@ -945,23 +895,11 @@ Path.inject(/** @lends Path# */{
                     : y0 > y1
                         ? -1 // Decreasing
                         : 1, // Increasing
-                curve = {
-                    values: v,
-                    winding: winding,
-                    // Add a reference to neighboring curves.
-                    previous: prevCurve,
-                    next: null // Always set it for hidden class optimization.
-                };
-            if (prevCurve)
-                prevCurve.next = curve;
+                curve = { values: v, winding: winding };
             monoCurves.push(curve);
-            prevCurve = curve;
-            // Keep track of the first and last curves with winding numbers.
-            if (winding) {
-                if (!firstWinding)
-                    firstWinding = curve;
-                lastWinding = curve;
-            }
+            // Keep track of the last non-horizontal curve (with winding).
+            if (winding)
+                last = curve;
         }
 
         // Handle bezier curves. We need to chop them into smaller curves with
@@ -1028,16 +966,11 @@ Path.inject(/** @lends Path# */{
                 handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
             }
             if (monoCurves.length > 0) {
-                // Link first and last curves
-                var first = monoCurves[0],
-                    last = monoCurves[monoCurves.length - 1];
-                first.previous = last;
-                last.next = first;
-                // Add information about the loop length and the first / last
-                // curve with non-zero winding (Used in getWinding()).
+                // Add information about the loop length and the last curve with
+                // non-zero winding, as required in getWinding().
+                var first = monoCurves[0];
                 first.length = monoCurves.length;
-                first.firstWinding = firstWinding;
-                first.lastWinding = lastWinding;
+                first.last = last;
             }
         }
         return monoCurves;
