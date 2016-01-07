@@ -358,22 +358,24 @@ PathItem.inject(new function() {
                 end = start + curve.length;
                 // Walk through one single loop of curves.
                 var startCounted = false,
-                    prevCurve, // non-horizontal curve before the current curve.
-                    nextCurve, // non-horizontal curve after the current curve.
+                    prevWinding, // The previous non-horizontal curve.
+                    nextWinding, // The next non-horizontal curve (with winding)
                     prevT = null,
                     curve = null;
                 for (var i = start; i < end; i++) {
                     if (!curve) {
-                        prevCurve = lastWinding;
-                        nextCurve = firstWinding;
+                        prevWinding = lastWinding;
+                        nextWinding = firstWinding;
                     } else if (curve.winding) {
-                        prevCurve = curve;
+                        prevWinding = curve;
                     }
                     curve = curves[i];
-                    if (curve === nextCurve) {
-                        nextCurve = curve.next;
-                        while (nextCurve && !nextCurve.winding) {
-                            nextCurve = nextCurve.next;
+                    if (curve === nextWinding) {
+                        // Each time we've reached the next curve with winding,
+                        // search for the next one after.
+                        nextWinding = curve.next;
+                        while (nextWinding && !nextWinding.winding) {
+                            nextWinding = nextWinding.next;
                         }
                     }
                     var values = curve.values,
@@ -405,10 +407,10 @@ PathItem.inject(new function() {
                             // Take care of cases where the ray merely touches
                             // the connecting point between two neighboring mono
                             // curves, but does not cross either of them.
-                            if (t < tMin && prevCurve
-                                    && winding * prevCurve.winding < 0
-                                || t > tMax && nextCurve
-                                    && winding * nextCurve.winding < 0) {
+                            if (t < tMin && prevWinding
+                                    && winding * prevWinding.winding < 0
+                                || t > tMax && nextWinding
+                                    && winding * nextWinding.winding < 0) {
                                 if (x > xBefore && x < xAfter) {
                                     ++windLeft;
                                     ++windRight;
@@ -431,11 +433,11 @@ PathItem.inject(new function() {
                         // If the point is on a horizontal curve and winding
                         // changes between before and after the curve, we treat
                         // this as a 'touch point'.
-                        if (py === values[1]
-                                && (values[0] < xAfter && values[6] > xBefore
+                        if (prevWinding && nextWinding
+                            && py === values[1]
+                            && (values[0] < xAfter && values[6] > xBefore
                                 ||  values[6] < xAfter && values[0] > xBefore)
-                                && prevCurve && nextCurve
-                                && prevCurve.winding * nextCurve.winding < 0) {
+                            && prevWinding.winding * nextWinding.winding < 0) {
                             ++windLeft;
                             ++windRight;
                         }
