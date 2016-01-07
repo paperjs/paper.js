@@ -13,10 +13,7 @@
 // Node.js emulation layer of browser based environment, based on node-canvas
 // and jsdom.
 
-// console.log(__dirname);
-
 var jsdom = require('jsdom'),
-    domToHtml = require('jsdom/lib/jsdom/browser/domtohtml').domToHtml,
     // Node Canvas library: https://github.com/learnboost/node-canvas
     Canvas = require('canvas'),
     // Expose global browser variables and create a document and a window using
@@ -33,7 +30,7 @@ function XMLSerializer() {
 }
 
 XMLSerializer.prototype.serializeToString = function(node) {
-    var text = domToHtml(node);
+    var text = jsdom.serializeDocument(node);
     // Fix a jsdom issue where all SVG tagNames are lowercased:
     // https://github.com/tmpvar/jsdom/issues/620
     var tagNames = ['linearGradient', 'radialGradient', 'clipPath'];
