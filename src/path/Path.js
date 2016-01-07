@@ -2218,7 +2218,7 @@ new function() { // Scope for drawing
                     // If shadowColor is defined, clear it after fill, so it
                     // won't be applied to both fill and stroke. If the path is
                     // only stroked, we don't have to clear it.
-                    ctx.shadowColor = 'rgba(0,0,0,0)';
+                    ctx.shadowBlur = 0;
                 }
                 if (hasStroke) {
                     if (dashLength) {

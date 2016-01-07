@@ -258,7 +258,7 @@ var Shape = Item.extend(/** @lends Shape# */{
             this._setStyles(ctx);
             if (hasFill) {
                 ctx.fill(style.getFillRule());
-                ctx.shadowColor = 'rgba(0,0,0,0)';
+                ctx.shadowBlur = 0;
             }
             if (hasStroke)
                 ctx.stroke();
