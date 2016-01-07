@@ -807,7 +807,7 @@ PathItem.inject(new function() {
             if (hasCrossings) {
                 // Divide any remaining intersections that are still part of
                 // valid paths after the removal of overlaps.
-                divideLocations(intersections, function(inter) {
+                divideLocations(intersections, hasOverlaps && function(inter) {
                     // Check both involved curves to see if they're still valid,
                     // meaning they are still part of their paths.
                     var curve1 = inter.getCurve(),
