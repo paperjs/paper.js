@@ -417,21 +417,21 @@ var Path = PathItem.extend(/** @lends Path# */{
             var total = this._countCurves(),
                 // If we're adding a new segment to the end of an open path,
                 // we need to step one index down to get its curve.
-                from = index > 0 && index + amount - 1 === total ? index - 1
+                start = index > 0 && index + amount - 1 === total ? index - 1
                     : index,
-                start = from,
-                to = Math.min(from + amount, total);
+                insert = start,
+                end = Math.min(start + amount, total);
             if (segs._curves) {
                 // Reuse removed curves.
-                curves.splice.apply(curves, [from, 0].concat(segs._curves));
-                start += segs._curves.length;
+                curves.splice.apply(curves, [start, 0].concat(segs._curves));
+                insert += segs._curves.length;
             }
             // Insert new curves, but do not initialize their segments yet,
             // since #_adjustCurves() handles all that for us.
-            for (var i = start; i < to; i++)
+            for (var i = insert; i < end; i++)
                 curves.splice(i, 0, new Curve(this, null, null));
             // Adjust segments for the curves before and after the removed ones
-            this._adjustCurves(from, to);
+            this._adjustCurves(start, end);
         }
         // Use SEGMENTS notification instead of GEOMETRY since curves are kept
         // up-to-date by _adjustCurves() and don't need notification.
@@ -442,11 +442,11 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Adjusts segments of curves before and after inserted / removed segments.
      */
-    _adjustCurves: function(from, to) {
+    _adjustCurves: function(start, end) {
         var segments = this._segments,
             curves = this._curves,
             curve;
-        for (var i = from; i < to; i++) {
+        for (var i = start; i < end; i++) {
             curve = curves[i];
             curve._path = this;
             curve._segment1 = segments[i];
@@ -455,14 +455,14 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // If it's the first segment, correct the last segment of closed
         // paths too:
-        if (curve = curves[this._closed && from === 0 ? segments.length - 1
-                : from - 1]) {
-            curve._segment2 = segments[from] || segments[0];
+        if (curve = curves[this._closed && start === 0 ? segments.length - 1
+                : start - 1]) {
+            curve._segment2 = segments[start] || segments[0];
             curve._changed();
         }
         // Fix the segment after the modified range, if it exists
-        if (curve = curves[to]) {
-            curve._segment1 = segments[to];
+        if (curve = curves[end]) {
+            curve._segment1 = segments[end];
             curve._changed();
         }
     },
@@ -725,13 +725,13 @@ var Path = PathItem.extend(/** @lends Path# */{
      * // Select the path, so we can see its segments:
      * path.selected = true;
      */
-    removeSegments: function(from, to, _includeCurves) {
-        from = from || 0;
-        to = Base.pick(to, this._segments.length);
+    removeSegments: function(start, end, _includeCurves) {
+        start = start || 0;
+        end = Base.pick(end, this._segments.length);
         var segments = this._segments,
             curves = this._curves,
             count = segments.length, // segment count before removal
-            removed = segments.splice(from, to - from),
+            removed = segments.splice(start, end - start),
             amount = removed.length;
         if (!amount)
             return removed;
@@ -744,7 +744,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             segment._index = segment._path = null;
         }
         // Adjust the indices of the segments above.
-        for (var i = from, l = segments.length; i < l; i++)
+        for (var i = start, l = segments.length; i < l; i++)
             segments[i]._index = i;
         // Keep curves in sync
         if (curves) {
@@ -752,9 +752,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             // one to the left of the segment, not to the right, as normally).
             // Also take into account closed paths, which have one curve more
             // than segments.
-            var index = from > 0 && to === count + (this._closed ? 1 : 0)
-                    ? from - 1
-                    : from,
+            var index = start > 0 && end === count + (this._closed ? 1 : 0)
+                    ? start - 1
+                    : start,
                 curves = curves.splice(index, amount);
             // Unlink the removed curves from the path.
             for (var i = curves.length - 1; i >= 0; i--)
