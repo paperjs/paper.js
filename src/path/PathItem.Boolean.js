@@ -402,17 +402,13 @@ PathItem.inject(new function() {
                             || t < tMin && prevT > tMax)) {
                             var x = Curve.getPoint(values, t).x,
                                 counted = false;
-                            // Take care of cases where the curve and the
-                            // preceding curve merely touches the ray towards
-                            // +-x direction, but proceeds to the same side of
-                            // the ray. This essentially is not a crossing.
-                            if (Numerical.isZero(Curve.getTangent(values, t).y)
-                                    && !Curve.isStraight(values)
-                                    // Does the winding over the edges change?
-                                    || t < tMin && prevCurve
-                                        && winding * prevCurve.winding < 0
-                                    || t > tMax && nextCurve
-                                        && winding * nextCurve.winding < 0) {
+                            // Take care of cases where the ray merely touches
+                            // the connecting point between two neighboring mono
+                            // curves, but does not cross either of them.
+                            if (t < tMin && prevCurve
+                                    && winding * prevCurve.winding < 0
+                                || t > tMax && nextCurve
+                                    && winding * nextCurve.winding < 0) {
                                 if (x > xBefore && x < xAfter) {
                                     ++windLeft;
                                     ++windRight;
