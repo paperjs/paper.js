@@ -2836,10 +2836,10 @@ statics: {
         var sin = Math.sin(phi),
             cos = Math.cos(phi),
             tan = Math.tan(phi),
-            tx = -Math.atan(b * tan / a),
-            ty = Math.atan(b / (tan * a));
+            tx = Math.atan2(b * tan, a),
+            ty = Math.atan2(b, tan * a);
         // Due to symetry, we don't need to cycle through pi * n solutions:
-        return [Math.abs(a * Math.cos(tx) * cos - b * Math.sin(tx) * sin),
+        return [Math.abs(a * Math.cos(tx) * cos + b * Math.sin(tx) * sin),
                 Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
     },
 
