@@ -353,11 +353,11 @@ PathItem.inject(new function() {
                 // Retrieve and use it here (See _getMonoCurve()).
                 var curve = curves[start],
                     last = curve.last,
-                    // Get the values of to the end x coordinate and winding of
-                    // the last non-horizontal curve, which will be the previous
-                    // non-horizontal curve for the first curve of the loop.
+                // Get the values of to the end x coordinate and winding of
+                // the last non-horizontal curve, which will be the previous
+                // non-horizontal curve for the first curve of the loop.
                     prevWinding = last.winding,
-                    prevEnd = last.values[6];
+                    prevXEnd = last.values[6];
                 end = start + curve.length;
                 for (var i = start; i < end; i++) {
                     var curve = curves[i],
@@ -369,37 +369,44 @@ PathItem.inject(new function() {
                     // compare the endpoints of the curve to determine if the
                     // ray from query point along +-x direction will intersect
                     // the monotone curve.
+                    // horizontal curves with winding == 0 will be completely
+                    // ignored
                     if (winding && (py >= yStart && py <= yEnd
-                            || py >= yEnd && py <= yStart)) {
+                        || py >= yEnd && py <= yStart)) {
+                        // calculate the x value for the ray's intersection
+                        var x;
                         if (py === yStart) {
-                            var x = values[0];
-                            if (winding * prevWinding < 0) {
-                                if (x > xBefore && x < xAfter) {
-                                    ++windLeft;
-                                    ++windRight;
-                                } else if (x < xBefore) {
+                            x = values[0];
+                        } else if (py === yEnd) {
+                            x = values[6];
+                        } else if (Curve.solveCubic(values, 1, py, roots, 0, 1) === 1) {
+                            x = Curve.getPoint(values, roots[0]).x;
+                        }
+                        if (x != null) {
+                            // count the intersection of the ray with the monotonic curve if
+                            // -    the crossing is not at the start of the curve
+                            // - or the windings are opposite (intersect at a vertical extremum)
+                            // - or the start of the current curve and the end of the prev
+                            //      curve are on opposite sides of px
+                            var isWindingChange = winding === -prevWinding,
+                                countIntersection = py !== yStart || isWindingChange ||
+                                    (x - px) * (prevXEnd - px) < 0;
+                            if (countIntersection) {
+                                if (x < xBefore) {
                                     windLeft += winding;
                                 } else if (x > xAfter) {
                                     windRight += winding;
+                                } else if (py === yStart && isWindingChange) {
+                                    // intersection is at a vertical extremum
+                                    ++windLeft;
+                                    ++windRight;
                                 }
-                            } else if (x < xBefore && prevEnd > xBefore) {
-                                windLeft += winding;
-                            } else if (x > xAfter && prevEnd < xAfter) {
-                                windRight += winding;
-                            }
-                        } else if (Curve.solveCubic(values, 1, py, roots, 0, 1)
-                                === 1) {
-                            var x = Curve.getPoint(values, roots[0]).x;
-                            if (x < xBefore) {
-                                windLeft += winding;
-                            } else if (x > xAfter) {
-                                windRight += winding;
                             }
                         }
                         // Update previous winding and end coordinate whenever
-                        // we encountered a non-horizontal curve.
+                        // the ray intersects a non-horizontal curve.
                         prevWinding = winding;
-                        prevEnd = values[6];
+                        prevXEnd = values[6];
                     }
                 }
             }
