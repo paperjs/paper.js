@@ -489,10 +489,8 @@ var Curve = Base.extend(/** @lends Curve# */{
                 // Adjust the handles on the existing segments. The new segment
                 // will be inserted between the existing segment1 and segment2:
                 // Convert absolute -> relative
-                segment1._handleOut.set(left[2] - left[0],
-                        left[3] - left[1]);
-                segment2._handleIn.set(right[4] - right[6],
-                        right[5] - right[7]);
+                segment1._handleOut.set(left[2] - left[0], left[3] - left[1]);
+                segment2._handleIn.set(right[4] - right[6],right[5] - right[7]);
             }
             // Create the new segment:
             var x = left[6], y = left[7],
@@ -1487,8 +1485,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 u = (uMin + uMax) / 2;
             // As we've been clipping v1 and v2, we need to pass on the original
             // curves here again to match the parameter space of t1 and t2.
-            // TODO: Add two more arguments to addCurveIntersections after param
-            // to pass on the sub-curves.
             v1 = c1.getValues();
             v2 = c2.getValues();
             addLocation(locations, param,
@@ -1906,8 +1902,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
 
             var v = [v1, v2],
                 pairs = [];
-            // Iterate through all end points: First p1 and p2 of curve 1,
-            // then p1 and p2 of curve 2.
+            // Iterate through all end points:
+            // First p1 and p2 of curve 1, then p1 and p2 of curve 2.
             for (var i = 0, t1 = 0;
                     i < 2 && pairs.length < 2;
                     i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
@@ -1916,15 +1912,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         v[i][t1 === 0 ? 1 : 7]));
                 if (t2 != null) {  // If point is on curve
                     var pair = i === 0 ? [t1, t2] : [t2, t1];
-                    // Filter out tiny overlaps
-                    // TODO: Compare distance of points instead of curve time?
+                    // Filter out tiny overlaps.
                     if (pairs.length === 0 ||
                         abs(pair[0] - pairs[0][0]) > timeEpsilon &&
                         abs(pair[1] - pairs[0][1]) > timeEpsilon)
                         pairs.push(pair);
                 }
-                // If we checked 3 points but found no match,
-                // curves cannot overlap.
+                // We checked 3 points but found no match, curves can't overlap.
                 if (i === 1 && pairs.length === 0)
                     break;
             }

@@ -98,16 +98,16 @@ var Numerical = new function() {
          * cannot be smaller, because errors add up to around 2e-7 in the bezier
          * fat-line clipping code as a result of recursive sub-division.
          */
-        CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases!
+        CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing "geometric" checks, such as
          * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 2e-7,
+        GEOMETRIC_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
-        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
+        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity.
