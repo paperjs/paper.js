@@ -130,7 +130,7 @@ test('item.parent / item.isChild / item.isParent / item.layer', function() {
         return project.activeLayer.children.indexOf(path) == -1;
     }, true);
     equals(function() {
-        return secondDoc.activeLayer.children.indexOf(path) == 0;
+        return secondDoc.activeLayer.children.indexOf(path) === 0;
     }, true);
 });
 
@@ -245,7 +245,7 @@ test('item.sendToBack()', function() {
     var secondPath = new Path();
     secondPath.sendToBack();
     equals(function() {
-        return secondPath.index == 0;
+        return secondPath.index === 0;
     }, true);
 });
 
@@ -428,161 +428,144 @@ test('group.selected', function() {
 });
 
 test('Check parent children object for named item', function() {
-    var path = new Path();
-    path.name = 'test';
+    var path1 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    var path2 = new Path();
-    path2.name = 'test';
+    var path2 = new Path({ name: 'test' });
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
 
     path2.remove();
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    path.remove();
+    path1.remove();
 
     equals(function() {
-        return !paper.project.activeLayer.children['test'];
+        return !layer.children['test'];
     }, true);
 });
 
 test('Named child access 1', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
-
-    path.remove();
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
-    }, true);
-});
-
-test('Named child access 2', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
-
-    path.remove();
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
 
+    path1.remove();
+
     equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length == 1;
+        return layer.children['test'] === path2;
     }, true);
 
     path2.remove();
 
     equals(function() {
-        return !paper.project.activeLayer._namedChildren['test'];
-    }, true);
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 });
 
-test('Named child access 3', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
+test('Named child access 2', function() {
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     var group = new Group();
 
     group.addChild(path2);
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    // TODO: Tests should not access internal properties
-    equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length;
-    }, 1);
+    path1.remove();
 
     equals(function() {
-        return group.children['test'] == path2;
+        return layer.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return group._namedChildren['test'].length == 1;
+        return group.children['test'] === path2;
+    }, true);
+
+    path2.remove();
+
+    equals(function() {
+        return group.children['test'] === undefined;
+    }, true);
+
+    group.addChild(path2);
+
+    equals(function() {
+        return group.children['test'] === path2;
+    }, true);
+
+    layer.appendTop(path2);
+
+    equals(function() {
+        return group.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return paper.project.activeLayer._namedChildren['test'][0] == path;
+        return layer.children['test'] === path2;
     }, true);
 
-    paper.project.activeLayer.appendTop(path2);
+    layer.addChild(path1);
 
     equals(function() {
-        return group.children['test'] == null;
+        return layer.children['test'] === path2;
     }, true);
 
-    equals(function() {
-        return group._namedChildren['test'] === undefined;
-    }, true);
+    path2.remove();
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
-
-    equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length;
-    }, 2);
 });
 
 test('Setting name of child back to null', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] == path1;
+    }, true);
+
+    path1.name = null;
+
+    equals(function() {
+        return layer.children['test'] == path2;
     }, true);
 
     path2.name = null;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
-    }, true);
-
-    path.name = null;
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 });
 
 test('Renaming item', function() {
-    var path = new Path();
-    path.name = 'test';
-
+    var path = new Path({ name: 'test' });
     path.name = 'test2';
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return paper.project.activeLayer.children['test2'] == path;
+        return layer.children['test2'] == path;
     }, true);
 });
 
@@ -662,7 +645,7 @@ test('Item#data', function() {
     var item = new Path();
     item.data = {
         testing: true
-    }
+    };
     equals(item.data.testing, true, 'we can set data using an object literal');
 
     var item = new Path({
