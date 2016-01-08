@@ -16,5 +16,15 @@
       "folder_exclude_patterns": ["*"],
       "file_exclude_patterns": [ "*.jar" ]
     }
-  ]
+  ],
+  "SublimeLinter":
+  {
+    "linters": {
+      "jshint": {
+        "@disable": true,
+        "args": [],
+        "excludes": []
+      }
+    }
+  }
 }
