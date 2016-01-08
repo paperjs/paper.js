@@ -239,16 +239,18 @@ PathItem.inject(new function() {
             prevT;
 
         for (var i = locations.length - 1; i >= 0; i--) {
-            var loc = locations[i],
-                curve = loc._curve,
-                t = loc._parameter,
-                origT = t,
-                segment;
+            var loc = locations[i];
+            // Call include() before retrieving _curve, because it might cause a
+            // change in the cached location values (see #resolveCrossings()).
             if (include) {
                 if (!include(loc))
                     continue;
                 results.unshift(loc);
             }
+            var curve = loc._curve,
+                t = loc._parameter,
+                origT = t,
+                segment;
             if (curve !== prevCurve) {
                 // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
