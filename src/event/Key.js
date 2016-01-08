@@ -147,9 +147,9 @@ var Key = new function() {
             // not all of them will receive keypress events.
             // Chrome doesn't fire keypress events for command and alt keys,
             // so we need to handle this in a way that works across all OSes.
-            if (key.length > 1 || browser.chrome && (event.altKey
+            if (key.length > 1 || browser && (browser.chrome && (event.altKey
                         || browser.mac && event.metaKey
-                        || !browser.mac && event.ctrlKey)) {
+                        || !browser.mac && event.ctrlKey))) {
                 handleKey(true, key,
                         charLookup[key] || (key.length > 1 ? '' : key), event);
             } else {
