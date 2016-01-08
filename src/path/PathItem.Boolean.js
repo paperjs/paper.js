@@ -22,7 +22,9 @@
  *  - Resolving a self-intersecting Path items
  *  - Boolean operations on self-intersecting Paths items
  *
- * @author Harikrishnan Gopalakrishnan
+ * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
+ * @author Jan Boesenberg <development@iconexperience.com>
+ * @author Juerg Lehni <juerg@scratchdisk.com>
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
