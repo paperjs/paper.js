@@ -77,6 +77,7 @@ test('path.flatten(maxDistance)', function() {
 
 test('Curve list after removing a segment - 1', function() {
     var path = new paper.Path([0, 0], [1, 1], [2, 2]);
+    var prevCurves = path.curves.slice();
 
     equals(function() {
         return path.curves.length;
@@ -84,11 +85,23 @@ test('Curve list after removing a segment - 1', function() {
 
     equals(function() {
         return path.segments[1].remove();
-    }, true, 'Removing the paths second segment should be succesfull.');
+    }, true, 'Removing the paths second segment should be successful.');
 
     equals(function() {
         return path.curves.length;
-    }, 1, 'After removing the middle segment, we should be left with one curve');
+    }, 1, 'After removing the middle segment, we should be left with one curve.');
+
+    equals(function() {
+        return path.curves[0] === prevCurves[0];
+    }, true, 'The remaining curve should be the same as in the previous state of the curves array.');
+
+    equals(function() {
+        return path.curves[0].path === path;
+    }, true, 'The remaining curve should stay linked to the path.');
+
+    equals(function() {
+        return prevCurves[1].path === null;
+    }, true, 'The removed curve should not stay linked to the path.');
 });
 
 test('Curve list after removing a segment - 2', function() {
