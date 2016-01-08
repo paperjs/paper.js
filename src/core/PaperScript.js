@@ -14,6 +14,7 @@
  * @name PaperScript
  * @namespace
  */
+/*jshint -W082 */
 Base.exports.PaperScript = (function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.
@@ -260,13 +261,13 @@ Base.exports.PaperScript = (function() {
         var sourceMap = null,
             browser = paper.browser,
             version = browser.versionNumber,
-            lineBreaks = /\r\n|\n|\r/mg;
+            lineBreaks = /\r\n|\n|\r/mg,
+            offset = 0;
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
         if (browser.chrome && version >= 30
                 || browser.webkit && version >= 537.76 // >= Safari 7.0.4
                 || browser.firefox && version >= 23) {
-            var offset = 0;
             if (window.location.href.indexOf(url) === 0) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
@@ -347,8 +348,8 @@ Base.exports.PaperScript = (function() {
             // Compile a list of all handlers that can be defined globally
             // inside the PaperScript. These are passed on to the function as
             // undefined arguments, so that their name exists, rather than
-            // injecting a code line that defines them as variables.
-            // They are exported again at the end of the function.
+            // injecting a code line that defines them as variables. They are
+            // exported again at the end of the function.
             handlers = ['onFrame', 'onResize'].concat(toolHandlers),
             // compile a list of parameter names for all variables that need to
             // appear as globals inside the script. At the same time, also
