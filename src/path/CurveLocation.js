@@ -67,8 +67,11 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     _setCurve: function(curve) {
         var path = curve._path;
-        this._version = path ? path._version : 0;
+        // We only store the path to verify versions for cachd values.
+        // To ensure we use the right path (e.g. after splitting), we shall
+        // always access the path on the result of getCurve().
         this._path = path;
+        this._version = path ? path._version : 0;
         this._curve = curve;
         this._segment = null; // To be determined, see #getSegment()
         // Also store references to segment1 and segment2, in case path
@@ -121,7 +124,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      */
     getCurve: function() {
-            path = this._path,
+        var path = this._path,
             that = this;
         if (path && path._version !== this._version) {
             // If the path's segments have changed in the meantime, clear the
@@ -158,7 +161,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      */
     getPath: function() {
-        return this._path;
+        var curve = this.getCurve();
+        return curve && curve._path;
     },
 
     /**
