@@ -420,8 +420,7 @@ PathItem.inject(new function() {
         // for the curve-chain starting with this segment. Once we have enough
         // confidence in the winding contribution, we can propagate it until the
         // next intersection or end of a curve chain.
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            chain = [],
+        var chain = [],
             start = segment,
             totalLength = 0,
             windingSum = 0;
