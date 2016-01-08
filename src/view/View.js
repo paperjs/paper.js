@@ -19,6 +19,7 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
+/*jshint -W082 */
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 

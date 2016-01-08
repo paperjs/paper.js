@@ -308,7 +308,7 @@ new function() {
                         attrs[entry.attribute + '-opacity'] = alpha;
                 }
                 if (type === 'style') {
-                    style.push(entry.attribute + ': ' + value)
+                    style.push(entry.attribute + ': ' + value);
                 } else {
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'number' ? formatter.number(value)

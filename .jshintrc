@@ -1,7 +1,8 @@
 {
 	"browser": true,
+    "node": true,
+    "wsh": true,
 	"evil": true,
-	"wsh": true,
 	"trailing": false,
 	"smarttabs": false,
 	"sub": true,
@@ -11,5 +12,9 @@
 	"eqnull": true,
 	"loopfunc": true,
 	"boss": true,
-	"shadow": true
+	"shadow": true,
+    "globals": {
+        "Event": true,
+        "MouseEvent": true
+    }
 }

@@ -235,7 +235,7 @@ var Style = Base.extend(new function() {
         WindingRule: 'FillRule'
     }, function(value, key) {
         var get = 'get' + key,
-            set = 'set' + key
+            set = 'set' + key;
         fields[get] = item[get] = '#get' + value;
         fields[set] = item[set] = '#set' + value;
     });
