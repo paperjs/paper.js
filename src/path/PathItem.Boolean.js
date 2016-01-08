@@ -416,10 +416,10 @@ PathItem.inject(new function() {
     }
 
     function propagateWinding(segment, path1, path2, monoCurves, operator) {
-        // Here we try to determine the most probable winding number
-        // contribution for the curve-chain starting with this segment. Once we
-        // have enough confidence in the winding contribution, we can propagate
-        // it until the next intersection or end of a curve chain.
+        // Here we try to determine the most likely winding number contribution
+        // for the curve-chain starting with this segment. Once we have enough
+        // confidence in the winding contribution, we can propagate it until the
+        // next intersection or end of a curve chain.
         var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
             chain = [],
             start = segment,
@@ -433,21 +433,15 @@ PathItem.inject(new function() {
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
         // Calculate the average winding among three evenly distributed points
-        // along this curve chain as a representative winding number. This
-        // selection gives a better chance of returning a correct winding than
-        // equally dividing the curve chain, with the same (amortized) time.
+        // along this curve chain as a representative winding number.
         for (var i = 0; i < 3; i++) {
-            // Sample the points at 1/4, 2/4 and 3/4 of the total length:
+            // Sample the points at 3 equal intervals along the total length:
             var length = totalLength * (i + 1) / 4;
-            for (var k = 0, m = chain.length; k < m; k++) {
-                var node = chain[k],
-                    curveLength = node.length;
+            for (var j = 0, l = chain.length; j < l; j++) {
+                var entry = chain[j],
+                    curveLength = entry.length;
                 if (length <= curveLength) {
-                    // If the selected location on the curve falls onto its
-                    // beginning or end, use the curve's center instead.
-                    if (length < epsilon || curveLength - length < epsilon)
-                        length = curveLength / 2;
-                    var curve = node.curve,
+                    var curve = entry.curve,
                         path = curve._path,
                         parent = path._parent,
                         t = curve.getParameterAt(length),
@@ -459,11 +453,10 @@ PathItem.inject(new function() {
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
-                    windingSum += operator.subtract && path2
-                        && (path === path1 && path2._getWinding(pt, hor)
-                        || path === path2 && !path1._getWinding(pt, hor))
-                        ? 0
-                        : getWinding(pt, monoCurves, hor);
+                    if (!(operator.subtract && path2
+                            && (path === path1 && path2._getWinding(pt, hor)
+                            || path === path2 && !path1._getWinding(pt, hor))))
+                        windingSum += getWinding(pt, monoCurves, hor);
                     break;
                 }
                 length -= curveLength;
