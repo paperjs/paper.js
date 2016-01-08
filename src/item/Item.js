@@ -328,7 +328,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var children = parent._children,
                 namedChildren = parent._namedChildren;
             (namedChildren[name] = namedChildren[name] || []).push(this);
-            children[name] = this;
+            // Only set this item if there isn't one under the same name already
+            if (!(name in children))
+                children[name] = this;
         }
         this._name = name || undefined;
         this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
