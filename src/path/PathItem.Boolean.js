@@ -372,17 +372,13 @@ PathItem.inject(new function() {
                     // Horizontal curves with winding == 0 will be completely
                     // ignored.
                     if (winding && (py >= yStart && py <= yEnd
-                        || py >= yEnd && py <= yStart)) {
+                            || py >= yEnd && py <= yStart)) {
                         // Calculate the x value for the ray's intersection.
-                        var x;
-                        if (py === yStart) {
-                            x = values[0];
-                        } else if (py === yEnd) {
-                            x = values[6];
-                        } else if (Curve.solveCubic(values, 1, py, roots, 0, 1)
-                                === 1) {
-                            x = Curve.getPoint(values, roots[0]).x;
-                        }
+                        var x = py === yStart ? values[0]
+                            :   py === yEnd   ? values[6]
+                            : Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
+                                ? Curve.getPoint(values, roots[0]).x
+                                : null;
                         if (x != null) {
                             // Count the intersection of the ray with the
                             // monotonic curve if:
@@ -392,8 +388,8 @@ PathItem.inject(new function() {
                             // - or the start of the current curve and the end
                             //   of the prev curve are on opposite sides of px
                             var isWindingChange = winding === -prevWinding;
-                            if (py !== yStart || isWindingChange ||
-                                    (x - px) * (prevXEnd - px) < 0) {
+                            if (py !== yStart || isWindingChange
+                                    || (x - px) * (prevXEnd - px) < 0) {
                                 if (x < xBefore) {
                                     windLeft += winding;
                                 } else if (x > xAfter) {
