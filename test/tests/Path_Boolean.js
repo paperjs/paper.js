@@ -28,7 +28,7 @@ function compareBoolean(actual, expected, message, options) {
     }
     actual.style = expected.style = {
         strokeColor: 'black',
-        fillColor: 'yellow'
+        fillColor: expected.closed ? 'yellow' : null
     };
     equals(actual, expected, message, options || { rasterize: true });
 }
@@ -118,6 +118,37 @@ test('#719', function() {
     var expected = arc.rotate(180);
 
     compareBoolean(result, expected);
+});
+
+test('#757 (support for open paths)', function() {
+    var rect = new Path.Rectangle({
+        from: [100, 250],
+        to: [350, 350]
+    });
+
+    var line = new Path({
+        segments: [
+            [100, 200],
+            [150, 400],
+            [200, 200],
+            [250, 400],
+            [300, 200],
+            [350, 400]
+        ]
+    });
+
+    var res = line.intersect(rect);
+
+    var children = res.removeChildren();
+    var first = children[0];
+    for (var i = 1; i < children.length; i++) {
+        first.join(children[i]);
+    }
+    first.insertAbove(res);
+    res.remove();
+    res = first;
+    compareBoolean(res,
+        'M112.5,250l25,100l25,0l25,-100l25,0l25,100l25,0l25,-100l25,0l25,100');
 });
 
 test('#784', function() {
@@ -329,7 +360,7 @@ test('#885', function() {
     compareBoolean(function() { return p1.exclude(p2); }, empty);
 });
 
-test('#889 & #890', function() {
+test('#889', function() {
     var cp = new CompoundPath([
         new Path({ segments: [ [340.26, 358.4], [576, 396.8], [345.78, 396.8] ], closed: true }),
         new Path({ segments: [ [691.2, 685.76], [672, 550.4, 0, 0, 10, 0], [729.6, 608, 0, -20, 0, 0] ], closed: true })
@@ -337,7 +368,9 @@ test('#889 & #890', function() {
     var p = new Path({ segments: [ [739, 418], [637, 704], [205, 704], [204.30709922574619, 356.553500194953] ], closed: true });
     compareBoolean(function() { return cp.subtract(p); },
         'M340.26,358.4l235.74,38.4l-21.47738,0l-212.24889,-24.39148z M691.2,685.76l-13.57151,-95.67911l11.09506,-31.10967c17.43794,12.2938 40.87645,34.99446 40.87645,49.02878z');
+});
 
+test('#890', function() {
     var cp = new CompoundPath([
         new Path({ segments: [ [676, 396.8], [445.78, 396.8], [426, 260] ], closed: true }),
         new Path({ segments: [ [672, 550.4, 0, 0, 31.74000000000001, 0], [633.5999999999999, 732.8, 0, 26.519999999999982] ], closed: true })
