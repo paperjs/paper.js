@@ -310,16 +310,14 @@ PathItem.inject(new function() {
             length = curves.length,
             roots = [],
             abs = Math.abs;
-        // Absolutely horizontal curves may return wrong results, since
-        // the curves are monotonic in y direction and this is an
-        // indeterminate state.
+        // Horizontal curves may return wrong results, since the curves are
+        // monotonic in y direction and this is an indeterminate state.
         if (horizontal) {
             var yTop = -Infinity,
                 yBottom = Infinity,
                 yBefore = py - epsilon,
                 yAfter = py + epsilon;
-            // Find the closest top and bottom intercepts for the same vertical
-            // line.
+            // Find the closest top and bottom intercepts for the vertical line.
             for (var i = 0; i < length; i++) {
                 var values = curves[i].values,
                     count = Curve.solveCubic(values, 0, px, roots, 0, 1);
@@ -332,8 +330,8 @@ PathItem.inject(new function() {
                     }
                 }
             }
-            // Shift the point lying on the horizontal curves by
-            // half of closest top and bottom intercepts.
+            // Shift the point lying on the horizontal curves by half of the
+            // closest top and bottom intercepts.
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
             if (yTop > -Infinity)
@@ -423,11 +421,10 @@ PathItem.inject(new function() {
             totalLength += length;
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
-        // Calculate the average winding among three evenly distributed
-        // points along this curve chain as a representative winding number.
-        // This selection gives a better chance of returning a correct
-        // winding than equally dividing the curve chain, with the same
-        // (amortised) time.
+        // Calculate the average winding among three evenly distributed points
+        // along this curve chain as a representative winding number. This
+        // selection gives a better chance of returning a correct winding than
+        // equally dividing the curve chain, with the same (amortized) time.
         for (var i = 0; i < 3; i++) {
             // Sample the points at 1/4, 2/4 and 3/4 of the total length:
             var length = totalLength * (i + 1) / 4;
