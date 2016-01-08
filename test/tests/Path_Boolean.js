@@ -296,13 +296,15 @@ test('#877', function() {
         })
     ]);
 
-    var p = new Path({segments:[
-        [135, 200],
-        [135, 120],
-        [170, 120],
-        [170, 200]
-    ], closed:true});
-
+    var p = new Path({
+        segments: [
+            [135, 200],
+            [135, 120],
+            [170, 120],
+            [170, 200]
+        ],
+        closed: true
+    });
     compareBoolean(function() { return cp.subtract(p); },
         'M50,60c0,-27.61424 22.38576,-50 50,-50c27.61424,0 50,22.38576 50,50c0,27.61424 -22.38576,50 -50,50c-27.61424,0 -50,-22.38576 -50,-50z M100,90c16.56854,0 30,-13.43146 30,-30c0,-16.56854 -13.43146,-30 -30,-30c-16.56854,0 -30,13.43146 -30,30c0,16.56854 13.43146,30 30,30z M120,140l15,0l0,50l-15,0z');
 });
@@ -318,9 +320,13 @@ test('#878', function() {
 });
 
 test('#885', function() {
-    var p1 = new paper.Path.Rectangle(100, 100, 100, 100);
+    var p1 = new Path.Rectangle(100, 100, 100, 100);
     var p2 = p1.clone();
+    var empty = new Path();
     compareBoolean(function() { return p1.unite(p2); }, p1);
+    compareBoolean(function() { return p1.intersect(p2); }, p1);
+    compareBoolean(function() { return p1.subtract(p2); }, empty);
+    compareBoolean(function() { return p1.exclude(p2); }, empty);
 });
 
 test('#889 & #890', function() {

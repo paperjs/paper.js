@@ -138,9 +138,12 @@ PathItem.inject(new function() {
             }
         }
         // If all encountered are overlaps (regardless if valid or not), we have
-        // two fully overlapping paths and can just return a clone of the first.
+        // two fully overlapping paths and can just return a clone of the first,
+        // or an empty path, depending on the operation.
         return finishResult(overlapsOnly
-                ? path1.getArea() ? path1.clone() : new Path(Item.NO_INSERT)
+                ? (operator.unite || operator.intersect) && path1.getArea()
+                    ? path1.clone(false)
+                    : new Path(Item.NO_INSERT)
                 : createResult(CompoundPath,
                     tracePaths(segments, operator, validOverlapsOnly),
                     !overlapsOnly), path1, path2);
