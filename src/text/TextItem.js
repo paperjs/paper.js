@@ -57,8 +57,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * The text contents of the text item.
      *
-     * @type String
      * @bean
+     * @type String
      *
      * @example {@paperscript}
      * // Setting the content of a PointText item:
@@ -105,8 +105,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * The font-family to be used in text content.
      *
      * @name TextItem#fontFamily
-     * @default 'sans-serif'
      * @type String
+     * @default 'sans-serif'
      */
 
     /**
@@ -114,8 +114,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * The font-weight to be used in text content.
      *
      * @name TextItem#fontWeight
-     * @default 'normal'
      * @type String|Number
+     * @default 'normal'
      */
 
     /**
@@ -123,8 +123,8 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * optional units `'px'`, `'pt'` and `'em'`.
      *
      * @name TextItem#fontSize
-     * @default 10
      * @type Number|String
+     * @default 10
      */
 
     /**
@@ -133,16 +133,16 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * @deprecated use {@link #fontFamily} instead.
      *
      * @name TextItem#font
-     * @default 'sans-serif'
      * @type String
+     * @default 'sans-serif'
      */
 
     /**
      * The text leading of text content.
      *
      * @name TextItem#leading
-     * @default fontSize * 1.2
      * @type Number|String
+     * @default fontSize * 1.2
      */
 
     /**
@@ -151,21 +151,22 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      * The justification of text paragraphs.
      *
      * @name TextItem#justification
+     * @type String
+     * @values 'left', 'right', 'center'
      * @default 'left'
-     * @type String('left', 'right', 'center')
      */
 
     /**
-     * @private
      * @bean
+     * @private
      * @deprecated use {@link #style} instead.
      */
     getCharacterStyle: '#getStyle',
     setCharacterStyle: '#setStyle',
 
     /**
-     * @private
      * @bean
+     * @private
      * @deprecated use {@link #style} instead.
      */
     getParagraphStyle: '#getStyle',

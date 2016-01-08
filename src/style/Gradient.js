@@ -130,8 +130,8 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     /**
      * The gradient stops on the gradient ramp.
      *
-     * @type GradientStop[]
      * @bean
+     * @type GradientStop[]
      */
     getStops: function() {
         return this._stops;
@@ -161,8 +161,8 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     /**
      * Specifies whether the gradient is radial or linear.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      */
     getRadial: function() {
         return this._radial;

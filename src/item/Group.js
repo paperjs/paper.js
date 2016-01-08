@@ -129,8 +129,8 @@ var Group = Item.extend(/** @lends Group# */{
      * `true`, the first child in the group is automatically defined as the
      * clipping mask.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      *
      * @example {@paperscript}
      * var star = new Path.Star({

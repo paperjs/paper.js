@@ -105,8 +105,8 @@ var Symbol = Base.extend(/** @lends Symbol# */{
     /**
      * The symbol definition.
      *
-     * @type Item
      * @bean
+     * @type Item
      */
     getDefinition: function() {
         return this._definition;

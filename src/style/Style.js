@@ -297,8 +297,9 @@ var Style = Base.extend(new function() {
 
     /**
      * The view that this style belongs to.
-     * @type View
+     *
      * @bean
+     * @type View
      */
     getView: function() {
         return this._project.getView();
@@ -320,8 +321,8 @@ var Style = Base.extend(new function() {
     },
 
     /**
-     * @private
      * @bean
+     * @private
      * @deprecated use {@link #fontFamily} instead.
      */
     getFont: '#getFontFamily',
@@ -371,8 +372,8 @@ var Style = Base.extend(new function() {
      *
      * @name Style#strokeWidth
      * @property
-     * @default 1
      * @type Number
+     * @default 1
      *
      * @example {@paperscript}
      * // Setting an item's stroke width:
@@ -394,8 +395,9 @@ var Style = Base.extend(new function() {
      *
      * @name Style#strokeCap
      * @property
+     * @type String
+     * @values 'round', 'square', 'butt'
      * @default 'butt'
-     * @type String('round', 'square', 'butt')
      *
      * @example {@paperscript height=200}
      * // A look at the different stroke caps:
@@ -427,8 +429,9 @@ var Style = Base.extend(new function() {
      *
      * @name Style#strokeJoin
      * @property
+     * @type String
+     * @values 'miter', 'round', 'bevel'
      * @default 'miter'
-     * @type String('miter', 'round', 'bevel')
      *
      * @example {@paperscript height=120}
      * // A look at the different stroke joins:
@@ -458,8 +461,8 @@ var Style = Base.extend(new function() {
      *
      * @name Style#strokeScaling
      * @property
-     * @default true
      * @type Boolean
+     * @default true
      */
 
     /**
@@ -467,8 +470,8 @@ var Style = Base.extend(new function() {
      *
      * @name Style#dashOffset
      * @property
-     * @default 0
      * @type Number
+     * @default 0
      */
 
     /**
@@ -484,8 +487,8 @@ var Style = Base.extend(new function() {
      *
      * @name Style#dashArray
      * @property
-     * @default []
      * @type Array
+     * @default []
      */
 
     /**
@@ -527,8 +530,9 @@ var Style = Base.extend(new function() {
      *
      * @name Style#fillRule
      * @property
+     * @type String
+     * @values 'nonzero', 'evenodd'
      * @default 'nonzero'
-     * @type String('nonzero', 'evenodd')
      */
 
     /**
@@ -560,18 +564,18 @@ var Style = Base.extend(new function() {
      * The shadow's blur radius.
      *
      * @property
-     * @default 0
      * @name Style#shadowBlur
      * @type Number
+     * @default 0
      */
 
     /**
      * The shadow's offset.
      *
      * @property
-     * @default 0
      * @name Style#shadowOffset
      * @type Point
+     * @default 0
      */
 
     /**
@@ -591,8 +595,8 @@ var Style = Base.extend(new function() {
      * The font-family to be used in text content.
      *
      * @name Style#fontFamily
-     * @default 'sans-serif'
      * @type String
+     * @default 'sans-serif'
      */
 
     /**
@@ -600,8 +604,8 @@ var Style = Base.extend(new function() {
      * The font-weight to be used in text content.
      *
      * @name Style#fontWeight
-     * @default 'normal'
      * @type String|Number
+     * @default 'normal'
      */
 
     /**
@@ -609,8 +613,8 @@ var Style = Base.extend(new function() {
      * optional units `'px'`, `'pt'` and `'em'`.
      *
      * @name Style#fontSize
-     * @default 10
      * @type Number|String
+     * @default 10
      */
 
     /**
@@ -618,8 +622,8 @@ var Style = Base.extend(new function() {
      * The font-family to be used in text content, as one string.
      *
      * @name Style#font
-     * @default 'sans-serif'
      * @type String
+     * @default 'sans-serif'
      * @deprecated use {@link #fontFamily} instead.
      */
 
@@ -627,8 +631,8 @@ var Style = Base.extend(new function() {
      * The text leading of text content.
      *
      * @name Style#leading
-     * @default fontSize * 1.2
      * @type Number|String
+     * @default fontSize * 1.2
      */
 
     /**
@@ -637,7 +641,8 @@ var Style = Base.extend(new function() {
      * The justification of text paragraphs.
      *
      * @name Style#justification
+     * @type String
+     * @values 'left', 'right', 'center'
      * @default 'left'
-     * @type String('left', 'right', 'center')
      */
 });

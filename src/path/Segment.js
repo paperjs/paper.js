@@ -181,8 +181,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     /**
      * The anchor point of the segment.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         return this._point;
@@ -199,8 +199,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * The handle point relative to the anchor point of the segment that
      * describes the in tangent of the segment.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getHandleIn: function() {
         return this._handleIn;
@@ -216,8 +216,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * The handle point relative to the anchor point of the segment that
      * describes the out tangent of the segment.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getHandleOut: function() {
         return this._handleOut;
@@ -255,8 +255,10 @@ var Segment = Base.extend(/** @lends Segment# */{
 
     /**
      * Specifies whether the {@link #point} of the segment is selected.
-     * @type Boolean
+     *
      * @bean
+     * @type Boolean
+     *
      * @example {@paperscript}
      * var path = new Path.Circle({
      *     center: [80, 50],
@@ -311,8 +313,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * The index of the segment in the {@link Path#segments} array that the
      * segment belongs to.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getIndex: function() {
         return this._index !== undefined ? this._index : null;
@@ -321,8 +323,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     /**
      * The path that the segment belongs to.
      *
-     * @type Path
      * @bean
+     * @type Path
      */
     getPath: function() {
         return this._path || null;
@@ -332,8 +334,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * The curve that the segment belongs to. For the last segment of an open
      * path, the previous segment is returned.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getCurve: function() {
         var path = this._path,
@@ -351,8 +353,8 @@ var Segment = Base.extend(/** @lends Segment# */{
     /**
      * The curve location that describes this segment's position ont the path.
      *
-     * @type CurveLocation
      * @bean
+     * @type CurveLocation
      */
     getLocation: function() {
         var curve = this.getCurve();
@@ -369,8 +371,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * belongs to. If the segments belongs to a closed path, the first segment
      * is returned for the last segment of the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getNext: function() {
         var segments = this._path && this._path._segments;
@@ -383,8 +385,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * segment belongs to. If the segments belongs to a closed path, the last
      * segment is returned for the first segment of the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getPrevious: function() {
         var segments = this._path && this._path._segments;

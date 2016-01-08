@@ -120,8 +120,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The size of the raster in pixels.
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getSize: function() {
         var size = this._size;
@@ -155,8 +155,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The width of the raster in pixels.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getWidth: function() {
         return this._size ? this._size.width : 0;
@@ -169,8 +169,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The height of the raster in pixels.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getHeight: function() {
         return this._size ? this._size.height : 0;
@@ -189,8 +189,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      * The resolution of the raster at its current size, in PPI (pixels per
      * inch).
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getResolution: function() {
         var matrix = this._matrix,
@@ -213,8 +213,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The HTMLImageElement of the raster, if one is associated.
      *
-     * @type HTMLImageElement|Canvas
      * @bean
+     * @type HTMLImageElement|Canvas
      */
     getImage: function() {
         return this._image;
@@ -252,8 +252,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      * image into it. Depending on security policies, this might fail, in which
      * case `null` is returned instead.
      *
-     * @type Canvas
      * @bean
+     * @type Canvas
      */
     getCanvas: function() {
         if (!this._canvas) {
@@ -277,8 +277,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The Canvas 2D drawing context of the raster.
      *
-     * @type Context
      * @bean
+     * @type Context
      */
     getContext: function(modify) {
         if (!this._context)

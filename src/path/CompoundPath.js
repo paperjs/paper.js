@@ -13,10 +13,15 @@
 /**
  * @name CompoundPath
  *
- * @class A compound path contains two or more paths, holes are drawn
- * where the paths overlap. All the paths in a compound path take on the
- * style of the backmost path and can be accessed through its
- * {@link Item#children} list.
+ * @class A compound path is a complex path that is made up of one or more
+ * simple sub-paths. It can have the `nonzero` fill rule, or the `evenodd` rule
+ * applied. Both rules use mathematical equations to determine if any region is
+ * outside or inside the final shape. The `evenodd` rule is more predictable:
+ * Every other region within a such a compound path is a hole, regardless of
+ * path direction.
+ *
+ * All the paths in a compound path take on the style of the compound path and
+ * can be accessed through its {@link Item#children} list.
  *
  * @extends PathItem
  */
@@ -163,8 +168,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * Specifies whether the compound path is oriented clock-wise.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      */
     isClockwise: function() {
         var child = this.getFirstChild();
@@ -180,8 +185,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * The first Segment contained within the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getFirstSegment: function() {
         var first = this.getFirstChild();
@@ -191,8 +196,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * The last Segment contained within the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getLastSegment: function() {
         var last = this.getLastChild();
@@ -203,8 +208,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * All the curves contained within the compound-path, from all its child
      * {@link Path} items.
      *
-     * @type Curve[]
      * @bean
+     * @type Curve[]
      */
     getCurves: function() {
         var children = this._children,
@@ -217,8 +222,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * The first Curve contained within the path.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getFirstCurve: function() {
         var first = this.getFirstChild();
@@ -228,8 +233,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     /**
      * The last Curve contained within the path.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getLastCurve: function() {
         var last = this.getLastChild();
@@ -240,8 +245,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * The area that the path's geometry is covering. Self-intersecting paths
      * can contain sub-areas that cancel each other out.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getArea: function() {
         var children = this._children,

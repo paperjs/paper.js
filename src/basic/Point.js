@@ -245,8 +245,8 @@ var Point = Base.extend(/** @lends Point# */{
      * = 0`, `y = 0`) to the point's location. Setting the length changes the
      * location but keeps the vector's angle.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLength: function() {
         return Math.sqrt(this.x * this.x + this.y * this.y);
@@ -285,8 +285,8 @@ var Point = Base.extend(/** @lends Point# */{
     /**
      * The vector's angle in degrees, measured from the x-axis to the vector.
      *
-     * @name Point#getAngle
      * @bean
+     * @name Point#getAngle
      * @type Number
      */
     getAngle: function(/* point */) {
@@ -312,8 +312,8 @@ var Point = Base.extend(/** @lends Point# */{
     /**
      * The vector's angle in radians, measured from the x-axis to the vector.
      *
-     * @name Point#getAngleInRadians
      * @bean
+     * @name Point#getAngleInRadians
      * @type Number
      */
     getAngleInRadians: function(/* point */) {
@@ -362,8 +362,8 @@ var Point = Base.extend(/** @lends Point# */{
      * are in quadrant `3` and angles between 270 and 360 degrees are in
      * quadrant `4`.
      *
-     * @type Number
      * @bean
+     * @type Number
      *
      * @example
      * var point = new Point({

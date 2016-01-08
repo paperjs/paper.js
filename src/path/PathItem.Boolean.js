@@ -981,8 +981,8 @@ Path.inject(/** @lends Path# */{
     /**
      * Returns a point that is guaranteed to be inside the path.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getInteriorPoint: function() {
         var bounds = this.getBounds(),

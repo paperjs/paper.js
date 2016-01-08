@@ -30,14 +30,14 @@
  * // has moved at least 10 points:
  * tool.distanceThreshold = 10;
  *
- * function onMouseDown(event) {
+ * tool.onMouseDown = function(event) {
  *     // Create a new path every time the mouse is clicked
  *     path = new Path();
  *     path.add(event.point);
  *     path.strokeColor = 'black';
  * }
  *
- * function onMouseDrag(event) {
+ * tool.onMouseDrag = function(event) {
  *     // Add a point to the path every time the mouse is dragged
  *     path.add(event.point);
  * }
@@ -61,7 +61,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     /**
      * Activates this tool, meaning {@link PaperScope#tool} will
-     * point to it and it will be the one that recieves mouse events.
+     * point to it and it will be the one that receives tool events.
      *
      * @name Tool#activate
      * @function
@@ -78,8 +78,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * The minimum distance the mouse has to drag before firing the onMouseDrag
      * event, since the last onMouseDrag event.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getMinDistance: function() {
         return this._minDistance;
@@ -97,8 +97,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * The maximum distance the mouse has to drag before firing the onMouseDrag
      * event, since the last onMouseDrag event.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getMaxDistance: function() {
         return this._maxDistance;
@@ -114,8 +114,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     // DOCS: document Tool#fixedDistance
     /**
-     * @type Number
      * @bean
+     * @type Number
      */
     getFixedDistance: function() {
         return this._minDistance == this._maxDistance
@@ -131,7 +131,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * The function to be called when the mouse button is pushed down. The
      * function receives a {@link ToolEvent} object which contains information
-     * about the mouse event.
+     * about the tool event.
      *
      * @name Tool#onMouseDown
      * @property
@@ -139,7 +139,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @example {@paperscript}
      * // Creating circle shaped paths where the user presses the mouse button:
-     * function onMouseDown(event) {
+     * tool.onMouseDown = function(event) {
      *     // Create a new circle shaped path with a radius of 10
      *     // at the position of the mouse (event.point):
      *     var path = new Path.Circle({
@@ -153,7 +153,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * The function to be called when the mouse position changes while the mouse
      * is being dragged. The function receives a {@link ToolEvent} object which
-     * contains information about the mouse event.
+     * contains information about the tool event.
      *
      * @name Tool#onMouseDrag
      * @property
@@ -167,7 +167,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *     strokeColor: 'black'
      * });
      *
-     * function onMouseDrag(event) {
+     * tool.onMouseDrag = function(event) {
      *     // Add a segment to the path at the position of the mouse:
      *     path.add(event.point);
      * }
@@ -176,7 +176,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * The function to be called the mouse moves within the project view. The
      * function receives a {@link ToolEvent} object which contains information
-     * about the mouse event.
+     * about the tool event.
      *
      * @name Tool#onMouseMove
      * @property
@@ -192,7 +192,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *     fillColor: 'black'
      * });
      *
-     * function onMouseMove(event) {
+     * tool.onMouseMove = function(event) {
      *     // Whenever the user moves the mouse, move the path
      *     // to that position:
      *     path.position = event.point;
@@ -202,7 +202,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * The function to be called when the mouse button is released. The function
      * receives a {@link ToolEvent} object which contains information about the
-     * mouse event.
+     * tool event.
      *
      * @name Tool#onMouseUp
      * @property
@@ -210,7 +210,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @example {@paperscript}
      * // Creating circle shaped paths where the user releases the mouse:
-     * function onMouseUp(event) {
+     * tool.onMouseUp = function(event) {
      *     // Create a new circle shaped path with a radius of 10
      *     // at the position of the mouse (event.point):
      *     var path = new Path.Circle({
@@ -246,7 +246,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *         fillColor: 'red'
      *     });
      *
-     * function onKeyDown(event) {
+     * tool.onKeyDown = function(event) {
      *     if (event.key == 'space') {
      *         // Scale the path by 110%:
      *         path.scale(1.1);
@@ -271,7 +271,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @type Function
      *
      * @example
-     * function onKeyUp(event) {
+     * tool.onKeyUp = function(event) {
      *     if (event.key == 'space') {
      *         console.log('The spacebar was released!');
      *     }
@@ -411,10 +411,10 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#on
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
-     * 'keydown', 'keyup')} type the event type
-     * @param {Function} function The function to be called when the event
-     * occurs
+     * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+     *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+     * @param {Function} function the function to be called when the event
+     *     occurs, receiving a {@link ToolEvent} object as its sole argument
      * @return {Tool} this tool itself, so calls can be chained
      */
     /**
@@ -423,8 +423,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @name Tool#on
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
-     * keydown, keyup}
+     *     following properties: {@values mousedown, mouseup, mousedrag,
+     *     mousemove, keydown, keyup}
      * @return {Tool} this tool itself, so calls can be chained
      */
 
@@ -433,9 +433,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#off
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
-     * 'keydown', 'keyup')} type the event type
-     * @param {Function} function The function to be detached
+     * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+     *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
+     * @param {Function} function the function to be detached
      * @return {Tool} this tool itself, so calls can be chained
      */
     /**
@@ -444,8 +444,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * @name Tool#off
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: {@code mousedown, mouseup, mousedrag, mousemove,
-     * keydown, keyup}
+     *     following properties: {@values mousedown, mouseup, mousedrag,
+     *     mousemove, keydown, keyup}
      * @return {Tool} this tool itself, so calls can be chained
      */
 
@@ -454,8 +454,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#emit
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
-     * 'keydown', 'keyup')} type the event type
+     * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+     *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
      * @param {Object} event an object literal containing properties describing
      * the event
      * @return {Boolean} {@true if the event had listeners}
@@ -466,8 +466,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#responds
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'mousemove',
-     * 'keydown', 'keyup')} type the event type
+     * @param {String} type the event type: {@values 'mousedown', 'mouseup',
+     *     'mousedrag', 'mousemove', 'keydown', 'keyup'}
      * @return {Boolean} {@true if the tool has one or more event handlers of
      * the specified type}
      */

@@ -287,8 +287,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The underlying native element.
      *
-     * @type HTMLCanvasElement
      * @bean
+     * @type HTMLCanvasElement
      */
     getElement: function() {
         return this._element;
@@ -300,9 +300,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * It is `1` for normal displays, and `2` or more for
      * high-resolution displays.
      *
-     * @type Number
      * @bean
-
+     * @type Number
      */
     getPixelRatio: function() {
         return this._pixelRatio;
@@ -313,8 +312,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * It is `72` for normal displays, and `144` for high-resolution
      * displays with a pixel-ratio of `2`.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getResolution: function() {
         return this._pixelRatio * 72;
@@ -324,8 +323,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * The size of the view. Changing the view's size will resize it's
      * underlying element.
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getViewSize: function() {
         var size = this._viewSize;
@@ -360,8 +359,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The bounds of the currently visible area in project coordinates.
      *
-     * @type Rectangle
      * @bean
+     * @type Rectangle
      */
     getBounds: function() {
         if (!this._bounds)
@@ -373,8 +372,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The size of the visible area in project coordinates.
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getSize: function() {
         return this.getBounds().getSize();
@@ -383,8 +382,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The center of the visible area in project coordinates.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getCenter: function() {
         return this.getBounds().getCenter();
@@ -398,8 +397,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * The zoom factor by which the project coordinates are magnified.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getZoom: function() {
         return this._zoom;
@@ -521,7 +520,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
      * path.fillColor = 'black';
      *
-     * function onFrame(event) {
+     * view.onFrame = function(event) {
      *     // Every frame, rotate the path by 3 degrees:
      *     path.rotate(3);
      * }
@@ -541,7 +540,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * var path = new Path.Circle(view.bounds.center, 30);
      * path.fillColor = 'red';
      *
-     * function onResize(event) {
+     * view.onResize = function(event) {
      *     // Whenever the view is resized, move the path to its center:
      *     path.position = view.center;
      * }
@@ -557,9 +556,12 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#on
      * @function
-     * @param {String('frame', 'resize')} type the event type
-     * @param {Function} function The function to be called when the event
-     * occurs
+     * @param {String} type the type of event: {@values 'frame', 'resize',
+     *     mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', 'mouseleave'}
+     * @param {Function} function the function to be called when the event
+     *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
+     *     sole argument
      * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -581,7 +583,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#on
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: `frame, resize`
+     *     following properties: {@values frame, resize}
      * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -605,8 +607,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#off
      * @function
-     * @param {String('frame', 'resize')} type the event type
-     * @param {Function} function The function to be detached
+     * @param {String} type the event type: {@values 'frame', 'resize'}
+     * @param {Function} function the function to be detached
      * @return {View} this view itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -636,7 +638,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#off
      * @function
      * @param {Object} param an object literal containing one or more of the
-     * following properties: `frame, resize`
+     *     following properties: {@values frame, resize}
      * @return {View} this view itself, so calls can be chained
      */
 
@@ -645,7 +647,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#emit
      * @function
-     * @param {String('frame', 'resize')} type the event type
+     * @param {String} type the event type: {@values 'frame', 'resize'}
      * @param {Object} event an object literal containing properties describing
      * the event
      * @return {Boolean} {@true if the event had listeners}
@@ -656,7 +658,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#responds
      * @function
-     * @param {String('frame', 'resize')} type the event type
+     * @param {String} type the event type: {@values 'frame', 'resize'}
      * @return {Boolean} {@true if the view has one or more event handlers of
      * the specified type}
      */

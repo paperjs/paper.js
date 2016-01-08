@@ -170,8 +170,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * The path's geometry, formatted as SVG style path data.
      *
      * @name PathItem#getPathData
-     * @type String
      * @bean
+     * @type String
      */
 
     setPathData: function(data) {

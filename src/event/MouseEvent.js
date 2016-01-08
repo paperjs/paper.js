@@ -37,8 +37,9 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * The type of mouse event.
      *
      * @name MouseEvent#type
-     * @type String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')
+     * @type String
+     * @values 'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', mouseleave'
      */
 
     /**

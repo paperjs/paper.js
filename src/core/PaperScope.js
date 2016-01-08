@@ -136,20 +136,23 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
     /**
      * The currently active project.
+     *
      * @name PaperScope#project
      * @type Project
      */
 
     /**
      * The list of all open projects within the current Paper.js context.
+     *
      * @name PaperScope#projects
      * @type Project[]
      */
 
     /**
      * The reference to the active project's view.
-     * @type View
+     *
      * @bean
+     * @type View
      */
     getView: function() {
         return this.project && this.project.getView();
@@ -157,13 +160,17 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
 
     /**
      * The reference to the active tool.
+     *
      * @name PaperScope#tool
+     * @property
      * @type Tool
      */
 
     /**
      * The list of available tools.
+     *
      * @name PaperScope#tools
+     * @property
      * @type Tool[]
      */
 
@@ -171,9 +178,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * A reference to the local scope. This is required, so `paper` will always
      * refer to the local scope, even when calling into it from another scope.
      * `paper.activate();` will have to be called in such a situation.
+     *
+     * @bean
      * @type PaperScript
      * @private
-     * @bean
      */
     getPaper: function() {
         return this;

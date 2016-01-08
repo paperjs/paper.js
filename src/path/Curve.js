@@ -174,8 +174,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The first anchor point of the curve.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint1: function() {
         return this._segment1._point;
@@ -189,8 +189,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The second anchor point of the curve.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint2: function() {
         return this._segment2._point;
@@ -204,8 +204,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The handle point that describes the tangent in the first anchor point.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getHandle1: function() {
         return this._segment1._handleOut;
@@ -219,8 +219,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The handle point that describes the tangent in the second anchor point.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getHandle2: function() {
         return this._segment2._handleIn;
@@ -234,8 +234,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The first segment of the curve.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getSegment1: function() {
         return this._segment1;
@@ -244,8 +244,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The second segment of the curve.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getSegment2: function() {
         return this._segment2;
@@ -254,8 +254,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The path that the curve belongs to.
      *
-     * @type Path
      * @bean
+     * @type Path
      */
     getPath: function() {
         return this._path;
@@ -264,8 +264,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The index of the curve in the {@link Path#curves} array.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getIndex: function() {
         return this._segment1._index;
@@ -275,8 +275,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * The next curve in the {@link Path#curves} array that the curve
      * belongs to.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getNext: function() {
         var curves = this._path && this._path._curves;
@@ -288,8 +288,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * The previous curve in the {@link Path#curves} array that the curve
      * belongs to.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getPrevious: function() {
         var curves = this._path && this._path._curves;
@@ -320,8 +320,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * Specifies whether the points and handles of the curve are selected.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      */
     isSelected: function() {
         return this.getPoint1().isSelected()
@@ -345,8 +345,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      *
      * Note that the handles are converted to absolute coordinates.
      *
-     * @type Number[]
      * @bean
+     * @type Number[]
      */
     getValues: function(matrix) {
         return Curve.getValues(this._segment1, this._segment2, matrix);
@@ -358,8 +358,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      *
      * Note that the handles are converted to absolute coordinates.
      *
-     * @type Point[]
      * @bean
+     * @type Point[]
      */
     getPoints: function() {
         // Convert to array of absolute points
@@ -373,8 +373,8 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The approximated length of the curve.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLength: function() {
         if (this._length == null)
@@ -385,16 +385,16 @@ var Curve = Base.extend(/** @lends Curve# */{
     /**
      * The area that the curve's geometry is covering.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getArea: function() {
         return Curve.getArea(this.getValues());
     },
 
     /**
-     * @type Line
      * @bean
+     * @type Line
      * @private
      */
     getLine: function() {

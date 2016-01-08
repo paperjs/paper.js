@@ -35,22 +35,24 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 
     /**
      * Describes the type of the hit result. For example, if you hit a segment
-     * point, the type would be 'segment'.
+     * point, the type would be `'segment'`.
      *
      * @name HitResult#type
      * @property
-     * @type String('segment', 'handle-in', 'handle-out', 'curve', 'stroke',
-     * 'fill', 'bounds', 'center', 'pixel')
+     * @type String
+     * @values 'segment', 'handle-in', 'handle-out', 'curve', 'stroke', 'fill',
+     *     'bounds', 'center', 'pixel'
      */
 
     /**
-     * If the HitResult has a {@link HitResult#type} of 'bounds', this property
-     * describes which corner of the bounding rectangle was hit.
+     * If the HitResult has a {@link HitResult#type} of `'bounds'`, this
+     * property describes which corner of the bounding rectangle was hit.
      *
      * @name HitResult#name
      * @property
-     * @type String('top-left', 'top-right', 'bottom-left', 'bottom-right',
-     * 'left-center', 'top-center', 'right-center', 'bottom-center')
+     * @type String
+     * @values 'top-left', 'top-right', 'bottom-left', 'bottom-right',
+     *     'left-center', 'top-center', 'right-center', 'bottom- center'
      */
 
     /**

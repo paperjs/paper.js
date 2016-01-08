@@ -120,8 +120,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     /**
      * The reference to the project's view.
-     * @type View
+     *
      * @bean
+     * @type View
      */
     getView: function() {
         return this._view;
@@ -131,8 +132,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The currently active path style. All selected items and newly
      * created items will be styled with this style.
      *
-     * @type Style
      * @bean
+     * @type Style
      *
      * @example {@paperscript}
      * project.currentStyle = {
@@ -165,8 +166,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * The index of the project in the {@link PaperScope#projects} list.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getIndex: function() {
         return this._index;
@@ -175,8 +176,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * Gives access to the project's configurable options.
      *
-     * @type Object
      * @bean
+     * @type Object
      * @deprecated use {@link PaperScope#settings} instead.
      */
     getOptions: function() {
@@ -196,8 +197,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The layer which is currently active. New items will be created on this
      * layer by default.
      *
-     * @type Layer
      * @bean
+     * @type Layer
      */
     getActiveLayer: function() {
         return this._activeLayer || new Layer({ project: this });
@@ -213,8 +214,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * The selected items contained within the project.
      *
-     * @type Item[]
      * @bean
+     * @type Item[]
      */
     getSelectedItems: function() {
         // TODO: Return groups if their children are all selected,
@@ -306,8 +307,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
-     *     and its sub-classes: {@code Group, Layer, Path, CompoundPath, Shape,
-     *     Raster, PlacedSymbol, PointText}, etc
+     *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
+     *     Shape, Raster, PlacedSymbol, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
      *     taking into account the setting of stroke color and width

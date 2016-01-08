@@ -267,8 +267,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * The unique id of the item.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getId: function() {
         return this._id;
@@ -278,16 +278,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The class name of the item as a string.
      *
      * @name Item#className
-     * @type String('Group', 'Layer', 'Path', 'CompoundPath', 'Shape',
-     * 'Raster', 'PlacedSymbol', 'PointText')
+     * @type String
+     * @values 'Group', 'Layer', 'Path', 'CompoundPath', 'Shape', 'Raster',
+     *     'PlacedSymbol', 'PointText'
      */
 
     /**
      * The name of the item. If the item has a name, it can be accessed by name
      * through its parent's children list.
      *
-     * @type String
      * @bean
+     * @type String
      *
      * @example {@paperscript}
      * var path = new Path.Circle({
@@ -339,9 +340,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * The path style of the item.
      *
+     * @bean
      * @name Item#getStyle
      * @type Style
-     * @bean
      *
      * @example {@paperscript}
      * // Applying several styles to an item in one go, by passing an object
@@ -465,13 +466,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * emulated. Be aware that emulation can have an impact on performance.
      *
      * @name Item#blendMode
-     * @type String('normal', 'multiply', 'screen', 'overlay', 'soft-light',
-     * 'hard-light', 'color-dodge', 'color-burn', 'darken', 'lighten',
-     * 'difference', 'exclusion', 'hue', 'saturation', 'luminosity', 'color',
-     * 'add', 'subtract', 'average', 'pin-light', 'negation', 'source-over',
-     * 'source-in', 'source-out', 'source-atop', 'destination-over',
-     * 'destination-in', 'destination-out', 'destination-atop', 'lighter',
-     * 'darker', 'copy', 'xor')
+     * @type String
+     * @values 'normal', 'multiply', 'screen', 'overlay', 'soft-light', 'hard-
+     *     light', 'color-dodge', 'color-burn', 'darken', 'lighten',
+     *     'difference', 'exclusion', 'hue', 'saturation', 'luminosity',
+     *     'color', 'add', 'subtract', 'average', 'pin-light', 'negation',
+     *     'source- over', 'source-in', 'source-out', 'source-atop',
+     *     'destination-over', 'destination-in', 'destination-out',
+     *     'destination-atop', 'lighter', 'darker', 'copy', 'xor'
      * @default 'normal'
      *
      * @example {@paperscript}
@@ -549,9 +551,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * construction of paths, position of path curves, individual segment points
      * and bounding boxes of symbol and raster items.
      *
+     * @bean
      * @type Boolean
      * @default false
-     * @bean
      * @see Project#selectedItems
      * @see Segment#selected
      * @see Curve#selected
@@ -619,9 +621,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * paths, compound paths, and text frame objects, and only if the item is
      * already contained within a clipping group.
      *
+     * @bean
      * @type Boolean
      * @default false
-     * @bean
      */
     isClipMask: function() {
         return this._clipMask;
@@ -652,8 +654,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * A plain javascript object which can be used to store
      * arbitrary data on the item.
      *
-     * @type Object
      * @bean
+     * @type Object
      *
      * @example
      * var path = new Path();
@@ -700,8 +702,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * default, this is the {@link Rectangle#center} of the item's
      * {@link #bounds} rectangle.
      *
-     * @type Point
      * @bean
+     * @type Point
      *
      * @example {@paperscript}
      * // Changing the position of a path:
@@ -766,8 +768,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * meaning the {@link Rectangle#center} of the item's {@link #bounds}
      * rectangle is used as pivot.
      *
-     * @type Point
      * @bean
+     * @type Point
      * @default null
      */
     getPivot: function(_dontLink) {
@@ -1021,8 +1023,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The current rotation angle of the item, as described by its
      * {@link #matrix}.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getRotation: function() {
         var decomposed = this._decomposed || this._decompose();
@@ -1045,8 +1047,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The current scale factor of the item, as described by its
      * {@link #matrix}.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getScaling: function(_dontLink) {
         var decomposed = this._decomposed || this._decompose(),
@@ -1072,8 +1074,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The item's transformation matrix, defining position and dimensions in
      * relation to its parent item in which it is contained.
      *
-     * @type Matrix
      * @bean
+     * @type Matrix
      */
     getMatrix: function() {
         return this._matrix;
@@ -1097,8 +1099,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * coordinate space. Note that the view's transformations resulting from
      * zooming and panning are not factored in.
      *
-     * @type Matrix
      * @bean
+     * @type Matrix
      */
     getGlobalMatrix: function(_dontClone) {
         var matrix = this._globalMatrix,
@@ -1124,9 +1126,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * on to the segments in {@link Path} items, the children of {@link Group}
      * items, etc.).
      *
+     * @bean
      * @type Boolean
      * @default true
-     * @bean
      */
     getApplyMatrix: function() {
         return this._applyMatrix;
@@ -1691,8 +1693,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
-     *     and its sub-classes: {@code Group, Layer, Path, CompoundPath, Shape,
-     *     Raster, PlacedSymbol, PointText}, etc
+     *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
+     *     Shape, Raster, PlacedSymbol, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
      *     taking into account the setting of stroke color and width
@@ -2754,8 +2756,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#strokeCap
      * @property
+     * @type String
+     * @values 'round', 'square', 'butt'
      * @default 'butt'
-     * @type String('round', 'square', 'butt')
      *
      * @example {@paperscript height=200}
      * // A look at the different stroke caps:
@@ -2787,9 +2790,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#strokeJoin
      * @property
+     * @type String
+     * @values 'miter', 'round', 'bevel'
      * @default 'miter'
-     * @type String('miter', 'round', 'bevel')
-     *
      *
      * @example {@paperscript height=120}
      * // A look at the different stroke joins:
@@ -2815,8 +2818,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#dashOffset
      * @property
-     * @default 0
      * @type Number
+     * @default 0
      */
 
     /**
@@ -2826,8 +2829,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#strokeScaling
      * @property
-     * @default true
      * @type Boolean
+     * @default true
      */
 
     /**
@@ -2846,8 +2849,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#dashArray
      * @property
-     * @default []
      * @type Array
+     * @default []
      */
 
     /**
@@ -2860,8 +2863,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#miterLimit
      * @property
-     * @default 10
      * @type Number
+     * @default 10
      */
 
     /**
@@ -2893,8 +2896,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#fillRule
      * @property
+     * @type String
+     * @values 'nonzero', 'evenodd'
      * @default 'nonzero'
-     * @type String('nonzero', 'evenodd')
      */
 
     /**
@@ -2926,18 +2930,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The shadow's blur radius.
      *
      * @property
-     * @default 0
      * @name Item#shadowBlur
      * @type Number
+     * @default 0
      */
 
     /**
      * The shadow's offset.
      *
      * @property
-     * @default 0
      * @name Item#shadowOffset
      * @type Point
+     * @default 0
      */
 
     // TODO: Find a better name than selectedColor. It should also be used for
@@ -3441,6 +3445,31 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
+     * The function to be called when the mouse position changes while the mouse
+     * is being dragged over the item. The function receives a {@link
+     * MouseEvent} object which contains information about the mouse event.
+     *
+     * @name Item#onMouseDrag
+     * @property
+     * @type Function
+     *
+     * @example {@paperscript height=240}
+     * // Press and drag the mouse on the blue circle to move it:
+     *
+     * // Create a circle shaped path at the center of the view:
+     * var path = new Path.Circle({
+     *     center: view.center,
+     *     radius: 50,
+     *     fillColor: 'blue'
+     * });
+     *
+     * // Install a drag event handler that moves the path along.
+     * path.onMouseDrag = function(event) {
+     *     path.position += event.delta;
+     * }
+     */
+
+    /**
      * The function to be called when the mouse button is released over the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
@@ -3676,11 +3705,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#on
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
-     * type
-     * @param {Function} function The function to be called when the event
-     * occurs
+     * @param {String} type the type of event: {@values 'frame', mousedown',
+     *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
+     *     'mouseenter', 'mouseleave'}
+     * @param {Function} function the function to be called when the event
+     *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
+     *     sole argument
      * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -3710,8 +3740,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#on
      * @function
      * @param {Object} object an object literal containing one or more of the
-     * following properties: {@code mousedown, mouseup, mousedrag, click,
-     * doubleclick, mousemove, mouseenter, mouseleave}
+     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
+     *     click, doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -3767,10 +3797,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#off
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
-     * type
-     * @param {Function} function The function to be detached
+     * @param {String} type the type of event: {@values 'frame', mousedown',
+     *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
+     *     'mouseenter', 'mouseleave'}
+     * @param {Function} function the function to be detached
      * @return {Item} this item itself, so calls can be chained
      */
     /**
@@ -3779,8 +3809,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#off
      * @function
      * @param {Object} object an object literal containing one or more of the
-     * following properties: {@code mousedown, mouseup, mousedrag, click,
-     * doubleclick, mousemove, mouseenter, mouseleave}
+     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
+     *     click, doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      */
 
@@ -3789,9 +3819,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#emit
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
-     * type
+     * @param {String} type the type of event: {@values 'frame', mousedown',
+     *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
+     *     'mouseenter', 'mouseleave'}
      * @param {Object} event an object literal containing properties describing
      * the event
      * @return {Boolean} {@true if the event had listeners}
@@ -3802,9 +3832,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @name Item#responds
      * @function
-     * @param {String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')} type the event
-     * type
+     * @param {String} type the type of event: {@values 'frame', mousedown',
+     *     'mouseup', 'mousedrag', 'click', 'doubleclick', 'mousemove',
+     *     'mouseenter', 'mouseleave'}
      * @return {Boolean} {@true if the item has one or more event handlers of
      * the specified type}
      */

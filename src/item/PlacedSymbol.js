@@ -91,8 +91,8 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
     /**
      * The symbol that the placed symbol refers to.
      *
-     * @type Symbol
      * @bean
+     * @type Symbol
      */
     getSymbol: function() {
         return this._symbol;

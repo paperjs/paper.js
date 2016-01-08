@@ -12,7 +12,9 @@
 
 /**
  * @name Event
- * @class
+ *
+ * @class The Event object is the base class for any of the other event types,
+ * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
  */
 var Event = Base.extend(/** @lends Event# */{
     _class: 'Event',
@@ -24,16 +26,31 @@ var Event = Base.extend(/** @lends Event# */{
     isPrevented: false,
     isStopped: false,
 
+    /**
+     * Cancels the event if it is cancelable, without stopping further
+     * propagation of the event.
+     */
     preventDefault: function() {
         this.isPrevented = true;
         this.event.preventDefault();
     },
 
+    /**
+     * Prevents further propagation of the current event.
+     */
     stopPropagation: function() {
         this.isStopped = true;
         this.event.stopPropagation();
     },
 
+    /**
+     * Cancels the event if it is cancelable, and stops stopping further
+     * propagation of the event. This is has the same effect as calling both
+     * {@link #stopPropagation()} and {@link #preventDefault()}.
+     *
+     * Any handler can also return `false` to indicate that `stop()` should be
+     * called right after.
+     */
     stop: function() {
         this.stopPropagation();
         this.preventDefault();
@@ -42,8 +59,8 @@ var Event = Base.extend(/** @lends Event# */{
     /**
      * The time at which the event was created, in milliseconds since the epoch.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getTimeStamp: function() {
         return this.event.timeStamp;
@@ -52,8 +69,8 @@ var Event = Base.extend(/** @lends Event# */{
     /**
      * The current state of the keyboard modifiers.
      *
-     * @type object
      * @bean
+     * @type object
      * @see Key.modifiers
      */
     getModifiers: function() {

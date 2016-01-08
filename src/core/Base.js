@@ -40,7 +40,7 @@ Base.inject(/** @lends Base# */{
      * The class name of the object as a string, if the prototype defines a
      * `_class` value.
      *
-     * @beans
+     * @bean
      */
     getClassName: function() {
         return this._class || '';

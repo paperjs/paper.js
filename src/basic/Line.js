@@ -50,8 +50,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The starting point of the line.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         return new Point(this._px, this._py);
@@ -60,8 +60,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The direction of the line as a vector.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getVector: function() {
         return new Point(this._vx, this._vy);
@@ -70,8 +70,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The length of the line.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLength: function() {
         return this.getVector().getLength();

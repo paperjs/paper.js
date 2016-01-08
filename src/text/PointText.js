@@ -61,8 +61,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
     /**
      * The PointText's anchor point
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         // Se Item#getPosition for an explanation why we create new LinkedPoint

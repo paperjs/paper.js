@@ -688,8 +688,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * The transform values as an array, in the same sequence as they are passed
      * to {@link #initialize(a, c, b, d, tx, ty)}.
      *
-     * @type Number[]
      * @bean
+     * @type Number[]
      */
     getValues: function() {
         return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
@@ -698,8 +698,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * The translation of the matrix as a vector.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getTranslation: function() {
         // No decomposition is required to extract translation.
@@ -709,8 +709,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * The scaling values of the matrix, if it can be decomposed.
      *
-     * @type Point
      * @bean
+     * @type Point
      * @see #decompose()
      */
     getScaling: function() {
@@ -720,8 +720,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * The rotation angle of the matrix, if it can be decomposed.
      *
-     * @type Number
      * @bean
+     * @type Number
      * @see #decompose()
      */
     getRotation: function() {

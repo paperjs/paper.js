@@ -237,8 +237,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     /**
      * The top-left point of the rectangle
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function(_dontLink) {
         var ctor = _dontLink ? Point : LinkedPoint;
@@ -255,8 +255,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     /**
      * The size of the rectangle
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getSize: function(_dontLink) {
         var ctor = _dontLink ? Size : LinkedSize;
@@ -288,8 +288,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * The position of the left hand side of the rectangle. Note that this
      * doesn't move the whole rectangle; the right hand side stays where it was.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLeft: function() {
         return this.x;
@@ -306,8 +306,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * The top coordinate of the rectangle. Note that this doesn't move the
      * whole rectangle: the bottom won't move.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getTop: function() {
         return this.y;
@@ -324,8 +324,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * The position of the right hand side of the rectangle. Note that this
      * doesn't move the whole rectangle; the left hand side stays where it was.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getRight: function() {
         return this.x + this.width;
@@ -346,8 +346,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * The bottom coordinate of the rectangle. Note that this doesn't move the
      * whole rectangle: the top won't move.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getBottom: function() {
         return this.y + this.height;
@@ -367,8 +367,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     /**
      * The center-x coordinate of the rectangle.
      *
-     * @type Number
      * @bean
+     * @type Number
      * @ignore
      */
     getCenterX: function() {
@@ -383,8 +383,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     /**
      * The center-y coordinate of the rectangle.
      *
-     * @type Number
      * @bean
+     * @type Number
      * @ignore
      */
     getCenterY: function() {
@@ -401,8 +401,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *
      * The center point of the rectangle.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getCenter: function(_dontLink) {
         var ctor = _dontLink ? Point : LinkedPoint;
@@ -477,8 +477,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     /**
      * The area of the rectangle.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getArea: function() {
         return this.width * this.height;
@@ -899,9 +899,9 @@ new function() {
              * Paper.js draws the visual bounds of selected items on top of your
              * project. This can be useful for debugging.
              *
+             * @bean
              * @type Boolean
              * @default false
-             * @bean
              */
             isSelected: function() {
                 return this._owner._boundsSelected;

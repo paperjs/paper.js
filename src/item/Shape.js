@@ -48,8 +48,9 @@ var Shape = Item.extend(/** @lends Shape# */{
     /**
      * The type of shape of the item as a string.
      *
-     * @type String('rectangle', 'circle', 'ellipse')
      * @bean
+     * @type String
+     * @values 'rectangle', 'circle', 'ellipse'
      */
     getType: function() {
         return this._type;
@@ -70,8 +71,8 @@ var Shape = Item.extend(/** @lends Shape# */{
     /**
      * The size of the shape.
      *
-     * @type Size
      * @bean
+     * @type Size
      */
     getSize: function() {
         var size = this._size;
@@ -109,8 +110,8 @@ var Shape = Item.extend(/** @lends Shape# */{
      * The radius of the shape, as a number if it is a circle, or a size object
      * for ellipses and rounded rectangles.
      *
-     * @type Number|Size
      * @bean
+     * @type Number|Size
      */
     getRadius: function() {
         var rad = this._radius;

@@ -176,8 +176,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The segments contained within the path.
      *
-     * @type Segment[]
      * @bean
+     * @type Segment[]
      */
     getSegments: function() {
         return this._segments;
@@ -200,8 +200,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The first Segment contained within the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getFirstSegment: function() {
         return this._segments[0];
@@ -210,8 +210,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The last Segment contained within the path.
      *
-     * @type Segment
      * @bean
+     * @type Segment
      */
     getLastSegment: function() {
         return this._segments[this._segments.length - 1];
@@ -220,8 +220,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The curves contained within the path.
      *
-     * @type Curve[]
      * @bean
+     * @type Curve[]
      */
     getCurves: function() {
         var curves = this._curves,
@@ -240,8 +240,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The first Curve contained within the path.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getFirstCurve: function() {
         return this.getCurves()[0];
@@ -250,8 +250,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The last Curve contained within the path.
      *
-     * @type Curve
      * @bean
+     * @type Curve
      */
     getLastCurve: function() {
         var curves = this.getCurves();
@@ -262,8 +262,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Specifies whether the path is closed. If it is closed, Paper.js connects
      * the first and last segments.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      *
      * @example {@paperscript}
      * var myPath = new Path();
@@ -805,8 +805,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * The approximate length of the path.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLength: function() {
         if (this._length == null) {
@@ -823,8 +823,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * The area that the path's geometry is covering. Self-intersecting paths
      * can contain sub-areas that cancel each other out.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getArea: function() {
         if (this._area == null) {
@@ -844,8 +844,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Specifies whether the path is oriented clock-wise.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      */
     isClockwise: function() {
         if (this._clockwise !== undefined)
@@ -873,8 +873,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * construction of paths, position of path curves, individual segment points
      * and bounding boxes of symbol and raster items.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      * @see Project#selectedItems
      * @see Segment#selected
      * @see Point#selected
@@ -907,8 +907,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Specifies whether the path and all its segments are selected. Cannot be
      * `true` on an empty path.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      *
      * @example {@paperscript}
      * // A path is fully selected, if all of its segments are selected:

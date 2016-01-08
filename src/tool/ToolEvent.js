@@ -44,7 +44,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * The type of tool event.
      *
      * @name ToolEvent#type
-     * @type String('mousedown', 'mouseup', 'mousemove', 'mousedrag')
+     * @type String
+     * @values 'mousedown', 'mouseup', 'mousemove', 'mousedrag'
      */
 
     /**
@@ -62,8 +63,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      *     console.log(event.point);
      * }
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         return this._choosePoint(this._point, this.tool._point);
@@ -77,8 +78,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * The position of the mouse in project coordinates when the previous
      * event was fired.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getLastPoint: function() {
         return this._choosePoint(this._lastPoint, this.tool._lastPoint);
@@ -92,8 +93,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * The position of the mouse in project coordinates when the mouse button
      * was last clicked.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getDownPoint: function() {
         return this._choosePoint(this._downPoint, this.tool._downPoint);
@@ -109,8 +110,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * artwork based on the moving direction of the mouse, as returned by
      * {@link #delta}.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getMiddlePoint: function() {
         // For explanations, see getDelta()
@@ -130,8 +131,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * mouse when the event was fired. In case of the mouseup event, the
      * difference to the mousedown position is returned.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getDelta: function() {
         // Do not put the calculated delta into delta, since this only reserved
@@ -151,8 +152,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
     /**
      * The number of times the mouse event was fired.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getCount: function() {
         // Return downCount for both mouse down and up, since
@@ -174,8 +175,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
      * {@link CompoundPath} items, the most top level group or compound path
      * that it is contained within is returned.
      *
-     * @type Item
      * @bean
+     * @type Item
      */
     getItem: function() {
         if (!this._item) {

@@ -74,8 +74,8 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     /**
      * The ramp-point of the gradient stop as a value between `0` and `1`.
      *
-     * @type Number
      * @bean
+     * @type Number
      *
      * @example {@paperscript height=300}
      * // Animating a gradient's ramp points:
@@ -123,8 +123,8 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     /**
      * The color of the gradient stop.
      *
-     * @type Color
      * @bean
+     * @type Color
      *
      * @example {@paperscript height=300}
      * // Animating a gradient's ramp points:

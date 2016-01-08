@@ -662,8 +662,8 @@ var Color = Base.extend(new function() {
         /**
          * Converts the color another type.
          *
-         * @param {String('rgb', 'gray', 'hsb', 'hsl')} type the color type to
-         * convert to.
+         * @param {String} type the color type to convert to. Possible values:
+         * {@values 'rgb', 'gray', 'hsb', 'hsl'}
          * @return {Color} the converted color as a new instance
          */
         convert: function(type) {
@@ -673,8 +673,9 @@ var Color = Base.extend(new function() {
         /**
          * The type of the color as a string.
          *
-         * @type String('rgb', 'gray', 'hsb', 'hsl')
          * @bean
+         * @type String
+         * @values 'rgb', 'gray', 'hsb', 'hsl'
          *
          * @example
          * var color = new Color(1, 0, 0);
@@ -694,8 +695,8 @@ var Color = Base.extend(new function() {
          * The color components that define the color, including the alpha value
          * if defined.
          *
-         * @type Number[]
          * @bean
+         * @type Number[]
          */
         getComponents: function() {
             var components = this._components.slice();
@@ -708,8 +709,8 @@ var Color = Base.extend(new function() {
          * The color's alpha value as a number between `0` and `1`.
          * All colors of the different subclasses support alpha values.
          *
-         * @type Number
          * @bean
+         * @type Number
          * @default 1
          *
          * @example {@paperscript}
