@@ -73,20 +73,20 @@ PathItem.inject(new function() {
     }
 
     function computeBoolean(path1, path2, operation) {
+        // Retrieve the operator lookup table for winding numbers.
+        var operator = operators[operation];
+        // Add a simple boolean property to check for a given operation,
+        // e.g. `if (operator.unite)`
+        operator[operation] = true;
         // If path1 is open, delegate to computeOpenBoolean()
         if (!path1._children && !path1._closed)
-            return computeOpenBoolean(path1, path2, operation);
+            return computeOpenBoolean(path1, path2, operator);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // Note that the result paths might not belong to the same type
         // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
         var _path1 = preparePath(path1, true),
-            _path2 = path2 && path1 !== path2 && preparePath(path2, true),
-            // Retrieve the operator lookup table for winding numbers.
-            operator = operators[operation];
-        // Add a simple boolean property to check for a given operation,
-        // e.g. `if (operator.unite)`
-        operator[operation] = true;
+            _path2 = path2 && path1 !== path2 && preparePath(path2, true);
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)

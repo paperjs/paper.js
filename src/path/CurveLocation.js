@@ -68,6 +68,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     _setCurve: function(curve) {
         var path = curve._path;
         this._version = path ? path._version : 0;
+        this._path = path;
         this._curve = curve;
         this._segment = null; // To be determined, see #getSegment()
         // Also store references to segment1 and segment2, in case path
@@ -120,14 +121,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      */
     getCurve: function() {
-        var curve = this._curve,
-            path = curve && curve._path,
+            path = this._path,
             that = this;
         if (path && path._version !== this._version) {
             // If the path's segments have changed in the meantime, clear the
             // internal _parameter value and force refetching of the correct
             // curve again here.
-            curve = this._parameter = this._curve = this._offset = null;
+            this._parameter = this._curve = this._offset = null;
         }
 
         // If path is out of sync, access current curve objects through segment1
@@ -145,21 +145,20 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             }
         }
 
-        return curve
+        return this._curve
             || trySegment(this._segment)
             || trySegment(this._segment1)
             || trySegment(this._segment2.getPrevious());
     },
 
     /**
-     * The path this curve belongs to, if any.
+     * The path that this locations is situated on.
      *
      * @type Item
      * @bean
      */
     getPath: function() {
-        var curve = this.getCurve();
-        return curve && curve._path;
+        return this._path;
     },
 
     /**
