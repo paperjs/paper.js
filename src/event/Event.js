@@ -16,6 +16,7 @@
  * @class The Event object is the base class for any of the other event types,
  * such as {@link MouseEvent}, {@link ToolEvent} and {@link KeyEvent}.
  */
+/* global Event: true */
 var Event = Base.extend(/** @lends Event# */{
     _class: 'Event',
 

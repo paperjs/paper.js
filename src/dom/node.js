@@ -13,7 +13,9 @@
 // Node.js emulation layer of browser based environment, based on node-canvas
 // and jsdom.
 
-/*global document:true, window:true, navigator:true, HTMLCanvasElement:true, Image:true */
+/* global document:true, window:true, navigator:true, HTMLCanvasElement:true,
+   Image:true */
+
 var jsdom = require('jsdom'),
     // Node Canvas library: https://github.com/learnboost/node-canvas
     Canvas = require('canvas'),

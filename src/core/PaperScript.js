@@ -14,7 +14,7 @@
  * @name PaperScript
  * @namespace
  */
-/*jshint -W082 */
+/* jshint -W082 */
 Base.exports.PaperScript = (function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.

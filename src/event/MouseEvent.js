@@ -22,6 +22,7 @@
  *
  * @extends Event
  */
+/* global MouseEvent: true */
 var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     _class: 'MouseEvent',
 
