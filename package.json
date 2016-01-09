@@ -15,6 +15,9 @@
   ],
   "main": "dist/paper-node.js",
   "browser": "dist/paper-full.js",
+  "scripts": {
+    "lint": "jshint src"
+  },
   "files": [
     "AUTHORS.md",
     "dist/",
@@ -35,6 +38,7 @@
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-qunit": "^1.2.1",
+    "jshint": "2.8.x",
     "prepro": "~0.9.1",
     "uglify-js": "~2.4.24"
   },

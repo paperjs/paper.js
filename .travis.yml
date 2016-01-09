@@ -1,4 +1,4 @@
 language: node_js
 node_js:
   - "0.12"
-script: 'npm install -g bower && bower install && cd build && ./minify-components.sh && cd .. && gulp test'
+script: 'npm install -g bower && bower install && cd build && ./minify-components.sh && cd .. && npm run lint && gulp test'
