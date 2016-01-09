@@ -380,7 +380,7 @@ Path.inject({ statics: new function() {
                 sides = Base.readNamed(arguments, 'sides'),
                 radius = Base.readNamed(arguments, 'radius'),
                 step = 360 / sides,
-                three = !(sides % 3),
+                three = sides % 3 === 0,
                 vector = new Point(0, three ? -radius : radius),
                 offset = three ? -1 : 0.5,
                 segments = new Array(sides);
