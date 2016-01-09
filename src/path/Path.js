@@ -1522,6 +1522,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         return null;
     },
 
+    toPath: '#clone',
+
     _hitTestSelf: function(point, options) {
         var that = this,
             style = this.getStyle(),
