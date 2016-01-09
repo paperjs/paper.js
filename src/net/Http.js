@@ -14,8 +14,8 @@ var Http = {
     request: function(method, url, callback, async) {
         // Code borrowed from Coffee Script and extended:
         async = (async === undefined) ? true : async;
-        var xhr = new (window.ActiveXObject || XMLHttpRequest)(
-                    'Microsoft.XMLHTTP');
+        var xhrConstructor = window.ActiveXObject || XMLHttpRequest;
+        var xhr = new xhrConstructor('Microsoft.XMLHTTP');
         xhr.open(method.toUpperCase(), url, async);
         if ('overrideMimeType' in xhr)
             xhr.overrideMimeType('text/plain');
