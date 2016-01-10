@@ -468,11 +468,11 @@ var Size = Base.extend(/** @lends Size# */{
          * console.log(minSize); // {width: 10, height: 5}
          *
          * @example
-         * // Solving with multiple sizes
+         * // Find the minimum of multiple sizes:
          * var size1 = new Size(60, 100);
          * var size2 = new Size(200, 5);
          * var size3 = new Size(250, 35);
-         * [size1, size2, size3].reduce(Size.min) // => Size {width: 60, height: 5}
+         * [size1, size2, size3].reduce(Size.min) // {width: 60, height: 5}
          */
         min: function(size1, size2) {
             return new Size(
@@ -496,11 +496,11 @@ var Size = Base.extend(/** @lends Size# */{
          * console.log(maxSize); // {width: 200, height: 100}
          *
          * @example
-         * // Solving with multiple sizes
+         * // Find the maximum of multiple sizes:
          * var size1 = new Size(60, 100);
          * var size2 = new Size(200, 5);
          * var size3 = new Size(250, 35);
-         * [size1, size2, size3].reduce(Size.max) // => Size {width: 250, height: 100}
+         * [size1, size2, size3].reduce(Size.max) // {width: 250, height: 100}
          */
         max: function(size1, size2) {
             return new Size(

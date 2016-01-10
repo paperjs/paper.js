@@ -866,11 +866,11 @@ var Point = Base.extend(/** @lends Point# */{
          * console.log(minPoint); // {x: 10, y: 5}
          *
          * @example
-         * // Solving with multiple points
+         * // Find the minimum of multiple points:
          * var point1 = new Point(60, 100);
          * var point2 = new Point(200, 5);
          * var point3 = new Point(250, 35);
-         * [point1, point2, point3].reduce(Point.min) // => Point {x: 60, y: 5}
+         * [point1, point2, point3].reduce(Point.min) // {x: 60, y: 5}
          */
         min: function(/* point1, point2 */) {
             var point1 = Point.read(arguments),
@@ -897,11 +897,11 @@ var Point = Base.extend(/** @lends Point# */{
          * console.log(maxPoint); // {x: 200, y: 100}
          *
          * @example
-         * // Solving with multiple points
+         * // Find the maximum of multiple points:
          * var point1 = new Point(60, 100);
          * var point2 = new Point(200, 5);
          * var point3 = new Point(250, 35);
-         * [point1, point2, point3].reduce(Point.max) // => Point {x: 250, y: 100}
+         * [point1, point2, point3].reduce(Point.max) // {x: 250, y: 100}
          */
         max: function(/* point1, point2 */) {
             var point1 = Point.read(arguments),
