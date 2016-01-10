@@ -1865,13 +1865,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // might just have tiny handles within the geometric epsilon
             // distance, so we have to check for that too.
 
-            function getEndDistanceSquared(v) {
+            function getSquaredLineLength(v) {
                 var x = v[6] - v[0],
                     y = v[7] - v[1];
                 return x * x + y * y;
             }
 
-            var flip = getEndDistanceSquared(v1) < getEndDistanceSquared(v2),
+            var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
                 l1 = flip ? v2 : v1,
                 l2 = flip ? v1 : v2,
                 line = new Line(l1[0], l1[1], l1[6], l1[7]);
