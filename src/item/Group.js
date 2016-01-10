@@ -174,15 +174,9 @@ var Group = Item.extend(/** @lends Group# */{
         param = param.extend({ clipItem: clipItem, clip: false });
         if (clip) {
             // If told to clip with a group, we start our own path and draw each
-            // child just like in a compound-path. We also cache the resulting
-            // path in _currentPath.
-            if (this._currentPath) {
-                ctx.currentPath = this._currentPath;
-                draw = false;
-            } else {
-                ctx.beginPath();
-                param.dontStart = param.dontFinish = true;
-            }
+            // child just like in a compound-path.
+            ctx.beginPath();
+            param.dontStart = param.dontFinish = true;
         } else if (clipItem) {
             clipItem.draw(ctx, param.extend({ clip: true }));
         }
@@ -193,9 +187,6 @@ var Group = Item.extend(/** @lends Group# */{
                 if (item !== clipItem)
                     item.draw(ctx, param);
             }
-        }
-        if (clip) {
-            this._currentPath = ctx.currentPath;
         }
     }
 });

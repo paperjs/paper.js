@@ -195,10 +195,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             project = this._project;
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
             // Clear cached bounds, position and decomposed matrix whenever
-            // geometry changes. Also clear _currentPath since it can be used
-            // both on compound-paths and clipping groups.
+            // geometry changes.
             this._bounds = this._position = this._decomposed =
-                    this._globalMatrix = this._currentPath = undefined;
+                    this._globalMatrix = undefined;
         }
         if (cacheParent
                 && (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
@@ -3908,8 +3907,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
             globalMatrix = matrices[matrices.length - 1].chain(matrix);
-        // If this item is not invertible, do not draw it, since it would cause
-        // empty ctx.currentPath and mess up caching. It appears to also be a
+        // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
         if (!globalMatrix.isInvertible())
@@ -4040,10 +4038,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     _isUpdated: function(updateVersion) {
         var parent = this._parent;
-        // For compound-paths, we need to use the _updateVersion of the parent,
-        // because when using the ctx.currentPath optimization, the children
-        // don't have to get drawn on each frame and thus won't change their
-        // _updateVersion.
+        // For compound-paths, use the _updateVersion of the parent, because the
+        // shape gets drawn at once at might get cached (e.g. Path2D soon).
         if (parent instanceof CompoundPath)
             return parent._isUpdated(updateVersion);
         // In case a parent is visible but isn't drawn (e.g. opacity == 0), the

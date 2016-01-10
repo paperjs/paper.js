@@ -142,12 +142,6 @@ var Path = PathItem.extend(/** @lends Path# */{
     _changed: function _changed(flags) {
         _changed.base.call(this, flags);
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
-            // The _currentPath is already cleared in Item, but clear it on the
-            // parent too, for children of CompoundPaths, and Groups (ab)used as
-            // clipping paths.
-            var parent = this._parent;
-            if (parent)
-                parent._currentPath = undefined;
             // Clockwise state becomes undefined as soon as geometry changes.
             // Also clear cached mono curves used for winding calculations.
             this._length = this._area = this._clockwise = this._monoCurves =
@@ -2192,17 +2186,12 @@ new function() { // Scope for drawing
             if (!dontStart)
                 ctx.beginPath();
 
-            if (!dontStart && this._currentPath) {
-                ctx.currentPath = this._currentPath;
-            } else if (hasFill || hasStroke && !dashLength || dontPaint) {
+            if (hasFill || hasStroke && !dashLength || dontPaint) {
                 // Prepare the canvas path if we have any situation that
                 // requires it to be defined.
                 drawSegments(ctx, this, strokeMatrix);
                 if (this._closed)
                     ctx.closePath();
-                // CompoundPath collects its own _currentPath
-                if (!dontStart)
-                    this._currentPath = ctx.currentPath;
             }
 
             function getOffset(i) {
@@ -2226,9 +2215,6 @@ new function() { // Scope for drawing
                     if (dashLength) {
                         // We cannot use the path created by drawSegments above
                         // Use PathIterator to draw dashed paths:
-                        // NOTE: We don't cache this path in another currentPath
-                        // since browsers that support currentPath also support
-                        // native dashes.
                         if (!dontStart)
                             ctx.beginPath();
                         var iterator = new PathIterator(this, 32, 0.25,

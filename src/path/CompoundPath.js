@@ -288,15 +288,10 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         if (children.length === 0)
             return;
 
-        if (this._currentPath) {
-            ctx.currentPath = this._currentPath;
-        } else {
-            param = param.extend({ dontStart: true, dontFinish: true });
-            ctx.beginPath();
-            for (var i = 0, l = children.length; i < l; i++)
-                children[i].draw(ctx, param, strokeMatrix);
-            this._currentPath = ctx.currentPath;
-        }
+        param = param.extend({ dontStart: true, dontFinish: true });
+        ctx.beginPath();
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i].draw(ctx, param, strokeMatrix);
 
         if (!param.clip) {
             this._setStyles(ctx);
