@@ -62,19 +62,26 @@ var Layer = Group.extend(/** @lends Layer# */{
      *     position: view.center
      * });
      */
-    initialize: function Layer(arg) {
-        var props = Base.isPlainObject(arg)
-                ? new Base(arg) // clone so we can add insert = false
-                : { children: Array.isArray(arg) ? arg : arguments },
-            insert = props.insert;
-        // Call the group constructor but don't insert yet!
-        props.insert = false;
-        Group.call(this, props);
-        if (insert === undefined || insert) {
-            this._project.addChild(this);
-            // When inserted, also activate the layer by default.
-            this.activate();
-        }
+    initialize: function Layer() {
+        Group.apply(this, arguments);
+    },
+
+    /**
+     * Private helper used in the constructor function to add the newly created
+     * item to the project scene graph.
+     */
+    _addToProject: function(project) {
+        project.addChild(this);
+        // When inserted, also activate the layer by default.
+        this.activate();
+    },
+
+    /**
+     * Private helper to return the owner, either the parent, or the project
+     * for top-level layers.
+     */
+    _getOwner: function() {
+        return this._parent || this._index != null && this._project;
     },
 
     /**
@@ -89,7 +96,7 @@ var Layer = Group.extend(/** @lends Layer# */{
             if (project._activeLayer === this)
                 project._activeLayer = this.getNextSibling()
                         || this.getPreviousSibling();
-            Base.splice(project.layers, null, this._index, 1);
+            Base.splice(project._children, null, this._index, 1);
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
@@ -105,16 +112,6 @@ var Layer = Group.extend(/** @lends Layer# */{
             return true;
         }
         return false;
-    },
-
-    getNextSibling: function getNextSibling() {
-        return this._parent ? getNextSibling.base.call(this)
-                : this._project.layers[this._index + 1] || null;
-    },
-
-    getPreviousSibling: function getPreviousSibling() {
-        return this._parent ? getPreviousSibling.base.call(this)
-                : this._project.layers[this._index - 1] || null;
     },
 
     isInserted: function isInserted() {

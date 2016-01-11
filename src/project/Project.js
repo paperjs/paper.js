@@ -52,7 +52,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // so paper.project is set, as required by Layer and DoumentView
         // constructors.
         PaperScopeItem.call(this, true);
-        this.layers = [];
+        this._children = [];
+        this._namedChildren = {};
         this._activeLayer = null;
         this.symbols = [];
         this._currentStyle = new Style(null, null, this);
@@ -76,7 +77,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // project serialization later, but deserialization of a layers array
         // will always work.
         // Pass true for compact, so 'Project' does not get added as the class
-        return Base.serialize(this.layers, options, true, dictionary);
+        return Base.serialize(this._children, options, true, dictionary);
     },
 
     /**
@@ -92,8 +93,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * {@link Project#symbols}.
      */
     clear: function() {
-        for (var i = this.layers.length - 1; i >= 0; i--)
-            this.layers[i].remove();
+        var children = this._children;
+        for (var i = children.length - 1; i >= 0; i--)
+            children[i].remove();
         this.symbols = [];
     },
 
@@ -103,7 +105,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return Boolean
      */
     isEmpty: function() {
-        return this.layers.length === 0;
+        return this._children.length === 0;
     },
 
     /**
@@ -189,9 +191,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * The layers contained within the project.
      *
-     * @name Project#layers
+     * @bean
      * @type Layer[]
      */
+    getLayers: function() {
+        return this._children;
+    },
+
+    // TODO: Define #setLayers()?
 
     /**
      * The layer which is currently active. New items will be created on this
@@ -237,7 +244,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     insertChild: function(index, item, _preserve) {
         if (item instanceof Layer) {
             item._remove(false, true);
-            Base.splice(this.layers, [item], index, 0);
+            Base.splice(this._children, [item], index, 0);
             item._setProject(this, true);
             // See Item#_remove() for an explanation of this:
             if (this._changes)
@@ -283,9 +290,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Selects all items in the project.
      */
     selectAll: function() {
-        var layers = this.layers;
-        for (var i = 0, l = layers.length; i < l; i++)
-            layers[i].setFullySelected(true);
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i].setFullySelected(true);
     },
 
     /**
@@ -338,10 +345,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // We don't need to do this here, but it speeds up things since we won't
         // repeatedly convert in Item#hitTest() then.
         var point = Point.read(arguments),
-            options = HitResult.getOptions(Base.read(arguments));
+            options = HitResult.getOptions(Base.read(arguments)),
+            children = this._children;
         // Loop backwards, so layers that get drawn last are tested first
-        for (var i = this.layers.length - 1; i >= 0; i--) {
-            var res = this.layers[i]._hitTest(point, options);
+        for (var i = children.length - 1; i >= 0; i--) {
+            var res = children[i]._hitTest(point, options);
             if (res) return res;
         }
         return null;
@@ -585,7 +593,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return {Item[]} the list of matching items contained in the project
      */
     getItems: function(match) {
-        return Item._getItems(this.layers, match);
+        return Item._getItems(this, match);
     },
 
     /**
@@ -602,7 +610,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return {Item} the first item in the project matching the given criteria
      */
     getItem: function(match) {
-        return Item._getItems(this.layers, match, null, null, true)[0] || null;
+        return Item._getItems(this, match, null, null, true)[0] || null;
     },
 
     /**
@@ -708,18 +716,19 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         ctx.save();
         matrix.applyToContext(ctx);
         // Use new Base() so we can use param.extend() to easily override values
-        var param = new Base({
-            offset: new Point(0, 0),
-            pixelRatio: pixelRatio,
-            viewMatrix: matrix.isIdentity() ? null : matrix,
-            matrices: [new Matrix()], // Start with the identity matrix.
-            // Tell the drawing routine that we want to keep _globalMatrix up to
-            // date. Item#rasterize() and Raster#getAverageColor() should not
-            // set this.
-            updateMatrix: true
-        });
-        for (var i = 0, layers = this.layers, l = layers.length; i < l; i++)
-            layers[i].draw(ctx, param);
+        var children = this._children,
+            param = new Base({
+                offset: new Point(0, 0),
+                pixelRatio: pixelRatio,
+                viewMatrix: matrix.isIdentity() ? null : matrix,
+                matrices: [new Matrix()], // Start with the identity matrix.
+                // Tell the drawing routine that we want to keep _globalMatrix
+                // up to date. Item#rasterize() and Raster#getAverageColor()
+                // should not set this.
+                updateMatrix: true
+            });
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i].draw(ctx, param);
         ctx.restore();
 
         // Draw the selection of the selected items in the project:

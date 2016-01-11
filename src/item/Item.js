@@ -90,8 +90,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = this._matrix = new Matrix(),
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project;
-        if (!internal)
-            this._id = UID.get();
+        this._id = internal ? null : UID.get();
+        this._parent = this._index = null;
         // Inherit the applyMatrix setting from paper.settings.applyMatrix
         this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
         // Handle matrix before everything else, to avoid issues with
@@ -100,29 +100,35 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix.translate(point);
         matrix._owner = this;
         this._style = new Style(project._currentStyle, this, project);
-        // If _project is already set, the item was already moved into the scene
-        // graph. Used by Layer, where it's added to project.layers instead
-        if (!this._project) {
-            // Do not insert into DOM if it's an internal path, if props.insert
-            // is false, or if the props are setting a different parent anyway.
-            if (internal || hasProps && props.insert === false) {
-                this._setProject(project);
-            } else if (hasProps && props.parent) {
-                this.setParent(props.parent);
-            } else {
-                // Create a new layer if there is no active one. This will
-                // automatically make it the new activeLayer.
-                (project._activeLayer || new Layer()).addChild(this);
-            }
+        // Do not add to the project if it's an internal path, if props.insert
+        // is false, or if the props are setting a different parent anyway.
+        if (internal || hasProps && props.insert === false) {
+            this._setProject(project);
+        } else if (hasProps && props.parent) {
+            props.parent.addChild(this);
+        } else {
+            this._addToProject(project);
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
-        if (hasProps && props !== Item.NO_INSERT)
+        if (hasProps && props !== Item.NO_INSERT) {
             // Filter out insert, parent and project properties as these were
             // handled above.
-            this._set(props, { insert: true, project: true, parent: true },
-                    // Don't check for plain object as that's done by hasProps.
-                    true);
+            this._set(props,
+                { internal: true, insert: true, project: true, parent: true },
+                // Don't check for plain object, as that's handled by hasProps.
+                true);
+        }
         return hasProps;
+    },
+
+    /*
+     * Private helper used in the constructor function to add the created item
+     * to the project scene graph. Overridden in Layer.
+     */
+    _addToProject: function(project) {
+        // Create a new layer if there is no active one. This will
+        // automatically make it the new activeLayer.
+        (project._activeLayer || new Layer()).addChild(this);
     },
 
     _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -323,10 +329,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (name === (+name) + '')
             throw new Error(
                     'Names consisting only of numbers are not supported.');
-        var parent = this._parent;
-        if (name && parent) {
-            var children = parent._children,
-                namedChildren = parent._namedChildren;
+        var owner = this._getOwner();
+        if (name && owner) {
+            var children = owner._children,
+                namedChildren = owner._namedChildren;
             (namedChildren[name] = namedChildren[name] || []).push(this);
             // Only set this item if there isn't one under the same name already
             if (!(name in children))
@@ -1267,6 +1273,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
+     * Private helper to return the owner, either the parent, or the project
+     * for top-level layers. See Layer#_getOwner()
+     */
+    _getOwner: '#getParent',
+
+    /**
      * The children items contained within this item. Items that define a
      * {@link #name} can also be accessed by name.
      *
@@ -1361,7 +1373,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getNextSibling: function() {
-        return this._parent && this._parent._children[this._index + 1] || null;
+        var owner = this._getOwner();
+        return owner && owner._children[this._index + 1] || null;
     },
 
     /**
@@ -1371,7 +1384,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getPreviousSibling: function() {
-        return this._parent && this._parent._children[this._index - 1] || null;
+        var owner = this._getOwner();
+        return owner && owner._children[this._index - 1] || null;
     },
 
     /**
@@ -1527,13 +1541,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * or duplicates it within the same project. When passed an item,
      * copies the item into the specified item.
      *
-     * @param {Project|Layer|Group|CompoundPath} item the item or project to
+     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * copy the item to
      * @return {Item} the new copy of the item
      */
-    copyTo: function(itemOrProject) {
+    copyTo: function(owner) {
         // Pass false fo insert, since we're inserting at a specific location.
-        return itemOrProject.addChild(this.clone(false));
+        return owner.addChild(this.clone(false));
     },
 
     /**
@@ -1950,7 +1964,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @see #matches(match)
      */
     getItems: function(match) {
-        return Item._getItems(this._children, match, this._matrix);
+        return Item._getItems(this, match, this._matrix);
     },
 
     /**
@@ -1969,15 +1983,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @see #getItems(match)
      */
     getItem: function(match) {
-        return Item._getItems(this._children, match, this._matrix, null, true)
-                [0] || null;
+        return Item._getItems(this, match, this._matrix, null, true)[0] || null;
     },
 
     statics: {
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
-        _getItems: function _getItems(children, match, matrix, param,
-                firstOnly) {
+        _getItems: function _getItems(item, match, matrix, param, firstOnly) {
             if (!param) {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
@@ -2007,7 +2019,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     });
                 }
             }
-            var items = param.items,
+            var children = item._children,
+                items = param.items,
                 rect = param.rect;
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
@@ -2035,9 +2048,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                         break;
                 }
                 if (param.recursive !== false) {
-                    _getItems(child._children, match,
-                            childMatrix, param,
-                            firstOnly);
+                    _getItems(child, match, childMatrix, param, firstOnly);
                 }
                 if (firstOnly && items.length > 0)
                     break;
@@ -2078,9 +2089,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // it as a child (this won't be successful on some classes, returning
         // null).
         var res = Base.importJSON(json, this);
-        return res !== this
-                ? this.addChild(res)
-                : res;
+        return res !== this ? this.addChild(res) : res;
     },
 
     /**
@@ -2273,20 +2282,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Sends this item to the back of all other items within the same parent.
      */
     sendToBack: function() {
-        // If there is no parent and the item is a layer, delegate to project
-        // instead.
-        return (this._parent || this instanceof Layer && this._project)
-                .insertChild(0, this);
+        var owner = this._getOwner();
+        return owner ? owner.insertChild(0, this) : null;
     },
 
     /**
      * Brings this item to the front of all other items within the same parent.
      */
     bringToFront: function() {
-        // If there is no parent and the item is a layer, delegate to project
-        // instead.
-        return (this._parent || this instanceof Layer && this._project)
-                .addChild(this);
+        var owner = this._getOwner();
+        return owner ? owner.addChild(this) : null;
     },
 
     /**
@@ -2360,10 +2365,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Removes the item from its parent's named children list.
      */
     _removeNamed: function() {
-        var parent = this._parent;
-        if (parent) {
-            var children = parent._children,
-                namedChildren = parent._namedChildren,
+        var owner = this._getOwner();
+        if (owner) {
+            var children = owner._children,
+                namedChildren = owner._namedChildren,
                 name = this._name,
                 namedArray = namedChildren[name],
                 index = namedArray ? namedArray.indexOf(this) : -1;
@@ -2373,10 +2378,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     delete children[name];
                 // Remove this entry
                 namedArray.splice(index, 1);
-                // If there are any items left in the named array, set
-                // the last of them to be this.parent.children[this.name]
+                // If there are any items left in the named array, set the first
+                // of them to be children[this.name]
                 if (namedArray.length) {
-                    children[name] = namedArray[namedArray.length - 1];
+                    children[name] = namedArray[0];
                 } else {
                     // Otherwise delete the empty array
                     delete namedChildren[name];

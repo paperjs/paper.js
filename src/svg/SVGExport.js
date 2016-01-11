@@ -417,7 +417,7 @@ new function() {
     Project.inject({
         exportSVG: function(options) {
             options = setOptions(options);
-            var layers = this.layers,
+            var children = this._children,
                 view = this.getView(),
                 size = view.getViewSize(),
                 node = createElement('svg', {
@@ -436,8 +436,8 @@ new function() {
             if (!matrix.isIdentity())
                 parent = node.appendChild(
                         createElement('g', getTransform(matrix)));
-            for (var i = 0, l = layers.length; i < l; i++)
-                parent.appendChild(exportSVG(layers[i], options, true));
+            for (var i = 0, l = children.length; i < l; i++)
+                parent.appendChild(exportSVG(children[i], options, true));
             return exportDefinitions(node, options);
         }
     });
