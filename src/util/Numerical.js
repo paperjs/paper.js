@@ -63,7 +63,7 @@ var Numerical = new function() {
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
-    function clip(value, min, max) {
+    function clamp(value, min, max) {
         return value < min ? min : value > max ? max : value;
     }
 
@@ -132,6 +132,16 @@ var Numerical = new function() {
         isZero: function(val) {
             return val >= -EPSILON && val <= EPSILON;
         },
+
+        /**
+         * Returns a number whose value is clamped by the given range.
+         *
+         * @param {Number} value the value to be clamped
+         * @param {Number} min the lower boundary of the range
+         * @param {Number} max the upper boundary of the range
+         * @return {Number} a number in the range of [min, max]
+         */
+        clamp: clamp,
 
         /**
          * Gauss-Legendre Numerical Integration.
@@ -254,10 +264,10 @@ var Numerical = new function() {
             // We need to include EPSILON in the comparisons with min / max,
             // as some solutions are ever so lightly out of bounds.
             if (isFinite(x1) && (min == null || x1 > eMin && x1 < eMax))
-                roots[count++] = min == null ? x1 : clip(x1, min, max);
+                roots[count++] = min == null ? x1 : clamp(x1, min, max);
             if (x2 !== x1
                     && isFinite(x2) && (min == null || x2 > eMin && x2 < eMax))
-                roots[count++] = min == null ? x2 : clip(x2, min, max);
+                roots[count++] = min == null ? x2 : clamp(x2, min, max);
             return count;
         },
 
@@ -349,7 +359,7 @@ var Numerical = new function() {
             var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
             if (isFinite(x) && (count === 0 || x !== roots[count - 1])
                     && (min == null || x > min - EPSILON && x < max + EPSILON))
-                roots[count++] = min == null ? x : clip(x, min, max);
+                roots[count++] = min == null ? x : clamp(x, min, max);
             return count;
         }
     };

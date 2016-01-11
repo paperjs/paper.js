@@ -2079,11 +2079,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                                 + (_default && value instanceof Curve ? 1 : 0)
                             : _default;
             // Handle negative values based on whether a path is open or not:
-            // Closed paths are wrapped around the end (allowing values to be
-            // negative), while open paths stay within the open range.
-            return index < 0 && closed
+            // Ranges on closed paths are allowed to wrapped around the
+            // beginning/end (e.g. start near the end, end near the beginning),
+            // while ranges on open paths stay within the path's open range.
+            return Numerical.clamp(index < 0 && closed
                     ? index % length
-                    : (Math.min(index, length - 1) % length + length) % length;
+                    : index < 0 ? index + length : index, 0, length);
         }
 
         var opts = options || {},
