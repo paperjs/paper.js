@@ -2256,7 +2256,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        return item._insertSibling(item._index + 1, this, _preserve);
+        return item.isInserted() ? item._insertSibling(item._index + 1, this, _preserve) : this;
     },
 
     /**
@@ -2266,7 +2266,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        return item._insertSibling(item._index, this, _preserve);
+        return item.isInserted() ? item._insertSibling(item._index, this, _preserve) : this;
     },
 
     /**
