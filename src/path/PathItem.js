@@ -317,12 +317,24 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     }
 
     /**
-     * Smooth bezier curves without changing the amount of segments or their
-     * points, by only smoothing and adjusting their handle points, for both
-     * open ended and closed paths.
+     * TODO: continuous:
+     * Smooths the path item by adjusting its curve handles so that the first
+     * and second derivatives of all involved curves are continuous across their
+     * boundaries.
+     */
+    /**
+     * Smooths the path item without changing the amount of segments in the path
+     * or moving their locations, by only smoothing and adjusting the angle and
+     * length of their handles.
+     * This works for open paths as well as closed paths.
      *
      * @name PathItem#smooth
      * @function
+     * @param {Object} [options] TODO
+     * TODO: controls the amount of smoothing as a factor by which to scale each
+     * handle.
+     *
+     * @see Segment#smooth(options)
      *
      * @example {@paperscript}
      * // Smoothing a closed shape:

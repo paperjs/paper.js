@@ -140,12 +140,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             children[i].reverse();
     },
 
-    smooth: function() {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].smooth();
-    },
-
     // DOCS: reduce()
     // TEST: reduce()
     reduce: function reduce(options) {
@@ -163,6 +157,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             return path;
         }
         return reduce.base.call(this);
+    },
+
+    // NOTE: Documentation is in PathItem.js
+    smooth: function(options) {
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++)
+            children[i].smooth(options);
     },
 
     /**

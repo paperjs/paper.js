@@ -411,21 +411,21 @@ var Path = PathItem.extend(/** @lends Path# */{
             var total = this._countCurves(),
                 // If we're adding a new segment to the end of an open path,
                 // we need to step one index down to get its curve.
-                from = index > 0 && index + amount - 1 === total ? index - 1
+                start = index > 0 && index + amount - 1 === total ? index - 1
                     : index,
-                start = from,
-                to = Math.min(from + amount, total);
+                insert = start,
+                end = Math.min(start + amount, total);
             if (segs._curves) {
                 // Reuse removed curves.
-                curves.splice.apply(curves, [from, 0].concat(segs._curves));
-                start += segs._curves.length;
+                curves.splice.apply(curves, [start, 0].concat(segs._curves));
+                insert += segs._curves.length;
             }
             // Insert new curves, but do not initialize their segments yet,
             // since #_adjustCurves() handles all that for us.
-            for (var i = start; i < to; i++)
+            for (var i = insert; i < end; i++)
                 curves.splice(i, 0, new Curve(this, null, null));
             // Adjust segments for the curves before and after the removed ones
-            this._adjustCurves(from, to);
+            this._adjustCurves(start, end);
         }
         // Use SEGMENTS notification instead of GEOMETRY since curves are kept
         // up-to-date by _adjustCurves() and don't need notification.
@@ -436,11 +436,11 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Adjusts segments of curves before and after inserted / removed segments.
      */
-    _adjustCurves: function(from, to) {
+    _adjustCurves: function(start, end) {
         var segments = this._segments,
             curves = this._curves,
             curve;
-        for (var i = from; i < to; i++) {
+        for (var i = start; i < end; i++) {
             curve = curves[i];
             curve._path = this;
             curve._segment1 = segments[i];
@@ -449,14 +449,14 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // If it's the first segment, correct the last segment of closed
         // paths too:
-        if (curve = curves[this._closed && from === 0 ? segments.length - 1
-                : from - 1]) {
-            curve._segment2 = segments[from] || segments[0];
+        if (curve = curves[this._closed && start === 0 ? segments.length - 1
+                : start - 1]) {
+            curve._segment2 = segments[start] || segments[0];
             curve._changed();
         }
         // Fix the segment after the modified range, if it exists
-        if (curve = curves[to]) {
-            curve._segment1 = segments[to];
+        if (curve = curves[end]) {
+            curve._segment1 = segments[end];
             curve._changed();
         }
     },
@@ -719,13 +719,13 @@ var Path = PathItem.extend(/** @lends Path# */{
      * // Select the path, so we can see its segments:
      * path.selected = true;
      */
-    removeSegments: function(from, to, _includeCurves) {
-        from = from || 0;
-        to = Base.pick(to, this._segments.length);
+    removeSegments: function(start, end, _includeCurves) {
+        start = start || 0;
+        end = Base.pick(end, this._segments.length);
         var segments = this._segments,
             curves = this._curves,
             count = segments.length, // segment count before removal
-            removed = segments.splice(from, to - from),
+            removed = segments.splice(start, end - start),
             amount = removed.length;
         if (!amount)
             return removed;
@@ -738,7 +738,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             segment._index = segment._path = null;
         }
         // Adjust the indices of the segments above.
-        for (var i = from, l = segments.length; i < l; i++)
+        for (var i = start, l = segments.length; i < l; i++)
             segments[i]._index = i;
         // Keep curves in sync
         if (curves) {
@@ -746,9 +746,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             // one to the left of the segment, not to the right, as normally).
             // Also take into account closed paths, which have one curve more
             // than segments.
-            var index = from > 0 && to === count + (this._closed ? 1 : 0)
-                    ? from - 1
-                    : from,
+            var index = start > 0 && end === count + (this._closed ? 1 : 0)
+                    ? start - 1
+                    : start,
                 curves = curves.splice(index, amount);
             // Unlink the removed curves from the path.
             for (var i = curves.length - 1; i >= 0; i--)
@@ -2056,9 +2056,147 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     getNearestPoint: function(/* point */) {
         return this.getNearestLocation.apply(this, arguments).getPoint();
+    },
+
+    // NOTE: Documentation is in PathItem.js
+    smooth: function(options) {
+        // Helper method to pick the right from / to indices.
+        // Supports numbers and segment objects.
+        // For numbers, the `to` index is exclusive, while for segments and
+        // curves, it is inclusive, handled by the `offset` parameter.
+        function getIndex(value, _default) {
+            var index = value == null
+                    ? _default
+                    : typeof value === 'number'
+                        ? value
+                        // Support both Segment and Curve through getIndex()
+                        : value.getIndex
+                            ? value.getIndex()
+                                + (_default && value instanceof Curve ? 1 : 0)
+                            : _default;
+            // Handle negative values based on whether a path is open or not:
+            // Ranges on closed paths are allowed to wrapped around the
+            // beginning/end (e.g. start near the end, end near the beginning),
+            // while ranges on open paths stay within the path's open range.
+            return Numerical.clamp(index < 0 && closed
+                    ? index % length
+                    : index < 0 ? index + length : index, 0, length);
+        }
+
+        var opts = options || {},
+            type = opts.type,
+            segments = this._segments,
+            length = segments.length,
+            range = opts.from !== undefined || opts.to !== undefined,
+            from = getIndex(opts.from, 0),
+            to = getIndex(opts.to, length - 1),
+            closed = this._closed;
+        if (from > to) {
+            if (closed) {
+                from -= length;
+            } else {
+                var tmp = from;
+                from = to;
+                to = tmp;
+            }
+        }
+        if (!type || type === 'continuous') {
+            // Continuous smoothing approach based on work by Lubos Brieda,
+            // Particle In Cell Consulting LLC, but further simplified by
+            // addressing handle symmetry across segments, and the possibility
+            // to process x and y coordinates simultaneously. Also added
+            // handling of closed paths.
+            // https://www.particleincell.com/2012/bezier-splines/
+            var min = Math.min,
+                amount = to - from + 1,
+                n = amount - 1;
+            // Overlap by up to 4 points on closed paths since a current segment
+            // is affected by its 4 neighbors on both sides (?).
+            var loop = closed && !range,
+                padding = loop ? min(amount, 4) : 1,
+                paddingLeft = padding,
+                paddingRight = padding,
+                knots = [];
+            if (!closed) {
+                // If the path is open and a range is defined, try using a
+                // padding of 1 on either side.
+                paddingLeft = min(1, from);
+                paddingRight = min(1, length - to - 1);
+            }
+            // Set up the knots array now, taking the paddings into account.
+            n += paddingLeft + paddingRight;
+            if (n <= 1)
+                return;
+            for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+                knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
+            }
+
+            // Right-hand side vectors, with left most segment added.
+            var a = [0],
+                b = [2],
+                c = [1],
+                rx = [knots[0]._x + 2 * knots[1]._x],
+                ry = [knots[0]._y + 2 * knots[1]._y],
+                n_1 = n - 1;
+
+            // Internal segments
+            for (var i = 1; i < n_1; i++) {
+                a[i] = 1;
+                b[i] = 4;
+                c[i] = 1;
+                rx[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
+                ry[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
+            }
+
+            // Right segment
+            a[n_1] = 2;
+            b[n_1] = 7;
+            c[n_1] = 0;
+            rx[n_1] = 8 * knots[n_1]._x + knots[n]._x;
+            ry[n_1] = 8 * knots[n_1]._y + knots[n]._y;
+
+            // Solve Ax = b with the Thomas algorithm (from Wikipedia)
+            for (var i = 1, j = 0; i < n; i++, j++) {
+                var m = a[i] / b[j];
+                b[i] = b[i] - m * c[j];
+                rx[i] = rx[i] - m * rx[j];
+                ry[i] = ry[i] - m * ry[j];
+            }
+
+            var px = [],
+                py = [];
+            px[n_1] = rx[n_1] / b[n_1];
+            py[n_1] = ry[n_1] / b[n_1];
+            for (var i = n - 2; i >= 0; i--) {
+                px[i] = (rx[i] - c[i] * px[i + 1]) / b[i];
+                py[i] = (ry[i] - c[i] * py[i + 1]) / b[i];
+            }
+            px[n] = (3 * knots[n]._x - px[n_1]) / 2;
+            py[n] = (3 * knots[n]._y - py[n_1]) / 2;
+
+            // Now update the segments
+            for (var i = paddingLeft, max = n - paddingRight, j = from;
+                    i <= max; i++, j++) {
+                var segment = segments[j < 0 ? j + length : j],
+                    pt = segment._point,
+                    hx = px[i] - pt._x,
+                    hy = py[i] - pt._y;
+                if (loop || i < max)
+                    segment.setHandleOut(hx, hy);
+                if (loop || i > paddingLeft)
+                    segment.setHandleIn(-hx, -hy);
+            }
+        } else {
+            // All other smoothing methods are handled directly on the segments:
+            for (var i = from; i <= to; i++) {
+                segments[i < 0 ? i + length : i].smooth(opts,
+                        i === from, i === to);
+            }
+        }
     }
 }),
 new function() { // Scope for drawing
+
     // Note that in the code below we're often accessing _x and _y on point
     // objects that were read from segments. This is because the SegmentPoint
     // class overrides the plain x / y properties with getter / setters and
@@ -2247,132 +2385,6 @@ new function() { // Scope for drawing
             // Now stroke it and draw its handles:
             ctx.stroke();
             drawHandles(ctx, this._segments, matrix, paper.settings.handleSize);
-        }
-    };
-},
-new function() { // Path Smoothing
-    /**
-     * Solves a tri-diagonal system for one of coordinates (x or y) of first
-     * bezier control points.
-     *
-     * @param rhs right hand side vector
-     * @return Solution vector
-     */
-    function getFirstControlPoints(rhs) {
-        var n = rhs.length,
-            x = [], // Solution vector.
-            tmp = [], // Temporary workspace.
-            b = 2;
-        x[0] = rhs[0] / b;
-        // Decomposition and forward substitution.
-        for (var i = 1; i < n; i++) {
-            tmp[i] = 1 / b;
-            b = (i < n - 1 ? 4 : 2) - tmp[i];
-            x[i] = (rhs[i] - x[i - 1]) / b;
-        }
-        // Back-substitution.
-        for (var i = 1; i < n; i++) {
-            x[n - i - 1] -= tmp[n - i] * x[n - i];
-        }
-        return x;
-    }
-
-    return {
-        // NOTE: Documentation for smooth() is in PathItem
-        smooth: function() {
-            // This code is based on the work by Oleg V. Polikarpotchkin,
-            // http://ov-p.spaces.live.com/blog/cns!39D56F0C7A08D703!147.entry
-            // It was extended to support closed paths by averaging overlapping
-            // beginnings and ends. The result of this approach is very close to
-            // Polikarpotchkin's closed curve solution, but reuses the same
-            // algorithm as for open paths, and is probably executing faster as
-            // well, so it is preferred.
-            var segments = this._segments,
-                size = segments.length,
-                closed = this._closed,
-                n = size,
-                // Add overlapping ends for averaging handles in closed paths
-                overlap = 0;
-            if (size <= 2)
-                return;
-            if (closed) {
-                // Overlap up to 4 points since averaging beziers affect the 4
-                // neighboring points
-                overlap = Math.min(size, 4);
-                n += Math.min(size, overlap) * 2;
-            }
-            var knots = [];
-            for (var i = 0; i < size; i++)
-                knots[i + overlap] = segments[i]._point;
-            if (closed) {
-                // If we're averaging, add the 4 last points again at the
-                // beginning, and the 4 first ones at the end.
-                for (var i = 0; i < overlap; i++) {
-                    knots[i] = segments[i + size - overlap]._point;
-                    knots[i + size + overlap] = segments[i]._point;
-                }
-            } else {
-                n--;
-            }
-            // Calculate first Bezier control points
-            // Right hand side vector
-            var rhs = [];
-
-            // Set right hand side X values
-            for (var i = 1; i < n - 1; i++)
-                rhs[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
-            rhs[0] = knots[0]._x + 2 * knots[1]._x;
-            rhs[n - 1] = 3 * knots[n - 1]._x;
-            // Get first control points X-values
-            var x = getFirstControlPoints(rhs);
-
-            // Set right hand side Y values
-            for (var i = 1; i < n - 1; i++)
-                rhs[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
-            rhs[0] = knots[0]._y + 2 * knots[1]._y;
-            rhs[n - 1] = 3 * knots[n - 1]._y;
-            // Get first control points Y-values
-            var y = getFirstControlPoints(rhs);
-
-            if (closed) {
-                // Do the actual averaging simply by linearly fading between the
-                // overlapping values.
-                for (var i = 0, j = size; i < overlap; i++, j++) {
-                    var f1 = i / overlap,
-                        f2 = 1 - f1,
-                        ie = i + overlap,
-                        je = j + overlap;
-                    // Beginning
-                    x[j] = x[i] * f1 + x[j] * f2;
-                    y[j] = y[i] * f1 + y[j] * f2;
-                    // End
-                    x[je] = x[ie] * f2 + x[je] * f1;
-                    y[je] = y[ie] * f2 + y[je] * f1;
-                }
-                n--;
-            }
-            var handleIn = null;
-            // Now set the calculated handles
-            for (var i = overlap; i <= n - overlap; i++) {
-                var segment = segments[i - overlap];
-                if (handleIn)
-                    segment.setHandleIn(handleIn.subtract(segment._point));
-                if (i < n) {
-                    segment.setHandleOut(
-                            new Point(x[i], y[i]).subtract(segment._point));
-                    handleIn = i < n - 1
-                            ? new Point(
-                                2 * knots[i + 1]._x - x[i + 1],
-                                2 * knots[i + 1]._y - y[i + 1])
-                            : new Point(
-                                (knots[n]._x + x[n - 1]) / 2,
-                                (knots[n]._y + y[n - 1]) / 2);
-                }
-            }
-            if (closed && handleIn) {
-                var segment = this._segments[0];
-                segment.setHandleIn(handleIn.subtract(segment._point));
-            }
         }
     };
 },

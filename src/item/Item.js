@@ -2445,24 +2445,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item[]} an array containing the removed items
      */
     /**
-     * Removes the children from the specified `from` index to the `to` index
-     * from the parent's {@link #children} array.
+     * Removes the children from the specified `start` index to and excluding
+     * the `end` index from the parent's {@link #children} array.
      *
      * @name Item#removeChildren
      * @function
-     * @param {Number} from the beginning index, inclusive
-     * @param {Number} [to=children.length] the ending index, exclusive
+     * @param {Number} start the beginning index, inclusive
+     * @param {Number} [end=children.length] the ending index, exclusive
      * @return {Item[]} an array containing the removed items
      */
-    removeChildren: function(from, to) {
+    removeChildren: function(start, end) {
         if (!this._children)
             return null;
-        from = from || 0;
-        to = Base.pick(to, this._children.length);
+        start = start || 0;
+        end = Base.pick(end, this._children.length);
         // Use Base.splice(), which adjusts #_index for the items above, and
         // deletes it for the removed items. Calling #_remove() afterwards is
         // fine, since it only calls Base.splice() if #_index is set.
-        var removed = Base.splice(this._children, null, from, to - from);
+        var removed = Base.splice(this._children, null, start, end - start);
         for (var i = removed.length - 1; i >= 0; i--) {
             // Don't notify parent each time, notify it separately after.
             removed[i]._remove(true, false);
