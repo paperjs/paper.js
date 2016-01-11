@@ -1122,7 +1122,7 @@ statics: /** @lends Curve */{
      */
     getNearestPoint: function(/* point */) {
         var loc = this.getNearestLocation.apply(this, arguments);
-		return loc ? loc.getPoint() : loc;
+        return loc ? loc.getPoint() : loc;
     }
 
     /**

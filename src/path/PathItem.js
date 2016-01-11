@@ -374,7 +374,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * }
      */
     getNearestPoint: function(/* point */) {
-        return this.getNearestLocation.apply(this, arguments).getPoint();
+        var loc = this.getNearestLocation.apply(this, arguments);
+        return loc ? loc.getPoint() : loc;
     },
 
     /**
