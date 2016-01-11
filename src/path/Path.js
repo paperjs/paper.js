@@ -1392,6 +1392,37 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+     * Interpolates between the specified {@code path0} and {@code path1}
+     * and use the result as the position and shape for the interpolated path.
+     * The number of segments in {@code path0}, {@code path1} and the
+     * interpolated path should be the same.
+     *
+     * @param {Path} path0 the position and shape of the path when {@code coef}
+     * is 0.
+     * @param {Path} path1 the position and shape of the path when {@code coef}
+     * is 1.
+     * @param {Number} coef the interpolation coefficient, typically between
+     * 0 and 1, but extrapolation is possible too.
+     */
+    interpolate: function(path0, path1, coef) {
+        for (var i = 0, l = this._segments.length; i < l; i++) {
+            // The number of segments should be the same everywhere,
+            // but we're going to try our best anyway
+            if ( !path0._segments[i] || !path1._segments[i] ) {
+                break;
+            }
+
+            this._segments[i].interpolate(
+                path0._segments[i],
+                path1._segments[i],
+                coef
+            );
+        }
+
+        this._changed(/*#=*/Change.GEOMETRY);
+    },
+
+    /**
      * Attempts to create a new shape item with same geometry as this path item,
      * and inherits all settings from it, similar to {@link Item#clone()}.
      *

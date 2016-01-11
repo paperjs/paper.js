@@ -160,6 +160,36 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
+     * Interpolates between the specified {@code compoundpath0} and
+     * {@code compoundpath1} and use the result as the position and shape for
+     * the interpolated compoundpath1. The number of children in
+     * {@code compoundpath0}, {@code compoundpath1} and the interpolated
+     * compoundpath should be the same.
+     *
+     * @param {CompoundPath} compoundpath0 the position and shape of the
+     * compound path when {@code coef} is 0.
+     * @param {CompoundPath} compoundpath1 the position and shape of the
+     * compound path when {@code coef} is 1.
+     * @param {Number} coef the interpolation coefficient, typically between
+     * 0 and 1, but extrapolation is possible too.
+     */
+    interpolate: function(compoundpath0, compoundpath1, coef) {
+       for (var i = 0, l = this._children.length; i < l; i++) {
+            // The number of children should be the same everywhere,
+            // but we're going to try our best anyway
+            if ( !path0._children[i] || !path1._children[i] ) {
+                break;
+            }
+
+            this._children[i].interpolate(
+                path0._children[i],
+                path1._children[i],
+                coef
+            );
+        }
+    },
+
+    /**
      * Specifies whether the compound path is oriented clock-wise.
      *
      * @type Boolean

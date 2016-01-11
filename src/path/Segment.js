@@ -477,6 +477,35 @@ var Segment = Base.extend(/** @lends Segment# */{
         this._changed();
     },
 
+    /**
+     * Interpolates between the specified {@code segment0} and {@code segment1}
+     * and use the result as the position for the interpolated segment.
+     *
+     * @param {Segment} segment0 the position of the segment when {@code coef}
+     * is 0.
+     * @param {Segment} segment1 the position of the segment when {@code coef}
+     * is 1.
+     * @param {Number} coef the interpolation coefficient, typically between
+     * 0 and 1, but extrapolation is possible too.
+     */
+    interpolate: function(segment0, segment1, coef) {
+        var dxPoint = segment1._point._x - segment0._point._x,
+            dyPoint = segment1._point._y - segment0._point._y,
+            dxHandleIn = segment1._handleIn._x - segment0._handleIn._x,
+            dyHandleIn = segment1._handleIn._y - segment0._handleIn._y,
+            dxHandleOut = segment1._handleOut._x - segment0._handleOut._x,
+            dyHandleOut = segment1._handleOut._y - segment0._handleOut._y;
+
+        this._point._x = segment0._point._x + dxPoint * coef;
+        this._point._y = segment0._point._y + dyPoint * coef;
+        this._handleIn._x = segment0._handleIn._x + dxHandleIn * coef;
+        this._handleIn._y = segment0._handleIn._y + dyHandleIn * coef;
+        this._handleOut._x = segment0._handleOut._x + dxHandleOut * coef;
+        this._handleOut._y = segment0._handleOut._y + dyHandleOut * coef;
+
+        this._changed();
+    },
+
     _transformCoordinates: function(matrix, coords, change) {
         // Use matrix.transform version() that takes arrays of multiple
         // points for largely improved performance, as no calls to

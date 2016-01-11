@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 25 11:23:38 2015 +0100
+ * Date: Sun Oct 25 11:24:42 2015 +0100
  *
  ***
  *
@@ -88,7 +88,7 @@ var Base = new function() {
 				val = dest[val.substring(1)] || val;
 			var isFunc = typeof val === 'function',
 				res = val,
-				prev = preserve || isFunc && !val.base
+				prev = preserve || isFunc
 						? (val && val.get ? name in dest : dest[name])
 						: null,
 				bean;
@@ -136,7 +136,7 @@ var Base = new function() {
 
 	function set(obj, props, exclude) {
 		for (var key in props)
-			if (props.hasOwnProperty(key) && !(exclude && exclude[key]))
+			if (props.hasOwnProperty(key) && (!exclude || !exclude[key]))
 				obj[key] = props[key];
 		return obj;
 	}
@@ -161,22 +161,19 @@ var Base = new function() {
 
 		extend: function() {
 			var base = this,
-				ctor,
-				proto;
+				ctor;
 			for (var i = 0, l = arguments.length; i < l; i++)
 				if (ctor = arguments[i].initialize)
 					break;
 			ctor = ctor || function() {
 				base.apply(this, arguments);
 			};
-			proto = ctor.prototype = create(this.prototype);
-			define(proto, 'constructor',
+			ctor.prototype = create(this.prototype);
+			ctor.base = base;
+			define(ctor.prototype, 'constructor',
 					{ value: ctor, writable: true, configurable: true });
 			inject(ctor, this, true);
-			if (arguments.length)
-				this.inject.apply(ctor, arguments);
-			ctor.base = base;
-			return ctor;
+			return arguments.length ? this.inject.apply(ctor, arguments) : ctor;
 		}
 	}, true).inject({
 		inject: function() {
@@ -222,8 +219,10 @@ var Base = new function() {
 						|| ctor.name === 'Object');
 			},
 
-			pick: function(a, b) {
-				return a !== undefined ? a : b;
+			pick: function() {
+				for (var i = 0, l = arguments.length; i < l; i++)
+					if (arguments[i] !== undefined)
+						return arguments[i];
 			}
 		}
 	});
@@ -5324,6 +5323,24 @@ var Segment = Base.extend({
 		this._changed();
 	},
 
+	interpolate: function(segment0, segment1, coef) {
+		var dxPoint = segment1._point._x - segment0._point._x,
+			dyPoint = segment1._point._y - segment0._point._y,
+			dxHandleIn = segment1._handleIn._x - segment0._handleIn._x,
+			dyHandleIn = segment1._handleIn._y - segment0._handleIn._y,
+			dxHandleOut = segment1._handleOut._x - segment0._handleOut._x,
+			dyHandleOut = segment1._handleOut._y - segment0._handleOut._y;
+
+		this._point._x = segment0._point._x + dxPoint * coef;
+		this._point._y = segment0._point._y + dyPoint * coef;
+		this._handleIn._x = segment0._handleIn._x + dxHandleIn * coef;
+		this._handleIn._y = segment0._handleIn._y + dyHandleIn * coef;
+		this._handleOut._x = segment0._handleOut._x + dxHandleOut * coef;
+		this._handleOut._y = segment0._handleOut._y + dyHandleOut * coef;
+
+		this._changed();
+	},
+
 	_transformCoordinates: function(matrix, coords, change) {
 		var point = this._point,
 			handleIn = !change || !this._handleIn.isZero()
@@ -7619,6 +7636,22 @@ var Path = PathItem.extend({
 		return this;
 	},
 
+	interpolate: function(path0, path1, coef) {
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			if ( !path0._segments[i] || !path1._segments[i] ) {
+				break;
+			}
+
+			this._segments[i].interpolate(
+				path0._segments[i],
+				path1._segments[i],
+				coef
+			);
+		}
+
+		this._changed(9);
+	},
+
 	toShape: function(insert) {
 		if (!this._closed)
 			return null;
@@ -8774,6 +8807,20 @@ var CompoundPath = PathItem.extend({
 			return path;
 		}
 		return reduce.base.call(this);
+	},
+
+	interpolate: function(compoundpath0, compoundpath1, coef) {
+	   for (var i = 0, l = this._children.length; i < l; i++) {
+			if ( !path0._children[i] || !path1._children[i] ) {
+				break;
+			}
+
+			this._children[i].interpolate(
+				path0._children[i],
+				path1._children[i],
+				coef
+			);
+		}
 	},
 
 	isClockwise: function() {
