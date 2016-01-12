@@ -1438,9 +1438,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // Avoid deeper recursion.
         // NOTE: @iconexperience determined that more than 20 recursions are
         // needed sometimes, depending on the tDiff threshold values further
-        // below when determining which curve converges the least. He also
-        // recommended a threshold of 0.5 instead of the initial 0.8, see: #565
-        if (++recursion >= 24)
+        // below when determining which curve converges the least: #565, #899
+        if (++recursion >= 26)
             return;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
