@@ -1433,8 +1433,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
         }
     }
 
-    function addCurveIntersections(v1, v2, c1, c2, locations, param,
-            tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion) {
+    function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
+            uMin, uMax, reverse, recursion) {
         // Avoid deeper recursion.
         // NOTE: @iconexperience determined that more than 20 recursions are
         // needed sometimes, depending on the tDiff threshold values further
@@ -1494,36 +1494,36 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // Apply the result of the clipping to curve 1:
             var v1Clip = Curve.getPart(v1, tMinClip, tMaxClip),
                 tDiff = tMaxClip - tMinClip;
-            if (oldTDiff > 0.5 && tDiff > 0.5) {
+            if (tDiff > 0.8) {
                 // Subdivide the curve which has converged the least.
                 if (tMaxNew - tMinNew > uMax - uMin) {
                     var parts = Curve.subdivide(v1Clip, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     addCurveIntersections(
-                        v2, parts[0], c2, c1, locations, param,
-                        uMin, uMax, tMinNew, t, tDiff, !reverse, recursion);
+                            v2, parts[0], c2, c1, locations, param,
+                            uMin, uMax, tMinNew, t, !reverse, recursion);
                     addCurveIntersections(
-                        v2, parts[1], c2, c1, locations, param,
-                        uMin, uMax, t, tMaxNew, tDiff, !reverse, recursion);
+                            v2, parts[1], c2, c1, locations, param,
+                            uMin, uMax, t, tMaxNew, !reverse, recursion);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     addCurveIntersections(
-                        parts[0], v1Clip, c2, c1, locations, param,
-                        uMin, u, tMinNew, tMaxNew, tDiff, !reverse, recursion);
+                            parts[0], v1Clip, c2, c1, locations, param,
+                            uMin, u, tMinNew, tMaxNew, !reverse, recursion);
                     addCurveIntersections(
-                        parts[1], v1Clip, c2, c1, locations, param,
-                        u, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
+                            parts[1], v1Clip, c2, c1, locations, param,
+                            u, uMax, tMinNew, tMaxNew, !reverse, recursion);
                 }
             } else if (tDiff > 0) { // Iterate
                 addCurveIntersections(v2, v1Clip, c2, c1, locations, param,
-                    uMin, uMax, tMinNew, tMaxNew, tDiff, !reverse, recursion);
+                        uMin, uMax, tMinNew, tMaxNew, !reverse, recursion);
             } else {
                 // Curve 1 has converged to a point. Since we cannot construct a
                 // fat-line from a point, we dismiss this clipping so we can
                 // continue clipping curve 2.
                 addCurveIntersections(v2, v1, c2, c1, locations, param,
-                    uMin, uMax, tMin, tMax, tDiff, !reverse, recursion);
+                        uMin, uMax, tMin, tMax, !reverse, recursion);
             }
         }
     }
@@ -1743,8 +1743,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         v1, v2, c1, c2, locations, param,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
-                        // tMin, tMax, uMin, uMax, oldTDiff, reverse, recursion
-                        0, 1, 0, 1, 0, false, 0);
+                        // tMin, tMax, uMin, uMax, reverse, recursion
+                        0, 1, 0, 1, 0, 0);
             // We're done if we handle lines and found one intersection already:
             // #805#issuecomment-148503018
             if (straight && locations.length > before)
