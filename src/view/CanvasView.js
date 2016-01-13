@@ -31,7 +31,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * @name CanvasView#initialize
      * @param {Size} size the size of the canvas to be created
      */
-    initialize: function(project, canvas) {
+    initialize: function CanvasView(project, canvas) {
         // Handle canvas argument
         if (!(canvas instanceof HTMLCanvasElement)) {
             // See if the arguments describe the view size:
