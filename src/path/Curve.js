@@ -1491,12 +1491,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t : u, null);
         } else {
             // Apply the result of the clipping to curve 1:
-            var v1Clip = Curve.getPart(v1, tMinClip, tMaxClip),
-                tDiff = tMaxClip - tMinClip;
-            if (tDiff > 0.8) {
+            v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+            if (tMaxClip - tMinClip > 0.8) {
                 // Subdivide the curve which has converged the least.
                 if (tMaxNew - tMinNew > uMax - uMin) {
-                    var parts = Curve.subdivide(v1Clip, 0.5),
+                    var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     addCurveIntersections(
                             v2, parts[0], c2, c1, locations, param,
@@ -1508,21 +1507,15 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     addCurveIntersections(
-                            parts[0], v1Clip, c2, c1, locations, param,
+                            parts[0], v1, c2, c1, locations, param,
                             uMin, u, tMinNew, tMaxNew, !reverse, recursion);
                     addCurveIntersections(
-                            parts[1], v1Clip, c2, c1, locations, param,
+                            parts[1], v1, c2, c1, locations, param,
                             u, uMax, tMinNew, tMaxNew, !reverse, recursion);
                 }
-            } else if (tDiff > 0) { // Iterate
-                addCurveIntersections(v2, v1Clip, c2, c1, locations, param,
-                        uMin, uMax, tMinNew, tMaxNew, !reverse, recursion);
-            } else {
-                // Curve 1 has converged to a point. Since we cannot construct a
-                // fat-line from a point, we dismiss this clipping so we can
-                // continue clipping curve 2.
+            } else { // Iterate
                 addCurveIntersections(v2, v1, c2, c1, locations, param,
-                        uMin, uMax, tMin, tMax, !reverse, recursion);
+                        uMin, uMax, tMinNew, tMaxNew, !reverse, recursion);
             }
         }
     }
