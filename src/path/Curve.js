@@ -1707,13 +1707,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 c2s2y = (3 * v2[5] + c2p2y) / 4,
                 min = Math.min,
                 max = Math.max;
-            if (!(  max(c1p1x, c1s1x, c1s2x, c1p2x) + epsilon >=
+            if (!(  max(c1p1x, c1s1x, c1s2x, c1p2x) + epsilon >
                     min(c2p1x, c2s1x, c2s2x, c2p2x) &&
-                    min(c1p1x, c1s1x, c1s2x, c1p2x) - epsilon <=
+                    min(c1p1x, c1s1x, c1s2x, c1p2x) - epsilon <
                     max(c2p1x, c2s1x, c2s2x, c2p2x) &&
-                    max(c1p1y, c1s1y, c1s2y, c1p2y) + epsilon >=
+                    max(c1p1y, c1s1y, c1s2y, c1p2y) + epsilon >
                     min(c2p1y, c2s1y, c2s2y, c2p2y) &&
-                    min(c1p1y, c1s1y, c1s2y, c1p2y) - epsilon <=
+                    min(c1p1y, c1s1y, c1s2y, c1p2y) - epsilon <
                     max(c2p1y, c2s1y, c2s2y, c2p2y)))
                 return locations;
             // Now detect and handle overlaps:
