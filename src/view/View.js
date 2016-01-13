@@ -496,7 +496,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     viewToProject: function(/* point */) {
         return this._matrix._inverseTransform(Point.read(arguments));
-    }
+    },
+
+    /**
+     * @param {Event} event
+     * @return {Point}
+     */
+    getEventPoint: function(event) {
+        return this.viewToProject(DomEvent.getOffset(event, this._element));
+    },
 
     /**
      * {@grouptitle Event Handlers}
@@ -699,10 +707,6 @@ new function() { // Injection scope for mouse events on the browser
                 target.getAttribute('id')];
     }
 
-    function viewToProject(view, event) {
-        return view.viewToProject(DomEvent.getOffset(event, view._element));
-    }
-
     function updateFocus() {
         var view = View._focused;
         if (!view || !view.isVisible()) {
@@ -726,7 +730,7 @@ new function() { // Injection scope for mouse events on the browser
         }
 
         if (!point)
-            point = viewToProject(view, event);
+            point = view.getEventPoint(event);
         if (project)
             project.removeOn(eventType);
         // Always first call the view's mouse handlers, as required by
