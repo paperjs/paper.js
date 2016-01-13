@@ -330,7 +330,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         // Update global reference to this scope.
         paper = this._scope;
         // Now handle event callbacks
-        var called = false, drag = false;
+        var called = false,
+            drag = false;
         switch (type) {
         case 'mousedown':
             this._updateEvent(type, point, null, null, true, false, false);
@@ -352,8 +353,12 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             this._firstMove = true;
             break;
         case 'mousedrag':
-            drag = true;
-        // Fall through to share event handling
+            // If there is no mousedrag event installed, fall back to mousemove,
+            // with which we share the actual event handling code anyhow.
+            if (!(drag = this.responds(type)))
+                type = 'mousemove';
+            // Fall through to the shared event handling code below:
+            /* jshint -W086 */
         case 'mousemove':
             // In order for idleInterval drag events to work, we need to not
             // check the first call for a change of position. Subsequent calls
