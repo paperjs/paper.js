@@ -481,26 +481,35 @@ var View = Base.extend(Emitter, /** @lends View# */{
     // TODO: getMousePoint
     // TODO: projectToView(rect)
 
-    // DOCS: projectToView(point), viewToProject(point)
     /**
-     * @param {Point} point
-     * @return {Point}
+     * Converts the passed point from project coordinate space to view
+     * coordinate space, which is measured in browser pixels in relation to the
+     * position of the view element.
+     *
+     * @param {Point} point the point in project coordinates to be converted
+     * @return {Point} the point converted into view coordinates
      */
     projectToView: function(/* point */) {
         return this._matrix._transformPoint(Point.read(arguments));
     },
 
     /**
-     * @param {Point} point
-     * @return {Point}
+     * Converts the passed point from view coordinate space to project
+     * coordinate space.
+     *
+     * @param {Point} point the point in view coordinates to be converted
+     * @return {Point} the point converted into project coordinates
      */
     viewToProject: function(/* point */) {
         return this._matrix._inverseTransform(Point.read(arguments));
     },
 
     /**
-     * @param {Event} event
-     * @return {Point}
+     * Determines and returns the event location in project coordinate space.
+     *
+     * @param {Event} event the native event object for which to determine the
+     *     location.
+     * @return {Point} the event point in project coordinates.
      */
     getEventPoint: function(event) {
         return this.viewToProject(DomEvent.getOffset(event, this._element));
