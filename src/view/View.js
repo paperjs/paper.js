@@ -732,10 +732,11 @@ new function() { // Injection scope for mouse events on the browser
     function handleEvent(type, view, event, point) {
         var eventType = type === 'mousemove' && mouseDown ? 'mousedrag' : type,
             project = paper.project,
-            tool = view._scope.tool;
+            tool = view._scope.tool,
+            called = false;
 
         function handle(obj) {
-            obj._handleEvent(eventType, event, point);
+            called = obj._handleEvent(eventType, event, point) || called;
         }
 
         if (!point)
@@ -749,6 +750,10 @@ new function() { // Injection scope for mouse events on the browser
             handle(view);
         if (tool)
             handle(tool);
+        // Prevent default if at least one mouse event handler was called, to
+        // prevent scrolling on touch devices.
+        if (called)
+            event.preventDefault();
         // In the end we always call update(), which only updates the view if
         // anything has changed in the above calls.
         view.update();
@@ -872,7 +877,14 @@ new function() { // Injection scope for mouse events on the browser
      * with support for bubbling (event-propagation).
      */
 
-    var downPoint,
+    var called = false, // Keep track of whether at least one handler was called
+        // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
+        // to doubleclick, fall back to click:
+        fallbacks = {
+            doubleclick: 'click',
+            mousedrag: 'mousemove'
+        },
+        downPoint,
         lastPoint,
         downItem,
         overItem,
@@ -880,13 +892,8 @@ new function() { // Injection scope for mouse events on the browser
         clickItem,
         clickTime,
         dblClick,
-        overView,
-        // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
-        // to doubleclick, fall back to click:
-        fallbacks = {
-            doubleclick: 'click',
-            mousedrag: 'mousemove'
-        };
+        overView;
+
 
     // Returns true if event was stopped, false otherwise, whether handler was
     // called or not!
@@ -904,9 +911,12 @@ new function() { // Injection scope for mouse events on the browser
                             // Calculate delta if prevPoint was passed
                             prevPoint ? point.subtract(prevPoint) : null);
                 }
-                // Bail out if propagation is stopped
-                if (obj.emit(type, mouseEvent) && mouseEvent.stopped)
-                    return true;
+                if (obj.emit(type, mouseEvent)) {
+                    called = true;
+                    // Bail out if propagation is stopped
+                    if (mouseEvent.stopped)
+                        return true;
+                }
             } else {
                 var fallback = fallbacks[type];
                 if (fallback)
@@ -923,7 +933,12 @@ new function() { // Injection scope for mouse events on the browser
         return false;
     }
 
+    // Returns true if event was stopped, false otherwise, whether handler was
+    // called or not!
     function emitEvents(view, item, type, event, point, prevPoint) {
+        // Set called to false, so it will reflect if the following calls to
+        // emitEvent() have at least called one handler.
+        called = false;
         // First handle the drag-item and its parents, through bubbling.
         return (dragItem && emitEvent(dragItem, type, event, point,
                     prevPoint)
@@ -968,8 +983,10 @@ new function() { // Injection scope for mouse events on the browser
         _viewEvents: viewEvents,
 
         /**
-         * Returns true if event was stopped, false otherwise, whether handler
-         * was called or not!
+         * Private method to handle view and item events.
+         *
+         * @return true if at least one event handler was called, false
+         *     otherwise.
          */
         _handleEvent: function(type, event, point) {
             // Run the hit-test first
@@ -1038,7 +1055,7 @@ new function() { // Injection scope for mouse events on the browser
                 }
             }
             lastPoint = point;
-            return stopped;
+            return called;
         },
 
         _installEvent: function(type) {

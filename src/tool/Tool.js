@@ -278,6 +278,12 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * }
      */
 
+
+    /**
+     * Private method to handle tool-events.
+     *
+     * @return true if at least one event handler was called, false otherwise.
+     */
     _handleEvent: function(type, event, point) {
         // Update global reference to this scope.
         paper = this._scope;
@@ -372,9 +378,6 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 }
             }
         }
-        // Prevent default if mouse event was handled.
-        if (called)
-            event.preventDefault();
         return called;
     }
     /**
