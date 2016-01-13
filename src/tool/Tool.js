@@ -351,12 +351,10 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             this._updateEvent(type, point, null, null, true, false, false);
             this._firstMove = true;
             break;
-
         case 'mousedrag':
             drag = true;
         // Fall through to share event handling
         case 'mousemove':
-            var source = !drag && this._firstMove;
             // In order for idleInterval drag events to work, we need to not
             // check the first call for a change of position. Subsequent calls
             // required by min/maxDistance functionality will require it,
@@ -367,8 +365,8 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // case it is shorter than maxDistance, as this would produce weird
             // results. matchMaxDistance controls this.
             var matchMaxDistance = false;
-            while (this._updateEvent(type, point, this.minDistance, this.maxDistance,
-                        source, needsChange, matchMaxDistance)) {
+            while (this._updateEvent(type, point, this.minDistance,
+                    this.maxDistance, !drag && this._firstMove, needsChange, matchMaxDistance)) {
                 called = this._fireEvent(type, event) || called;
                 if (drag) {
                     needsChange = true;
