@@ -281,8 +281,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     _handleEvent: function(type, event, point) {
         // Update global reference to this scope.
         paper = this._scope;
-        // Now handle event callbacks
-        var // In order for idleInterval drag events to work, we need to not
+        var minDistance = this.minDistance,
+            maxDistance = this.maxDistance,
+            // In order for idleInterval drag events to work, we need to not
             // check the first call for a change of position. Subsequent calls
             // required by min/maxDistance functionality will require it,
             // otherwise this might loop endlessly.
@@ -293,22 +294,27 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // results. matchMaxDistance controls this.
             matchMaxDistance = false,
             called = false,
-            drag = false,
-            tool = this;
+            tool = this,
+            mouse = {};
+            // Create a simple lookup object to quickly check for different
+            // mouse event types.
+            mouse[type.substr(5)] = true;
 
         function update(start, minDistance, maxDistance) {
             var toolPoint = tool._point,
                 pt = point;
-            if (!start) {
+            if (start) {
+                tool._count = 0;
+            } else {
+                tool._count++;
                 if (minDistance != null || maxDistance != null) {
-                    var minDist = minDistance != null ? minDistance : 0,
-                        vector = pt.subtract(toolPoint),
+                    var vector = pt.subtract(toolPoint),
                         distance = vector.getLength();
-                    if (distance < minDist)
+                    if (distance < (minDistance || 0))
                         return false;
                     // Produce a new point on the way to point if point is
                     // further away than maxDistance
-                    if (maxDistance != null && maxDistance !== 0) {
+                    if (maxDistance) {
                         if (distance > maxDistance) {
                             pt = toolPoint.add(vector.normalize(maxDistance));
                         } else if (matchMaxDistance) {
@@ -322,21 +328,17 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // Make sure mousemove events have lastPoint set even for the first
             // move so event.delta is always defined for them.
             // TODO: Decide whether mousedown also should always have delta set.
-            tool._lastPoint = start && type === 'mousemove' ? pt : toolPoint;
+            tool._lastPoint = start && mouse.move ? pt : toolPoint;
             tool._point = pt;
-            switch (type) {
-            case 'mousedown':
+            if (mouse.down) {
                 tool._lastPoint = tool._downPoint;
                 tool._downPoint = pt;
                 tool._downCount++;
-                break;
-            case 'mouseup':
+            } else if (mouse.up) {
                 // Mouse up events return the down point for last point, so
                 // delta is spanning over the whole drag.
                 tool._lastPoint = tool._downPoint;
-                break;
             }
-            tool._count = start ? 0 : tool._count + 1;
             return true;
         }
 
@@ -345,29 +347,23 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     tool.emit(type, new ToolEvent(tool, type, event)) || called;
         }
 
-        switch (type) {
-        case 'mousedown':
+        if (mouse.down) {
             update(true);
             emit();
-            break;
-        case 'mouseup':
-            update(false, null, this.maxDistance);
+        } else if (mouse.up) {
+            update(false, null, maxDistance);
             emit();
             // Start with new values for 'mousemove'
             update(true);
             this._firstMove = true;
-            break;
-        case 'mousedrag':
+        } else {
             // If there is no mousedrag event installed, fall back to mousemove,
             // with which we share the actual event handling code anyhow.
-            if (!(drag = this.responds(type)))
+            var drag = mouse.drag && this.responds(type);
+            if (!drag)
                 type = 'mousemove';
-            // Fall through to the shared event handling code below:
-            /* jshint -W086 */
-        case 'mousemove':
             needsChange = !drag;
-            while (update(!drag && this._firstMove, this.minDistance,
-                    this.maxDistance)) {
+            while (update(!drag && this._firstMove, minDistance, maxDistance)) {
                 emit();
                 if (drag) {
                     needsChange = matchMaxDistance = true;
@@ -375,7 +371,6 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     this._firstMove = false;
                 }
             }
-            break;
         }
         // Prevent default if mouse event was handled.
         if (called)
