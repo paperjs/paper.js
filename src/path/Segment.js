@@ -351,7 +351,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * The curve location that describes this segment's position ont the path.
+     * The curve location that describes this segment's position on the path.
      *
      * @bean
      * @type CurveLocation

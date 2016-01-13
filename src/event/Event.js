@@ -24,15 +24,15 @@ var Event = Base.extend(/** @lends Event# */{
         this.event = event;
     },
 
-    isPrevented: false,
-    isStopped: false,
+    prevented: false,
+    stopped: false,
 
     /**
      * Cancels the event if it is cancelable, without stopping further
      * propagation of the event.
      */
     preventDefault: function() {
-        this.isPrevented = true;
+        this.prevented = true;
         this.event.preventDefault();
     },
 
@@ -40,7 +40,7 @@ var Event = Base.extend(/** @lends Event# */{
      * Prevents further propagation of the current event.
      */
     stopPropagation: function() {
-        this.isStopped = true;
+        this.stopped = true;
         this.event.stopPropagation();
     },
 

@@ -2659,7 +2659,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     isDescendant: function(item) {
         var parent = this;
         while (parent = parent._parent) {
-            if (parent == item)
+            if (parent === item)
                 return true;
         }
         return false;

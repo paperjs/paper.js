@@ -119,6 +119,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Items that need the onFrame handler called on them
         this._frameItems = {};
         this._frameItemCount = 0;
+        // Count the installed events, see _installEvent() / _uninstallEvent().
+        this._eventCounters = {};
     },
 
     /**
@@ -150,7 +152,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return true;
     },
 
-    _events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove'],
+    _events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove',
+            'onMouseDrag', 'onMouseEnter', 'onMouseLeave'],
         function(name) {
             this[name] = {
                 install: function(type) {
@@ -681,16 +684,23 @@ var View = Base.extend(Emitter, /** @lends View# */{
 },
 new function() { // Injection scope for mouse events on the browser
 /*#*/ if (__options.environment == 'browser') {
+
+    /**
+     * Native event handling, coordinate conversion, focus handling and
+     * delegation to view and tool objects.
+     */
+
     var tool,
         prevFocus,
         tempFocus,
-        dragging = false;
+        mouseDown = false;
 
     function getView(event) {
         // Get the view from the current event target.
         var target = DomEvent.getTarget(event);
         // Some node do not have the getAttribute method, e.g. SVG nodes.
-        return target.getAttribute && View._viewsById[target.getAttribute('id')];
+        return target.getAttribute && View._viewsById[
+                target.getAttribute('id')];
     }
 
     function viewToProject(view, event) {
@@ -710,16 +720,33 @@ new function() { // Injection scope for mouse events on the browser
         }
     }
 
-    function handleMouseMove(view, point, event) {
-        view._handleEvent('mousemove', point, event);
-        var tool = view._scope.tool;
-        if (tool) {
-            // If there's no onMouseDrag, fire onMouseMove while dragging.
-            tool._handleEvent(dragging && tool.responds('mousedrag')
-                    ? 'mousedrag' : 'mousemove', point, event);
+    function handleEvent(type, view, event, point) {
+        var eventType = type === 'mousemove' && mouseDown ? 'mousedrag' : type,
+            project = paper.project,
+            tool = view._scope.tool;
+
+        function handle(obj) {
+            obj._handleEvent(eventType, event, point);
         }
+
+        if (!point)
+            point = viewToProject(view, event);
+        if (project)
+            project.removeOn(eventType);
+        // Always first call the view's mouse handlers, as required by
+        // CanvasView, and then handle the active tool, if any.
+        // No need to call view if it doesn't have event handlers for this type.
+        if (view._eventCounters[type])
+            handle(view);
+        if (tool)
+            handle(tool);
+        // In the end we always call update(), which only updates the view if
+        // anything has changed in the above calls.
         view.update();
-        return tool;
+    }
+
+    function handleMouseMove(view, event, point) {
+        handleEvent('mousemove', view, event, point);
     }
 
     // Touch handling inspired by Hammer.js
@@ -747,9 +774,9 @@ new function() { // Injection scope for mouse events on the browser
 
     var viewEvents = {
         'selectstart dragstart': function(event) {
-            // Only stop this even if we're dragging already, since otherwise no
-            // text whatsoever can be selected on the page.
-            if (dragging)
+            // Only stop this even if we're mouseDown already, since otherwise
+            // no text whatsoever can be selected on the page.
+            if (mouseDown)
                 event.preventDefault();
         }
     };
@@ -766,10 +793,12 @@ new function() { // Injection scope for mouse events on the browser
                 // TODO: Remove again after Dec 2016 once it is fixed in Chrome.
                 var offset = DomEvent.getOffset(event, view._element),
                     x = offset.x,
-                    abs = Math.abs(x),
-                    max = 1 << 25;
-                offset.x = abs - max < abs ? (abs - max) * (x < 0 ? -1 : 1) : x;
-                handleMouseMove(view, view.viewToProject(offset), event);
+                    abs = Math.abs,
+                    ax = abs(x),
+                    max = 1 << 25,
+                    diff = ax - max;
+                offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
+                handleMouseMove(view, event, view.viewToProject(offset));
             }
         },
 
@@ -783,22 +812,14 @@ new function() { // Injection scope for mouse events on the browser
     viewEvents[mousedown] = function(event) {
         // Get the view from the event, and store a reference to the view that
         // should receive keyboard input.
-        var view = View._focused = getView(event),
-            point = viewToProject(view, event);
-        dragging = true;
-        // Always first call the view's mouse handlers, as required by
-        // CanvasView, and then handle the active tool, if any.
-        view._handleEvent('mousedown', point, event);
-        if (tool = view._scope.tool)
-            tool._handleEvent('mousedown', point, event);
-        // In the end we always call update(), which only updates the view if
-        // anything has changed in the above calls.
-        view.update();
+        var view = View._focused = getView(event);
+        mouseDown = true;
+        handleEvent('mousedown', view, event);
     };
 
     docEvents[mousemove] = function(event) {
         var view = View._focused;
-        if (!dragging) {
+        if (!mouseDown) {
             // See if we can get the view from the current event target, and
             // handle the mouse move over it.
             var target = getView(event);
@@ -808,7 +829,7 @@ new function() { // Injection scope for mouse events on the browser
                 // If we switch view, fire one last mousemove in the old view,
                 // to give items the change to receive a mouseleave, etc.
                 if (view !== target)
-                    handleMouseMove(view, viewToProject(view, event), event);
+                    handleMouseMove(view, event);
                 prevFocus = view;
                 view = View._focused = tempFocus = target;
             } else if (tempFocus && tempFocus === view) {
@@ -817,23 +838,15 @@ new function() { // Injection scope for mouse events on the browser
                 updateFocus();
             }
         }
-        if (view) {
-            var point = viewToProject(view, event);
-            if (dragging || view.getBounds().contains(point))
-                tool = handleMouseMove(view, point, event);
-        }
+        if (view)
+            handleMouseMove(view, event);
     };
 
     docEvents[mouseup] = function(event) {
         var view = View._focused;
-        if (!view || !dragging)
-            return;
-        var point = viewToProject(view, event);
-        dragging = false;
-        view._handleEvent('mouseup', point, event);
-        if (tool)
-            tool._handleEvent('mouseup', point, event);
-        view.update();
+        if (view && mouseDown)
+            handleEvent('mouseup', view, event);
+        mouseDown = false;
     };
 
     DomEvent.add(document, docEvents);
@@ -842,9 +855,84 @@ new function() { // Injection scope for mouse events on the browser
         load: updateFocus
     });
 
-    // Flags defining which native events are required by which Paper events
-    // as required for counting amount of necessary natives events.
-    // The mapping is native -> virtual
+    /**
+     * Higher level event handling, hit-testing, and emitting of normal mouse
+     * events along with "virtual" events such as mouseenter, mouseleave,
+     * mousedrag, click, doubleclick, on both the hit-test item and the view,
+     * with support for bubbling (event-propagation).
+     */
+
+    var downPoint,
+        lastPoint,
+        downItem,
+        overItem,
+        dragItem,
+        clickItem,
+        clickTime,
+        dblClick,
+        overView,
+        // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
+        // to doubleclick, fall back to click:
+        fallbacks = {
+            doubleclick: 'click',
+            mousedrag: 'mousemove'
+        };
+
+    // Returns true if event was stopped, false otherwise, whether handler was
+    // called or not!
+    function emitEvent(obj, type, event, point, prevPoint, stopItem) {
+        var target = obj,
+            mouseEvent;
+
+        function emit(obj, type) {
+            if (obj.responds(type)) {
+                // Only produce the event object if we really need it, and then
+                // reuse it if we're bubbling.
+                if (!mouseEvent) {
+                    mouseEvent = new MouseEvent(
+                            type, event, point, target, mouseDown,
+                            // Calculate delta if prevPoint was passed
+                            prevPoint ? point.subtract(prevPoint) : null);
+                }
+                // Bail out if propagation is stopped
+                if (obj.emit(type, mouseEvent) && mouseEvent.stopped)
+                    return true;
+            } else {
+                var fallback = fallbacks[type];
+                if (fallback)
+                    return emit(obj, fallback);
+            }
+        }
+
+        // Bubble up the parents and emit this event until we're told to stop.
+        while (obj && obj !== stopItem) {
+            if (emit(obj, type))
+                return true;
+            obj = obj._parent;
+        }
+        return false;
+    }
+
+    function emitEvents(view, item, type, event, point, prevPoint) {
+        // First handle the drag-item and its parents, through bubbling.
+        return (dragItem && emitEvent(dragItem, type, event, point,
+                    prevPoint)
+            // Next handle the hit-test item, if it's different from the drag
+            // item and not a descendant of it (in which case it would already
+            // have received an event in the call above). Use fallbacks to
+            // translate mousedrag to mousemove, since drag is handled above.
+            || item && item !== dragItem && !item.isDescendant(dragItem)
+                && emitEvent(item, fallbacks[type] || type, event, point,
+                    prevPoint, dragItem)
+            // Lastly handle the move / drag on the view, if we're still here.
+            || emitEvent(view, type, event, point, prevPoint));
+    }
+
+    /**
+     * Flags defining which native events are required by which Paper events
+     * as required for counting amount of necessary natives events.
+     * The mapping is native -> virtual
+     */
     var mouseFlags = {
         mousedown: {
             mousedown: 1,
@@ -869,18 +957,87 @@ new function() { // Injection scope for mouse events on the browser
     return {
         _viewEvents: viewEvents,
 
-        // To be defined in subclasses
-        _handleEvent: function(/* type, point, event */) {},
+        /**
+         * Returns true if event was stopped, false otherwise, whether handler
+         * was called or not!
+         */
+        _handleEvent: function(type, event, point) {
+            // Run the hit-test first
+            var hit = this._project.hitTest(point, {
+                    tolerance: 0,
+                    fill: true,
+                    stroke: true
+                }),
+                item = hit && hit.item,
+                inView = this.getBounds().contains(point),
+                stopped = false,
+                mouse = {};
+            // Create a simple lookup object to quickly check for different
+            // mouse event types.
+            mouse[type.substr(5)] = true;
+            // Handle mousemove first, even if this is not actually a mousemove
+            // event but the mouse has moved since the last event, but do not
+            // allow it to stop the other events in that case.
+            var nativeMove = mouse.move || mouse.drag;
+                moveType = nativeMove && type
+                    || lastPoint && !lastPoint.equals(point) && 'mousemove';
+            if (moveType) {
+                // Handle mouseenter / leave between items, as well as views.
+                if (item !== overItem) {
+                    if (overItem)
+                        emitEvent(overItem, 'mouseleave', event, point);
+                    if (item)
+                        emitEvent(item, 'mouseenter', event, point);
+                }
+                overItem = item;
+                if (overView && !overView.getBounds().contains(point)) {
+                    emitEvent(overView, 'mouseleave', event, point);
+                    overView = null;
+                }
+                if (this !== overView && inView) {
+                    emitEvent(this, 'mouseenter', event, point);
+                    overView = this;
+                }
+                if (inView || mouse.drag)
+                    stopped = emitEvents(this, item, moveType, event, point,
+                            lastPoint);
+            }
+            if (!nativeMove) {
+               // Now handle mousedown / mouseup
+                stopped = emitEvents(this, item, type, event, point, downPoint);
+                if (mouse.down) {
+                    // See if we're clicking again on the same item, within the
+                    // double-click time. Firefox uses 300ms as the max time
+                    // difference:
+                    dblClick = clickItem === item
+                        && (Date.now() - clickTime < 300);
+                    downItem = clickItem = item;
+                    downPoint = lastPoint = point;
+                    // Only start dragging if the mousedown event has not
+                    // stopped propagation.
+                    dragItem = !stopped && item;
+                } else if (mouse.up) {
+                    // Emulate click / doubleclick, but only on item, not view
+                    if (!stopped && item && item === downItem) {
+                        clickTime = Date.now();
+                        emitEvent(item, dblClick ? 'doubleclick' : 'click',
+                                event, point, downPoint);
+                        dblClick = false;
+                    }
+                    downItem = dragItem = null;
+                }
+            }
+            lastPoint = point;
+            return stopped;
+        },
 
         _installEvent: function(type) {
             // If the view requires counting of installed mouse events,
             // increase the counters now according to mouseFlags
             var counters = this._eventCounters;
-            if (counters) {
-                for (var key in mouseFlags) {
-                    counters[key] = (counters[key] || 0)
-                            + (mouseFlags[key][type] || 0);
-                }
+            for (var key in mouseFlags) {
+                counters[key] = (counters[key] || 0)
+                        + (mouseFlags[key][type] || 0);
             }
         },
 
@@ -888,10 +1045,8 @@ new function() { // Injection scope for mouse events on the browser
             // If the view requires counting of installed mouse events,
             // decrease the counters now according to mouseFlags
             var counters = this._eventCounters;
-            if (counters) {
-                for (var key in mouseFlags)
-                    counters[key] -= mouseFlags[key][type] || 0;
-            }
+            for (var key in mouseFlags)
+                counters[key] -= mouseFlags[key][type] || 0;
         },
 
         statics: {

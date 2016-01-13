@@ -709,6 +709,30 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * SVG content
      */
 
+    removeOn: function(type) {
+        var sets = this._removeSets;
+        if (sets) {
+            // Always clear the drag set on mouseup
+            if (type === 'mouseup')
+                sets.mousedrag = null;
+            var set = sets[type];
+            if (set) {
+                for (var id in set) {
+                    var item = set[id];
+                    // If we remove this item, we also need to erase it from all
+                    // other sets.
+                    for (var key in sets) {
+                        var other = sets[key];
+                        if (other && other != set)
+                            delete other[item._id];
+                    }
+                    item.remove();
+                }
+                sets[type] = null;
+            }
+        }
+    },
+
     draw: function(ctx, matrix, pixelRatio) {
         // Increase the _updateVersion before the draw-loop. After that, items
         // that are visible will have their _updateVersion set to the new value.

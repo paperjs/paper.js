@@ -31,7 +31,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * @name CanvasView#initialize
      * @param {Size} size the size of the canvas to be created
      */
-    initialize: function CanvasView(project, canvas) {
+    initialize: function(project, canvas) {
         // Handle canvas argument
         if (!(canvas instanceof HTMLCanvasElement)) {
             // See if the arguments describe the view size:
@@ -43,8 +43,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             canvas = CanvasProvider.getCanvas(size);
         }
         this._context = canvas.getContext('2d');
-        // Have Item count installed mouse events.
-        this._eventCounters = {};
         this._pixelRatio = 1;
 /*#*/ if (__options.environment == 'browser') {
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
@@ -144,150 +142,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         project._needsUpdate = false;
         return true;
     }
-},
-new function() { // Item based mouse handling:
-    var downPoint,
-        lastPoint,
-        overPoint,
-        downItem,
-        lastItem,
-        overItem,
-        dragItem,
-        dblClick,
-        clickTime;
-
-    // Returns true if event was stopped, false otherwise, whether handler was
-    // called or not!
-    function callEvent(view, type, event, point, target, lastPoint) {
-        var item = target,
-            mouseEvent;
-
-        function call(obj, type) {
-            if (obj.responds(type)) {
-                // Only produce the event object if we really need it, and then
-                // reuse it if we're bubbling.
-                if (!mouseEvent) {
-                    mouseEvent = new MouseEvent(type, event, point, target,
-                            // Calculate delta if lastPoint was passed
-                            lastPoint ? point.subtract(lastPoint) : null);
-                }
-                if (obj.emit(type, mouseEvent) && mouseEvent.isStopped) {
-                    // Call preventDefault() on native event if mouse event was
-                    // handled here.
-                    event.preventDefault();
-                    return true;
-                }
-            } else if (type === 'doubleclick') {
-                // If obj doesn't respond to doubleclick, fall back to click:
-                return call(obj, 'click');
-            }
-        }
-
-        // Bubble up the parents and call this event until we're told to stop.
-        while (item) {
-            if (call(item, type))
-                return true;
-            item = item.getParent();
-        }
-        // Also call event handler on view, if installed.
-        if (call(view, type))
-            return true;
-        return false;
-    }
-
-    return /** @lends CanvasView# */{
-        /**
-         * Returns true if event was stopped, false otherwise, whether handler
-         * was called or not!
-         */
-        _handleEvent: function(type, point, event) {
-            // Drop out if we don't have any event handlers for this type
-            if (!this._eventCounters[type])
-                return;
-            // Run the hit-test first
-            var project = this._project,
-                hit = project.hitTest(point, {
-                    tolerance: 0,
-                    fill: true,
-                    stroke: true
-                }),
-                item = hit && hit.item,
-                stopped = false;
-            // Now handle the mouse events
-            switch (type) {
-            case 'mousedown':
-                stopped = callEvent(this, type, event, point, item);
-                // See if we're clicking again on the same item, within the
-                // double-click time. Firefox uses 300ms as the max time
-                // difference:
-                dblClick = lastItem == item && (Date.now() - clickTime < 300);
-                downItem = lastItem = item;
-                downPoint = lastPoint = overPoint = point;
-                // Only start dragging if none of the mosedown events have
-                // stopped propagation.
-                dragItem = !stopped && item;
-                // Find the first item pu the chain that responds to drag.
-                // NOTE: Drag event don't bubble
-                while (dragItem && !dragItem.responds('mousedrag'))
-                    dragItem = dragItem._parent;
-                break;
-            case 'mouseup':
-                // stopping mousup events does not prevent mousedrag / mousemove
-                // hanlding here, but it does click / doubleclick
-                stopped = callEvent(this, type, event, point, item, downPoint);
-                if (dragItem) {
-                    // If the point has changed since the last mousedrag event,
-                    // send another one
-                    if (lastPoint && !lastPoint.equals(point))
-                        callEvent(this, 'mousedrag', event, point, dragItem,
-                                lastPoint);
-                    // If we end up over another item, send it a mousemove event
-                    // now. Use point as overPoint, so delta is (0, 0) since
-                    // this will be the first mousemove event for this item.
-                    if (item !== dragItem) {
-                        overPoint = point;
-                        callEvent(this, 'mousemove', event, point, item,
-                                overPoint);
-                    }
-                }
-                if (!stopped && item && item === downItem) {
-                    clickTime = Date.now();
-                    callEvent(this, dblClick ? 'doubleclick' : 'click', event,
-                            downPoint, item);
-                    dblClick = false;
-                }
-                downItem = dragItem = null;
-                break;
-            case 'mousemove':
-                // Allow both mousedrag and mousemove events to stop mousemove
-                // events from reaching tools.
-                if (dragItem)
-                    stopped = callEvent(this, 'mousedrag', event, point,
-                            dragItem, lastPoint);
-                // TODO: Consider implementing this again? "If we have a
-                // mousedrag event, do not send mousemove events to any
-                // item while we're dragging."
-                // For now, we let other items receive mousemove events even
-                // during a drag event.
-                // If we change the overItem, reset overPoint to point so
-                // delta is (0, 0)
-                if (!stopped) {
-                    if (item !== overItem)
-                        overPoint = point;
-                    stopped = callEvent(this, type, event, point, item,
-                            overPoint);
-                }
-                lastPoint = overPoint = point;
-                if (item !== overItem) {
-                    callEvent(this, 'mouseleave', event, point, overItem);
-                    overItem = item;
-                    callEvent(this, 'mouseenter', event, point, item);
-                }
-                break;
-            }
-            return stopped;
-        }
-    };
 });
 
 /*#*/ if (__options.environment == 'node') {
