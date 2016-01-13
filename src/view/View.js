@@ -704,11 +704,11 @@ new function() { // Injection scope for mouse events on the browser
     }
 
     function updateFocus() {
-        if (!View._focused || !View._focused.isVisible()) {
+        var view = View._focused;
+        if (!view || !view.isVisible()) {
             // Find the first visible view
             for (var i = 0, l = View._views.length; i < l; i++) {
-                var view = View._views[i];
-                if (view && view.isVisible()) {
+                if ((view = View._views[i]).isVisible()) {
                     View._focused = tempFocus = view;
                     break;
                 }
@@ -778,6 +778,7 @@ new function() { // Injection scope for mouse events on the browser
     };
 
     var docEvents = {
+        // NOTE: mouseleave does not seem to work on document in IE:
         mouseout: function(event) {
             // When the moues leaves the document, fire one last mousemove
             // event, to give items the change to receive a mouseleave, etc.
@@ -994,7 +995,7 @@ new function() { // Injection scope for mouse events on the browser
                     emitEvent(this, 'mouseenter', event, point);
                     overView = this;
                 }
-                if (inView || mouse.drag)
+                if (inView || mouse.drag && !lastPoint.equals(point))
                     stopped = emitEvents(this, item, moveType, event, point,
                             lastPoint);
             }
