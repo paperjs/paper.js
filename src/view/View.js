@@ -900,7 +900,7 @@ new function() { // Injection scope for mouse events on the browser
                 // reuse it if we're bubbling.
                 if (!mouseEvent) {
                     mouseEvent = new MouseEvent(
-                            type, event, point, target, mouseDown,
+                            type, event, point, target,
                             // Calculate delta if prevPoint was passed
                             prevPoint ? point.subtract(prevPoint) : null);
                 }
