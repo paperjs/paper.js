@@ -43,10 +43,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Borrowed from Hammer.js:
         var none = 'none';
         DomElement.setPrefixed(element.style, {
+            userDrag: none,
             userSelect: none,
             touchCallout: none,
             contentZooming: none,
-            userDrag: none,
             tapHighlightColor: 'rgba(0,0,0,0)'
         });
 
@@ -786,39 +786,31 @@ new function() { // Injection scope for mouse events on the browser
         }
     }
 
-    var viewEvents = {
-        'selectstart dragstart': function(event) {
-            // Only stop this even if we're mouseDown already, since otherwise
-            // no text whatsoever can be selected on the page.
-            if (mouseDown)
-                event.preventDefault();
-        }
-    };
+    var viewEvents = {},
+        docEvents = {
+            // NOTE: mouseleave does not seem to work on document in IE:
+            mouseout: function(event) {
+                // When the moues leaves the document, fire one last mousemove
+                // event, to give items the change to receive a mouseleave, etc.
+                var view = View._focused,
+                    target = DomEvent.getRelatedTarget(event);
+                if (view && (!target || target.nodeName === 'HTML')) {
+                    // See #800 for this bizarre workaround for an issue of
+                    // Chrome on Windows:
+                    // TODO: Remove again after Dec 2016, once fixed in Chrome.
+                    var offset = DomEvent.getOffset(event, view._element),
+                        x = offset.x,
+                        abs = Math.abs,
+                        ax = abs(x),
+                        max = 1 << 25,
+                        diff = ax - max;
+                    offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
+                    handleMouseMove(view, event, view.viewToProject(offset));
+                }
+            },
 
-    var docEvents = {
-        // NOTE: mouseleave does not seem to work on document in IE:
-        mouseout: function(event) {
-            // When the moues leaves the document, fire one last mousemove
-            // event, to give items the change to receive a mouseleave, etc.
-            var view = View._focused,
-                target = DomEvent.getRelatedTarget(event);
-            if (view && (!target || target.nodeName === 'HTML')) {
-                // See #800 for this bizarre workaround for an issue of Chrome
-                // on Windows:
-                // TODO: Remove again after Dec 2016 once it is fixed in Chrome.
-                var offset = DomEvent.getOffset(event, view._element),
-                    x = offset.x,
-                    abs = Math.abs,
-                    ax = abs(x),
-                    max = 1 << 25,
-                    diff = ax - max;
-                offset.x = abs(diff) < ax ? diff * (x < 0 ? -1 : 1) : x;
-                handleMouseMove(view, event, view.viewToProject(offset));
-            }
-        },
-
-        scroll: updateFocus
-    };
+            scroll: updateFocus
+        };
 
     // mousemove and mouseup events need to be installed on document, not the
     // view element, since we want to catch the end of drag events even outside
