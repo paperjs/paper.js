@@ -44,10 +44,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         var none = 'none';
         DomElement.setPrefixed(element.style, {
             userSelect: none,
-            // This makes the element blocking in IE10+
-            // You could experiment with the value, see this issue:
-            // https://github.com/EightMedia/hammer.js/issues/241
-            touchAction: none,
             touchCallout: none,
             contentZooming: none,
             userDrag: none,
