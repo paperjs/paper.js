@@ -282,7 +282,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * Private method to handle tool-events.
      *
-     * @return true if at least one event handler was called, false otherwise.
+     * @return {@true if the default event should be prevented}. This is if at
+     *     least one event handler was called and none of the called handlers
+     *     wants to enforce the default.
      */
     _handleEvent: function(type, event, point) {
         // Update global reference to this scope.
@@ -299,12 +301,13 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // case it is shorter than maxDistance, as this would produce weird
             // results. matchMaxDistance controls this.
             matchMaxDistance = false,
-            called = false,
+            called = false, // Has at least one handler been called?
+            enforced = false, // Does a handler want to enforce the default?
             tool = this,
             mouse = {};
-            // Create a simple lookup object to quickly check for different
-            // mouse event types.
-            mouse[type.substr(5)] = true;
+        // Create a simple lookup object to quickly check for different
+        // mouse event types.
+        mouse[type.substr(5)] = true;
 
         function update(start, minDistance, maxDistance) {
             var toolPoint = tool._point,
@@ -349,8 +352,14 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         }
 
         function emit() {
-            called = tool.responds(type) &&
-                    tool.emit(type, new ToolEvent(tool, type, event)) || called;
+            if (tool.responds(type)) {
+                var toolEvent = new ToolEvent(tool, type, event);
+                if (tool.emit(type, toolEvent)) {
+                    called = true;
+                    if (toolEvent._enforced)
+                        enforced = true;
+                }
+            }
         }
 
         if (mouse.down) {
@@ -378,7 +387,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 }
             }
         }
-        return called;
+        return called && !enforced;
     }
     /**
      * {@grouptitle Event Handling}

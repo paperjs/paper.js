@@ -733,10 +733,10 @@ new function() { // Injection scope for mouse events on the browser
         var eventType = type === 'mousemove' && mouseDown ? 'mousedrag' : type,
             project = paper.project,
             tool = view._scope.tool,
-            called = false;
+            prevent = false;
 
         function handle(obj) {
-            called = obj._handleEvent(eventType, event, point) || called;
+            prevent = obj._handleEvent(eventType, event, point) || prevent;
         }
 
         if (!point)
@@ -752,7 +752,7 @@ new function() { // Injection scope for mouse events on the browser
             handle(tool);
         // Prevent default if at least one mouse event handler was called, to
         // prevent scrolling on touch devices.
-        if (called)
+        if (prevent)
             event.preventDefault();
         // In the end we always call update(), which only updates the view if
         // anything has changed in the above calls.
@@ -869,7 +869,8 @@ new function() { // Injection scope for mouse events on the browser
      * with support for bubbling (event-propagation).
      */
 
-    var called = false, // Keep track of whether at least one handler was called
+    var called = false, // Has at least one handler been called?
+        enforced = false, // Does a handler want to enforce the default?
         // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
         // to doubleclick, fall back to click:
         fallbacks = {
@@ -905,6 +906,8 @@ new function() { // Injection scope for mouse events on the browser
                 }
                 if (obj.emit(type, mouseEvent)) {
                     called = true;
+                    if (mouseEvent._enforced)
+                        enforced = true;
                     // Bail out if propagation is stopped
                     if (mouseEvent.stopped)
                         return true;
@@ -928,9 +931,10 @@ new function() { // Injection scope for mouse events on the browser
     // Returns true if event was stopped, false otherwise, whether handler was
     // called or not!
     function emitEvents(view, item, type, event, point, prevPoint) {
-        // Set called to false, so it will reflect if the following calls to
-        // emitEvent() have at least called one handler.
-        called = false;
+        // Set enforced and called to false, so it will reflect if the following
+        // calls to emitEvent() have called a handler, and if  at least one of
+        // the handlers wants to enforce default.
+        called = enforced = false;
         // First handle the drag-item and its parents, through bubbling.
         return (dragItem && emitEvent(dragItem, type, event, point,
                     prevPoint)
@@ -977,8 +981,9 @@ new function() { // Injection scope for mouse events on the browser
         /**
          * Private method to handle view and item events.
          *
-         * @return true if at least one event handler was called, false
-         *     otherwise.
+         * @return {@true if the default event should be prevented}. This is if
+         *     at least one event handler was called and none of the called
+         *     handlers wants to enforce the default.
          */
         _handleEvent: function(type, event, point) {
             // Run the hit-test first
@@ -1047,7 +1052,7 @@ new function() { // Injection scope for mouse events on the browser
                 }
             }
             lastPoint = point;
-            return called;
+            return called && !enforced;
         },
 
         _installEvent: function(type) {

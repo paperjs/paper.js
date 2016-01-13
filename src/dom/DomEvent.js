@@ -17,13 +17,21 @@
  */
 var DomEvent = /** @lends DomEvent */{
     add: function(el, events) {
-        for (var type in events)
-            el.addEventListener(type, events[type], false);
+        for (var type in events) {
+            var func = events[type],
+                parts = type.split(/[\s,]+/g);
+            for (var i = 0, l = parts.length; i < l; i++)
+                el.addEventListener(parts[i], func, false);
+        }
     },
 
     remove: function(el, events) {
-        for (var type in events)
-            el.removeEventListener(type, events[type], false);
+        for (var type in events) {
+            var func = events[type],
+                parts = type.split(/[\s,]+/g);
+            for (var i = 0, l = parts.length; i < l; i++)
+                el.removeEventListener(parts[i], func, false);
+        }
     },
 
     getPoint: function(event) {
