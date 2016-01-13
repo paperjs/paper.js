@@ -321,33 +321,28 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         return true;
     },
 
-    _fireEvent: function(type, event) {
-        return this.responds(type)
-                && this.emit(type, new ToolEvent(this, type, event));
-    },
-
     _handleEvent: function(type, event, point) {
         // Update global reference to this scope.
         paper = this._scope;
         // Now handle event callbacks
-        var called = false,
+        var tool = this,
+            called = false,
             drag = false;
+
+        function emit() {
+            called = tool.responds(type) &&
+                    tool.emit(type, new ToolEvent(tool, type, event)) || called;
+        }
+
         switch (type) {
         case 'mousedown':
             this._updateEvent(type, point, null, null, true, false, false);
-            called = this._fireEvent(type, event);
+            emit();
             break;
         case 'mouseup':
-            // If the last mouse drag happened in a different place, call mouse
-            // drag first, then mouse up.
-            if (!point.equals(this._point)
-                    && this._updateEvent('mousedrag', point, this.minDistance,
-                            this.maxDistance, false, false, false)) {
-                called = this._fireEvent('mousedrag', event);
-            }
             this._updateEvent(type, point, null, this.maxDistance, false,
                     false, false);
-            called = this._fireEvent(type, event) || called;
+            emit();
             // Start with new values for 'mousemove'
             this._updateEvent(type, point, null, null, true, false, false);
             this._firstMove = true;
@@ -364,18 +359,18 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // check the first call for a change of position. Subsequent calls
             // required by min/maxDistance functionality will require it,
             // otherwise this might loop endlessly.
-            var needsChange = !drag;
-            // If the mouse is moving faster than maxDistance, do not produce
-            // events for what is left after the first event is generated in
-            // case it is shorter than maxDistance, as this would produce weird
-            // results. matchMaxDistance controls this.
-            var matchMaxDistance = false;
+            var needsChange = !drag,
+                // If the mouse is moving faster than maxDistance, do not
+                // produce events for what is left after the first event is
+                // generated in case it is shorter than maxDistance, as this
+                // would produce weird results. matchMaxDistance controls this.
+                matchMaxDistance = false;
             while (this._updateEvent(type, point, this.minDistance,
-                    this.maxDistance, !drag && this._firstMove, needsChange, matchMaxDistance)) {
-                called = this._fireEvent(type, event) || called;
+                    this.maxDistance, !drag && this._firstMove, needsChange,
+                    matchMaxDistance)) {
+                emit();
                 if (drag) {
-                    needsChange = true;
-                    matchMaxDistance = true;
+                    needsChange = matchMaxDistance = true;
                 } else {
                     this._firstMove = false;
                 }
