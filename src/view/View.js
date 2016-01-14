@@ -793,14 +793,16 @@ new function() { // Injection scope for mouse events on the browser
             // See if we can get the view from the current event target, and
             // handle the mouse move over it.
             var target = getView(event);
-            if (target && view !== target) {
-                // Temporarily focus this view without making it sticky, so Key
-                // events are handled too during the mouse over.
-                // As we switch view, fire one last mousemove in the old view,
-                // to give items the change to receive a mouseleave, etc.
-                handleMouseMove(view, event);
-                prevFocus = view;
-                view = View._focused = tempFocus = target;
+            if (target) {
+                if (view !== target) {
+                    // Temporarily focus this view without making it sticky, so
+                    // Key events are handled too during the mouse over.
+                    // As we switch view, fire one last mousemove in the old
+                    // view, to let items receive receive a mouseleave, etc.
+                    handleMouseMove(view, event);
+                    prevFocus = view;
+                    view = View._focused = tempFocus = target;
+                }
             } else if (tempFocus && tempFocus === view) {
                 // Clear temporary focus again and update it.
                 view = View._focused = prevFocus;
@@ -996,7 +998,7 @@ new function() { // Injection scope for mouse events on the browser
                         emitEvent(item, 'mouseenter', event, point);
                 }
                 overItem = item;
-                if (wasInView ^ inView) {
+                if (nativeMove && (wasInView ^ inView)) {
                     emitEvent(this, inView ? 'mouseenter' : 'mouseleave', event,
                             point);
                     overView = inView ? this : null;
