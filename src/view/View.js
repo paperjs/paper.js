@@ -1018,12 +1018,12 @@ new function() { // Injection scope for mouse events on the browser
                     emitEvent(this, inView ? 'mouseenter' : 'mouseleave', event,
                             point);
                     overView = inView ? this : null;
-                    handle = nativeMove; // To include the leaving move.
+                    handle = true; // To include the leaving move.
                 }
                 if (inView || mouse.drag && !lastPoint.equals(point)) {
                     stopped = emitEvents(this, item, moveType, event, point,
                             lastPoint);
-                    handle = nativeMove;
+                    handle = true;
                 }
                 wasInView = inView;
             }
@@ -1031,12 +1031,8 @@ new function() { // Injection scope for mouse events on the browser
             if (!nativeMove &&
                     // We emit mousedown only when in the view, and mouseup
                     // regardless, as long as the mousedown event was inside.
-                    (handle = mouse.down && inView || mouse.up && !!downPoint)) {
+                    (handle = mouse.down && inView || mouse.up && downPoint)) {
                 stopped = emitEvents(this, item, type, event, point, downPoint);
-                // Clear wasInView so we're not accidentally handling mousedrag
-                // events that started outside the view as mousemove events on
-                // the view (needed to handle touch scrolling correctly).
-                wasInView = false;
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
@@ -1060,6 +1056,10 @@ new function() { // Injection scope for mouse events on the browser
                     }
                     downItem = dragItem = null;
                 }
+                // Clear wasInView so we're not accidentally handling mousedrag
+                // events that started outside the view as mousemove events on
+                // the view (needed to handle touch scrolling correctly).
+                wasInView = false;
             }
             lastPoint = point;
             // Now finally call the tool events, but filter mouse move events

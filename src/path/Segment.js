@@ -119,7 +119,7 @@ var Segment = Base.extend(/** @lends Segment# */{
             // Nothing
         } else if (count === 1) {
             // NOTE: This copies from existing segments through accessors.
-            if ('point' in arg0) {
+            if (arg0 && 'point' in arg0) {
                 point = arg0.point;
                 handleIn = arg0.handleIn;
                 handleOut = arg0.handleOut;

@@ -55,7 +55,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         PaperScopeItem.call(this);
         this._firstMove = true;
         this._count = 0;
-        this._downCount = 0;
+        this._downCount = -1; // So first is 0
         this._set(props);
     },
 
@@ -278,7 +278,6 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * }
      */
 
-
     /**
      * Private method to handle tool-events.
      *
@@ -287,28 +286,30 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     _handleEvent: function(type, event, point, mouse) {
         // Update global reference to this scope.
         paper = this._scope;
-        var minDistance = this.minDistance,
+        // If there is no mousedrag event installed, fall back to mousemove,
+        // with which we share the actual event handling code anyhow.
+        var move = mouse.move || mouse.drag && !this.responds(type);
+        // Make sure type is not 'mousedrag' if we fell back.
+        if (move)
+            type = 'mousemove';
+        var responds = this.responds(type),
+            minDistance = this.minDistance,
             maxDistance = this.maxDistance,
-            // In order for idleInterval drag events to work, we need to not
-            // check the first call for a change of position. Subsequent calls
-            // required by min/maxDistance functionality will require it,
-            // otherwise this might loop endlessly.
-            needsChange = false,
-            // If the mouse is moving faster than maxDistance, do not produce
-            // events for what is left after the first event is generated in
-            // case it is shorter than maxDistance, as this would produce weird
-            // results. matchMaxDistance controls this.
-            matchMaxDistance = false,
             called = false,
             tool = this;
-
+        // Updates the internal tool state, taking into account minDistance and
+        // maxDistance and interpolating "fake" events along the moved distance
+        // to respect their settings, if necessary.
+        // Returns true as long as events should be fired, false when the target
+        // is reached.
         function update(start, minDistance, maxDistance) {
             var toolPoint = tool._point,
                 pt = point;
             if (start) {
                 tool._count = 0;
             } else {
-                tool._count++;
+                if (pt.equals(toolPoint))
+                    return false;
                 if (minDistance != null || maxDistance != null) {
                     var vector = pt.subtract(toolPoint),
                         distance = vector.getLength();
@@ -317,63 +318,48 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                     // Produce a new point on the way to point if point is
                     // further away than maxDistance
                     if (maxDistance) {
-                        if (distance > maxDistance) {
-                            pt = toolPoint.add(vector.normalize(maxDistance));
-                        } else if (matchMaxDistance) {
-                            return false;
-                        }
+                        pt = toolPoint.add(vector.normalize(
+                                Math.min(distance, maxDistance)));
                     }
                 }
-                if (needsChange && pt.equals(toolPoint))
-                    return false;
+                tool._count++;
             }
-            // Make sure mousemove events have lastPoint set even for the first
-            // move so event.delta is always defined for them.
-            // TODO: Decide whether mousedown also should always have delta set.
-            tool._lastPoint = start && mouse.move ? pt : toolPoint;
-            tool._point = pt;
+            if (responds) {
+                tool._point = pt;
+                tool._lastPoint = move || mouse.drag
+                    // Make sure mousemove events have lastPoint set even for
+                    // the first move so event.delta is always defined for them.
+                    ? start && move ? pt : toolPoint
+                    // Set lastPoint to previous downPoint, or current point if
+                    // this is the first mousedown, so there's always a delta.
+                    // This way mouseup has a delta spanning over the full drag.
+                    : tool._downPoint || pt;
+            }
+            // Keep track of downPoint regardless of the value of response
             if (mouse.down) {
-                tool._lastPoint = tool._downPoint;
                 tool._downPoint = pt;
                 tool._downCount++;
-            } else if (mouse.up) {
-                // Mouse up events return the down point for last point, so
-                // delta is spanning over the whole drag.
-                tool._lastPoint = tool._downPoint;
             }
             return true;
         }
 
-        function emit() {
-            called = tool.responds(type)
-                    && tool.emit(type, new ToolEvent(tool, type, event))
-                    || called;
+        function emit(firstMove) {
+            if (responds) {
+                called = tool.emit(type, new ToolEvent(tool, type, event))
+                        || called;
+                tool._firstMove = firstMove;
+            }
         }
 
         if (mouse.down) {
-            update(true);
-            emit();
+            update(responds);
+            emit(false);
         } else if (mouse.up) {
             update(false, null, maxDistance);
-            emit();
-            // Start with new values for 'mousemove'
-            update(true);
-            this._firstMove = true;
-        } else {
-            // If there is no mousedrag event installed, fall back to mousemove,
-            // with which we share the actual event handling code anyhow.
-            var drag = mouse.drag && this.responds(type);
-            if (!drag)
-                type = 'mousemove';
-            needsChange = !drag;
-            while (update(!drag && this._firstMove, minDistance, maxDistance)) {
-                emit();
-                if (drag) {
-                    needsChange = matchMaxDistance = true;
-                } else {
-                    this._firstMove = false;
-                }
-            }
+            emit(true);
+        } else if (responds) {
+            while (update(this._firstMove, minDistance, maxDistance))
+                emit(false);
         }
         return called;
     }
