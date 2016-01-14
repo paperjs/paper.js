@@ -476,26 +476,29 @@ Base.inject(/** @lends Base# */{
                     typeof json === 'string' ? JSON.parse(json) : json,
                     // Provide our own create function to handle target and
                     // insertion.
-                    function(type, args) {
+                    function(ctor, args) {
                         // If a target is provided and its of the right type,
                         // import right into it.
-                        var obj = target && target.constructor === type
-                                ? target
-                                : Base.create(type.prototype),
-                            isTarget = obj === target;
+                        var useTarget = target && target.constructor === ctor,
+                            obj = useTarget ? target
+                                : Base.create(ctor.prototype),
+                            // When reusing an object, try to initialize it
+                            // through _initialize (Item), fall-back to _set.
+                            init = useTarget ? obj._initialize || obj._set
+                                : ctor;
                         // NOTE: We don't set insert false for layers since we
                         // want these to be created on the fly in the active
                         // project into which we're importing (except for if
                         // it's a preexisting target layer).
                         if (args.length === 1 && obj instanceof Item
-                                && (isTarget || !(obj instanceof Layer))) {
+                                && (useTarget || !(obj instanceof Layer))) {
                             var arg = args[0];
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        type.apply(obj, args);
+                        init.apply(obj, args);
                         // Clear target to only use it once.
-                        if (isTarget)
+                        if (useTarget)
                             target = null;
                         return obj;
                     });
