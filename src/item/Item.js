@@ -4065,8 +4065,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 && this._isUpdated(updateVersion)) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
-            var color = this.getSelectedColor(true)
-                    || this.getLayer().getSelectedColor(true),
+            var layer,
+                color = this.getSelectedColor(true)
+                    || (layer = this.getLayer()) && layer.getSelectedColor(true),
                 mx = matrix.chain(this.getGlobalMatrix(true));
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
