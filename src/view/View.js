@@ -828,7 +828,7 @@ new function() { // Injection scope for mouse events on the browser
             handleMouseMove(view, event);
     };
 
-    docEvents[mousedown] = function(event) {
+    docEvents[mousedown] = function() {
         // In order to not switch views during scroll dragging on touch devices,
         // we need to know if the mouse was clicked anywhere on the document
         // (see docEvents[mousemove]) The rest happens in viewEvents[mousedown].
