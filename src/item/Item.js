@@ -136,11 +136,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         function(name) {
             this[name] = {
                 install: function(type) {
-                    this.getView()._installEvent(type);
+                    this.getView()._countItemEvent(type, 1);
                 },
 
                 uninstall: function(type) {
-                    this.getView()._uninstallEvent(type);
+                    this.getView()._countItemEvent(type, -1);
                 }
             };
         }, {

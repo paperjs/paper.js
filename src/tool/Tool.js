@@ -46,9 +46,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     _class: 'Tool',
     _list: 'tools',
     _reference: 'tool',
-    _events: [ 'onActivate', 'onDeactivate', 'onEditOptions',
-            'onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
-            'onKeyDown', 'onKeyUp' ],
+    _events: ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
+            'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',
+            'onKeyUp'],
 
     // DOCS: rewrite Tool constructor explanation
     initialize: function Tool(props) {

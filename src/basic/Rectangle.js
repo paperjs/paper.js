@@ -572,7 +572,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
         // or by looking at the amount of elements in the arguments list,
         // or the passed array:
         return arg && arg.width !== undefined
-                || (Array.isArray(arg) ? arg : arguments).length == 4
+                || (Array.isArray(arg) ? arg : arguments).length === 4
                 ? this._containsRectangle(Rectangle.read(arguments))
                 : this._containsPoint(Point.read(arguments));
     },
