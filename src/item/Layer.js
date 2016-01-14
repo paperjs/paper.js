@@ -139,5 +139,9 @@ var Layer = Group.extend(/** @lends Layer# */{
         return !this._parent
                 ? this._project.insertChild(index, item, _preserve)
                 : _insertSibling.base.call(this, index, item, _preserve);
+    },
+
+    _hitTestSelf: function() {
+        return null;
     }
 });
