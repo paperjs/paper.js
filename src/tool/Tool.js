@@ -286,7 +286,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *     least one event handler was called and none of the called handlers
      *     wants to enforce the default.
      */
-    _handleEvent: function(type, event, point) {
+    _handleEvent: function(type, event, point, mouse) {
         // Update global reference to this scope.
         paper = this._scope;
         var minDistance = this.minDistance,
@@ -303,11 +303,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             matchMaxDistance = false,
             called = false, // Has at least one handler been called?
             enforced = false, // Does a handler want to enforce the default?
-            tool = this,
-            mouse = {};
-        // Create a simple lookup object to quickly check for different
-        // mouse event types.
-        mouse[type.substr(5)] = true;
+            tool = this;
 
         function update(start, minDistance, maxDistance) {
             var toolPoint = tool._point,

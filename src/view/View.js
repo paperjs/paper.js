@@ -698,7 +698,8 @@ new function() { // Injection scope for mouse events on the browser
 
     var prevFocus,
         tempFocus,
-        mouseDown = false;
+        dragging = false, // mousedown that started on a view.
+        mouseDown = false; // mouesdown anywhere.
 
     function getView(event) {
         // Get the view from the current event target.
@@ -782,7 +783,7 @@ new function() { // Injection scope for mouse events on the browser
         // Get the view from the event, and store a reference to the view that
         // should receive keyboard input.
         var view = View._focused = getView(event);
-        mouseDown = true;
+        dragging = true;
         view._handleEvent('mousedown', event);
     };
 
@@ -792,13 +793,12 @@ new function() { // Injection scope for mouse events on the browser
             // See if we can get the view from the current event target, and
             // handle the mouse move over it.
             var target = getView(event);
-            if (target) {
+            if (target && view !== target) {
                 // Temporarily focus this view without making it sticky, so Key
                 // events are handled too during the mouse over.
-                // If we switch view, fire one last mousemove in the old view,
+                // As we switch view, fire one last mousemove in the old view,
                 // to give items the change to receive a mouseleave, etc.
-                if (view !== target)
-                    handleMouseMove(view, event);
+                handleMouseMove(view, event);
                 prevFocus = view;
                 view = View._focused = tempFocus = target;
             } else if (tempFocus && tempFocus === view) {
@@ -811,11 +811,18 @@ new function() { // Injection scope for mouse events on the browser
             handleMouseMove(view, event);
     };
 
+    docEvents[mousedown] = function(event) {
+        // In order to not switch views during scroll dragging on touch devices,
+        // we need to know if the mouse was clicked anywhere on the document
+        // (see docEvents[mousemove]) The rest happens in viewEvents[mousedown].
+        mouseDown = true;
+    };
+
     docEvents[mouseup] = function(event) {
         var view = View._focused;
-        if (view && mouseDown)
+        if (view && dragging)
             view._handleEvent('mouseup', event);
-        mouseDown = false;
+        mouseDown = dragging = false;
     };
 
     DomEvent.add(document, docEvents);
@@ -938,7 +945,8 @@ new function() { // Injection scope for mouse events on the browser
         clickItem,
         clickTime,
         dblClick,
-        overView;
+        overView,
+        wasInView = false;
 
     return {
         _viewEvents: viewEvents,
@@ -954,7 +962,7 @@ new function() { // Injection scope for mouse events on the browser
             // it to a mousedrag.
             // NOTE: emitEvent(), as well as Tool#_handleEvent() fall back to
             // mousemove if the objects don't respond to mousedrag.
-            if (type === 'mousemove' && mouseDown)
+            if (type === 'mousemove' && dragging)
                 type = 'mousedrag';
             // Before handling events, process removeOn() calls for cleanup.
             if (project)
@@ -963,14 +971,16 @@ new function() { // Injection scope for mouse events on the browser
                 point = this.getEventPoint(event);
             // Run the hit-test on items first, but only if we're required to do
             // so for this given mouse event, see #_countItemEvent().
-            var hit = handleItems && this._project.hitTest(point, {
+            var inView = this.getBounds().contains(point),
+                hit = inView && handleItems && this._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
                     stroke: true
                 }),
                 item = hit && hit.item || undefined,
-                inView = this.getBounds().contains(point),
-                wasInView = this === overView,
+                // Keep track if view event should be handled, so we can use it
+                // to decide if tool._handleEvent() shall be called after.
+                handle = false,
                 stopped = false,
                 mouse = {};
             // Create a simple lookup object to quickly check for different
@@ -981,9 +991,8 @@ new function() { // Injection scope for mouse events on the browser
             // Handle mousemove first, even if this is not actually a mousemove
             // event but the mouse has moved since the last event, but do not
             // allow it to stop the other events in that case.
-            var nativeMove = mouse.move || mouse.drag;
-                moveType = nativeMove && type
-                    || lastPoint && !lastPoint.equals(point) && 'mousemove';
+            var nativeMove = mouse.move || mouse.drag,
+                moveType = nativeMove && type || 'mousemove';
             if (moveType) {
                 // Handle mouseenter / leave between items, as well as views.
                 if (item !== overItem) {
@@ -997,14 +1006,25 @@ new function() { // Injection scope for mouse events on the browser
                     emitEvent(this, inView ? 'mouseenter' : 'mouseleave', event,
                             point);
                     overView = inView ? this : null;
+                    handle = nativeMove; // To include the leaving move.
                 }
-                if (inView || mouse.drag && !lastPoint.equals(point))
+                if (inView || mouse.drag && !lastPoint.equals(point)) {
                     stopped = emitEvents(this, item, moveType, event, point,
                             lastPoint);
+                    handle = nativeMove;
+                }
+                wasInView = inView;
             }
-            if (!nativeMove) {
-               // Now handle mousedown / mouseup
+            // Now handle mousedown / mouseup
+            if (!nativeMove &&
+                    // We emit mousedown only when in the view, and mouseup
+                    // regardless, as long as the mousedown event was inside.
+                    (handle = mouse.down && inView || mouse.up && !!downPoint)) {
                 stopped = emitEvents(this, item, type, event, point, downPoint);
+                // Clear wasInView so we're not accidentally handling mousedrag
+                // events that started outside the view as mousemove events on
+                // the view (needed to handle touch scrolling correctly).
+                wasInView = false;
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
@@ -1034,8 +1054,7 @@ new function() { // Injection scope for mouse events on the browser
             // to only be fired if we're inside the view or if we just left it.
             // Prevent default if at least one handler was called, and none of
             // them enforces default, to prevent scrolling on touch devices.
-            if (tool && (mouse.move || inView || wasInView)
-                    && tool._handleEvent(type, event, point)
+            if (handle && tool && tool._handleEvent(type, event, point, mouse)
                     || called && !enforced)
                 event.preventDefault();
             // In the end we always call update(), which only updates the view
