@@ -225,18 +225,23 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @type Item[]
      */
     getSelectedItems: function() {
-        // TODO: Return groups if their children are all selected,
-        // and filter out their children from the list.
-        // TODO: The order of these items should be that of their
-        // drawing order.
-        var items = [];
-        for (var id in this._selectedItems) {
-            var item = this._selectedItems[id];
-            if (item.isInserted())
+        // TODO: Return groups if their children are all selected, and filter
+        // out their children from the list.
+        // TODO: The order of these items should be that of their drawing order.
+        var selectedItems = this._selectedItems,
+            items = [];
+        for (var id in selectedItems) {
+            var item = selectedItems[id];
+            if (item.isInserted()) {
                 items.push(item);
+            } else {
+                this._selectedItemCount--;
+                delete selectedItems[id];
+            }
         }
         return items;
     },
+    // TODO: Implement setSelectedItems?
 
     // Project#insertChild() and #addChild() are helper functions called in
     // Item#copyTo(), Layer#initialize(), Layer#_insertSibling()
@@ -271,7 +276,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         return this.insertChild(undefined, item, _preserve);
     },
 
-    // TODO: Implement setSelectedItems?
     _updateSelection: function(item) {
         var id = item._id,
             selectedItems = this._selectedItems;
