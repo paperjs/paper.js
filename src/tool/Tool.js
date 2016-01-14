@@ -282,9 +282,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     /**
      * Private method to handle tool-events.
      *
-     * @return {@true if the default event should be prevented}. This is if at
-     *     least one event handler was called and none of the called handlers
-     *     wants to enforce the default.
+     * @return {@true if at least one event handler was called}.
      */
     _handleEvent: function(type, event, point, mouse) {
         // Update global reference to this scope.
@@ -301,8 +299,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             // case it is shorter than maxDistance, as this would produce weird
             // results. matchMaxDistance controls this.
             matchMaxDistance = false,
-            called = false, // Has at least one handler been called?
-            enforced = false, // Does a handler want to enforce the default?
+            called = false,
             tool = this;
 
         function update(start, minDistance, maxDistance) {
@@ -348,14 +345,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         }
 
         function emit() {
-            if (tool.responds(type)) {
-                var toolEvent = new ToolEvent(tool, type, event);
-                if (tool.emit(type, toolEvent)) {
-                    called = true;
-                    if (toolEvent._enforced)
-                        enforced = true;
-                }
-            }
+            called = tool.responds(type)
+                    && tool.emit(type, new ToolEvent(tool, type, event))
+                    || called;
         }
 
         if (mouse.down) {
@@ -383,7 +375,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 }
             }
         }
-        return called && !enforced;
+        return called;
     }
     /**
      * {@grouptitle Event Handling}

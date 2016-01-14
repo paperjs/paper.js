@@ -26,8 +26,6 @@ var Event = Base.extend(/** @lends Event# */{
 
     prevented: false,
     stopped: false,
-    // Internal flag indicating whether the default shall be enforced.
-    _enforced: false,
 
     /**
      * Cancels the event if it is cancelable, without stopping further

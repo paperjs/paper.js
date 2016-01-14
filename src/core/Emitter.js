@@ -85,20 +85,14 @@ var Emitter = {
         // won't throw us off track here:
         handlers = handlers.slice();
         for (var i = 0, l = handlers.length; i < l; i++) {
-            var res = handlers[i].apply(this, args);
-            // Look at the handler's return value to decide how to propagate:
-            if (res === false) {
-                // If it returns false, prevent the default behavior and stop
-                // propagation of the event by calling stop()
+            if (handlers[i].apply(this, args) === false) {
+                // If the handler returns false, prevent the default behavior
+                // and stop propagation of the event by calling stop()
                 if (event && event.stop)
                     event.stop();
                 // Stop propagation right now!
                 break;
-            } else if (res === true) {
-                // If it return true, remember that one handler wants to enforce
-                // the browser's default behavior. This is handled later.
-                event._enforced = true;
-            }
+           }
         }
         return true;
     },

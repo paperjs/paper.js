@@ -838,8 +838,7 @@ new function() { // Injection scope for mouse events on the browser
      * with support for bubbling (event-propagation).
      */
 
-    var called = false, // Has at least one handler been called?
-        enforced = false, // Does a handler want to enforce the default?
+    var called = false,
         // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
         // to doubleclick, fall back to click:
         fallbacks = {
@@ -847,8 +846,7 @@ new function() { // Injection scope for mouse events on the browser
             mousedrag: 'mousemove'
         };
 
-    // Returns true if event was stopped, false otherwise, whether handler was
-    // called or not!
+    // Returns true if event was stopped, false otherwise.
     function emitEvent(obj, type, event, point, prevPoint, stopItem) {
         var target = obj,
             mouseEvent;
@@ -865,8 +863,6 @@ new function() { // Injection scope for mouse events on the browser
                 }
                 if (obj.emit(type, mouseEvent)) {
                     called = true;
-                    if (mouseEvent._enforced)
-                        enforced = true;
                     // Bail out if propagation is stopped
                     if (mouseEvent.stopped)
                         return true;
@@ -887,13 +883,11 @@ new function() { // Injection scope for mouse events on the browser
         return false;
     }
 
-    // Returns true if event was stopped, false otherwise, whether handler was
-    // called or not!
+    // Returns true if event was stopped, false otherwise.
     function emitEvents(view, item, type, event, point, prevPoint) {
-        // Set enforced and called to false, so it will reflect if the following
-        // calls to emitEvent() have called a handler, and if  at least one of
-        // the handlers wants to enforce default.
-        called = enforced = false;
+        // Set called to false, so it will reflect if the following calls to
+        // emitEvent() have called a handler.
+        called = false;
         // First handle the drag-item and its parents, through bubbling.
         return (dragItem && emitEvent(dragItem, type, event, point,
                     prevPoint)
@@ -958,7 +952,7 @@ new function() { // Injection scope for mouse events on the browser
             var handleItems = this._itemEvents[type],
                 project = paper.project,
                 tool = this._scope.tool;
-            // If it's a native mousemove event but the mouse is clicke, convert
+            // If it's a native mousemove event but the mouse is down, convert
             // it to a mousedrag.
             // NOTE: emitEvent(), as well as Tool#_handleEvent() fall back to
             // mousemove if the objects don't respond to mousedrag.
@@ -1054,8 +1048,17 @@ new function() { // Injection scope for mouse events on the browser
             // to only be fired if we're inside the view or if we just left it.
             // Prevent default if at least one handler was called, and none of
             // them enforces default, to prevent scrolling on touch devices.
-            if (handle && tool && tool._handleEvent(type, event, point, mouse)
-                    || called && !enforced)
+            if (handle && tool)
+                called = tool._handleEvent(type, event, point, mouse) || called;
+            // Call preventDefault()`, but only according to this convention:
+            // - If any of the handlers were called, except for mousemove events
+            //   which need to call `event.preventDefault()` explicitly, or
+            //   `return false;`.
+            // - If this is a mousedown event, and the view or tools respond to
+            //   mouseup.
+            var up = 'mouseup';
+            if (called && !mouse.move || mouse.down && (this._itemEvents[up]
+                    || this.responds(up) || tool.responds(up)))
                 event.preventDefault();
             // In the end we always call update(), which only updates the view
             // if anything has changed in the above calls.
