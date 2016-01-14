@@ -407,10 +407,19 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * Checks whether the view is currently visible within the current browser
      * viewport.
      *
-     * @return {Boolean} whether the view is visible
+     * @return {Boolean} {@true if the view is visible}
      */
     isVisible: function() {
         return DomElement.isInView(this._element);
+    },
+
+    /**
+     * Checks whether the view is inserted into the browser DOM.
+     *
+     * @return {Boolean}  {@true if the view is inserted}
+     */
+    isInserted: function() {
+        return DomElement.isInserted(this._element);
     },
 
     /**
@@ -799,12 +808,16 @@ new function() { // Injection scope for mouse events on the browser
                     // Key events are handled too during the mouse over.
                     // As we switch view, fire one last mousemove in the old
                     // view, to let items receive receive a mouseleave, etc.
-                    handleMouseMove(view, event);
+                    if (view)
+                        handleMouseMove(view, event);
                     prevFocus = view;
                     view = View._focused = tempFocus = target;
                 }
             } else if (tempFocus && tempFocus === view) {
-                // Clear temporary focus again and update it.
+                // Clear temporary focus again and switch back to previous focus
+                // but only if it is still valid (still in the DOM).
+                if (prevFocus && !prevFocus.isInserted())
+                    prevFocus = null;
                 view = View._focused = prevFocus;
                 updateFocus();
             }

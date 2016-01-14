@@ -84,14 +84,14 @@ var DomElement = new function() {
         },
 
         /**
-         * Checks if element is invisibile (display: none, ...)
+         * Checks if element is invisibile (display: none, ...).
          */
         isInvisible: function(el) {
             return DomElement.getSize(el).equals(new Size(0, 0));
         },
 
         /**
-         * Checks if element is visibile in current viewport
+         * Checks if element is visibile in current viewport.
          */
         isInView: function(el) {
             // See if the viewport bounds intersect with the windows rectangle
@@ -99,6 +99,13 @@ var DomElement = new function() {
             return !DomElement.isInvisible(el)
                     && DomElement.getViewportBounds(el).intersects(
                         DomElement.getBounds(el, true));
+        },
+
+        /**
+         * Checks if element is inside the DOM.
+         */
+        isInserted: function(el) {
+            return document.body.contains(el);
         },
 
         /**
