@@ -968,7 +968,8 @@ new function() { // Injection scope for mouse events on the browser
         _handleEvent: function(type, event, point) {
             var handleItems = this._itemEvents[type],
                 project = paper.project,
-                tool = this._scope.tool;
+                tool = this._scope.tool,
+                view = this;
             // If it's a native mousemove event but the mouse is down, convert
             // it to a mousedrag.
             // NOTE: emitEvent(), as well as Tool#_handleEvent() fall back to
@@ -1067,16 +1068,23 @@ new function() { // Injection scope for mouse events on the browser
             // them enforces default, to prevent scrolling on touch devices.
             if (handle && tool)
                 called = tool._handleEvent(type, event, point, mouse) || called;
-            // Call preventDefault()`, but only according to this convention:
+
+            // Now call preventDefault()`, if any of these conditions are met:
             // - If any of the handlers were called, except for mousemove events
             //   which need to call `event.preventDefault()` explicitly, or
             //   `return false;`.
             // - If this is a mousedown event, and the view or tools respond to
             //   mouseup.
-            var up = 'mouseup';
-            if (called && !mouse.move || mouse.down && (this._itemEvents[up]
-                    || this.responds(up) || tool.responds(up)))
+
+            function responds(type) {
+                return view._itemEvents[type] || view.responds(type)
+                        || tool.responds(type);
+            }
+
+            if (called && (!nativeMove || responds('mousedrag'))
+                    || mouse.down && responds('mouseup'))
                 event.preventDefault();
+
             // In the end we always call update(), which only updates the view
             // if anything has changed in the above calls.
             this.update();
