@@ -810,7 +810,8 @@ new function() { // Injection scope for mouse events on the browser
                     // view, to let items receive receive a mouseleave, etc.
                     if (view)
                         handleMouseMove(view, event);
-                    prevFocus = view;
+                    if (!prevFocus)
+                        prevFocus = view;
                     view = View._focused = tempFocus = target;
                 }
             } else if (tempFocus && tempFocus === view) {
@@ -819,6 +820,7 @@ new function() { // Injection scope for mouse events on the browser
                 if (prevFocus && !prevFocus.isInserted())
                     prevFocus = null;
                 view = View._focused = prevFocus;
+                prevFocus = null;
                 updateFocus();
             }
         }
