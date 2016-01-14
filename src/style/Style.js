@@ -302,7 +302,7 @@ var Style = Base.extend(new function() {
      * @type View
      */
     getView: function() {
-        return this._project.getView();
+        return this._project._view;
     },
 
     // Overrides

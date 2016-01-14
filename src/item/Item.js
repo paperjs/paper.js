@@ -1189,7 +1189,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getView: function() {
-        return this._project.getView();
+        return this._project._view;
     },
 
     /**

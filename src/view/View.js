@@ -132,8 +132,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
         View._views.splice(View._views.indexOf(this), 1);
         delete View._viewsById[this._id];
         // Unlink from project
-        if (this._project._view === this)
-            this._project._view = null;
+        var project = this._project;
+        if (project._view === this)
+            project._view = null;
 /*#*/ if (__options.environment == 'browser') {
         // Uninstall event handlers again for this view.
         DomEvent.remove(this._element, this._viewEvents);
