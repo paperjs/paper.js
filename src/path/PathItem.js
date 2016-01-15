@@ -441,7 +441,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * var paths = [];
      * for (var i = 0; i < 5; i++) {
      *     paths.push(new Path.Rectangle({
-     *         point: [30 + i * 100, 25],
+     *         point: [30 + i * 100, 30],
      *         size: [50, 50],
      *         fullySelected: true
      *     }));
