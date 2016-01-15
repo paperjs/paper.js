@@ -2084,7 +2084,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
 
         var opts = options || {},
-            type = opts.type,
+            type = opts.type || 'asymmetric',
             segments = this._segments,
             length = segments.length,
             range = opts.from !== undefined || opts.to !== undefined,
@@ -2100,19 +2100,24 @@ var Path = PathItem.extend(/** @lends Path# */{
                 to = tmp;
             }
         }
-        if (!type || type === 'continuous') {
+        if (/^(?:asymmetric|continuous)$/.test(type)) {
             // Continuous smoothing approach based on work by Lubos Brieda,
             // Particle In Cell Consulting LLC, but further simplified by
             // addressing handle symmetry across segments, and the possibility
             // to process x and y coordinates simultaneously. Also added
             // handling of closed paths.
             // https://www.particleincell.com/2012/bezier-splines/
-            var min = Math.min,
+            //
+            // We use different parameters for the two supported smooth methods
+            // that use this algorithm: continuous and asymmetric. asymmetric
+            // was the only approach available in v0.9.25 & below.
+            var asymmetric = type === 'asymmetric',
+                min = Math.min,
                 amount = to - from + 1,
-                n = amount - 1;
-            // Overlap by up to 4 points on closed paths since a current segment
-            // is affected by its 4 neighbors on both sides (?).
-            var loop = closed && !range,
+                n = amount - 1,
+                // Overlap by up to 4 points on closed paths since a current
+                // segment is affected by its 4 neighbors on both sides (?).
+                loop = closed && !range,
                 padding = loop ? min(amount, 4) : 1,
                 paddingLeft = padding,
                 paddingRight = padding,
@@ -2131,43 +2136,56 @@ var Path = PathItem.extend(/** @lends Path# */{
                 knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
             }
 
-            // Right-hand side vectors, with left most segment added (L).
-            // We can remove the need for the arrays a, and c, because:
-            // - a is 0 for (L), 1 for (I) and 2 for (R)
-            // - c is 1 for (L) and (I), 0 for (R)
-            var b = [2],
-                rx = [knots[0]._x + 2 * knots[1]._x],
-                ry = [knots[0]._y + 2 * knots[1]._y],
-                n_1 = n - 1;
+            // In the algorithm we treat these 3 cases:
+            // - left most segment (L)
+            // - internal segments (I)
+            // - right most segment (R)
+            //
+            // In both the continuous and asymmetric method, c takes these
+            // values and can hence be removed from the loop starting in n - 2:
+            // c = 1 (L), 1 (I), 0 (R)
+            //
+            // continuous:
+            // a = 0 (L), 1 (I), 2 (R)
+            // b = 2 (L), 4 (I), 7 (R)
+            // u = 1 (L), 4 (I), 8 (R)
+            // v = 2 (L), 2 (I), 1 (R)
+            //
+            // asymmetric:
+            // a = 0 (L), 1 (I), 1 (R)
+            // b = 2 (L), 4 (I), 2 (R)
+            // u = 1 (L), 4 (I), 3 (R)
+            // v = 2 (L), 2 (I), 0 (R)
 
-            // Internal segments (I).
-            for (var i = 1; i < n_1; i++) {
-                b[i] = 4;
-                rx[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
-                ry[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
-            }
-
-            // Right segment (R).
-            b[n_1] = 7;
-            rx[n_1] = 8 * knots[n_1]._x + knots[n]._x;
-            ry[n_1] = 8 * knots[n_1]._y + knots[n]._y;
-
-            // Solve Ax = b with the Thomas algorithm (from Wikipedia)
-            for (var i = 1, j = 0; i < n; i++, j++) {
-                var a = i === n_1 ? 2 : 1,
-                    m = a / b[j];
-                b[i] = b[i] - m;
-                rx[i] = rx[i] - m * rx[j];
-                ry[i] = ry[i] - m * ry[j];
-            }
-
-            var px = [],
+            // (L): u = 1, v = 2
+            var x = knots[0]._x + 2 * knots[1]._x,
+                y = knots[0]._y + 2 * knots[1]._y,
+                f = 2,
+                n_1 = n - 1,
+                rx = [x],
+                ry = [y],
+                rf = [f],
+                px = [],
                 py = [];
-            px[n_1] = rx[n_1] / b[n_1];
-            py[n_1] = ry[n_1] / b[n_1];
+            // Solve with the Thomas algorithm
+            for (var i = 1; i < n; i++) {
+                var internal = i < n_1,
+                    //  internal--(I)  asymmetric--(R) (R)--continuous
+                    a = internal ? 1 : asymmetric ? 1 : 2,
+                    b = internal ? 4 : asymmetric ? 2 : 7,
+                    u = internal ? 4 : asymmetric ? 3 : 8,
+                    v = internal ? 2 : asymmetric ? 0 : 1,
+                    m = a / f;
+                f = rf[i] = b - m;
+                x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x;
+                y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y;
+            }
+
+            px[n_1] = rx[n_1] / rf[n_1];
+            py[n_1] = ry[n_1] / rf[n_1];
             for (var i = n - 2; i >= 0; i--) {
-                px[i] = (rx[i] - px[i + 1]) / b[i];
-                py[i] = (ry[i] - py[i + 1]) / b[i];
+                px[i] = (rx[i] - px[i + 1]) / rf[i];
+                py[i] = (ry[i] - py[i + 1]) / rf[i];
             }
             px[n] = (3 * knots[n]._x - px[n_1]) / 2;
             py[n] = (3 * knots[n]._y - py[n_1]) / 2;
