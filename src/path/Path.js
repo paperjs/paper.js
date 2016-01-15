@@ -2078,9 +2078,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             // Ranges on closed paths are allowed to wrapped around the
             // beginning/end (e.g. start near the end, end near the beginning),
             // while ranges on open paths stay within the path's open range.
-            return Numerical.clamp(index < 0 && closed
+            return Math.min(index < 0 && closed
                     ? index % length
-                    : index < 0 ? index + length : index, 0, length - 1);
+                    : index < 0 ? index + length : index, length - 1);
         }
 
         var opts = options || {},
