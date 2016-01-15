@@ -49,6 +49,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // Exceptions are Raster, PlacedSymbol, Clip and Shape.
     _applyMatrix: true,
     _canApplyMatrix: true,
+    _canScaleStroke: false,
     _boundsSelected: false,
     _selectChildren: false,
     // Provide information about fields to be serialized, with their defaults
@@ -3981,7 +3982,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var strokeMatrix = parentStrokeMatrix
                 ? parentStrokeMatrix.chain(matrix)
                 // pass `true` for dontMerge
-                : !this.getStrokeScaling(true) && getViewMatrix(globalMatrix),
+                : this._canScaleStroke && !this.getStrokeScaling(true)
+                    && getViewMatrix(globalMatrix),
             // If we're drawing into a separate canvas and a clipItem is defined
             // for the current rendering loop, we need to draw the clip item
             // again.
