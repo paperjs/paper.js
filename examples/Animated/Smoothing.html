@@ -39,7 +39,7 @@
                 path.segments[i].point.y = yPos;
             }
             if (smooth)
-                path.smooth({ continuous: true });
+                path.smooth( { type: 'continuous' });
         }
 
         function onMouseMove(event) {
