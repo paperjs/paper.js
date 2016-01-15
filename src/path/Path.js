@@ -2131,34 +2131,32 @@ var Path = PathItem.extend(/** @lends Path# */{
                 knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
             }
 
-            // Right-hand side vectors, with left most segment added.
-            var a = [0],
-                b = [2],
-                c = [1],
+            // Right-hand side vectors, with left most segment added (L).
+            // We can remove the need for the arrays a, and c, because:
+            // - a is 0 for (L), 1 for (I) and 2 for (R)
+            // - c is 1 for (L) and (I), 0 for (R)
+            var b = [2],
                 rx = [knots[0]._x + 2 * knots[1]._x],
                 ry = [knots[0]._y + 2 * knots[1]._y],
                 n_1 = n - 1;
 
-            // Internal segments
+            // Internal segments (I).
             for (var i = 1; i < n_1; i++) {
-                a[i] = 1;
                 b[i] = 4;
-                c[i] = 1;
                 rx[i] = 4 * knots[i]._x + 2 * knots[i + 1]._x;
                 ry[i] = 4 * knots[i]._y + 2 * knots[i + 1]._y;
             }
 
-            // Right segment
-            a[n_1] = 2;
+            // Right segment (R).
             b[n_1] = 7;
-            c[n_1] = 0;
             rx[n_1] = 8 * knots[n_1]._x + knots[n]._x;
             ry[n_1] = 8 * knots[n_1]._y + knots[n]._y;
 
             // Solve Ax = b with the Thomas algorithm (from Wikipedia)
             for (var i = 1, j = 0; i < n; i++, j++) {
-                var m = a[i] / b[j];
-                b[i] = b[i] - m * c[j];
+                var a = i === n_1 ? 2 : 1,
+                    m = a / b[j];
+                b[i] = b[i] - m;
                 rx[i] = rx[i] - m * rx[j];
                 ry[i] = ry[i] - m * ry[j];
             }
@@ -2168,8 +2166,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             px[n_1] = rx[n_1] / b[n_1];
             py[n_1] = ry[n_1] / b[n_1];
             for (var i = n - 2; i >= 0; i--) {
-                px[i] = (rx[i] - c[i] * px[i + 1]) / b[i];
-                py[i] = (ry[i] - c[i] * py[i + 1]) / b[i];
+                px[i] = (rx[i] - px[i + 1]) / b[i];
+                py[i] = (ry[i] - py[i + 1]) / b[i];
             }
             px[n] = (3 * knots[n]._x - px[n_1]) / 2;
             py[n] = (3 * knots[n]._y - py[n_1]) / 2;
