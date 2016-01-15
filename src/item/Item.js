@@ -593,8 +593,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         if ((selected = !!selected) ^ this._selected) {
             this._selected = selected;
-            this._project._updateSelection(this);
-            this._changed(/*#=*/Change.ATTRIBUTE);
+            var project = this._project;
+            if (project) {
+                project._updateSelection(this);
+                this._changed(/*#=*/Change.ATTRIBUTE);
+            }
         }
     },
 
