@@ -208,7 +208,7 @@ var Numerical = new function() {
          * @param {Number[]} roots the array to store the roots in
          * @param {Number} [min] the lower bound of the allowed roots
          * @param {Number} [max] the upper bound of the allowed roots
-         * @return {Number} The number of real roots found, or -1 if there are
+         * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
          * @author Harikrishnan Gopalakrishnan

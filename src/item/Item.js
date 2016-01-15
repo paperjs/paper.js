@@ -1640,7 +1640,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     }
      * }
      *
-     * @param {Point} point The point to check for
+     * @param {Point} point the point to check for
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -1731,7 +1731,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
-     * @param {Point} point The point where the hit-test should be performed
+     * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: 2 }]
      * @return {HitResult} a hit result object that contains more information
@@ -2157,9 +2157,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * {@grouptitle Hierarchy Operations} Adds the specified item as a child of
-     * this item at the end of the its children list. You can use this function
-     * for groups, compound paths and layers.
+     * {@grouptitle Hierarchy Operations}
+     *
+     * Adds the specified item as a child of this item at the end of the its
+     * children list. You can use this function for groups, compound paths and
+     * layers.
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
@@ -2187,7 +2189,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * children list. You can use this function for groups, compound paths and
      * layers.
      *
-     * @param {Item[]} items The items to be added as children
+     * @param {Item[]} items the items to be added as children
      * @return {Item[]} the added items, or `null` if adding was not possible
      */
     addChildren: function(items, _preserve) {
@@ -2200,7 +2202,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * groups, compound paths and layers.
      *
      * @param {Number} index
-     * @param {Item[]} items The items to be appended as children
+     * @param {Item[]} items the items to be appended as children
      * @return {Item[]} the inserted items, or `null` if inserted was not
      *     possible
      */
@@ -2304,7 +2306,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * use this function for groups, compound paths and layers.
      *
      * @function
-     * @param {Item} item The item to be appended as a child
+     * @param {Item} item the item to be appended as a child
      * @deprecated use {@link #addChild(item)} instead.
      */
     appendTop: '#addChild',
@@ -2314,7 +2316,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * the list of children and moving it below all other children. You can
      * use this function for groups, compound paths and layers.
      *
-     * @param {Item} item The item to be appended as a child
+     * @param {Item} item the item to be appended as a child
      * @deprecated use {@link #insertChild(index, item)} instead.
      */
     appendBottom: function(item) {
@@ -2325,7 +2327,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Moves this item above the specified item.
      *
      * @function
-     * @param {Item} item The item above which it should be moved
+     * @param {Item} item the item above which it should be moved
      * @return {Boolean} {@true if it was moved}
      * @deprecated use {@link #insertAbove(item)} instead.
      */
@@ -2616,7 +2618,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks if this item is above the specified item in the stacking order
      * of the project.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
      */
     isAbove: function(item) {
@@ -2627,7 +2629,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks if the item is below the specified item in the stacking order of
      * the project.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
      */
     isBelow: function(item) {
@@ -2637,7 +2639,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks whether the specified item is the parent of the item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is the parent of the item}
      */
     isParent: function(item) {
@@ -2647,7 +2649,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks whether the specified item is a child of the item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true it is a child of the item}
      */
     isChild: function(item) {
@@ -2657,7 +2659,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks if the item is contained within the specified item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is inside the specified item}
      */
     isDescendant: function(item) {
@@ -3148,7 +3150,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Matrix} matrix the matrix by which the item shall be transformed
      */
     // TODO: Implement flags:
-    // @param {String[]} flags Array of any of the following: 'objects',
+    // @param {String[]} flags array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
     transform: function(matrix, _applyMatrix, _applyRecursively,

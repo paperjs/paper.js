@@ -66,8 +66,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * constructor figures out how to fit a rectangle between them.
      *
      * @name Rectangle#initialize
-     * @param {Point} from The first point defining the rectangle
-     * @param {Point} to The second point defining the rectangle
+     * @param {Point} from the first point defining the rectangle
+     * @param {Point} to the second point defining the rectangle
      */
     /**
      * Creates a new rectangle object from the passed rectangle object.
@@ -528,7 +528,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *
      * @name Rectangle#contains
      * @function
-     * @param {Rectangle} rect The specified rectangle
+     * @param {Rectangle} rect the specified rectangle
      * @return {Boolean} {@true if the rectangle entirely contains the specified
      * rectangle}
      *
@@ -659,7 +659,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * Returns a new rectangle representing the intersection of this rectangle
      * with the specified rectangle.
      *
-     * @param {Rectangle} rect The rectangle to be intersected with this
+     * @param {Rectangle} rect the rectangle to be intersected with this
      * rectangle
      * @return {Rectangle} the largest rectangle contained in both the specified
      * rectangle and in this rectangle

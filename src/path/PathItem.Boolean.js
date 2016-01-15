@@ -470,16 +470,14 @@ PathItem.inject(new function() {
     }
 
     /**
-     * Private method to trace closed contours from a set of segments according
-     * to a set of constraints-winding contribution and a custom operator.
+     * Private method to trace closed paths from a list of segments, according
+     * to a the their winding number contribution and a custom operator.
      *
-     * @param {Segment[]} segments Array of 'seed' segments for tracing closed
-     * contours
-     * @param {Function} the operator function that receives as argument the
-     * winding number contribution of a curve and returns a boolean value
-     * indicating whether the curve should be included in the final contour or
-     * not
-     * @return {Path[]} the contours traced
+     * @param {Segment[]} segments array of segments to trace closed paths
+     * @param {Function} operator the operator lookup table that receives as key
+     *     the winding number contribution of a curve and returns a boolean
+     *     value indicating whether the curve should be included in result
+     * @return {Path[]} the traced closed paths
      */
     function tracePaths(segments, operator, validOverlapsOnly) {
         var paths = [],
