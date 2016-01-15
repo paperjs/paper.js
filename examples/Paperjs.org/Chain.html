@@ -34,7 +34,7 @@
                 vector.length = length;
                 nextSegment.point = segment.point - vector;
             }
-            path.smooth();
+            path.smooth({ continuous: true });
         }
 
         function onMouseDown(event) {
