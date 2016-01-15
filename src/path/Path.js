@@ -2087,10 +2087,10 @@ var Path = PathItem.extend(/** @lends Path# */{
             type = opts.type || 'asymmetric',
             segments = this._segments,
             length = segments.length,
-            range = opts.from !== undefined || opts.to !== undefined,
+            closed = this._closed,
+            loop = closed && opts.from === undefined && opts.to === undefined,
             from = getIndex(opts.from, 0),
-            to = getIndex(opts.to, length - 1),
-            closed = this._closed;
+            to = getIndex(opts.to, length - 1);
         if (from > to) {
             if (closed) {
                 from -= length;
@@ -2117,7 +2117,6 @@ var Path = PathItem.extend(/** @lends Path# */{
                 n = amount - 1,
                 // Overlap by up to 4 points on closed paths since a current
                 // segment is affected by its 4 neighbors on both sides (?).
-                loop = closed && !range,
                 padding = loop ? min(amount, 4) : 1,
                 paddingLeft = padding,
                 paddingRight = padding,
@@ -2206,7 +2205,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             // All other smoothing methods are handled directly on the segments:
             for (var i = from; i <= to; i++) {
                 segments[i < 0 ? i + length : i].smooth(opts,
-                        i === from, i === to);
+                        !loop && i === from, !loop && i === to);
             }
         }
     }
