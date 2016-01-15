@@ -32,11 +32,11 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @name Segment#initialize
      * @param {Point} [point={x: 0, y: 0}] the anchor point of the segment
      * @param {Point} [handleIn={x: 0, y: 0}] the handle point relative to the
-     * anchor point of the segment that describes the in tangent of the
-     * segment
+     *     anchor point of the segment that describes the in tangent of the
+     *     segment
      * @param {Point} [handleOut={x: 0, y: 0}] the handle point relative to the
-     * anchor point of the segment that describes the out tangent of the
-     * segment
+     *     anchor point of the segment that describes the out tangent of the
+     *     segment
      *
      * @example {@paperscript}
      * var handleIn = new Point(-80, -100);
@@ -381,15 +381,40 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
-     * Smooths the bezier curves that pass through this segment without moving
-     * its point, by taking into its distance to the neighboring segments and
-     * changing the direction and length of the segment's handles accordingly.
+     * Smooths the bezier curves that pass through this segment by taking into
+     * account the segment's position and distance to the neighboring segments
+     * and changing the direction and length of the segment's handles
+     * accordingly without moving the segment itself.
      *
-     * @param {Object} [options] TODO
-     * TODO: controls the amount of smoothing as a factor by which to scale each
-     * handle.
+     * Two different smoothing methods are available:
      *
-     * @see PathItem#smooth(options)
+     * - `'catmull-rom'` uses the Catmull-Rom spline to smooth the segment.
+     *
+     *     The optionally passed factor controls the knot parametrization of the
+     *     algorithm:
+     *
+     *     - `0.0`: the standard, uniform Catmull-Rom spline
+     *     - `0.5`: the centripetal Catmull-Rom spline, guaranteeing no
+     *         self-intersections
+     *     - `1.0`: the chordal Catmull-Rom spline
+     *
+     * - `'geometric'` use a simple heuristic and empiric geometric method to
+     *     smooth the segment's handles. The handles were weighted, meaning that
+     *     big differences in distances between the segments will lead to
+     *     probably undesired results.
+     *
+     *     The optionally passed factor defines the tension parameter (`0...1`),
+     *     controlling the amount of smoothing as a factor by which to scale
+     *     each handle.
+     *
+     * @option [options.type='catmull-rom'] {String} the type of smoothing
+     *     method: {@values 'catmull-rom', 'geometric'}
+     * @option options.factor {Number} the factor parameterizing the smoothing
+     *     method — default: `0.5` for `'catmull-rom'`, `0.4` for `'geometric'`
+     *
+     * @param {Object} [options] the smoothing options
+     *
+     * @see PathItem#smooth([options])
      */
     smooth: function(options, _first, _last) {
         // _first = _last = false;

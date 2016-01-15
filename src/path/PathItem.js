@@ -317,25 +317,71 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
     }
 
-    /**
-     * TODO: continuous:
-     * Smooths the path item by adjusting its curve handles so that the first
-     * and second derivatives of all involved curves are continuous across their
-     * boundaries.
-     */
+    // TODO: Write about negative indices, and add an example for ranges.
     /**
      * Smooths the path item without changing the amount of segments in the path
-     * or moving their locations, by only smoothing and adjusting the angle and
-     * length of their handles.
-     * This works for open paths as well as closed paths.
+     * or moving the segments' locations, by smoothing and adjusting the angle
+     * and length of the segments' handles based on the position and distance of
+     * neighboring segments.
+     *
+     * Smoothing works both for open paths and closed paths, and can be applied
+     * to the full path, as well as a sub-range of it. If a range is defined
+     * using the `options.from` and `options.to` properties, only the curve
+     * handles inside that range are touched.
+     *
+     * Four different smoothing methods are available:
+     *
+     * - `'continuous'` smooths the path item by adjusting its curve handles so
+     *     that the first and second derivatives of all involved curves are
+     *     continuous across their boundaries.
+     *
+     *     This method tends to result in the smoothest results, but does not
+     *     allow for further parametrization of the handles.
+     *
+     * - `'asymmetric'` is based on the same principle as `'continuous'` but
+     *     uses different factors so that the result is asymmetric. This used to
+     *     the only method available until v0.10.0, and is currently still the
+     *     default when no method is specified, for reasons of backward
+     *     compatibility. It will eventually be removed.
+     *
+     * - `'catmull-rom'` uses the Catmull-Rom spline to smooth the segment.
+     *
+     *     The optionally passed factor controls the knot parametrization of the
+     *     algorithm:
+     *
+     *     - `0.0`: the standard, uniform Catmull-Rom spline
+     *     - `0.5`: the centripetal Catmull-Rom spline, guaranteeing no
+     *         self-intersections
+     *     - `1.0`: the chordal Catmull-Rom spline
+     *
+     * - `'geometric'` use a simple heuristic and empiric geometric method to
+     *     smooth the segment's handles. The handles were weighted, meaning that
+     *     big differences in distances between the segments will lead to
+     *     probably undesired results.
+     *
+     *     The optionally passed factor defines the tension parameter (`0...1`),
+     *     controlling the amount of smoothing as a factor by which to scale
+     *     each handle.
      *
      * @name PathItem#smooth
      * @function
-     * @param {Object} [options] TODO
-     * TODO: controls the amount of smoothing as a factor by which to scale each
-     * handle.
      *
-     * @see Segment#smooth(options)
+     * @option [options.type='asymmetric'] {String} the type of smoothing
+     *     method: {@values 'continuous', 'asymmetric', 'catmull-rom',
+     *     'geometric'}
+     * @option options.factor {Number} the factor parameterizing the smoothing
+     *     method — default: `0.5` for `'catmull-rom'`, `0.4` for `'geometric'`
+     * @option options.from {Number|Segment|Curve} the segment or curve at which
+     *     to start smoothing, if not the full path shall be smoothed
+     *     (inclusive). This can either be a segment index, or a segment or
+     *     curve object that is part of the path.
+     * @option options.to {Number|Segment|Curve} the segment or curve to which
+     *     the handles of the path shall be processed (inclusive). This can
+     *     either be a segment index, or a segment or curve object that is part
+     *     of the path.
+     *
+     * @param {Object} [options] the smoothing options
+     * @see Segment#smooth([options])
      *
      * @example {@paperscript}
      * // Smoothing a closed shape:
@@ -353,7 +399,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * copy.position.x += 100;
      *
      * // Smooth the segments of the copy:
-     * copy.smooth();
+     * copy.smooth({ type: 'continuous' });
      *
      * @example {@paperscript height=220}
      * var path = new Path();
@@ -374,11 +420,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * var copy = path.clone();
      * copy.position.y += 120;
      *
-     * // Set its stroke color to red:
-     * copy.strokeColor = 'red';
+     * // Select the path, so we can see its handles:
+     * copy.fullySelected = true;
      *
      * // Smooth the segments of the copy:
-     * copy.smooth();
+     * copy.smooth({ type: 'catmull-rom', factor: 0.5 });
      */
 
     /**
