@@ -27,11 +27,10 @@
  * transforms source coordinates (x,y) into destination coordinates (x',y')
  * by considering them to be a column vector and multiplying the coordinate
  * vector by the matrix according to the following process:
- * <pre>
- *      [ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
- *      [ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
- *      [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
- * </pre>
+ *
+ *     [ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
+ *     [ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
+ *     [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
  *
  * This class is optimized for speed and minimizes calculations based on its
  * knowledge of the underlying matrix (as opposed to say simply performing

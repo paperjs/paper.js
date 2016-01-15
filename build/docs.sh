@@ -24,7 +24,8 @@ else
 fi
 
 cd jsdoc-toolkit
-java -jar jsrun.jar app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
+# TODO: jsdoc2 -c=conf/$MODE.conf -D="renderMode:$MODE"
+java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/$MODE.conf -D="renderMode:$MODE"
 cd ..
 
 if [ $MODE = "docs" ]
