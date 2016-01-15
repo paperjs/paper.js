@@ -409,7 +409,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * // Smooth the segments of the copy:
      * copy.smooth({ type: 'continuous' });
      *
-     * @example {@paperscript}
+     * @example {@paperscript height=220}
      * var path = new Path();
      * path.strokeColor = 'black';
      *
@@ -434,7 +434,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * // Smooth the path using centripetal Catmull-Rom splines:
      * copy.smooth({ type: 'catmull-rom', factor: 0.5 });
      *
-     * @example {@paperscript}
+     * @example {@paperscript height=110}
      * // Smoothing ranges of paths, using segments, curves or indices:
      *
      * // Create 5 rectangles, next to each other:

@@ -31,5 +31,5 @@ cd ..
 if [ $MODE = "docs" ]
 then
     # Build paper.js library for documentation
-    ./preprocess.sh stripped ../src/paper.js "-o '{ \"browser\": true }' -i '../src/constants.js'" ../dist/docs/assets/js/paper.js
+    ./preprocess.sh stripped ../src/paper.js "-i '../src/constants.js'" ../dist/docs/assets/js/paper.js
 fi

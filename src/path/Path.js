@@ -2065,15 +2065,20 @@ var Path = PathItem.extend(/** @lends Path# */{
         // For numbers, the `to` index is exclusive, while for segments and
         // curves, it is inclusive, handled by the `offset` parameter.
         function getIndex(value, _default) {
-            var index = value == null
-                    ? _default
-                    : typeof value === 'number'
-                        ? value
-                        // Support both Segment and Curve through getIndex()
-                        : value.getIndex
-                            ? value.getIndex()
-                                + (_default && value instanceof Curve ? 1 : 0)
-                            : _default;
+            // Support both Segment and Curve through #index getter.
+            var index = value && value.index;
+            if (index != null) {
+                // Make sure the segment / curve is not from a wrong path.
+                var path = value.path;
+                if (path && path !== that)
+                    throw new Error(value._class + ' ' + index + ' of ' + path
+                            + ' is not part of ' + that);
+                // Add offset of 1 to curves to reach their end segment.
+                if (_default && value instanceof Curve)
+                    index++;
+            } else {
+                index = typeof value === 'number' ? value : _default;
+            }
             // Handle negative values based on whether a path is open or not:
             // Ranges on closed paths are allowed to wrapped around the
             // beginning/end (e.g. start near the end, end near the beginning),
@@ -2083,7 +2088,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                     : index < 0 ? index + length : index, length - 1);
         }
 
-        var opts = options || {},
+        var that = this,
+            opts = options || {},
             type = opts.type || 'asymmetric',
             segments = this._segments,
             length = segments.length,
