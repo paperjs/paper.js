@@ -2080,7 +2080,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             // while ranges on open paths stay within the path's open range.
             return Numerical.clamp(index < 0 && closed
                     ? index % length
-                    : index < 0 ? index + length : index, 0, length);
+                    : index < 0 ? index + length : index, 0, length - 1);
         }
 
         var opts = options || {},
