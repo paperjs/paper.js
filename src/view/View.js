@@ -1078,7 +1078,7 @@ new function() { // Injection scope for mouse events on the browser
 
             function responds(type) {
                 return view._itemEvents[type] || view.responds(type)
-                        || tool.responds(type);
+                        || tool && tool.responds(type);
             }
 
             if (called && (!nativeMove || responds('mousedrag'))
