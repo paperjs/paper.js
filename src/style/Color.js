@@ -797,7 +797,7 @@ var Color = Base.extend(new function() {
         /**
          * Returns the color as a CSS string.
          *
-         * @param {Boolean} hex whether to return the color in hexadecial
+         * @param {Boolean} hex whether to return the color in hexadecimal
          * representation or as a CSS RGB / RGBA string.
          * @return {String} a CSS string representation of the color
          */

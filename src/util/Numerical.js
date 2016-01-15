@@ -211,7 +211,7 @@ var Numerical = new function() {
          * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
-         * @author Harikrishnan Gopalakrishnan
+         * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveQuadratic: function(a, b, c, roots, min, max) {
             var count = 0,
@@ -298,7 +298,7 @@ var Numerical = new function() {
          * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
-         * @author Harikrishnan Gopalakrishnan
+         * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
             var count = 0,
