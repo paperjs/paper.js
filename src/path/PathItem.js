@@ -327,7 +327,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * Smoothing works both for open paths and closed paths, and can be applied
      * to the full path, as well as a sub-range of it. If a range is defined
      * using the `options.from` and `options.to` properties, only the curve
-     * handles inside that range are touched.
+     * handles inside that range are touched. If one or both limits of the range
+     * are specified in negative indices, the indices are wrapped around the end
+     * of the curve. That way, a smoothing range in a close path can even wrap
+     * around the connection between the last and the first segment.
      *
      * Four different smoothing methods are available:
      *
@@ -374,11 +377,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @option options.from {Number|Segment|Curve} the segment or curve at which
      *     to start smoothing, if not the full path shall be smoothed
      *     (inclusive). This can either be a segment index, or a segment or
-     *     curve object that is part of the path.
+     *     curve object that is part of the path. If the passed number is
+     *     negative, the index is wrapped around the end of the path.
      * @option options.to {Number|Segment|Curve} the segment or curve to which
      *     the handles of the path shall be processed (inclusive). This can
      *     either be a segment index, or a segment or curve object that is part
-     *     of the path.
+     *     of the path. If the passed number is negative, the index is wrapped
+     *     around the end of the path.
      *
      * @param {Object} [options] the smoothing options
      * @see Segment#smooth([options])
@@ -388,20 +393,23 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * // Create a rectangular path with its top-left point at
      * // {x: 30, y: 25} and a size of {width: 50, height: 50}:
-     * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
-     * path.strokeColor = 'black';
+     * var path = new Path.Rectangle({
+     *     point: [30, 25],
+     *     size: [50, 50],
+     *     strokeColor: 'black',
+     * });
      *
      * // Select the path, so we can see its handles:
      * path.fullySelected = true;
      *
-     * // Create a copy of the path and move it 100pt to the right:
+     * // Create a copy of the path and move it 100 to the right:
      * var copy = path.clone();
      * copy.position.x += 100;
      *
      * // Smooth the segments of the copy:
      * copy.smooth({ type: 'continuous' });
      *
-     * @example {@paperscript height=220}
+     * @example {@paperscript}
      * var path = new Path();
      * path.strokeColor = 'black';
      *
@@ -416,15 +424,47 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *     path.lineBy(x, y);
      * }
      *
-     * // Create a copy of the path and move it 100pt down:
+     * // Create a copy of the path and move it 100 down:
      * var copy = path.clone();
      * copy.position.y += 120;
      *
      * // Select the path, so we can see its handles:
      * copy.fullySelected = true;
      *
-     * // Smooth the segments of the copy:
+     * // Smooth the path using centripetal Catmull-Rom splines:
      * copy.smooth({ type: 'catmull-rom', factor: 0.5 });
+     *
+     * @example {@paperscript}
+     * // Smoothing ranges of paths, using segments, curves or indices:
+     *
+     * // Create 5 rectangles, next to each other:
+     * var paths = [];
+     * for (var i = 0; i < 5; i++) {
+     *     paths.push(new Path.Rectangle({
+     *         point: [30 + i * 100, 25],
+     *         size: [50, 50],
+     *         fullySelected: true
+     *     }));
+     * }
+     * // Smooth a range, using segments:
+     * paths[1].smooth({
+     *     type: 'continuous',
+     *     from: paths[1].segments[0],
+     *     to: paths[1].segments[2]
+     * });
+     *
+     * // Smooth a range, using curves:
+     * paths[2].smooth({
+     *     type: 'continuous',
+     *     from: paths[2].curves[0],
+     *     to: paths[2].curves[1]
+     * });
+     *
+     * // Smooth a range, using indices:
+     * paths[3].smooth({ type: 'continuous', from: 0, to: 2 });
+     *
+     * // Smooth a range, using negative indices:
+     * paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
      */
 
     /**
