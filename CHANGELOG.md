@@ -71,7 +71,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 
 ### Removed
 - Legacy Color constructors (removed in 0.9.25): GrayColor, RgbColor, HsbColor,
-  HslColor, and GradientColor. These have been replaced with the corresponding
+  HslColor, and GradientColor. These have been replaced with corresponding
   forms of the Color constructor.
 - Remove `getEndDistanceSquared()` (added `getSquaredLineLength()`)
 - `ctx.currentPath` caching optimization
