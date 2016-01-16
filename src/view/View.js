@@ -19,7 +19,7 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-/* jshint -W082 */
+/* jshint -W082 */// Do not complain about functions inside Prepro.js statements
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
