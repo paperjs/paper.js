@@ -2114,8 +2114,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * {@grouptitle Hierarchy Operations}
      *
      * Adds the specified item as a child of this item at the end of the its
-     * children list. You can use this function for groups, compound paths and
-     * layers.
+     * {@link #children}  list. You can use this function for groups, compound
+     * paths and layers.
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
@@ -2129,7 +2129,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * in its {@link #children} list. You can use this function for groups,
      * compound paths and layers.
      *
-     * @param {Number} index
+     * @param {Number} index the index at which to insert the item
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */

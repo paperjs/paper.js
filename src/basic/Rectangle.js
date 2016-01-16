@@ -799,10 +799,10 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
         ['Right', 'Center'], ['Bottom', 'Center']
     ],
     function(parts, index) {
-        var part = parts.join('');
-        // find out if the first of the pair is an x or y property,
-        // by checking the first character for [R]ight or [L]eft;
-        var xFirst = /^[RL]/.test(part);
+        var part = parts.join(''),
+            // find out if the first of the pair is an x or y property,
+            // by checking the first character for [R]ight or [L]eft;
+            xFirst = /^[RL]/.test(part);
         // Rename Center to CenterX or CenterY:
         if (index >= 4)
             parts[1] += xFirst ? 'Y' : 'X';
@@ -861,8 +861,8 @@ new function() {
     var proto = Rectangle.prototype;
 
     return Base.each(['x', 'y', 'width', 'height'], function(key) {
-        var part = Base.capitalize(key);
-        var internal = '_' + key;
+        var part = Base.capitalize(key),
+            internal = '_' + key;
         this['get' + part] = function() {
             return this[internal];
         };

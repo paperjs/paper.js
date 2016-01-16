@@ -269,44 +269,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
     // TODO: Implement setSelectedItems?
 
-    insertLayer: function(index, item) {
-        if (item instanceof Layer) {
-            item._remove(false, true);
-            Base.splice(this._children, [item], index, 0);
-            item._setProject(this, true);
-            // See Item#_remove() for an explanation of this:
-            if (this._changes)
-                item._changed(/*#=*/Change.INSERTION);
-            // TODO: this._changed(/*#=*/Change.LAYERS);
-            // Also activate this layer if there was none before
-            if (!this._activeLayer)
-                this._activeLayer = item;
-        } else {
-            item = null;
-        }
-        return item;
-    },
-
-    addLayer: function(item) {
-        return this.insertLayer(undefined, item);
-    },
-
-    // Project#_insertItem() and Item#_insertItem() are helper functions called
-    // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
-    // methods. They are called the same to facilitate so duck-typing.
-    _insertItem: function(index, item, _preserve, _created) {
-        item = this.insertLayer(index, item)
-                // Anything else than layers needs to be added to a layer first.
-                // If none exists yet, create one now, then add the item to it.
-                || (this._activeLayer || this._insertItem(undefined,
-                        new Layer(Item.NO_INSERT), true, true))
-                        .insertChild(index, item, _preserve);
-        // If a layer was newly created, also activate it.
-        if (_created && item.activate)
-            item.activate();
-        return item;
-    },
-
     _updateSelection: function(item) {
         var id = item._id,
             selectedItems = this._selectedItems;
@@ -388,6 +350,61 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             if (res) return res;
         }
         return null;
+    },
+
+    /**
+     * {@grouptitle Hierarchy Operations}
+     *
+     * Adds the specified layer at the end of the this project's {@link #layers}
+     * list.
+     *
+     * @param {Layer} layer the layer to be added to the project
+     * @return {Layer} the added layer, or `null` if adding was not possible
+     */
+    addLayer: function(layer) {
+        return this.insertLayer(undefined, layer);
+    },
+
+    /**
+     * Inserts the specified layer at the specified index in this project's
+     * {@link #layers} list.
+     *
+     * @param {Number} index the index at which to insert the layer
+     * @param {Item} item the item to be inserted in the project
+     * @return {Layer} the added layer, or `null` if adding was not possible
+     */
+    insertLayer: function(index, layer) {
+        if (layer instanceof Layer) {
+            layer._remove(false, true);
+            Base.splice(this._children, [layer], index, 0);
+            layer._setProject(this, true);
+            // See Item#_remove() for an explanation of this:
+            if (this._changes)
+                layer._changed(/*#=*/Change.INSERTION);
+            // TODO: this._changed(/*#=*/Change.LAYERS);
+            // Also activate this layer if there was none before
+            if (!this._activeLayer)
+                this._activeLayer = layer;
+        } else {
+            layer = null;
+        }
+        return layer;
+    },
+
+    // Project#_insertItem() and Item#_insertItem() are helper functions called
+    // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
+    // methods. They are called the same to facilitate so duck-typing.
+    _insertItem: function(index, item, _preserve, _created) {
+        item = this.insertLayer(index, item)
+                // Anything else than layers needs to be added to a layer first.
+                // If none exists yet, create one now, then add the item to it.
+                || (this._activeLayer || this._insertItem(undefined,
+                        new Layer(Item.NO_INSERT), true, true))
+                        .insertChild(index, item, _preserve);
+        // If a layer was newly created, also activate it.
+        if (_created && item.activate)
+            item.activate();
+        return item;
     },
 
     /**
