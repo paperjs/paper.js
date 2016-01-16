@@ -220,8 +220,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this affine transform
      */
     scale: function(/* scale, center */) {
-        // Do not modify scale, center, since that would arguments of which
-        // we're reading from!
         var scale = Point.read(arguments),
             center = Point.read(arguments, 0, { readNull: true });
         if (center)
@@ -761,10 +759,10 @@ var Matrix = Base.extend(/** @lends Matrix# */{
                     this._tx, this._ty);
         }
     }
-}, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
+}, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(key) {
     // Create getters and setters for all internal attributes.
-    var part = Base.capitalize(name),
-        prop = '_' + name;
+    var part = Base.capitalize(key),
+        prop = '_' + key;
     this['get' + part] = function() {
         return this[prop];
     };

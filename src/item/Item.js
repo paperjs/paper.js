@@ -105,10 +105,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // is false, or if the props are setting a different parent anyway.
         if (internal || hasProps && props.insert === false) {
             this._setProject(project);
-        } else if (hasProps && props.parent) {
-            props.parent.addChild(this);
         } else {
-            this._addToProject(project);
+            (hasProps && props.parent || project)
+                    ._insertItem(undefined, this, true, true);
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT) {
@@ -120,16 +119,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 true);
         }
         return hasProps;
-    },
-
-    /*
-     * Private helper used in the constructor function to add the created item
-     * to the project scene graph. Overridden in Layer.
-     */
-    _addToProject: function(project) {
-        // Create a new layer if there is no active one. This will
-        // automatically make it the new activeLayer.
-        (project._activeLayer || new Layer()).addChild(this);
     },
 
     _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -219,24 +208,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
         }
-        if (project) {
-            if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-                project._needsUpdate = true;
-            }
-            // Have project keep track of changed items so they can be iterated.
-            // This can be used for example to update the SVG tree. Needs to be
-            // activated in Project
-            if (project._changes) {
-                var entry = project._changesById[this._id];
-                if (entry) {
-                    entry.flags |= flags;
-                } else {
-                    entry = { item: this, flags: flags };
-                    project._changesById[this._id] = entry;
-                    project._changes.push(entry);
-                }
-            }
-        }
+        if (project)
+            project._changed(flags, this);
         // If this item is a symbol's definition, notify it of the change too
         if (symbol)
             symbol._changed(flags);
@@ -1092,15 +1065,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
         matrix.initialize.apply(matrix, arguments);
-        if (this._applyMatrix) {
-            // Directly apply the internal matrix. This will also call
-            // _changed() for us.
-            this.transform(null, true);
-        } else {
-            this._changed(/*#=*/Change.GEOMETRY);
-        }
     },
 
     /**
@@ -1538,20 +1506,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         this._data = data ? Base.clone(data) : null;
         if (name)
             this.setName(name);
-    },
-
-    /**
-     * When passed a project, copies the item to the project,
-     * or duplicates it within the same project. When passed an item,
-     * copies the item into the specified item.
-     *
-     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
-     * copy the item to
-     * @return {Item} the new copy of the item
-     */
-    copyTo: function(owner) {
-        // Pass false fo insert, since we're inserting at a specific location.
-        return owner.addChild(this.clone(false));
     },
 
     /**
@@ -2160,8 +2114,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * {@grouptitle Hierarchy Operations}
      *
      * Adds the specified item as a child of this item at the end of the its
-     * children list. You can use this function for groups, compound paths and
-     * layers.
+     * {@link #children}  list. You can use this function for groups, compound
+     * paths and layers.
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
@@ -2175,7 +2129,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * in its {@link #children} list. You can use this function for groups,
      * compound paths and layers.
      *
-     * @param {Number} index
+     * @param {Number} index the index at which to insert the item
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
@@ -2257,12 +2211,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return items;
     },
 
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function(index, item, _preserve) {
-        return this._parent
-                ? this._parent.insertChild(index, item, _preserve)
-                : null;
-    },
+    // Internal alias, so both Project and Item can be used in #copyTo(), and
+    // through _getOwner() in the various Item#insert*() methods.
+    _insertItem: '#insertChild',
 
     /**
      * Inserts this item above the specified item.
@@ -2271,7 +2222,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        return item._insertSibling(item._index + 1, this, _preserve);
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index + 1, this, _preserve)
+                : null;
     },
 
     /**
@@ -2281,7 +2234,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        return item._insertSibling(item._index, this, _preserve);
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index, this, _preserve) : null;
     },
 
     /**
@@ -2289,7 +2243,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     sendToBack: function() {
         var owner = this._getOwner();
-        return owner ? owner.insertChild(0, this) : null;
+        return owner ? owner._insertItem(0, this) : null;
     },
 
     /**
@@ -2297,7 +2251,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     bringToFront: function() {
         var owner = this._getOwner();
-        return owner ? owner.addChild(this) : null;
+        return owner ? owner._insertItem(undefined, this) : null;
     },
 
     /**
@@ -2342,6 +2296,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @deprecated use {@link #insertBelow(item)} instead.
      */
     moveBelow: '#insertBelow',
+
+    /**
+     * When passed a project, copies the item to the project,
+     * or duplicates it within the same project. When passed an item,
+     * copies the item into the specified item.
+     *
+     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
+     * copy the item to
+     * @return {Item} the new copy of the item
+     */
+    copyTo: function(owner) {
+        // Pass false for insert, since we're inserting at a specific location.
+        return owner._insertItem(undefined, this.clone(false));
+    },
 
     /**
      * If this is a group, layer or compound-path with only one child-item,
@@ -2400,23 +2368,25 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Removes the item from its parent's children list.
      */
     _remove: function(notifySelf, notifyParent) {
-        var parent = this._parent;
-        if (parent) {
+        var owner = this._getOwner(),
+            project = this._project,
+            index = this._index;
+        if (owner && index != null) {
+            // Only required for layers, but not enough to merit an override.
+            if (project._activeLayer === this)
+                project._activeLayer = this.getNextSibling()
+                        || this.getPreviousSibling();
             if (this._name)
                 this._removeNamed();
-            if (this._index != null)
-                Base.splice(parent._children, null, this._index, 1);
+            Base.splice(owner._children, null, index, 1);
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
-            if (notifySelf) {
-                var project = this._project;
-                if (project && project._changes)
-                    this._changed(/*#=*/Change.INSERTION);
-            }
-            // Notify parent of changed children
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
+            // Notify owner of changed children (this can be the project too).
             if (notifyParent)
-                parent._changed(/*#=*/Change.CHILDREN);
+                owner._changed(/*#=*/Change.CHILDREN, this);
             this._parent = null;
             return true;
         }
@@ -2966,11 +2936,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @property
      * @type Color
      */
-
+}, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
+    var rotate = key === 'rotate';
+    this[key] = function(/* value, center */) {
+        var value = (rotate ? Base : Point).read(arguments),
+            center = Point.read(arguments, 0, { readNull: true });
+        return this.transform(new Matrix()[key](value,
+                center || this.getPosition(true)));
+    };
+}, /** @lends Item# */{
     /**
      * {@grouptitle Transform Functions}
      *
-     * Translates (moves) the item by the given offset point.
+     * Translates (moves) the item by the given offset views.
      *
      * @param {Point} delta the offset to translate the item by
      */
@@ -2980,13 +2958,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Rotates the item by a given angle around the given point.
+     * Rotates the item by a given angle around the given center point.
      *
      * Angles are oriented clockwise and measured in degrees.
      *
+     * @name Item#rotate
+     * @function
      * @param {Number} angle the rotation angle
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#rotate
+     * @see Matrix#rotate(angle[, center])
      *
      * @example {@paperscript}
      * // Rotating an item:
@@ -3023,20 +3003,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     path.rotate(3, view.center);
      * }
      */
-    rotate: function(angle /*, center */) {
-        return this.transform(new Matrix().rotate(angle,
-                Point.read(arguments, 1, { readNull: true })
-                    || this.getPosition(true)));
-    }
-}, Base.each(['scale', 'shear', 'skew'], function(name) {
-    this[name] = function() {
-        // See Matrix#scale for explanation of this:
-        var point = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
-        return this.transform(new Matrix()[name](point,
-                center || this.getPosition(true)));
-    };
-}, /** @lends Item# */{
+
     /**
      * Scales the item by the given value from its center point, or optionally
      * from a supplied point.
@@ -3108,7 +3075,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} shear the horziontal and vertical shear factors as a point
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(shear[, center])
      */
     /**
      * Shears the item by the given values from its center point, or optionally
@@ -3119,7 +3086,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal shear factor
      * @param {Number} ver the vertical shear factor
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
 
     /**
@@ -3130,7 +3097,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} skew the horziontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(skew[, center])
      */
     /**
      * Skews the item by the given angles from its center point, or optionally
@@ -3141,9 +3108,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal skew angle in degrees
      * @param {Number} ver the vertical sskew angle in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
-}), /** @lends Item# */{
+
     /**
      * Transform the item.
      *
@@ -3361,7 +3328,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     fitBounds: function(rectangle, fill) {
         // TODO: Think about passing options with various ways of defining
-        // fitting.
+        // fitting. Compare with InDesign fitting to see possible options.
         rectangle = Rectangle.read(arguments);
         var bounds = this.getBounds(),
             itemRatio = bounds.height / bounds.width,
@@ -3373,8 +3340,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     new Size(bounds.width * scale, bounds.height * scale));
         newBounds.setCenter(rectangle.getCenter());
         this.setBounds(newBounds);
-    },
-
+    }
+}), /** @lends Item# */{
     /**
      * {@grouptitle Event Handlers}
      *
@@ -4100,10 +4067,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _canComposite: function() {
         return false;
     }
-}, Base.each(['down', 'drag', 'up', 'move'], function(name) {
-    this['removeOn' + Base.capitalize(name)] = function() {
+}, Base.each(['down', 'drag', 'up', 'move'], function(key) {
+    this['removeOn' + Base.capitalize(key)] = function() {
         var hash = {};
-        hash[name] = true;
+        hash[key] = true;
         return this.removeOn(hash);
     };
 }, /** @lends Item# */{

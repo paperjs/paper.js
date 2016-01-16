@@ -524,10 +524,10 @@ var Size = Base.extend(/** @lends Size# */{
             return new Size(Math.random(), Math.random());
         }
     }
-}, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+}, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
     // Inject round, ceil, floor, abs:
-    var op = Math[name];
-    this[name] = function() {
+    var op = Math[key];
+    this[key] = function() {
         return new Size(op(this.width), op(this.height));
     };
 }, {}));

@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "gulp": "^3.9.0",
-    "gulp-qunit": "^1.2.1",
+    "gulp-qunit": "git://github.com/lehni/gulp-qunit.git#459c5603ceac460327a40dc89df6f19c786dc61b",
     "jshint": "2.8.x",
     "prepro": "~0.9.1",
     "uglify-js": "~2.4.24"

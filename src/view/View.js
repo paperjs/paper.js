@@ -19,7 +19,7 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-/* jshint -W082 */
+/* jshint -W082 */// Do not complain about functions inside Prepro.js statements
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
@@ -261,19 +261,13 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * Private notifier that is called whenever a change occurs in this view.
      * Used only by Matrix for now.
-     *
-     * @param {ChangeFlag} flags describes what exactly has changed
      */
-    _changed: function(flags) {
-        if (flags & /*#=*/ChangeFlag.APPEARANCE)
-            this._project._needsUpdate = true;
-    },
-
-    _transform: function(matrix) {
-        this._matrix.concatenate(matrix);
+    _changed: function() {
+        // The only one calling View._changed() is Matrix, so it can only mean
+        // one thing:
+        this._project._changed(/*#=*/Change.VIEW);
         // Force recalculation of these values next time they are requested.
         this._bounds = null;
-        this._update();
     },
 
     /**
@@ -330,13 +324,13 @@ var View = Base.extend(Emitter, /** @lends View# */{
             return;
         this._viewSize.set(size.width, size.height);
         this._setViewSize(size);
-        this._bounds = null; // Force recalculation
         // Call onResize handler on any size change
         this.emit('resize', {
             size: size,
             delta: delta
         });
-        this._update();
+        this._changed();
+        this.update();
     },
 
     /**
@@ -383,7 +377,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     setCenter: function(/* center */) {
         var center = Point.read(arguments);
-        this.scrollBy(center.subtract(this.getCenter()));
+        this.translate(this.getCenter().subtract(center));
     },
 
     /**
@@ -397,10 +391,28 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     setZoom: function(zoom) {
-        // TODO: Clamp the view between 1/32 and 64, just like Illustrator?
-        this._transform(new Matrix().scale(zoom / this._zoom,
+        this.transform(new Matrix().scale(zoom / this._zoom,
             this.getCenter()));
         this._zoom = zoom;
+    },
+
+    /**
+     * The view's transformation matrix, defining the view onto the project's
+     * contents (position, zoom level, rotation, etc).
+     *
+     * @bean
+     * @type Matrix
+     */
+    getMatrix: function() {
+        return this._matrix;
+    },
+
+    setMatrix: function() {
+        // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
+        var matrix = this._matrix;
+        matrix.initialize.apply(matrix, arguments);
     },
 
     /**
@@ -420,17 +432,124 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     isInserted: function() {
         return DomElement.isInserted(this._element);
+    }
+}, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
+    var rotate = key === 'rotate';
+    this[key] = function(/* value, center */) {
+        var value = (rotate ? Base : Point).read(arguments),
+            center = Point.read(arguments, 0, { readNull: true });
+        return this.transform(new Matrix()[key](value,
+                center || this.getCenter(true)));
+    };
+}, /** @lends View# */{
+    /**
+     * {@grouptitle Transform Functions}
+     *
+     * Translates (scrolls) the view by the given offset vector.
+     *
+     * @param {Point} delta the offset to translate the view by
+     */
+    translate: function(/* delta */) {
+        var mx = new Matrix();
+        return this.transform(mx.translate.apply(mx, arguments));
+    },
+
+    /**
+     * Rotates the view by a given angle around the given center point.
+     *
+     * Angles are oriented clockwise and measured in degrees.
+     *
+     * @name View#rotate
+     * @function
+     * @param {Number} angle the rotation angle
+     * @param {Point} [center={@link View#getCenter()}]
+     * @see Matrix#rotate(angle[, center])
+     */
+
+    /**
+     * Scales the view by the given value from its center point, or optionally
+     * from a supplied point.
+     *
+     * @name View#scale
+     * @function
+     * @param {Number} scale the scale factor
+     * @param {Point} [center={@link View#getCenter()}]
+     */
+    /**
+     * Scales the view by the given values from its center point, or optionally
+     * from a supplied point.
+     *
+     * @name View#scale
+     * @function
+     * @param {Number} hor the horizontal scale factor
+     * @param {Number} ver the vertical scale factor
+     * @param {Point} [center={@link View#getCenter()}]
+     */
+
+    /**
+     * Shears the view by the given value from its center point, or optionally
+     * by a supplied point.
+     *
+     * @name View#shear
+     * @function
+     * @param {Point} shear the horziontal and vertical shear factors as a point
+     * @param {Point} [center={@link View#getCenter()}]
+     * @see Matrix#shear(shear[, center])
+     */
+    /**
+     * Shears the view by the given values from its center point, or optionally
+     * by a supplied point.
+     *
+     * @name View#shear
+     * @function
+     * @param {Number} hor the horizontal shear factor
+     * @param {Number} ver the vertical shear factor
+     * @param {Point} [center={@link View#getCenter()}]
+     * @see Matrix#shear(hor, ver[, center])
+     */
+
+    /**
+     * Skews the view by the given angles from its center point, or optionally
+     * by a supplied point.
+     *
+     * @name View#skew
+     * @function
+     * @param {Point} skew the horziontal and vertical skew angles in degrees
+     * @param {Point} [center={@link View#getCenter()}]
+     * @see Matrix#shear(skew[, center])
+     */
+    /**
+     * Skews the view by the given angles from its center point, or optionally
+     * by a supplied point.
+     *
+     * @name View#skew
+     * @function
+     * @param {Number} hor the horizontal skew angle in degrees
+     * @param {Number} ver the vertical sskew angle in degrees
+     * @param {Point} [center={@link View#getCenter()}]
+     * @see Matrix#shear(hor, ver[, center])
+     */
+
+    /**
+     * Transform the view.
+     *
+     * @param {Matrix} matrix the matrix by which the view shall be transformed
+     */
+    transform: function(matrix) {
+        this._matrix.concatenate(matrix);
     },
 
     /**
      * Scrolls the view by the given vector.
      *
      * @param {Point} point
+     * @deprecated use {@link #translate(delta)} instead (using opposite
+     *     direction).
      */
     scrollBy: function(/* point */) {
-        this._transform(new Matrix().translate(Point.read(arguments).negate()));
-    },
-
+        this.translate(Point.read(arguments).negate());
+    }
+}), /** @lends View# */{
     /**
      * Makes all animation play by adding the view to the request animation
      * loop.

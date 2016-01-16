@@ -12,7 +12,7 @@
 
 # This script simply creates symbolic links to src/load.js from
 # dist/paper-full.js and dist/paper-node.js, which loads the library from
-# separate sources through PrePro both in the browser and in Node.js.
+# separate sources through Prepro.js both in the browser and in Node.js.
 
 if [ -f ../dist/paper-full.js ]
 then

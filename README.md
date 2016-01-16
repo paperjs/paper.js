@@ -143,7 +143,7 @@ And to go back to a built library
     cd build
     ./build.sh
 
-Note that your PaperScripts examples do not need to change, they can keep loading `dist/paper-full.js`, which will always do the right thing. Note also that `src/load.js` handles both browsers and Node.js, through the handy PrePro JS preprocessing library <http://github.com/lehni/prepro.js>.
+Note that your PaperScripts examples do not need to change, they can keep loading `dist/paper-full.js`, which will always do the right thing. Note also that `src/load.js` handles both browsers and Node.js, through the handy Prepro.js preprocessing library <http://github.com/lehni/prepro.js>.
 
 ### Branch structure
 

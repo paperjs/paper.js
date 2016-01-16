@@ -12,7 +12,7 @@
 
 // Define __options for code preprocessing when building the library, as well as
 // browser based compile-time preprocessing when loading the separate source
-// files directly through load.js / prepro.js during development.
+// files directly through load.js / Prepro.js during development.
 
 // The paper.js version.
 // NOTE: Adjust value here before calling publish.sh, which then updates and

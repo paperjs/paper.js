@@ -947,10 +947,10 @@ var Point = Base.extend(/** @lends Point# */{
                         * /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
         }
     }
-}, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+}, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
     // Inject round, ceil, floor, abs:
-    var op = Math[name];
-    this[name] = function() {
+    var op = Math[key];
+    this[key] = function() {
         return new Point(op(this.x), op(this.y));
     };
 }, {}));
