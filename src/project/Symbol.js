@@ -93,13 +93,11 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
-        if (flags & /*#=*/ChangeFlag.GEOMETRY) {
+        if (flags & /*#=*/ChangeFlag.GEOMETRY)
             // Clear cached bounds of all items that this symbol is linked to.
             Item._clearBoundsCache(this);
-        }
-        if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-            this.project._needsUpdate = true;
-        }
+        if (flags & /*#=*/ChangeFlag.APPEARANCE)
+            this.project._changed(flags);
     },
 
     /**

@@ -208,24 +208,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
         }
-        if (project) {
-            if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-                project._needsUpdate = true;
-            }
-            // Have project keep track of changed items so they can be iterated.
-            // This can be used for example to update the SVG tree. Needs to be
-            // activated in Project
-            if (project._changes) {
-                var entry = project._changesById[this._id];
-                if (entry) {
-                    entry.flags |= flags;
-                } else {
-                    entry = { item: this, flags: flags };
-                    project._changesById[this._id] = entry;
-                    project._changes.push(entry);
-                }
-            }
-        }
+        if (project)
+            project._changed(flags, this);
         // If this item is a symbol's definition, notify it of the change too
         if (symbol)
             symbol._changed(flags);
@@ -1081,15 +1065,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
         matrix.initialize.apply(matrix, arguments);
-        if (this._applyMatrix) {
-            // Directly apply the internal matrix. This will also call
-            // _changed() for us.
-            this.transform(null, true);
-        } else {
-            this._changed(/*#=*/Change.GEOMETRY);
-        }
     },
 
     /**
@@ -2389,23 +2368,25 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Removes the item from its parent's children list.
      */
     _remove: function(notifySelf, notifyParent) {
-        var parent = this._parent;
-        if (parent) {
+        var owner = this._getOwner(),
+            project = this._project,
+            index = this._index;
+        if (owner && index != null) {
+            // Only required for layers, but not enough to merit an override.
+            if (project._activeLayer === this)
+                project._activeLayer = this.getNextSibling()
+                        || this.getPreviousSibling();
             if (this._name)
                 this._removeNamed();
-            if (this._index != null)
-                Base.splice(parent._children, null, this._index, 1);
+            Base.splice(owner._children, null, index, 1);
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
-            if (notifySelf) {
-                var project = this._project;
-                if (project && project._changes)
-                    this._changed(/*#=*/Change.INSERTION);
-            }
-            // Notify parent of changed children
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
+            // Notify owner of changed children (this can be the project too).
             if (notifyParent)
-                parent._changed(/*#=*/Change.CHILDREN);
+                owner._changed(/*#=*/Change.CHILDREN, this);
             this._parent = null;
             return true;
         }

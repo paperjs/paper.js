@@ -81,6 +81,32 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * Private notifier that is called whenever a change occurs in the project.
+     *
+     * @param {ChangeFlag} flags describes what exactly has changed
+     * @param {Item} item the item that has caused the change
+     */
+    _changed: function(flags, item) {
+        if (flags & /*#=*/ChangeFlag.APPEARANCE) {
+            this._needsUpdate = true;
+        }
+        // Have project keep track of changed items so they can be iterated.
+        // This can be used for example to update the SVG tree. Needs to be
+        // activated in Project
+        var changes = this._changes;
+        if (changes && item) {
+            var changesById = this._changesById,
+                id = item._id,
+                entry = changesById[id];
+            if (entry) {
+                entry.flags |= flags;
+            } else {
+                changes.push(changesById[id] = { item: item, flags: flags });
+            }
+        }
+    },
+
+    /**
      * Activates this project, so all newly created items will be placed
      * in it.
      *

@@ -265,8 +265,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
-        if (flags & /*#=*/ChangeFlag.APPEARANCE)
-            this._project._needsUpdate = true;
+        this._project._changed(flats);
     },
 
     _transform: function(matrix) {
