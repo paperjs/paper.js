@@ -913,8 +913,8 @@ Path.inject(/** @lends Path# */{
                 y1 = v[3],
                 y2 = v[5],
                 y3 = v[7];
-            if (Curve.isStraight(v) ||
-                y0 >= y1 === y1 >= y2 && y1 >= y2 === y2 >= y3) {
+            if (Curve.isStraight(v)
+                    || y0 >= y1 === y1 >= y2 && y1 >= y2 === y2 >= y3) {
                 // Straight curves and curves with end and control points sorted
                 // in y direction are guaranteed to be monotone in y direction.
                 insertCurve(v);
