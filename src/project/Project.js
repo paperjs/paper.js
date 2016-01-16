@@ -243,10 +243,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
     // TODO: Implement setSelectedItems?
 
-    // Project#insertChild() and #addChild() are helper functions called in
-    // Item#copyTo(), Layer#initialize(), Layer#_insertSibling()
-    // They are called the same as the functions on Item so duck-typing works.
-    insertChild: function(index, item, _preserve) {
+    insertLayer: function(index, item) {
         if (item instanceof Layer) {
             item._remove(false, true);
             Base.splice(this._children, [item], index, 0);
@@ -258,22 +255,30 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             // Also activate this layer if there was none before
             if (!this._activeLayer)
                 this._activeLayer = item;
-        } else if (item instanceof Item) {
-            // Anything else than layers needs to be added to a layer first
-            (this._activeLayer
-                // NOTE: If there is no layer and this project is not the active
-                // one, passing insert: false and calling addChild on the
-                // project will handle it correctly.
-                || this.insertChild(index, new Layer(Item.NO_INSERT)))
-                    .insertChild(index, item, _preserve);
         } else {
             item = null;
         }
         return item;
     },
 
-    addChild: function(item, _preserve) {
-        return this.insertChild(undefined, item, _preserve);
+    addLayer: function(item) {
+        return this.insertLayer(undefined, item);
+    },
+
+    // Project#_insertItem() and Item#_insertItem() are helper functions called
+    // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
+    // methods. They are called the same to facilitate so duck-typing.
+    _insertItem: function(index, item, _preserve, _created) {
+        item = this.insertLayer(index, item)
+                // Anything else than layers needs to be added to a layer first.
+                // If none exists yet, create one now, then add the item to it.
+                || (this._activeLayer || this._insertItem(undefined,
+                        new Layer(Item.NO_INSERT), true, true))
+                        .insertChild(index, item, _preserve);
+        // If a layer was newly created, also activate it.
+        if (_created && item.activate)
+            item.activate();
+        return item;
     },
 
     _updateSelection: function(item) {

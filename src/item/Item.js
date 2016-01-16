@@ -105,10 +105,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // is false, or if the props are setting a different parent anyway.
         if (internal || hasProps && props.insert === false) {
             this._setProject(project);
-        } else if (hasProps && props.parent) {
-            props.parent.addChild(this);
         } else {
-            this._addToProject(project);
+            (hasProps && props.parent || project)
+                    ._insertItem(undefined, this, true, true);
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT) {
@@ -120,16 +119,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 true);
         }
         return hasProps;
-    },
-
-    /*
-     * Private helper used in the constructor function to add the created item
-     * to the project scene graph. Overridden in Layer.
-     */
-    _addToProject: function(project) {
-        // Create a new layer if there is no active one. This will
-        // automatically make it the new activeLayer.
-        (project._activeLayer || new Layer()).addChild(this);
     },
 
     _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -1541,20 +1530,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * When passed a project, copies the item to the project,
-     * or duplicates it within the same project. When passed an item,
-     * copies the item into the specified item.
-     *
-     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
-     * copy the item to
-     * @return {Item} the new copy of the item
-     */
-    copyTo: function(owner) {
-        // Pass false fo insert, since we're inserting at a specific location.
-        return owner.addChild(this.clone(false));
-    },
-
-    /**
      * Rasterizes the item into a newly created Raster object. The item itself
      * is not removed after rasterization.
      *
@@ -2257,12 +2232,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return items;
     },
 
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function(index, item, _preserve) {
-        return this._parent
-                ? this._parent.insertChild(index, item, _preserve)
-                : null;
-    },
+    // Internal alias, so both Project and Item can be used in #copyTo(), and
+    // through _getOwner() in the various Item#insert*() methods.
+    _insertItem: '#insertChild',
 
     /**
      * Inserts this item above the specified item.
@@ -2271,7 +2243,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        return item._insertSibling(item._index + 1, this, _preserve);
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index + 1, this, _preserve)
+                : null;
     },
 
     /**
@@ -2281,7 +2255,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        return item._insertSibling(item._index, this, _preserve);
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index, this, _preserve) : null;
     },
 
     /**
@@ -2289,7 +2264,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     sendToBack: function() {
         var owner = this._getOwner();
-        return owner ? owner.insertChild(0, this) : null;
+        return owner ? owner._insertItem(0, this) : null;
     },
 
     /**
@@ -2297,7 +2272,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     bringToFront: function() {
         var owner = this._getOwner();
-        return owner ? owner.addChild(this) : null;
+        return owner ? owner._insertItem(undefined, this) : null;
     },
 
     /**
@@ -2342,6 +2317,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @deprecated use {@link #insertBelow(item)} instead.
      */
     moveBelow: '#insertBelow',
+
+    /**
+     * When passed a project, copies the item to the project,
+     * or duplicates it within the same project. When passed an item,
+     * copies the item into the specified item.
+     *
+     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
+     * copy the item to
+     * @return {Item} the new copy of the item
+     */
+    copyTo: function(owner) {
+        // Pass false for insert, since we're inserting at a specific location.
+        return owner._insertItem(undefined, this.clone(false));
+    },
 
     /**
      * If this is a group, layer or compound-path with only one child-item,

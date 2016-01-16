@@ -67,16 +67,6 @@ var Layer = Group.extend(/** @lends Layer# */{
     },
 
     /**
-     * Private helper used in the constructor function to add the newly created
-     * item to the project scene graph.
-     */
-    _addToProject: function(project) {
-        project.addChild(this);
-        // When inserted, also activate the layer by default.
-        this.activate();
-    },
-
-    /**
      * Private helper to return the owner, either the parent, or the project
      * for top-level layers.
      */
@@ -130,15 +120,6 @@ var Layer = Group.extend(/** @lends Layer# */{
      */
     activate: function() {
         this._project._activeLayer = this;
-    },
-
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function _insertSibling(index, item, _preserve) {
-        // If the item is a layer and contained within Project#layers, use
-        // our own version of move().
-        return !this._parent
-                ? this._project.insertChild(index, item, _preserve)
-                : _insertSibling.base.call(this, index, item, _preserve);
     },
 
     _hitTestSelf: function() {
