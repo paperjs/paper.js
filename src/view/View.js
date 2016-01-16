@@ -265,7 +265,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
-        this._project._changed(flats);
+        this._project._changed(flags);
     },
 
     _transform: function(matrix) {
@@ -400,6 +400,25 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._transform(new Matrix().scale(zoom / this._zoom,
             this.getCenter()));
         this._zoom = zoom;
+    },
+
+    /**
+     * The view's transformation matrix, defining the view onto the project's
+     * contents (position, zoom level, rotation, etc).
+     *
+     * @bean
+     * @type Matrix
+     */
+    getMatrix: function() {
+        return this._matrix;
+    },
+
+    setMatrix: function() {
+        // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
+        var matrix = this._matrix;
+        matrix.initialize.apply(matrix, arguments);
     },
 
     /**
