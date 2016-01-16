@@ -35,7 +35,9 @@ var ChangeFlag = {
     // Raster pixels
     PIXELS: 0x200,
     // Clipping in one of the child items
-    CLIPPING: 0x400
+    CLIPPING: 0x400,
+    // The view has been transformed
+    VIEW: 0x800
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
@@ -51,5 +53,6 @@ var Change = {
     STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
     ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
     CONTENT: ChangeFlag.CONTENT | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
-    PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
+    PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE,
+    VIEW: ChangeFlag.VIEW | ChangeFlag.APPEARANCE
 };

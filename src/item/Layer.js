@@ -67,51 +67,11 @@ var Layer = Group.extend(/** @lends Layer# */{
     },
 
     /**
-     * Private helper used in the constructor function to add the newly created
-     * item to the project scene graph.
-     */
-    _addToProject: function(project) {
-        project.addChild(this);
-        // When inserted, also activate the layer by default.
-        this.activate();
-    },
-
-    /**
      * Private helper to return the owner, either the parent, or the project
-     * for top-level layers.
+     * for top-level layers, if they are inserted in it.
      */
     _getOwner: function() {
         return this._parent || this._index != null && this._project;
-    },
-
-    /**
-     * Removes the layer from its project's layers list
-     * or its parent's children list.
-     */
-    _remove: function _remove(notifySelf, notifyParent) {
-        if (this._parent)
-            return _remove.base.call(this, notifySelf, notifyParent);
-        if (this._index != null) {
-            var project = this._project;
-            if (project._activeLayer === this)
-                project._activeLayer = this.getNextSibling()
-                        || this.getPreviousSibling();
-            Base.splice(project._children, null, this._index, 1);
-            this._installEvents(false);
-            // Notify self of the insertion change. We only need this
-            // notification if we're tracking changes for now.
-            if (notifySelf && project._changes)
-                this._changed(/*#=*/Change.INSERTION);
-            // Notify parent of changed children
-            if (notifyParent) {
-                // TODO: project._changed(/*#=*/Change.LAYERS);
-                // Tell project we need a redraw. This is similar to _changed()
-                // mechanism.
-                project._needsUpdate = true;
-            }
-            return true;
-        }
-        return false;
     },
 
     isInserted: function isInserted() {
@@ -130,15 +90,6 @@ var Layer = Group.extend(/** @lends Layer# */{
      */
     activate: function() {
         this._project._activeLayer = this;
-    },
-
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function _insertSibling(index, item, _preserve) {
-        // If the item is a layer and contained within Project#layers, use
-        // our own version of move().
-        return !this._parent
-                ? this._project.insertChild(index, item, _preserve)
-                : _insertSibling.base.call(this, index, item, _preserve);
     },
 
     _hitTestSelf: function() {

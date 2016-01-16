@@ -81,6 +81,32 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
+     * Private notifier that is called whenever a change occurs in the project.
+     *
+     * @param {ChangeFlag} flags describes what exactly has changed
+     * @param {Item} item the item that has caused the change
+     */
+    _changed: function(flags, item) {
+        if (flags & /*#=*/ChangeFlag.APPEARANCE) {
+            this._needsUpdate = true;
+        }
+        // Have project keep track of changed items so they can be iterated.
+        // This can be used for example to update the SVG tree. Needs to be
+        // activated in Project
+        var changes = this._changes;
+        if (changes && item) {
+            var changesById = this._changesById,
+                id = item._id,
+                entry = changesById[id];
+            if (entry) {
+                entry.flags |= flags;
+            } else {
+                changes.push(changesById[id] = { item: item, flags: flags });
+            }
+        }
+    },
+
+    /**
      * Activates this project, so all newly created items will be placed
      * in it.
      *
@@ -243,39 +269,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
     // TODO: Implement setSelectedItems?
 
-    // Project#insertChild() and #addChild() are helper functions called in
-    // Item#copyTo(), Layer#initialize(), Layer#_insertSibling()
-    // They are called the same as the functions on Item so duck-typing works.
-    insertChild: function(index, item, _preserve) {
-        if (item instanceof Layer) {
-            item._remove(false, true);
-            Base.splice(this._children, [item], index, 0);
-            item._setProject(this, true);
-            // See Item#_remove() for an explanation of this:
-            if (this._changes)
-                item._changed(/*#=*/Change.INSERTION);
-            // TODO: this._changed(/*#=*/Change.LAYERS);
-            // Also activate this layer if there was none before
-            if (!this._activeLayer)
-                this._activeLayer = item;
-        } else if (item instanceof Item) {
-            // Anything else than layers needs to be added to a layer first
-            (this._activeLayer
-                // NOTE: If there is no layer and this project is not the active
-                // one, passing insert: false and calling addChild on the
-                // project will handle it correctly.
-                || this.insertChild(index, new Layer(Item.NO_INSERT)))
-                    .insertChild(index, item, _preserve);
-        } else {
-            item = null;
-        }
-        return item;
-    },
-
-    addChild: function(item, _preserve) {
-        return this.insertChild(undefined, item, _preserve);
-    },
-
     _updateSelection: function(item) {
         var id = item._id,
             selectedItems = this._selectedItems;
@@ -357,6 +350,61 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             if (res) return res;
         }
         return null;
+    },
+
+    /**
+     * {@grouptitle Hierarchy Operations}
+     *
+     * Adds the specified layer at the end of the this project's {@link #layers}
+     * list.
+     *
+     * @param {Layer} layer the layer to be added to the project
+     * @return {Layer} the added layer, or `null` if adding was not possible
+     */
+    addLayer: function(layer) {
+        return this.insertLayer(undefined, layer);
+    },
+
+    /**
+     * Inserts the specified layer at the specified index in this project's
+     * {@link #layers} list.
+     *
+     * @param {Number} index the index at which to insert the layer
+     * @param {Item} item the item to be inserted in the project
+     * @return {Layer} the added layer, or `null` if adding was not possible
+     */
+    insertLayer: function(index, layer) {
+        if (layer instanceof Layer) {
+            layer._remove(false, true);
+            Base.splice(this._children, [layer], index, 0);
+            layer._setProject(this, true);
+            // See Item#_remove() for an explanation of this:
+            if (this._changes)
+                layer._changed(/*#=*/Change.INSERTION);
+            // TODO: this._changed(/*#=*/Change.LAYERS);
+            // Also activate this layer if there was none before
+            if (!this._activeLayer)
+                this._activeLayer = layer;
+        } else {
+            layer = null;
+        }
+        return layer;
+    },
+
+    // Project#_insertItem() and Item#_insertItem() are helper functions called
+    // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
+    // methods. They are called the same to facilitate so duck-typing.
+    _insertItem: function(index, item, _preserve, _created) {
+        item = this.insertLayer(index, item)
+                // Anything else than layers needs to be added to a layer first.
+                // If none exists yet, create one now, then add the item to it.
+                || (this._activeLayer || this._insertItem(undefined,
+                        new Layer(Item.NO_INSERT), true, true))
+                        .insertChild(index, item, _preserve);
+        // If a layer was newly created, also activate it.
+        if (_created && item.activate)
+            item.activate();
+        return item;
     },
 
     /**
