@@ -63,6 +63,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Define code format standards in .editorconfig file
 - Add `getSquaredLineLength()` (removed `getEndDistanceSquared()`)
 - layers may now be given names (#491).
+- Add `Project#addLayer()` and `Project#insertLayer()` (#903).
 
 
 ### Deprecated
@@ -70,11 +71,13 @@ All notable changes to Paper.js shall be documented in this file, following comm
 
 
 ### Removed
-- Legacy Color constructors (removed in 0.9.25): GrayColor, RgbColor, HsbColor,
-  HslColor, and GradientColor. These have been replaced with corresponding
-  forms of the Color constructor.
+- Legacy `Color` constructors (removed in 0.9.25): `GrayColor`, `RgbColor`,
+  `HsbColor`, `HslColor`, and `GradientColor`. These have been replaced
+   with corresponding forms of the `Color` constructor.
 - Remove `getEndDistanceSquared()` (added `getSquaredLineLength()`)
 - `ctx.currentPath` caching optimization
+- Undocumented function `Project#addChild()` that added a layer to a project.
+  It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
 
 
 ### Fixed
