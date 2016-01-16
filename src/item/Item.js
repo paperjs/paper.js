@@ -2936,11 +2936,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @property
      * @type Color
      */
-
+}, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
+    var rotate = key === 'rotate';
+    this[key] = function(/* value, center */) {
+        var value = (rotate ? Base : Point).read(arguments),
+            center = Point.read(arguments, 0, { readNull: true });
+        return this.transform(new Matrix()[key](value,
+                center || this.getPosition(true)));
+    };
+}, /** @lends Item# */{
     /**
      * {@grouptitle Transform Functions}
      *
-     * Translates (moves) the item by the given offset point.
+     * Translates (moves) the item by the given offset views.
      *
      * @param {Point} delta the offset to translate the item by
      */
@@ -2950,13 +2958,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Rotates the item by a given angle around the given point.
+     * Rotates the item by a given angle around the given center point.
      *
      * Angles are oriented clockwise and measured in degrees.
      *
+     * @name Item#rotate
+     * @function
      * @param {Number} angle the rotation angle
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#rotate
+     * @see Matrix#rotate(angle[, center])
      *
      * @example {@paperscript}
      * // Rotating an item:
@@ -2993,20 +3003,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     path.rotate(3, view.center);
      * }
      */
-    rotate: function(angle /*, center */) {
-        return this.transform(new Matrix().rotate(angle,
-                Point.read(arguments, 1, { readNull: true })
-                    || this.getPosition(true)));
-    }
-}, Base.each(['scale', 'shear', 'skew'], function(name) {
-    this[name] = function() {
-        // See Matrix#scale for explanation of this:
-        var point = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
-        return this.transform(new Matrix()[name](point,
-                center || this.getPosition(true)));
-    };
-}, /** @lends Item# */{
+
     /**
      * Scales the item by the given value from its center point, or optionally
      * from a supplied point.
@@ -3078,7 +3075,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} shear the horziontal and vertical shear factors as a point
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(shear[, center])
      */
     /**
      * Shears the item by the given values from its center point, or optionally
@@ -3089,7 +3086,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal shear factor
      * @param {Number} ver the vertical shear factor
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
 
     /**
@@ -3100,7 +3097,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} skew the horziontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(skew[, center])
      */
     /**
      * Skews the item by the given angles from its center point, or optionally
@@ -3111,9 +3108,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal skew angle in degrees
      * @param {Number} ver the vertical sskew angle in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
-}), /** @lends Item# */{
+
     /**
      * Transform the item.
      *
@@ -3331,7 +3328,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     fitBounds: function(rectangle, fill) {
         // TODO: Think about passing options with various ways of defining
-        // fitting.
+        // fitting. Compare with InDesign fitting to see possible options.
         rectangle = Rectangle.read(arguments);
         var bounds = this.getBounds(),
             itemRatio = bounds.height / bounds.width,
@@ -3343,8 +3340,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     new Size(bounds.width * scale, bounds.height * scale));
         newBounds.setCenter(rectangle.getCenter());
         this.setBounds(newBounds);
-    },
-
+    }
+}), /** @lends Item# */{
     /**
      * {@grouptitle Event Handlers}
      *
@@ -4070,10 +4067,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _canComposite: function() {
         return false;
     }
-}, Base.each(['down', 'drag', 'up', 'move'], function(name) {
-    this['removeOn' + Base.capitalize(name)] = function() {
+}, Base.each(['down', 'drag', 'up', 'move'], function(key) {
+    this['removeOn' + Base.capitalize(key)] = function() {
         var hash = {};
-        hash[name] = true;
+        hash[key] = true;
         return this.removeOn(hash);
     };
 }, /** @lends Item# */{
