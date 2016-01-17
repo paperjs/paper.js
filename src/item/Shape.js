@@ -280,14 +280,13 @@ var Shape = Item.extend(/** @lends Shape# */{
             style = this._style,
             strokeWidth = style.hasStroke() &&
                 /^getStrokeBounds$|^get.*RoughBounds$/.test(getter) &&
-                style.getStrokeWidth(),
-            strokePadding = strokeWidth && Path._getStrokePadding(
-                strokeWidth, style._getStrokeMatrix(matrix));
+                style.getStrokeWidth();
         // If we're getting the strokeBounds, include the stroke width before
         // or after transforming the rect, based on strokeScaling.
         if (matrix)
             rect = matrix._transformBounds(rect);
-        return strokePadding ? rect.expand(strokePadding) : rect;
+        return strokeWidth ? rect.expand(Path._getStrokePadding(
+                strokeWidth, style._getStrokeMatrix(matrix))) : rect;
     }
 },
 new function() { // Scope for _contains() and _hitTestSelf() code.
@@ -337,6 +336,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
 
         _hitTestSelf: function _hitTestSelf(point, options) {
             var hit = false;
+            // TODO: Correctly support strokeScaling here too!
             if (this.hasStroke()) {
                 var type = this._type,
                     radius = this._radius,

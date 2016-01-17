@@ -1715,16 +1715,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             parentViewMatrix = options._viewMatrix,
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
-            viewMatrix = options._viewMatrix = parentViewMatrix
+            viewMatrix = parentViewMatrix
                     ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
                     : this.getGlobalMatrix().prepend(this.getView()._matrix),
+            strokeMatrix = viewMatrix.inverted(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
             tolerancePadding = options._tolerancePadding = new Size(
-                        Path._getStrokePadding(1, viewMatrix.inverted())
+                        Path._getStrokePadding(1, strokeMatrix)
                     ).multiply(
                         Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
                     );
@@ -1774,17 +1775,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var children = !res && this._children;
         if (children) {
             var opts = this._getChildHitTestOptions(options);
+            opts._viewMatrix = viewMatrix;
             // Loop backwards, so items that get drawn last are tested first
             for (var i = children.length - 1; i >= 0 && !res; i--)
                 res = children[i]._hitTest(point, opts);
+            // Restore viewMatrix for next child, as opts === options sometimes.
+            opts._viewMatrix = parentViewMatrix;
         }
         if (!res && checkSelf)
-            res = this._hitTestSelf(point, options);
+            res = this._hitTestSelf(point, options, strokeMatrix);
         // Transform the point back to the outer coordinate system.
         if (res && res.point)
             res.point = matrix.transform(res.point);
-        // Restore viewMatrix for next child.
-        options._viewMatrix = parentViewMatrix;
         return res;
     },
 

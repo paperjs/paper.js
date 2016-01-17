@@ -761,6 +761,7 @@ statics: {
      * NOTE: padding is only used for Path.getBounds().
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
+        padding /= 2; // strokePadding is in width, not radius
         // Code ported and further optimised from:
         // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
         function add(value, padding) {

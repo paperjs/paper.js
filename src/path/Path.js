@@ -1518,7 +1518,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
-    _hitTestSelf: function(point, options) {
+    _hitTestSelf: function(point, options, strokeMatrix) {
         var that = this,
             style = this.getStyle(),
             segments = this._segments,
@@ -1545,8 +1545,11 @@ var Path = PathItem.extend(/** @lends Path# */{
                 join = style.getStrokeJoin();
                 cap = style.getStrokeCap();
                 miterLimit = radius * style.getMiterLimit();
-                // Add the stroke radius to tolerance padding.
-                strokePadding = tolerancePadding.add(new Point(radius, radius));
+                // Add the stroke radius to tolerance padding, taking
+                // #strokeScaling into account through _getStrokeMatrix().
+                strokePadding = tolerancePadding.add(
+                    Path._getStrokePadding(radius,
+                            !style.getStrokeScaling() && strokeMatrix));
             } else {
                 join = cap = 'round';
             }
@@ -2768,19 +2771,20 @@ statics: {
         if (!style.hasStroke())
             return Path.getBounds(segments, closed, style, matrix);
         var length = segments.length - (closed ? 0 : 1),
-            radius = style.getStrokeWidth() / 2,
+            strokeWidth = style.getStrokeWidth(),
+            strokeRadius = strokeWidth / 2,
             strokeMatrix = style._getStrokeMatrix(matrix),
-            strokePadding = Path._getStrokePadding(radius, strokeMatrix),
+            strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
             // Start with normal path bounds with added stroke padding. Then we
             // only need to look at each segment and handle join / cap / miter.
             bounds = Path.getBounds(segments, closed, style, matrix,
                     strokePadding),
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
-            miterLimit = radius * style.getMiterLimit(),
+            miterLimit = strokeRadius * style.getMiterLimit(),
             // Create a rectangle of padding size, used for union with bounds
             // further down
-            joinBounds = new Rectangle(new Size(strokePadding).multiply(2));
+            joinBounds = new Rectangle(new Size(strokePadding));
 
         // helper function that is passed to _addBevelJoin() and _addSquareCap()
         // to handle the point transformations. Use strokeMatrix here!
@@ -2804,7 +2808,7 @@ statics: {
                     && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
-                Path._addBevelJoin(segment, join, radius, miterLimit, add);
+                Path._addBevelJoin(segment, join, strokeRadius, miterLimit, add);
             }
         }
 
@@ -2812,7 +2816,7 @@ statics: {
             if (cap === 'round') {
                 addRound(segment);
             } else {
-                Path._addSquareCap(segment, cap, radius, add);
+                Path._addSquareCap(segment, cap, strokeRadius, add);
             }
         }
 
