@@ -25,6 +25,10 @@ var gulp = require('gulp'),
     gitty = require('gitty')('.'),
     fs = require('fs');
 
+/**
+ * Options
+ */
+
 // Options to be used in Prepro.js preprocessing through the global __options
 // object.
 var buildOptions = {
@@ -45,20 +49,30 @@ var uglifyOptions = {
     }
 };
 
+var acornPath = 'bower_components/acorn/';
+
 var buildNames = Object.keys(buildOptions);
 var docNames = Object.keys(docOptions);
-
-gulp.task('default', ['dist']);
 
 gulp.on('error', function(err) {
     console.error(err.toString());
     gulp.emit('end');
 });
 
+gulp.task('default', ['dist']);
+
+/**
+ * Task: test
+ */
+
 gulp.task('test', function() {
     return gulp.src('test/index.html')
         .pipe(qunit({ timeout: 20, noGlobals: true }));
 });
+
+/**
+ * Task: docs
+ */
 
 docNames.forEach(function(name) {
     gulp.task('docs:' + name, ['clean:docs'], shell.task([
@@ -78,6 +92,10 @@ gulp.task('clean:docs', function(callback) {
     ]);
 });
 
+/**
+ * Task: load
+ */
+
 gulp.task('load', ['clean:load'], function() {
     return gulp.src('src/load.js')
         .pipe(symlink('dist/paper-full.js'))
@@ -91,50 +109,26 @@ gulp.task('clean:load', function() {
     ]);
 });
 
+/**
+ * Task: build
+ */
+
 gulp.task('build',
     buildNames.map(function(name) {
         return 'build:' + name;
     })
 );
 
-gulp.task('minify', ['build'], function() {
-    return gulp.src([
-            'dist/paper-full.js',
-            'dist/paper-core.js'
-        ])
-        .pipe(uglify(uglifyOptions))
-        .pipe(rename({
-            suffix: '.min'
-        }))
-        .pipe(gulp.dest('dist'));
-});
-
-gulp.task('dist', ['minify', 'docs'], function() {
-    return merge(
-            gulp.src([
-                'dist/paper-full*.js',
-                'dist/paper-core*.js',
-                'LICENSE.txt',
-                'examples/**/*',
-            ], { base: '.' }),
-            gulp.src([
-                'dist/docs/**/*'
-            ], { base: 'dist' })
-        )
-        .pipe(zip('/paperjs.zip'))
-        .pipe(gulp.dest('dist'));
-});
-
+// Get the date of the last commit from git.
+var gitLog = gitty.logSync('-1');
 buildNames.forEach(function(name) {
-    // Get the date of the last commit from git.
-    var logData = gitty.logSync('-1');
     gulp.task('build:' + name, ['build:start'], function() {
         return gulp.src('src/paper.js')
             .pipe(prepro({
                 evaluate: ['src/constants.js', 'src/options.js'],
                 setup: function() {
                     var options = buildOptions[name];
-                    options.date = logData[0].date;
+                    options.date = gitLog[0].date;
                     // This object will be merged into the Prepro.js VM scope,
                     // which already holds a __options object from the above
                     // include statement.
@@ -164,16 +158,51 @@ gulp.task('clean:build', function() {
 });
 
 gulp.task('minify:acorn', function() {
-    var path = 'bower_components/acorn/';
     // Only compress acorn if the compressed file doesn't exist yet.
     try {
-        fs.accessSync(path + 'acorn.min.js');
+        fs.accessSync(acornPath + 'acorn.min.js');
     } catch(e) {
-        return gulp.src(path + 'acorn.js')
+        return gulp.src(acornPath + 'acorn.js')
             .pipe(uglify(uglifyOptions))
             .pipe(rename({
                 suffix: '.min'
             }))
-            .pipe(gulp.dest(path));
+            .pipe(gulp.dest(acornPath));
     }
+});
+
+/**
+ * Task: minify
+ */
+
+gulp.task('minify', ['build'], function() {
+    return gulp.src([
+            'dist/paper-full.js',
+            'dist/paper-core.js'
+        ])
+        .pipe(uglify(uglifyOptions))
+        .pipe(rename({
+            suffix: '.min'
+        }))
+        .pipe(gulp.dest('dist'));
+});
+
+/**
+ * Task: dist
+ */
+
+gulp.task('dist', ['minify', 'docs'], function() {
+    return merge(
+            gulp.src([
+                'dist/paper-full*.js',
+                'dist/paper-core*.js',
+                'LICENSE.txt',
+                'examples/**/*',
+            ], { base: '.' }),
+            gulp.src([
+                'dist/docs/**/*'
+            ], { base: 'dist' })
+        )
+        .pipe(zip('/paperjs.zip'))
+        .pipe(gulp.dest('dist'));
 });
