@@ -1847,7 +1847,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
                 straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                straightBoth =  straight1 && straight2;
+                straightBoth = straight1 && straight2;
 
             // Linear curves can only overlap if they are collinear. Instead of
             // using the #isCollinear() check, we pick the longer of the two

@@ -41,10 +41,15 @@ if (typeof window === 'object') {
     // Step out and back into src in case this is loaded from dist/paper-node.js
     prepro.include('../src/options.js');
     // Override node specific options.
-    prepro.setOptions({
-        environment: 'node',
-        legacy: false,
-        version: 'dev'
+    prepro.setup(function() {
+        // This object will be merged into the Prepro.js VM scope, which already
+        // holds a __options object from the above include statement.
+        return {
+            __options: {
+                version: 'dev',
+                environment: 'node'
+            }
+        };
     });
     // Load Paper.js library files.
     prepro.include('../src/paper.js');
