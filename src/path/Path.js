@@ -2765,28 +2765,34 @@ statics: {
      * @private
      */
     getStrokeBounds: function(segments, closed, style, matrix) {
-        // TODO: Find a way to reuse 'bounds' cache instead?
         if (!style.hasStroke())
             return Path.getBounds(segments, closed, style, matrix);
         var length = segments.length - (closed ? 0 : 1),
             radius = style.getStrokeWidth() / 2,
-            padding = Path._getStrokePadding(radius, matrix),
-            bounds = Path.getBounds(segments, closed, style, matrix, padding),
+            strokeMatrix = style._getStrokeMatrix(matrix),
+            strokePadding = Path._getStrokePadding(radius, strokeMatrix),
+            // Start with normal path bounds with added stroke padding. Then we
+            // only need to look at each segment and handle join / cap / miter.
+            bounds = Path.getBounds(segments, closed, style, matrix,
+                    strokePadding),
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
-            miterLimit = radius * style.getMiterLimit();
-        // Create a rectangle of padding size, used for union with bounds
-        // further down
-        var joinBounds = new Rectangle(new Size(padding).multiply(2));
+            miterLimit = radius * style.getMiterLimit(),
+            // Create a rectangle of padding size, used for union with bounds
+            // further down
+            joinBounds = new Rectangle(new Size(strokePadding).multiply(2));
 
+        // helper function that is passed to _addBevelJoin() and _addSquareCap()
+        // to handle the point transformations. Use strokeMatrix here!
         function add(point) {
-            bounds = bounds.include(matrix
-                ? matrix._transformPoint(point, point) : point);
+            bounds = bounds.include(strokeMatrix
+                ? strokeMatrix._transformPoint(point, point) : point);
         }
 
         function addRound(segment) {
+            var point = segment._point;
             bounds = bounds.unite(joinBounds.setCenter(matrix
-                ? matrix._transformPoint(segment._point) : segment._point));
+                    ? matrix._transformPoint(point) : point));
         }
 
         function addJoin(segment, join) {
@@ -2967,9 +2973,9 @@ statics: {
         // Delegate to handleBounds, but pass on radius values for stroke and
         // joins. Handle miter joins specially, by passing the largest radius
         // possible.
-        // TODO: Take strokeScaling into account here too!
         var strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
-            joinRadius = strokeRadius;
+            joinRadius = strokeRadius,
+            strokeMatrix = strokeRadius && style._getStrokeMatrix(matrix);
         if (strokeRadius > 0) {
             if (style.getStrokeJoin() === 'miter')
                 joinRadius = strokeRadius * style.getMiterLimit();
@@ -2977,7 +2983,7 @@ statics: {
                 joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
         }
         return Path.getHandleBounds(segments, closed, style, matrix,
-                Path._getStrokePadding(strokeRadius, matrix),
-                Path._getStrokePadding(joinRadius, matrix));
+                Path._getStrokePadding(strokeRadius, strokeMatrix),
+                Path._getStrokePadding(joinRadius, strokeMatrix));
     }
 }});

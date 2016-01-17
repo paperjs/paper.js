@@ -277,18 +277,17 @@ var Shape = Item.extend(/** @lends Shape# */{
 
     _getBounds: function(getter, matrix) {
         var rect = new Rectangle(this._size).setCenter(0, 0),
-            strokeWidth = getter === 'getStrokeBounds' && this.hasStroke()
-                && this.getStrokeWidth(),
-            scaling = strokeWidth && this.getStrokeScaling();
+            style = this._style,
+            strokeWidth = style.hasStroke() &&
+                /^getStrokeBounds$|^get.*RoughBounds$/.test(getter) &&
+                style.getStrokeWidth(),
+            strokePadding = strokeWidth && Path._getStrokePadding(
+                strokeWidth, style._getStrokeMatrix(matrix));
         // If we're getting the strokeBounds, include the stroke width before
         // or after transforming the rect, based on strokeScaling.
-        if (strokeWidth && scaling)
-            rect = rect.expand(strokeWidth);
         if (matrix)
             rect = matrix._transformBounds(rect);
-        if (strokeWidth && !scaling)
-            rect = rect.expand(strokeWidth);
-        return rect;
+        return strokePadding ? rect.expand(strokePadding) : rect;
     }
 },
 new function() { // Scope for _contains() and _hitTestSelf() code.

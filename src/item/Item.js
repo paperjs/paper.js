@@ -788,6 +788,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             match = key.match(/^internal(.*)$/),
             internalGetter = match ? 'get' + match[1] : null;
         this[getter] = function(_matrix) {
+            // TODO: If we're getting stroke based bounds (strokeBounds,
+            // roughBounds, internalRoughBounds), and the object does not have
+            // a stroke, fall back to the bounds getter without the stroke:
+            // strokeBounds -> bounds
+            // roughBounds -> handleBounds
+            // internalRoughBounds -> internalHandleBounds
             var boundsGetter = this._boundsGetter,
                 // Allow subclasses to override _boundsGetter if they use the
                 // same calculations for multiple type of bounds.

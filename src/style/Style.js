@@ -305,6 +305,17 @@ var Style = Base.extend(new function() {
         return this._project._view;
     },
 
+    /**
+     * Private helper that returns to correct matrix to use to transform stroke
+     * relatd geometries when calculating bounds: the item's matrix if
+     * {@link #strokeScaling} is `true`, otherwise the shiftless, inverted view
+     * matrix.
+     */
+    _getStrokeMatrix: function(matrix) {
+        return this.getStrokeScaling() ? matrix
+                : this.getView()._matrix._shiftless().invert();
+    },
+
     // Overrides
 
     getFontStyle: function() {
