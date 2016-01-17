@@ -2707,16 +2707,13 @@ new function() { // PostScript-style drawing commands
 }, { // A dedicated scope for the tricky bounds calculations
     // We define all the different getBounds functions as static methods on Path
     // and have #_getBounds directly access these. All static bounds functions
-    // below have the same first four parameters: segments, closed, style,
+    // below have the same first four parameters: segments, closed, path,
     // matrix, so they can be called from #_getBounds() and also be used in
     // Curve. But not all of them use all these parameters, and some define
     // additional ones after.
 
     _getBounds: function(getter, matrix) {
-        // See #draw() for an explanation of why we can access _style
-        // properties directly here:
-        return Path[getter](this._segments, this._closed, this.getStyle(),
-                matrix);
+        return Path[getter](this._segments, this._closed, this, matrix);
     },
 
 // Mess with indentation in order to get more line-space below:
@@ -2726,7 +2723,7 @@ statics: {
      *
      * @private
      */
-    getBounds: function(segments, closed, style, matrix, strokePadding) {
+    getBounds: function(segments, closed, path, matrix, strokePadding) {
         var first = segments[0];
         // If there are no segments, return "empty" rectangle, just like groups,
         // since #bounds is assumed to never return null.
@@ -2767,17 +2764,18 @@ statics: {
      *
      * @private
      */
-    getStrokeBounds: function(segments, closed, style, matrix) {
+    getStrokeBounds: function(segments, closed, path, matrix) {
+        var style = path._style;
         if (!style.hasStroke())
-            return Path.getBounds(segments, closed, style, matrix);
+            return Path.getBounds(segments, closed, path, matrix);
         var length = segments.length - (closed ? 0 : 1),
             strokeWidth = style.getStrokeWidth(),
             strokeRadius = strokeWidth / 2,
-            strokeMatrix = style._getStrokeMatrix(matrix),
+            strokeMatrix = path._getStrokeMatrix(matrix),
             strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
             // Start with normal path bounds with added stroke padding. Then we
             // only need to look at each segment and handle join / cap / miter.
-            bounds = Path.getBounds(segments, closed, style, matrix,
+            bounds = Path.getBounds(segments, closed, path, matrix,
                     strokePadding),
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
@@ -2937,7 +2935,7 @@ statics: {
      *
      * @private
      */
-    getHandleBounds: function(segments, closed, style, matrix, strokePadding,
+    getHandleBounds: function(segments, closed, path, matrix, strokePadding,
             joinPadding) {
         var coords = new Array(6),
             x1 = Infinity,
@@ -2973,20 +2971,21 @@ statics: {
      *
      * @private
      */
-    getRoughBounds: function(segments, closed, style, matrix) {
+    getRoughBounds: function(segments, closed, path, matrix) {
         // Delegate to handleBounds, but pass on radius values for stroke and
         // joins. Handle miter joins specially, by passing the largest radius
         // possible.
-        var strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
+        var style = path._style,
+            strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
             joinRadius = strokeRadius,
-            strokeMatrix = strokeRadius && style._getStrokeMatrix(matrix);
+            strokeMatrix = strokeRadius && path._getStrokeMatrix(matrix);
         if (strokeRadius > 0) {
             if (style.getStrokeJoin() === 'miter')
                 joinRadius = strokeRadius * style.getMiterLimit();
             if (style.getStrokeCap() === 'square')
                 joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
         }
-        return Path.getHandleBounds(segments, closed, style, matrix,
+        return Path.getHandleBounds(segments, closed, path, matrix,
                 Path._getStrokePadding(strokeRadius, strokeMatrix),
                 Path._getStrokePadding(joinRadius, strokeMatrix));
     }

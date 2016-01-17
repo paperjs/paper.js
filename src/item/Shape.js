@@ -286,7 +286,7 @@ var Shape = Item.extend(/** @lends Shape# */{
         if (matrix)
             rect = matrix._transformBounds(rect);
         return strokeWidth ? rect.expand(Path._getStrokePadding(
-                strokeWidth, style._getStrokeMatrix(matrix))) : rect;
+                strokeWidth, this._getStrokeMatrix(matrix))) : rect;
     }
 },
 new function() { // Scope for _contains() and _hitTestSelf() code.

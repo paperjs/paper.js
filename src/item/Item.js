@@ -913,6 +913,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return bounds;
     },
 
+    /**
+     * Returns to correct matrix to use to transform stroke related geometries
+     * when calculating bounds: the item's matrix if {@link #strokeScaling} is
+     * `true`, otherwise the shiftless, inverted view matrix.
+     */
+    _getStrokeMatrix: function(matrix) {
+        return this.getStrokeScaling() ? matrix
+                : this._parent.getViewMatrix().invert()._shiftless();
+    },
+
     statics: {
         /**
          * Set up a boundsCache structure that keeps track of items that keep
@@ -1099,6 +1109,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
+    },
+
+    /**
+     * The item's global matrix in relation to the view coordinate space. This
+     * means that the view's transformations resulting from zooming and panning
+     * are factored in.
+     *
+     * @bean
+     * @type Matrix
+     */
+    getViewMatrix: function() {
+        return this.getGlobalMatrix().prepend(this.getView()._matrix);
     },
 
     /**
