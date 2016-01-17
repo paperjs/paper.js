@@ -470,7 +470,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             raster = new Raster(Item.NO_INSERT);
         raster.setImage(this.getSubCanvas(rect));
         raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
-        raster._matrix.preConcatenate(this._matrix);
+        raster._matrix.prepend(this._matrix);
         raster.insertAbove(this);
         return raster;
     },

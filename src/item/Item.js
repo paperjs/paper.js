@@ -838,7 +838,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var child = children[i];
             if (child._visible && !child.isEmpty()) {
                 var rect = child._getCachedBounds(getter,
-                        matrix && matrix.chain(child._matrix), cacheItem);
+                        matrix && matrix.appended(child._matrix), cacheItem);
                 x1 = Math.min(rect.x, x1);
                 y1 = Math.min(rect.y, y1);
                 x2 = Math.max(rect.x + rect.width, x2);
@@ -1089,7 +1089,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = this._globalMatrix = this._matrix.clone();
             var parent = this._parent;
             if (parent)
-                matrix.preConcatenate(parent.getGlobalMatrix(true));
+                matrix.prepend(parent.getGlobalMatrix(true));
             matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
@@ -1706,20 +1706,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
-            parentTotalMatrix = options._totalMatrix,
-            view = this.getView(),
+            parentViewMatrix = options._viewMatrix,
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
-            totalMatrix = options._totalMatrix = parentTotalMatrix
-                    ? parentTotalMatrix.chain(matrix)
+            viewMatrix = options._viewMatrix = parentViewMatrix
+                    ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
-                    : this.getGlobalMatrix().preConcatenate(view._matrix),
+                    : this.getGlobalMatrix().prepend(this.getView()._matrix),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
             tolerancePadding = options._tolerancePadding = new Size(
-                        Path._getPenPadding(1, totalMatrix.inverted())
+                        Path._getStrokePadding(1, viewMatrix.inverted())
                     ).multiply(
                         Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
                     );
@@ -1778,8 +1777,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Transform the point back to the outer coordinate system.
         if (res && res.point)
             res.point = matrix.transform(res.point);
-        // Restore totalMatrix for next child.
-        options._totalMatrix = parentTotalMatrix;
+        // Restore viewMatrix for next child.
+        options._viewMatrix = parentViewMatrix;
         return res;
     },
 
@@ -1983,7 +1982,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
-                    childMatrix = matrix && matrix.chain(child._matrix),
+                    childMatrix = matrix && matrix.appended(child._matrix),
                     add = true;
                 if (rect) {
                     var bounds = child.getBounds(childMatrix);
@@ -3137,9 +3136,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Bail out if there is nothing to do.
         if (!matrix && !applyMatrix)
             return this;
-        // Simply preconcatenate the internal matrix with the passed one:
+        // Simply prepend the internal matrix with the passed one:
         if (matrix)
-            _matrix.preConcatenate(matrix);
+            _matrix.prepend(matrix);
         // Call #_transformContent() now, if we need to directly apply the
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, PlacedSymbol, since
@@ -3884,7 +3883,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var matrices = param.matrices,
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = matrices[matrices.length - 1].chain(matrix);
+            globalMatrix = matrices[matrices.length - 1].appended(matrix);
         // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
@@ -3893,10 +3892,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
         // Since globalMatrix does not take the view's matrix into account (we
         // could have multiple views with different zooms), we may have to
-        // pre-concatenate the view's matrix.
+        // prepend the view's matrix.
         // Note that it's only provided if it isn't the identity matrix.
         function getViewMatrix(matrix) {
-            return viewMatrix ? viewMatrix.chain(matrix) : matrix;
+            return viewMatrix ? viewMatrix.appended(matrix) : matrix;
         }
 
         // Only keep track of transformation if told so. See Project#draw()
@@ -3952,7 +3951,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         ctx.save();
         // Get the transformation matrix for non-scaling strokes.
         var strokeMatrix = parentStrokeMatrix
-                ? parentStrokeMatrix.chain(matrix)
+                ? parentStrokeMatrix.appended(matrix)
                 // pass `true` for dontMerge
                 : this._canScaleStroke && !this.getStrokeScaling(true)
                     && getViewMatrix(globalMatrix),
@@ -4042,7 +4041,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var layer,
                 color = this.getSelectedColor(true)
                     || (layer = this.getLayer()) && layer.getSelectedColor(true),
-                mx = matrix.chain(this.getGlobalMatrix(true));
+                mx = matrix.appended(this.getGlobalMatrix(true));
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
             if (this._drawSelected)

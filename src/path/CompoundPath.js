@@ -268,7 +268,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             var child = children[i],
                 mx = child._matrix;
             paths.push(child.getPathData(_matrix && !mx.isIdentity()
-                    ? _matrix.chain(mx) : _matrix, _precision));
+                    ? _matrix.appended(mx) : _matrix, _precision));
         }
         return paths.join(' ');
     }
@@ -313,7 +313,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 mx = child._matrix;
             if (!selectedItems[child._id])
                 child._drawSelected(ctx, mx.isIdentity() ? matrix
-                        : matrix.chain(mx));
+                        : matrix.appended(mx));
         }
     }
 },

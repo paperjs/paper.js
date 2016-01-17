@@ -1504,9 +1504,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                     radius: radius,
                     insert: false
                 });
-            // Pass `true` to exclude the matrix, so we can preconcatenate after
+            // Pass `true` to exclude the matrix, so we can prepend after
             shape.copyAttributes(this, true);
-            shape._matrix.preConcatenate(this._matrix);
+            shape._matrix.prepend(this._matrix);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
             if (insert === undefined || insert)
@@ -2701,7 +2701,7 @@ new function() { // PostScript-style drawing commands
                 this.join();
         }
     };
-}, {  // A dedicated scope for the tricky bounds calculations
+}, { // A dedicated scope for the tricky bounds calculations
     // We define all the different getBounds functions as static methods on Path
     // and have #_getBounds directly access these. All static bounds functions
     // below have the same first four parameters: segments, closed, style,
@@ -2826,14 +2826,14 @@ statics: {
      * stroke adds to the bounding box, by calculating the dimensions of a
      * rotated ellipse.
      */
-    _getPenPadding: function(radius, matrix) {
+    _getStrokePadding: function(radius, matrix) {
         if (!matrix)
             return [radius, radius];
         // If a matrix is provided, we need to rotate the stroke circle
         // and calculate the bounding box of the resulting rotated elipse:
         // Get rotated hor and ver vectors, and determine rotation angle
         // and elipse values from them:
-        var mx = matrix.shiftless(),
+        var mx = matrix._shiftless(),
             hor = mx.transform(new Point(radius, 0)),
             ver = mx.transform(new Point(0, radius)),
             phi = hor.getAngleInRadians(),
@@ -2965,8 +2965,9 @@ statics: {
      */
     getRoughBounds: function(segments, closed, style, matrix) {
         // Delegate to handleBounds, but pass on radius values for stroke and
-        // joins. Hanlde miter joins specially, by passing the largets radius
+        // joins. Handle miter joins specially, by passing the largest radius
         // possible.
+        // TODO: Take strokeScaling into account here too!
         var strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
             joinRadius = strokeRadius;
         if (strokeRadius > 0) {
@@ -2976,7 +2977,7 @@ statics: {
                 joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
         }
         return Path.getHandleBounds(segments, closed, style, matrix,
-                Path._getPenPadding(strokeRadius, matrix),
-                Path._getPenPadding(joinRadius, matrix));
+                Path._getStrokePadding(strokeRadius, matrix),
+                Path._getStrokePadding(joinRadius, matrix));
     }
 }});

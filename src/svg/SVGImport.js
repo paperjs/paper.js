@@ -338,7 +338,7 @@ new function() {
                 v[j] = parseFloat(v[j]);
             switch (command) {
             case 'matrix':
-                matrix.concatenate(
+                matrix.append(
                         new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
                 break;
             case 'rotate':
@@ -461,7 +461,7 @@ new function() {
                 // symbol.
                 var scale = size ? rect.getSize().divide(size) : 1,
                     matrix = new Matrix().translate(rect.getPoint()).scale(scale);
-                item.transform(matrix.inverted());
+                item.transform(matrix.invert());
             } else if (item instanceof Symbol) {
                 // The symbol is wrapping a group. Note that viewBox was already
                 // applied to the group, and above code was executed for it.

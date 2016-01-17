@@ -536,7 +536,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {Matrix} matrix the matrix by which the view shall be transformed
      */
     transform: function(matrix) {
-        this._matrix.concatenate(matrix);
+        this._matrix.append(matrix);
     },
 
     /**
