@@ -19,7 +19,7 @@
 // global one in the whole scope.
 
 paper = new (PaperScope.inject(Base.exports, {
-    // Mark fields as enumerable so PaperScope.inject can pick them up
+    // Mark fields as enumerable so PaperScope.inject can pick them up.
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
@@ -34,7 +34,7 @@ if (typeof define === 'function' && define.amd) {
     // apparently confuse the require.js optimizer.
     define('paper', paper);
 } else if (typeof module === 'object' && module) { // could be `null`
-    // Support CommonJS module
+    // Support CommonJS module.
     // NOTE: Do not check typeof module.exports === 'object' since it will be
     // the Base constructor function after straps.js is included.
     module.exports = paper;
@@ -43,7 +43,7 @@ if (typeof define === 'function' && define.amd) {
 /*#*/ } else if (__options.environment == 'node') {
 
 paper = new (PaperScope.inject(Base.exports, {
-    // Mark fields as enumerable so PaperScope.inject can pick them up
+    // Mark fields as enumerable so PaperScope.inject can pick them up.
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
