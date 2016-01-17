@@ -2770,7 +2770,7 @@ statics: {
             return Path.getBounds(segments, closed, style, matrix);
         var length = segments.length - (closed ? 0 : 1),
             radius = style.getStrokeWidth() / 2,
-            padding = Path._getPenPadding(radius, matrix),
+            padding = Path._getStrokePadding(radius, matrix),
             bounds = Path.getBounds(segments, closed, style, matrix, padding),
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),

@@ -486,16 +486,16 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
     },
 
+    _orNullIfIdentity: function() {
+        return this.isIdentity() ? null : this;
+    },
+
     /**
      * @return {Boolean} whether this transform is the identity transform
      */
     isIdentity: function() {
         return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
                 && this._tx === 0 && this._ty === 0;
-    },
-
-    orNullIfIdentity: function() {
-        return this.isIdentity() ? null : this;
     },
 
     /**

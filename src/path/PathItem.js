@@ -69,9 +69,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // NOTE: The hidden argument _matrix is used internally to override the
         // passed path's transformation matrix.
         var self = this === path || !path, // self-intersections?
-            matrix1 = this._matrix.orNullIfIdentity(),
+            matrix1 = this._matrix._orNullIfIdentity(),
             matrix2 = self ? matrix1
-                : (_matrix || path._matrix).orNullIfIdentity();
+                : (_matrix || path._matrix)._orNullIfIdentity();
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.
         if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))

@@ -879,9 +879,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix.orNullIfIdentity();
+        matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix if there is a internalGetter.
-        var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
+        var _matrix = internalGetter ? null : this._matrix._orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
