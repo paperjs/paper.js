@@ -40,7 +40,7 @@ var docOptions = {
 
 var uglifyOptions = {
     output: {
-        // ascii_only: true,
+        ascii_only: true,
         comments: /^!/
     }
 };
