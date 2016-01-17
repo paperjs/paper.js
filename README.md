@@ -97,6 +97,17 @@ Also, whenever you would like to update the modules, you will need to execute:
 
     PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm update
 
+If you keep forgetting about this requirement, or would like to be able to type
+simple and clean commands, add this to your `.bash_profile` file:
+
+    # PKG Config for Pango / Cairo
+    export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
+
+After adding this line, your commands should work in the expected way:
+
+    npm install paper
+    npm update
+
 ##### Installing Cairo, Pango and all other dependencies on Debian/Ubuntu Linux:
 
     sudo apt-get install libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev
