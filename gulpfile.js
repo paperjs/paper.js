@@ -14,14 +14,14 @@ var gulp = require('gulp'),
     qunit = require('gulp-qunit'),
     prepro = require('gulp-prepro'),
     rename = require('gulp-rename'),
-    rimraf = require('gulp-rimraf'),
     shell = require('gulp-shell'),
     symlink = require('gulp-symlink'),
     uglify = require('gulp-uglify'),
     uncomment = require('gulp-uncomment'),
     whitespace = require('gulp-whitespace'),
-    zip = require('gulp-zip'),
     merge = require('merge-stream'),
+    del = require('del'),
+    zip = require('gulp-zip'),
     gitty = require('gitty')('.'),
     fs = require('fs');
 
@@ -48,6 +48,8 @@ var uglifyOptions = {
 var buildNames = Object.keys(buildOptions);
 var docNames = Object.keys(docOptions);
 
+gulp.task('default', ['dist']);
+
 gulp.on('error', function(err) {
     console.error(err.toString());
     gulp.emit('end');
@@ -59,7 +61,7 @@ gulp.task('test', function() {
 });
 
 docNames.forEach(function(name) {
-    gulp.task('docs:' + name, shell.task([
+    gulp.task('docs:' + name, ['clean:docs'], shell.task([
         'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
             '-D="renderMode:' + docOptions[name] + '"',
     ], {
@@ -69,6 +71,13 @@ docNames.forEach(function(name) {
 
 gulp.task('docs', ['docs:local']);
 
+gulp.task('clean:docs', function(callback) {
+    return del([
+        'dist/docs/**',
+        'dist/serverdocs/**'
+    ]);
+});
+
 gulp.task('load', ['clean:load'], function() {
     return gulp.src('src/load.js')
         .pipe(symlink('dist/paper-full.js'))
@@ -76,11 +85,10 @@ gulp.task('load', ['clean:load'], function() {
 });
 
 gulp.task('clean:load', function() {
-    return gulp.src([
-            'dist/paper-full.js',
-            'dist/paper-node.js'
-        ], { read: false })
-        .pipe(rimraf());
+    return del([
+        'dist/paper-full.js',
+        'dist/paper-node.js'
+    ]);
 });
 
 gulp.task('build',
@@ -150,8 +158,9 @@ buildNames.forEach(function(name) {
 gulp.task('build:start', ['clean:build', 'minify:acorn']);
 
 gulp.task('clean:build', function() {
-    return gulp.src('dist/paper-*.js', { read: false })
-        .pipe(rimraf());
+    return del([
+        'dist/paper-*.js'
+    ]);
 });
 
 gulp.task('minify:acorn', function() {
