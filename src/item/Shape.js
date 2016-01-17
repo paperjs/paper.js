@@ -309,14 +309,20 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         }
     }
 
-    // Calculates the length of the ellipse radius that passes through the point
-    function getEllipseRadius(point, radius) {
-        var angle = point.getAngleInRadians(),
-            width = radius.width * 2,
-            height = radius.height * 2,
-            x = width * Math.sin(angle),
-            y = height * Math.cos(angle);
-        return width * height / (2 * Math.sqrt(x * x + y * y));
+    function isOnEllipseStroke(point, radius, padding, quadrant) {
+        // Translate the ellipse / circle to the unit circle with radius 1, and
+        // translate the point along by dividing with radius (a number for
+        // circle, a size for ellipse). Then subtract the radius with the same
+        // direction as point (vector.normalize()), to get a vector that
+        // describe proximity and direction to the stroke. Translate this back
+        // by multiplying with radius, then divide by strokePadding to get a new
+        // vector in stroke space, and finally check its length.
+        var vector = point.divide(radius);
+        // We also have to check the vector's quadrant in case we're matching
+        // quarter ellipses in the corners.
+        return (!quadrant || vector.quadrant === quadrant) &&
+                vector.subtract(vector.normalize()).multiply(radius)
+                    .divide(padding).length <= 1;
     }
 
     return /** @lends Shape# */{
@@ -335,36 +341,35 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         },
 
         _hitTestSelf: function _hitTestSelf(point, options) {
-            var hit = false;
-            // TODO: Correctly support strokeScaling here too!
-            if (this.hasStroke()) {
+            var hit = false,
+                style = this._style;
+            if (style.hasStroke()) {
                 var type = this._type,
                     radius = this._radius,
-                    strokeWidth = this.getStrokeWidth() + 2 * options.tolerance;
+                    strokeWidth = style.getStrokeWidth(),
+                    strokePadding = options._tolerancePadding.add(
+                        Path._getStrokePadding(strokeWidth / 2,
+                            !style.getStrokeScaling() &&
+                                options._strokeMatrix));
                 if (type === 'rectangle') {
-                    var center = getCornerCenter(this, point, strokeWidth);
+                    var padding = strokePadding.multiply(2),
+                        center = getCornerCenter(this, point, padding);
                     if (center) {
-                        // Check the stroke of the quarter corner ellipse,
-                        // similar to the ellipse check further down:
-                        var pt = point.subtract(center);
-                        hit = 2 * Math.abs(pt.getLength()
-                                - getEllipseRadius(pt, radius)) <= strokeWidth;
+                        // Check the stroke of the quarter corner ellipse:
+                        hit = isOnEllipseStroke(point.subtract(center), radius,
+                                strokePadding, center.getQuadrant());
                     } else {
                         var rect = new Rectangle(this._size).setCenter(0, 0),
-                            outer = rect.expand(strokeWidth),
-                            inner = rect.expand(-strokeWidth);
+                            outer = rect.expand(padding),
+                            inner = rect.expand(padding.negate());
                         hit = outer._containsPoint(point)
                                 && !inner._containsPoint(point);
                     }
                 } else {
-                    if (type === 'ellipse')
-                        radius = getEllipseRadius(point, radius);
-                    hit = 2 * Math.abs(point.getLength() - radius)
-                            <= strokeWidth;
+                    hit = isOnEllipseStroke(point, radius, strokePadding);
                 }
             }
-            return hit
-                    ? new HitResult('stroke', this)
+            return hit ? new HitResult('stroke', this)
                     : _hitTestSelf.base.apply(this, arguments);
         }
     };
