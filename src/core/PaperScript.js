@@ -100,15 +100,20 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.compile
      * @function
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     debugging
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
      * @param {String} code the PaperScript code
-     * @param {String} url the url of the source, for source-map debugging
-     * @return {String} the compiled PaperScript as JavaScript code
+     * @param {Object} [option] the compilation options
+     * @return {String} the compiled PaperScript translated into JavaScript code
      */
-    function compile(code, url, options) {
+    function compile(code, options) {
         if (!code)
             return '';
         options = options || {};
-        url = url || '';
         // Use Acorn or Esprima to translate the code into an AST structure
         // which is then walked and parsed for operators to overload. Instead of
         // modifying the AST and translating it back to code, we directly change
@@ -258,9 +263,10 @@ Base.exports.PaperScript = (function() {
         }
 /*#*/ if (__options.environment == 'browser') {
         // Source-map support:
-        var sourceMap = null,
+        var url = options.url || '',
             browser = paper.browser,
             version = browser.versionNumber,
+            sourceMap = null,
             lineBreaks = /\r\n|\n|\r/mg,
             offset = 0;
         // TODO: Verify these browser versions for source map support, and check
@@ -268,7 +274,7 @@ Base.exports.PaperScript = (function() {
         if (browser.chrome && version >= 30
                 || browser.webkit && version >= 537.76 // >= Safari 7.0.4
                 || browser.firefox && version >= 23) {
-            if (window.location.href.indexOf(url) === 0) {
+            if (url && window.location.href.indexOf(url) === 0) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML;
@@ -324,18 +330,26 @@ Base.exports.PaperScript = (function() {
     }
 
     /**
-     * Executes the parsed PaperScript code in a compiled function that receives
-     * all properties of the passed {@link PaperScope} as arguments, to emulate
-     * a global scope with unaffected performance. It also installs global view
-     * and tool handlers automatically for you.
+     * Compiles the PaperScript code into a compiled function and executes it.
+     * The compiled function receives all properties of the passed {@link
+     * PaperScope} as arguments, to emulate a global scope with unaffected
+     * performance. It also installs global view and tool handlers automatically
+     * on the respective objects.
      *
      * @name PaperScript.execute
      * @function
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     debugging
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
-     * @param {String} url the url of the source, for source-map debugging
+     * @param {Object} [option] the compilation options
+     * @return {String} the compiled PaperScript translated into JavaScript code
      */
-    function execute(code, scope, url, options) {
+    function execute(code, scope, options) {
         // Set currently active scope.
         paper = scope;
         var view = scope.getView(),
@@ -358,7 +372,7 @@ Base.exports.PaperScript = (function() {
             params = [],
             args = [],
             func;
-        code = compile(code, url, options);
+        code = compile(code, options);
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
             // these too as pseudo-globals, but only if they seem to be in use.
