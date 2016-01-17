@@ -1518,7 +1518,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
-    _hitTestSelf: function(point, options, strokeMatrix) {
+    _hitTestSelf: function(point, options) {
         var that = this,
             style = this.getStyle(),
             segments = this._segments,
@@ -1533,23 +1533,23 @@ var Path = PathItem.extend(/** @lends Path# */{
             hitStroke = options.stroke && style.hasStroke(),
             hitFill = options.fill && style.hasFill(),
             hitCurves = options.curves,
-            radius = hitStroke
+            strokeRadius = hitStroke
                     ? style.getStrokeWidth() / 2
                     // Set radius to 0 when we're hit-testing fills with
                     // tolerance, to handle tolerance through stroke hit-test
                     // functionality. Also use 0 when hit-testing curves.
                     : hitFill && options.tolerance > 0 || hitCurves
                         ? 0 : null;
-        if (radius !== null) {
-            if (radius > 0) {
+        if (strokeRadius !== null) {
+            if (strokeRadius > 0) {
                 join = style.getStrokeJoin();
                 cap = style.getStrokeCap();
-                miterLimit = radius * style.getMiterLimit();
+                miterLimit = strokeRadius * style.getMiterLimit();
                 // Add the stroke radius to tolerance padding, taking
                 // #strokeScaling into account through _getStrokeMatrix().
                 strokePadding = tolerancePadding.add(
-                    Path._getStrokePadding(radius,
-                            !style.getStrokeScaling() && strokeMatrix));
+                    Path._getStrokePadding(strokeRadius,
+                        !style.getStrokeScaling() && options._strokeMatrix));
             } else {
                 join = cap = 'round';
             }
@@ -1606,11 +1606,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                     if (join !== 'round' && (segment._handleIn.isZero()
                             || segment._handleOut.isZero()))
                         // _addBevelJoin() handles both 'bevel' and 'miter'!
-                        Path._addBevelJoin(segment, join, radius, miterLimit,
-                                addToArea, true);
+                        Path._addBevelJoin(segment, join, strokeRadius,
+                               miterLimit, addToArea, true);
                 } else if (cap !== 'round') {
                     // It's a cap
-                    Path._addSquareCap(segment, cap, radius, addToArea, true);
+                    Path._addSquareCap(segment, cap, strokeRadius, addToArea,
+                          true);
                 }
                 // See if the above produced an area to check for
                 if (!area.isEmpty()) {
@@ -1639,7 +1640,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                     return res;
         }
         // If we're querying for stroke, perform that before fill
-        if (radius !== null) {
+        if (strokeRadius !== null) {
             loc = this.getNearestLocation(point);
             // Note that paths need at least two segments to have an actual
             // stroke. But we still check for segments with the radius fallback
@@ -2712,8 +2713,9 @@ new function() { // PostScript-style drawing commands
     // Curve. But not all of them use all these parameters, and some define
     // additional ones after.
 
-    _getBounds: function(getter, matrix) {
-        return Path[getter](this._segments, this._closed, this, matrix);
+    _getBounds: function(getter, matrix, cacheItem, internal) {
+        return Path[getter](this._segments, this._closed, this, matrix,
+                internal);
     },
 
 // Mess with indentation in order to get more line-space below:
@@ -2764,14 +2766,14 @@ statics: {
      *
      * @private
      */
-    getStrokeBounds: function(segments, closed, path, matrix) {
+    getStrokeBounds: function(segments, closed, path, matrix, internal) {
         var style = path._style;
         if (!style.hasStroke())
             return Path.getBounds(segments, closed, path, matrix);
         var length = segments.length - (closed ? 0 : 1),
             strokeWidth = style.getStrokeWidth(),
             strokeRadius = strokeWidth / 2,
-            strokeMatrix = path._getStrokeMatrix(matrix),
+            strokeMatrix = path._getStrokeMatrix(matrix, internal),
             strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
             // Start with normal path bounds with added stroke padding. Then we
             // only need to look at each segment and handle join / cap / miter.
@@ -2971,14 +2973,15 @@ statics: {
      *
      * @private
      */
-    getRoughBounds: function(segments, closed, path, matrix) {
+    getRoughBounds: function(segments, closed, path, matrix, internal) {
         // Delegate to handleBounds, but pass on radius values for stroke and
         // joins. Handle miter joins specially, by passing the largest radius
         // possible.
         var style = path._style,
             strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
             joinRadius = strokeRadius,
-            strokeMatrix = strokeRadius && path._getStrokeMatrix(matrix);
+            strokeMatrix = strokeRadius &&
+                path._getStrokeMatrix(matrix, internal);
         if (strokeRadius > 0) {
             if (style.getStrokeJoin() === 'miter')
                 joinRadius = strokeRadius * style.getMiterLimit();

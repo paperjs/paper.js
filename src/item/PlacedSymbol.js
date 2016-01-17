@@ -108,11 +108,12 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
     },
 
 
-    _getBounds: function(getter, matrix, cacheItem) {
+    _getBounds: function(getter, matrix, cacheItem, internal) {
         var definition = this.symbol._definition;
         // Redirect the call to the symbol definition to calculate the bounds
         return definition._getCachedBounds(getter,
-                matrix && matrix.appended(definition._matrix), cacheItem);
+                matrix && matrix.appended(definition._matrix),
+                cacheItem, internal);
     },
 
     _hitTestSelf: function(point, options) {

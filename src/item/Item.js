@@ -781,12 +781,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // required by the code that uses these methods internally, but make
         // sure they can be cached like all the others as well.
         // Pass on the getter that these version actually use, untransformed,
-        // as internalGetter.
+        // as `internal`.
         // NOTE: These need to be versions of other methods, as otherwise the
         // cache gets messed up.
         var getter = 'get' + Base.capitalize(key),
             match = key.match(/^internal(.*)$/),
-            internalGetter = match ? 'get' + match[1] : null;
+            internal = match ? 'get' + match[1] : null;
         this[getter] = function(_matrix) {
             // TODO: If we're getting stroke based bounds (strokeBounds,
             // roughBounds, internalRoughBounds), and the object does not have
@@ -798,11 +798,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 // Allow subclasses to override _boundsGetter if they use the
                 // same calculations for multiple type of bounds.
                 // The default is getter:
-                name = !internalGetter && (typeof boundsGetter === 'string'
+                name = !internal && (typeof boundsGetter === 'string'
                         ? boundsGetter : boundsGetter && boundsGetter[getter])
                         || getter,
-                bounds = this._getCachedBounds(name, _matrix, this,
-                        internalGetter);
+                bounds = this._getCachedBounds(name, _matrix, this, internal);
             // If we're returning 'bounds', create a LinkedRectangle that uses
             // the setBounds() setter to update the Item whenever the bounds are
             // changed:
@@ -823,7 +822,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Subclasses override it to define calculations for the various required
      * bounding types.
      */
-    _getBounds: function(getter, matrix, cacheItem) {
+    _getBounds: function(getter, matrix, cacheItem, internal) {
         // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
         // But cacheName is used in sub-classes such as PlacedSymbol and Raster.
@@ -844,7 +843,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var child = children[i];
             if (child._visible && !child.isEmpty()) {
                 var rect = child._getCachedBounds(getter,
-                        matrix && matrix.appended(child._matrix), cacheItem);
+                        matrix && matrix.appended(child._matrix),
+                        cacheItem, internal);
                 x1 = Math.min(rect.x, x1);
                 y1 = Math.min(rect.y, y1);
                 x2 = Math.max(rect.x + rect.width, x2);
@@ -881,13 +881,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Private method that deals with the calling of _getBounds, recursive
      * matrix concatenation and handles all the complicated caching mechanisms.
      */
-    _getCachedBounds: function(getter, matrix, cacheItem, internalGetter) {
+    _getCachedBounds: function(getter, matrix, cacheItem, internal) {
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
         matrix = matrix && matrix._orNullIfIdentity();
-        // Do not transform by the internal matrix if there is a internalGetter.
-        var _matrix = internalGetter ? null : this._matrix._orNullIfIdentity(),
+        // Do not transform by the internal matrix if there is a internal getter
+        var _matrix = internal ? null : this._matrix._orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
@@ -899,8 +899,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // getInternalBounds is getBounds untransformed. Do not replace earlier,
         // so we can cache both separately, since they're not in the same
         // transformation space!
-        var bounds = this._getBounds(internalGetter || getter,
-                matrix || _matrix, cacheItem);
+        var bounds = this._getBounds(internal || getter, matrix || _matrix,
+                cacheItem, internal);
         // If we can cache the result, update the _bounds cache structure
         // before returning
         if (cache) {
@@ -908,7 +908,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 this._bounds = {};
             var cached = this._bounds[cache] = bounds.clone();
             // Mark as internal, so Item#transform() won't transform it!
-            cached._internal = !!internalGetter;
+            cached._internal = !!internal;
         }
         return bounds;
     },
@@ -918,9 +918,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * when calculating bounds: the item's matrix if {@link #strokeScaling} is
      * `true`, otherwise the shiftless, inverted view matrix.
      */
-    _getStrokeMatrix: function(matrix) {
+    _getStrokeMatrix: function(matrix, internal) {
         return this.getStrokeScaling() ? matrix
-                : this._parent.getViewMatrix().invert()._shiftless();
+                : (internal ? this : this._parent).getViewMatrix()
+                    .invert()._shiftless();
     },
 
     statics: {
@@ -1746,11 +1747,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
+            tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
             tolerancePadding = options._tolerancePadding = new Size(
-                        Path._getStrokePadding(1, strokeMatrix)
-                    ).multiply(
-                        Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
-                    );
+                    Path._getStrokePadding(tolerance, strokeMatrix));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
@@ -1794,21 +1793,23 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
         }
 
+        options._viewMatrix = viewMatrix;
+        options._strokeMatrix = strokeMatrix;
         var children = !res && this._children;
         if (children) {
             var opts = this._getChildHitTestOptions(options);
-            opts._viewMatrix = viewMatrix;
             // Loop backwards, so items that get drawn last are tested first
             for (var i = children.length - 1; i >= 0 && !res; i--)
                 res = children[i]._hitTest(point, opts);
-            // Restore viewMatrix for next child, as opts === options sometimes.
-            opts._viewMatrix = parentViewMatrix;
         }
         if (!res && checkSelf)
-            res = this._hitTestSelf(point, options, strokeMatrix);
+            res = this._hitTestSelf(point, options);
         // Transform the point back to the outer coordinate system.
         if (res && res.point)
             res.point = matrix.transform(res.point);
+        // Restore viewMatrix for next child, so appended matrix chains are
+        // calculated correctly.
+        options._viewMatrix = parentViewMatrix;
         return res;
     },
 
