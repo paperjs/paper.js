@@ -21,12 +21,15 @@ if (typeof window === 'object') {
 
     // Browser based loading through Prepro.js:
     if (!window.include) {
-        var scripts = document.getElementsByTagName('script');
-        var src = scripts[scripts.length - 1].getAttribute('src');
-        // Assume that we're loading browser.js from a root folder, either
-        // through dist/paper-full.js, or directly through src/load.js, and
-        // match root as all the parts of the path that lead to that folder.
-        var root = src.match(/^(.*\/)\w*\//)[1];
+        // Get the last script tag and assume it's the one that loaded this file
+        // then get its src attribute and figure out the location of our root.
+        var scripts = document.getElementsByTagName('script'),
+            src = scripts[scripts.length - 1].getAttribute('src');
+        // Assume that we're loading from a non-root folder, either through
+        // ../../dist/paper-full.js, or directly through ../../src/load.js,
+        // and match root as all the parts of the path that lead to that folder.
+        // So we basically just want all the leading '.' and '/' characters:
+        var root = src.match(/^([.\/]*)/)[1];
         // First load the prepro's browser.js file, which provides the include()
         // function for the browser.
         load(root + 'node_modules/prepro/lib/browser.js');
