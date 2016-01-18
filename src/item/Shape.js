@@ -343,7 +343,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         _hitTestSelf: function _hitTestSelf(point, options) {
             var hit = false,
                 style = this._style;
-            if (style.hasStroke()) {
+            if (options.stroke && style.hasStroke()) {
                 var type = this._type,
                     radius = this._radius,
                     strokeWidth = style.getStrokeWidth(),

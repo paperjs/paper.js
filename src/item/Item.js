@@ -1696,8 +1696,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
      *     Shape, Raster, PlacedSymbol, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
-     * @option options.stroke {Boolean} hit-test the stroke of path items,
-     *     taking into account the setting of stroke color and width
+     * @option options.stroke {Boolean} hit-test the stroke of path and shape
+     *     items, taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
      *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
