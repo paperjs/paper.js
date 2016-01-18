@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "4"
+sudo: false
 env:
   - CXX=g++-4.9
 addons:
@@ -9,4 +10,9 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.9
+      - libcairo2-dev
+      - libpango1.0-dev
+      - libssl-dev
+      - libjpeg62-dev
+      - libgif-dev
 script: 'npm install -g bower && bower install && npm run lint && gulp build && gulp test'
