@@ -1,4 +1,12 @@
 language: node_js
 node_js:
-  - "4.2.4"
+  - "4"
+env:
+  - CXX=g++-4.9
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
 script: 'npm install -g bower && bower install && npm run lint && gulp build && gulp test'
