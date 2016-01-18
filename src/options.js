@@ -14,14 +14,8 @@
 // browser based compile-time preprocessing when loading the separate source
 // files directly through load.js / Prepro.js during development.
 
-// The paper.js version.
-// NOTE: Adjust value here before calling publish.sh, which then updates and
-// publishes the various JSON package files automatically.
-var version = '0.9.25';
-
 var __options = {
-    // If this file is loaded in the browser, we're in dev mode through load.js
-    version: typeof window === 'object' ? 'dev' : version,
+    version: 'dev',
     environment: 'browser',
     parser: 'acorn',
     svg: true,

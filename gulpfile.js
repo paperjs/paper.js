@@ -22,7 +22,7 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
     del = require('del'),
     zip = require('gulp-zip'),
-    gitty = require('gitty')('.'),
+    gitty = require('gitty'),
     fs = require('fs');
 
 /**
@@ -53,6 +53,30 @@ var acornPath = 'bower_components/acorn/';
 
 var buildNames = Object.keys(buildOptions);
 var docNames = Object.keys(docOptions);
+
+/**
+ * Git
+ */
+
+var gitRepo = gitty('.');
+
+function git(param) {
+    var args = arguments.length === 1 ? param.split(' ') : [].slice.apply(arguments);
+    var operation = args.shift();
+    return new gitty.Command(gitRepo, operation, args).execSync().trim();
+}
+
+var gitDate = git('log -1 --pretty=format:%ad');
+var gitVersion = git('describe --abbrev=0 --tags');
+var gitBranch = git('rev-parse --abbrev-ref HEAD');
+if (gitBranch !== 'master')
+    gitVersion += '-' + gitBranch;
+
+gulp.task('nop');
+
+/**
+ * Task: default
+ */
 
 gulp.on('error', function(err) {
     console.error(err.toString());
@@ -120,7 +144,6 @@ gulp.task('build',
 );
 
 // Get the date of the last commit from git.
-var gitLog = gitty.logSync('-1');
 buildNames.forEach(function(name) {
     gulp.task('build:' + name, ['build:start'], function() {
         return gulp.src('src/paper.js')
@@ -128,7 +151,8 @@ buildNames.forEach(function(name) {
                 evaluate: ['src/constants.js', 'src/options.js'],
                 setup: function() {
                     var options = buildOptions[name];
-                    options.date = gitLog[0].date;
+                    options.version = gitVersion;
+                    options.date = gitDate;
                     // This object will be merged into the Prepro.js VM scope,
                     // which already holds a __options object from the above
                     // include statement.

@@ -45,10 +45,7 @@ if (typeof window === 'object') {
         // This object will be merged into the Prepro.js VM scope, which already
         // holds a __options object from the above include statement.
         return {
-            __options: {
-                version: 'dev',
-                environment: 'node'
-            }
+            __options: { environment: 'node' }
         };
     });
     // Load Paper.js library files.

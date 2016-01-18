@@ -1,5 +1,5 @@
 /*!
- * Paper.js v*#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js *#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
