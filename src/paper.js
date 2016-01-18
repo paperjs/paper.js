@@ -1,5 +1,5 @@
 /*!
- * Paper.js *#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v*#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -36,11 +36,11 @@ var paper = new function(undefined) {
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../bower_components/straps/straps.js', { exports: false });
 
-/*#*/ if (__options.version == 'dev' && __options.environment == 'browser') {
+/*#*/ if (__options.load && __options.environment == 'browser') {
 /*#*/     include('../bower_components/stats.js/build/stats.min.js');
 /*#*/ }
 
-/*#*/ if (__options.version == 'dev') {
+/*#*/ if (__options.load) {
 /*#*/     include('constants.js');
 /*#*/ }
 
@@ -122,7 +122,7 @@ var paper = new function(undefined) {
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
-/*#*/ if (__options.version == 'dev') {
+/*#*/ if (__options.load) {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }
 

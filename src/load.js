@@ -14,6 +14,11 @@
 // the browser, avoiding the step of having to manually preprocess it after each
 // change. This is very useful during development of the library itself.
 if (typeof window === 'object') {
+    /* jshint -W082 */
+    function load(src) {
+        document.write('<script src="' + src + '"></script>');
+    }
+
     // Browser based loading through Prepro.js:
     if (!window.include) {
         var scripts = document.getElementsByTagName('script');
@@ -24,29 +29,29 @@ if (typeof window === 'object') {
         var root = src.match(/^(.*\/)\w*\//)[1];
         // First load the prepro's browser.js file, which provides the include()
         // function for the browser.
-        document.write('<script type="text/javascript" src="' + root
-                + 'node_modules/prepro/lib/browser.js"></script>');
-        // Now that we have include(), load this file again, which will execute
-        // the lower part of the code the 2nd time around.
-        document.write('<script type="text/javascript" src="' + root
-                + 'src/load.js"></script>');
+        load(root + 'node_modules/prepro/lib/browser.js');
+        // Now that we will have window.include() through browser.js, trigger
+        // the loading of this file again, which will execute the lower part of
+        // the code the 2nd time around.
+        load(root + 'src/load.js');
     } else {
         include('options.js');
         include('paper.js');
     }
 } else {
-    // Node based loading through Prepro.js:
-    var prepro = require('prepro/lib/node.js');
-    // Include deafult browser options.
-    // Step out and back into src in case this is loaded from dist/paper-node.js
-    prepro.include('../src/options.js');
-    // Override node specific options.
+    // Node.js based loading through Prepro.js:
+    var prepro = require('prepro/lib/node.js'),
+        // Load the default browser-based options for further amendments.
+        // Step out and back into src, if this is loaded from dist/paper-node.js
+        options = require('../src/options.js');
+    // Override Node.js specific options.
+    options.version += '-load';
+    options.environment = 'node';
+    options.load = true;
     prepro.setup(function() {
-        // This object will be merged into the Prepro.js VM scope, which already
-        // holds a __options object from the above include statement.
-        return {
-            __options: { environment: 'node' }
-        };
+        // Return objects to be defined in the preprocess-scope.
+        // Note that this would be merge in with already existing objects.
+        return { __options: options };
     });
     // Load Paper.js library files.
     prepro.include('../src/paper.js');

@@ -14,12 +14,24 @@
 // browser based compile-time preprocessing when loading the separate source
 // files directly through load.js / Prepro.js during development.
 
+// The paper.js version.
+// NOTE: Adjust value here before calling publish.sh, which then updates and
+// publishes the various JSON package files automatically.
+var version = '0.9.25';
+// If this file is loaded in the browser, we're in load.js mode.
+var load = typeof window === 'object';
+
 var __options = {
-    version: 'dev',
+    version: version + (load ? '-load' : ''),
     environment: 'browser',
+    load: load,
     parser: 'acorn',
     svg: true,
     booleanOperations: true,
     nativeContains: false,
     paperScript: true
 };
+
+// Export for use in Gulp.js
+if (typeof module !== 'undefined')
+    module.exports = __options;

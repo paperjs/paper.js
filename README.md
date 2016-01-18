@@ -45,8 +45,8 @@ Paper.js, in minified and normal variants:
 
 ### Installing Node.js, NPM and Bower
 
-Node.js is required by Bower, as well as by Gulp, which needs to be installed if
-you intend to build the library or its documentation by yourself.
+Node.js is required by Bower, as well as by Gulp.js, which needs to be installed
+if you intend to build the library or its documentation by yourself.
 
 There are many tutorials explaining the different ways to install Node.js on
 different platforms. It is generally not recommended to install Node.js through
@@ -147,7 +147,7 @@ run:
 
 ### Setting Up For Building
 
-As of 2016, Paper.js uses [Gulp](http://gulpjs.com/) for building, and has a
+As of 2016, Paper.js uses [Gulp.js](http://gulpjs.com/) for building, and has a
 couple of dependencies as Bower and NPM modules. Read the chapter [Installing
 Node.js, NPM and Bower](#installing-nodejs-npm-and-bower) if you still need to
 install these.
@@ -159,8 +159,8 @@ following commands from the Paper.js directory:
     npm install
     bower install
 
-It is also recommended to install Gulp globally, so you can easier execute the
-build commands from anywhere in the command line:
+It is also recommended to install Gulp.js globally, so you can easier execute
+the build commands from anywhere in the command line:
 
     npm install -g gulp
 
@@ -235,7 +235,7 @@ folder in your web browser. There should be a green bar at the top, meaning all
 tests have passed. If the bar is red, some tests have not passed. These will be
 highlighted and become visible when scrolling down.
 
-You can also run the unit tests through Gulp on the command line:
+You can also run the unit tests through Gulp.js on the command line:
 
     gulp test
 

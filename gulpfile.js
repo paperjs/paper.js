@@ -21,13 +21,18 @@ var gulp = require('gulp'),
     whitespace = require('gulp-whitespace'),
     merge = require('merge-stream'),
     del = require('del'),
-    zip = require('gulp-zip'),
+    extend = require('extend'),
+    fs = require('fs'),
     gitty = require('gitty'),
-    fs = require('fs');
+    zip = require('gulp-zip');
 
 /**
  * Options
  */
+
+// Require the __options object before preprocessing, so we have access to the
+// version number and can make amendments, e.g. the release date.
+var options = require('./src/options.js');
 
 // Options to be used in Prepro.js preprocessing through the global __options
 // object.
@@ -66,13 +71,12 @@ function git(param) {
     return new gitty.Command(gitRepo, operation, args).execSync().trim();
 }
 
-var gitDate = git('log -1 --pretty=format:%ad');
-var gitVersion = git('describe --abbrev=0 --tags');
-var gitBranch = git('rev-parse --abbrev-ref HEAD');
-if (gitBranch !== 'master')
-    gitVersion += '-' + gitBranch;
-
-gulp.task('nop');
+// Get the date of the last commit from this branch for release date:
+options.date = git('log -1 --pretty=format:%ad');
+// If we're not on the master branch, append the branch name to the version:
+var branch = git('rev-parse --abbrev-ref HEAD');
+if (branch !== 'master')
+    options.version += '-' + branch;
 
 /**
  * Task: default
@@ -148,15 +152,17 @@ buildNames.forEach(function(name) {
     gulp.task('build:' + name, ['build:start'], function() {
         return gulp.src('src/paper.js')
             .pipe(prepro({
-                evaluate: ['src/constants.js', 'src/options.js'],
+                // Evaluate constants.js inside the precompilation scope before
+                // the actual precompilation, so all the constants substitution
+                // statements in the code can work (look for: /*#=*/):
+                evaluate: ['src/constants.js'],
                 setup: function() {
-                    var options = buildOptions[name];
-                    options.version = gitVersion;
-                    options.date = gitDate;
-                    // This object will be merged into the Prepro.js VM scope,
-                    // which already holds a __options object from the above
-                    // include statement.
-                    return { __options: options };
+                    // Return objects to be defined in the preprocess-scope.
+                    // Note that this would be merge in with already existing
+                    // objects.
+                    return {
+                        __options: extend({}, options, buildOptions[name])
+                    };
                 }
             }))
             .pipe(uncomment({

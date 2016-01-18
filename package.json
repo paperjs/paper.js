@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "del": "^2.2.0",
+    "extend": "^3.0.0",
     "gitty": "^3.3.3",
     "gulp": "^3.9.0",
     "gulp-prepro": "^2.0.0",
