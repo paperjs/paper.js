@@ -14,12 +14,13 @@
 // the browser, avoiding the step of having to manually preprocess it after each
 // change. This is very useful during development of the library itself.
 if (typeof window === 'object') {
+    // Browser based loading through Prepro.js:
+
     /* jshint -W082 */
     function load(src) {
         document.write('<script src="' + src + '"></script>');
     }
 
-    // Browser based loading through Prepro.js:
     if (!window.include) {
         // Get the last script tag and assume it's the one that loaded this file
         // then get its src attribute and figure out the location of our root.

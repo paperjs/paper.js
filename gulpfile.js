@@ -147,7 +147,6 @@ gulp.task('build',
     })
 );
 
-// Get the date of the last commit from git.
 buildNames.forEach(function(name) {
     gulp.task('build:' + name, ['build:start'], function() {
         return gulp.src('src/paper.js')
