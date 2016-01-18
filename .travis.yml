@@ -15,4 +15,10 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
-script: 'npm install -g bower && bower install && npm run lint && gulp build && gulp test'
+before_script:
+  - npm install -g bower
+  - bower install
+script:
+  - npm run lint
+  - gulp minify
+  - gulp test
