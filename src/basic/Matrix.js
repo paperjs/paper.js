@@ -435,18 +435,21 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this matrix, or `null`, if the matrix is singular.
      */
     invert: function() {
-        var det = this._getDeterminant(),
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
             tx = this._tx,
             ty = this._ty,
+            det = a * d - b * c,
             res = null;
-        if (det) {
-            this._tx = (this._b * ty - this._d * tx) / det;
-            this._ty = (this._c * tx - this._a * ty) / det;
-            var d = this._a / det;
-            this._a = this._d / det;
-            this._c /= -det;
-            this._b /= -det;
-            this._d = d;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            this._a = d / det;
+            this._b = -b / det;
+            this._c = -c / det;
+            this._d = a / det;
+            this._tx = (b * ty - d * tx) / det;
+            this._ty = (c * tx - a * ty) / det;
             res = this;
         }
         return res;
@@ -506,7 +509,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the transform is invertible
      */
     isInvertible: function() {
-        return !!this._getDeterminant();
+        var det = this._a * this._d - this._b * this._c;
+        return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
     },
 
     /**
@@ -516,7 +520,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the matrix is singular
      */
     isSingular: function() {
-        return !this._getDeterminant();
+        return !this.isInvertible();
     },
 
     /**
@@ -557,10 +561,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         if (!dest)
             dest = new Point();
         return dest.set(
-            x * this._a + y * this._b + this._tx,
-            x * this._c + y * this._d + this._ty,
-            _dontNotify
-        );
+                x * this._a + y * this._b + this._tx,
+                x * this._c + y * this._d + this._ty,
+                _dontNotify);
     },
 
     _transformCoordinates: function(src, dst, count) {
@@ -597,10 +600,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         for (var i = 2; i < 8; i++) {
             var val = coords[i],
                 j = i & 1;
-            if (val < min[j])
+            if (val < min[j]) {
                 min[j] = val;
-            else if (val > max[j])
+            } else if (val > max[j]) {
                 max[j] = val;
+            }
         }
         if (!dest)
             dest = new Rectangle();
@@ -617,30 +621,26 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this._inverseTransform(Point.read(arguments));
     },
 
-    /**
-     * Returns the determinant of this transform, but only if the matrix is
-     * reversible, null otherwise.
-     */
-    _getDeterminant: function() {
-        var det = this._a * this._d - this._b * this._c;
-        return isFinite(det) && !Numerical.isZero(det)
-                && isFinite(this._tx) && isFinite(this._ty)
-                ? det : null;
-    },
-
     _inverseTransform: function(point, dest, _dontNotify) {
-        var det = this._getDeterminant();
-        if (!det)
-            return null;
-        var x = point.x - this._tx,
-            y = point.y - this._ty;
-        if (!dest)
-            dest = new Point();
-        return dest.set(
-            (x * this._d - y * this._b) / det,
-            (y * this._a - x * this._c) / det,
-            _dontNotify
-        );
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            tx = this._tx,
+            ty = this._ty,
+            det = a * d - b * c,
+            res = null;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            var x = point.x - this._tx,
+                y = point.y - this._ty;
+            if (!dest)
+                dest = new Point();
+            res = dest.set(
+                    (x * d - y * b) / det,
+                    (y * a - x * c) / det,
+                    _dontNotify);
+        }
+        return res;
     },
 
     /**
