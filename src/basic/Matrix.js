@@ -442,10 +442,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         if (det) {
             this._tx = (this._b * ty - this._d * tx) / det;
             this._ty = (this._c * tx - this._a * ty) / det;
-            this._d /= det;
+            var d = this._a / det;
+            this._a = this._d / det;
             this._c /= -det;
             this._b /= -det;
-            this._a /= det;
+            this._d = d;
             res = this;
         }
         return res;
