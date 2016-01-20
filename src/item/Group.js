@@ -169,8 +169,7 @@ var Group = Item.extend(/** @lends Group# */{
 
     _draw: function(ctx, param) {
         var clip = param.clip,
-            clipItem = !clip && this._getClipItem(),
-            draw = true;
+            clipItem = !clip && this._getClipItem();
         param = param.extend({ clipItem: clipItem, clip: false });
         if (clip) {
             // If told to clip with a group, we start our own path and draw each
@@ -180,13 +179,11 @@ var Group = Item.extend(/** @lends Group# */{
         } else if (clipItem) {
             clipItem.draw(ctx, param.extend({ clip: true }));
         }
-        if (draw) {
-            var children = this._children;
-            for (var i = 0, l = children.length; i < l; i++) {
-                var item = children[i];
-                if (item !== clipItem)
-                    item.draw(ctx, param);
-            }
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            var item = children[i];
+            if (item !== clipItem)
+                item.draw(ctx, param);
         }
     }
 });
