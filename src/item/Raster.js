@@ -323,7 +323,12 @@ var Raster = Item.extend(/** @lends Raster# */{
      * });
      */
     getSource: function() {
-        return this._image && this._image.src || this.toDataURL();
+        var image = this._image;
+/*#*/ if (__options.environment == 'node') {
+        // See #toDataURL()
+        image = image && this._src;
+/*#*/ } // __options.environment == 'node'
+        return image && image.src || this.toDataURL();
     },
 
     setSource: function(src) {
@@ -367,9 +372,9 @@ var Raster = Item.extend(/** @lends Raster# */{
         // If we're running on the server and it's a string,
         // check if it is a data URL
         if (/^data:/.test(src)) {
-            // Preserve the data in this._data since canvas-node eats it.
-            // TODO: Fix canvas-node instead
-            image.src = this._data = src;
+            // Preserve the data in this._src since canvas-node eats it.
+            image.src = src;
+            this._src = { src: src, data: src };
             // Emit load event with a delay, so behavior is the same as when
             // it's actually loaded and we give the code time to install event.
             setTimeout(loaded, 0);
@@ -378,20 +383,31 @@ var Raster = Item.extend(/** @lends Raster# */{
             require('request').get({
                 url: src,
                 encoding: null // So the response data is a Buffer
-            }, function (err, response, data) {
+            }, function (err, response, buffer) {
                 if (err)
                     throw err;
                 if (response.statusCode == 200) {
-                    image.src = this._data = data;
+                    image.src = buffer;
+                    that._src = {
+                        src: src,
+                        buffer: buffer,
+                        type: response.headers['content-type']
+                    };
                     loaded();
                 }
             });
         } else {
             // Load it from disk:
-            require('fs').readFile(src, function (err, data) {
+            src = (src.match(/^file:\/\/(.*)$/) || [null, src])[1];
+            require('fs').readFile(src, function (err, buffer) {
                 if (err)
                     throw err;
-                image.src = this._data = data;
+                image.src = buffer;
+                that._src = {
+                    src: 'file://' + src,
+                    buffer: buffer,
+                    type: require('mime').lookup(src)
+                };
                 loaded();
             });
         }
@@ -483,17 +499,24 @@ var Raster = Item.extend(/** @lends Raster# */{
     toDataURL: function() {
         // See if the linked image is base64 encoded already, if so reuse it,
         // otherwise try using canvas.toDataURL()
+        var image = this._image,
+            src;
 /*#*/ if (__options.environment == 'node') {
-        if (this._data) {
-            if (this._data instanceof Buffer)
-                this._data = this._data.toString('base64');
-            return this._data;
+        // Only use the information stored in _src if we still use the _image
+        // that goes with it.
+        var obj = image && this._src;
+        if (obj) {
+            if (!obj.data) {
+                obj.data = 'data:' + obj.type + ';base64,' +
+                    obj.buffer.toString('base64');
+            }
+            src = obj.data;
         }
 /*#*/ } else {
-        var src = this._image && this._image.src;
+         src = image && image.src;
+/*#*/ } // __options.environment == 'node'
         if (/^data:/.test(src))
             return src;
-/*#*/ }
         var canvas = this.getCanvas();
         return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
     },
