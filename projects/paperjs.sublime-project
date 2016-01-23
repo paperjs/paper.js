@@ -12,6 +12,7 @@
     },
     {
       "path": "../gulp",
+      "folder_exclude_patterns": ["jsdoc"]
     },
     {
       "path": "..",

@@ -2,16 +2,16 @@
   "folders":
   [
     {
-      "path": "../build/jsdoc-toolkit/app"
+      "path": "../gulp/jsdoc/app"
     },
     {
-      "path": "../build/jsdoc-toolkit/templates"
+      "path": "../gulp/jsdoc/templates"
     },
     {
-      "path": "../build/jsdoc-toolkit/conf"
+      "path": "../gulp/jsdoc/conf"
     },
     {
-      "path": "../build/jsdoc-toolkit",
+      "path": "../gulp/jsdoc",
       "name": "root",
       "folder_exclude_patterns": ["*"],
       "file_exclude_patterns": [ "*.jar" ]

@@ -12,7 +12,8 @@
 
 var gulp = require('gulp'),
     del = require('del'),
-    shell = require('gulp-shell');
+    shell = require('gulp-shell'),
+    options = require('../utils/options.js');
 
 var docOptions = {
     local: 'docs', // Generates the offline docs
@@ -22,7 +23,8 @@ var docOptions = {
 Object.keys(docOptions).forEach(function(name) {
     gulp.task('docs:' + name, ['clean:docs'], shell.task([
         'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
-            '-D="renderMode:' + docOptions[name] + '"',
+            '-D="renderMode:' + docOptions[name] + '" ' +
+            '-D="version:' + options.version + '"'
     ], {
         cwd: 'gulp/jsdoc'
     }));
