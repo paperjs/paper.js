@@ -37,6 +37,7 @@
     "canvas": "^1.2.9"
   },
   "devDependencies": {
+    "acorn": "~0.5.0",
     "del": "^2.2.0",
     "extend": "^3.0.0",
     "gitty": "^3.3.3",
@@ -55,7 +56,11 @@
     "jshint": "2.8.x",
     "merge-stream": "^1.0.0",
     "prepro": "^2.0.0",
-    "require-dir": "^0.3.0"
+    "qunitjs": "^1.20.0",
+    "require-dir": "^0.3.0",
+    "resemblejs": "^2.1.0",
+    "stats.js": "0.0.14-master",
+    "straps": "^1.8.0"
   },
   "keywords": [
     "vector",

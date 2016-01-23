@@ -157,7 +157,6 @@ has dependencies that need to be installed. Install them by issuing the
 following commands from the Paper.js directory:
 
     npm install
-    bower install
 
 It is also recommended to install Gulp.js globally, so you can easier execute
 the build commands from anywhere in the command line:

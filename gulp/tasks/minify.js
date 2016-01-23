@@ -15,7 +15,7 @@ var gulp = require('gulp'),
     fs = require('fs'),
     uglify = require('gulp-uglify');
 
-var acornPath = 'bower_components/acorn/';
+var acornPath = 'node_modules/acorn/';
 
 var uglifyOptions = {
     output: {

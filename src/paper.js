@@ -34,10 +34,10 @@
 // parameter inside the paper scope.
 var paper = new function(undefined) {
 // Inline Straps.js core (the Base class) inside the paper scope first:
-/*#*/ include('../bower_components/straps/straps.js', { exports: false });
+/*#*/ include('../node_modules/straps/straps.js', { exports: false });
 
 /*#*/ if (__options.load && __options.environment == 'browser') {
-/*#*/     include('../bower_components/stats.js/build/stats.min.js');
+/*#*/     include('../node_modules/stats.js/build/stats.min.js');
 /*#*/ }
 
 /*#*/ if (__options.load) {
