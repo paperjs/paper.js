@@ -11,9 +11,15 @@
  */
 
 var gulp = require('gulp'),
-    requireDir = require('require-dir');
+    gutil = require('gulp-util'),
+    ERROR = gutil.colors.red('[ERROR]');
 
-// Require all tasks in gulp, including the task sub-folder.
-requireDir('./gulp', { recurse: true });
-
-gulp.task('default', ['dist']);
+gulp.on('error', function(err) {
+    var msg = err.toString();
+    if (msg === '[object Object]')
+        msg = err;
+    gutil.log(ERROR, err);
+    if (err.stack)
+        gutil.log(ERROR, err.stack);
+    this.emit('end');
+});

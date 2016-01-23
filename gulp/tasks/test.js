@@ -11,9 +11,9 @@
  */
 
 var gulp = require('gulp'),
-    requireDir = require('require-dir');
+    qunit = require('gulp-qunit');
 
-// Require all tasks in gulp, including the task sub-folder.
-requireDir('./gulp', { recurse: true });
-
-gulp.task('default', ['dist']);
+gulp.task('test', function() {
+    return gulp.src('test/index.html')
+        .pipe(qunit({ timeout: 20, noGlobals: true }));
+});

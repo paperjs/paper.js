@@ -11,9 +11,11 @@
  */
 
 var gulp = require('gulp'),
-    requireDir = require('require-dir');
+    del = require('del'),
+    symlink = require('gulp-symlink');
 
-// Require all tasks in gulp, including the task sub-folder.
-requireDir('./gulp', { recurse: true });
-
-gulp.task('default', ['dist']);
+gulp.task('load', ['clean:load'], function() {
+    return gulp.src('src/load.js')
+        .pipe(symlink('dist/paper-full.js'))
+        .pipe(symlink('dist/paper-node.js'));
+});
