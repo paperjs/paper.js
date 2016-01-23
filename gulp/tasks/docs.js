@@ -24,7 +24,7 @@ Object.keys(docOptions).forEach(function(name) {
         'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
             '-D="renderMode:' + docOptions[name] + '"',
     ], {
-        cwd: 'jsdoc-toolkit'
+        cwd: 'gulp/jsdoc'
     }));
 });
 
