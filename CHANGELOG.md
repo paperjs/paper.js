@@ -37,6 +37,11 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Throw an exception if arguments to `smooth()` are segments or curves from
   incorrect paths.
 - Many minor code and algorithm optimizations.
+- Performance optimization for monotone curves (#907).
+- Move to gulp build process.
+- Move `PaperScript#execute` URL argument into `options.url` (#902).
+- Rename `Matrix#concatenate()` to `#append()` and `preConcatenate()` to `#prepend()`.
+- Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functiond.
 
 
 ### Added
@@ -64,10 +69,18 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Add `getSquaredLineLength()` (removed `getEndDistanceSquared()`)
 - layers may now be given names (#491).
 - Add `Project#addLayer()` and `Project#insertLayer()` (#903).
+- Add `View#matrix` to allow matrix transformation to be used on the view (#832).
+- Add tests QUnit tests for leaked globals.
+- Add `Matrix#prepended` and `#appended` to return copies of the modified  matrix.
+- Add `Shape#hitTest()` boolean option `options.stroke` (#911).
+- Insert version number into docs.
 
 
 ### Deprecated
 - Deprecate `#windingRule` on `Item` and `Style` in favor of `#fillRule`.
+- `Matrix#concatenante` in favor of `#append`.
+- `Matrix#preConcatenate` in favor of `#prepend`.
+- `Matrix#chain` in favor of `#appended`.
 
 
 ### Removed
@@ -101,4 +114,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Fix problems with group selection structures after `group#importJSON()` (#785).
 - Fix exceptions when a top-level layer is selected.
 - Don't allow layers to turn up in hit-tests (#608).
+- Correctly handle `#strokeScaling` when calculating `Path` and `Shape` bounds (#697).
+- Maintain `Raster#source` correctly on Node.js (#914).
+- Boolean operations correctly handle open `Path` items within `CompoundPath` (#912).
 
