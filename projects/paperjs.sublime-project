@@ -19,5 +19,13 @@
       "name": "root",
       "folder_exclude_patterns": ["*"]
     }
-  ]
+  ],
+  "SublimeLinter":
+  {
+    "linters": {
+      "jshint": {
+        "@disable": false
+      }
+    }
+  }
 }
