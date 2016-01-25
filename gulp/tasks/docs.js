@@ -20,14 +20,22 @@ var docOptions = {
     server: 'serverdocs' // Generates the website templates for the online docs
 };
 
-Object.keys(docOptions).forEach(function(name) {
-    gulp.task('docs:' + name, ['clean:docs'], shell.task([
-        'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
-            '-D="renderMode:' + docOptions[name] + '" ' +
+gulp.task('docs', ['docs:local']);
+
+for (var key in docOptions) {
+    gulp.task('docs:' + key, ['clean:docs:' + key], shell.task([
+        'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + key + '.conf ' +
+            '-D="renderMode:' + docOptions[key] + '" ' +
             '-D="version:' + options.version + '"'
     ], {
         cwd: 'gulp/jsdoc'
     }));
-});
+}
 
-gulp.task('docs', ['docs:local']);
+for (var key in docOptions) {
+    gulp.task('clean:docs:' + key, function(callback) {
+        return del([
+            'dist/' + docOptions[key] + '/**',
+        ]);
+    });
+}
