@@ -27,14 +27,16 @@ var buildOptions = {
     node: { environment: 'node', paperScript: true }
 };
 
+var buildNames = Object.keys(buildOptions);
+
 gulp.task('build',
-    Object.keys(buildOptions).map(function(name) {
+    buildNames.map(function(name) {
         return 'build:' + name;
     })
 );
 
-for (var key in buildOptions) {
-    gulp.task('build:' + key, ['clean:build', 'minify:acorn'], function() {
+buildNames.forEach(function(name) {
+    gulp.task('build:' + name, ['clean:build:' + name, 'minify:acorn'], function() {
         return gulp.src('src/paper.js')
             .pipe(prepro({
                 // Evaluate constants.js inside the precompilation scope before
@@ -46,7 +48,7 @@ for (var key in buildOptions) {
                     // Note that this would be merge in with already existing
                     // objects.
                     return {
-                        __options: extend({}, options, buildOptions[key])
+                        __options: extend({}, options, buildOptions[name])
                     };
                 }
             }))
@@ -58,14 +60,14 @@ for (var key in buildOptions) {
                 removeTrailing: true
             }))
             .pipe(rename({
-                suffix: '-' + key
+                suffix: '-' + name
             }))
             .pipe(gulp.dest('dist'));
     });
-}
 
-gulp.task('clean:build', function() {
-    return del([
-        'dist/paper-*.js'
-    ]);
+    gulp.task('clean:build:' + name, function() {
+        return del([
+            'dist/paper-' + name + '.js'
+        ]);
+    });
 });

@@ -12,6 +12,7 @@
 
 var gulp = require('gulp'),
     del = require('del'),
+    rename = require('gulp-rename'),
     shell = require('gulp-shell'),
     options = require('../utils/options.js');
 
@@ -20,22 +21,24 @@ var docOptions = {
     server: 'serverdocs' // Generates the website templates for the online docs
 };
 
-gulp.task('docs', ['docs:local']);
+gulp.task('docs', ['docs:local', 'build:full'], function() {
+    gulp.src('dist/paper-full.js')
+        .pipe(rename({ basename: 'paper' }))
+        .pipe(gulp.dest('dist/docs/assets/js/'));
+});
 
-for (var key in docOptions) {
-    gulp.task('docs:' + key, ['clean:docs:' + key], shell.task([
-        'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + key + '.conf ' +
-            '-D="renderMode:' + docOptions[key] + '" ' +
+Object.keys(docOptions).forEach(function(name) {
+    gulp.task('docs:' + name, ['clean:docs:' + name], shell.task([
+        'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
+            '-D="renderMode:' + docOptions[name] + '" ' +
             '-D="version:' + options.version + '"'
     ], {
         cwd: 'gulp/jsdoc'
     }));
-}
 
-for (var key in docOptions) {
-    gulp.task('clean:docs:' + key, function(callback) {
+    gulp.task('clean:docs:' + name, function() {
         return del([
-            'dist/' + docOptions[key] + '/**',
+            'dist/' + docOptions[name] + '/**',
         ]);
     });
-}
+});
