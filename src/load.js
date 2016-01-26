@@ -14,7 +14,7 @@
 // the browser, avoiding the step of having to manually preprocess it after each
 // change. This is very useful during development of the library itself.
 if (typeof window === 'object') {
-    // Browser based loading through Prepro.js:
+     // Browser based loading through Prepro.js:
 
     /* jshint -W082 */
     function load(src) {
@@ -28,9 +28,9 @@ if (typeof window === 'object') {
             src = scripts[scripts.length - 1].getAttribute('src');
         // Assume that we're loading from a non-root folder, either through
         // ../../dist/paper-full.js, or directly through ../../src/load.js,
-        // and match root as all the parts of the path that lead to that folder.
-        // So we basically just want all the leading '.' and '/' characters:
-        var root = src.match(/^([.\/]*)/)[1];
+        // and match root as all the parts of the path that lead to that folder,
+        // exclude the last bit (dist|src), since that's the sub-folder of paper
+        var root = src.match(/^(.*\/)\w*\//)[1];
         // First load the prepro's browser.js file, which provides the include()
         // function for the browser.
         load(root + 'node_modules/prepro/lib/browser.js');
