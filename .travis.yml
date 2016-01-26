@@ -15,9 +15,6 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
-before_script:
-  - npm install -g bower
-  - bower install
 script:
   - npm run lint
   - gulp minify
