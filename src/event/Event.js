@@ -22,7 +22,7 @@ var Event = Base.extend(/** @lends Event# */{
 
     initialize: function Event(event) {
         this.event = event;
-        this.type = event.type;
+        this.type = event && event.type;
     },
 
     prevented: false,

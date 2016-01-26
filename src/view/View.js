@@ -129,7 +129,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         DomEvent.remove(window, this._windowEvents);
         this._element = this._project = null;
         // Remove all onFrame handlers.
-        // TODO: Shouldn't we remove all handlers, automatically
+        // TODO: Shouldn't we remove all other event handlers, automatically
         this.off('frame');
         this._animate = false;
         this._frameItems = {};
@@ -222,7 +222,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
-     * Makes all animation pause by removing the view to the request animation
+     * Makes all animation pause by removing the view from the request animation
      * loop.
      */
     pause: function() {
