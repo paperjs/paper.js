@@ -91,6 +91,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - `ctx.currentPath` caching optimization
 - Undocumented function `Project#addChild()` that added a layer to a project.
   It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
+- Canvas attributes "resize" and "data-paper-resize" no longer will cause paper to resize the canvas when the viewport size changes; CSS is required since 0.9.22.
 
 
 ### Fixed
@@ -117,4 +118,5 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Correctly handle `#strokeScaling` when calculating `Path` and `Shape` bounds (#697).
 - Maintain `Raster#source` correctly on Node.js (#914).
 - Boolean operations correctly handle open `Path` items within `CompoundPath` (#912).
+- Don't modify an array of child items passed to `CompoundPath#insertChildren()` when it is a child items array of a `CompoundPath`.
 
