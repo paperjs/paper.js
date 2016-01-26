@@ -198,7 +198,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 // stop, e.g.  due to a call to pause(), or a request for a
                 // single redraw.
                 if (that._animate) {
-                    // Request next frame before handling the current frame
+                    // Request next update before handling the current frame
                     that.requestUpdate();
                     that._handleFrame();
                 }
@@ -233,21 +233,18 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Set the global paper object to the current scope
         paper = this._scope;
         var now = Date.now() / 1000,
-            delta = this._before ? now - this._before : 0;
-        this._before = now;
-        this._handlingFrame = true;
+            delta = this._last ? now - this._last : 0;
+        this._last = now;
         // Use new Base() to convert into a Base object, for #toString()
         this.emit('frame', new Base({
-            // Time elapsed since last redraw in seconds:
+            // Time elapsed since last frame in seconds:
             delta: delta,
-            // Time since first call of frame() in seconds:
+            // Total since first frame in seconds:
             time: this._time += delta,
             count: this._count++
         }));
-        // Update framerate stats
         if (this._stats)
             this._stats.update();
-        this._handlingFrame = false;
     },
 
     _animateItem: function(item, animate) {
