@@ -19,7 +19,6 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-/* jshint -W082 */// Do not complain about functions inside Prepro.js statements
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
@@ -29,8 +28,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._project = project;
         this._scope = project._scope;
         this._element = element;
-        var size;
-/*#*/ if (__options.environment == 'browser') {
         // Sub-classes may set _pixelRatio first
         if (!this._pixelRatio)
             this._pixelRatio = window.devicePixelRatio || 1;
@@ -80,7 +77,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // it might have been set to a % size, in which case it would use some
         // default internal size (300x150 on WebKit) and scale up the pixels.
         // We also need this call here for HiDPI support.
-        this._setViewSize(size = getCanvasSize());
+        var size = this._viewSize = getCanvasSize();
+        this._setViewSize(size.width, size.height);
         // TODO: Test this on IE:
         if (PaperScope.hasAttribute(element, 'stats')
                 && typeof Stats !== 'undefined') {
@@ -94,19 +92,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
             style.top = offset.y + 'px';
             document.body.appendChild(stats);
         }
-/*#*/ } else if (__options.environment == 'node') {
-        // Sub-classes may set _pixelRatio first
-        if (!this._pixelRatio)
-            this._pixelRatio = 1;
-        // Generate an id for this view
-        this._id = 'view-' + View._id++;
-        size = new Size(element.width, element.height);
-/*#*/ } // __options.environment == 'node'
         // Keep track of views internally
         View._views.push(this);
         // Link this id to our view
         View._viewsById[this._id] = this;
-        this._viewSize = size;
         (this._matrix = new Matrix())._owner = this;
         this._zoom = 1;
         // Make sure the first view is focused for keyboard input straight away
@@ -135,11 +124,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
         var project = this._project;
         if (project._view === this)
             project._view = null;
-/*#*/ if (__options.environment == 'browser') {
         // Uninstall event handlers again for this view.
         DomEvent.remove(this._element, this._viewEvents);
         DomEvent.remove(window, this._windowEvents);
-/*#*/ } // __options.environment == 'browser'
         this._element = this._project = null;
         // Remove all onFrame handlers.
         // TODO: Shouldn't we remove all handlers, automatically
@@ -174,7 +161,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _count: 0,
 
     _requestFrame: function() {
-/*#*/ if (__options.environment == 'browser') {
         var that = this;
         DomEvent.requestAnimationFrame(function() {
             that._requested = false;
@@ -186,7 +172,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
             that._handleFrame();
         }, this._element);
         this._requested = true;
-/*#*/ } // __options.environment == 'browser'
     },
 
     _handleFrame: function() {
@@ -319,11 +304,13 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     setViewSize: function(/* size */) {
         var size = Size.read(arguments),
+            width = size.width,
+            height = size.height,
             delta = size.subtract(this._viewSize);
         if (delta.isZero())
             return;
-        this._viewSize.set(size.width, size.height);
-        this._setViewSize(size);
+        this._viewSize.set(width, height);
+        this._setViewSize(width, height);
         // Call onResize handler on any size change
         this.emit('resize', {
             size: size,
@@ -334,12 +321,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
-     * Private method, overriden in CanvasView for HiDPI support.
+     * Private method, overridden in CanvasView for HiDPI support.
      */
-    _setViewSize: function(size) {
+    _setViewSize: function(width, height) {
         var element = this._element;
-        element.width = size.width;
-        element.height = size.height;
+        if (element.width !== width)
+            element.width = width;
+        if (element.height !== height)
+            element.height = height;
     },
 
     /**
@@ -556,12 +545,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     play: function() {
         this._animate = true;
-/*#*/ if (__options.environment == 'browser') {
         // Request a frame handler straight away to initialize the
         // sequence of onFrame calls.
         if (!this._requested)
             this._requestFrame();
-/*#*/ } // __options.environment == 'browser'
     },
 
     /**
@@ -806,10 +793,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         _id: 0,
 
         create: function(project, element) {
-/*#*/ if (__options.environment == 'browser') {
             if (typeof element === 'string')
                 element = document.getElementById(element);
-/*#*/ } // __options.environment == 'browser'
             // Factory to provide the right View subclass for a given element.
             // Produces only CanvasViews for now:
             return new CanvasView(project, element);
@@ -817,8 +802,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
     }
 },
 new function() { // Injection scope for mouse events on the browser
-/*#*/ if (__options.environment == 'browser') {
-
     /**
      * Native event handling, coordinate conversion, focus handling and
      * delegation to view and tool objects.
@@ -1227,5 +1210,4 @@ new function() { // Injection scope for mouse events on the browser
             updateFocus: updateFocus
         }
     };
-/*#*/ } // __options.environment == 'browser'
 });

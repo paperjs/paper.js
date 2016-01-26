@@ -14,7 +14,7 @@
 // the browser, avoiding the step of having to manually preprocess it after each
 // change. This is very useful during development of the library itself.
 if (typeof window === 'object') {
-    // Browser based loading through Prepro.js:
+     // Browser based loading through Prepro.js:
 
     /* jshint -W082 */
     function load(src) {
@@ -28,9 +28,9 @@ if (typeof window === 'object') {
             src = scripts[scripts.length - 1].getAttribute('src');
         // Assume that we're loading from a non-root folder, either through
         // ../../dist/paper-full.js, or directly through ../../src/load.js,
-        // and match root as all the parts of the path that lead to that folder.
-        // So we basically just want all the leading '.' and '/' characters:
-        var root = src.match(/^([.\/]*)/)[1];
+        // and match root as all the parts of the path that lead to that folder,
+        // exclude the last bit (dist|src), since that's the sub-folder of paper
+        var root = src.match(/^(.*\/)\w*\//)[1];
         // First load the prepro's browser.js file, which provides the include()
         // function for the browser.
         load(root + 'node_modules/prepro/lib/browser.js');
@@ -40,23 +40,31 @@ if (typeof window === 'object') {
         load(root + 'src/load.js');
     } else {
         include('options.js');
+        // Load constants.js, required by the on-the-fly preprocessing:
+        include('constants.js');
+        // Automatically load stats.js while developing.
+        include('../node_modules/stats.js/build/stats.min.js');
         include('paper.js');
     }
 } else {
     // Node.js based loading through Prepro.js:
     var prepro = require('prepro/lib/node.js'),
         // Load the default browser-based options for further amendments.
-        // Step out and back into src, if this is loaded from dist/paper-node.js
+        // Step out and back into src, in case this is loaded from
+        // dist/paper-node.js
         options = require('../src/options.js');
     // Override Node.js specific options.
     options.version += '-load';
-    options.environment = 'node';
     options.load = true;
     prepro.setup(function() {
         // Return objects to be defined in the preprocess-scope.
         // Note that this would be merge in with already existing objects.
-        return { __options: options };
+        // We're defining window here since the paper-scope argument is only
+        // available in the included scripts when the library is actually built.
+        return { __options: options, window: null };
     });
+    // Load constants.js, required by the on-the-fly preprocessing:
+    prepro.include('../src/constants.js');
     // Load Paper.js library files.
     prepro.include('../src/paper.js');
 }

@@ -10,22 +10,30 @@
  * All rights reserved.
  */
 
-// Node.js emulation layer of browser based environment, based on node-canvas
-// and jsdom.
-
-/* global document:true, window:true, navigator:true, HTMLCanvasElement:true,
-   Image:true */
+// Node.js emulation layer of browser environment, based on jsdom with node-
+// canvas integration.
 
 var jsdom = require('jsdom'),
-    // Node Canvas library: https://github.com/learnboost/node-canvas
-    Canvas = require('canvas'),
-    // Expose global browser variables and create a document and a window using
-    // jsdom, e.g. for import/exportSVG()
-    document = jsdom.jsdom('<html><body></body></html>'),
-    window = document.defaultView,
-    navigator = window.navigator,
-    HTMLCanvasElement = Canvas,
-    Image = Canvas.Image;
+    idlUtils = require('jsdom/lib/jsdom/living/generated/utils');
+
+// Create our document and window objects through jsdom.
+/* global document:true, window:true */
+var document = jsdom.jsdom('<html><body></body></html>', {
+        features: {
+            FetchExternalResources : ['img', 'script']
+        }
+    }),
+    window = document.defaultView;
+
+['pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream'].forEach(
+    function(key) {
+        this[key] = function() {
+            var impl = this._canvas ? this : idlUtils.implForWrapper(this),
+                canvas = impl && impl._canvas;
+            return canvas[key].apply(canvas, arguments);
+        };
+    },
+    window.HTMLCanvasElement.prototype);
 
 // Define XMLSerializer and DOMParser shims, to emulate browser behavior.
 // TODO: Put this into a simple node module, with dependency on jsdom?
@@ -56,3 +64,8 @@ DOMParser.prototype.parseFromString = function(string, contenType) {
     div.innerHTML = string;
     return div.firstChild;
 };
+
+window.XMLSerializer = XMLSerializer;
+window.DOMParser = DOMParser;
+
+module.exports = window;

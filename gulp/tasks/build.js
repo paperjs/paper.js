@@ -23,8 +23,7 @@ var gulp = require('gulp'),
 // object, merged in with the options required above.
 var buildOptions = {
     full: { paperScript: true },
-    core: { paperScript: false },
-    node: { environment: 'node', paperScript: true }
+    core: { paperScript: false }
 };
 
 var buildNames = Object.keys(buildOptions);
@@ -32,8 +31,12 @@ var buildNames = Object.keys(buildOptions);
 gulp.task('build',
     buildNames.map(function(name) {
         return 'build:' + name;
-    })
+    }).concat(['build:copy'])
 );
+
+gulp.task('build:copy', function() {
+    gulp.src(['src/node/*.js']).pipe(gulp.dest('dist/node'));
+});
 
 buildNames.forEach(function(name) {
     gulp.task('build:' + name, ['clean:build:' + name, 'minify:acorn'], function() {

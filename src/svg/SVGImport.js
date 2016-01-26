@@ -566,7 +566,6 @@ new function() {
             // as this is how SVG works too.
             // See if it's a string but handle markup separately
             if (typeof source === 'string' && !/^.*</.test(source)) {
-/*#*/ if (__options.environment == 'browser') {
                 // First see if we're meant to import an element with the given
                 // id.
                 node = document.getElementById(source);
@@ -577,9 +576,6 @@ new function() {
                 } else {
                     return Http.request('get', source, onLoadCallback);
                 }
-/*#*/ } else if (__options.environment == 'node') {
-            // TODO: Implement!
-/*#*/ } // __options.environment == 'node'
             } else if (typeof File !== 'undefined' && source instanceof File) {
                 // Load local file through FileReader
                 var reader = new FileReader();
@@ -591,7 +587,8 @@ new function() {
         }
 
         if (typeof source === 'string')
-            node = new DOMParser().parseFromString(source, 'image/svg+xml');
+            node = new window.DOMParser().parseFromString(source,
+                    'image/svg+xml');
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
         // jsdom in Node.js uses uppercase values for nodeName...

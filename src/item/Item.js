@@ -145,7 +145,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             },
 
             // Only for external sources, e.g. Raster
-            onLoad: {}
+            onLoad: {},
+            onError: {}
         }
     ),
 

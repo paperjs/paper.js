@@ -221,6 +221,33 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setImage: function(image) {
+        var that = this,
+            loaded = false;
+
+        function emit(event) {
+            var view = that.getView(),
+                type = event && event.type || 'load';
+            if (view && that.responds(type)) {
+                paper = view._scope;
+                that.emit(type, new Event(event));
+                // TODO: Request a redraw in the next animation frame from
+                // update() instead!
+                view.update();
+            }
+        }
+
+        function update() {
+            // Both canvas and image have width / height attributes. Due to IE,
+            // naturalWidth / Height needs to be checked for a swell, because it
+            // apparently can have width / height set to 0 when the image is
+            // invisible in the document.
+            that._size = new Size(
+                    image ? image.naturalWidth || image.width : 0,
+                    image ? image.naturalHeight || image.height : 0);
+            that._context = null;
+            that._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
+        }
+
         if (this._canvas)
             CanvasProvider.release(this._canvas);
         // Due to similarities, we can handle both canvas and image types here.
@@ -228,22 +255,30 @@ var Raster = Item.extend(/** @lends Raster# */{
             // A canvas object
             this._image = null;
             this._canvas = image;
-            this._loaded = true;
+            loaded = true;
         } else {
             // A image object
             this._image = image;
             this._canvas = null;
-            this._loaded = image && image.complete;
+            loaded = image && image.complete;
         }
-        // Both canvas and image have width / height attributes. Due to IE,
-        // naturalWidth / Height needs to be checked for a swell, because it
-        // apparently can have width / height set to 0 when the image is
-        // invisible in the document.
-        this._size = new Size(
-                image ? image.naturalWidth || image.width : 0,
-                image ? image.naturalHeight || image.height : 0);
-        this._context = null;
-        this._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
+        this._loaded = loaded;
+        if (loaded) {
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
+            update();
+            setTimeout(emit, 0);
+        } else if (image) {
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, {
+                load: function(event) {
+                    that._loaded = true;
+                    update();
+                    emit(event);
+                },
+                error: emit
+            });
+        }
     },
 
     /**
@@ -324,95 +359,19 @@ var Raster = Item.extend(/** @lends Raster# */{
      */
     getSource: function() {
         var image = this._image;
-/*#*/ if (__options.environment == 'node') {
-        // See #toDataURL()
-        image = image && this._src;
-/*#*/ } // __options.environment == 'node'
         return image && image.src || this.toDataURL();
     },
 
     setSource: function(src) {
-        var that = this,
-            crossOrigin = this._crossOrigin,
-            image;
-
-        function loaded() {
-            var view = that.getView();
-            if (view) {
-                paper = view._scope;
-                that.setImage(image);
-                that.emit('load');
-                view.update();
-            }
-        }
-
-/*#*/ if (__options.environment == 'browser') {
-        // src can be an URL or a DOM ID to load the image from
-        image = document.getElementById(src) || new Image();
+        var crossOrigin = this._crossOrigin,
+            // src can be an URL or a DOM ID to load the image from:
+            image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        // IE has naturalWidth / Height defined, but width / height set to 0
-        // when the image is invisible in the document.
-        if (image.naturalWidth && image.naturalHeight) {
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            setTimeout(loaded, 0);
-        } else {
-            // Trigger the load event on the image once it's loaded
-            DomEvent.add(image, { load: loaded });
-            // A new image created above? Set the source now.
-            if (!image.src)
-                image.src = src;
-        }
-        this.setImage(image);
-/*#*/ } else if (__options.environment == 'node') {
-        image = new Image();
-        if (crossOrigin)
-            image.crossOrigin = crossOrigin;
-        // If we're running on the server and it's a string,
-        // check if it is a data URL
-        if (/^data:/.test(src)) {
-            // Preserve the data in this._src since canvas-node eats it.
+        // A new image created above? Set the source now.
+        if (!image.src)
             image.src = src;
-            this._src = { src: src, data: src };
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            setTimeout(loaded, 0);
-        } else if (/^https?:\/\//.test(src)) {
-            // Load it from remote location:
-            require('request').get({
-                url: src,
-                encoding: null // So the response data is a Buffer
-            }, function (err, response, buffer) {
-                if (err)
-                    throw err;
-                if (response.statusCode == 200) {
-                    image.src = buffer;
-                    that._src = {
-                        src: src,
-                        buffer: buffer,
-                        type: response.headers['content-type']
-                    };
-                    loaded();
-                }
-            });
-        } else {
-            // Load it from disk:
-            src = (src.match(/^file:\/\/(.*)$/) || [null, src])[1];
-            require('fs').readFile(src, function (err, buffer) {
-                if (err)
-                    throw err;
-                image.src = buffer;
-                that._src = {
-                    src: 'file://' + src,
-                    buffer: buffer,
-                    type: require('mime').lookup(src)
-                };
-                loaded();
-            });
-        }
         this.setImage(image);
-/*#*/ } // __options.environment == 'node'
     },
 
     /**
@@ -500,21 +459,7 @@ var Raster = Item.extend(/** @lends Raster# */{
         // See if the linked image is base64 encoded already, if so reuse it,
         // otherwise try using canvas.toDataURL()
         var image = this._image,
-            src;
-/*#*/ if (__options.environment == 'node') {
-        // Only use the information stored in _src if we still use the _image
-        // that goes with it.
-        var obj = image && this._src;
-        if (obj) {
-            if (!obj.data) {
-                obj.data = 'data:' + obj.type + ';base64,' +
-                    obj.buffer.toString('base64');
-            }
-            src = obj.data;
-        }
-/*#*/ } else {
-         src = image && image.src;
-/*#*/ } // __options.environment == 'node'
+            src = image && image.src;
         if (/^data:/.test(src))
             return src;
         var canvas = this.getCanvas();
