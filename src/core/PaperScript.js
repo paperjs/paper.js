@@ -482,8 +482,6 @@ Base.exports.PaperScript = (function() {
             });
             if (res.onFrame)
                 view.setOnFrame(res.onFrame);
-            // Automatically update view at the end.
-            view.update();
         }
         return compiled;
     }

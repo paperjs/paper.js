@@ -230,9 +230,6 @@ var Raster = Item.extend(/** @lends Raster# */{
             if (view && that.responds(type)) {
                 paper = view._scope;
                 that.emit(type, new Event(event));
-                // TODO: Request a redraw in the next animation frame from
-                // update() instead!
-                view.update();
             }
         }
 

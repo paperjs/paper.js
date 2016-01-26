@@ -160,18 +160,73 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _time: 0,
     _count: 0,
 
-    _requestFrame: function() {
-        var that = this;
-        DomEvent.requestAnimationFrame(function() {
-            that._requested = false;
-            // Do we need to stop due to a call to the frame event's uninstall()
-            if (!that._animate)
-                return;
-            // Request next frame already before handling the current frame
-            that._requestFrame();
-            that._handleFrame();
-        }, this._element);
-        this._requested = true;
+    /**
+     * Updates the view if there are changes. Note that when using built-in
+     * event hanlders for interaction, animation and load events, this method is
+     * invoked for you automatically at the end.
+     *
+     * @name View#update
+     * @function
+     * @param {Boolean} [force=false] {@true if the view should be updated even
+     * if no change has happened}
+     * @return {Boolean} {@true if the view was updated}
+     */
+    // update: function(force) {
+    // },
+
+    /**
+     * Updates the view if there are changes.
+     *
+     * @deprecated use {@link #update()} instead.
+     */
+    draw: '#update',
+
+    /**
+     * Requests an update of the view if there are changes through the browser's
+     * requestAnimationFrame() mechanism for smooth animation. Note that when
+     * using built-in event handlers for interaction, animation and load events,
+     * updates are automatically invoked for you automatically at the end.
+     *
+     * @function
+     */
+    requestUpdate: function() {
+        if (!this._requested) {
+            var that = this;
+            DomEvent.requestAnimationFrame(function() {
+                that._requested = false;
+                // Only handle frame and request next one if we don't need to
+                // stop, e.g.  due to a call to pause(), or a request for a
+                // single redraw.
+                if (that._animate) {
+                    // Request next frame before handling the current frame
+                    that.requestUpdate();
+                    that._handleFrame();
+                }
+                // Even if we're not animating, update the view now since this
+                // might have been a request for a single redraw after a change
+                that.update();
+            }, this._element);
+            this._requested = true;
+        }
+    },
+
+    /**
+     * Makes all animation play by adding the view to the request animation
+     * loop.
+     */
+    play: function() {
+        this._animate = true;
+        // Request a frame handler straight away to initialize the
+        // sequence of onFrame calls.
+        this.requestUpdate();
+    },
+
+    /**
+     * Makes all animation pause by removing the view to the request animation
+     * loop.
+     */
+    pause: function() {
+        this._animate = false;
     },
 
     _handleFrame: function() {
@@ -193,8 +248,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         if (this._stats)
             this._stats.update();
         this._handlingFrame = false;
-        // Automatically update view on each frame.
-        this.update();
     },
 
     _animateItem: function(item, animate) {
@@ -226,20 +279,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 time: entry.time += event.delta,
                 count: entry.count++
             }));
-        }
-    },
-
-    _update: function() {
-        this._project._needsUpdate = true;
-        if (this._handlingFrame)
-            return;
-        if (this._animate) {
-            // If we're animating, call _handleFrame staight away, but without
-            // requesting another animation frame.
-            this._handleFrame();
-        } else {
-            // Otherwise simply update the view now
-            this.update();
         }
     },
 
@@ -317,7 +356,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
             delta: delta
         });
         this._changed();
-        this.update();
+        this.requestUpdate();
     },
 
     /**
@@ -539,49 +578,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this.translate(Point.read(arguments).negate());
     }
 }), /** @lends View# */{
-    /**
-     * Makes all animation play by adding the view to the request animation
-     * loop.
-     */
-    play: function() {
-        this._animate = true;
-        // Request a frame handler straight away to initialize the
-        // sequence of onFrame calls.
-        if (!this._requested)
-            this._requestFrame();
-    },
-
-    /**
-     * Makes all animation pause by removing the view to the request animation
-     * loop.
-     */
-    pause: function() {
-        this._animate = false;
-    },
-
-    /**
-     * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
-     * invoked for you automatically at the end.
-     *
-     * @name View#update
-     * @function
-     * @param {Boolean} [force=false] {@true if the view should be updated even
-     * if no change has happened}
-     * @return {Boolean} {@true if the view was updated}
-     */
-    // update: function(force) {
-    // },
-
-    /**
-     * Updates the view if there are changes.
-     *
-     * @deprecated use {@link #update()} instead.
-     */
-    draw: function() {
-        this.update();
-    },
-
     // TODO: getInvalidBounds
     // TODO: invalidate(rect)
     // TODO: style: artwork / preview / raster / opaque / ink
@@ -1186,10 +1182,6 @@ new function() { // Injection scope for mouse events on the browser
             if (called && (!nativeMove || responds('mousedrag'))
                     || mouse.down && responds('mouseup'))
                 event.preventDefault();
-
-            // In the end we always call update(), which only updates the view
-            // if anything has changed in the above calls.
-            this.update();
         },
 
         _countItemEvent: function(type, sign) {

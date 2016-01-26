@@ -134,8 +134,6 @@ var Key = new function() {
             paper = scope;
             // Call the onKeyDown or onKeyUp handler if present
             tool.emit(type, new KeyEvent(down, key, character, event));
-            if (view)
-                view.update();
         }
     }
 

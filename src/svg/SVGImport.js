@@ -558,7 +558,6 @@ new function() {
                 view = scope.project && scope.getView();
             if (onLoad)
                 onLoad.call(this, item);
-            view.update();
         }
 
         if (isRoot) {
