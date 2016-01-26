@@ -27,9 +27,9 @@ paper = new (PaperScope.inject(Base.exports, {
     window: window
 }))();
 
-// If we're on node, require some additional functionality now (PaperScript
-// support in require() with sourceMaps, and exportFrames / exportImage on
-// CanvasView)
+// If we're on node, require some additional functionality now before finishing:
+// - PaperScript support in require() with sourceMaps
+// - exportFrames / exportImage on CanvasView
 if (paper.agent.node)
     require('./node/extend')(paper);
 

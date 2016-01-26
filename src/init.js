@@ -10,8 +10,11 @@
  * All rights reserved.
  */
 
-// Node.js emulation layer of browser based environment, based on node-canvas
-// and jsdom.
+// Here we only make sure that there's a window and document object in the node
+// environment. We can't do this directly in src/paper.js, due to the nature of
+// how Prepro.js loads the include() files in the various scenarios. E.g. on
+// Node.js,only the files included in such a way see each other's variables in
+// their shared scope.
 
 /* global document:true, window:true */
 window = window || require('./node/window');
