@@ -95,8 +95,6 @@ Base.exports.PaperScript = (function() {
         return scope.acorn.parse(code, options);
     }
 
-    var sourceMaps = {};
-
     /**
      * Compiles PaperScript code into JavaScript code.
      *
@@ -104,13 +102,14 @@ Base.exports.PaperScript = (function() {
      * @function
      *
      * @option options.url {String} the url of the source, for source-map
-     *     debugging
+     *     generation
      * @option options.source {String} the source to be used for the source-
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
      * @param {Object} [option] the compilation options
-     * @return {String} the compiled PaperScript translated into JavaScript code
+     * @return {Object} an object holding the compiled PaperScript translated
+     *     into JavaScript code along with source-maps and other information.
      */
     function compile(code, options) {
         if (!code)
@@ -285,21 +284,23 @@ Base.exports.PaperScript = (function() {
             agent = paper.agent,
             version = agent.versionNumber,
             offsetCode = false,
-            sourceMap = null,
+            sourceMaps = options.sourceMaps,
             // Include the original code in the sourceMap if there is no linked
             // source file so the debugger can still display it correctly.
             source = options.source || code,
             lineBreaks = /\r\n|\n|\r/mg,
-            offset = 0;
+            offset = options.offset || 0,
+            map;
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
-        if (agent.chrome && version >= 30
+        if (sourceMaps && (agent.chrome && version >= 30
                 || agent.webkit && version >= 537.76 // >= Safari 7.0.4
                 || agent.firefox && version >= 23
-                || agent.node) {
+                || agent.node)) {
             if (agent.node) {
-                code = 'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n' + code;
-                offset = -3; // -2 for function body, - 1 for require("source-map-support")
+                // -2 required to remove function header:
+                // https://code.google.com/p/chromium/issues/detail?id=331655
+                offset -= 2;
             } else if (url && window.location.href.indexOf(url) === 0) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
@@ -309,18 +310,21 @@ Base.exports.PaperScript = (function() {
                 offset = html.substr(0, html.indexOf(code) + 1).match(
                         lineBreaks).length + 1;
             }
-            // A hack required by most versions of browsers except chrome 36+:
-            // Instead of starting the mappings at the given offset, we have to
-            // shift the actual code down to the place in the original file, as
-            // source-map support seems incomplete in these browsers.
-            // TODO: Report as bugs?
-            offsetCode = offset > 0 && (!browser.chrome || version < 36);
+            // A hack required by older versions of browsers to align inlined
+            // code: Instead of starting the mappings at the given offset, we
+            // have to shift the actual code down to the place in the original
+            // file, as source-map support seems incomplete in these browsers.
+            offsetCode = offset > 0 && !(
+                    agent.chrome && version >= 36 ||
+                    agent.safari && version >= 600 ||
+                    agent.firefox && version >= 40 ||
+                    agent.node);
             var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A'];
                 // Create empty entries by the amount of lines + 1, so join can be
             // used below to produce the actual instructions that many times.
             mappings.length = (code.match(lineBreaks) || []).length + 1
                     + (offsetCode ? offset : 0);
-            sourceMap = {
+            map = {
                 version: 3,
                 file: url,
                 names:[],
@@ -328,6 +332,7 @@ Base.exports.PaperScript = (function() {
                 // the lines of the original code, all that is required is a
                 // mappings string that increments by one between each line.
                 // AACA is the instruction to increment the line by one.
+                // TODO: Add support for column offsets!
                 mappings: mappings.join(';AACA'),
                 sourceRoot: '',
                 sources: [url],
@@ -336,19 +341,25 @@ Base.exports.PaperScript = (function() {
         }
         // Now do the parsing magic
         walkAST(parse(code, { ranges: true }));
-        if (sourceMap) {
-            // Adjust the line offset of the resulting code if required.
-            // This is part of a browser hack, see above.
-            if (offsetCode)
+        if (map) {
+            if (offsetCode) {
+                // Adjust the line offset of the resulting code if required.
+                // This is part of a browser hack, see above.
                 code = new Array(offset + 1).join('\n') + code;
-            code += "\n//# sourceMappingURL=data:application/json;base64,"
-                    + window.btoa(unescape(encodeURIComponent(
-                        JSON.stringify(sourceMap))))
-                    + "\n//# sourceURL=" + (url || 'paperscript');
-            if (url)
-                sourceMaps[url] = sourceMap;
+            }
+            if (/^(inline|both)$/.test(sourceMaps)) {
+                code += "\n//# sourceMappingURL=data:application/json;base64,"
+                        + window.btoa(unescape(encodeURIComponent(
+                            JSON.stringify(map))));
+            }
+            code += "\n//# sourceURL=" + (url || 'paperscript');
         }
-        return code;
+        return {
+            url: url,
+            source: source,
+            code: code,
+            map: map
+        };
     }
 
     /**
@@ -362,14 +373,15 @@ Base.exports.PaperScript = (function() {
      * @function
      *
      * @option options.url {String} the url of the source, for source-map
-     *     debugging
+     *     generation
      * @option options.source {String} the source to be used for the source-
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [option] the compilation options
-     * @return {String} the compiled PaperScript translated into JavaScript code
+     * @return {Object} an object holding the compiled PaperScript translated
+     *     into JavaScript code along with source-maps and other information.
      */
     function execute(code, scope, options) {
         // Set currently active scope.
@@ -393,8 +405,9 @@ Base.exports.PaperScript = (function() {
             // function call.
             params = [],
             args = [],
-            func;
-        code = compile(code, options);
+            func,
+            compiled = typeof code === 'object' ? code : compile(code, options);
+        code = compiled.code;
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
             // these too as pseudo-globals, but only if they seem to be in use.
@@ -428,12 +441,12 @@ Base.exports.PaperScript = (function() {
         if (handlers)
             code += '\nreturn { ' + handlers + ' };';
         var agent = paper.agent;
-        if (agent.chrome || agent.firefox) {
-            // On Firefox, all error numbers inside dynamically compiled code
-            // are relative to the line where the eval / compilation happened.
-            // To fix this issue, we're temporarily inserting a new script
-            // tag. We also use this on Chrome to fix an issue with compiled
-            // functions:
+        if (agent.chrome || agent.firefox && agent.versionNumber < 40) {
+            // On older Firefox, all error numbers inside dynamically compiled
+            // code are relative to the line where the eval / compilation
+            // happened. To fix this issue, we're temporarily inserting a new
+            // script tag.
+            // We also use this on Chrome to fix issues with compiled functions:
             // https://code.google.com/p/chromium/issues/detail?id=331655
             var script = document.createElement('script'),
                 head = document.head || document.getElementsByTagName('head')[0];
@@ -472,6 +485,7 @@ Base.exports.PaperScript = (function() {
             // Automatically update view at the end.
             view.update();
         }
+        return compiled;
     }
 
     function loadScript(script) {
@@ -562,13 +576,7 @@ Base.exports.PaperScript = (function() {
         compile: compile,
         execute: execute,
         load: load,
-        parse: parse,
-        sourceMapSupport: {
-            retrieveSourceMap: function(source) {
-                var map = sourceMaps[source];
-                return map ? { url: source, map: map } : null;
-            }
-        }
+        parse: parse
     };
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
