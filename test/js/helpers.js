@@ -35,7 +35,7 @@ var errorHandler = console.error;
 console.error = function() {
     QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
     errorHandler.apply(this, arguments);
-}
+};
 
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
@@ -75,14 +75,14 @@ function compareItem(actual, expected, message, options, properties) {
 
     function getImageTag(raster) {
         return '<img width="' + raster.width + '" height="' + raster.height
-                + '" src="' + raster.source + '">'
+                + '" src="' + raster.source + '">';
     }
 
     if (options && options.rasterize) {
         // In order to properly compare pixel by pixel, we need to put each item
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
-        var resolution = options.rasterize == true ? 72 : options.rasterize,
+        var resolution = options.rasterize === true ? 72 : options.rasterize,
             actualBounds = actual.strokeBounds,
             expecedBounds = expected.strokeBounds,
             bounds = actualBounds.isEmpty()
@@ -120,7 +120,7 @@ function compareItem(actual, expected, message, options, properties) {
                 .onComplete(function(data) { result = data; });
             var identical = result ? 100 - result.misMatchPercentage : 0,
                 ok = identical == 100,
-                text = identical.toFixed(2) + '% identical'
+                text = identical.toFixed(2) + '% identical';
             QUnit.push(ok, text, '100.00% identical', message);
             if (!ok && result) {
                 // Get the right entry for this unit test and assertion, and
@@ -407,7 +407,7 @@ function createSVG(str, attrs) {
             node.setAttribute(key, attrs[key]);
         return node;
     } else {
-        return new DOMParser().parseFromString(
+        return new window.DOMParser().parseFromString(
             '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
             'text/xml');
     }
