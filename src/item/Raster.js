@@ -221,6 +221,33 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setImage: function(image) {
+        var that = this,
+            loaded = false;
+
+        function emit(event) {
+            var view = that.getView(),
+                type = event && event.type || 'load';
+            if (view && that.responds(type)) {
+                paper = view._scope;
+                that.emit(type, new Event(event));
+                // TODO: Request a redraw in the next animation frame from
+                // update() instead!
+                view.update();
+            }
+        }
+
+        function update() {
+            // Both canvas and image have width / height attributes. Due to IE,
+            // naturalWidth / Height needs to be checked for a swell, because it
+            // apparently can have width / height set to 0 when the image is
+            // invisible in the document.
+            that._size = new Size(
+                    image ? image.naturalWidth || image.width : 0,
+                    image ? image.naturalHeight || image.height : 0);
+            that._context = null;
+            that._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
+        }
+
         if (this._canvas)
             CanvasProvider.release(this._canvas);
         // Due to similarities, we can handle both canvas and image types here.
@@ -228,22 +255,30 @@ var Raster = Item.extend(/** @lends Raster# */{
             // A canvas object
             this._image = null;
             this._canvas = image;
-            this._loaded = true;
+            loaded = true;
         } else {
             // A image object
             this._image = image;
             this._canvas = null;
-            this._loaded = image && image.complete;
+            loaded = image && image.complete;
         }
-        // Both canvas and image have width / height attributes. Due to IE,
-        // naturalWidth / Height needs to be checked for a swell, because it
-        // apparently can have width / height set to 0 when the image is
-        // invisible in the document.
-        this._size = new Size(
-                image ? image.naturalWidth || image.width : 0,
-                image ? image.naturalHeight || image.height : 0);
-        this._context = null;
-        this._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
+        this._loaded = loaded;
+        if (loaded) {
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
+            update();
+            setTimeout(emit, 0);
+        } else if (image) {
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, {
+                load: function(event) {
+                    that._loaded = true;
+                    update();
+                    emit(event);
+                },
+                error: emit
+            });
+        }
     },
 
     /**
@@ -328,35 +363,14 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setSource: function(src) {
-        var that = this,
-            crossOrigin = this._crossOrigin,
-            image;
-
-        function loaded() {
-            var view = that.getView();
-            if (view) {
-                paper = view._scope;
-                that.setImage(image);
-                that.emit('load');
-                view.update();
-            }
-        }
-
-        // src can be an URL or a DOM ID to load the image from
-        image = document.getElementById(src) || new window.Image();
+        var crossOrigin = this._crossOrigin,
+            // src can be an URL or a DOM ID to load the image from:
+            image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        if (image.complete) {
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            setTimeout(loaded, 0);
-        } else {
-            // Trigger the load event on the image once it's loaded
-            DomEvent.add(image, { load: loaded });
-            // A new image created above? Set the source now.
-            if (!image.src)
-                image.src = src;
-        }
+        // A new image created above? Set the source now.
+        if (!image.src)
+            image.src = src;
         this.setImage(image);
     },
 
