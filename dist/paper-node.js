@@ -1,1 +1,0 @@
-../src/load.js

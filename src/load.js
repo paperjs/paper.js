@@ -40,23 +40,31 @@ if (typeof window === 'object') {
         load(root + 'src/load.js');
     } else {
         include('options.js');
+        // Load constants.js, required by the on-the-fly preprocessing:
+        include('constants.js');
+        // Automatically load stats.js while developing.
+        include('../node_modules/stats.js/build/stats.min.js');
         include('paper.js');
     }
 } else {
     // Node.js based loading through Prepro.js:
     var prepro = require('prepro/lib/node.js'),
         // Load the default browser-based options for further amendments.
-        // Step out and back into src, if this is loaded from dist/paper-node.js
+        // Step out and back into src, in case this is loaded from
+        // dist/paper-node.js
         options = require('../src/options.js');
     // Override Node.js specific options.
     options.version += '-load';
-    options.environment = 'node';
     options.load = true;
     prepro.setup(function() {
         // Return objects to be defined in the preprocess-scope.
         // Note that this would be merge in with already existing objects.
-        return { __options: options };
+        // We're defining window here since the paper-scope argument is only
+        // available in the included scripts when the library is actually built.
+        return { __options: options, window: null };
     });
+    // Load constants.js, required by the on-the-fly preprocessing:
+    prepro.include('../src/constants.js');
     // Load Paper.js library files.
     prepro.include('../src/paper.js');
 }

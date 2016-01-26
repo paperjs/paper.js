@@ -33,7 +33,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      */
     initialize: function CanvasView(project, canvas) {
         // Handle canvas argument
-        if (!(canvas instanceof HTMLCanvasElement)) {
+        if (!(canvas instanceof window.HTMLCanvasElement)) {
             // See if the arguments describe the view size:
             var size = Size.read(arguments, 1);
             if (size.isZero())
@@ -135,90 +135,3 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         return true;
     }
 });
-
-/*#*/ if (__options.environment == 'node') {
-// Node.js based image exporting code.
-CanvasView.inject(new function() {
-    // Utility function that converts a number to a string with
-    // x amount of padded 0 digits:
-    function toPaddedString(number, length) {
-        var str = number.toString(10);
-        for (var i = 0, l = length - str.length; i < l; i++) {
-            str = '0' + str;
-        }
-        return str;
-    }
-
-    var fs = require('fs');
-
-    return {
-        // DOCS: CanvasView#exportFrames(param);
-        exportFrames: function(param) {
-            param = new Base({
-                fps: 30,
-                prefix: 'frame-',
-                amount: 1
-            }, param);
-            if (!param.directory) {
-                throw new Error('Missing param.directory');
-            }
-            var view = this,
-                count = 0,
-                frameDuration = 1 / param.fps,
-                startTime = Date.now(),
-                lastTime = startTime;
-
-            // Start exporting frames by exporting the first frame:
-            exportFrame(param);
-
-            function exportFrame(param) {
-                var filename = param.prefix + toPaddedString(count, 6) + '.png',
-                    path = param.directory + '/' + filename;
-                var out = view.exportImage(path, function() {
-                    // When the file has been closed, export the next fame:
-                    var then = Date.now();
-                    if (param.onProgress) {
-                        param.onProgress({
-                            count: count,
-                            amount: param.amount,
-                            percentage: Math.round(count / param.amount
-                                    * 10000) / 100,
-                            time: then - startTime,
-                            delta: then - lastTime
-                        });
-                    }
-                    lastTime = then;
-                    if (count < param.amount) {
-                        exportFrame(param);
-                    } else {
-                        // Call onComplete handler when finished:
-                        if (param.onComplete) {
-                            param.onComplete();
-                        }
-                    }
-                });
-                // Use new Base() to convert into a Base object, for #toString()
-                view.emit('frame', new Base({
-                    delta: frameDuration,
-                    time: frameDuration * count,
-                    count: count
-                }));
-                count++;
-            }
-        },
-
-        // DOCS: CanvasView#exportImage(path, callback);
-        exportImage: function(path, callback) {
-            this.draw();
-            var out = fs.createWriteStream(path),
-                stream = this._element.createPNGStream();
-            // Pipe the png stream to the write stream:
-            stream.pipe(out);
-            if (callback) {
-                out.on('close', callback);
-            }
-            return out;
-        }
-    };
-});
-/*#*/ } // __options.environment == 'node'

@@ -23,7 +23,6 @@ var load = typeof window === 'object';
 
 var __options = {
     version: version + (load ? '-load' : ''),
-    environment: 'browser',
     load: load,
     parser: 'acorn',
     svg: true,

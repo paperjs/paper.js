@@ -13,8 +13,6 @@
 // First add Base and a couple of other objects that are not automatically
 // exported to exports (Numerical, Key, etc), then inject all exports into
 // PaperScope, and create the initial paper object, all in one statement:
-/*#*/ if (__options.environment == 'browser') {
-
 // NOTE: Do not create local variable `var paper` since it would shield the
 // global one in the whole scope.
 
@@ -23,26 +21,17 @@ paper = new (PaperScope.inject(Base.exports, {
     enumerable: true,
     Base: Base,
     Numerical: Numerical,
-    Key: Key
-}))();
-
-/*#*/ } else if (__options.environment == 'node') {
-
-paper = new (PaperScope.inject(Base.exports, {
-    // Mark fields as enumerable so PaperScope.inject can pick them up
-    enumerable: true,
-    Base: Base,
-    Numerical: Numerical,
-    // Export dom/node.js stuff too
-    XMLSerializer: XMLSerializer,
-    DOMParser: DOMParser,
-    HTMLCanvasElement: HTMLCanvasElement,
-    Image: Image,
+    Key: Key,
+    // Export jsdom document and window too, for Node.js
     document: document,
     window: window
 }))();
 
-/*#*/ } // __options.environment == 'node'
+// If we're on node, require some additional functionality now (PaperScript
+// support in require() with sourceMaps, and exportFrames / exportImage on
+// CanvasView)
+if (paper.agent.node)
+    require('./node/extend')(paper);
 
 // https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {

@@ -343,7 +343,7 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
 
         // src can be an URL or a DOM ID to load the image from
-        image = document.getElementById(src) || new Image();
+        image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
         if (image.complete) {

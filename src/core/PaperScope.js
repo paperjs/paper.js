@@ -72,7 +72,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             CanvasProvider.release(ctx);
         }
         if (!this.agent) {
-            var user = navigator.userAgent.toLowerCase(),
+            var user = window.navigator.userAgent.toLowerCase(),
                 // Detect basic platforms, only mac internally required for now.
                 os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
                 platform =  os === 'darwin' ? 'mac' : os,
