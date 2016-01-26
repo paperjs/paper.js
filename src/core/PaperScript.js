@@ -271,10 +271,10 @@ Base.exports.PaperScript = (function() {
                 base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
             value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0);
             while (value || !res) {
-                var next = value & ((1 << 5) - 1);
+                var next = value & (32 - 1);
                 value >>= 5;
                 if (value)
-                    next |= (1 << 5);
+                    next |= 32;
                 res += base64[next];
             }
             return res;

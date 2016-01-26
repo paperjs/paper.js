@@ -74,13 +74,13 @@ DOMParser.prototype.parseFromString = function(string, contenType) {
     return div.firstChild;
 };
 
-var sourceMaps = {};
-var sourceMapSupport = {
-    retrieveSourceMap: function(source) {
-        var map = sourceMaps[source];
-        return map ? { url: source, map: map } : null;
-    }
-};
+var sourceMaps = {},
+    sourceMapSupport = {
+        retrieveSourceMap: function(source) {
+            var map = sourceMaps[source];
+            return map ? { url: source, map: map } : null;
+        }
+    };
 
 // Register the .pjs extension for automatic compilation as PaperScript
 require.extensions['.pjs'] = function(module, filename) {
