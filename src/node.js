@@ -37,7 +37,7 @@ Base.each(
     ['pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream'],
     function(key) {
         this[key] = function() {
-            var impl = idlUtils.implForWrapper(this),
+            var impl = this._canvas ? this : idlUtils.implForWrapper(this),
                 canvas = impl && impl._canvas;
             return canvas[key].apply(canvas, arguments);
         };
