@@ -100,7 +100,7 @@ var PathFitter = Base.extend({
         }
         // Fitting failed -- split at max error point and fit recursively
         var tanCenter = this.points[split - 1].subtract(this.points[split + 1])
-            .normalize();
+                .normalize();
         this.fitCubic(first, split, tan1, tanCenter);
         this.fitCubic(split, last, tanCenter.negate(), tan2);
     },
