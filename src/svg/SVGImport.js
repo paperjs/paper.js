@@ -587,7 +587,8 @@ new function() {
         }
 
         if (typeof source === 'string')
-            node = new DOMParser().parseFromString(source, 'image/svg+xml');
+            node = new window.DOMParser().parseFromString(source,
+                    'image/svg+xml');
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
         // jsdom in Node.js uses uppercase values for nodeName...

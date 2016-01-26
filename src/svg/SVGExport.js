@@ -380,7 +380,7 @@ new function() {
             definitions = null;
         }
         return options.asString
-                ? new XMLSerializer().serializeToString(svg)
+                ? new window.XMLSerializer().serializeToString(svg)
                 : svg;
     }
 

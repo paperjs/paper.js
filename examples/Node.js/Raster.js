@@ -20,7 +20,7 @@ raster.onLoad = function() {
     var path = require('path');
     var fs = require('fs');
 
-    var svg = new XMLSerializer().serializeToString(project.exportSVG());
+    var svg = new paper.XMLSerializer().serializeToString(project.exportSVG());
     fs.writeFile(path.resolve(__dirname, 'out.svg'),svg, function (err) {
         if (err) throw err;
             console.log('Saved!');
