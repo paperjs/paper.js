@@ -26,6 +26,24 @@ paper = new (PaperScope.inject(Base.exports, {
     Key: Key
 }))();
 
+/*#*/ } else if (__options.environment == 'node') {
+
+paper = new (PaperScope.inject(Base.exports, {
+    // Mark fields as enumerable so PaperScope.inject can pick them up
+    enumerable: true,
+    Base: Base,
+    Numerical: Numerical,
+    // Export dom/node.js stuff too
+    XMLSerializer: XMLSerializer,
+    DOMParser: DOMParser,
+    HTMLCanvasElement: HTMLCanvasElement,
+    Image: Image,
+    document: document,
+    window: window
+}))();
+
+/*#*/ } // __options.environment == 'node'
+
 // https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {
     // Support AMD (e.g. require.js)
@@ -39,21 +57,3 @@ if (typeof define === 'function' && define.amd) {
     // the Base constructor function after straps.js is included.
     module.exports = paper;
 }
-
-/*#*/ } else if (__options.environment == 'node') {
-
-paper = new (PaperScope.inject(Base.exports, {
-    // Mark fields as enumerable so PaperScope.inject can pick them up
-    enumerable: true,
-    Base: Base,
-    Numerical: Numerical,
-    // Export dom/node.js stuff too
-    XMLSerializer: XMLSerializer,
-    DOMParser: DOMParser,
-    Canvas: Canvas
-}))();
-
-// Export the paper scope.
-module.exports = paper;
-
-/*#*/ } // __options.environment == 'node'

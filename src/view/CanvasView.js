@@ -44,7 +44,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         }
         this._context = canvas.getContext('2d');
         this._pixelRatio = 1;
-/*#*/ if (__options.environment == 'browser') {
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
@@ -53,19 +52,15 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
                         'backingStorePixelRatio') || 1;
             this._pixelRatio = deviceRatio / backingStoreRatio;
         }
-/*#*/ } // __options.environment == 'browser'
         View.call(this, project, canvas);
     },
 
-    _setViewSize: function(size) {
-        var element = this._element,
-            pixelRatio = this._pixelRatio,
-            width = size.width,
-            height = size.height;
+    _setViewSize: function _setViewSize(width, height) {
+        var pixelRatio = this._pixelRatio;
         // Upscale the canvas if the pixel ratio is more than 1.
-        element.width = width * pixelRatio;
-        element.height = height * pixelRatio;
+        _setViewSize.base.call(this, width * pixelRatio, height * pixelRatio);
         if (pixelRatio !== 1) {
+            var element = this._element;
             // We need to set the correct size on non-resizable canvases through
             // their style when HiDPI is active, as otherwise they would appear
             // too big.
@@ -85,9 +80,9 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * pixels.
      */
     getPixelSize: function(size) {
-        var browser = paper.browser,
+        var agent = paper.agent,
             pixels;
-        if (browser && browser.firefox) {
+        if (agent && agent.firefox) {
             // Firefox doesn't appear to convert context.font sizes to pixels,
             // while other browsers do. Workaround:
             var parent = this._element.parentNode,
@@ -132,9 +127,6 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         var project = this._project;
         if (!project || !force && !project._needsUpdate)
             return false;
-        // Initial tests conclude that clearing the canvas using clearRect
-        // is always faster than setting canvas.width = canvas.width
-        // http://jsperf.com/clearrect-vs-setting-width/7
         var ctx = this._context,
             size = this._viewSize;
         ctx.clearRect(0, 0, size.width + 1, size.height + 1);

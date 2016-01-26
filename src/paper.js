@@ -44,6 +44,10 @@ var paper = new function(undefined) {
 /*#*/     include('constants.js');
 /*#*/ }
 
+/*#*/ if (__options.environment == 'node') {
+/*#*/     include('node.js');
+/*#*/ }
+
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Emitter.js');
 /*#*/ include('core/PaperScope.js');
@@ -64,7 +68,7 @@ var paper = new function(undefined) {
 /*#*/ include('basic/Line.js');
 
 /*#*/ include('project/Project.js');
-/*#*/ include('project/Symbol.js');
+// /*#*/ include('project/Symbol.js');
 
 /*#*/ include('item/Item.js');
 /*#*/ include('item/Group.js');
@@ -96,29 +100,21 @@ var paper = new function(undefined) {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (__options.environment == 'node') {
-/*#*/     include('dom/node.js');
-/*#*/ }
 /*#*/ include('dom/DomElement.js');
-/*#*/ if (__options.environment == 'browser') {
-// DomEvent doesn't make sense outside of the browser (yet)
-/*#*/     include('dom/DomEvent.js');
-/*#*/ }
+/*#*/ include('dom/DomEvent.js');
 
 /*#*/ include('view/View.js');
 /*#*/ include('view/CanvasView.js');
 
-/*#*/ if (__options.environment == 'browser') {
-/*#*/     include('event/Event.js');
-/*#*/     include('event/KeyEvent.js');
-/*#*/     include('event/Key.js');
-/*#*/     include('event/MouseEvent.js');
+/*#*/ include('event/Event.js');
+/*#*/ include('event/KeyEvent.js');
+/*#*/ include('event/Key.js');
+/*#*/ include('event/MouseEvent.js');
 
-/*#*/     include('tool/ToolEvent.js');
-/*#*/     include('tool/Tool.js');
+/*#*/ include('tool/ToolEvent.js');
+/*#*/ include('tool/Tool.js');
 
-/*#*/     include('net/Http.js');
-/*#*/ }
+/*#*/ include('net/Http.js');
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');

@@ -2,8 +2,8 @@ var paper = require('paper'),
     path = require('path'),
     fs = require('fs');
 
-paper.setup(new paper.Canvas(300, 600));
 with (paper) {
+    paper.setup(new Size(300, 600));
     var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
 
     var radius = view.bounds.width * 0.4,

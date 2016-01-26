@@ -1,5 +1,5 @@
 var paper = require('paper');
-paper.setup(new paper.Canvas(1024, 768));
+paper.setup(new paper.Size(1024, 768));
 
 var layer = paper.project.activeLayer;
 
