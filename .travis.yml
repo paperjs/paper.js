@@ -15,8 +15,9 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
+      - msttcorefonts
 script:
   - npm run lint
   - gulp minify
   - gulp test:browser
-  - gulp test:node
+#  - gulp test:node
