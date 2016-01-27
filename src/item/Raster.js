@@ -105,13 +105,13 @@ var Raster = Item.extend(/** @lends Raster# */{
         var image = source._image,
             canvas = source._canvas;
         if (image) {
-            this.setImage(image);
+            this._setImage(image);
         } else if (canvas) {
             // If the Raster contains a Canvas object, we need to create a new
             // one and draw this raster's canvas on it.
             var copyCanvas = CanvasProvider.getCanvas(source._size);
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            this.setImage(copyCanvas);
+            this._setImage(copyCanvas);
         }
         // TODO: Shouldn't this be copied with attributes instead of content?
         this._crossOrigin = source._crossOrigin;
@@ -136,8 +136,8 @@ var Raster = Item.extend(/** @lends Raster# */{
                 // Get reference to image before changing canvas.
                 var element = this.getElement();
                 // NOTE: Setting canvas internally sets _size.
-                // NOTE: No need to release previous canvas as #setImage() does.
-                this.setImage(CanvasProvider.getCanvas(size));
+                // NOTE: No need to release canvas because #_setImage() does so.
+                this._setImage(CanvasProvider.getCanvas(size));
                 // Draw element back onto new canvas.
                 if (element)
                     this.getContext(true).drawImage(element, 0, 0,
@@ -211,7 +211,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     getPpi: '#getResolution',
 
     /**
-     * The HTMLImageElement of the raster, if one is associated.
+     * The HTMLImageElement or Canvas element of the raster, if one is
+     * associated.
      *
      * @bean
      * @type HTMLImageElement|Canvas
@@ -221,8 +222,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setImage: function(image) {
-        var that = this,
-            loaded = false;
+        var that = this;
 
         function emit(event) {
             var view = that.getView(),
@@ -233,18 +233,25 @@ var Raster = Item.extend(/** @lends Raster# */{
             }
         }
 
-        function update() {
-            // Both canvas and image have width / height attributes. Due to IE,
-            // naturalWidth / Height needs to be checked for a swell, because it
-            // apparently can have width / height set to 0 when the image is
-            // invisible in the document.
-            that._size = new Size(
-                    image ? image.naturalWidth || image.width : 0,
-                    image ? image.naturalHeight || image.height : 0);
-            that._context = null;
-            that._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
+        this._setImage(image);
+        if (this._loaded) {
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
+            setTimeout(emit, 0);
+        } else if (image) {
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, {
+                load: function(event) {
+                    that._loaded = true;
+                    that._setImage(image);
+                    emit(event);
+                },
+                error: emit
+            });
         }
+    },
 
+    _setImage: function(image) {
         if (this._canvas)
             CanvasProvider.release(this._canvas);
         // Due to similarities, we can handle both canvas and image types here.
@@ -252,30 +259,22 @@ var Raster = Item.extend(/** @lends Raster# */{
             // A canvas object
             this._image = null;
             this._canvas = image;
-            loaded = true;
+            this._loaded = true;
         } else {
             // A image object
             this._image = image;
             this._canvas = null;
-            loaded = image && image.complete;
+            this._loaded = image && image.complete;
         }
-        this._loaded = loaded;
-        if (loaded) {
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            update();
-            setTimeout(emit, 0);
-        } else if (image) {
-            // Trigger the load event on the image once it's loaded
-            DomEvent.add(image, {
-                load: function(event) {
-                    that._loaded = true;
-                    update();
-                    emit(event);
-                },
-                error: emit
-            });
-        }
+        // Both canvas and image have width / height attributes. Due to IE,
+        // naturalWidth / Height needs to be checked for a swell, because it
+        // apparently can have width / height set to 0 when the image is
+        // invisible in the document.
+        this._size = new Size(
+                image ? image.naturalWidth || image.width : 0,
+                image ? image.naturalHeight || image.height : 0);
+        this._context = null;
+        this._changed(/*#=*/(Change.GEOMETRY | Change.PIXELS));
     },
 
     /**
@@ -365,10 +364,10 @@ var Raster = Item.extend(/** @lends Raster# */{
             image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
+        this.setImage(image);
         // A new image created above? Set the source now.
         if (!image.src)
             image.src = src;
-        this.setImage(image);
     },
 
     /**
@@ -440,7 +439,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     getSubRaster: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             raster = new Raster(Item.NO_INSERT);
-        raster.setImage(this.getSubCanvas(rect));
+        raster._setImage(this.getSubCanvas(rect));
         raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
         raster._matrix.prepend(this._matrix);
         raster.insertAbove(this);
