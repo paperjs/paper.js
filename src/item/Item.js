@@ -70,9 +70,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     }
 },
 new function() { // // Scope to inject various item event handlers
-    var handles = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+    var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
-    return Base.each(handles,
+    return Base.each(handlers,
         function(name) {
             this._events[name] = {
                 install: function(type) {
@@ -100,7 +100,7 @@ new function() { // // Scope to inject various item event handlers
                 onError: {}
             },
             statics: {
-                _itemHandlers: handles
+                _itemHandlers: handlers
             }
         }
     );
