@@ -41,7 +41,7 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
         deps: [
             // To dynamically load from the sources, require Prepro.js first
             '../node_modules/prepro/lib/node',
-            { path: '../src/load.js', namespace: 'paper' }
+            { path: '../dist/paper-full.js' }
         ],
         code: 'load.js'
     }, callback);

@@ -18,4 +18,5 @@ addons:
 script:
   - npm run lint
   - gulp minify
-  - gulp test
+  - gulp test:browser
+  - gulp test:node
