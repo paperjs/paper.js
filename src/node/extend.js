@@ -72,59 +72,63 @@ module.exports = function(paper) {
     });
 
     // Override requestAnimationFrame() to avoid setInterval() timers.
+    // NOTE: In Node.js, we only support manual updating for now, but
+    // View#exportFrames() below offers a way to emulate animations by exporting
+    // them frame by frame at the given frame-rate.
     paper.DomEvent.requestAnimationFrame = function(callback) {
     };
 
     // Node.js based image exporting code.
     paper.CanvasView.inject({
-        // DOCS: CanvasView#exportFrames(param);
-        exportFrames: function(param) {
-            param = paper.Base.set({
+        // DOCS: CanvasView#exportFrames(options);
+        exportFrames: function(options) {
+            options = paper.Base.set({
                 fps: 30,
                 prefix: 'frame-',
-                amount: 1
-            }, param);
-            if (!param.directory) {
-                throw new Error('Missing param.directory');
-            }
+                amount: 1,
+            }, options);
+            if (!options.directory)
+                throw new Error('Missing options.directory');
             var view = this,
                 count = 0,
-                frameDuration = 1 / param.fps,
+                frameDuration = 1 / options.fps,
                 startTime = Date.now(),
-                lastTime = startTime;
+                lastTime = startTime,
+                padding = options.padding || ((options.amount - 1) + '').length;
+                paddedStr = Array(padding + 1).join('0');
 
             // Start exporting frames by exporting the first frame:
-            exportFrame(param);
+            exportFrame(options);
 
-            function exportFrame(param) {
+            function exportFrame() {
                 // Convert to a Base object, for #toString()
                 view.emit('frame', new paper.Base({
                     delta: frameDuration,
                     time: frameDuration * count,
                     count: count
                 }));
-                var file = path.join(param.directory,
-                        param.prefix + ('000000' + count).slice(-6) + '.png');
+                var file = path.join(options.directory, options.prefix +
+                        (paddedStr + count).slice(-padding) + '.png');
                 var out = view.exportImage(file, function() {
-                    // When the file has been closed, export the next fame:
+                    // Once the file has been closed, export the next fame:
                     var then = Date.now();
-                    if (param.onProgress) {
-                        param.onProgress({
+                    if (options.onProgress) {
+                        options.onProgress({
                             count: count,
-                            amount: param.amount,
-                            percentage: Math.round(count / param.amount
+                            amount: options.amount,
+                            percentage: Math.round(count / options.amount
                                     * 10000) / 100,
                             time: then - startTime,
                             delta: then - lastTime
                         });
                     }
                     lastTime = then;
-                    if (++count < param.amount) {
-                        exportFrame(param);
+                    if (++count < options.amount) {
+                        exportFrame();
                     } else {
                         // Call onComplete handler when finished:
-                        if (param.onComplete) {
-                            param.onComplete();
+                        if (options.onComplete) {
+                            options.onComplete();
                         }
                     }
                 });
