@@ -13,8 +13,7 @@
 // Node.js emulation layer of browser environment, based on jsdom with node-
 // canvas integration.
 
-var jsdom = require('jsdom'),
-    idlUtils = require('jsdom/lib/jsdom/living/generated/utils');
+var jsdom = require('jsdom');
 
 // Create our document and window objects through jsdom.
 /* global document:true, window:true */
@@ -25,18 +24,10 @@ var document = jsdom.jsdom('<html><body></body></html>', {
     }),
     window = document.defaultView;
 
-['pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream'].forEach(
-    function(key) {
-        this[key] = function() {
-            var impl = this._canvas ? this : idlUtils.implForWrapper(this),
-                canvas = impl && impl._canvas;
-            return canvas[key].apply(canvas, arguments);
-        };
-    },
-    window.HTMLCanvasElement.prototype);
+require('./canvas')(window);
 
 // Define XMLSerializer and DOMParser shims, to emulate browser behavior.
-// TODO: Put this into a simple node module, with dependency on jsdom?
+// Effort to bring this to jsdom: https://github.com/tmpvar/jsdom/issues/1368
 function XMLSerializer() {
 }
 
@@ -44,7 +35,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
     var text = jsdom.serializeDocument(node);
     // Fix a jsdom issue where all SVG tagNames are lowercased:
     // https://github.com/tmpvar/jsdom/issues/620
-    var tagNames = ['linearGradient', 'radialGradient', 'clipPath'];
+    var tagNames = ['linearGradient', 'radialGradient', 'clipPath', 'textPath'];
     for (var i = 0, l = tagNames.length; i < l; i++) {
         var tagName = tagNames[i];
         text = text.replace(

@@ -253,17 +253,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         return this;
     },
 
-    createCanvas: function(width, height, type) {
-        if (type) {
-            // TODO: Support 'pdf' on node.js!
-        }
+    createCanvas: function(width, height) {
         return CanvasProvider.getCanvas(width, height);
     },
-
-    /**
-     * @deprecated, use use {@link #createCanvas(width, height)} instead.
-     */
-    Canvas: '#createCanvas',
 
     /**
      * Activates this PaperScope, so all newly created items will be placed

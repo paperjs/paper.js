@@ -12,6 +12,7 @@
 
 var fs = require('fs'),
     path = require('path');
+    Canvas = require('canvas');
 
 module.exports = function(paper) {
     var sourceMaps = {},
@@ -51,6 +52,24 @@ module.exports = function(paper) {
             return scope;
         };
     };
+
+    paper.PaperScope.inject({
+        createCanvas: function(width, height, type) {
+            // Do not use CanvasProvider.getCanvas(), since we may be changing
+            // the underlying node-canvas and don't want to release it after
+            // back into the pool.
+            var canvas = paper.document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.type = type;
+            return canvas;
+        },
+
+        /**
+         * @deprecated, use use {@link #createCanvas(width, height)} instead.
+         */
+        Canvas: '#createCanvas'
+    });
 
     // Node.js based image exporting code.
     paper.CanvasView.inject({
