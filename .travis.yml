@@ -15,7 +15,7 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
-      - msttcorefonts
+      - ttf-mscorefonts-installer
 script:
   - npm run lint
   - gulp minify
