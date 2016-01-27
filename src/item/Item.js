@@ -3387,7 +3387,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option event.delta {Number} the time passed in seconds since the last
      *     frame event
      *
+     * @name Item#onFrame
+     * @property
+     * @type Function
      * @see View#onFrame
+     *
      * @example {@paperscript}
      * // Creating an animation:
      *
@@ -3400,20 +3404,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     // Every frame, rotate the path by 3 degrees:
      *     this.rotate(3);
      * }
-     *
-     * @name Item#onFrame
-     * @property
-     * @type Function
      */
 
     /**
      * The function to be called when the mouse button is pushed down on the
      * item. The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDown
      * @property
      * @type Function
+     * @see View#onMouseDown
      *
      * @example {@paperscript}
      * // Press the mouse button down on the circle shaped path, to make it red:
@@ -3456,10 +3460,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse position changes while the mouse
      * is being dragged over the item. The function receives a {@link
      * MouseEvent} object which contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDrag
      * @property
      * @type Function
+     * @see View#onMouseDrag
      *
      * @example {@paperscript height=240}
      * // Press and drag the mouse on the blue circle to move it:
@@ -3481,10 +3489,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse button is released over the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseUp
      * @property
      * @type Function
+     * @see View#onMouseUp
      *
      * @example {@paperscript}
      * // Release the mouse button over the circle shaped path, to make it red:
@@ -3507,10 +3519,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse clicks on the item. The function
      * receives a {@link MouseEvent} object which contains information about the
      * mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onClick
      * @property
      * @type Function
+     * @see View#onClick
      *
      * @example {@paperscript}
      * // Click on the circle shaped path, to make it red:
@@ -3553,10 +3569,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse double clicks on the item. The
      * function receives a {@link MouseEvent} object which contains information
      * about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onDoubleClick
      * @property
      * @type Function
+     * @see View#onDoubleClick
      *
      * @example {@paperscript}
      * // Double click on the circle shaped path, to make it red:
@@ -3596,13 +3616,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * The function to be called repeatedly when the mouse moves on top of the
-     * item. The function receives a {@link MouseEvent} object which contains
+     * The function to be called repeatedly while the mouse moves over the item.
+     * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseMove
      * @property
      * @type Function
+     * @see View#onMouseMove
      *
      * @example {@paperscript}
      * // Move over the circle shaped path, to change its opacity:
@@ -3626,10 +3650,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * function will only be called again, once the mouse moved outside of the
      * item first. The function receives a {@link MouseEvent} object which
      * contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseEnter
      * @property
      * @type Function
+     * @see View#onMouseEnter
      *
      * @example {@paperscript}
      * // When you move the mouse over the item, its fill color is set to red.
@@ -3684,10 +3712,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse moves out of the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseLeave
      * @property
      * @type Function
+     * @see View#onMouseLeave
      *
      * @example {@paperscript}
      * // Move the mouse over the circle shaped path and then move it out

@@ -629,6 +629,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @option event.delta {Number} the time passed in seconds since the last
      * frame event
      *
+     * @name View#onFrame
+     * @property
+     * @type Function
+     * @see Item#onFrame
+     *
      * @example {@paperscript}
      * // Creating an animation:
      *
@@ -641,14 +646,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *     // Every frame, rotate the path by 3 degrees:
      *     path.rotate(3);
      * }
-     *
-     * @name View#onFrame
-     * @property
-     * @type Function
      */
 
     /**
      * Handler function that is called whenever a view is resized.
+     *
+     * @name View#onResize
+     * @property
+     * @type Function
      *
      * @example
      * // Repositioning items when a view is resized:
@@ -661,11 +666,119 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *     // Whenever the view is resized, move the path to its center:
      *     path.position = view.center;
      * }
+     */
+
+    /**
+     * The function to be called when the mouse button is pushed down on the
+     * view. The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
      *
-     * @name View#onResize
+     * @name View#onMouseDown
      * @property
      * @type Function
+     * @see Item#onMouseDown
      */
+
+    /**
+     * The function to be called when the mouse position changes while the mouse
+     * is being dragged over the view. The function receives a {@link
+     * MouseEvent} object which contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseDrag
+     * @property
+     * @type Function
+     * @see Item#onMouseDrag
+     */
+
+    /**
+     * The function to be called when the mouse button is released over the item.
+     * The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     *
+     * @name View#onMouseUp
+     * @property
+     * @type Function
+     * @see Item#onMouseUp
+     */
+
+    /**
+     * The function to be called when the mouse clicks on the view. The function
+     * receives a {@link MouseEvent} object which contains information about the
+     * mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onClick
+     * @property
+     * @type Function
+     * @see Item#onClick
+     */
+
+    /**
+     * The function to be called when the mouse double clicks on the view. The
+     * function receives a {@link MouseEvent} object which contains information
+     * about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onDoubleClick
+     * @property
+     * @type Function
+     * @see Item#onDoubleClick
+     */
+
+    /**
+     * The function to be called repeatedly while the mouse moves over the
+     * view. The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseMove
+     * @property
+     * @type Function
+     * @see Item#onMouseMove
+     */
+
+    /**
+     * The function to be called when the mouse moves over the view. This
+     * function will only be called again, once the mouse moved outside of the
+     * view first. The function receives a {@link MouseEvent} object which
+     * contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseEnter
+     * @property
+     * @type Function
+     * @see Item#onMouseEnter
+     */
+
+    /**
+     * The function to be called when the mouse moves out of the view.
+     * The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseLeave
+     * @property
+     * @type Function
+     * @see View#onMouseLeave
+     */
+
+
     /**
      * {@grouptitle Event Handling}
      *
