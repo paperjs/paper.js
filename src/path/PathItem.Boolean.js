@@ -90,7 +90,7 @@ PathItem.inject(new function() {
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
-                ^ (_path2.isClockwise() !== _path1.isClockwise()))
+                ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.

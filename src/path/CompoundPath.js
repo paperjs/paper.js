@@ -181,8 +181,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     setClockwise: function(clockwise) {
-        /* jshint -W018 */// Don't complain about confusing use of !:
-        if (this.isClockwise() !== !!clockwise)
+        if (this.isClockwise() ^ !!clockwise)
             this.reverse();
     },
 

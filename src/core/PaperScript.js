@@ -14,7 +14,6 @@
  * @name PaperScript
  * @namespace
  */
-/* jshint -W082 */// Do not complain about functions inside Prepro.js statements
 Base.exports.PaperScript = (function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.
