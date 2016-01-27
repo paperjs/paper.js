@@ -72,14 +72,14 @@ test('Project#getItems()', function() {
         className: 'Group'
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === group
+        return matches.length == 1 && matches[0] === group;
     }, true);
 
     var matches = paper.project.getItems({
         type: 'group'
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === group
+        return matches.length == 1 && matches[0] === group;
     }, true);
 
     var raster = new Raster();
@@ -87,7 +87,7 @@ test('Project#getItems()', function() {
         class: Raster
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === raster
+        return matches.length == 1 && matches[0] === raster;
     }, true);
 
     equals(function() {
@@ -120,7 +120,7 @@ test('Project#getItems() with compare function', function() {
 
     var items = paper.project.getItems({
         opacity: function(value) {
-            return value < 1
+            return value < 1;
         }
     });
     equals(function() {
@@ -162,23 +162,26 @@ test('Project#getItems() with color', function() {
 });
 
 test('Project#getItems() with regex function', function() {
-    var decoyPath = new Path({
+    var layer = paper.project.activeLayer;
+    var stopPath = new Path({
         name: 'stop'
     });
 
-    var decoyPath2 = new Path({
+    var pausePath = new Path({
         name: 'pause'
     });
 
-    var path = new Path({
+    var startPath = new Path({
         name: 'starting'
     });
 
     var items = paper.project.getItems({
         name: /^start/g
     });
+
+    // console.log(paper.project.activeLayer);
     equals(function() {
-        return items.length == 1 && items[0] == path;
+        return items.length == 1 && items[0] == startPath;
     }, true);
 
     equals(function() {

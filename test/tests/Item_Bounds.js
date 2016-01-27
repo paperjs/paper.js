@@ -94,5 +94,5 @@ test('text.bounds', function() {
     var text = new PointText(new Point(50, 100));
     text.fillColor = 'black';
     text.content = 'This is a test';
-    equals(text.bounds, new Rectangle(50, 89.2, 67, 14.4), 'text.bounds', { tolerance: 0.5 });
+    equals(text.bounds, new Rectangle(50, 89.2, 67, 14.4), 'text.bounds', { tolerance: 1 });
 });

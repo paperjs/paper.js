@@ -24,11 +24,8 @@ gulp.task('test:browser', ['minify:acorn'], function() {
 gulp.task('test:node', ['minify:acorn'], function(callback) {
     qunit_node.setup({
         log: {
-            assertions: false,
             errors: true,
-            tests: false,
-            globalSummary: true,
-            testing: true
+            globalSummary: true
         }
     });
     // Use the correct working directory for tests:
