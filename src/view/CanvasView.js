@@ -42,17 +42,25 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
                         + [].slice.call(arguments, 1));
             canvas = CanvasProvider.getCanvas(size);
         }
-        this._context = canvas.getContext('2d');
+        var context = this._context = canvas.getContext('2d');
+        // Save context right away, and restore in #remove(). Also restore() and
+        // save() again in _setViewSize(), to prevent accumulation of scaling.
+        context.save();
         this._pixelRatio = 1;
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,
-                backingStoreRatio = DomElement.getPrefixed(this._context,
+                backingStoreRatio = DomElement.getPrefixed(context,
                         'backingStorePixelRatio') || 1;
             this._pixelRatio = deviceRatio / backingStoreRatio;
         }
         View.call(this, project, canvas);
+    },
+
+    remove: function remove() {
+        this._context.restore();
+        return remove.base.call(this);
     },
 
     _setViewSize: function _setViewSize(width, height) {
@@ -60,7 +68,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         // Upscale the canvas if the pixel ratio is more than 1.
         _setViewSize.base.call(this, width * pixelRatio, height * pixelRatio);
         if (pixelRatio !== 1) {
-            var element = this._element;
+            var element = this._element,
+                context = this._context;
             // We need to set the correct size on non-resizable canvases through
             // their style when HiDPI is active, as otherwise they would appear
             // too big.
@@ -71,7 +80,9 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             }
             // Scale the context to counter the fact that we've manually scaled
             // our canvas element.
-            this._context.scale(pixelRatio, pixelRatio);
+            context.restore();
+            context.save();
+            context.scale(pixelRatio, pixelRatio);
         }
     },
 
