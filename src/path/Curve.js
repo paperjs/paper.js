@@ -1149,25 +1149,21 @@ new function() { // // Scope to inject various curve evaluation methods
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
-    // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
-    // determine the bounds of Curve objects with defined segment1 and segment2
-    // values Curve.getBounds() can be used directly on curve arrays, without
-    // the need to create a Curve object first, as required by the code that
-    // finds path intersections.
-    function(name) {
-        // NOTE: (For easier searching): This loop produces:
-        // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
-        // getWeightedNormalAt, getCurvatureAt
-        this[name + 'At'] = function(offset, isParameter) {
-            var values = this.getValues();
-            return Curve[name](values, isParameter ? offset
-                    : Curve.getParameterAt(values, offset, 0));
-        };
-    }, {
-        statics: {
-            evaluateMethods: methods
+        function(name) {
+            // NOTE: (For easier searching): This loop produces:
+            // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+            // getWeightedNormalAt, getCurvatureAt
+            this[name + 'At'] = function(offset, isParameter) {
+                var values = this.getValues();
+                return Curve[name](values, isParameter ? offset
+                        : Curve.getParameterAt(values, offset, 0));
+            };
+        }, {
+            statics: {
+                _evaluateMethods: methods
+            }
         }
-    });
+    );
 },
 new function() { // Scope for methods that require private functions
 

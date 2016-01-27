@@ -1688,7 +1688,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // TODO: intersects(item)
     // TODO: contains(item)
-}, Base.each(Curve.evaluateMethods,
+}, Base.each(Curve._evaluateMethods,
     function(name) {
         // NOTE: (For easier searching): This loop produces:
         // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,

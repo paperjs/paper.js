@@ -512,7 +512,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     hasOverlap: function() {
         return !!this._overlap;
     }
-}, Base.each(Curve.evaluateMethods, function(name) {
+}, Base.each(Curve._evaluateMethods, function(name) {
     // Produce getters for #getTangent() / #getNormal() / #getCurvature()
     // NOTE: (For easier searching): This loop produces:
     // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
