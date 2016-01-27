@@ -887,8 +887,10 @@ new function() { // Injection scope for mouse events on the browser
         // Get the view from the event, and store a reference to the view that
         // should receive keyboard input.
         var view = View._focused = getView(event);
-        dragging = true;
-        view._handleEvent('mousedown', event);
+        if (!dragging) {
+            dragging = true;
+            view._handleEvent('mousedown', event);
+        }
     };
 
     docEvents[mousemove] = function(event) {
