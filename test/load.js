@@ -10,6 +10,6 @@
  * All rights reserved.
  */
 
-/*#*/ include('js/helpers.js');
+/*#*/ include('helpers.js');
 /*#*/ include('../node_modules/resemblejs/resemble.js', { namespace: 'resemble' });
 /*#*/ include('tests/load.js');

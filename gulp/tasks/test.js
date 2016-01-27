@@ -13,6 +13,8 @@
 var gulp = require('gulp'),
     qunit = require('gulp-qunit'),
     qunit_node = require('qunit'),
+    gutil = require('gulp-util'),
+    chalk = require('chalk'),
     extend = require('extend'),
     minimist = require('minimist');
 
@@ -32,7 +34,7 @@ gulp.task('test:browser', ['minify:acorn'], function() {
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
     qunit_node.setup({
-        log: extend({ errors: true, globalSummary: true }, options)
+        log: extend({ errors: true }, options)
     });
     // Use the correct working directory for tests:
     process.chdir('test');
@@ -47,5 +49,21 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
             { path: '../dist/paper-full.js', namespace: 'paper' }
         ],
         code: 'load.js'
-    }, callback);
+    }, function(err, stats) {
+        var passed = false;
+        if (err) {
+            gulp.emit('error', new gutil.PluginError(node-qunit, err));
+        } else {
+            var color = stats.failed > 0 ? chalk.red : chalk.green;
+            gutil.log('Took ' + stats.runtime + ' ms to run ' + chalk.blue(stats.assertions) + ' assertions. ' + color(stats.passed + ' passed, ' + stats.failed + ' failed.'));
+            if (stats.failed > 0) {
+                gutil.log('node-qunit: ' + chalk.red('✖') + ' QUnit assertions failed');
+            } else {
+                gutil.log('node-qunit: ' + chalk.green('✔') + ' QUnit assertions all passed');
+                passed = true;
+            }
+        }
+        gulp.emit('node-qunit.finished', { 'passed': passed });
+        callback();
+    });
 });
