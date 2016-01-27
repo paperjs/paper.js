@@ -104,8 +104,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Items that need the onFrame handler called on them
         this._frameItems = {};
         this._frameItemCount = 0;
-        // Count the installed item events, see _countItemEvent().
-        this._itemEvents = {};
+        // Count the installed native and virtual item events,
+        // see #_countItemEvent():
+        this._itemNativeEvents = {};
+        this._itemVirtualEvents = {};
     },
 
     /**
@@ -1137,7 +1139,7 @@ new function() { // Injection scope for event handling on the browser
      * Required by code that is counting the amount of required natives events.
      * The mapping is native -> virtual.
      */
-    var itemEvents = {
+    var itemNativeEvents = {
         mousedown: {
             mousedown: 1,
             mousedrag: 1,
@@ -1180,12 +1182,12 @@ new function() { // Injection scope for event handling on the browser
          * tools.
          */
         _handleMouseEvent: function(type, event, point) {
-            var handleItems = this._itemEvents[type],
+            var hitItems = this._itemNativeEvents[type],
                 tool = this._scope.tool,
                 view = this;
 
             function responds(type) {
-                return view._itemEvents[type] || view.responds(type)
+                return view._itemVirtualEvents[type] || view.responds(type)
                         || tool && tool.responds(type);
             }
 
@@ -1199,9 +1201,9 @@ new function() { // Injection scope for event handling on the browser
                 point = this.getEventPoint(event);
 
             // Run the hit-test on items first, but only if we're required to do
-            // so for this given mouse event, see #_countItemEvent().
+            // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hit = inView && handleItems && this._project.hitTest(point, {
+                hit = inView && hitItems && this._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
                     stroke: true
@@ -1327,12 +1329,16 @@ new function() { // Injection scope for event handling on the browser
 
         _countItemEvent: function(type, sign) {
             // If the view requires counting of installed mouse events,
-            // change the event counters now according to itemEvents.
-            var events = this._itemEvents;
-            for (var key in itemEvents) {
-                events[key] = (events[key] || 0)
-                        + (itemEvents[key][type] || 0) * sign;
+            // change the event counters now according to itemNativeEvents
+            // (defined in the code further above).
+            var nativeEvents = this._itemNativeEvents,
+                virtualEvents = this._itemVirtualEvents;
+            for (var key in itemNativeEvents) {
+                nativeEvents[key] = (nativeEvents[key] || 0)
+                        + (itemNativeEvents[key][type] || 0) * sign;
             }
+            // Also update the count of virtual events installed.
+            virtualEvents[type] = (virtualEvents[type] || 0) + sign;
         },
 
         statics: {
