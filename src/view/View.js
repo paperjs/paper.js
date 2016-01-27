@@ -1254,20 +1254,19 @@ new function() { // Injection scope for event handling on the browser
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
                     // difference:
-                    if (item) {
-                        dblClick = item === clickItem
-                            && (Date.now() - clickTime < 300);
-                        downItem = clickItem = item;
-                        // Only start dragging if the mousedown event has not
-                        // stopped propagation.
-                        dragItem = !stopped && item;
-                    }
+                    dblClick = item === clickItem
+                        && (Date.now() - clickTime < 300);
+                    downItem = clickItem = item;
+                    // Only start dragging if the mousedown event has not
+                    // stopped propagation.
+                    dragItem = !stopped && item;
                     downPoint = lastPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on item, not view
-                    if (!stopped && item && item === downItem) {
+                    if (!stopped && item === downItem) {
                         clickTime = Date.now();
-                        emitMouseEvent(item, dblClick ? 'doubleclick' : 'click',
+                        emitMouseEvents(this, item,
+                                dblClick ? 'doubleclick' : 'click',
                                 event, point, downPoint);
                         dblClick = false;
                     }
