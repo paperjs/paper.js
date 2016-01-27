@@ -37,6 +37,47 @@ console.error = function() {
     errorHandler.apply(this, arguments);
 };
 
+// Override equals to convert functions to message and execute them as tests()
+function equals(actual, expected, message, options) {
+    // Allow the use of functions for actual, which will get called and their
+    // source content extracted for readable reports.
+    if (typeof actual === 'function') {
+        if (!message)
+            message = getFunctionMessage(actual);
+        actual = actual();
+    }
+    // Get the comparator based on the expected value's type only and ignore the
+    // actual value's type.
+    var type = typeof expected,
+        cls;
+    type = expected === null && 'Null'
+            || type === 'number' && 'Number'
+            || type === 'boolean' && 'Boolean'
+            || type === 'undefined' && 'Undefined'
+            || Array.isArray(expected) && 'Array'
+            || expected instanceof Element && 'Element' // handle DOM Elements
+            || (cls = expected && expected._class) // check _class 2nd last
+            || type === 'object' && 'Object'; // Object as catch-all
+    var comparator = type && comparators[type];
+    if (!message)
+        message = type ? type.toLowerCase() : 'value';
+    if (comparator) {
+        comparator(actual, expected, message, options);
+    } else if (expected && expected.equals) {
+        // Fall back to equals
+        QUnit.push(expected.equals(actual), actual, expected, message);
+    } else {
+        // Finally perform a strict compare
+        QUnit.push(actual === expected, actual, expected, message);
+    }
+    if (options && options.cloned && cls) {
+        var identical = identicalAfterCloning[cls];
+        QUnit.push(identical ? actual === expected : actual !== expected,
+                actual, identical ? expected : 'not ' + expected,
+                message + ': identical after cloning');
+    }
+}
+
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
     // Just compare the string representation of classes inheriting from Base,
@@ -336,47 +377,6 @@ function getFunctionMessage(func) {
             .replace(/;$/, '');
     }
     return message;
-}
-
-// Override equals to convert functions to message and execute them as tests()
-function equals(actual, expected, message, options) {
-    // Allow the use of functions for actual, which will get called and their
-    // source content extracted for readable reports.
-    if (typeof actual === 'function') {
-        if (!message)
-            message = getFunctionMessage(actual);
-        actual = actual();
-    }
-    // Get the comparator based on the expected value's type only and ignore the
-    // actual value's type.
-    var type = typeof expected,
-        cls;
-    type = expected === null && 'Null'
-            || type === 'number' && 'Number'
-            || type === 'boolean' && 'Boolean'
-            || type === 'undefined' && 'Undefined'
-            || Array.isArray(expected) && 'Array'
-            || expected instanceof Element && 'Element' // handle DOM Elements
-            || (cls = expected && expected._class) // check _class 2nd last
-            || type === 'object' && 'Object'; // Object as catch-all
-    var comparator = type && comparators[type];
-    if (!message)
-        message = type ? type.toLowerCase() : 'value';
-    if (comparator) {
-        comparator(actual, expected, message, options);
-    } else if (expected && expected.equals) {
-        // Fall back to equals
-        QUnit.push(expected.equals(actual), actual, expected, message);
-    } else {
-        // Finally perform a strict compare
-        QUnit.push(actual === expected, actual, expected, message);
-    }
-    if (options && options.cloned && cls) {
-        var identical = identicalAfterCloning[cls];
-        QUnit.push(identical ? actual === expected : actual !== expected,
-                actual, identical ? expected : 'not ' + expected,
-                message + ': identical after cloning');
-    }
 }
 
 function test(testName, expected) {

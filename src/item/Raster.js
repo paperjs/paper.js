@@ -245,7 +245,6 @@ var Raster = Item.extend(/** @lends Raster# */{
             // Trigger the load event on the image once it's loaded
             DomEvent.add(image, {
                 load: function(event) {
-                    that._loaded = true;
                     that._setImage(image);
                     emit(event);
                 },
@@ -272,7 +271,7 @@ var Raster = Item.extend(/** @lends Raster# */{
             // A Image object
             this._image = image;
             this._canvas = null;
-            this._loaded = image && image.complete;
+            this._loaded = !!(image && image.src && image.complete);
         }
         // Both canvas and image have width / height attributes. Due to IE,
         // naturalWidth / Height needs to be checked for a swell, because it
