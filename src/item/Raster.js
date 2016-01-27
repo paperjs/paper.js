@@ -643,6 +643,45 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.getContext(true).putImageData(data, point.x, point.y);
     },
 
+    /**
+     * {@grouptitle Event Handlers}
+     *
+     * The event handler function to be called when the underlying image has
+     * finished loading and is ready to be used. This is also triggered when
+     * the image is already loaded, or when a canvas is used instead of an
+     * image.
+     *
+     * @name Raster#onLoad
+     * @property
+     * @type Function
+     *
+     * @example
+     * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
+     * var raster = new Raster(url);
+     *
+     * // If you create a Raster using a url, you can use the onLoad
+     * // handler to do something once it is loaded:
+     * raster.onLoad = function() {
+     *     console.log('The image has finished loading.');
+     * };
+     *
+     * // As with all events in paper.js, you can also use this notation instead
+     * // to install multiple handlers:
+     * raster.on('load', function() {
+     *     console.log('Now the image is definitely ready.');
+     * });
+     */
+
+    /**
+     *
+     * The event handler function to be called when there is an error loading
+     * the underlying image.
+     *
+     * @name Raster#onError
+     * @property
+     * @type Function
+     */
+
     _getBounds: function(getter, matrix) {
         var rect = new Rectangle(this._size).setCenter(0, 0);
         return matrix ? matrix._transformBounds(rect) : rect;
