@@ -14,7 +14,6 @@ var gulp = require('gulp'),
     qunit = require('gulp-qunit'),
     qunit_node = require('qunit'),
     gutil = require('gulp-util'),
-    chalk = require('chalk'),
     extend = require('extend'),
     minimist = require('minimist');
 
@@ -51,21 +50,23 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
         ],
         code: 'load.js'
     }, function(err, stats) {
-        var passed = false;
+        var result;
         if (err) {
-            gulp.emit('error', new gutil.PluginError(name, err));
+            result = new gutil.PluginError(name, err);
         } else {
-            var color = stats.failed > 0 ? chalk.red : chalk.green;
-            gutil.log('Took ' + stats.runtime + ' ms to run ' + chalk.blue(stats.assertions) + ' assertions. ' + color(stats.passed + ' passed, ' + stats.failed + ' failed.'));
+            var color = gutil.colors[stats.failed > 0 ? 'red' : 'green'];
+            gutil.log('Took ' + stats.runtime + ' ms to run ' +
+                gutil.colors.blue(stats.assertions) + ' tests. ' +
+                color(stats.passed + ' passed, ' + stats.failed + ' failed.'));
             if (stats.failed > 0) {
-                gutil.log(name + ': ' + chalk.red('✖') + ' QUnit assertions failed');
-                gulp.emit('error', new gutil.PluginError(name, 'QUnit assertions failed'));
+                err = 'QUnit assertions failed';
+                gutil.log(name + ': ' + gutil.colors.red('✖ ') + err);
+                result = new gutil.PluginError(name, err);
             } else {
-                gutil.log(name + ': ' + chalk.green('✔') + ' QUnit assertions all passed');
-                passed = true;
+                gutil.log(name + ': ' + gutil.colors.green('✔ ') +
+                    'QUnit assertions all passed');
             }
         }
-        gulp.emit('node-qunit.finished', { 'passed': passed });
-        callback();
+        callback(result);
     });
 });
