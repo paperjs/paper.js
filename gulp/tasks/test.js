@@ -11,8 +11,8 @@
  */
 
 var gulp = require('gulp'),
-    qunit = require('gulp-qunit'),
-    qunit_node = require('qunit'),
+    gulp_qunit = require('gulp-qunit'),
+    node_qunit = require('qunit'),
     gutil = require('gulp-util'),
     extend = require('extend'),
     minimist = require('minimist');
@@ -28,17 +28,17 @@ gulp.task('test', ['test:browser']);
 
 gulp.task('test:browser', ['minify:acorn'], function() {
     return gulp.src('test/index.html')
-        .pipe(qunit({ timeout: 20, noGlobals: true }));
+        .pipe(gulp_qunit({ timeout: 20, noGlobals: true }));
 });
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
     var name = 'node-qunit';
-    qunit_node.setup({
+    node_qunit.setup({
         log: extend({ errors: true }, options)
     });
     // Use the correct working directory for tests:
     process.chdir('./test');
-    qunit_node.run({
+    node_qunit.run({
         maxBlockDuration: 100 * 1000,
         deps: [
             // To dynamically load the tests files from the sources, we need to
