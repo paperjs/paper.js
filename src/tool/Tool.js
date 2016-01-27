@@ -283,7 +283,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @return {@true if at least one event handler was called}.
      */
-    _handleEvent: function(type, event, point, mouse) {
+    _handleMouseEvent: function(type, event, point, mouse) {
         // Update global reference to this scope.
         paper = this._scope;
         // If there is no mousedrag event installed, fall back to mousemove,

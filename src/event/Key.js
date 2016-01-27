@@ -91,8 +91,6 @@ var Key = new function() {
     function handleKey(down, key, character, event) {
         var type = down ? 'keydown' : 'keyup',
             view = View._focused,
-            scope = view && view.isVisible() && view._scope,
-            tool = scope && scope.tool,
             name;
         keyMap[key] = down;
         // Link the key from keydown with the character form keypress, so keyup
@@ -129,11 +127,9 @@ var Key = new function() {
             // A normal key, add it to metaFixMap if that's defined.
             metaFixMap[key] = character;
         }
-        if (tool && tool.responds(type)) {
-            // Update global reference to this scope.
-            paper = scope;
-            // Call the onKeyDown or onKeyUp handler if present
-            tool.emit(type, new KeyEvent(down, key, character, event));
+        if (view) {
+            view._handleKeyEvent(down ? 'keydown' : 'keyup', event, key,
+                    character);
         }
     }
 
