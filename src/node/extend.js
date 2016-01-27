@@ -73,14 +73,13 @@ module.exports = function(paper) {
 
     // Override requestAnimationFrame() to avoid setInterval() timers.
     paper.DomEvent.requestAnimationFrame = function(callback) {
-        process.nextTick(callback);
     };
 
     // Node.js based image exporting code.
     paper.CanvasView.inject({
         // DOCS: CanvasView#exportFrames(param);
         exportFrames: function(param) {
-            param = new paper.Base({
+            param = paper.Base.set({
                 fps: 30,
                 prefix: 'frame-',
                 amount: 1
@@ -98,6 +97,12 @@ module.exports = function(paper) {
             exportFrame(param);
 
             function exportFrame(param) {
+                // Convert to a Base object, for #toString()
+                view.emit('frame', new paper.Base({
+                    delta: frameDuration,
+                    time: frameDuration * count,
+                    count: count
+                }));
                 var file = path.join(param.directory,
                         param.prefix + ('000000' + count).slice(-6) + '.png');
                 var out = view.exportImage(file, function() {
@@ -114,7 +119,7 @@ module.exports = function(paper) {
                         });
                     }
                     lastTime = then;
-                    if (count < param.amount) {
+                    if (++count < param.amount) {
                         exportFrame(param);
                     } else {
                         // Call onComplete handler when finished:
@@ -123,13 +128,6 @@ module.exports = function(paper) {
                         }
                     }
                 });
-                // Convert to a Base object, for #toString()
-                view.emit('frame', new paper.Base({
-                    delta: frameDuration,
-                    time: frameDuration * count,
-                    count: count
-                }));
-                count++;
             }
         },
 

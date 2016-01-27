@@ -46,4 +46,4 @@ paper.view.onFrame = function(event) {
         var angle = (values.count - i) * Math.sin(event.count / 128) / 10;
         item.rotate(angle);
     }
-}
+};
