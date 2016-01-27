@@ -32,16 +32,14 @@ To learn more about its features for dependence tracking, see
 
 ### Which Version to Use?
 
-The various distributions come with three different pre-build versions of
+The various distributions come with two different pre-build versions of
 Paper.js, in minified and normal variants:
 
 - `paper-full.js` – The full version for the browser, including PaperScript
   support and Acorn.js
 - `paper-core.js` – The core version for the browser, without PaperScript
-  support nor Acorn.js. Use this to shave off some bytes when working with
-  JavaScript directly.
-- `paper-node.js` – The version for Node.js. It is recommended to install this
-  through NPM, see below.
+  support nor Acorn.js. You can use this to shave off some bytes and compilation
+  time when working with JavaScript directly.
 
 ### Installing Node.js, NPM and Bower
 
@@ -172,9 +170,8 @@ files, you can run the `build` task:
     gulp build
 
 You will then find the built library files inside the `dist` folder, named
-`paper-full.js`, `paper-core.js` and `paper-node.js`, along with their minified
-versions. Read [Which Version to Use?](#which-version-to-use) for an explanation
-of the different versions.
+`paper-full.js` and `paper-core.js`, along with their minified versions. Read
+more about this in [Which Version to Use?](#which-version-to-use).
 
 ### Running Directly from Separate Source Files
 
