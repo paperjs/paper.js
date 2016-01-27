@@ -10,7 +10,12 @@
  * All rights reserved.
  */
 
-if (typeof window === 'object') {
+var isNode = typeof global === 'object';
+
+if (isNode) {
+    // Resemble.js needs the Image constructor this global
+    global.Image = window.Image;
+} else {
     // This is only required when running in the browser:
     // Until window.history.pushState() works when running locally, we need to
     // trick qunit into thinking that the feature is not present. This appears
@@ -33,11 +38,6 @@ if (typeof window === 'object') {
             transparency: 1
         });
     });
-} else if (typeof global === 'object') {
-    // Install paper.js globally on node-qunit, as the rest of the code expects
-    // it to be unscoped.
-    paper.install(global);
-    // NOTE: This also installs window and document in the global scope.
 }
 
 var errorHandler = console.error;
@@ -185,6 +185,7 @@ var compareProperties = function(actual, expected, properties, message, options)
 };
 
 var compareItem = function(actual, expected, message, options, properties) {
+    options = options || {};
 
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -201,7 +202,7 @@ var compareItem = function(actual, expected, message, options, properties) {
                 + '" src="' + raster.source + '">';
     }
 
-    if (options && options.rasterize) {
+    if (options.rasterize) {
         // In order to properly compare pixel by pixel, we need to put each item
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
@@ -241,11 +242,15 @@ var compareItem = function(actual, expected, message, options, properties) {
                 .compareTo(expected.getImageData())
                 // When working with imageData, this call is synchronous:
                 .onComplete(function(data) { result = data; });
-            var identical = result ? 100 - result.misMatchPercentage : 0,
-                ok = identical == 100,
-                text = identical.toFixed(2) + '% identical';
-            QUnit.push(ok, text, '100.00% identical', message);
-            if (!ok && result) {
+            var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
+                fixed = ((1 / tolerance) + '').length - 1,
+                identical = result ? 100 - result.misMatchPercentage : 0,
+                reached = identical.toFixed(fixed),
+                hundred = (100).toFixed(fixed),
+                ok = reached == hundred;
+            QUnit.push(ok, reached + '% identical', hundred + '% identical',
+                    message);
+            if (!ok && result && !isNode) {
                 // Get the right entry for this unit test and assertion, and
                 // replace the results with images
                 var entry = document.getElementById('qunit-test-output-' + id)
@@ -261,14 +266,14 @@ var compareItem = function(actual, expected, message, options, properties) {
             }
         }
     } else {
-        if (options && options.cloned)
+        if (options.cloned)
             QUnit.notStrictEqual(actual.id, expected.id,
                     'not ' + message + '.id');
         QUnit.strictEqual(actual.constructor, expected.constructor,
                 message + '.constructor');
         // When item is cloned and has a name, the name will be versioned:
         equals(actual.name,
-                options && options.cloned && expected.name
+                options.cloned && expected.name
                     ? expected.name + ' 1' : expected.name,
                 message + '.name');
         compareProperties(actual, expected, ['children', 'bounds', 'position',

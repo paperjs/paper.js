@@ -12,7 +12,16 @@
 
 var gulp = require('gulp'),
     qunit = require('gulp-qunit'),
-    qunit_node = require('qunit');
+    qunit_node = require('qunit'),
+    extend = require('extend'),
+    minimist = require('minimist');
+
+// Support simple command line options to pass on to test:node, to display
+// errors selectively, e.g.:
+// gulp test:node --assertions
+var options = minimist(process.argv.slice(2), {
+  boolean: true
+});
 
 gulp.task('test', ['test:browser']);
 
@@ -23,10 +32,7 @@ gulp.task('test:browser', ['minify:acorn'], function() {
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
     qunit_node.setup({
-        log: {
-            errors: true,
-            globalSummary: true
-        }
+        log: extend({ errors: true, globalSummary: true }, options)
     });
     // Use the correct working directory for tests:
     process.chdir('test');
@@ -35,9 +41,8 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
         deps: [
             // To dynamically load from the sources, require Prepro.js first
             '../node_modules/prepro/lib/node',
-            { path: '../src/load.js', namespace: 'paper' },
-            { path: '../node_modules/resemblejs/resemble.js', namespace: 'resemble' }
+            { path: '../src/load.js', namespace: 'paper' }
         ],
-        code: 'tests/load.js'
+        code: 'load.js'
     }, callback);
 });

@@ -10,8 +10,6 @@
  * All rights reserved.
  */
 
-/*#*/ include('../js/helpers.js');
-
 /*#*/ include('Point.js');
 /*#*/ include('Size.js');
 /*#*/ include('Rectangle.js');
