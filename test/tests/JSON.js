@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('JSON');
+QUnit.module('JSON');
 
 function testExportImportJSON(project) {
     // Use higher precision than in comparissons, for bounds

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Symbol & Placed Symbol');
+QUnit.module('Symbol & Placed Symbol');
 
 test('placedSymbol bounds', function() {
     var path = new Path.Circle([50, 50], 50);

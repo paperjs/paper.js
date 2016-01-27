@@ -45,7 +45,7 @@ if (typeof window === 'object') {
     }
 } else {
     // Node.js based loading through Prepro.js:
-    var prepro = require('prepro/lib/node.js'),
+    var prepro = require('prepro/lib/node'),
         // Load the default browser-based options for further amendments.
         // Step out and back into src, in case this is loaded from
         // dist/paper-node.js
@@ -64,4 +64,10 @@ if (typeof window === 'object') {
     prepro.include('../src/constants.js');
     // Load Paper.js library files.
     prepro.include('../src/paper.js');
+    // Pass paper object through.
+    // TODO: For some reason, this is only set when loading in node-qunit, but
+    // not when directly requiring from the examples. This may have something
+    // to do with the use of parent.module... Find out!
+    if (prepro.exports)
+        module.exports = prepro.exports;
 }

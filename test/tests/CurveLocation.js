@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('CurveLocation');
+QUnit.module('CurveLocation');
 
 test('CurveLocation#offset', function() {
     var path = new Path();

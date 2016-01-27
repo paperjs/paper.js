@@ -25,7 +25,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=0.8.0 <5.0.0"
+    "node": ">=0.8.0 <6.0.0"
   },
   "dependencies": {
     "jsdom": "git://github.com/lehni/jsdom.git#3d55789d0f4d55392721b1e22890837fde472375",
@@ -57,6 +57,7 @@
     "jshint-summary": "^0.4.0",
     "merge-stream": "^1.0.0",
     "prepro": "^2.0.0",
+    "qunit": "^0.7.7",
     "qunitjs": "^1.20.0",
     "require-dir": "^0.3.0",
     "resemblejs": "^2.1.0",

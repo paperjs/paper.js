@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('TextItem');
+QUnit.module('TextItem');
 
 test('PointText', function() {
     var text = new PointText({

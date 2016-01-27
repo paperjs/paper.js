@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Boolean Operations');
+QUnit.module('Path Boolean Operations');
 
 function createPath(str) {
     var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;

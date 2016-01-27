@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('HitResult');
+QUnit.module('HitResult');
 
 test('Hit-testing options', function() {
     var defaultOptions = {

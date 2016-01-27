@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Color');
+QUnit.module('Color');
 
 test('Set named color', function() {
     var path = new Path();
@@ -222,6 +222,3 @@ test('Color#divide', function() {
     var color = new Color(1, 1, 1);
     equals(color.divide(4), new Color([0.25, 0.25, 0.25]));
 });
-
-
-

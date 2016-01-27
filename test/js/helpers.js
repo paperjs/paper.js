@@ -13,23 +13,30 @@
 // Until window.history.pushState() works when running locally, we need to trick
 // qunit into thinking that the feature is not present. This appears to work...
 // TODO: Ideally we should fix this in QUnit instead.
-delete window.history;
-window.history = {};
 
-QUnit.begin(function() {
-    if (QUnit.urlParams.hidepassed) {
-        document.getElementById('qunit-tests').className += ' hidepass';
-    }
-    resemble.outputSettings({
-        errorColor: {
-            red: 255,
-            green: 51,
-            blue: 0
-        },
-        errorType: 'flat',
-        transparency: 1
+if (typeof window !== 'undefined') {
+    delete window.history;
+    window.history = {};
+
+    QUnit.begin(function() {
+        if (QUnit.urlParams.hidepassed) {
+            document.getElementById('qunit-tests').className += ' hidepass';
+        }
+        resemble.outputSettings({
+            errorColor: {
+                red: 255,
+                green: 51,
+                blue: 0
+            },
+            errorType: 'flat',
+            transparency: 1
+        });
     });
-});
+}
+
+if (typeof global !== 'undefined') {
+    paper.install(global);
+}
 
 var errorHandler = console.error;
 console.error = function() {
@@ -38,7 +45,7 @@ console.error = function() {
 };
 
 // Override equals to convert functions to message and execute them as tests()
-function equals(actual, expected, message, options) {
+var equals = function(actual, expected, message, options) {
     // Allow the use of functions for actual, which will get called and their
     // source content extracted for readable reports.
     if (typeof actual === 'function') {
@@ -55,7 +62,7 @@ function equals(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof Element && 'Element' // handle DOM Elements
+            || expected instanceof window.Element && 'Element' // handle DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
@@ -76,7 +83,7 @@ function equals(actual, expected, message, options) {
                 actual, identical ? expected : 'not ' + expected,
                 message + ': identical after cloning');
     }
-}
+};
 
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
@@ -366,7 +373,7 @@ var identicalAfterCloning = {
     Symbol: true
 };
 
-function getFunctionMessage(func) {
+var getFunctionMessage = function(func) {
     var message = func.toString().match(
         /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
             .replace(/    /g, '')
@@ -377,29 +384,22 @@ function getFunctionMessage(func) {
             .replace(/;$/, '');
     }
     return message;
-}
+};
 
-function test(testName, expected) {
-    return QUnit.test(testName, function() {
-        var project = new Project();
-        expected();
-        project.remove();
-    });
-}
+var project;
 
-function asyncTest(testName, expected) {
-    return QUnit.asyncTest(testName, function() {
-        var project = new Project();
-        expected(function() {
+var test = function(testName, expected) {
+    return QUnit.test(testName, function(assert) {
+        if (project)
             project.remove();
-            QUnit.start();
-        });
+        project = new Project();
+        expected(assert);
     });
-}
+};
 
 // SVG
 
-function createSVG(str, attrs) {
+var createSVG = function(str, attrs) {
     if (attrs) {
         // Similar to SVGExport's createElement / setAttributes.
         var node = document.createElementNS('http://www.w3.org/2000/svg', str);
@@ -411,4 +411,4 @@ function createSVG(str, attrs) {
             '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
             'text/xml');
     }
-}
+};

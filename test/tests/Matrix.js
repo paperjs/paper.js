@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-module('Matrix');
+QUnit.module('Matrix');
+
 test('Decomposition: rotate()', function() {
     function testAngle(a, ea) {
         var m = new Matrix().rotate(a),

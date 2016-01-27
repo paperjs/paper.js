@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('PathItem Contains');
+QUnit.module('PathItem Contains');
 
 function testPoint(item, point, inside, message) {
     equals(item.contains(point), inside, message || ('The point ' + point

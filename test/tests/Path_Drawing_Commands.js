@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Drawing Commands');
+QUnit.module('Path Drawing Commands');
 
 test('path.lineTo(point);', function() {
     var path = new Path();

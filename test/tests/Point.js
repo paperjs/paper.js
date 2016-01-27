@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-module('Point');
+QUnit.module('Point');
+
 test('new Point(10, 20)', function() {
     var point = new Point(10, 20);
     equals(point.x, 10, 'point.x');
@@ -43,8 +44,6 @@ test('new Point({ angle: 45, length: 20})', function() {
     var point = new Point({ angle: 40, length: 20 });
     equals(point, new Point(15.32089, 12.85575));
 });
-
-module('Point vector operations');
 
 test('normalize(length)', function() {
     var point = new Point(0, 10).normalize(20);

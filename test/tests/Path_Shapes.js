@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Predefined Path Shapes');
+QUnit.module('Predefined Path Shapes');
 
 test('new Path.Rectangle([50, 50], [100, 100])', function() {
     var path = new Path.Rectangle([50, 50], [100, 100]);

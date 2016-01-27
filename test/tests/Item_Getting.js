@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Getting and Matching Items');
+QUnit.module('Getting and Matching Items');
 
 test('Item#getItems()', function() {
     var group = new Group([new Path({ selected: true }), new Raster()]);

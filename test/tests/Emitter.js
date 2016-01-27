@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Emitter');
+QUnit.module('Emitter');
 
 test('on()', function() {
     var emitter = new Base(Emitter),

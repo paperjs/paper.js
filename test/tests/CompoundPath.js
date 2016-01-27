@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Compound Path');
+QUnit.module('Compound Path');
 
 test('moveTo / lineTo', function() {
     var path = new CompoundPath();

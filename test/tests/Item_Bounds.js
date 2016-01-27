@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item Bounds');
+QUnit.module('Item Bounds');
 
 test('item.bounds caching', function() {
     var circle = new Path.Circle(new Point(100, 100), 50);

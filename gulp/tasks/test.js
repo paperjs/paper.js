@@ -11,9 +11,34 @@
  */
 
 var gulp = require('gulp'),
-    qunit = require('gulp-qunit');
+    qunit = require('gulp-qunit'),
+    qunit_node = require('qunit');
 
-gulp.task('test', function() {
+gulp.task('test', ['test:browser']);
+
+gulp.task('test:browser', ['minify:acorn'], function() {
     return gulp.src('test/index.html')
         .pipe(qunit({ timeout: 20, noGlobals: true }));
+});
+
+gulp.task('test:node', ['minify:acorn'], function(callback) {
+    qunit_node.setup({
+        log: {
+            assertions: false,
+            errors: true,
+            tests: false,
+            globalSummary: true,
+            testing: true
+        }
+    });
+    qunit_node.run({
+        maxBlockDuration: 100 * 1000,
+        deps: [
+            // To dynamically load from the sources:
+            'node_modules/prepro/lib/node',
+            { path: 'src/load.js', namespace: 'paper' },
+            { path: 'node_modules/resemblejs/resemble.js', namespace: 'resemble' }
+        ],
+        code: 'test/tests/load.js'
+    }, callback);
 });

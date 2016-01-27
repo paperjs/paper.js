@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path');
+QUnit.module('Path');
 
 test('path.join(path)', function() {
     var path = new Path();
