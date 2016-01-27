@@ -18,7 +18,7 @@ gulp.on('error', function(err) {
     var msg = err.toString();
     if (msg === '[object Object]')
         msg = err;
-    gutil.log(ERROR, err);
+    gutil.log(ERROR, msg);
     if (err.stack)
         gutil.log(ERROR, err.stack);
     this.emit('end');

@@ -33,6 +33,7 @@ gulp.task('test:browser', ['minify:acorn'], function() {
 });
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
+    var name = 'node-qunit';
     qunit_node.setup({
         log: extend({ errors: true }, options)
     });
@@ -52,14 +53,15 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
     }, function(err, stats) {
         var passed = false;
         if (err) {
-            gulp.emit('error', new gutil.PluginError(node-qunit, err));
+            gulp.emit('error', new gutil.PluginError(name, err));
         } else {
             var color = stats.failed > 0 ? chalk.red : chalk.green;
             gutil.log('Took ' + stats.runtime + ' ms to run ' + chalk.blue(stats.assertions) + ' assertions. ' + color(stats.passed + ' passed, ' + stats.failed + ' failed.'));
             if (stats.failed > 0) {
-                gutil.log('node-qunit: ' + chalk.red('✖') + ' QUnit assertions failed');
+                gutil.log(name + ': ' + chalk.red('✖') + ' QUnit assertions failed');
+                gulp.emit('error', new gutil.PluginError(name, 'QUnit assertions failed'));
             } else {
-                gutil.log('node-qunit: ' + chalk.green('✔') + ' QUnit assertions all passed');
+                gutil.log(name + ': ' + chalk.green('✔') + ' QUnit assertions all passed');
                 passed = true;
             }
         }
