@@ -10,11 +10,12 @@
  * All rights reserved.
  */
 
-// Until window.history.pushState() works when running locally, we need to trick
-// qunit into thinking that the feature is not present. This appears to work...
-// TODO: Ideally we should fix this in QUnit instead.
-
-if (typeof window !== 'undefined') {
+if (typeof window === 'object') {
+    // This is only required when running in the browser:
+    // Until window.history.pushState() works when running locally, we need to
+    // trick qunit into thinking that the feature is not present. This appears
+    // to work...
+    // TODO: Ideally we should fix this in QUnit instead.
     delete window.history;
     window.history = {};
 
@@ -32,16 +33,57 @@ if (typeof window !== 'undefined') {
             transparency: 1
         });
     });
-}
-
-if (typeof global !== 'undefined') {
+} else if (typeof global === 'object') {
+    // Install paper.js globally on node-qunit, as the rest of the code expects
+    // it to be unscoped.
     paper.install(global);
+    // NOTE: This also installs window and document in the global scope.
 }
 
 var errorHandler = console.error;
 console.error = function() {
     QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
     errorHandler.apply(this, arguments);
+};
+
+// NOTE: In order to "export" all methods into the shared Prepro.js scope when
+// using node-qunit, we need to define global functions as:
+// `var name = function() {}`. `function name() {}` does not work!
+
+var project;
+
+var test = function(testName, expected) {
+    var parameters = expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
+    // If this is running on an older version of QUnit (e.g. node-qunit is stuck
+    // with v1.10 for now), emulate the new assert.async() syntax through
+    // QUnit.asyncTest() and QUnit.start();
+    if (!QUnit.async && parameters === 'assert') {
+        return QUnit.asyncTest(testName, function() {
+            // Since tests may be asynchronous, remove the old project before
+            // running the next test.
+            if (project)
+                project.remove();
+            project = new Project();
+            // Pass a fake assert object with just the functions that we need,
+            // so far a async() function returning a done() function:
+            expected({
+                async: function() {
+                    return function() {
+                        QUnit.start();
+                    };
+                }
+            });
+        });
+    } else {
+        return QUnit.test(testName, function(assert) {
+            // Since tests may be asynchronous, remove the old project before
+            // running the next test.
+            if (project)
+                project.remove();
+            project = new Project();
+            expected(assert);
+        });
+    }
 };
 
 // Override equals to convert functions to message and execute them as tests()
@@ -85,6 +127,39 @@ var equals = function(actual, expected, message, options) {
     }
 };
 
+// A list of classes that should be identical after their owners were cloned.
+var identicalAfterCloning = {
+    Gradient: true,
+    Symbol: true
+};
+
+var getFunctionMessage = function(func) {
+    var message = func.toString().match(
+        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+            .replace(/    /g, '')
+            .replace(/^\s+|\s+$/g, '');
+    if (/^return /.test(message)) {
+        message = message
+            .replace(/^return /, '')
+            .replace(/;$/, '');
+    }
+    return message;
+};
+
+var createSVG = function(str, attrs) {
+    if (attrs) {
+        // Similar to SVGExport's createElement / setAttributes.
+        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+        for (var key in attrs)
+            node.setAttribute(key, attrs[key]);
+        return node;
+    } else {
+        return new window.DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
+            'text/xml');
+    }
+};
+
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
     // Just compare the string representation of classes inheriting from Base,
@@ -102,14 +177,14 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
             : objectParser).call(this, obj, stack);
 });
 
-function compareProperties(actual, expected, properties, message, options) {
+var compareProperties = function(actual, expected, properties, message, options) {
     for (var i = 0, l = properties.length; i < l; i++) {
         var key = properties[i];
         equals(actual[key], expected[key], message + '.' + key, options);
     }
-}
+};
 
-function compareItem(actual, expected, message, options, properties) {
+var compareItem = function(actual, expected, message, options, properties) {
 
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -208,7 +283,7 @@ function compareItem(actual, expected, message, options, properties) {
                 'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
                 'justification'], message + '.style', options);
     }
-}
+};
 
 // A list of comparator functions, based on `expected` type. See equals() for
 // an explanation of how the type is determined.
@@ -364,51 +439,5 @@ var comparators = {
     Project: function(actual, expected, message, options) {
         compareProperties(actual, expected, ['symbols', 'layers'],
                 message, options);
-    }
-};
-
-// A list of classes that should be identical after their owners were cloned.
-var identicalAfterCloning = {
-    Gradient: true,
-    Symbol: true
-};
-
-var getFunctionMessage = function(func) {
-    var message = func.toString().match(
-        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
-            .replace(/    /g, '')
-            .replace(/^\s+|\s+$/g, '');
-    if (/^return /.test(message)) {
-        message = message
-            .replace(/^return /, '')
-            .replace(/;$/, '');
-    }
-    return message;
-};
-
-var project;
-
-var test = function(testName, expected) {
-    return QUnit.test(testName, function(assert) {
-        if (project)
-            project.remove();
-        project = new Project();
-        expected(assert);
-    });
-};
-
-// SVG
-
-var createSVG = function(str, attrs) {
-    if (attrs) {
-        // Similar to SVGExport's createElement / setAttributes.
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
     }
 };

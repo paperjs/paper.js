@@ -30,6 +30,10 @@ test('Create a raster from a url', function(assert) {
         equals(raster.size, new Size(146, 146), true);
         done();
     };
+    raster.onError = function(event) {
+        pushFailure(event.event);
+        done();
+    };
 });
 
 test('Create a raster from a data url', function(assert) {
@@ -37,6 +41,10 @@ test('Create a raster from a data url', function(assert) {
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     raster.onLoad = function() {
         equals(raster.size, new Size(2, 2), true);
+        done();
+    };
+    raster.onError = function(event) {
+        pushFailure(event.event);
         done();
     };
 });
@@ -91,7 +99,11 @@ test('Raster#getPixel / setPixel', function(assert) {
         // Alpha
         var color = new Color(1, 1, 0, 0.50196);
         raster.setPixel([0, 0], color);
-        equals(raster.getPixel([0, 0]), color, 'alpha');
+        equals(raster.getPixel([0, 0]), color, 'alpha', { tolerance: 1e-2 });
+        done();
+    };
+    raster.onError = function(event) {
+        pushFailure(event.event);
         done();
     };
 });
@@ -122,6 +134,10 @@ test('Raster#getSubCanvas', function(assert) {
         }, true);
         done();
     };
+    raster.onError = function(event) {
+        pushFailure(event.event);
+        done();
+    };
 });
 
 test('Raster#getAverageColor(path)', function() {
@@ -138,7 +154,7 @@ test('Raster#getAverageColor(path)', function() {
     var raster = paper.project.activeLayer.rasterize(72);
     circle.scale(0.8);
     equals(raster.getAverageColor(circle), circle.fillColor, null,
-            { tolerance: 10e-4 });
+            { tolerance: 1e-3 });
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
@@ -161,5 +177,5 @@ test('Raster#getAverageColor(path) with compound path', function() {
     path.scale(0.8);
     path2.scale(1.2);
     equals(raster.getAverageColor(compoundPath), new Color(1, 0, 0), null,
-            { tolerance: 10e-4 });
+            { tolerance: 1e-3 });
 });

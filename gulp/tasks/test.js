@@ -31,14 +31,16 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
             testing: true
         }
     });
+    // Use the correct working directory for tests:
+    process.chdir('test');
     qunit_node.run({
         maxBlockDuration: 100 * 1000,
         deps: [
-            // To dynamically load from the sources:
-            'node_modules/prepro/lib/node',
-            { path: 'src/load.js', namespace: 'paper' },
-            { path: 'node_modules/resemblejs/resemble.js', namespace: 'resemble' }
+            // To dynamically load from the sources, require Prepro.js first
+            '../node_modules/prepro/lib/node',
+            { path: '../src/load.js', namespace: 'paper' },
+            { path: '../node_modules/resemblejs/resemble.js', namespace: 'resemble' }
         ],
-        code: 'test/tests/load.js'
+        code: 'tests/load.js'
     }, callback);
 });
