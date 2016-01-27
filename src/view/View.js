@@ -168,11 +168,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#update
      * @function
-     * @param {Boolean} [force=false] {@true if the view should be updated even
-     * if no change has happened}
      * @return {Boolean} {@true if the view was updated}
      */
-    // update: function(force) {
+    // update: function() {
     // },
 
     /**
@@ -180,7 +178,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @deprecated use {@link #update()} instead.
      */
-    draw: '#update',
+    draw: function() {
+        this.update();
+    },
 
     /**
      * Requests an update of the view if there are changes through the browser's

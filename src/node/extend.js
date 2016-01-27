@@ -130,7 +130,7 @@ module.exports = function(paper) {
 
         // DOCS: CanvasView#exportImage(path, callback);
         exportImage: function(path, callback) {
-            this.draw();
+            this.update();
             var out = fs.createWriteStream(path),
                 stream = this._element.createPNGStream();
             // Pipe the png stream to the write stream:
