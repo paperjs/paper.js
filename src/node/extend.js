@@ -116,7 +116,7 @@ module.exports = function(paper) {
                         options.onProgress({
                             count: count,
                             amount: options.amount,
-                            percentage: Math.round(count / options.amount
+                            percentage: Math.round((count + 1) / options.amount
                                     * 10000) / 100,
                             time: then - startTime,
                             delta: then - lastTime
