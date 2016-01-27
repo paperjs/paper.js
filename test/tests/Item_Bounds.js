@@ -92,6 +92,8 @@ test('shape.strokeBounds when scaled with strokeScaling set to false', function(
 
 test('text.bounds', function() {
     var text = new PointText(new Point(50, 100));
+    text.fontFamily = 'Helvetica, Arial';
+    text.fontSize = 12;
     text.fillColor = 'black';
     text.content = 'This is a test';
     equals(text.bounds, new Rectangle(50, 89.2, 67, 14.4), 'text.bounds', { tolerance: 1 });
