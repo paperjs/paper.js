@@ -67,8 +67,44 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         selected: false,
         clipMask: false,
         data: {}
-    },
+    }
+},
+new function() { // // Scope to inject various item event handlers
+    var handles = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+    return Base.each(handles,
+        function(name) {
+            this._events[name] = {
+                install: function(type) {
+                    this.getView()._countItemEvent(type, 1);
+                },
 
+                uninstall: function(type) {
+                    this.getView()._countItemEvent(type, -1);
+                }
+            };
+        }, {
+            _events: {
+                onFrame: {
+                    install: function() {
+                        this.getView()._animateItem(this, true);
+                    },
+
+                    uninstall: function() {
+                        this.getView()._animateItem(this, false);
+                    }
+                },
+
+                // Only for external sources, e.g. Raster
+                onLoad: {},
+                onError: {}
+            },
+            statics: {
+                _itemHandlers: handles
+            }
+        }
+    );
+}, /** @lends Item# */{
     initialize: function Item() {
         // Do nothing, but declare it for named constructors.
     },
@@ -120,35 +156,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         return hasProps;
     },
-
-    _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
-            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-        function(name) {
-            this[name] = {
-                install: function(type) {
-                    this.getView()._countItemEvent(type, 1);
-                },
-
-                uninstall: function(type) {
-                    this.getView()._countItemEvent(type, -1);
-                }
-            };
-        }, {
-            onFrame: {
-                install: function() {
-                    this.getView()._animateItem(this, true);
-                },
-
-                uninstall: function() {
-                    this.getView()._animateItem(this, false);
-                }
-            },
-
-            // Only for external sources, e.g. Raster
-            onLoad: {},
-            onError: {}
-        }
-    ),
 
     _serialize: function(options, dictionary) {
         var props = {},

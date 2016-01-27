@@ -136,8 +136,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         return true;
     },
 
-    _events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove',
-            'onMouseDrag', 'onMouseEnter', 'onMouseLeave'],
+    _events: Base.each(
+        Item._itemHandlers.concat(['onResize', 'onKeyDown', 'onKeyUp']),
         function(name) {
             this[name] = {};
         }, {
