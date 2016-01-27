@@ -65,10 +65,9 @@ test('Create a raster from a dom image', function(assert) {
 });
 
 test('Create a raster from a canvas', function() {
-    var canvas = CanvasProvider.getCanvas(30, 20);
+    var canvas = paper.createCanvas(30, 20);
     var raster = new Raster(canvas);
     equals(raster.size, new Size(30, 20), true);
-    CanvasProvider.release(canvas);
 });
 
 test('Create a raster from a dom id', function(assert) {

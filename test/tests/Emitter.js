@@ -13,7 +13,7 @@
 QUnit.module('Emitter');
 
 test('on()', function() {
-    var emitter = new Base(Emitter),
+    var emitter = new Item(),
         installed;
     // fake event type registration
     emitter._eventTypes = {mousemove: {install: function(){ installed = true;} } };
@@ -37,7 +37,7 @@ test('on()', function() {
 });
 
 test('off()', function() {
-    var emitter = new Base(Emitter),
+    var emitter = new Item(),
         uninstalled, called = 0,
         handler = function () {called++},
         handler2 = function () {};
@@ -68,7 +68,7 @@ test('off()', function() {
 });
 
 test('emit()', function() {
-    var emitter = new Base(Emitter),
+    var emitter = new Item(),
         called,
         handler = function (e) {called = e};
     // fake event type registration

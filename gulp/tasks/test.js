@@ -39,9 +39,12 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
     qunit_node.run({
         maxBlockDuration: 100 * 1000,
         deps: [
-            // To dynamically load from the sources, require Prepro.js first
-            '../node_modules/prepro/lib/node',
-            { path: '../dist/paper-full.js' }
+            // To dynamically load the tests from the sources, we need to
+            // require Prepro.js first. Since we need a sub-module, we need to
+            // use relative addresses: require('prepro/lib/node') does not work
+            // because of the way node-qunit handles relative addresses.
+            '../node_modules/prepro/lib/node.js',
+            { path: '../dist/paper-full.js', namespace: 'paper' }
         ],
         code: 'load.js'
     }, callback);

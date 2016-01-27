@@ -10,12 +10,15 @@
  * All rights reserved.
  */
 
-var isNode = typeof global === 'object';
+var isNode = typeof global === 'object',
+    root;
 
 if (isNode) {
-    // Resemble.js needs the Image constructor this global
-    global.Image = window.Image;
+    root = global;
+    // Resemble.js needs the Image constructor this global.
+    global.Image = paper.window.Image;
 } else {
+    root = window;
     // This is only required when running in the browser:
     // Until window.history.pushState() works when running locally, we need to
     // trick qunit into thinking that the feature is not present. This appears
@@ -40,6 +43,10 @@ if (isNode) {
     });
 }
 
+// The unit-tests expect the paper classes to be global.
+if (!('Base' in root))
+    paper.install(root);
+
 var errorHandler = console.error;
 console.error = function() {
     QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
@@ -50,7 +57,7 @@ console.error = function() {
 // using node-qunit, we need to define global functions as:
 // `var name = function() {}`. `function name() {}` does not work!
 
-var project;
+var currentProject;
 
 var test = function(testName, expected) {
     var parameters = expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
@@ -61,9 +68,9 @@ var test = function(testName, expected) {
         return QUnit.asyncTest(testName, function() {
             // Since tests may be asynchronous, remove the old project before
             // running the next test.
-            if (project)
-                project.remove();
-            project = new Project();
+            if (currentProject)
+                currentProject.remove();
+            currentProject = new Project();
             // Pass a fake assert object with just the functions that we need,
             // so far a async() function returning a done() function:
             expected({
@@ -78,9 +85,9 @@ var test = function(testName, expected) {
         return QUnit.test(testName, function(assert) {
             // Since tests may be asynchronous, remove the old project before
             // running the next test.
-            if (project)
-                project.remove();
-            project = new Project();
+            if (currentProject)
+                currentProject.remove();
+            currentProject = new Project();
             expected(assert);
         });
     }
