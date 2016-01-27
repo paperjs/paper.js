@@ -22,13 +22,17 @@ module.exports = function(window) {
     var HTMLCanvasElement = window.HTMLCanvasElement;
 
     function getImplementation(obj) {
-        return obj._canvas ? obj : idlUtils.implForWrapper(obj);
+        // Try implForWrapper() first, fall back on obj. This appears to be
+        // necessary on v7.2.2, but not anymore once we can switch to 8.0.0
+        var impl = idlUtils.implForWrapper(obj);
+        return impl && impl._canvas ? impl : obj;
     }
 
     // Add fake HTMLCanvasElement#type property:
     Object.defineProperty(HTMLCanvasElement.prototype, 'type', {
         get: function() {
-            return getImplementation(this)._type;
+            var canvas = getImplementation(this)._canvas;
+            return canvas && canvas.type || 'image';
         },
 
         set: function(type) {
@@ -38,7 +42,6 @@ module.exports = function(window) {
                 size = impl._canvas || impl;
             impl._canvas = new Canvas(size.width, size.height, type);
             impl._context = null;
-            impl._type = type;
         }
     });
 

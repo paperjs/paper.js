@@ -13,6 +13,5 @@ fs.readFile('./in.json', { encoding: 'utf8' }, function (err, data) {
         if (err)
             throw err;
         console.log('Saved!');
-        process.exit();
     });
 });
