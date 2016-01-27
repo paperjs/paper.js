@@ -71,6 +71,11 @@ module.exports = function(paper) {
         Canvas: '#createCanvas'
     });
 
+    // Override requestAnimationFrame() to avoid setInterval() timers.
+    paper.DomEvent.requestAnimationFrame = function(callback) {
+        process.nextTick(callback);
+    };
+
     // Node.js based image exporting code.
     paper.CanvasView.inject({
         // DOCS: CanvasView#exportFrames(param);
