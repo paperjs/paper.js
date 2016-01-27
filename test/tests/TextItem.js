@@ -14,7 +14,7 @@ QUnit.module('TextItem');
 
 test('PointText', function() {
     var text = new PointText({
-        fontFamily: 'Helvetica, Arial',
+        fontFamily: 'Arial, Helvetica',
         fontSize: 14,
         point: [100, 100],
         content: 'Hello World!'
