@@ -1916,12 +1916,14 @@ new function() { // // Scope to inject various item event handlers
                 // Compare further with the _class property value instead.
                 value = this._class;
             }
-            if (compare instanceof RegExp) {
-                return compare.test(value);
-            } else if (typeof compare === 'function') {
+            if (typeof compare === 'function') {
                 return !!compare(value);
-            } else if (Base.isPlainObject(compare)) {
-                return matchObject(compare, value);
+            } else if (compare) {
+                if (compare.test) { // RegExp-ish
+                    return compare.test(value);
+                } else if (Base.isPlainObject(compare)) {
+                    return matchObject(compare, value);
+                }
             }
             return Base.equals(value, compare);
         }
