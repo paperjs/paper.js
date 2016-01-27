@@ -213,9 +213,12 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * The HTMLImageElement or Canvas element of the raster, if one is
      * associated.
+     * Note that for consistency, a {@link #onLoad} event will be triggered on
+     * the raster even if the image has already finished loading before, or if
+     * we are setting the raster to a canvas.
      *
      * @bean
-     * @type HTMLImageElement|Canvas
+     * @type HTMLImageElement|HTMLCanvasElement
      */
     getImage: function() {
         return this._image;
@@ -251,17 +254,22 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
     },
 
+    /**
+     * Internal version of {@link #setImage(image)} that does not trigger
+     * events. This is used by #setImage(), but also in other places where
+     * underlying canvases are replaced, resized, etc.
+     */
     _setImage: function(image) {
         if (this._canvas)
             CanvasProvider.release(this._canvas);
         // Due to similarities, we can handle both canvas and image types here.
         if (image && image.getContext) {
-            // A canvas object
+            // A Canvas object
             this._image = null;
             this._canvas = image;
             this._loaded = true;
         } else {
-            // A image object
+            // A Image object
             this._image = image;
             this._canvas = null;
             this._loaded = image && image.complete;
@@ -284,7 +292,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * case `null` is returned instead.
      *
      * @bean
-     * @type Canvas
+     * @type HTMLCanvasELement
      */
     getCanvas: function() {
         if (!this._canvas) {
@@ -338,6 +346,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      * ID of a DOM element to get the image from (either a DOM Image or a
      * Canvas). Reading this property will return the url of the source image or
      * a data-url.
+     * Note that for consistency, a {@link #onLoad} event will be triggered on
+     * the raster even if the image has already finished loading before.
      *
      * @bean
      * @type HTMLImageElement|HTMLCanvasElement|String
@@ -417,7 +427,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @param {Rectangle} rect the boundaries of the sub image in pixel
      * coordinates
      *
-     * @return {Canvas} the sub image as a Canvas object
+     * @return {HTMLCanvasELement} the sub image as a Canvas object
      */
     getSubCanvas: function(/* rect */) {
         var rect = Rectangle.read(arguments),
@@ -465,7 +475,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * Draws an image on the raster.
      *
-     * @param {HTMLImageELement|Canvas} image
+     * @param {HTMLImageELement|HTMLCanvasELement} image
      * @param {Point} point the offset of the image as a point in pixel
      * coordinates
      */
