@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Curves');
+QUnit.module('Path Curves');
 
 test('path.curves synchronisation', function() {
     var path = new Path();

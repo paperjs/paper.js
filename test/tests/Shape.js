@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Shape');
+QUnit.module('Shape');
 
 test('shape.toPath().toShape()', function() {
     var shapes = {

@@ -25,7 +25,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=0.8.0 <5.0.0"
+    "node": ">=0.8.0 <6.0.0"
   },
   "dependencies": {
     "jsdom": "git://github.com/lehni/jsdom.git#3d55789d0f4d55392721b1e22890837fde472375",
@@ -42,7 +42,7 @@
     "gulp": "^3.9.0",
     "gulp-cached": "^1.1.0",
     "gulp-jshint": "^2.0.0",
-    "gulp-prepro": "^2.0.0",
+    "gulp-prepro": "^2.1.0",
     "gulp-qunit": "git://github.com/lehni/gulp-qunit.git#459c5603ceac460327a40dc89df6f19c786dc61b",
     "gulp-rename": "^1.2.2",
     "gulp-rimraf": "^0.2.0",
@@ -56,7 +56,9 @@
     "jshint": "2.8.x",
     "jshint-summary": "^0.4.0",
     "merge-stream": "^1.0.0",
-    "prepro": "^2.0.0",
+    "minimist": "^1.2.0",
+    "prepro": "^2.1.0",
+    "qunit": "^0.7.7",
     "qunitjs": "^1.20.0",
     "require-dir": "^0.3.0",
     "resemblejs": "^2.1.0",

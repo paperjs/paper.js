@@ -45,7 +45,7 @@ if (typeof window === 'object') {
     }
 } else {
     // Node.js based loading through Prepro.js:
-    var prepro = require('prepro/lib/node.js'),
+    var prepro = require('prepro/lib/node'),
         // Load the default browser-based options for further amendments.
         // Step out and back into src, in case this is loaded from
         // dist/paper-node.js

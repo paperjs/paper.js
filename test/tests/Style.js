@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Style');
+QUnit.module('Style');
 
 test('style defaults', function() {
     var path = new Path();

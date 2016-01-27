@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item Bounds');
+QUnit.module('Item Bounds');
 
 test('item.bounds caching', function() {
     var circle = new Path.Circle(new Point(100, 100), 50);
@@ -94,5 +94,5 @@ test('text.bounds', function() {
     var text = new PointText(new Point(50, 100));
     text.fillColor = 'black';
     text.content = 'This is a test';
-    equals(text.bounds, new Rectangle(50, 89.2, 67, 14.4), 'text.bounds', { tolerance: 0.5 });
+    equals(text.bounds, new Rectangle(50, 89.2, 67, 14.4), 'text.bounds', { tolerance: 1 });
 });

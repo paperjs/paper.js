@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Intersections');
+QUnit.module('Path Intersections');
 
 function testIntersection(intersections, results) {
     equals(intersections.length, results.length, 'intersections.length');

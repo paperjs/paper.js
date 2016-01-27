@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item');
+QUnit.module('Item');
 
 test('copyTo(project)', function() {
     var project = paper.project;

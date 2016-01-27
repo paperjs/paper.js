@@ -10,26 +10,42 @@
  * All rights reserved.
  */
 
-// Until window.history.pushState() works when running locally, we need to trick
-// qunit into thinking that the feature is not present. This appears to work...
-// TODO: Ideally we should fix this in QUnit instead.
-delete window.history;
-window.history = {};
+var isNode = typeof global === 'object',
+    root;
 
-QUnit.begin(function() {
-    if (QUnit.urlParams.hidepassed) {
-        document.getElementById('qunit-tests').className += ' hidepass';
-    }
-    resemble.outputSettings({
-        errorColor: {
-            red: 255,
-            green: 51,
-            blue: 0
-        },
-        errorType: 'flat',
-        transparency: 1
+if (isNode) {
+    root = global;
+    // Resemble.js needs the Image constructor this global.
+    global.Image = paper.window.Image;
+} else {
+    root = window;
+    // This is only required when running in the browser:
+    // Until window.history.pushState() works when running locally, we need to
+    // trick qunit into thinking that the feature is not present. This appears
+    // to work...
+    // TODO: Ideally we should fix this in QUnit instead.
+    delete window.history;
+    window.history = {};
+
+    QUnit.begin(function() {
+        if (QUnit.urlParams.hidepassed) {
+            document.getElementById('qunit-tests').className += ' hidepass';
+        }
+        resemble.outputSettings({
+            errorColor: {
+                red: 255,
+                green: 51,
+                blue: 0
+            },
+            errorType: 'flat',
+            transparency: 1
+        });
     });
-});
+}
+
+// The unit-tests expect the paper classes to be global.
+if (!('Base' in root))
+    paper.install(root);
 
 var errorHandler = console.error;
 console.error = function() {
@@ -37,8 +53,48 @@ console.error = function() {
     errorHandler.apply(this, arguments);
 };
 
+// NOTE: In order to "export" all methods into the shared Prepro.js scope when
+// using node-qunit, we need to define global functions as:
+// `var name = function() {}`. `function name() {}` does not work!
+
+var currentProject;
+
+var test = function(testName, expected) {
+    var parameters = expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
+    // If this is running on an older version of QUnit (e.g. node-qunit is stuck
+    // with v1.10 for now), emulate the new assert.async() syntax through
+    // QUnit.asyncTest() and QUnit.start();
+    if (!QUnit.async && parameters === 'assert') {
+        return QUnit.asyncTest(testName, function() {
+            // Since tests may be asynchronous, remove the old project before
+            // running the next test.
+            if (currentProject)
+                currentProject.remove();
+            currentProject = new Project();
+            // Pass a fake assert object with just the functions that we need,
+            // so far a async() function returning a done() function:
+            expected({
+                async: function() {
+                    return function() {
+                        QUnit.start();
+                    };
+                }
+            });
+        });
+    } else {
+        return QUnit.test(testName, function(assert) {
+            // Since tests may be asynchronous, remove the old project before
+            // running the next test.
+            if (currentProject)
+                currentProject.remove();
+            currentProject = new Project();
+            expected(assert);
+        });
+    }
+};
+
 // Override equals to convert functions to message and execute them as tests()
-function equals(actual, expected, message, options) {
+var equals = function(actual, expected, message, options) {
     // Allow the use of functions for actual, which will get called and their
     // source content extracted for readable reports.
     if (typeof actual === 'function') {
@@ -55,7 +111,7 @@ function equals(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof Element && 'Element' // handle DOM Elements
+            || expected instanceof window.Element && 'Element' // handle DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
@@ -76,7 +132,40 @@ function equals(actual, expected, message, options) {
                 actual, identical ? expected : 'not ' + expected,
                 message + ': identical after cloning');
     }
-}
+};
+
+// A list of classes that should be identical after their owners were cloned.
+var identicalAfterCloning = {
+    Gradient: true,
+    Symbol: true
+};
+
+var getFunctionMessage = function(func) {
+    var message = func.toString().match(
+        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+            .replace(/    /g, '')
+            .replace(/^\s+|\s+$/g, '');
+    if (/^return /.test(message)) {
+        message = message
+            .replace(/^return /, '')
+            .replace(/;$/, '');
+    }
+    return message;
+};
+
+var createSVG = function(str, attrs) {
+    if (attrs) {
+        // Similar to SVGExport's createElement / setAttributes.
+        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+        for (var key in attrs)
+            node.setAttribute(key, attrs[key]);
+        return node;
+    } else {
+        return new window.DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
+            'text/xml');
+    }
+};
 
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
@@ -95,14 +184,15 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
             : objectParser).call(this, obj, stack);
 });
 
-function compareProperties(actual, expected, properties, message, options) {
+var compareProperties = function(actual, expected, properties, message, options) {
     for (var i = 0, l = properties.length; i < l; i++) {
         var key = properties[i];
         equals(actual[key], expected[key], message + '.' + key, options);
     }
-}
+};
 
-function compareItem(actual, expected, message, options, properties) {
+var compareItem = function(actual, expected, message, options, properties) {
+    options = options || {};
 
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -119,7 +209,7 @@ function compareItem(actual, expected, message, options, properties) {
                 + '" src="' + raster.source + '">';
     }
 
-    if (options && options.rasterize) {
+    if (options.rasterize) {
         // In order to properly compare pixel by pixel, we need to put each item
         // into a group with a white background of the united dimensions of the
         // bounds of both items before rasterizing.
@@ -159,11 +249,15 @@ function compareItem(actual, expected, message, options, properties) {
                 .compareTo(expected.getImageData())
                 // When working with imageData, this call is synchronous:
                 .onComplete(function(data) { result = data; });
-            var identical = result ? 100 - result.misMatchPercentage : 0,
-                ok = identical == 100,
-                text = identical.toFixed(2) + '% identical';
-            QUnit.push(ok, text, '100.00% identical', message);
-            if (!ok && result) {
+            var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
+                fixed = ((1 / tolerance) + '').length - 1,
+                identical = result ? 100 - result.misMatchPercentage : 0,
+                reached = identical.toFixed(fixed),
+                hundred = (100).toFixed(fixed),
+                ok = reached == hundred;
+            QUnit.push(ok, reached + '% identical', hundred + '% identical',
+                    message);
+            if (!ok && result && !isNode) {
                 // Get the right entry for this unit test and assertion, and
                 // replace the results with images
                 var entry = document.getElementById('qunit-test-output-' + id)
@@ -179,14 +273,14 @@ function compareItem(actual, expected, message, options, properties) {
             }
         }
     } else {
-        if (options && options.cloned)
+        if (options.cloned)
             QUnit.notStrictEqual(actual.id, expected.id,
                     'not ' + message + '.id');
         QUnit.strictEqual(actual.constructor, expected.constructor,
                 message + '.constructor');
         // When item is cloned and has a name, the name will be versioned:
         equals(actual.name,
-                options && options.cloned && expected.name
+                options.cloned && expected.name
                     ? expected.name + ' 1' : expected.name,
                 message + '.name');
         compareProperties(actual, expected, ['children', 'bounds', 'position',
@@ -201,7 +295,7 @@ function compareItem(actual, expected, message, options, properties) {
                 'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
                 'justification'], message + '.style', options);
     }
-}
+};
 
 // A list of comparator functions, based on `expected` type. See equals() for
 // an explanation of how the type is determined.
@@ -359,56 +453,3 @@ var comparators = {
                 message, options);
     }
 };
-
-// A list of classes that should be identical after their owners were cloned.
-var identicalAfterCloning = {
-    Gradient: true,
-    Symbol: true
-};
-
-function getFunctionMessage(func) {
-    var message = func.toString().match(
-        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
-            .replace(/    /g, '')
-            .replace(/^\s+|\s+$/g, '');
-    if (/^return /.test(message)) {
-        message = message
-            .replace(/^return /, '')
-            .replace(/;$/, '');
-    }
-    return message;
-}
-
-function test(testName, expected) {
-    return QUnit.test(testName, function() {
-        var project = new Project();
-        expected();
-        project.remove();
-    });
-}
-
-function asyncTest(testName, expected) {
-    return QUnit.asyncTest(testName, function() {
-        var project = new Project();
-        expected(function() {
-            project.remove();
-            QUnit.start();
-        });
-    });
-}
-
-// SVG
-
-function createSVG(str, attrs) {
-    if (attrs) {
-        // Similar to SVGExport's createElement / setAttributes.
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
-    }
-}

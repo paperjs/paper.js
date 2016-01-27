@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Bounds');
+QUnit.module('Path Bounds');
 
 test('path.bounds', function() {
     var path = new Path([
