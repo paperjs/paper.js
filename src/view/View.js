@@ -106,8 +106,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._frameItemCount = 0;
         // Count the installed native and virtual item events,
         // see #_countItemEvent():
-        this._itemNativeEvents = {};
-        this._itemVirtualEvents = {};
+        this._itemEvents = { native: {}, virtual: {} };
     },
 
     /**
@@ -1139,7 +1138,7 @@ new function() { // Injection scope for event handling on the browser
      * Required by code that is counting the amount of required natives events.
      * The mapping is native -> virtual.
      */
-    var itemNativeEvents = {
+    var itemEventsMap = {
         mousedown: {
             mousedown: 1,
             mousedrag: 1,
@@ -1182,12 +1181,13 @@ new function() { // Injection scope for event handling on the browser
          * tools.
          */
         _handleMouseEvent: function(type, event, point) {
-            var hitItems = this._itemNativeEvents[type],
+            var itemEvents = this._itemEvents,
+                hitItems = itemEvents.native[type],
                 tool = this._scope.tool,
                 view = this;
 
             function responds(type) {
-                return view._itemVirtualEvents[type] || view.responds(type)
+                return itemEvents.virtual[type] || view.responds(type)
                         || tool && tool.responds(type);
             }
 
@@ -1329,16 +1329,17 @@ new function() { // Injection scope for event handling on the browser
 
         _countItemEvent: function(type, sign) {
             // If the view requires counting of installed mouse events,
-            // change the event counters now according to itemNativeEvents
+            // change the event counters now according to itemEventsMap
             // (defined in the code further above).
-            var nativeEvents = this._itemNativeEvents,
-                virtualEvents = this._itemVirtualEvents;
-            for (var key in itemNativeEvents) {
-                nativeEvents[key] = (nativeEvents[key] || 0)
-                        + (itemNativeEvents[key][type] || 0) * sign;
+            var itemEvents = this._itemEvents,
+                native = itemEvents.native,
+                virtual = itemEvents.virtual;
+            for (var key in itemEventsMap) {
+                native[key] = (native[key] || 0)
+                        + (itemEventsMap[key][type] || 0) * sign;
             }
             // Also update the count of virtual events installed.
-            virtualEvents[type] = (virtualEvents[type] || 0) + sign;
+            virtual[type] = (virtual[type] || 0) + sign;
         },
 
         statics: {
