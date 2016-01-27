@@ -93,7 +93,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             // (via  view.requestUpdate()), which handles the smooth updates.
             this._needsUpdate = true;
             var view = this._view;
-            if (view && !view._requested)
+            if (view && !view._requested && view._autoUpdate)
                 view.requestUpdate();
         }
         // Have project keep track of changed items so they can be iterated.

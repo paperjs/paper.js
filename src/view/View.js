@@ -107,6 +107,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Count the installed native and virtual item events,
         // see #_countItemEvent():
         this._itemEvents = { native: {}, virtual: {} };
+        // Do not set _autoUpdate on Node.js by default:
+        this._autoUpdate = !paper.agent.node;
     },
 
     /**
@@ -162,6 +164,26 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _count: 0,
 
     /**
+     * Controls whether the view is automatically updated in the next animation
+     * frame on changes, or whether you prefer to manually call
+     * {@link #update()} or {@link #requestUpdate()} after changes.
+     * Note that this is `true` by default, except for Node.js, where manual
+     * updates make more sense.
+     *
+     * @bean
+     * @type Boolean
+     */
+    getAutoUpdate: function() {
+        return this._autoUpdate;
+    },
+
+    setAutoUpdate: function(autoUpdate) {
+        this._autoUpdate = autoUpdate;
+        if (autoUpdate)
+            this.requestUpdate();
+    },
+
+    /**
      * Updates the view if there are changes. Note that when using built-in
      * event hanlders for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
@@ -205,7 +227,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 }
                 // Even if we're not animating, update the view now since this
                 // might have been a request for a single redraw after a change
-                that.update();
+                if (that._autoUpdate)
+                    that.update();
             }, this._element);
             this._requested = true;
         }
@@ -354,7 +377,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
             delta: delta
         });
         this._changed();
-        this.requestUpdate();
+        if (this._autoUpdate)
+            this.requestUpdate();
     },
 
     /**
