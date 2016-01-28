@@ -40,13 +40,16 @@ if (isNode) {
             lines.forEach(function(line) {
                 gutil.log(line);
             });
+        } else if (false) {
+            gutil.log(colors.green('Test succeeded') + ': ' + details.module
+                    + ': ' + details.name +': '  + (details.message || ''));
         }
     });
     QUnit.done(function(details) {
         if (done)
             return;
         var color = colors[details.failed > 0 ? 'red' : 'green'];
-        gutil.log('Took ' + details.runtime + ' ms to run '
+        gutil.log('Took ' + details.runtime + 'ms to run '
             + colors.blue(details.total) + ' tests. ' + color(details.passed
                 + ' passed, ' + details.failed + ' failed.'));
         if (details.failed > 0) {
