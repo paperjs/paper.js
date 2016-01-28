@@ -23,7 +23,7 @@ test('Create a raster without a source and set its size', function() {
     equals(raster.size, new Size(640, 480), true);
 });
 
-test('Create a raster from a url', function(assert) {
+test('Create a raster from a URL', function(assert) {
     var done = assert.async();
     var raster = new Raster('assets/paper-js.gif');
     raster.onLoad = function() {
@@ -31,12 +31,12 @@ test('Create a raster from a url', function(assert) {
         done();
     };
     raster.onError = function(event) {
-        pushFailure(event.event);
+        pushFailure('Loading from a valid local URL should not give an error.');
         done();
     };
 });
 
-test('Create a raster from a data url', function(assert) {
+test('Create a raster from a data URL', function(assert) {
     var done = assert.async();
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     raster.onLoad = function() {
@@ -44,7 +44,7 @@ test('Create a raster from a data url', function(assert) {
         done();
     };
     raster.onError = function(event) {
-        pushFailure(event.event);
+        pushFailure('Loading from a valid data URL should not give an error.');
         done();
     };
 });
@@ -101,10 +101,6 @@ test('Raster#getPixel / setPixel', function(assert) {
         equals(raster.getPixel([0, 0]), color, 'alpha', { tolerance: 1e-2 });
         done();
     };
-    raster.onError = function(event) {
-        pushFailure(event.event);
-        done();
-    };
 });
 
 test('Raster#getSubCanvas', function(assert) {
@@ -131,10 +127,6 @@ test('Raster#getSubCanvas', function(assert) {
         equals(function() {
             return Base.equals(Array.prototype.slice.call(ctx.getImageData(0, 0, 1, 2).data), expected);
         }, true);
-        done();
-    };
-    raster.onError = function(event) {
-        pushFailure(event.event);
         done();
     };
 });
