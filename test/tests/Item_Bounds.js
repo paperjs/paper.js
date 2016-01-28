@@ -96,7 +96,7 @@ test('text.bounds', function() {
         fontSize: 14,
         fillColor: 'black',
         point: [50, 100],
-        content: 'This is a test'
+        content: 'Hello World!'
     });
-    equals(text.bounds, new Rectangle(50, 87.4, 78.6, 16.8), 'text.bounds', { tolerance: 1.0 });
+    equals(text.bounds, new Rectangle(50, 87.4, 76.25, 16.8), 'text.bounds', { tolerance: 1.0 });
 });
