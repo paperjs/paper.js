@@ -73,16 +73,6 @@ if (isNode) {
     });
 }
 
-resemble.outputSettings({
-    errorColor: {
-        red: 255,
-        green: 51,
-        blue: 0
-    },
-    errorType: 'flat',
-    transparency: 1
-});
-
 // The unit-tests expect the paper classes to be global.
 if (!('Base' in root))
     paper.install(root);
@@ -231,8 +221,7 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
-var compareItem = function(actual, expected, message, options, properties) {
-    options = options || {};
+var compareRasterized = function(actual, expected, message, options) {
 
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -249,92 +238,104 @@ var compareItem = function(actual, expected, message, options, properties) {
                 + '" src="' + raster.source + '">';
     }
 
-    if (options.rasterize) {
-        // In order to properly compare pixel by pixel, we need to put each item
-        // into a group with a white background of the united dimensions of the
-        // bounds of both items before rasterizing.
-        var resolution = options.rasterize === true ? 72 : options.rasterize,
-            actualBounds = actual.strokeBounds,
-            expecedBounds = expected.strokeBounds,
-            bounds = actualBounds.isEmpty()
-                    ? expecedBounds
-                    : expecedBounds.isEmpty()
-                    ? actualBounds
-                    : actualBounds.unite(expecedBounds);
-        if (bounds.isEmpty()) {
-            QUnit.push(true, 'empty', 'empty', message);
-            return;
-        }
-        var group = actual && expected && new Group({
-                insert: false,
-                children: [
-                    new Shape.Rectangle({
-                        rectangle: bounds,
-                        fillColor: 'white'
-                    })
-                ]
-            }),
-            actual = rasterize(actual, group, resolution),
-            expected = rasterize(expected, group, resolution);
-        if (!actual || !expected) {
-            QUnit.pushFailure('Unable to compare rasterized items: ' +
-                    (!actual ? 'actual' : 'expected') + ' item is null',
-                    QUnit.stack(2));
-        } else {
-            // Use resemble.js to compare the two rasterized items.
-            var id = QUnit.config.current.testId,
-                index = QUnit.config.current.assertions.length + 1,
-                result;
-            resemble(actual.getImageData())
-                .compareTo(expected.getImageData())
-                // When working with imageData, this call is synchronous:
-                .onComplete(function(data) { result = data; });
-            var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
-                fixed = ((1 / tolerance) + '').length - 1,
-                identical = result ? 100 - result.misMatchPercentage : 0,
-                reached = identical.toFixed(fixed),
-                hundred = (100).toFixed(fixed),
-                ok = reached == hundred;
-            QUnit.push(ok, reached + '% identical', hundred + '% identical',
-                    message);
-            if (!ok && result && !isNode) {
-                // Get the right entry for this unit test and assertion, and
-                // replace the results with images
-                var entry = document.getElementById('qunit-test-output-' + id)
-                        .querySelector('li:nth-child(' + (index) + ')'),
-                    bounds = result.diffBounds;
-                entry.querySelector('.test-expected td').innerHTML =
-                        getImageTag(expected);
-                entry.querySelector('.test-actual td').innerHTML =
-                        getImageTag(actual);
-                entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
-                        + '</pre><br>'
-                        + '<img src="' + result.getImageDataUrl() + '">';
-            }
-        }
-    } else {
-        if (options.cloned)
-            QUnit.notStrictEqual(actual.id, expected.id,
-                    'not ' + message + '.id');
-        QUnit.strictEqual(actual.constructor, expected.constructor,
-                message + '.constructor');
-        // When item is cloned and has a name, the name will be versioned:
-        equals(actual.name,
-                options.cloned && expected.name
-                    ? expected.name + ' 1' : expected.name,
-                message + '.name');
-        compareProperties(actual, expected, ['children', 'bounds', 'position',
-                'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
-                'selected', 'fullySelected', 'clipMask', 'guide'],
-                message, options);
-        if (properties)
-            compareProperties(actual, expected, properties, message, options);
-        // Style
-        compareProperties(actual.style, expected.style, ['fillColor',
-                'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
-                'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
-                'justification'], message + '.style', options);
+    // In order to properly compare pixel by pixel, we need to put each item
+    // into a group with a white background of the united dimensions of the
+    // bounds of both items before rasterizing.
+    var resolution = options.rasterize === true ? 72 : options.rasterize,
+        actualBounds = actual.strokeBounds,
+        expecedBounds = expected.strokeBounds,
+        bounds = actualBounds.isEmpty()
+                ? expecedBounds
+                : expecedBounds.isEmpty()
+                ? actualBounds
+                : actualBounds.unite(expecedBounds);
+    if (bounds.isEmpty()) {
+        QUnit.push(true, 'empty', 'empty', message);
+        return;
     }
+    var group = actual && expected && new Group({
+            insert: false,
+            children: [
+                new Shape.Rectangle({
+                    rectangle: bounds,
+                    fillColor: 'white'
+                })
+            ]
+        }),
+        actual = rasterize(actual, group, resolution),
+        expected = rasterize(expected, group, resolution);
+    if (!actual || !expected) {
+        QUnit.pushFailure('Unable to compare rasterized items: ' +
+                (!actual ? 'actual' : 'expected') + ' item is null',
+                QUnit.stack(2));
+    } else {
+        // Use resemble.js to compare the two rasterized items.
+        var id = QUnit.config.current.testId,
+            index = QUnit.config.current.assertions.length + 1,
+            result;
+        if (!resemble._setup) {
+            resemble._setup = true;
+            resemble.outputSettings({
+                errorColor: { red: 255, green: 51, blue: 0 },
+                errorType: 'flat',
+                transparency: 1
+            });
+        }
+        resemble(actual.getImageData())
+            .compareTo(expected.getImageData())
+            // When working with imageData, this call is synchronous:
+            .onComplete(function(data) { result = data; });
+        var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
+            fixed = ((1 / tolerance) + '').length - 1,
+            identical = result ? 100 - result.misMatchPercentage : 0,
+            reached = identical.toFixed(fixed),
+            hundred = (100).toFixed(fixed),
+            ok = reached == hundred;
+        QUnit.push(ok, reached + '% identical', hundred + '% identical',
+                message);
+        if (!ok && result && !isNode) {
+            // Get the right entry for this unit test and assertion, and
+            // replace the results with images
+            var entry = document.getElementById('qunit-test-output-' + id)
+                    .querySelector('li:nth-child(' + (index) + ')'),
+                bounds = result.diffBounds;
+            entry.querySelector('.test-expected td').innerHTML =
+                    getImageTag(expected);
+            entry.querySelector('.test-actual td').innerHTML =
+                    getImageTag(actual);
+            entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
+                    + '</pre><br>'
+                    + '<img src="' + result.getImageDataUrl() + '">';
+        }
+    }
+};
+
+var compareItem = function(actual, expected, message, options, properties) {
+    options = options || {};
+    if (options.rasterize) {
+        return compareRasterized(actual, expected, message, options);
+    }
+    if (options.cloned)
+        QUnit.notStrictEqual(actual.id, expected.id,
+                'not ' + message + '.id');
+    QUnit.strictEqual(actual.constructor, expected.constructor,
+            message + '.constructor');
+    // When item is cloned and has a name, the name will be versioned:
+    equals(actual.name,
+            options.cloned && expected.name
+                ? expected.name + ' 1' : expected.name,
+            message + '.name');
+    compareProperties(actual, expected, ['children', 'bounds', 'position',
+            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+            'selected', 'fullySelected', 'clipMask', 'guide'],
+            message, options);
+    if (properties)
+        compareProperties(actual, expected, properties, message, options);
+    // Style
+    compareProperties(actual.style, expected.style, ['fillColor',
+            'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
+            'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
+            'justification'], message + '.style', options);
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
