@@ -108,8 +108,7 @@ After adding this line, your commands should work in the expected way:
 
 ##### Installing Cairo, Pango and all other dependencies on Debian/Ubuntu Linux:
 
-    sudo apt-get install libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev
-    libgif-dev
+    sudo apt-get install libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev libgif-dev
 
 You might also need to install the build-essential package if you don't usually
 build from c++ sources:
