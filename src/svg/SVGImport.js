@@ -186,20 +186,26 @@ new function() {
     // nodeNames still.
     var importers = {
         '#document': function (node, type, options, isRoot) {
-            var nodes = node.childNodes;
+            var nodes = node.childNodes,
+                move = !paper.agent.node;
             for (var i = 0, l = nodes.length; i < l; i++) {
-                var child = nodes[i];
+                var child = nodes[i],
+                    next;
                 if (child.nodeType === 1) {
-                    // NOTE: We need to move the svg node into our current
-                    // document, so default styles apply!
-                    var next = child.nextSibling;
-                    document.body.appendChild(child);
+                    if (move) {
+                        // NOTE: We need to move the svg node into our current
+                        // document, so default styles apply!
+                        next = child.nextSibling;
+                        document.body.appendChild(child);
+                    }
                     var item = importSVG(child, options, isRoot);
-                    //  After import, we move it back to where it was:
-                    if (next) {
-                        node.insertBefore(child, next);
-                    } else {
-                        node.appendChild(child);
+                    if (move) {
+                        //  After import, we move it back to where it was:
+                        if (next) {
+                            node.insertBefore(child, next);
+                        } else {
+                            node.appendChild(child);
+                        }
                     }
                     return item;
                 }
