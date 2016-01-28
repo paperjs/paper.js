@@ -15,7 +15,7 @@ var gulp = require('gulp'),
     node_qunit = require('qunit'),
     gutil = require('gulp-util');
 
-gulp.task('test', ['test:browser']);
+gulp.task('test', ['test:browser', 'test:node']);
 
 gulp.task('test:browser', ['minify:acorn'], function() {
     return gulp.src('test/index.html')
