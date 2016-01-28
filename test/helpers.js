@@ -17,45 +17,46 @@ if (isNode) {
     root = global;
     // Resemble.js needs the Image constructor this global.
     global.Image = paper.window.Image;
-    // Handle logging to gulp directly from here.
+    // Handle logging to gulp directly from here, imitating the way gulp-qunit
+    // logs and formats results and errors:
     var gutil = require('gulp-util'),
-        colors = gutil.colors;
-
+        colors = gutil.colors,
+        done = false;
     QUnit.log(function(details) {
         if (!details.result) {
-            var str = colors.red('Test failed') + ': ' + details.module + ': ' + details.name;
-            str += '\n' + colors.red('Failed assertion') + ': ' + details.message;
-            str += details.message || '';
+            var lines = [
+                colors.red('Test failed') + ': ' + details.module + ': '
+                        + details.name
+            ];
+            var line = 'Failed assertion: ' + (details.message || '');
             if (details.expected !== undefined) {
-                str += ', ';
-                str += 'expected: ' + details.expected + ', but was: ' +
-                        details.actual;
+                line += ', expected: ' + details.expected + ', but was: '
+                        + details.actual;
             }
-            if (details.source)
-                str += '\n' + details.source;
-            str.split(/\r\n|\n|\r/mg).forEach(function(line) {
+            lines.push(line);
+            if (details.source) {
+                lines = lines.concat(details.source.split(/\r\n|\n|\r/mg));
+            }
+            lines.forEach(function(line) {
                 gutil.log(line);
             });
         }
     });
-
-    var first = true;
     QUnit.done(function(details) {
-        if (first) {
-            first = false;
-            // Imitate the way gulp-qunit formats results and errors.
-            var color = colors[details.failed > 0 ? 'red' : 'green'];
-            gutil.log('Took ' + details.runtime + ' ms to run '
-                + colors.blue(details.total) + ' tests. ' + color(details.passed
-                    + ' passed, ' + details.failed + ' failed.'));
-            if (details.failed > 0) {
-                gutil.log('node-qunit: ' + gutil.colors.red('✖')
-                    + ' QUnit assertions failed');
-            } else {
-                gutil.log('node-qunit: ' + gutil.colors.green('✔')
-                    + ' QUnit assertions all passed');
-            }
+        if (done)
+            return;
+        var color = colors[details.failed > 0 ? 'red' : 'green'];
+        gutil.log('Took ' + details.runtime + ' ms to run '
+            + colors.blue(details.total) + ' tests. ' + color(details.passed
+                + ' passed, ' + details.failed + ' failed.'));
+        if (details.failed > 0) {
+            gutil.log('node-qunit: ' + gutil.colors.red('✖')
+                + ' QUnit assertions failed');
+        } else {
+            gutil.log('node-qunit: ' + gutil.colors.green('✔')
+                + ' QUnit assertions all passed');
         }
+        done = true;
     });
 } else {
     root = window;
