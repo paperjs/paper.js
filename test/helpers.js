@@ -15,7 +15,7 @@ var isNode = typeof global === 'object',
 
 if (isNode) {
     root = global;
-    // Resemble.js needs the Image constructor this global.
+    // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
     // Handle logging to gulp directly from here, imitating the way gulp-qunit
     // logs and formats results and errors:
@@ -169,33 +169,6 @@ var equals = function(actual, expected, message, options) {
 var identicalAfterCloning = {
     Gradient: true,
     Symbol: true
-};
-
-var getFunctionMessage = function(func) {
-    var message = func.toString().match(
-        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
-            .replace(/    /g, '')
-            .replace(/^\s+|\s+$/g, '');
-    if (/^return /.test(message)) {
-        message = message
-            .replace(/^return /, '')
-            .replace(/;$/, '');
-    }
-    return message;
-};
-
-var createSVG = function(str, attrs) {
-    if (attrs) {
-        // Similar to SVGExport's createElement / setAttributes.
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
-    }
 };
 
 // Register a jsDump parser for Base.
@@ -495,3 +468,33 @@ var comparators = {
                 message, options);
     }
 };
+
+// Some other helpers:
+
+var getFunctionMessage = function(func) {
+    var message = func.toString().match(
+        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+            .replace(/    /g, '')
+            .replace(/^\s+|\s+$/g, '');
+    if (/^return /.test(message)) {
+        message = message
+            .replace(/^return /, '')
+            .replace(/;$/, '');
+    }
+    return message;
+};
+
+var createSVG = function(str, attrs) {
+    if (attrs) {
+        // Similar to SVGExport's createElement / setAttributes.
+        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+        for (var key in attrs)
+            node.setAttribute(key, attrs[key]);
+        return node;
+    } else {
+        return new window.DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
+            'text/xml');
+    }
+};
+
