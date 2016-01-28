@@ -25,7 +25,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=0.8.0 <6.0.0"
+    "node": ">=0.10.0 <6.0.0"
   },
   "dependencies": {
     "jsdom": "git://github.com/lehni/jsdom.git#3d55789d0f4d55392721b1e22890837fde472375",
@@ -43,7 +43,7 @@
     "gulp-cached": "^1.1.0",
     "gulp-jshint": "^2.0.0",
     "gulp-prepro": "^2.2.0",
-    "gulp-qunits": "^1.5.0",
+    "gulp-qunits": "^1.5.1",
     "gulp-rename": "^1.2.2",
     "gulp-rimraf": "^0.2.0",
     "gulp-shell": "^0.5.1",
