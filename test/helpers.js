@@ -99,44 +99,38 @@ QUnit.done(function(details) {
     console.error = errorHandler;
 });
 
+var currentProject,
+    // In case we're stuck with an old QUnit, use a fake assert object with just
+    // the functions that we need:
+    // For now, a async() function returning a done() function:
+    fakeAssert = {
+        async: function() {
+            return function() {
+                QUnit.start();
+            };
+        }
+    };
+
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
 // `var name = function() {}`. `function name() {}` does not work!
 
-var currentProject;
-
 var test = function(testName, expected) {
-    var parameters = expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
     // If this is running on an older version of QUnit (e.g. node-qunit is stuck
     // with v1.10 for now), emulate the new assert.async() syntax through
     // QUnit.asyncTest() and QUnit.start();
-    if (!QUnit.async && parameters === 'assert') {
-        return QUnit.asyncTest(testName, function() {
-            // Since tests may be asynchronous, remove the old project before
-            // running the next test.
-            if (currentProject)
-                currentProject.remove();
-            currentProject = new Project();
-            // Pass a fake assert object with just the functions that we need,
-            // so far a async() function returning a done() function:
-            expected({
-                async: function() {
-                    return function() {
-                        QUnit.start();
-                    };
-                }
-            });
-        });
-    } else {
-        return QUnit.test(testName, function(assert) {
-            // Since tests may be asynchronous, remove the old project before
-            // running the next test.
-            if (currentProject)
-                currentProject.remove();
-            currentProject = new Project();
-            expected(assert);
-        });
-    }
+    var emulate = !QUnit.async && 'assert' ===
+            // Get the parameter list from the passed function to see if we're
+            // expecting the assert object to do async...
+            expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
+    return QUnit[emulate ? 'asyncTest' : 'test'](testName, function(assert) {
+        // Since tests can be asynchronous, remove the old project before
+        // running the next test.
+        if (currentProject)
+            currentProject.remove();
+        currentProject = new Project();
+        expected(emulate ? fakeAssert : assert);
+    });
 };
 
 // Override equals to convert functions to message and execute them as tests()
