@@ -3,7 +3,6 @@ os:
   - linux
 node_js:
   - 'stable'
-  - '0.12'
 sudo: true
 env:
   - CXX=g++-4.9
@@ -24,5 +23,5 @@ addons:
       - libgif-dev
 script:
   - npm run lint
-  - node --harmony `which gulp` minify
-  - node --harmony `which gulp` test
+  - gulp minify
+  - gulp test
