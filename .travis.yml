@@ -1,13 +1,16 @@
 language: node_js
+os:
+  - linux
 node_js:
   - 'stable'
-  - '0.10'
+  - '0.12'
 sudo: true
 env:
   - CXX=g++-4.9
 before_install:
   - "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections"
   - "echo ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note | sudo debconf-set-selections"
+  - sudo apt-get install ttf-mscorefonts-installer
 addons:
   apt:
     sources:
@@ -19,8 +22,7 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
-      - ttf-mscorefonts-installer
 script:
   - npm run lint
-  - gulp minify
-  - gulp test
+  - node --harmony `which gulp` minify
+  - node --harmony `which gulp` test
