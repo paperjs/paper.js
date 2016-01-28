@@ -12,7 +12,6 @@
 
 var gulp = require('gulp'),
     qunits = require('gulp-qunits'),
-    node_qunit = require('qunit'),
     gutil = require('gulp-util');
 
 gulp.task('test', ['test:browser', 'test:node']);
