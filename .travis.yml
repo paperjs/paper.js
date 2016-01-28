@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-  - "4"
+  - 'stable'
+  - '4'
 sudo: false
 env:
   - CXX=g++-4.9
@@ -15,7 +16,16 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
+before_script:
+  - npm install -g gulp
+  - npm install
 script:
   - npm run lint
   - gulp minify
   - gulp test
+install:
+  - |
+    wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O Arial.ttf
+    mkdir -p ~/.fonts
+    mv Arial.ttf ~/.fonts
+    fc-cache -f -v
