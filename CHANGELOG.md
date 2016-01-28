@@ -41,7 +41,8 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Move to gulp build process.
 - Move `PaperScript#execute` URL argument into `options.url` (#902).
 - Rename `Matrix#concatenate()` to `#append()` and `preConcatenate()` to `#prepend()`.
-- Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functiond.
+- Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functions.
+- Queue internal `View#update()` calls to minimize the number of times a canvas is redrawn (#830) (#925).
 
 
 ### Added
@@ -74,6 +75,13 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Add `Matrix#prepended` and `#appended` to return copies of the modified  matrix.
 - Add `Shape#hitTest()` boolean option `options.stroke` (#911).
 - Insert version number into docs.
+- Add `View#requestUpdate()` function to minimize number of actual canvas redraw.
+- Support `Raster#onLoad()` events on `Raster#setImage()` now (#924).
+- Add `Raster#onError()` event support (#849).
+- Add 'keydown' and 'keyup' events to `View` (#896).
+- Add mouse events to `View`.
+- Add `View#autoUpdate` boolean (default: true) to control  automatic updating of the canvas (#921).
+
 
 
 ### Deprecated
