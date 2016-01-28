@@ -71,48 +71,40 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             };
             CanvasProvider.release(ctx);
         }
-
-/*#*/ if (__options.environment == 'browser') {
-        if (!this.browser) {
-            var agent = navigator.userAgent.toLowerCase(),
+        if (!this.agent) {
+            var user = window.navigator.userAgent.toLowerCase(),
                 // Detect basic platforms, only mac internally required for now.
-                platform = (/(win)/.exec(agent)
-                        || /(mac)/.exec(agent)
-                        || /(linux)/.exec(agent)
-                        || [])[0],
-                browser = proto.browser = { platform: platform };
+                os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
+                platform =  os === 'darwin' ? 'mac' : os,
+                agent = proto.agent = proto.browser = { platform: platform };
             if (platform)
-                browser[platform] = true;
+                agent[platform] = true;
             // Use replace() to get all matches, and deal with Chrome/Webkit
             // overlap:
             // TODO: Do we need Mozilla next to Firefox? Other than the
             // different treatment of the Chrome/Webkit overlap
             // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
-            agent.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
+            user.replace(
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
                 function(all, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
-                    if (!browser.chrome) {
-                        var v = n === 'opera' ? v2 : v1;
-                        if (n === 'trident') {
-                            // Use rv: and rename to msie
-                            v = rv;
-                            n = 'msie';
-                        }
-                        browser.version = v;
-                        browser.versionNumber = parseFloat(v);
-                        browser.name = n;
-                        browser[n] = true;
+                    if (!agent.chrome) {
+                        var v = n === 'opera' ? v2 :
+                                /^(node|trident)$/.test(n) ? rv : v1;
+                        agent.version = v;
+                        agent.versionNumber = parseFloat(v);
+                        n = n === 'trident' ? 'msie' : n;
+                        agent.name = n;
+                        agent[n] = true;
                     }
                 }
             );
-            if (browser.chrome)
-                delete browser.webkit;
-            if (browser.atom)
-                delete browser.chrome;
+            if (agent.chrome)
+                delete agent.webkit;
+            if (agent.atom)
+                delete agent.chrome;
         }
-/*#*/ } // __options.environment == 'browser'
     },
 
     /**
@@ -188,8 +180,23 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         return this;
     },
 
-    execute: function(code, url, options) {
-        paper.PaperScript.execute(code, this, url, options);
+    /**
+     * Compiles the PaperScript code into a compiled function and executes it.
+     * The compiled function receives all properties of this {@link PaperScope}
+     * as arguments, to emulate a global scope with unaffected performance. It
+     * also installs global view and tool handlers automatically on the
+     * respective objects.
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     debugging
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
+     * @param {String} code the PaperScript code
+     * @param {Object} [option] the compilation options
+     */
+    execute: function(code, options) {
+        paper.PaperScript.execute(code, this, options);
         View.updateFocus();
     },
 
@@ -244,6 +251,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         this.project = new Project(element);
         // This is needed in PaperScript.load().
         return this;
+    },
+
+    createCanvas: function(width, height) {
+        return CanvasProvider.getCanvas(width, height);
     },
 
     /**

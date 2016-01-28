@@ -90,7 +90,7 @@ PathItem.inject(new function() {
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
-                ^ (_path2.isClockwise() !== _path1.isClockwise()))
+                ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
@@ -550,7 +550,6 @@ PathItem.inject(new function() {
                 continue;
             start = otherStart = null;
             while (true) {
-                handleIn = path && seg._handleIn;
                 // For each segment we encounter, see if there are multiple
                 // intersections, and if so, pick the best one:
                 inter = inter && (findBestIntersection(inter, true)
@@ -592,9 +591,18 @@ PathItem.inject(new function() {
                     otherStart = other;
                 }
                 // Add the segment to the path, and mark it as visited.
-                path.add(new Segment(seg._point, handleIn, seg._handleOut));
+                // But first we need to look ahead. If we encounter the end of
+                // an open path, we need to treat it the same way as the fill of
+                // an open path would: Connecting the last and first segment
+                // with a straight line, ignoring the handles.
+                var next = seg.getNext();
+                path.add(new Segment(seg._point, handleIn,
+                        next && seg._handleOut));
                 seg._visited = true;
-                seg = seg.getNext();
+                // If this is the end of an open path, go back to its first
+                // segment but ignore its handleIn (see above for handleOut).
+                seg = next || seg._path.getFirstSegment();
+                handleIn = next && next._handleIn;
                 inter = seg._intersection;
             }
             if (finished) {

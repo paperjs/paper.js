@@ -1504,9 +1504,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                     radius: radius,
                     insert: false
                 });
-            // Pass `true` to exclude the matrix, so we can preconcatenate after
+            // Pass `true` to exclude the matrix, so we can prepend after
             shape.copyAttributes(this, true);
-            shape._matrix.preConcatenate(this._matrix);
+            shape._matrix.prepend(this._matrix);
             // Determine and apply the shape's angle of rotation.
             shape.rotate(topCenter.subtract(center).getAngle() + 90);
             if (insert === undefined || insert)
@@ -1533,20 +1533,23 @@ var Path = PathItem.extend(/** @lends Path# */{
             hitStroke = options.stroke && style.hasStroke(),
             hitFill = options.fill && style.hasFill(),
             hitCurves = options.curves,
-            radius = hitStroke
+            strokeRadius = hitStroke
                     ? style.getStrokeWidth() / 2
                     // Set radius to 0 when we're hit-testing fills with
                     // tolerance, to handle tolerance through stroke hit-test
                     // functionality. Also use 0 when hit-testing curves.
                     : hitFill && options.tolerance > 0 || hitCurves
                         ? 0 : null;
-        if (radius !== null) {
-            if (radius > 0) {
+        if (strokeRadius !== null) {
+            if (strokeRadius > 0) {
                 join = style.getStrokeJoin();
                 cap = style.getStrokeCap();
-                miterLimit = radius * style.getMiterLimit();
-                // Add the stroke radius to tolerance padding.
-                strokePadding = tolerancePadding.add(new Point(radius, radius));
+                miterLimit = strokeRadius * style.getMiterLimit();
+                // Add the stroke radius to tolerance padding, taking
+                // #strokeScaling into account through _getStrokeMatrix().
+                strokePadding = tolerancePadding.add(
+                    Path._getStrokePadding(strokeRadius,
+                        !style.getStrokeScaling() && options._strokeMatrix));
             } else {
                 join = cap = 'round';
             }
@@ -1603,11 +1606,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                     if (join !== 'round' && (segment._handleIn.isZero()
                             || segment._handleOut.isZero()))
                         // _addBevelJoin() handles both 'bevel' and 'miter'!
-                        Path._addBevelJoin(segment, join, radius, miterLimit,
-                                addToArea, true);
+                        Path._addBevelJoin(segment, join, strokeRadius,
+                               miterLimit, addToArea, true);
                 } else if (cap !== 'round') {
                     // It's a cap
-                    Path._addSquareCap(segment, cap, radius, addToArea, true);
+                    Path._addSquareCap(segment, cap, strokeRadius, addToArea,
+                          true);
                 }
                 // See if the above produced an area to check for
                 if (!area.isEmpty()) {
@@ -1636,7 +1640,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                     return res;
         }
         // If we're querying for stroke, perform that before fill
-        if (radius !== null) {
+        if (strokeRadius !== null) {
             loc = this.getNearestLocation(point);
             // Note that paths need at least two segments to have an actual
             // stroke. But we still check for segments with the radius fallback
@@ -1684,7 +1688,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // TODO: intersects(item)
     // TODO: contains(item)
-}, Base.each(Curve.evaluateMethods,
+}, Base.each(Curve._evaluateMethods,
     function(name) {
         // NOTE: (For easier searching): This loop produces:
         // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
@@ -2701,19 +2705,17 @@ new function() { // PostScript-style drawing commands
                 this.join();
         }
     };
-}, {  // A dedicated scope for the tricky bounds calculations
+}, { // A dedicated scope for the tricky bounds calculations
     // We define all the different getBounds functions as static methods on Path
     // and have #_getBounds directly access these. All static bounds functions
-    // below have the same first four parameters: segments, closed, style,
+    // below have the same first four parameters: segments, closed, path,
     // matrix, so they can be called from #_getBounds() and also be used in
     // Curve. But not all of them use all these parameters, and some define
     // additional ones after.
 
-    _getBounds: function(getter, matrix) {
-        // See #draw() for an explanation of why we can access _style
-        // properties directly here:
-        return Path[getter](this._segments, this._closed, this.getStyle(),
-                matrix);
+    _getBounds: function(getter, matrix, cacheItem, internal) {
+        return Path[getter](this._segments, this._closed, this, matrix,
+                internal);
     },
 
 // Mess with indentation in order to get more line-space below:
@@ -2723,7 +2725,7 @@ statics: {
      *
      * @private
      */
-    getBounds: function(segments, closed, style, matrix, strokePadding) {
+    getBounds: function(segments, closed, path, matrix, strokePadding) {
         var first = segments[0];
         // If there are no segments, return "empty" rectangle, just like groups,
         // since #bounds is assumed to never return null.
@@ -2764,29 +2766,37 @@ statics: {
      *
      * @private
      */
-    getStrokeBounds: function(segments, closed, style, matrix) {
-        // TODO: Find a way to reuse 'bounds' cache instead?
+    getStrokeBounds: function(segments, closed, path, matrix, internal) {
+        var style = path._style;
         if (!style.hasStroke())
-            return Path.getBounds(segments, closed, style, matrix);
+            return Path.getBounds(segments, closed, path, matrix);
         var length = segments.length - (closed ? 0 : 1),
-            radius = style.getStrokeWidth() / 2,
-            padding = Path._getPenPadding(radius, matrix),
-            bounds = Path.getBounds(segments, closed, style, matrix, padding),
+            strokeWidth = style.getStrokeWidth(),
+            strokeRadius = strokeWidth / 2,
+            strokeMatrix = path._getStrokeMatrix(matrix, internal),
+            strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
+            // Start with normal path bounds with added stroke padding. Then we
+            // only need to look at each segment and handle join / cap / miter.
+            bounds = Path.getBounds(segments, closed, path, matrix,
+                    strokePadding),
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
-            miterLimit = radius * style.getMiterLimit();
-        // Create a rectangle of padding size, used for union with bounds
-        // further down
-        var joinBounds = new Rectangle(new Size(padding).multiply(2));
+            miterLimit = strokeRadius * style.getMiterLimit(),
+            // Create a rectangle of padding size, used for union with bounds
+            // further down
+            joinBounds = new Rectangle(new Size(strokePadding));
 
+        // helper function that is passed to _addBevelJoin() and _addSquareCap()
+        // to handle the point transformations. Use strokeMatrix here!
         function add(point) {
-            bounds = bounds.include(matrix
-                ? matrix._transformPoint(point, point) : point);
+            bounds = bounds.include(strokeMatrix
+                ? strokeMatrix._transformPoint(point, point) : point);
         }
 
         function addRound(segment) {
+            var point = segment._point;
             bounds = bounds.unite(joinBounds.setCenter(matrix
-                ? matrix._transformPoint(segment._point) : segment._point));
+                    ? matrix._transformPoint(point) : point));
         }
 
         function addJoin(segment, join) {
@@ -2798,7 +2808,7 @@ statics: {
                     && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
-                Path._addBevelJoin(segment, join, radius, miterLimit, add);
+                Path._addBevelJoin(segment, join, strokeRadius, miterLimit, add);
             }
         }
 
@@ -2806,7 +2816,7 @@ statics: {
             if (cap === 'round') {
                 addRound(segment);
             } else {
-                Path._addSquareCap(segment, cap, radius, add);
+                Path._addSquareCap(segment, cap, strokeRadius, add);
             }
         }
 
@@ -2826,14 +2836,14 @@ statics: {
      * stroke adds to the bounding box, by calculating the dimensions of a
      * rotated ellipse.
      */
-    _getPenPadding: function(radius, matrix) {
+    _getStrokePadding: function(radius, matrix) {
         if (!matrix)
             return [radius, radius];
         // If a matrix is provided, we need to rotate the stroke circle
         // and calculate the bounding box of the resulting rotated elipse:
         // Get rotated hor and ver vectors, and determine rotation angle
         // and elipse values from them:
-        var mx = matrix.shiftless(),
+        var mx = matrix._shiftless(),
             hor = mx.transform(new Point(radius, 0)),
             ver = mx.transform(new Point(0, radius)),
             phi = hor.getAngleInRadians(),
@@ -2927,7 +2937,7 @@ statics: {
      *
      * @private
      */
-    getHandleBounds: function(segments, closed, style, matrix, strokePadding,
+    getHandleBounds: function(segments, closed, path, matrix, strokePadding,
             joinPadding) {
         var coords = new Array(6),
             x1 = Infinity,
@@ -2963,20 +2973,23 @@ statics: {
      *
      * @private
      */
-    getRoughBounds: function(segments, closed, style, matrix) {
+    getRoughBounds: function(segments, closed, path, matrix, internal) {
         // Delegate to handleBounds, but pass on radius values for stroke and
-        // joins. Hanlde miter joins specially, by passing the largets radius
+        // joins. Handle miter joins specially, by passing the largest radius
         // possible.
-        var strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
-            joinRadius = strokeRadius;
+        var style = path._style,
+            strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
+            joinRadius = strokeRadius,
+            strokeMatrix = strokeRadius &&
+                path._getStrokeMatrix(matrix, internal);
         if (strokeRadius > 0) {
             if (style.getStrokeJoin() === 'miter')
                 joinRadius = strokeRadius * style.getMiterLimit();
             if (style.getStrokeCap() === 'square')
                 joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
         }
-        return Path.getHandleBounds(segments, closed, style, matrix,
-                Path._getPenPadding(strokeRadius, matrix),
-                Path._getPenPadding(joinRadius, matrix));
+        return Path.getHandleBounds(segments, closed, path, matrix,
+                Path._getStrokePadding(strokeRadius, strokeMatrix),
+                Path._getStrokePadding(joinRadius, strokeMatrix));
     }
 }});

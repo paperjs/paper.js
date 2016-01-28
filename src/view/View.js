@@ -19,7 +19,6 @@
  * center, both useful for constructing artwork that should appear centered on
  * screen.
  */
-/* jshint -W082 */// Do not complain about functions inside Prepro.js statements
 var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
@@ -29,8 +28,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._project = project;
         this._scope = project._scope;
         this._element = element;
-        var size;
-/*#*/ if (__options.environment == 'browser') {
         // Sub-classes may set _pixelRatio first
         if (!this._pixelRatio)
             this._pixelRatio = window.devicePixelRatio || 1;
@@ -80,7 +77,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // it might have been set to a % size, in which case it would use some
         // default internal size (300x150 on WebKit) and scale up the pixels.
         // We also need this call here for HiDPI support.
-        this._setViewSize(size = getCanvasSize());
+        var size = this._viewSize = getCanvasSize();
+        this._setViewSize(size.width, size.height);
         // TODO: Test this on IE:
         if (PaperScope.hasAttribute(element, 'stats')
                 && typeof Stats !== 'undefined') {
@@ -94,19 +92,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
             style.top = offset.y + 'px';
             document.body.appendChild(stats);
         }
-/*#*/ } else if (__options.environment == 'node') {
-        // Sub-classes may set _pixelRatio first
-        if (!this._pixelRatio)
-            this._pixelRatio = 1;
-        // Generate an id for this view
-        this._id = 'view-' + View._id++;
-        size = new Size(element.width, element.height);
-/*#*/ } // __options.environment == 'node'
         // Keep track of views internally
         View._views.push(this);
         // Link this id to our view
         View._viewsById[this._id] = this;
-        this._viewSize = size;
         (this._matrix = new Matrix())._owner = this;
         this._zoom = 1;
         // Make sure the first view is focused for keyboard input straight away
@@ -115,8 +104,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Items that need the onFrame handler called on them
         this._frameItems = {};
         this._frameItemCount = 0;
-        // Count the installed item events, see _countItemEvent().
-        this._itemEvents = {};
+        // Count the installed native and virtual item events,
+        // see #_countItemEvent():
+        this._itemEvents = { native: {}, virtual: {} };
+        // Do not set _autoUpdate on Node.js by default:
+        this._autoUpdate = !paper.agent.node;
     },
 
     /**
@@ -135,22 +127,20 @@ var View = Base.extend(Emitter, /** @lends View# */{
         var project = this._project;
         if (project._view === this)
             project._view = null;
-/*#*/ if (__options.environment == 'browser') {
         // Uninstall event handlers again for this view.
         DomEvent.remove(this._element, this._viewEvents);
         DomEvent.remove(window, this._windowEvents);
-/*#*/ } // __options.environment == 'browser'
         this._element = this._project = null;
         // Remove all onFrame handlers.
-        // TODO: Shouldn't we remove all handlers, automatically
+        // TODO: Shouldn't we remove all other event handlers, automatically
         this.off('frame');
         this._animate = false;
         this._frameItems = {};
         return true;
     },
 
-    _events: Base.each(['onResize', 'onMouseDown', 'onMouseUp', 'onMouseMove',
-            'onMouseDrag', 'onMouseEnter', 'onMouseLeave'],
+    _events: Base.each(
+        Item._itemHandlers.concat(['onResize', 'onKeyDown', 'onKeyUp']),
         function(name) {
             this[name] = {};
         }, {
@@ -173,43 +163,112 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _time: 0,
     _count: 0,
 
-    _requestFrame: function() {
-/*#*/ if (__options.environment == 'browser') {
-        var that = this;
-        DomEvent.requestAnimationFrame(function() {
-            that._requested = false;
-            // Do we need to stop due to a call to the frame event's uninstall()
-            if (!that._animate)
-                return;
-            // Request next frame already before handling the current frame
-            that._requestFrame();
-            that._handleFrame();
-        }, this._element);
-        this._requested = true;
-/*#*/ } // __options.environment == 'browser'
+    /**
+     * Controls whether the view is automatically updated in the next animation
+     * frame on changes, or whether you prefer to manually call
+     * {@link #update()} or {@link #requestUpdate()} after changes.
+     * Note that this is `true` by default, except for Node.js, where manual
+     * updates make more sense.
+     *
+     * @bean
+     * @type Boolean
+     */
+    getAutoUpdate: function() {
+        return this._autoUpdate;
+    },
+
+    setAutoUpdate: function(autoUpdate) {
+        this._autoUpdate = autoUpdate;
+        if (autoUpdate)
+            this.requestUpdate();
+    },
+
+    /**
+     * Updates the view if there are changes. Note that when using built-in
+     * event hanlders for interaction, animation and load events, this method is
+     * invoked for you automatically at the end.
+     *
+     * @name View#update
+     * @function
+     * @return {Boolean} {@true if the view was updated}
+     */
+    // update: function() {
+    // },
+
+    /**
+     * Updates the view if there are changes.
+     *
+     * @deprecated use {@link #update()} instead.
+     */
+    draw: function() {
+        this.update();
+    },
+
+    /**
+     * Requests an update of the view if there are changes through the browser's
+     * requestAnimationFrame() mechanism for smooth animation. Note that when
+     * using built-in event handlers for interaction, animation and load events,
+     * updates are automatically invoked for you automatically at the end.
+     *
+     * @function
+     */
+    requestUpdate: function() {
+        if (!this._requested) {
+            var that = this;
+            DomEvent.requestAnimationFrame(function() {
+                that._requested = false;
+                // Only handle frame and request next one if we don't need to
+                // stop, e.g.  due to a call to pause(), or a request for a
+                // single redraw.
+                if (that._animate) {
+                    // Request next update before handling the current frame
+                    that.requestUpdate();
+                    that._handleFrame();
+                }
+                // Even if we're not animating, update the view now since this
+                // might have been a request for a single redraw after a change
+                if (that._autoUpdate)
+                    that.update();
+            }, this._element);
+            this._requested = true;
+        }
+    },
+
+    /**
+     * Makes all animation play by adding the view to the request animation
+     * loop.
+     */
+    play: function() {
+        this._animate = true;
+        // Request a frame handler straight away to initialize the
+        // sequence of onFrame calls.
+        this.requestUpdate();
+    },
+
+    /**
+     * Makes all animation pause by removing the view from the request animation
+     * loop.
+     */
+    pause: function() {
+        this._animate = false;
     },
 
     _handleFrame: function() {
         // Set the global paper object to the current scope
         paper = this._scope;
         var now = Date.now() / 1000,
-            delta = this._before ? now - this._before : 0;
-        this._before = now;
-        this._handlingFrame = true;
+            delta = this._last ? now - this._last : 0;
+        this._last = now;
         // Use new Base() to convert into a Base object, for #toString()
         this.emit('frame', new Base({
-            // Time elapsed since last redraw in seconds:
+            // Time elapsed since last frame in seconds:
             delta: delta,
-            // Time since first call of frame() in seconds:
+            // Total since first frame in seconds:
             time: this._time += delta,
             count: this._count++
         }));
-        // Update framerate stats
         if (this._stats)
             this._stats.update();
-        this._handlingFrame = false;
-        // Automatically update view on each frame.
-        this.update();
     },
 
     _animateItem: function(item, animate) {
@@ -241,20 +300,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 time: entry.time += event.delta,
                 count: entry.count++
             }));
-        }
-    },
-
-    _update: function() {
-        this._project._needsUpdate = true;
-        if (this._handlingFrame)
-            return;
-        if (this._animate) {
-            // If we're animating, call _handleFrame staight away, but without
-            // requesting another animation frame.
-            this._handleFrame();
-        } else {
-            // Otherwise simply update the view now
-            this.update();
         }
     },
 
@@ -319,27 +364,32 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     setViewSize: function(/* size */) {
         var size = Size.read(arguments),
+            width = size.width,
+            height = size.height,
             delta = size.subtract(this._viewSize);
         if (delta.isZero())
             return;
-        this._viewSize.set(size.width, size.height);
-        this._setViewSize(size);
+        this._viewSize.set(width, height);
+        this._setViewSize(width, height);
         // Call onResize handler on any size change
         this.emit('resize', {
             size: size,
             delta: delta
         });
         this._changed();
-        this.update();
+        if (this._autoUpdate)
+            this.requestUpdate();
     },
 
     /**
-     * Private method, overriden in CanvasView for HiDPI support.
+     * Private method, overridden in CanvasView for HiDPI support.
      */
-    _setViewSize: function(size) {
+    _setViewSize: function(width, height) {
         var element = this._element;
-        element.width = size.width;
-        element.height = size.height;
+        if (element.width !== width)
+            element.width = width;
+        if (element.height !== height)
+            element.height = height;
     },
 
     /**
@@ -536,7 +586,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @param {Matrix} matrix the matrix by which the view shall be transformed
      */
     transform: function(matrix) {
-        this._matrix.concatenate(matrix);
+        this._matrix.append(matrix);
     },
 
     /**
@@ -550,51 +600,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this.translate(Point.read(arguments).negate());
     }
 }), /** @lends View# */{
-    /**
-     * Makes all animation play by adding the view to the request animation
-     * loop.
-     */
-    play: function() {
-        this._animate = true;
-/*#*/ if (__options.environment == 'browser') {
-        // Request a frame handler straight away to initialize the
-        // sequence of onFrame calls.
-        if (!this._requested)
-            this._requestFrame();
-/*#*/ } // __options.environment == 'browser'
-    },
-
-    /**
-     * Makes all animation pause by removing the view to the request animation
-     * loop.
-     */
-    pause: function() {
-        this._animate = false;
-    },
-
-    /**
-     * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
-     * invoked for you automatically at the end.
-     *
-     * @name View#update
-     * @function
-     * @param {Boolean} [force=false] {@true if the view should be updated even
-     * if no change has happened}
-     * @return {Boolean} {@true if the view was updated}
-     */
-    // update: function(force) {
-    // },
-
-    /**
-     * Updates the view if there are changes.
-     *
-     * @deprecated use {@link #update()} instead.
-     */
-    draw: function() {
-        this.update();
-    },
-
     // TODO: getInvalidBounds
     // TODO: invalidate(rect)
     // TODO: style: artwork / preview / raster / opaque / ink
@@ -649,6 +654,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @option event.delta {Number} the time passed in seconds since the last
      * frame event
      *
+     * @name View#onFrame
+     * @property
+     * @type Function
+     * @see Item#onFrame
+     *
      * @example {@paperscript}
      * // Creating an animation:
      *
@@ -661,14 +671,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *     // Every frame, rotate the path by 3 degrees:
      *     path.rotate(3);
      * }
-     *
-     * @name View#onFrame
-     * @property
-     * @type Function
      */
 
     /**
      * Handler function that is called whenever a view is resized.
+     *
+     * @name View#onResize
+     * @property
+     * @type Function
      *
      * @example
      * // Repositioning items when a view is resized:
@@ -681,11 +691,119 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *     // Whenever the view is resized, move the path to its center:
      *     path.position = view.center;
      * }
+     */
+
+    /**
+     * The function to be called when the mouse button is pushed down on the
+     * view. The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
      *
-     * @name View#onResize
+     * @name View#onMouseDown
      * @property
      * @type Function
+     * @see Item#onMouseDown
      */
+
+    /**
+     * The function to be called when the mouse position changes while the mouse
+     * is being dragged over the view. The function receives a {@link
+     * MouseEvent} object which contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseDrag
+     * @property
+     * @type Function
+     * @see Item#onMouseDrag
+     */
+
+    /**
+     * The function to be called when the mouse button is released over the item.
+     * The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     *
+     * @name View#onMouseUp
+     * @property
+     * @type Function
+     * @see Item#onMouseUp
+     */
+
+    /**
+     * The function to be called when the mouse clicks on the view. The function
+     * receives a {@link MouseEvent} object which contains information about the
+     * mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onClick
+     * @property
+     * @type Function
+     * @see Item#onClick
+     */
+
+    /**
+     * The function to be called when the mouse double clicks on the view. The
+     * function receives a {@link MouseEvent} object which contains information
+     * about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onDoubleClick
+     * @property
+     * @type Function
+     * @see Item#onDoubleClick
+     */
+
+    /**
+     * The function to be called repeatedly while the mouse moves over the
+     * view. The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseMove
+     * @property
+     * @type Function
+     * @see Item#onMouseMove
+     */
+
+    /**
+     * The function to be called when the mouse moves over the view. This
+     * function will only be called again, once the mouse moved outside of the
+     * view first. The function receives a {@link MouseEvent} object which
+     * contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseEnter
+     * @property
+     * @type Function
+     * @see Item#onMouseEnter
+     */
+
+    /**
+     * The function to be called when the mouse moves out of the view.
+     * The function receives a {@link MouseEvent} object which contains
+     * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy, reaching
+     * the view at the end, unless they are stopped before with {@link
+     * Event#stopPropagation()} or by returning `false` from a handler.
+     *
+     * @name View#onMouseLeave
+     * @property
+     * @type Function
+     * @see View#onMouseLeave
+     */
+
+
     /**
      * {@grouptitle Event Handling}
      *
@@ -806,24 +924,19 @@ var View = Base.extend(Emitter, /** @lends View# */{
         _id: 0,
 
         create: function(project, element) {
-/*#*/ if (__options.environment == 'browser') {
             if (typeof element === 'string')
                 element = document.getElementById(element);
-/*#*/ } // __options.environment == 'browser'
             // Factory to provide the right View subclass for a given element.
             // Produces only CanvasViews for now:
             return new CanvasView(project, element);
         }
     }
 },
-new function() { // Injection scope for mouse events on the browser
-/*#*/ if (__options.environment == 'browser') {
-
+new function() { // Injection scope for event handling on the browser
     /**
      * Native event handling, coordinate conversion, focus handling and
      * delegation to view and tool objects.
      */
-
     var prevFocus,
         tempFocus,
         dragging = false, // mousedown that started on a view.
@@ -851,7 +964,7 @@ new function() { // Injection scope for mouse events on the browser
     }
 
     function handleMouseMove(view, event, point) {
-        view._handleEvent('mousemove', event, point);
+        view._handleMouseEvent('mousemove', event, point);
     }
 
     // Touch handling inspired by Hammer.js
@@ -911,8 +1024,10 @@ new function() { // Injection scope for mouse events on the browser
         // Get the view from the event, and store a reference to the view that
         // should receive keyboard input.
         var view = View._focused = getView(event);
-        dragging = true;
-        view._handleEvent('mousedown', event);
+        if (!dragging) {
+            dragging = true;
+            view._handleMouseEvent('mousedown', event);
+        }
     };
 
     docEvents[mousemove] = function(event) {
@@ -957,7 +1072,7 @@ new function() { // Injection scope for mouse events on the browser
     docEvents[mouseup] = function(event) {
         var view = View._focused;
         if (view && dragging)
-            view._handleEvent('mouseup', event);
+            view._handleMouseEvent('mouseup', event);
         mouseDown = dragging = false;
     };
 
@@ -983,7 +1098,7 @@ new function() { // Injection scope for mouse events on the browser
         };
 
     // Returns true if event was stopped, false otherwise.
-    function emitEvent(obj, type, event, point, prevPoint, stopItem) {
+    function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
         var target = obj,
             mouseEvent;
 
@@ -992,8 +1107,7 @@ new function() { // Injection scope for mouse events on the browser
                 // Only produce the event object if we really need it, and then
                 // reuse it if we're bubbling.
                 if (!mouseEvent) {
-                    mouseEvent = new MouseEvent(
-                            type, event, point, target,
+                    mouseEvent = new MouseEvent(type, event, point, target,
                             // Calculate delta if prevPoint was passed
                             prevPoint ? point.subtract(prevPoint) : null);
                 }
@@ -1020,22 +1134,27 @@ new function() { // Injection scope for mouse events on the browser
     }
 
     // Returns true if event was stopped, false otherwise.
-    function emitEvents(view, item, type, event, point, prevPoint) {
+    function emitMouseEvents(view, item, type, event, point, prevPoint) {
+        // Before handling events, process removeOn() calls for cleanup.
+        // NOTE: As soon as there is one event handler receiving mousedrag
+        // events, non of the removeOnMove() items will be removed while the
+        // user is dragging.
+        view._project.removeOn(type);
         // Set called to false, so it will reflect if the following calls to
-        // emitEvent() have called a handler.
+        // emitMouseEvent() have called a handler.
         called = false;
         // First handle the drag-item and its parents, through bubbling.
-        return (dragItem && emitEvent(dragItem, type, event, point,
+        return (dragItem && emitMouseEvent(dragItem, type, event, point,
                     prevPoint)
             // Next handle the hit-test item, if it's different from the drag
             // item and not a descendant of it (in which case it would already
             // have received an event in the call above). Use fallbacks to
             // translate mousedrag to mousemove, since drag is handled above.
             || item && item !== dragItem && !item.isDescendant(dragItem)
-                && emitEvent(item, fallbacks[type] || type, event, point,
+                && emitMouseEvent(item, fallbacks[type] || type, event, point,
                     prevPoint, dragItem)
             // Lastly handle the move / drag on the view, if we're still here.
-            || emitEvent(view, type, event, point, prevPoint));
+            || emitMouseEvent(view, type, event, point, prevPoint));
     }
 
     /**
@@ -1043,7 +1162,7 @@ new function() { // Injection scope for mouse events on the browser
      * Required by code that is counting the amount of required natives events.
      * The mapping is native -> virtual.
      */
-    var itemEvents = {
+    var itemEventsMap = {
         mousedown: {
             mousedown: 1,
             mousedrag: 1,
@@ -1065,7 +1184,7 @@ new function() { // Injection scope for mouse events on the browser
     };
 
     /**
-     * Various variables required by #_handleEvent()
+     * Various variables required by #_handleMouseEvent()
      */
     var downPoint,
         lastPoint,
@@ -1082,94 +1201,101 @@ new function() { // Injection scope for mouse events on the browser
         _viewEvents: viewEvents,
 
         /**
-         * Private method to handle view and item events.
+         * Private method to handle mouse events, and delegate to items and
+         * tools.
          */
-        _handleEvent: function(type, event, point) {
-            var handleItems = this._itemEvents[type],
-                project = paper.project,
+        _handleMouseEvent: function(type, event, point) {
+            var itemEvents = this._itemEvents,
+                // Look up hitItems, which tells us whether a given native mouse
+                // event requires an item hit-test or not, before changing type
+                // to the virtual value (e.g. mousemove -> mousedrag):
+                hitItems = itemEvents.native[type],
                 tool = this._scope.tool,
                 view = this;
-            // If it's a native mousemove event but the mouse is down, convert
-            // it to a mousedrag.
-            // NOTE: emitEvent(), as well as Tool#_handleEvent() fall back to
-            // mousemove if the objects don't respond to mousedrag.
-            if (type === 'mousemove' && dragging)
+
+            function responds(type) {
+                return itemEvents.virtual[type] || view.responds(type)
+                        || tool && tool.responds(type);
+            }
+
+            // If it's a native mousemove event but the mouse is down, and at
+            // least one of the events responds to mousedrag, convert to it.
+            // NOTE: emitMouseEvent(), as well as Tool#_handleMouseEvent() fall
+            // back to mousemove if the objects don't respond to mousedrag.
+            if (type === 'mousemove' && dragging && responds('mousedrag'))
                 type = 'mousedrag';
-            // Before handling events, process removeOn() calls for cleanup.
-            if (project)
-                project.removeOn(type);
             if (!point)
                 point = this.getEventPoint(event);
+
             // Run the hit-test on items first, but only if we're required to do
-            // so for this given mouse event, see #_countItemEvent().
+            // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hit = inView && handleItems && this._project.hitTest(point, {
+                hit = inView && hitItems && this._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
                     stroke: true
                 }),
                 item = hit && hit.item || undefined,
                 // Keep track if view event should be handled, so we can use it
-                // to decide if tool._handleEvent() shall be called after.
+                // to decide if tool._handleMouseEvent() shall be called after.
                 handle = false,
-                stopped = false,
                 mouse = {};
             // Create a simple lookup object to quickly check for different
             // mouse event types.
             mouse[type.substr(5)] = true;
+
             // Always first call the view's mouse handlers, as required by
             // CanvasView, and then handle the active tool after, if any.
             // Handle mousemove first, even if this is not actually a mousemove
             // event but the mouse has moved since the last event, but do not
             // allow it to stop the other events in that case.
-            var nativeMove = mouse.move || mouse.drag,
-                moveType = nativeMove && type || 'mousemove';
-            if (moveType) {
-                // Handle mouseenter / leave between items, as well as views.
-                if (item !== overItem) {
-                    if (overItem)
-                        emitEvent(overItem, 'mouseleave', event, point);
-                    if (item)
-                        emitEvent(item, 'mouseenter', event, point);
-                }
-                overItem = item;
-                if (nativeMove && (wasInView ^ inView)) {
-                    emitEvent(this, inView ? 'mouseenter' : 'mouseleave', event,
-                            point);
-                    overView = inView ? this : null;
-                    handle = true; // To include the leaving move.
-                }
-                if (inView || mouse.drag && !lastPoint.equals(point)) {
-                    stopped = emitEvents(this, item, moveType, event, point,
-                            lastPoint);
-                    handle = true;
-                }
-                wasInView = inView;
+            var moveType = mouse.move || mouse.drag ? type : 'mousemove';
+            // Handle mouseenter / leave between items.
+            if (item !== overItem) {
+                if (overItem)
+                    emitMouseEvent(overItem, 'mouseleave', event, point);
+                if (item)
+                    emitMouseEvent(item, 'mouseenter', event, point);
             }
+            overItem = item;
+            // Handle mouseenter / leave on the view.
+            if (wasInView ^ inView) {
+                emitMouseEvent(this, inView ? 'mouseenter' : 'mouseleave',
+                        event, point);
+                overView = inView ? this : null;
+                handle = true; // To include the leaving move.
+            }
+            // Now finally handle the mousemove / mousedrag event.
+            // mousedrag is allowed to leave the view and still triggers events,
+            // but do not trigger two subsequent even with the same location.
+            if ((inView || mouse.drag) && !point.equals(lastPoint)) {
+                emitMouseEvents(this, item, moveType, event, point, lastPoint);
+                handle = true;
+            }
+            wasInView = inView;
             // Now handle mousedown / mouseup
-            if (!nativeMove &&
-                    // We emit mousedown only when in the view, and mouseup
-                    // regardless, as long as the mousedown event was inside.
-                    (handle = mouse.down && inView || mouse.up && downPoint)) {
-                stopped = emitEvents(this, item, type, event, point, downPoint);
+            // We emit mousedown only when in the view, and mouseup regardless,
+            // as long as the mousedown event was inside.
+            if (mouse.down && inView || mouse.up && downPoint) {
+                var stopped = emitMouseEvents(this, item, type, event, point,
+                        downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
                     // difference:
-                    if (item) {
-                        dblClick = item === clickItem
-                            && (Date.now() - clickTime < 300);
-                        downItem = clickItem = item;
-                        // Only start dragging if the mousedown event has not
-                        // stopped propagation.
-                        dragItem = !stopped && item;
-                    }
+                    dblClick = item === clickItem
+                        && (Date.now() - clickTime < 300);
+                    downItem = clickItem = item;
+                    // Only start dragging if the mousedown event has not
+                    // stopped propagation.
+                    dragItem = !stopped && item;
                     downPoint = lastPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on item, not view
-                    if (!stopped && item && item === downItem) {
+                    if (!stopped && item === downItem) {
                         clickTime = Date.now();
-                        emitEvent(item, dblClick ? 'doubleclick' : 'click',
+                        emitMouseEvents(this, item,
+                                dblClick ? 'doubleclick' : 'click',
                                 event, point, downPoint);
                         dblClick = false;
                     }
@@ -1179,14 +1305,17 @@ new function() { // Injection scope for mouse events on the browser
                 // events that started outside the view as mousemove events on
                 // the view (needed to handle touch scrolling correctly).
                 wasInView = false;
+                handle = true;
             }
             lastPoint = point;
             // Now finally call the tool events, but filter mouse move events
             // to only be fired if we're inside the view or if we just left it.
             // Prevent default if at least one handler was called, and none of
             // them enforces default, to prevent scrolling on touch devices.
-            if (handle && tool)
-                called = tool._handleEvent(type, event, point, mouse) || called;
+            if (handle && tool) {
+                called = tool._handleMouseEvent(type, event, point, mouse)
+                    || called;
+            }
 
             // Now call preventDefault()`, if any of these conditions are met:
             // - If any of the handlers were called, except for mousemove events
@@ -1195,28 +1324,49 @@ new function() { // Injection scope for mouse events on the browser
             // - If this is a mousedown event, and the view or tools respond to
             //   mouseup.
 
-            function responds(type) {
-                return view._itemEvents[type] || view.responds(type)
-                        || tool && tool.responds(type);
+            if (called && !mouse.move || mouse.down && responds('mouseup'))
+                event.preventDefault();
+        },
+
+        /**
+         * Private method to handle key events.
+         */
+        _handleKeyEvent: function(type, event, key, character) {
+            var scope = this._scope,
+                tool = scope.tool,
+                keyEvent;
+
+            function emit(obj) {
+                if (obj.responds(type)) {
+                    // Update global reference to this scope.
+                    paper = scope;
+                    // Only produce the event object if we really need it.
+                    obj.emit(type, keyEvent = keyEvent
+                            || new KeyEvent(type, event, key, character));
+                }
             }
 
-            if (called && (!nativeMove || responds('mousedrag'))
-                    || mouse.down && responds('mouseup'))
-                event.preventDefault();
-
-            // In the end we always call update(), which only updates the view
-            // if anything has changed in the above calls.
-            this.update();
+            if (this.isVisible()) {
+                // Call the onKeyDown or onKeyUp handler if present
+                emit(this);
+                if (tool && tool.responds(type))
+                    emit(tool);
+            }
         },
 
         _countItemEvent: function(type, sign) {
             // If the view requires counting of installed mouse events,
-            // change the event counters now according to itemEvents.
-            var events = this._itemEvents;
-            for (var key in itemEvents) {
-                events[key] = (events[key] || 0)
-                        + (itemEvents[key][type] || 0) * sign;
+            // change the event counters now according to itemEventsMap
+            // (defined in the code further above).
+            var itemEvents = this._itemEvents,
+                native = itemEvents.native,
+                virtual = itemEvents.virtual;
+            for (var key in itemEventsMap) {
+                native[key] = (native[key] || 0)
+                        + (itemEventsMap[key][type] || 0) * sign;
             }
+            // Also update the count of virtual events installed.
+            virtual[type] = (virtual[type] || 0) + sign;
         },
 
         statics: {
@@ -1227,5 +1377,4 @@ new function() { // Injection scope for mouse events on the browser
             updateFocus: updateFocus
         }
     };
-/*#*/ } // __options.environment == 'browser'
 });

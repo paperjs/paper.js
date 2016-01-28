@@ -49,7 +49,7 @@ new function() {
             // in rotate(). To do so, SVG requries us to inverse transform the
             // translation point by the matrix itself, since they are provided
             // in local coordinates.
-            matrix = matrix.shiftless();
+            matrix = matrix._shiftless();
             var point = matrix._inverseTransform(trans);
             attrs[center ? 'cx' : 'x'] = point.x;
             attrs[center ? 'cy' : 'y'] = point.y;
@@ -380,7 +380,7 @@ new function() {
             definitions = null;
         }
         return options.asString
-                ? new XMLSerializer().serializeToString(svg)
+                ? new window.XMLSerializer().serializeToString(svg)
                 : svg;
     }
 

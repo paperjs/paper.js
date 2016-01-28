@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Length');
+QUnit.module('Path Length');
 
 test('path.length', function() {
     var path = new Path([

@@ -108,10 +108,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     insertChildren: function insertChildren(index, items, _preserve) {
         // Convert CompoundPath items in the children list by adding their
-        // children to the list and removing their parent.
+        // children to the list, replacing their parent.
         for (var i = items.length - 1; i >= 0; i--) {
             var item = items[i];
             if (item instanceof CompoundPath) {
+                // Clone the items array before modifying it, as it may be a
+                // passed children array from another item.
+                items = items.slice();
                 items.splice.apply(items, [i, 1].concat(item.removeChildren()));
                 item.remove();
             }
@@ -178,8 +181,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     setClockwise: function(clockwise) {
-        /* jshint -W018 */// Don't complain about confusing use of !:
-        if (this.isClockwise() !== !!clockwise)
+        if (this.isClockwise() ^ !!clockwise)
             this.reverse();
     },
 
@@ -268,7 +270,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             var child = children[i],
                 mx = child._matrix;
             paths.push(child.getPathData(_matrix && !mx.isIdentity()
-                    ? _matrix.chain(mx) : _matrix, _precision));
+                    ? _matrix.appended(mx) : _matrix, _precision));
         }
         return paths.join(' ');
     }
@@ -313,7 +315,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 mx = child._matrix;
             if (!selectedItems[child._id])
                 child._drawSelected(ctx, mx.isIdentity() ? matrix
-                        : matrix.chain(mx));
+                        : matrix.appended(mx));
         }
     }
 },

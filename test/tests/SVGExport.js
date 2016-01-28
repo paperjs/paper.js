@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('SVGExport');
+QUnit.module('SVGExport');
 
 test('Export SVG line', function() {
     var attrs = {

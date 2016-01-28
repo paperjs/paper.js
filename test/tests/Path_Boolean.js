@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Path Boolean Operations');
+QUnit.module('Path Boolean Operations');
 
 function createPath(str) {
     var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;
@@ -30,7 +30,7 @@ function compareBoolean(actual, expected, message, options) {
         strokeColor: 'black',
         fillColor: expected.closed ? 'yellow' : null
     };
-    equals(actual, expected, message, options || { rasterize: true });
+    equals(actual, expected, message, Base.set({ rasterize: true }, options));
 }
 
 test('#541', function() {
@@ -884,7 +884,8 @@ test('Isolated edge-cases from @iconexperience\'s boolean-test suite', function(
         closed: true
     });
     compareBoolean(function() { return path1.unite(); },
-        'M428.65987,123.24313c0,0 18.24445,159.97772 20.21157,166.76806c-3.05664,-6.18082 -73.53131,-139.25432 -73.53131,-139.25432z M448.97323,290.23336c0,0 0,0 0,0c0.22704,0.04317 -0.06896,-0.00471 0,0c-0.02659,-0.00506 -0.06063,-0.08007 -0.1018,-0.22217c0.07286,0.14733 0.10741,0.22256 0.1018,0.22217z');
+        'M428.65987,123.24313c0,0 18.24445,159.97772 20.21157,166.76806c-3.05664,-6.18082 -73.53131,-139.25432 -73.53131,-139.25432z M448.97323,290.23336c0,0 0,0 0,0c0.22704,0.04317 -0.06896,-0.00471 0,0c-0.02659,-0.00506 -0.06063,-0.08007 -0.1018,-0.22217c0.07286,0.14733 0.10741,0.22256 0.1018,0.22217z',
+        null, { tolerance: 1e-3 });
 
     // #784#issuecomment-168605018
     var path1 = new CompoundPath();

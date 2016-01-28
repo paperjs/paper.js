@@ -146,7 +146,7 @@ var PathIterator = Base.extend({
             ctx.bezierCurveTo.apply(ctx, curve.slice(2));
         }
     }
-}, Base.each(Curve.evaluateMethods,
+}, Base.each(Curve._evaluateMethods,
     function(name) {
         this[name + 'At'] = function(offset, weighted) {
             var param = this.getParameterAt(offset);

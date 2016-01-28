@@ -2,12 +2,9 @@ var paper = require('paper'),
     path = require('path'),
     fs = require('fs');
 
-paper.setup(new paper.Canvas(300, 600));
-with (paper) {
-    fs.readFile('./in.svg', { encoding: 'utf8' }, function (err, data) {
-        if (err)
-            throw err; 
-        project.importSVG(data);
+paper.setup(new paper.Size(300, 600));
+paper.project.importSVG('file://' + path.resolve(__dirname, 'in.svg'), {
+    onLoad: function(item) {
         paper.view.exportFrames({
             amount: 1,
             directory: __dirname,
@@ -18,5 +15,5 @@ with (paper) {
                 console.log(event.percentage + '% complete, frame took: ' + event.delta);
             }
         });
-    });
-}
+    }
+});

@@ -186,20 +186,26 @@ new function() {
     // nodeNames still.
     var importers = {
         '#document': function (node, type, options, isRoot) {
-            var nodes = node.childNodes;
+            var nodes = node.childNodes,
+                move = !paper.agent.node;
             for (var i = 0, l = nodes.length; i < l; i++) {
-                var child = nodes[i];
+                var child = nodes[i],
+                    next;
                 if (child.nodeType === 1) {
-                    // NOTE: We need to move the svg node into our current
-                    // document, so default styles apply!
-                    var next = child.nextSibling;
-                    document.body.appendChild(child);
+                    if (move) {
+                        // NOTE: We need to move the svg node into our current
+                        // document, so default styles apply!
+                        next = child.nextSibling;
+                        document.body.appendChild(child);
+                    }
                     var item = importSVG(child, options, isRoot);
-                    //  After import, we move it back to where it was:
-                    if (next) {
-                        node.insertBefore(child, next);
-                    } else {
-                        node.appendChild(child);
+                    if (move) {
+                        //  After import, we move it back to where it was:
+                        if (next) {
+                            node.insertBefore(child, next);
+                        } else {
+                            node.appendChild(child);
+                        }
                     }
                     return item;
                 }
@@ -338,7 +344,7 @@ new function() {
                 v[j] = parseFloat(v[j]);
             switch (command) {
             case 'matrix':
-                matrix.concatenate(
+                matrix.append(
                         new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
                 break;
             case 'rotate':
@@ -461,7 +467,7 @@ new function() {
                 // symbol.
                 var scale = size ? rect.getSize().divide(size) : 1,
                     matrix = new Matrix().translate(rect.getPoint()).scale(scale);
-                item.transform(matrix.inverted());
+                item.transform(matrix.invert());
             } else if (item instanceof Symbol) {
                 // The symbol is wrapping a group. Note that viewBox was already
                 // applied to the group, and above code was executed for it.
@@ -558,7 +564,6 @@ new function() {
                 view = scope.project && scope.getView();
             if (onLoad)
                 onLoad.call(this, item);
-            view.update();
         }
 
         if (isRoot) {
@@ -566,7 +571,6 @@ new function() {
             // as this is how SVG works too.
             // See if it's a string but handle markup separately
             if (typeof source === 'string' && !/^.*</.test(source)) {
-/*#*/ if (__options.environment == 'browser') {
                 // First see if we're meant to import an element with the given
                 // id.
                 node = document.getElementById(source);
@@ -577,9 +581,6 @@ new function() {
                 } else {
                     return Http.request('get', source, onLoadCallback);
                 }
-/*#*/ } else if (__options.environment == 'node') {
-            // TODO: Implement!
-/*#*/ } // __options.environment == 'node'
             } else if (typeof File !== 'undefined' && source instanceof File) {
                 // Load local file through FileReader
                 var reader = new FileReader();
@@ -591,7 +592,8 @@ new function() {
         }
 
         if (typeof source === 'string')
-            node = new DOMParser().parseFromString(source, 'image/svg+xml');
+            node = new window.DOMParser().parseFromString(source,
+                    'image/svg+xml');
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
         // jsdom in Node.js uses uppercase values for nodeName...

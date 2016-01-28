@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Curve');
+QUnit.module('Curve');
 
 test('Curve#getParameterOf()', function() {
     // For issue #708:

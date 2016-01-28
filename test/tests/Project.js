@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Project');
+QUnit.module('Project');
 
 test('activate()', function() {
     var project = new Project();

@@ -761,6 +761,7 @@ statics: {
      * NOTE: padding is only used for Path.getBounds().
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
+        padding /= 2; // strokePadding is in width, not radius
         // Code ported and further optimised from:
         // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
         function add(value, padding) {
@@ -814,10 +815,8 @@ statics: {
             if (!bounds) {
                 // Calculate the curve bounds by passing a segment list for the
                 // curve to the static Path.get*Boudns methods.
-                var path = this._path;
                 bounds = this._bounds[name] = Path[name](
-                        [this._segment1, this._segment2], false,
-                        path && path.getStyle());
+                        [this._segment1, this._segment2], false, this._path);
             }
             return bounds.clone();
         };
@@ -1150,25 +1149,21 @@ new function() { // // Scope to inject various curve evaluation methods
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
-    // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
-    // determine the bounds of Curve objects with defined segment1 and segment2
-    // values Curve.getBounds() can be used directly on curve arrays, without
-    // the need to create a Curve object first, as required by the code that
-    // finds path intersections.
-    function(name) {
-        // NOTE: (For easier searching): This loop produces:
-        // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
-        // getWeightedNormalAt, getCurvatureAt
-        this[name + 'At'] = function(offset, isParameter) {
-            var values = this.getValues();
-            return Curve[name](values, isParameter ? offset
-                    : Curve.getParameterAt(values, offset, 0));
-        };
-    }, {
-        statics: {
-            evaluateMethods: methods
+        function(name) {
+            // NOTE: (For easier searching): This loop produces:
+            // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
+            // getWeightedNormalAt, getCurvatureAt
+            this[name + 'At'] = function(offset, isParameter) {
+                var values = this.getValues();
+                return Curve[name](values, isParameter ? offset
+                        : Curve.getParameterAt(values, offset, 0));
+            };
+        }, {
+            statics: {
+                _evaluateMethods: methods
+            }
         }
-    });
+    );
 },
 new function() { // Scope for methods that require private functions
 
@@ -1847,7 +1842,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
                 straight1 = Curve.isStraight(v1),
                 straight2 = Curve.isStraight(v2),
-                straightBoth =  straight1 && straight2;
+                straightBoth = straight1 && straight2;
 
             // Linear curves can only overlap if they are collinear. Instead of
             // using the #isCollinear() check, we pick the longer of the two

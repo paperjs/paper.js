@@ -10,6 +10,8 @@
  * All rights reserved.
  */
 
+QUnit.module('Item Cloning');
+
 function cloneAndCompare(item) {
     var copy = item.clone();
     equals(function() {

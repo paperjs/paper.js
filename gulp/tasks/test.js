@@ -1,0 +1,42 @@
+/*
+ * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ */
+
+var gulp = require('gulp'),
+    qunits = require('gulp-qunits'),
+    gutil = require('gulp-util');
+
+gulp.task('test', ['test:browser', 'test:node']);
+
+gulp.task('test:browser', ['minify:acorn'], function() {
+    return gulp.src('index.html', { cwd: 'test' })
+        .pipe(qunits({
+            noGlobals: true,
+            timeout: 20
+        }));
+});
+
+gulp.task('test:node', ['minify:acorn'], function(callback) {
+    return gulp.src('load.js', { cwd: 'test' })
+        .pipe(qunits({
+            require: [
+                // To dynamically load the tests files from the sources, we need
+                // to require Prepro.js first.
+                'prepro/lib/node.js',
+                // Note that loading dist/paper-full.js also works in
+                // combination with `gulp load`, in which case Prepro.js is
+                // present and handles the loading transparently.
+                { path: '../dist/paper-full.js', namespace: 'paper' }
+            ],
+            noGlobals: true,
+            timeout: 20
+        }));
+});

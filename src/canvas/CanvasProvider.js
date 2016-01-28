@@ -25,12 +25,8 @@ var CanvasProvider = {
         if (this.canvases.length) {
             canvas = this.canvases.pop();
         } else {
-/*#*/ if (__options.environment == 'browser') {
             canvas = document.createElement('canvas');
-/*#*/ } else { // __options.environment != 'browser'
-            canvas = new Canvas(width, height);
-            clear = false; // It's already cleared through constructor.
-/*#*/ } // __options.environment != 'browser'
+            clear = false; // It's already cleared through createElement().
         }
         var ctx = canvas.getContext('2d');
         // If they are not the same size, we don't need to clear them

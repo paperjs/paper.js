@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Layer');
+QUnit.module('Layer');
 
 test('previousSibling / nextSibling', function() {
     var project = paper.project;

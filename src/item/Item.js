@@ -67,8 +67,44 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         selected: false,
         clipMask: false,
         data: {}
-    },
+    }
+},
+new function() { // // Scope to inject various item event handlers
+    var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+    return Base.each(handlers,
+        function(name) {
+            this._events[name] = {
+                install: function(type) {
+                    this.getView()._countItemEvent(type, 1);
+                },
 
+                uninstall: function(type) {
+                    this.getView()._countItemEvent(type, -1);
+                }
+            };
+        }, {
+            _events: {
+                onFrame: {
+                    install: function() {
+                        this.getView()._animateItem(this, true);
+                    },
+
+                    uninstall: function() {
+                        this.getView()._animateItem(this, false);
+                    }
+                },
+
+                // Only for external sources, e.g. Raster
+                onLoad: {},
+                onError: {}
+            },
+            statics: {
+                _itemHandlers: handlers
+            }
+        }
+    );
+}, /** @lends Item# */{
     initialize: function Item() {
         // Do nothing, but declare it for named constructors.
     },
@@ -120,34 +156,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         return hasProps;
     },
-
-    _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
-            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-        function(name) {
-            this[name] = {
-                install: function(type) {
-                    this.getView()._countItemEvent(type, 1);
-                },
-
-                uninstall: function(type) {
-                    this.getView()._countItemEvent(type, -1);
-                }
-            };
-        }, {
-            onFrame: {
-                install: function() {
-                    this.getView()._animateItem(this, true);
-                },
-
-                uninstall: function() {
-                    this.getView()._animateItem(this, false);
-                }
-            },
-
-            // Only for external sources, e.g. Raster
-            onLoad: {}
-        }
-    ),
 
     _serialize: function(options, dictionary) {
         var props = {},
@@ -781,22 +789,27 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // required by the code that uses these methods internally, but make
         // sure they can be cached like all the others as well.
         // Pass on the getter that these version actually use, untransformed,
-        // as internalGetter.
+        // as `internal`.
         // NOTE: These need to be versions of other methods, as otherwise the
         // cache gets messed up.
         var getter = 'get' + Base.capitalize(key),
             match = key.match(/^internal(.*)$/),
-            internalGetter = match ? 'get' + match[1] : null;
+            internal = match ? 'get' + match[1] : null;
         this[getter] = function(_matrix) {
+            // TODO: If we're getting stroke based bounds (strokeBounds,
+            // roughBounds, internalRoughBounds), and the object does not have
+            // a stroke, fall back to the bounds getter without the stroke:
+            // strokeBounds -> bounds
+            // roughBounds -> handleBounds
+            // internalRoughBounds -> internalHandleBounds
             var boundsGetter = this._boundsGetter,
                 // Allow subclasses to override _boundsGetter if they use the
                 // same calculations for multiple type of bounds.
                 // The default is getter:
-                name = !internalGetter && (typeof boundsGetter === 'string'
+                name = !internal && (typeof boundsGetter === 'string'
                         ? boundsGetter : boundsGetter && boundsGetter[getter])
                         || getter,
-                bounds = this._getCachedBounds(name, _matrix, this,
-                        internalGetter);
+                bounds = this._getCachedBounds(name, _matrix, this, internal);
             // If we're returning 'bounds', create a LinkedRectangle that uses
             // the setBounds() setter to update the Item whenever the bounds are
             // changed:
@@ -817,7 +830,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Subclasses override it to define calculations for the various required
      * bounding types.
      */
-    _getBounds: function(getter, matrix, cacheItem) {
+    _getBounds: function(getter, matrix, cacheItem, internal) {
         // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
         // But cacheName is used in sub-classes such as PlacedSymbol and Raster.
@@ -838,7 +851,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var child = children[i];
             if (child._visible && !child.isEmpty()) {
                 var rect = child._getCachedBounds(getter,
-                        matrix && matrix.chain(child._matrix), cacheItem);
+                        matrix && matrix.appended(child._matrix),
+                        cacheItem, internal);
                 x1 = Math.min(rect.x, x1);
                 y1 = Math.min(rect.y, y1);
                 x2 = Math.max(rect.x + rect.width, x2);
@@ -875,13 +889,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Private method that deals with the calling of _getBounds, recursive
      * matrix concatenation and handles all the complicated caching mechanisms.
      */
-    _getCachedBounds: function(getter, matrix, cacheItem, internalGetter) {
+    _getCachedBounds: function(getter, matrix, cacheItem, internal) {
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix.orNullIfIdentity();
-        // Do not transform by the internal matrix if there is a internalGetter.
-        var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
+        matrix = matrix && matrix._orNullIfIdentity();
+        // Do not transform by the internal matrix if there is a internal getter
+        var _matrix = internal ? null : this._matrix._orNullIfIdentity(),
             cache = (!matrix || matrix.equals(_matrix)) && getter;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
@@ -893,8 +907,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // getInternalBounds is getBounds untransformed. Do not replace earlier,
         // so we can cache both separately, since they're not in the same
         // transformation space!
-        var bounds = this._getBounds(internalGetter || getter,
-                matrix || _matrix, cacheItem);
+        var bounds = this._getBounds(internal || getter, matrix || _matrix,
+                cacheItem, internal);
         // If we can cache the result, update the _bounds cache structure
         // before returning
         if (cache) {
@@ -902,9 +916,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 this._bounds = {};
             var cached = this._bounds[cache] = bounds.clone();
             // Mark as internal, so Item#transform() won't transform it!
-            cached._internal = !!internalGetter;
+            cached._internal = !!internal;
         }
         return bounds;
+    },
+
+    /**
+     * Returns to correct matrix to use to transform stroke related geometries
+     * when calculating bounds: the item's matrix if {@link #strokeScaling} is
+     * `true`, otherwise the shiftless, inverted view matrix.
+     */
+    _getStrokeMatrix: function(matrix, internal) {
+        return this.getStrokeScaling() ? matrix
+                : (internal ? this : this._parent).getViewMatrix()
+                    .invert()._shiftless();
     },
 
     statics: {
@@ -1089,10 +1114,22 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = this._globalMatrix = this._matrix.clone();
             var parent = this._parent;
             if (parent)
-                matrix.preConcatenate(parent.getGlobalMatrix(true));
+                matrix.prepend(parent.getGlobalMatrix(true));
             matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
+    },
+
+    /**
+     * The item's global matrix in relation to the view coordinate space. This
+     * means that the view's transformations resulting from zooming and panning
+     * are factored in.
+     *
+     * @bean
+     * @type Matrix
+     */
+    getViewMatrix: function() {
+        return this.getGlobalMatrix().prepend(this.getView()._matrix);
     },
 
     /**
@@ -1667,8 +1704,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
      *     Shape, Raster, PlacedSymbol, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
-     * @option options.stroke {Boolean} hit-test the stroke of path items,
-     *     taking into account the setting of stroke color and width
+     * @option options.stroke {Boolean} hit-test the stroke of path and shape
+     *     items, taking into account the setting of stroke color and width
      * @option options.segments {Boolean} hit-test for {@link Segment#point} of
      *     {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
@@ -1706,23 +1743,21 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
-            parentTotalMatrix = options._totalMatrix,
-            view = this.getView(),
+            parentViewMatrix = options._viewMatrix,
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
-            totalMatrix = options._totalMatrix = parentTotalMatrix
-                    ? parentTotalMatrix.chain(matrix)
+            viewMatrix = parentViewMatrix
+                    ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
-                    : this.getGlobalMatrix().preConcatenate(view._matrix),
+                    : this.getGlobalMatrix().prepend(this.getView()._matrix),
+            strokeMatrix = viewMatrix.inverted(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
+            tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
             tolerancePadding = options._tolerancePadding = new Size(
-                        Path._getPenPadding(1, totalMatrix.inverted())
-                    ).multiply(
-                        Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
-                    );
+                    Path._getStrokePadding(tolerance, strokeMatrix));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
@@ -1766,6 +1801,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             }
         }
 
+        options._viewMatrix = viewMatrix;
+        options._strokeMatrix = strokeMatrix;
         var children = !res && this._children;
         if (children) {
             var opts = this._getChildHitTestOptions(options);
@@ -1778,8 +1815,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Transform the point back to the outer coordinate system.
         if (res && res.point)
             res.point = matrix.transform(res.point);
-        // Restore totalMatrix for next child.
-        options._totalMatrix = parentTotalMatrix;
+        // Restore viewMatrix for next child, so appended matrix chains are
+        // calculated correctly.
+        options._viewMatrix = parentViewMatrix;
         return res;
     },
 
@@ -1878,12 +1916,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 // Compare further with the _class property value instead.
                 value = this._class;
             }
-            if (compare instanceof RegExp) {
-                return compare.test(value);
-            } else if (typeof compare === 'function') {
+            if (typeof compare === 'function') {
                 return !!compare(value);
-            } else if (Base.isPlainObject(compare)) {
-                return matchObject(compare, value);
+            } else if (compare) {
+                if (compare.test) { // RegExp-ish
+                    return compare.test(value);
+                } else if (Base.isPlainObject(compare)) {
+                    return matchObject(compare, value);
+                }
             }
             return Base.equals(value, compare);
         }
@@ -1983,7 +2023,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
-                    childMatrix = matrix && matrix.chain(child._matrix),
+                    childMatrix = matrix && matrix.appended(child._matrix),
                     add = true;
                 if (rect) {
                     var bounds = child.getBounds(childMatrix);
@@ -3137,9 +3177,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Bail out if there is nothing to do.
         if (!matrix && !applyMatrix)
             return this;
-        // Simply preconcatenate the internal matrix with the passed one:
+        // Simply prepend the internal matrix with the passed one:
         if (matrix)
-            _matrix.preConcatenate(matrix);
+            _matrix.prepend(matrix);
         // Call #_transformContent() now, if we need to directly apply the
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, PlacedSymbol, since
@@ -3356,7 +3396,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option event.delta {Number} the time passed in seconds since the last
      *     frame event
      *
+     * @name Item#onFrame
+     * @property
+     * @type Function
      * @see View#onFrame
+     *
      * @example {@paperscript}
      * // Creating an animation:
      *
@@ -3369,20 +3413,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     // Every frame, rotate the path by 3 degrees:
      *     this.rotate(3);
      * }
-     *
-     * @name Item#onFrame
-     * @property
-     * @type Function
      */
 
     /**
      * The function to be called when the mouse button is pushed down on the
      * item. The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDown
      * @property
      * @type Function
+     * @see View#onMouseDown
      *
      * @example {@paperscript}
      * // Press the mouse button down on the circle shaped path, to make it red:
@@ -3425,10 +3469,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse position changes while the mouse
      * is being dragged over the item. The function receives a {@link
      * MouseEvent} object which contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDrag
      * @property
      * @type Function
+     * @see View#onMouseDrag
      *
      * @example {@paperscript height=240}
      * // Press and drag the mouse on the blue circle to move it:
@@ -3450,10 +3498,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse button is released over the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseUp
      * @property
      * @type Function
+     * @see View#onMouseUp
      *
      * @example {@paperscript}
      * // Release the mouse button over the circle shaped path, to make it red:
@@ -3476,10 +3528,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse clicks on the item. The function
      * receives a {@link MouseEvent} object which contains information about the
      * mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onClick
      * @property
      * @type Function
+     * @see View#onClick
      *
      * @example {@paperscript}
      * // Click on the circle shaped path, to make it red:
@@ -3522,10 +3578,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse double clicks on the item. The
      * function receives a {@link MouseEvent} object which contains information
      * about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onDoubleClick
      * @property
      * @type Function
+     * @see View#onDoubleClick
      *
      * @example {@paperscript}
      * // Double click on the circle shaped path, to make it red:
@@ -3565,13 +3625,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * The function to be called repeatedly when the mouse moves on top of the
-     * item. The function receives a {@link MouseEvent} object which contains
+     * The function to be called repeatedly while the mouse moves over the item.
+     * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseMove
      * @property
      * @type Function
+     * @see View#onMouseMove
      *
      * @example {@paperscript}
      * // Move over the circle shaped path, to change its opacity:
@@ -3595,10 +3659,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * function will only be called again, once the mouse moved outside of the
      * item first. The function receives a {@link MouseEvent} object which
      * contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseEnter
      * @property
      * @type Function
+     * @see View#onMouseEnter
      *
      * @example {@paperscript}
      * // When you move the mouse over the item, its fill color is set to red.
@@ -3653,10 +3721,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse moves out of the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseLeave
      * @property
      * @type Function
+     * @see View#onMouseLeave
      *
      * @example {@paperscript}
      * // Move the mouse over the circle shaped path and then move it out
@@ -3884,7 +3956,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var matrices = param.matrices,
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = matrices[matrices.length - 1].chain(matrix);
+            globalMatrix = matrices[matrices.length - 1].appended(matrix);
         // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
@@ -3893,10 +3965,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
         // Since globalMatrix does not take the view's matrix into account (we
         // could have multiple views with different zooms), we may have to
-        // pre-concatenate the view's matrix.
+        // prepend the view's matrix.
         // Note that it's only provided if it isn't the identity matrix.
         function getViewMatrix(matrix) {
-            return viewMatrix ? viewMatrix.chain(matrix) : matrix;
+            return viewMatrix ? viewMatrix.appended(matrix) : matrix;
         }
 
         // Only keep track of transformation if told so. See Project#draw()
@@ -3952,7 +4024,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         ctx.save();
         // Get the transformation matrix for non-scaling strokes.
         var strokeMatrix = parentStrokeMatrix
-                ? parentStrokeMatrix.chain(matrix)
+                ? parentStrokeMatrix.appended(matrix)
                 // pass `true` for dontMerge
                 : this._canScaleStroke && !this.getStrokeScaling(true)
                     && getViewMatrix(globalMatrix),
@@ -4042,7 +4114,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             var layer,
                 color = this.getSelectedColor(true)
                     || (layer = this.getLayer()) && layer.getSelectedColor(true),
-                mx = matrix.chain(this.getGlobalMatrix(true));
+                mx = matrix.appended(this.getGlobalMatrix(true));
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
             if (this._drawSelected)

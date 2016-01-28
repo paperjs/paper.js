@@ -32,17 +32,10 @@
 
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
-var paper = new function(undefined) {
+var paper = function(window, undefined) {
+/*#*/ include('init.js');
 // Inline Straps.js core (the Base class) inside the paper scope first:
-/*#*/ include('../bower_components/straps/straps.js', { exports: false });
-
-/*#*/ if (__options.version == 'dev' && __options.environment == 'browser') {
-/*#*/     include('../bower_components/stats.js/build/stats.min.js');
-/*#*/ }
-
-/*#*/ if (__options.version == 'dev') {
-/*#*/     include('constants.js');
-/*#*/ }
+/*#*/ include('../node_modules/straps/straps.js');
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Emitter.js');
@@ -96,33 +89,25 @@ var paper = new function(undefined) {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (__options.environment == 'node') {
-/*#*/     include('dom/node.js');
-/*#*/ }
 /*#*/ include('dom/DomElement.js');
-/*#*/ if (__options.environment == 'browser') {
-// DomEvent doesn't make sense outside of the browser (yet)
-/*#*/     include('dom/DomEvent.js');
-/*#*/ }
+/*#*/ include('dom/DomEvent.js');
 
 /*#*/ include('view/View.js');
 /*#*/ include('view/CanvasView.js');
 
-/*#*/ if (__options.environment == 'browser') {
-/*#*/     include('event/Event.js');
-/*#*/     include('event/KeyEvent.js');
-/*#*/     include('event/Key.js');
-/*#*/     include('event/MouseEvent.js');
+/*#*/ include('event/Event.js');
+/*#*/ include('event/KeyEvent.js');
+/*#*/ include('event/Key.js');
+/*#*/ include('event/MouseEvent.js');
 
-/*#*/     include('tool/ToolEvent.js');
-/*#*/     include('tool/Tool.js');
+/*#*/ include('tool/ToolEvent.js');
+/*#*/ include('tool/Tool.js');
 
-/*#*/     include('net/Http.js');
-/*#*/ }
+/*#*/ include('net/Http.js');
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
-/*#*/ if (__options.version == 'dev') {
+/*#*/ if (__options.load) {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }
 
@@ -139,4 +124,4 @@ var paper = new function(undefined) {
 
 /*#*/ include('export.js');
 return paper;
-};
+}(this.window);

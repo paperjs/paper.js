@@ -346,12 +346,13 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Concatenates the given affine transform to this transform.
+     * Appends the specified matrix to this matrix. This is the equivalent of
+     * multiplying `(this matrix) * (specified matrix)`.
      *
-     * @param {Matrix} mx the transform to concatenate
-     * @return {Matrix} this affine transform
+     * @param {Matrix} matrix the matrix to append
+     * @return {Matrix} this matrix, modified
      */
-    concatenate: function(mx) {
+    append: function(mx) {
         var a1 = this._a,
             b1 = this._b,
             c1 = this._c,
@@ -373,12 +374,25 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Pre-concatenates the given affine transform to this transform.
+     * Returns a new matrix as the result of appending the specified matrix to
+     * this matrix. This is the equivalent of multiplying
+     * `(this matrix) * (specified matrix)`.
      *
-     * @param {Matrix} mx the transform to preconcatenate
-     * @return {Matrix} this affine transform
+     * @param {Matrix} matrix the matrix to append
+     * @return {Matrix} the newly created matrix
      */
-    preConcatenate: function(mx) {
+    appended: function(mx) {
+        return this.clone().append(mx);
+    },
+
+    /**
+     * Prepends the specified matrix to this matrix. This is the equivalent of
+     * multiplying `(specified matrix) * (this matrix)`.
+     *
+     * @param {Matrix} matrix the matrix to prepend
+     * @return {Matrix} this matrix, modified
+     */
+    prepend: function(mx) {
         var a1 = this._a,
             b1 = this._b,
             c1 = this._c,
@@ -402,32 +416,82 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Returns a new instance of the result of the concatenation of the given
-     * affine transform with this transform.
+     * Returns a new matrix as the result of prepending the specified matrix
+     * to this matrix. This is the equivalent of multiplying
+     * `(specified matrix) s* (this matrix)`.
      *
-     * @param {Matrix} mx the transform to concatenate
-     * @return {Matrix} the newly created affine transform
+     * @param {Matrix} matrix the matrix to prepend
+     * @return {Matrix} the newly created matrix
      */
-    chain: function(mx) {
-        var a1 = this._a,
-            b1 = this._b,
-            c1 = this._c,
-            d1 = this._d,
-            tx1 = this._tx,
-            ty1 = this._ty,
-            a2 = mx._a,
-            b2 = mx._b,
-            c2 = mx._c,
-            d2 = mx._d,
-            tx2 = mx._tx,
-            ty2 = mx._ty;
-        return new Matrix(
-                a2 * a1 + c2 * b1,
-                a2 * c1 + c2 * d1,
-                b2 * a1 + d2 * b1,
-                b2 * c1 + d2 * d1,
-                tx1 + tx2 * a1 + ty2 * b1,
-                ty1 + tx2 * c1 + ty2 * d1);
+    prepended: function(mx) {
+        return this.clone().prepend(mx);
+    },
+
+    /**
+     * Inverts the matrix, causing it to perform the opposite transformation.
+     * If the matrix is not invertible (in which case {@link #isSingular()}
+     * returns true), `null` is returned.
+     *
+     * @return {Matrix} this matrix, or `null`, if the matrix is singular.
+     */
+    invert: function() {
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            tx = this._tx,
+            ty = this._ty,
+            det = a * d - b * c,
+            res = null;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            this._a = d / det;
+            this._b = -b / det;
+            this._c = -c / det;
+            this._d = a / det;
+            this._tx = (b * ty - d * tx) / det;
+            this._ty = (c * tx - a * ty) / det;
+            res = this;
+        }
+        return res;
+    },
+
+    /**
+     * Creates a new matrix that is the inversion of this matrix, causing it to
+     * perform the opposite transformation. If the matrix is not invertible (in
+     * which case {@link #isSingular()} returns true), `null` is returned.
+     *
+     * @return {Matrix} this matrix, or `null`, if the matrix is singular.
+     */
+    inverted: function() {
+        return this.clone().invert();
+    },
+
+    /**
+     * @deprecated, use use {@link #append(matrix)} instead.
+     */
+    concatenate: '#append',
+    /**
+     * @deprecated, use use {@link #prepend(matrix)} instead.
+     */
+    preConcatenate: '#prepend',
+    /**
+     * @deprecated, use use {@link #appended(matrix)} instead.
+     */
+    chain: '#appended',
+
+    /**
+     * A private helper function to create a clone of this matrix, without the
+     * translation factored in.
+     *
+     * @return {Matrix} a clone of this matrix, with {@link #tx} and {@link #ty}
+     * set to `0`.
+     */
+    _shiftless: function() {
+        return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
+    },
+
+    _orNullIfIdentity: function() {
+        return this.isIdentity() ? null : this;
     },
 
     /**
@@ -438,10 +502,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
                 && this._tx === 0 && this._ty === 0;
     },
 
-    orNullIfIdentity: function() {
-        return this.isIdentity() ? null : this;
-    },
-
     /**
      * Returns whether the transform is invertible. A transform is not
      * invertible if the determinant is 0 or any value is non-finite or NaN.
@@ -449,7 +509,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the transform is invertible
      */
     isInvertible: function() {
-        return !!this._getDeterminant();
+        var det = this._a * this._d - this._b * this._c;
+        return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
     },
 
     /**
@@ -459,7 +520,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the matrix is singular
      */
     isSingular: function() {
-        return !this._getDeterminant();
+        return !this.isInvertible();
     },
 
     /**
@@ -500,21 +561,17 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         if (!dest)
             dest = new Point();
         return dest.set(
-            x * this._a + y * this._b + this._tx,
-            x * this._c + y * this._d + this._ty,
-            _dontNotify
-        );
+                x * this._a + y * this._b + this._tx,
+                x * this._c + y * this._d + this._ty,
+                _dontNotify);
     },
 
     _transformCoordinates: function(src, dst, count) {
-        var i = 0,
-            j = 0,
-            max = 2 * count;
-        while (i < max) {
-            var x = src[i++],
-                y = src[i++];
-            dst[j++] = x * this._a + y * this._b + this._tx;
-            dst[j++] = x * this._c + y * this._d + this._ty;
+        for (var i = 0, max = 2 * count; i < max; i += 2) {
+            var x = src[i],
+                y = src[i + 1];
+            dst[i] = x * this._a + y * this._b + this._tx;
+            dst[i + 1] = x * this._c + y * this._d + this._ty;
         }
         return dst;
     },
@@ -540,10 +597,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         for (var i = 2; i < 8; i++) {
             var val = coords[i],
                 j = i & 1;
-            if (val < min[j])
+            if (val < min[j]) {
                 min[j] = val;
-            else if (val > max[j])
+            } else if (val > max[j]) {
                 max[j] = val;
+            }
         }
         if (!dest)
             dest = new Rectangle();
@@ -560,30 +618,26 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this._inverseTransform(Point.read(arguments));
     },
 
-    /**
-     * Returns the determinant of this transform, but only if the matrix is
-     * reversible, null otherwise.
-     */
-    _getDeterminant: function() {
-        var det = this._a * this._d - this._b * this._c;
-        return isFinite(det) && !Numerical.isZero(det)
-                && isFinite(this._tx) && isFinite(this._ty)
-                ? det : null;
-    },
-
     _inverseTransform: function(point, dest, _dontNotify) {
-        var det = this._getDeterminant();
-        if (!det)
-            return null;
-        var x = point.x - this._tx,
-            y = point.y - this._ty;
-        if (!dest)
-            dest = new Point();
-        return dest.set(
-            (x * this._d - y * this._b) / det,
-            (y * this._a - x * this._c) / det,
-            _dontNotify
-        );
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            tx = this._tx,
+            ty = this._ty,
+            det = a * d - b * c,
+            res = null;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            var x = point.x - this._tx,
+                y = point.y - this._ty;
+            if (!dest)
+                dest = new Point();
+            res = dest.set(
+                    (x * d - y * b) / det,
+                    (y * a - x * c) / det,
+                    _dontNotify);
+        }
+        return res;
     },
 
     /**
@@ -723,29 +777,6 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      */
     getRotation: function() {
         return (this.decompose() || {}).rotation;
-    },
-
-    /**
-     * Creates the inversion of the transformation of the matrix and returns it
-     * as a new insteance. If the matrix is not invertible (in which case {@link
-     * #isSingular()} returns true), `null` is returned.
-     *
-     * @return {Matrix} the inverted matrix, or `null`, if the matrix is
-     *     singular
-     */
-    inverted: function() {
-        var det = this._getDeterminant();
-        return det && new Matrix(
-                this._d / det,
-                -this._c / det,
-                -this._b / det,
-                this._a / det,
-                (this._b * this._ty - this._d * this._tx) / det,
-                (this._c * this._tx - this._a * this._ty) / det);
-    },
-
-    shiftless: function() {
-        return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
     },
 
     /**

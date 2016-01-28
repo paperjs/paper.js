@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Group');
+QUnit.module('Group');
 
 test('new Group()', function() {
     var group = new Group();

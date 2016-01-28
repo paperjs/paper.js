@@ -11,9 +11,9 @@
  */
 
 var gulp = require('gulp'),
-    qunit = require('gulp-qunit');
+    requireDir = require('require-dir');
 
-gulp.task('test', function() {
-    return gulp.src('./test/index.html')
-        .pipe(qunit({ timeout: 20, noGlobals: true }));
-});
+requireDir('./gulp/utils');
+requireDir('./gulp/tasks');
+
+gulp.task('default', ['dist']);
