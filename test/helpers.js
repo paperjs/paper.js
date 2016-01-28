@@ -17,50 +17,6 @@ if (isNode) {
     root = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
-    // Handle logging to gulp directly from here, imitating the way gulp-qunit
-    // logs and formats results and errors:
-    var gutil = require('gulp-util'),
-        colors = gutil.colors,
-        done = false;
-    QUnit.log(function(details) {
-        if (!details.result) {
-            var lines = [
-                colors.red('Test failed') + ': ' + details.module + ': '
-                        + details.name
-            ];
-            var line = 'Failed assertion: ' + (details.message || '');
-            if (details.expected !== undefined) {
-                line += ', expected: ' + details.expected + ', but was: '
-                        + details.actual;
-            }
-            lines.push(line);
-            if (details.source) {
-                lines = lines.concat(details.source.split(/\r\n|\n|\r/mg));
-            }
-            lines.forEach(function(line) {
-                gutil.log(line);
-            });
-        } else if (false) {
-            gutil.log(colors.green('Test succeeded') + ': ' + details.module
-                    + ': ' + details.name +': '  + (details.message || ''));
-        }
-    });
-    QUnit.done(function(details) {
-        if (done)
-            return;
-        var color = colors[details.failed > 0 ? 'red' : 'green'];
-        gutil.log('Took ' + details.runtime + 'ms to run '
-            + colors.blue(details.total) + ' tests. ' + color(details.passed
-                + ' passed, ' + details.failed + ' failed.'));
-        if (details.failed > 0) {
-            gutil.log('node-qunit: ' + gutil.colors.red('✖')
-                + ' QUnit assertions failed');
-        } else {
-            gutil.log('node-qunit: ' + gutil.colors.green('✔')
-                + ' QUnit assertions all passed');
-        }
-        done = true;
-    });
 } else {
     root = window;
     // This is only required when running in the browser:
@@ -93,37 +49,19 @@ QUnit.done(function(details) {
     console.error = errorHandler;
 });
 
-var currentProject,
-    // In case we're stuck with an old QUnit, use a fake assert object with just
-    // the functions that we need:
-    // For now, a async() function returning a done() function:
-    fakeAssert = {
-        async: function() {
-            return function() {
-                QUnit.start();
-            };
-        }
-    };
+var currentProject;
 
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
 // `var name = function() {}`. `function name() {}` does not work!
-
 var test = function(testName, expected) {
-    // If this is running on an older version of QUnit (e.g. node-qunit is stuck
-    // with v1.10 for now), emulate the new assert.async() syntax through
-    // QUnit.asyncTest() and QUnit.start();
-    var emulate = !QUnit.async && 'assert' ===
-            // Get the parameter list from the passed function to see if we're
-            // expecting the assert object to do async...
-            expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
-    return QUnit[emulate ? 'asyncTest' : 'test'](testName, function(assert) {
+    return QUnit.test(testName, function(assert) {
         // Since tests can be asynchronous, remove the old project before
         // running the next test.
         if (currentProject)
             currentProject.remove();
         currentProject = new Project();
-        expected(emulate ? fakeAssert : assert);
+        expected(assert);
     });
 };
 

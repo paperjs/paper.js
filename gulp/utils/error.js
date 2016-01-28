@@ -18,8 +18,10 @@ gulp.on('error', function(err) {
     var msg = err.toString();
     if (msg === '[object Object]')
         msg = err;
-    gutil.log(ERROR, msg);
     if (err.stack)
-        gutil.log(ERROR, err.stack);
+        msg += err.stack;
+    msg.split(/\r\n|\n|\r/mg).forEach(function(line) {
+        gutil.log(ERROR, line);
+    });
     this.emit('end');
 });
