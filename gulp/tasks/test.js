@@ -13,16 +13,7 @@
 var gulp = require('gulp'),
     gulp_qunit = require('gulp-qunit'),
     node_qunit = require('qunit'),
-    gutil = require('gulp-util'),
-    extend = require('extend'),
-    minimist = require('minimist');
-
-// Support simple command line options to pass on to test:node, to display
-// errors selectively, e.g.:
-// gulp test:node --assertions
-var options = minimist(process.argv.slice(2), {
-  boolean: true
-});
+    gutil = require('gulp-util');
 
 gulp.task('test', ['test:browser']);
 
@@ -32,12 +23,11 @@ gulp.task('test:browser', ['minify:acorn'], function() {
 });
 
 gulp.task('test:node', ['minify:acorn'], function(callback) {
-    var name = 'node-qunit';
-    node_qunit.setup({
-        log: extend({ errors: true }, options)
-    });
     // Use the correct working directory for tests:
     process.chdir('./test');
+    // Deactivate all logging since we're doing our own directly to gutil.log()
+    // from helpers.js
+    node_qunit.setup({ log: {} });
     node_qunit.run({
         maxBlockDuration: 100 * 1000,
         deps: [
@@ -55,24 +45,7 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
         // for the loading, which was requested above.
         code: 'load.js'
     }, function(err, stats) {
-        var result;
-        if (err) {
-            result = new gutil.PluginError(name, err);
-        } else {
-            // Imitate the way gulp-qunit formats results and errors.
-            var color = gutil.colors[stats.failed > 0 ? 'red' : 'green'];
-            gutil.log('Took ' + stats.runtime + ' ms to run ' +
-                gutil.colors.blue(stats.assertions) + ' tests. ' +
-                color(stats.passed + ' passed, ' + stats.failed + ' failed.'));
-            if (stats.failed > 0) {
-                err = 'QUnit assertions failed';
-                gutil.log(name + ': ' + gutil.colors.red('✖ ') + err);
-                result = new gutil.PluginError(name, err);
-            } else {
-                gutil.log(name + ': ' + gutil.colors.green('✔ ') +
-                    'QUnit assertions all passed');
-            }
-        }
-        callback(result);
+        err = err || stats.failed > 0 && 'QUnit assertions failed';
+        callback(err && new gutil.PluginError('node-qunit', err));
     });
 });

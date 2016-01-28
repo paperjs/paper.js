@@ -15,8 +15,52 @@ var isNode = typeof global === 'object',
 
 if (isNode) {
     root = global;
-    // Resemble.js needs the Image constructor this global.
+    // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
+    // Handle logging to gulp directly from here, imitating the way gulp-qunit
+    // logs and formats results and errors:
+    var gutil = require('gulp-util'),
+        colors = gutil.colors,
+        done = false;
+    QUnit.log(function(details) {
+        if (!details.result) {
+            var lines = [
+                colors.red('Test failed') + ': ' + details.module + ': '
+                        + details.name
+            ];
+            var line = 'Failed assertion: ' + (details.message || '');
+            if (details.expected !== undefined) {
+                line += ', expected: ' + details.expected + ', but was: '
+                        + details.actual;
+            }
+            lines.push(line);
+            if (details.source) {
+                lines = lines.concat(details.source.split(/\r\n|\n|\r/mg));
+            }
+            lines.forEach(function(line) {
+                gutil.log(line);
+            });
+        } else if (false) {
+            gutil.log(colors.green('Test succeeded') + ': ' + details.module
+                    + ': ' + details.name +': '  + (details.message || ''));
+        }
+    });
+    QUnit.done(function(details) {
+        if (done)
+            return;
+        var color = colors[details.failed > 0 ? 'red' : 'green'];
+        gutil.log('Took ' + details.runtime + 'ms to run '
+            + colors.blue(details.total) + ' tests. ' + color(details.passed
+                + ' passed, ' + details.failed + ' failed.'));
+        if (details.failed > 0) {
+            gutil.log('node-qunit: ' + gutil.colors.red('✖')
+                + ' QUnit assertions failed');
+        } else {
+            gutil.log('node-qunit: ' + gutil.colors.green('✔')
+                + ' QUnit assertions all passed');
+        }
+        done = true;
+    });
 } else {
     root = window;
     // This is only required when running in the browser:
@@ -26,20 +70,10 @@ if (isNode) {
     // TODO: Ideally we should fix this in QUnit instead.
     delete window.history;
     window.history = {};
-
     QUnit.begin(function() {
         if (QUnit.urlParams.hidepassed) {
             document.getElementById('qunit-tests').className += ' hidepass';
         }
-        resemble.outputSettings({
-            errorColor: {
-                red: 255,
-                green: 51,
-                blue: 0
-            },
-            errorType: 'flat',
-            transparency: 1
-        });
     });
 }
 
@@ -47,50 +81,50 @@ if (isNode) {
 if (!('Base' in root))
     paper.install(root);
 
+// Override console.error, so that we can catch errors that are only logged to
+// the console.
 var errorHandler = console.error;
 console.error = function() {
     QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
     errorHandler.apply(this, arguments);
 };
 
+QUnit.done(function(details) {
+    console.error = errorHandler;
+});
+
+var currentProject,
+    // In case we're stuck with an old QUnit, use a fake assert object with just
+    // the functions that we need:
+    // For now, a async() function returning a done() function:
+    fakeAssert = {
+        async: function() {
+            return function() {
+                QUnit.start();
+            };
+        }
+    };
+
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
 // `var name = function() {}`. `function name() {}` does not work!
 
-var currentProject;
-
 var test = function(testName, expected) {
-    var parameters = expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
     // If this is running on an older version of QUnit (e.g. node-qunit is stuck
     // with v1.10 for now), emulate the new assert.async() syntax through
     // QUnit.asyncTest() and QUnit.start();
-    if (!QUnit.async && parameters === 'assert') {
-        return QUnit.asyncTest(testName, function() {
-            // Since tests may be asynchronous, remove the old project before
-            // running the next test.
-            if (currentProject)
-                currentProject.remove();
-            currentProject = new Project();
-            // Pass a fake assert object with just the functions that we need,
-            // so far a async() function returning a done() function:
-            expected({
-                async: function() {
-                    return function() {
-                        QUnit.start();
-                    };
-                }
-            });
-        });
-    } else {
-        return QUnit.test(testName, function(assert) {
-            // Since tests may be asynchronous, remove the old project before
-            // running the next test.
-            if (currentProject)
-                currentProject.remove();
-            currentProject = new Project();
-            expected(assert);
-        });
-    }
+    var emulate = !QUnit.async && 'assert' ===
+            // Get the parameter list from the passed function to see if we're
+            // expecting the assert object to do async...
+            expected.toString().match(/^\s*function[^\(]*\(([^\)]*)/)[1];
+    return QUnit[emulate ? 'asyncTest' : 'test'](testName, function(assert) {
+        // Since tests can be asynchronous, remove the old project before
+        // running the next test.
+        if (currentProject)
+            currentProject.remove();
+        currentProject = new Project();
+        expected(emulate ? fakeAssert : assert);
+    });
 };
 
 // Override equals to convert functions to message and execute them as tests()
@@ -140,33 +174,6 @@ var identicalAfterCloning = {
     Symbol: true
 };
 
-var getFunctionMessage = function(func) {
-    var message = func.toString().match(
-        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
-            .replace(/    /g, '')
-            .replace(/^\s+|\s+$/g, '');
-    if (/^return /.test(message)) {
-        message = message
-            .replace(/^return /, '')
-            .replace(/;$/, '');
-    }
-    return message;
-};
-
-var createSVG = function(str, attrs) {
-    if (attrs) {
-        // Similar to SVGExport's createElement / setAttributes.
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
-    }
-};
-
 // Register a jsDump parser for Base.
 QUnit.jsDump.setParser('Base', function (obj, stack) {
     // Just compare the string representation of classes inheriting from Base,
@@ -191,8 +198,7 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
-var compareItem = function(actual, expected, message, options, properties) {
-    options = options || {};
+var compareRasterized = function(actual, expected, message, options) {
 
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -209,92 +215,104 @@ var compareItem = function(actual, expected, message, options, properties) {
                 + '" src="' + raster.source + '">';
     }
 
-    if (options.rasterize) {
-        // In order to properly compare pixel by pixel, we need to put each item
-        // into a group with a white background of the united dimensions of the
-        // bounds of both items before rasterizing.
-        var resolution = options.rasterize === true ? 72 : options.rasterize,
-            actualBounds = actual.strokeBounds,
-            expecedBounds = expected.strokeBounds,
-            bounds = actualBounds.isEmpty()
-                    ? expecedBounds
-                    : expecedBounds.isEmpty()
-                    ? actualBounds
-                    : actualBounds.unite(expecedBounds);
-        if (bounds.isEmpty()) {
-            QUnit.push(true, 'empty', 'empty', message);
-            return;
-        }
-        var group = actual && expected && new Group({
-                insert: false,
-                children: [
-                    new Shape.Rectangle({
-                        rectangle: bounds,
-                        fillColor: 'white'
-                    })
-                ]
-            }),
-            actual = rasterize(actual, group, resolution),
-            expected = rasterize(expected, group, resolution);
-        if (!actual || !expected) {
-            QUnit.pushFailure('Unable to compare rasterized items: ' +
-                    (!actual ? 'actual' : 'expected') + ' item is null',
-                    QUnit.stack(2));
-        } else {
-            // Use resemble.js to compare the two rasterized items.
-            var id = QUnit.config.current.testId,
-                index = QUnit.config.current.assertions.length + 1,
-                result;
-            resemble(actual.getImageData())
-                .compareTo(expected.getImageData())
-                // When working with imageData, this call is synchronous:
-                .onComplete(function(data) { result = data; });
-            var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
-                fixed = ((1 / tolerance) + '').length - 1,
-                identical = result ? 100 - result.misMatchPercentage : 0,
-                reached = identical.toFixed(fixed),
-                hundred = (100).toFixed(fixed),
-                ok = reached == hundred;
-            QUnit.push(ok, reached + '% identical', hundred + '% identical',
-                    message);
-            if (!ok && result && !isNode) {
-                // Get the right entry for this unit test and assertion, and
-                // replace the results with images
-                var entry = document.getElementById('qunit-test-output-' + id)
-                        .querySelector('li:nth-child(' + (index) + ')'),
-                    bounds = result.diffBounds;
-                entry.querySelector('.test-expected td').innerHTML =
-                        getImageTag(expected);
-                entry.querySelector('.test-actual td').innerHTML =
-                        getImageTag(actual);
-                entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
-                        + '</pre><br>'
-                        + '<img src="' + result.getImageDataUrl() + '">';
-            }
-        }
-    } else {
-        if (options.cloned)
-            QUnit.notStrictEqual(actual.id, expected.id,
-                    'not ' + message + '.id');
-        QUnit.strictEqual(actual.constructor, expected.constructor,
-                message + '.constructor');
-        // When item is cloned and has a name, the name will be versioned:
-        equals(actual.name,
-                options.cloned && expected.name
-                    ? expected.name + ' 1' : expected.name,
-                message + '.name');
-        compareProperties(actual, expected, ['children', 'bounds', 'position',
-                'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
-                'selected', 'fullySelected', 'clipMask', 'guide'],
-                message, options);
-        if (properties)
-            compareProperties(actual, expected, properties, message, options);
-        // Style
-        compareProperties(actual.style, expected.style, ['fillColor',
-                'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
-                'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
-                'justification'], message + '.style', options);
+    // In order to properly compare pixel by pixel, we need to put each item
+    // into a group with a white background of the united dimensions of the
+    // bounds of both items before rasterizing.
+    var resolution = options.rasterize === true ? 72 : options.rasterize,
+        actualBounds = actual.strokeBounds,
+        expecedBounds = expected.strokeBounds,
+        bounds = actualBounds.isEmpty()
+                ? expecedBounds
+                : expecedBounds.isEmpty()
+                ? actualBounds
+                : actualBounds.unite(expecedBounds);
+    if (bounds.isEmpty()) {
+        QUnit.push(true, 'empty', 'empty', message);
+        return;
     }
+    var group = actual && expected && new Group({
+            insert: false,
+            children: [
+                new Shape.Rectangle({
+                    rectangle: bounds,
+                    fillColor: 'white'
+                })
+            ]
+        }),
+        actual = rasterize(actual, group, resolution),
+        expected = rasterize(expected, group, resolution);
+    if (!actual || !expected) {
+        QUnit.pushFailure('Unable to compare rasterized items: ' +
+                (!actual ? 'actual' : 'expected') + ' item is null',
+                QUnit.stack(2));
+    } else {
+        // Use resemble.js to compare the two rasterized items.
+        var id = QUnit.config.current.testId,
+            index = QUnit.config.current.assertions.length + 1,
+            result;
+        if (!resemble._setup) {
+            resemble._setup = true;
+            resemble.outputSettings({
+                errorColor: { red: 255, green: 51, blue: 0 },
+                errorType: 'flat',
+                transparency: 1
+            });
+        }
+        resemble(actual.getImageData())
+            .compareTo(expected.getImageData())
+            // When working with imageData, this call is synchronous:
+            .onComplete(function(data) { result = data; });
+        var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
+            fixed = ((1 / tolerance) + '').length - 1,
+            identical = result ? 100 - result.misMatchPercentage : 0,
+            reached = identical.toFixed(fixed),
+            hundred = (100).toFixed(fixed),
+            ok = reached == hundred;
+        QUnit.push(ok, reached + '% identical', hundred + '% identical',
+                message);
+        if (!ok && result && !isNode) {
+            // Get the right entry for this unit test and assertion, and
+            // replace the results with images
+            var entry = document.getElementById('qunit-test-output-' + id)
+                    .querySelector('li:nth-child(' + (index) + ')'),
+                bounds = result.diffBounds;
+            entry.querySelector('.test-expected td').innerHTML =
+                    getImageTag(expected);
+            entry.querySelector('.test-actual td').innerHTML =
+                    getImageTag(actual);
+            entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
+                    + '</pre><br>'
+                    + '<img src="' + result.getImageDataUrl() + '">';
+        }
+    }
+};
+
+var compareItem = function(actual, expected, message, options, properties) {
+    options = options || {};
+    if (options.rasterize) {
+        return compareRasterized(actual, expected, message, options);
+    }
+    if (options.cloned)
+        QUnit.notStrictEqual(actual.id, expected.id,
+                'not ' + message + '.id');
+    QUnit.strictEqual(actual.constructor, expected.constructor,
+            message + '.constructor');
+    // When item is cloned and has a name, the name will be versioned:
+    equals(actual.name,
+            options.cloned && expected.name
+                ? expected.name + ' 1' : expected.name,
+            message + '.name');
+    compareProperties(actual, expected, ['children', 'bounds', 'position',
+            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+            'selected', 'fullySelected', 'clipMask', 'guide'],
+            message, options);
+    if (properties)
+        compareProperties(actual, expected, properties, message, options);
+    // Style
+    compareProperties(actual.style, expected.style, ['fillColor',
+            'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
+            'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
+            'justification'], message + '.style', options);
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
@@ -453,3 +471,33 @@ var comparators = {
                 message, options);
     }
 };
+
+// Some other helpers:
+
+var getFunctionMessage = function(func) {
+    var message = func.toString().match(
+        /^\s*function[^\{]*\{([\s\S]*)\}\s*$/)[1]
+            .replace(/    /g, '')
+            .replace(/^\s+|\s+$/g, '');
+    if (/^return /.test(message)) {
+        message = message
+            .replace(/^return /, '')
+            .replace(/;$/, '');
+    }
+    return message;
+};
+
+var createSVG = function(str, attrs) {
+    if (attrs) {
+        // Similar to SVGExport's createElement / setAttributes.
+        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+        for (var key in attrs)
+            node.setAttribute(key, attrs[key]);
+        return node;
+    } else {
+        return new window.DOMParser().parseFromString(
+            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
+            'text/xml');
+    }
+};
+
