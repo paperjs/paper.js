@@ -17,6 +17,46 @@ if (isNode) {
     root = global;
     // Resemble.js needs the Image constructor this global.
     global.Image = paper.window.Image;
+    // Handle logging to gulp directly from here.
+    var gutil = require('gulp-util'),
+        colors = gutil.colors;
+
+    QUnit.log(function(details) {
+        if (!details.result) {
+            var str = colors.red('Test failed') + ': ' + details.module + ': ' + details.name;
+            str += '\n' + colors.red('Failed assertion') + ': ' + details.message;
+            str += details.message || '';
+            if (details.expected !== undefined) {
+                str += ', ';
+                str += 'expected: ' + details.expected + ', but was: ' +
+                        details.actual;
+            }
+            if (details.source)
+                str += '\n' + details.source;
+            str.split(/\r\n|\n|\r/mg).forEach(function(line) {
+                gutil.log(line);
+            });
+        }
+    });
+
+    var first = true;
+    QUnit.done(function(details) {
+        if (first) {
+            first = false;
+            // Imitate the way gulp-qunit formats results and errors.
+            var color = colors[details.failed > 0 ? 'red' : 'green'];
+            gutil.log('Took ' + details.runtime + ' ms to run '
+                + colors.blue(details.total) + ' tests. ' + color(details.passed
+                    + ' passed, ' + details.failed + ' failed.'));
+            if (details.failed > 0) {
+                gutil.log('node-qunit: ' + gutil.colors.red('✖')
+                    + ' QUnit assertions failed');
+            } else {
+                gutil.log('node-qunit: ' + gutil.colors.green('✔')
+                    + ' QUnit assertions all passed');
+            }
+        }
+    });
 } else {
     root = window;
     // This is only required when running in the browser:
@@ -26,32 +66,38 @@ if (isNode) {
     // TODO: Ideally we should fix this in QUnit instead.
     delete window.history;
     window.history = {};
-
     QUnit.begin(function() {
         if (QUnit.urlParams.hidepassed) {
             document.getElementById('qunit-tests').className += ' hidepass';
         }
-        resemble.outputSettings({
-            errorColor: {
-                red: 255,
-                green: 51,
-                blue: 0
-            },
-            errorType: 'flat',
-            transparency: 1
-        });
     });
 }
+
+resemble.outputSettings({
+    errorColor: {
+        red: 255,
+        green: 51,
+        blue: 0
+    },
+    errorType: 'flat',
+    transparency: 1
+});
 
 // The unit-tests expect the paper classes to be global.
 if (!('Base' in root))
     paper.install(root);
 
+// Override console.error, so that we can catch errors that are only logged to
+// the console.
 var errorHandler = console.error;
 console.error = function() {
     QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
     errorHandler.apply(this, arguments);
 };
+
+QUnit.done(function(details) {
+    console.error = errorHandler;
+});
 
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
