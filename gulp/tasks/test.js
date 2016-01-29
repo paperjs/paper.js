@@ -19,7 +19,7 @@ gulp.task('test', ['test:browser', 'test:node']);
 gulp.task('test:browser', ['minify:acorn'], function() {
     return gulp.src('index.html', { cwd: 'test' })
         .pipe(qunits({
-            noGlobals: true,
+            checkGlobals: true,
             timeout: 20
         }));
 });
