@@ -3,17 +3,21 @@ os:
   - linux
 node_js:
   - 'stable'
-sudo: true
+  - '4'
+sudo: false
 env:
   - CXX=g++-4.9
-before_install:
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -qq update
-  - "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections"
-  - "echo ttf-mscorefonts-installer msttcorefonts/present-mscorefonts-eula note | sudo debconf-set-selections"
-  - sudo apt-get install ttf-mscorefonts-installer
-  - sudo apt-get install g++-4.9
-  - sudo apt-get install libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev libgif-dev
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.9
+      - libcairo2-dev
+      - libpango1.0-dev
+      - libssl-dev
+      - libjpeg62-dev
+      - libgif-dev
 script:
   - npm run lint
   - gulp minify
