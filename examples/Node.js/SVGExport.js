@@ -1,6 +1,9 @@
-var paper = require('paper'),
-    path = require('path'),
-    fs = require('fs');
+// Please note: When loading paper as a normal module installed in node_modules,
+// you would use this instead:
+// var paper = require('paper');
+var paper = require('../../dist/paper-full.js');
+var path = require('path');
+var fs = require('fs');
 
 with (paper) {
     paper.setup(new Size(300, 600));
