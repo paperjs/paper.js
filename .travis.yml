@@ -16,6 +16,8 @@ addons:
       - libssl-dev
       - libjpeg62-dev
       - libgif-dev
+before_script:
+  - npm install -g gulp
 script:
   - gulp jshint
   - gulp minify
