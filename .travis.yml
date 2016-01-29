@@ -17,7 +17,7 @@ addons:
       - libjpeg62-dev
       - libgif-dev
 script:
-  - npm run lint
+  - gulp jshint
   - gulp minify
   - gulp test
 install:
