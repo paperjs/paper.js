@@ -1,4 +1,4 @@
-# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![Build Status](https://travis-ci.org/paperjs/paper.js.svg?branch=master)](https://travis-ci.org/paperjs/paper.js)
+# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![Build Status](https://travis-ci.org/paperjs/paper.js.svg?branch=develop)](https://travis-ci.org/paperjs/paper.js)
 
 
 If you want to work with Paper.js, simply download the latest "stable" version
