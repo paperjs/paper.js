@@ -1,10 +1,9 @@
 language: node_js
-os:
-  - linux
 node_js:
   - 'stable'
   - '4'
-sudo: false
+sudo: required
+dist: trusty
 env:
   - CXX=g++-4.9
 addons:
