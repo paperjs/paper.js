@@ -18,6 +18,7 @@ addons:
       - libgif-dev
 before_script:
   - npm install -g gulp
+  - npm install
 script:
   - gulp jshint
   - gulp minify
