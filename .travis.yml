@@ -1,6 +1,5 @@
 language: node_js
 node_js:
-  - 'stable'
   - '4'
 sudo: false
 env:
@@ -25,7 +24,7 @@ script:
   - gulp test
 install:
   - |
-    wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O Arial.ttf
+    wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
     mkdir -p ~/.fonts
-    mv Arial.ttf ~/.fonts
+    mv arial.ttf ~/.fonts
     fc-cache -f -v
