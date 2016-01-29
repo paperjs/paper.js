@@ -20,7 +20,7 @@ before_script:
   - npm install -g gulp
   - npm install
 script:
-  - npm run lint
+  - gulp jshint
   - gulp minify
   - gulp test
 install:
