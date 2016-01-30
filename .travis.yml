@@ -37,4 +37,4 @@ script:
 - gulp test
 - gulp dist
 after_script:
-- travis/deploy-build.sh
+- '[ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh'
