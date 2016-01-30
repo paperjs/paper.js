@@ -277,9 +277,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 break;
             case 'a':
                 for (var j = 0; j < length; j += 7) {
-                    this.arcTo(current = getPoint(j + 5),
-                            new Size(+coords[j], +coords[j + 1]),
-                            +coords[j + 2], +coords[j + 4], +coords[j + 3]);
+                    var destPoint = getPoint(j + 5);
+                    if ((destPoint - current) > 1e-12) {
+                        current = destPoint;
+                        this.arcTo(destPoint,
+                                new Size(+coords[j], +coords[j + 1]),
+                                +coords[j + 2], +coords[j + 4], +coords[j + 3]);
+                    }
                 }
                 break;
             case 'z':
