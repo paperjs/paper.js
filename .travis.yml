@@ -19,6 +19,9 @@ addons:
     - libssl-dev
     - libjpeg62-dev
     - libgif-dev
+cache:
+  directories:
+  - node_modules
 before_script:
 - git submodule update --init
 - npm install -g gulp
@@ -30,7 +33,7 @@ script:
 - gulp dist
 after_script:
 - |
-  echo HOME: $HOME
+  echo TRAVIS_NODE_VERSION: $TRAVIS_NODE_VERSION
   git config user.name "Paper.js Bot"
   git config user.email "bot@paperjs.org"
   git config credential.helper "store --file=.git/credentials"
@@ -42,13 +45,12 @@ after_script:
   rm $HOME/tmp/gulpfile.js
   git clean -fdx
   git checkout -- .
-  git branch -d build --force
   git checkout --orphan build
   git rm -rf .
   mv $HOME/tmp/* .
   rmdir $HOME/tmp
   git add --all *
-  git commit -m "Commit built version for $TRAVIS_COMMIT."
+  git commit -m "commit build for $TRAVIS_COMMIT"
   git push -u origin build --force
 install:
 - |
