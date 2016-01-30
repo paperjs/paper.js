@@ -1,0 +1,82 @@
+{
+  "name": "paper",
+  "version": "0.9.25",
+  "description": "The Swiss Army Knife of Vector Graphics Scripting",
+  "license": "MIT",
+  "homepage": "http://paperjs.org",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/paperjs/paper.js"
+  },
+  "bugs": "https://github.com/paperjs/paper.js/issues",
+  "contributors": [
+    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
+    "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
+  ],
+  "main": "dist/paper-full.js",
+  "scripts": {
+    "lint": "jshint src",
+    "prepublish": "gulp build"
+  },
+  "files": [
+    "AUTHORS.md",
+    "dist/",
+    "examples/",
+    "LICENSE.txt",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=0.10.0 <6.0.0"
+  },
+  "dependencies": {
+    "jsdom": "git://github.com/lehni/jsdom.git#3d55789d0f4d55392721b1e22890837fde472375",
+    "source-map-support": "^0.4.0"
+  },
+  "optionalDependencies": {
+    "canvas": "^1.3.5"
+  },
+  "devDependencies": {
+    "acorn": "~0.5.0",
+    "del": "^2.2.0",
+    "extend": "^3.0.0",
+    "gitty": "^3.3.3",
+    "gulp": "^3.9.0",
+    "gulp-cached": "^1.1.0",
+    "gulp-jshint": "^2.0.0",
+    "gulp-prepro": "^2.2.0",
+    "gulp-qunits": "^2.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-shell": "^0.5.1",
+    "gulp-symlink": "^2.1.3",
+    "gulp-uglify": "^1.5.1",
+    "gulp-uncomment": "^0.3.0",
+    "gulp-util": "^3.0.0",
+    "gulp-whitespace": "^0.1.0",
+    "gulp-zip": "^3.0.2",
+    "jshint": "2.8.x",
+    "jshint-summary": "^0.4.0",
+    "merge-stream": "^1.0.0",
+    "prepro": "^2.2.0",
+    "qunitjs": "^1.20.0",
+    "require-dir": "^0.3.0",
+    "resemblejs": "^2.1.0",
+    "stats.js": "0.0.14-master",
+    "straps": "^1.8.0"
+  },
+  "keywords": [
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js"
+  ]
+}

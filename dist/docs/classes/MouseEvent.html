@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>MouseEvent</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>MouseEvent</h1>
+
+<p> Extends <b><a href="../classes/Event.html"><tt>Event</tt></a></b></p>
+
+<p>The MouseEvent object is received by the <a href="../classes/Item.html"><tt>Item</tt></a>&rsquo;s mouse event handlers <a href="../classes/Item.html#onmousedown"><tt>item.onMouseDown</tt></a>, <a href="../classes/Item.html#onmousedrag"><tt>item.onMouseDrag</tt></a>, <a href="../classes/Item.html#onmousemove"><tt>item.onMouseMove</tt></a>, <a href="../classes/Item.html#onmouseup"><tt>item.onMouseUp</tt></a>, <a href="../classes/Item.html#onclick"><tt>item.onClick</tt></a>, <a href="../classes/Item.html#ondoubleclick"><tt>item.onDoubleClick</tt></a>, <a href="../classes/Item.html#onmouseenter"><tt>item.onMouseEnter</tt></a> and <a href="../classes/Item.html#onmouseleave"><tt>item.onMouseLeave</tt></a>. The MouseEvent object is the only parameter passed to these functions and contains information about the mouse event.</p>
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="type" class="member">
+<div class="member-link">
+<a name="type" href="#type"><tt><b>type</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The type of mouse event.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'mousedown'</tt>, <tt>'mouseup'</tt>, <tt>'mousedrag'</tt>, <tt>'click'</tt>, <tt>'doubleclick'</tt>, <tt>'mousemove'</tt>, <tt>'mouseenter'</tt>, <tt>mouseleave'</tt></li>
+		</ul>
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point" class="member">
+<div class="member-link">
+<a name="point" href="#point"><tt><b>point</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The position of the mouse in project coordinates when the event was fired.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="target" class="member">
+<div class="member-link">
+<a name="target" href="#target"><tt><b>target</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Item.html"><tt>Item</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="delta" class="member">
+<div class="member-link">
+<a name="delta" href="#delta"><tt><b>delta</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="tostring" class="member">
+<div class="member-link">
+<a name="tostring" href="#tostring"><tt><b>toString</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;a string representation of the mouse event
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== inherited properties ====================== -->
+<div class="reference-members"><h2>Properties inherited from <a href="../classes/Event.html"><tt>Event</tt></a></h2>
+
+	
+<div id="timestamp" class="member">
+<div class="member-link">
+<a name="timestamp" href="#timestamp"><tt><b>timeStamp</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The time at which the event was created, in milliseconds since the epoch.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+
+	
+<div id="modifiers" class="member">
+<div class="member-link">
+<a name="modifiers" href="#modifiers"><tt><b>modifiers</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The current state of the keyboard modifiers.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>object</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Key.html#modifiers"><tt>Key.modifiers</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- =========================== inherited methods ========================= -->
+<div class="reference-members"><h2>Methods inherited from <a href="../classes/Event.html"><tt>Event</tt></a></h2>
+
+	
+<div id="preventdefault" class="member">
+<div class="member-link">
+<a name="preventdefault" href="#preventdefault"><tt><b>preventDefault</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Cancels the event if it is cancelable, without stopping further propagation of the event.</p>
+    
+	
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="stoppropagation" class="member">
+<div class="member-link">
+<a name="stoppropagation" href="#stoppropagation"><tt><b>stopPropagation</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Prevents further propagation of the current event.</p>
+    
+	
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="stop" class="member">
+<div class="member-link">
+<a name="stop" href="#stop"><tt><b>stop</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Cancels the event if it is cancelable, and stops stopping further propagation of the event. This is has the same effect as calling both <a href="../classes/Event.html#stoppropagation"><tt>stopPropagation</tt></a>() and <a href="../classes/Event.html#preventdefault"><tt>preventDefault</tt></a>().</p>
+<p>Any handler can also return <code>false</code> to indicate that <code>stop()</code> should be called right after.</p>
+    
+	
+	
+	
+	
+</div>
+</div>
+</div>
+
+</div>
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Line</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Line</h1>
+
+<p>The Line object represents..</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="line-point1-point2-arg3-arg4" class="member">
+<div class="member-link">
+<a name="line-point1-point2-arg3-arg4" href="#line-point1-point2-arg3-arg4"><tt><b>Line</b>(point1, point2[, asVector, arg3, arg4])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a Line object.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+	
+	<li>
+<tt>point2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+	
+	<li>
+<tt>asVector:</tt> 
+<tt>Boolean</tt>
+
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+	<li>
+<tt>arg3:</tt> 
+
+
+
+</li>
+	
+	<li>
+<tt>arg4:</tt> 
+
+
+
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Line.html"><tt>Line</tt></a></tt>
+</li>
+		
+	</ul>
+
+    
+    
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="point" class="member">
+<div class="member-link">
+<a name="point" href="#point"><tt><b>point</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The starting point of the line.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="vector" class="member">
+<div class="member-link">
+<a name="vector" href="#vector"><tt><b>vector</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The direction of the line as a vector.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="length" class="member">
+<div class="member-link">
+<a name="length" href="#length"><tt><b>length</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The length of the line.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="intersect-line" class="member">
+<div class="member-link">
+<a name="intersect-line" href="#intersect-line"><tt><b>intersect</b>(line[, isInfinite])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>line:</tt> 
+<a href="../classes/Line.html"><tt>Line</tt></a>
+
+
+</li>
+	
+	<li>
+<tt>isInfinite:</tt> 
+<tt>Boolean</tt>
+
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the intersection point of the lines, <code>undefined</code> if the  two lines are collinear, or <code>null</code> if they don&rsquo;t intersect.
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="getside-point" class="member">
+<div class="member-link">
+<a name="getside-point" href="#getside-point"><tt><b>getSide</b>(point[, isInfinite])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+	
+	<li>
+<tt>isInfinite:</tt> 
+<tt>Boolean</tt>
+
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Number</tt></tt>
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="getdistance-point" class="member">
+<div class="member-link">
+<a name="getdistance-point" href="#getdistance-point"><tt><b>getDistance</b>(point)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Number</tt></tt>
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

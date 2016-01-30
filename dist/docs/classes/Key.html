@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Key</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Key</h1>
+
+
+
+</div>
+
+
+
+
+
+
+
+    <div class="reference-members">
+    	<h2>Static Properties</h2>
+        
+            
+<div id="modifiers" class="member">
+<div class="member-link">
+<a name="modifiers" href="#modifiers"><tt><b>Key.modifiers</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The current state of the keyboard modifiers.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Object</tt>
+		</li>
+	</ul>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>modifiers.shift: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the shift key is  pressed, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.control: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the control key is  pressed, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.alt: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the alt/option key is  pressed, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.meta: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the meta/windows/command  key is pressed, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.capsLock: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the caps-lock key is  active, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.space: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the space key is  pressed, <tt>false</tt> otherwise.</li>
+<li><tt>modifiers.option: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the alt/option key is  pressed, <tt>false</tt> otherwise. This is the same as <code>modifiers.alt</code></li>
+<li><tt>modifiers.command: <tt>Boolean</tt></tt> &mdash; <tt>true</tt> if the meta key is pressed  on Mac, or the control key is pressed on Windows and Linux, <tt>false</tt> otherwise.</li>
+</ul>
+	
+	
+</div>
+
+</div>
+</div>
+        
+    </div>
+
+
+
+
+	<div class="reference-members">
+		<h2>Static Methods</h2>
+		
+			
+<div id="isdown-key" class="member">
+<div class="member-link">
+<a name="isdown-key" href="#isdown-key"><tt><b>Key.isDown</b>(key)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the specified key is pressed.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>key:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;any character or special key descriptor:  <tt>&lsquo;enter&rsquo;</tt>, <tt>&lsquo;space&rsquo;</tt>, <tt>&lsquo;shift&rsquo;</tt>, <tt>&lsquo;control&rsquo;</tt>, <tt>&lsquo;alt&rsquo;</tt>, <tt>&lsquo;meta&rsquo;</tt>, <tt>&lsquo;caps-lock&rsquo;</tt>, <tt>&lsquo;left&rsquo;</tt>, <tt>&lsquo;up&rsquo;</tt>, <tt>&lsquo;right&rsquo;</tt>, <tt>&lsquo;down&rsquo;</tt>, <tt>&lsquo;escape&rsquo;</tt>, <tt>&lsquo;delete&rsquo;</tt>, &hellip;
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the key is pressed, <tt>false</tt> otherwise
+</li>
+		
+	</ul>
+
+	
+	<h4>Example:<span class="description">Whenever the user clicks, create a circle shaped path. If the 'a' key is pressed, fill it with red, otherwise fill it with blue:</span></h4>
+
+
+<pre><code>function onMouseDown(event) {
+    var path = new Path.Circle(event.point, 10);
+    if (Key.isDown('a')) {
+        path.fillColor = 'red';
+    } else {
+        path.fillColor = 'blue';
+    }
+}</code></pre>
+
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

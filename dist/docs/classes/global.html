@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>_global_</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Global Scope</h1>
+
+<p>When code is executed as PaperScript, the script&rsquo;s scope is populated with all fields of the currently active <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> object, which within the script appear to be global.</p>
+<p>In a JavaScript context, only the <a href="../classes/global.html#paper"><tt>paper</tt></a> variable is added to the global scope, referencing the currently active <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> object, through which all properties and Paper.js classes can be accessed.</p>
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="paper" class="member">
+<div class="member-link">
+<a name="paper" href="#paper"><tt><b>paper</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the currently active <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> object.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/PaperScope.html"><tt>PaperScope</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Global PaperScript Properties</h3>
+
+<div id="project" class="member">
+<div class="member-link">
+<a name="project" href="#project"><tt><b>project</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The project for which the PaperScript is executed.</p>
+<p>Note that when working with mulitple projects, this does not necessarily reflect the currently active project. For this, use <a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a> instead.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Project.html"><tt>Project</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="projects" class="member">
+<div class="member-link">
+<a name="projects" href="#projects"><tt><b>projects</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The list of all open projects within the current Paper.js context.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/Project.html"><tt>Project</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="view" class="member">
+<div class="member-link">
+<a name="view" href="#view"><tt><b>view</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The reference to the project&rsquo;s view.</p>
+<p>Note that when working with mulitple projects, this does not necessarily reflect the view of the currently active project. For this, use <a href="../classes/PaperScope.html#view"><tt>paperScope.view</tt></a> instead.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/View.html"><tt>View</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="tool" class="member">
+<div class="member-link">
+<a name="tool" href="#tool"><tt><b>tool</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The reference to the tool object which is automatically created when global tool event handlers are defined.</p>
+<p>Note that when working with mulitple tools, this does not necessarily reflect the currently active tool. For this, use <a href="../classes/PaperScope.html#tool"><tt>paperScope.tool</tt></a> instead.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Tool.html"><tt>Tool</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="tools" class="member">
+<div class="member-link">
+<a name="tools" href="#tools"><tt><b>tools</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The list of available tools.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/Tool.html"><tt>Tool</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>PaperScript View Event Handlers</h3>
+
+<div id="onframe" class="member">
+<div class="member-link">
+<a name="onframe" href="#onframe"><tt><b>onFrame</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A global reference to the <a href="../classes/View.html#onframe"><tt>view.onFrame</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onresize" class="member">
+<div class="member-link">
+<a name="onresize" href="#onresize"><tt><b>onResize</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/View.html#onresize"><tt>view.onResize</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>PaperScript Tool Event Handlers</h3>
+
+<div id="onmousedown" class="member">
+<div class="member-link">
+<a name="onmousedown" href="#onmousedown"><tt><b>onMouseDown</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onmousedown"><tt>tool.onMouseDown</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousedrag" class="member">
+<div class="member-link">
+<a name="onmousedrag" href="#onmousedrag"><tt><b>onMouseDrag</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onmousedrag"><tt>tool.onMouseDrag</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousemove" class="member">
+<div class="member-link">
+<a name="onmousemove" href="#onmousemove"><tt><b>onMouseMove</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onmousemove"><tt>tool.onMouseMove</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmouseup" class="member">
+<div class="member-link">
+<a name="onmouseup" href="#onmouseup"><tt><b>onMouseUp</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onmouseup"><tt>tool.onMouseUp</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Keyboard Event Handlers (for PaperScript)</h3>
+
+<div id="onkeydown" class="member">
+<div class="member-link">
+<a name="onkeydown" href="#onkeydown"><tt><b>onKeyDown</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onkeydown"><tt>tool.onKeyDown</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onkeyup" class="member">
+<div class="member-link">
+<a name="onkeyup" href="#onkeyup"><tt><b>onKeyUp</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>A reference to the <a href="../classes/Tool.html#onkeyup"><tt>tool.onKeyUp</tt></a> handler function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

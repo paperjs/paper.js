@@ -1,0 +1,34 @@
+{
+  "name": "paper",
+  "version": "0.9.25",
+  "description": "The Swiss Army Knife of Vector Graphics Scripting",
+  "license": "MIT",
+  "repo": "paperjs/paper.js",
+  "main": [
+    "dist/paper-full.js"
+  ],
+  "scripts": [
+    "dist/paper-full.js"
+  ],
+  "files": [
+    "AUTHORS.md",
+    "LICENSE.txt",
+    "README.md"
+  ],
+  "keywords": [
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js"
+  ]
+}

@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Style</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Style</h1>
+
+<p>Style is used for changing the visual styles of items contained within a Paper.js project and is returned by <a href="../classes/Item.html#style"><tt>item.style</tt></a> and <a href="../classes/Project.html#currentstyle"><tt>project.currentStyle</tt></a>.</p>
+<p>All properties of Style are also reflected directly in <a href="../classes/Item.html"><tt>Item</tt></a>, i.e.: <a href="../classes/Item.html#fillcolor"><tt>item.fillColor</tt></a>.</p>
+<p>To set multiple style properties in one go, you can pass an object to <a href="../classes/Item.html#style"><tt>item.style</tt></a>. This is a convenient way to define a style once and apply it to a series of items:</p>
+<h4>Example:<span class="description">Styling paths</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var path = new Path.Circle(new Point(80, 50), 30);
+path.style = {
+    fillColor: new Color(1, 0, 0),
+    strokeColor: 'black',
+    strokeWidth: 5
+};
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Styling text items</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+var text = new PointText(view.center);
+text.content = 'Hello world.';
+text.style = {
+    fontFamily: 'Courier New',
+    fontWeight: 'bold',
+    fontSize: 20,
+    fillColor: 'red',
+    justification: 'center'
+};
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Styling groups</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var path1 = new Path.Circle({
+    center: [100, 50],
+    radius: 30
+});
+
+var path2 = new Path.Rectangle({
+    from: [170, 20],
+    to: [230, 80]
+});
+
+var group = new Group(path1, path2);
+
+// All styles set on a group are automatically
+// set on the children of the group:
+group.style = {
+    strokeColor: 'black',
+    dashArray: [4, 10],
+    strokeWidth: 4,
+    strokeCap: 'round'
+};
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="view" class="member">
+<div class="member-link">
+<a name="view" href="#view"><tt><b>view</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The view that this style belongs to.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/View.html"><tt>View</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Stroke Style</h3>
+
+<div id="strokecolor" class="member">
+<div class="member-link">
+<a name="strokecolor" href="#strokecolor"><tt><b>strokeColor</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The color of the stroke.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Setting the stroke color of a path:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-3">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set its stroke color to RGB red:
+circle.strokeColor = new Color(1, 0, 0);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strokewidth" class="member">
+<div class="member-link">
+<a name="strokewidth" href="#strokewidth"><tt><b>strokeWidth</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The width of the stroke.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>1</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Setting an item's stroke width:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-4">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set its stroke color to black:
+circle.strokeColor = 'black';
+
+// Set its stroke width to 10:
+circle.strokeWidth = 10;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strokecap" class="member">
+<div class="member-link">
+<a name="strokecap" href="#strokecap"><tt><b>strokeCap</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The shape to be used at the beginning and end of open <a href="../classes/Path.html"><tt>Path</tt></a> items, when they have a stroke.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'round'</tt>, <tt>'square'</tt>, <tt>'butt'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'butt'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">A look at the different stroke caps:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-5">
+var line = new Path(new Point(80, 50), new Point(420, 50));
+line.strokeColor = 'black';
+line.strokeWidth = 20;
+
+// Select the path, so we can see where the stroke is formed:
+line.selected = true;
+
+// Set the stroke cap of the line to be round:
+line.strokeCap = 'round';
+
+// Copy the path and set its stroke cap to be square:
+var line2 = line.clone();
+line2.position.y += 50;
+line2.strokeCap = 'square';
+
+// Make another copy and set its stroke cap to be butt:
+var line2 = line.clone();
+line2.position.y += 100;
+line2.strokeCap = 'butt';
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-5"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strokejoin" class="member">
+<div class="member-link">
+<a name="strokejoin" href="#strokejoin"><tt><b>strokeJoin</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The shape to be used at the segments and corners of <a href="../classes/Path.html"><tt>Path</tt></a> items when they have a stroke.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'miter'</tt>, <tt>'round'</tt>, <tt>'bevel'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'miter'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">A look at the different stroke joins:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-6">
+var path = new Path();
+path.add(new Point(80, 100));
+path.add(new Point(120, 40));
+path.add(new Point(160, 100));
+path.strokeColor = 'black';
+path.strokeWidth = 20;
+
+// Select the path, so we can see where the stroke is formed:
+path.selected = true;
+
+var path2 = path.clone();
+path2.position.x += path2.bounds.width * 1.5;
+path2.strokeJoin = 'round';
+
+var path3 = path2.clone();
+path3.position.x += path3.bounds.width * 1.5;
+path3.strokeJoin = 'bevel';
+</script>
+<div class="canvas"><canvas width="516" height="120" id="canvas-6"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="strokescaling" class="member">
+<div class="member-link">
+<a name="strokescaling" href="#strokescaling"><tt><b>strokeScaling</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the stroke is to be drawn taking the current affine transformation into account (the default behavior), or whether it should appear as a non-scaling stroke.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>true</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="dashoffset" class="member">
+<div class="member-link">
+<a name="dashoffset" href="#dashoffset"><tt><b>dashOffset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The dash offset of the stroke.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="dasharray" class="member">
+<div class="member-link">
+<a name="dasharray" href="#dasharray"><tt><b>dashArray</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies an array containing the dash and gap lengths of the stroke.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>[]</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Array</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-7">
+var path = new Path.Circle(new Point(80, 50), 40);
+path.strokeWidth = 2;
+path.strokeColor = 'black';
+
+// Set the dashed stroke to [10pt dash, 4pt gap]:
+path.dashArray = [10, 4];
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="miterlimit" class="member">
+<div class="member-link">
+<a name="miterlimit" href="#miterlimit"><tt><b>miterLimit</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The miter limit of the stroke. When two line segments meet at a sharp angle and miter joins have been specified for <a href="../classes/Style.html#strokejoin"><tt>strokeJoin</tt></a>, it is possible for the miter to extend far beyond the <a href="../classes/Style.html#strokewidth"><tt>strokeWidth</tt></a> of the path. The miterLimit imposes a limit on the ratio of the miter length to the <a href="../classes/Style.html#strokewidth"><tt>strokeWidth</tt></a>.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>10</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Fill Style</h3>
+
+<div id="fillcolor" class="member">
+<div class="member-link">
+<a name="fillcolor" href="#fillcolor"><tt><b>fillColor</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The fill color.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Setting the fill color of a path to red:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-8">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var circle = new Path.Circle(new Point(80, 50), 35);
+
+// Set the fill color of the circle to RGB red:
+circle.fillColor = new Color(1, 0, 0);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fillrule" class="member">
+<div class="member-link">
+<a name="fillrule" href="#fillrule"><tt><b>fillRule</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The fill-rule with which the shape gets filled. Please note that only modern browsers support fill-rules other than <code>&#39;nonzero&#39;</code>.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'nonzero'</tt>, <tt>'evenodd'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'nonzero'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Shadow Style</h3>
+
+<div id="shadowcolor" class="member">
+<div class="member-link">
+<a name="shadowcolor" href="#shadowcolor"><tt><b>shadowColor</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The shadow color.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Creating a circle with a black shadow:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-9">
+var circle = new Path.Circle({
+    center: [80, 50],
+    radius: 35,
+    fillColor: 'white',
+    // Set the shadow color of the circle to RGB black:
+    shadowColor: new Color(0, 0, 0),
+    // Set the shadow blur radius to 12:
+    shadowBlur: 12,
+    // Offset the shadow by { x: 5, y: 5 }
+    shadowOffset: new Point(5, 5)
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="shadowblur" class="member">
+<div class="member-link">
+<a name="shadowblur" href="#shadowblur"><tt><b>shadowBlur</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The shadow&rsquo;s blur radius.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="shadowoffset" class="member">
+<div class="member-link">
+<a name="shadowoffset" href="#shadowoffset"><tt><b>shadowOffset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The shadow&rsquo;s offset.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>0</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Selection Style</h3>
+
+<div id="selectedcolor" class="member">
+<div class="member-link">
+<a name="selectedcolor" href="#selectedcolor"><tt><b>selectedColor</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The color the item is highlighted with when selected. If the item does not specify its own color, the color defined by its layer is used instead.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Character Style</h3>
+
+<div id="fontfamily" class="member">
+<div class="member-link">
+<a name="fontfamily" href="#fontfamily"><tt><b>fontFamily</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font-family to be used in text content.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'sans-serif'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontweight" class="member">
+<div class="member-link">
+<a name="fontweight" href="#fontweight"><tt><b>fontWeight</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font-weight to be used in text content.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'normal'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>⟋<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="fontsize" class="member">
+<div class="member-link">
+<a name="fontsize" href="#fontsize"><tt><b>fontSize</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The font size of text content, as a number in pixels, or as a string with optional units <code>&#39;px&#39;</code>, <code>&#39;pt&#39;</code> and <code>&#39;em&#39;</code>.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>10</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="leading" class="member">
+<div class="member-link">
+<a name="leading" href="#leading"><tt><b>leading</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The text leading of text content.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>fontSize * 1.2</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>⟋<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Paragraph Style</h3>
+
+<div id="justification" class="member">
+<div class="member-link">
+<a name="justification" href="#justification"><tt><b>justification</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The justification of text paragraphs.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'left'</tt>, <tt>'right'</tt>, <tt>'center'</tt></li>
+		</ul>
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>'left'</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HitResult</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>HitResult</h1>
+
+<p>A HitResult object contains information about the results of a hit test. It is returned by <a href="../classes/Item.html#hittest-point"><tt>item.hitTest(point)</tt></a> and <a href="../classes/Project.html#hittest-point"><tt>project.hitTest(point)</tt></a>.</p>
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="type" class="member">
+<div class="member-link">
+<a name="type" href="#type"><tt><b>type</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Describes the type of the hit result. For example, if you hit a segment point, the type would be <code>&#39;segment&#39;</code>.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'segment'</tt>, <tt>'handle-in'</tt>, <tt>'handle-out'</tt>, <tt>'curve'</tt>, <tt>'stroke'</tt>, <tt>'fill'</tt>, <tt>'bounds'</tt>, <tt>'center'</tt>, <tt>'pixel'</tt></li>
+		</ul>
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="name" class="member">
+<div class="member-link">
+<a name="name" href="#name"><tt><b>name</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>If the HitResult has a <a href="../classes/HitResult.html#type"><tt>hitResult.type</tt></a> of <code>&#39;bounds&#39;</code>, this property describes which corner of the bounding rectangle was hit.</p>
+	
+	
+		<ul class="member-list">
+			<h4>Values:</h4>
+			<li><tt>'top-left'</tt>, <tt>'top-right'</tt>, <tt>'bottom-left'</tt>, <tt>'bottom-right'</tt>, <tt>'left-center'</tt>, <tt>'top-center'</tt>, <tt>'right-center'</tt>, <tt>'bottom- center'</tt></li>
+		</ul>
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>String</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="item" class="member">
+<div class="member-link">
+<a name="item" href="#item"><tt><b>item</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The item that was hit.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Item.html"><tt>Item</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="location" class="member">
+<div class="member-link">
+<a name="location" href="#location"><tt><b>location</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>If the HitResult has a type of &lsquo;curve&rsquo; or &lsquo;stroke&rsquo;, this property gives more information about the exact position that was hit on the path.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="color" class="member">
+<div class="member-link">
+<a name="color" href="#color"><tt><b>color</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>If the HitResult has a type of &lsquo;pixel&rsquo;, this property refers to the color of the pixel on the <a href="../classes/Raster.html"><tt>Raster</tt></a> that was hit.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="segment" class="member">
+<div class="member-link">
+<a name="segment" href="#segment"><tt><b>segment</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>If the HitResult has a type of &lsquo;stroke&rsquo;, &lsquo;segment&rsquo;, &lsquo;handle-in&rsquo; or &lsquo;handle-out&rsquo;, this property refers to the segment that was hit or that is closest to the hitResult.location on the curve.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Segment.html"><tt>Segment</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point" class="member">
+<div class="member-link">
+<a name="point" href="#point"><tt><b>point</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Describes the actual coordinates of the segment, handle or bounding box corner that was hit.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

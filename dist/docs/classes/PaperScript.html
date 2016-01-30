@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PaperScript</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>PaperScript</h1>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+	<div class="reference-members">
+		<h2>Static Methods</h2>
+		
+			
+<div id="compile-code" class="member">
+<div class="member-link">
+<a name="compile-code" href="#compile-code"><tt><b>PaperScript.compile</b>(code[, option])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Compiles PaperScript code into JavaScript code.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.url: <tt>String</tt></tt> &mdash; the url of the source, for source-map  generation</li>
+<li><tt>options.source: <tt>String</tt></tt> &mdash; the source to be used for the source-  mapping, in case the code that&rsquo;s passed in has already been mingled.</li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>code:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the PaperScript code
+
+</li>
+	
+	<li>
+<tt>option:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the compilation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Object</tt></tt>&nbsp;&mdash;&nbsp;an object holding the compiled PaperScript translated  into JavaScript code along with source-maps and other information.
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="execute-code-scope" class="member">
+<div class="member-link">
+<a name="execute-code-scope" href="#execute-code-scope"><tt><b>PaperScript.execute</b>(code, scope[, option])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Compiles the PaperScript code into a compiled function and executes it. The compiled function receives all properties of the passed <a href="../classes/PaperScope.html"><tt>PaperScope</tt></a> as arguments, to emulate a global scope with unaffected performance. It also installs global view and tool handlers automatically on the respective objects.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.url: <tt>String</tt></tt> &mdash; the url of the source, for source-map  generation</li>
+<li><tt>options.source: <tt>String</tt></tt> &mdash; the source to be used for the source-  mapping, in case the code that&rsquo;s passed in has already been mingled.</li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>code:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the PaperScript code
+
+</li>
+	
+	<li>
+<tt>scope:</tt> 
+<a href="../classes/PaperScope.html"><tt>PaperScope</tt></a>
+&mdash;&nbsp;the scope for which the code is executed
+
+</li>
+	
+	<li>
+<tt>option:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the compilation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Object</tt></tt>&nbsp;&mdash;&nbsp;an object holding the compiled PaperScript translated  into JavaScript code along with source-maps and other information.
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+			
+<div id="load" class="member">
+<div class="member-link">
+<a name="load" href="#load"><tt><b>PaperScript.load</b>([script])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Loads, compiles and executes PaperScript code in the HTML document. Note that this method is executed automatically for all scripts in the document through a window load event. You can optionally call it earlier (e.g. from a DOM ready event), or you can mark scripts to be ignored by setting the attribute <code>ignore=&quot;true&quot;</code> or <code>data-paper-ignore=&quot;true&quot;</code>, and call the <code>PaperScript.load(script)</code> method for each script separately when needed.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>script:</tt> 
+<tt>HTMLScriptElement</tt>
+&mdash;&nbsp;the script to load. If none is  provided, all scripts of the HTML document are iterated over and  loaded
+&mdash;&nbsp;optional, default: <tt>null</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PaperScope.html"><tt>PaperScope</tt></a></tt>&nbsp;&mdash;&nbsp;the scope produced for the passed <code>script</code>, or  <code>undefined</code> of multiple scripts area loaded
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+		
+	</div>
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gradient</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Gradient</h1>
+
+<p>The Gradient object.</p>
+<h4>Example:<span class="description">Applying a linear gradient color containing evenly distributed color stops:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+// Define two points which we will be using to construct
+// the path and to position the gradient color:
+var topLeft = view.center - [80, 80];
+var bottomRight = view.center + [80, 80];
+
+// Create a rectangle shaped path between
+// the topLeft and bottomRight points:
+var path = new Path.Rectangle({
+    topLeft: topLeft,
+    bottomRight: bottomRight,
+    // Fill the path with a gradient of three color stops
+    // that runs between the two points we defined earlier:
+    fillColor: {
+        gradient: {
+            stops: ['yellow', 'red', 'blue']
+        },
+        origin: topLeft,
+        destination: bottomRight
+    }
+});
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-0"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Create a circle shaped path at the center of the view, using 40% of the height of the view as its radius and fill it with a radial gradient color:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+var path = new Path.Circle({
+    center: view.center,
+    radius: view.bounds.height * 0.4
+});
+
+// Fill the path with a radial gradient color with three stops:
+// yellow from 0% to 5%, mix between red from 5% to 20%,
+// mix between red and black from 20% to 100%:
+path.fillColor = {
+    gradient: {
+        stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+        radial: true
+    },
+    origin: path.position,
+    destination: path.bounds.rightCenter
+};
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="stops" class="member">
+<div class="member-link">
+<a name="stops" href="#stops"><tt><b>stops</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The gradient stops on the gradient ramp.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/GradientStop.html"><tt>GradientStop</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="radial" class="member">
+<div class="member-link">
+<a name="radial" href="#radial"><tt><b>radial</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the gradient is radial or linear.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="clone" class="member">
+<div class="member-link">
+<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Gradient.html"><tt>Gradient</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the gradient
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="equals-gradient" class="member">
+<div class="member-link">
+<a name="equals-gradient" href="#equals-gradient"><tt><b>equals</b>(gradient)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the gradient is equal to the supplied gradient.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>gradient:</tt> 
+<a href="../classes/Gradient.html"><tt>Gradient</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if they are equal, <tt>false</tt> otherwise
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.9.25 (develop)<br>
+Copyright &#169; 2011—2016 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>
