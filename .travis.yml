@@ -23,6 +23,7 @@ cache:
   directories:
   - node_modules
   - gulp/jsdoc
+  - ~/.fonts
 install:
 - travis/install-fonts.sh
 before_script:
