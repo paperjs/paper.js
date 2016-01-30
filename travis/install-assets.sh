@@ -2,7 +2,7 @@
 
 # Download and instal assets, but only if they haven't been installed from the
 # cache yet.
-if [ ! -d ~/assets ];
+if [ ! -d ~/assets ]; then
     mkdir -p ~/assets
     wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
     mv arial.ttf ~/assets
