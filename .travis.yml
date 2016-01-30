@@ -22,7 +22,11 @@ addons:
 cache:
   directories:
   - node_modules
+  - gulp/jsdoc
+install:
+- travis/install-fonts.sh
 before_script:
+- travis/setup-git.sh
 - git submodule update --init
 - npm install -g gulp
 - npm install
@@ -32,29 +36,4 @@ script:
 - gulp test
 - gulp dist
 after_script:
-- |
-  echo TRAVIS_NODE_VERSION: $TRAVIS_NODE_VERSION
-  git config user.name "Paper.js Bot"
-  git config user.email "bot@paperjs.org"
-  git config credential.helper "store --file=.git/credentials"
-  echo "https://${GH_TOKEN}:@github.com" > .git/credentials
-  mkdir $HOME/tmp
-  cp -a dist $HOME/tmp/
-  cp -p *.* $HOME/tmp/
-  rm $HOME/tmp/dist/.gitignore
-  rm $HOME/tmp/gulpfile.js
-  git clean -fdx
-  git checkout -- .
-  git checkout --orphan build
-  git rm -rf .
-  mv $HOME/tmp/* .
-  rmdir $HOME/tmp
-  git add --all *
-  git commit -m "commit build for $TRAVIS_COMMIT"
-  git push -u origin build --force
-install:
-- |
-  wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
-  mkdir -p ~/.fonts
-  mv arial.ttf ~/.fonts
-  fc-cache -f -v
+- travis/deploy-build.sh
