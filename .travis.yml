@@ -1,31 +1,56 @@
 language: node_js
 node_js:
-  - 'stable'
-  - '4'
+- stable
+- '4'
 sudo: false
 env:
+  matrix:
   - CXX=g++-4.9
+  global:
+  - GH_REF: github.com/paper/paper.js.git
+  - secure: KWZGzQIizOS/EE7vvt+Of9HTQADIkunOKzMkbbypxd4du03LIEyCOo24dV8JJdOWTjWqq57O0/Jvp7zPT/d4nJe4//jKG5scmYrBpu0me+YZFxQeA0nOk7wOUpZW3qEAsO9+4OLgba+0pmKeFtVvQ46plTJog55ln2dD6f8+LdY6DH45MkYkYFO39sHylWQ3LYetKpBC1Ej8YY+dC++wnjfazVICWIy+AHIEB9fnvejVGDqkJ3yUPtZj+KMnqjUM7pXc3Fjei9T5Fvz5IPQQTCwqIu3Bv8ABfaVR34tgM6FvCJyonVIPd3J0qVo9rxIzFp/4wLs9Xz4vqqqmgYGiKHV0ekQ+lMSYb6HFFSV/OUZbMTr5SQaRsI/2qTQB8Hm9Aa0qLjrNNuJQOp2NJlrrY48BlDEme2LbXlcgbUtLciyDYkjILgr0dMWUwD3sLI+dOoIfs6w21QkXRMNlkL9GqlNOSPgzcTSvNkO4/FUfiN9/5HpA9hJ40Ll2v5ov0XBkQ3DR+wfIKmtT56dDu37ISp8G5Zk2gCsrSsx3LxNlK6VlMer3Pu+klrSj/6XdlbZtX4hNon3D+p7v1B0IWK3m9JKsSiwr46E5iuBWyk7yf9nzK/l4IOup3VdApPgbfewLmnjvyOgWCmxQ0sMaZvdSvYP87r5fQkC1xQ9zhnonYNg=
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - g++-4.9
-      - libcairo2-dev
-      - libpango1.0-dev
-      - libssl-dev
-      - libjpeg62-dev
-      - libgif-dev
+    - g++-4.9
+    - libcairo2-dev
+    - libpango1.0-dev
+    - libssl-dev
+    - libjpeg62-dev
+    - libgif-dev
 before_script:
-  - npm install -g gulp
-  - npm install
+- git submodule update --init
+- npm install -g gulp
+- npm install
 script:
-  - gulp jshint
-  - gulp minify
-  - gulp test
+- gulp jshint
+- gulp minify
+- gulp test
+- gulp dist
+after_script:
+- |
+  git config user.name "Paper.js Bot"
+  git config user.email "bot@paperjs.org"
+  mkdir $HOME/build
+  cp -a dist $HOME/build/
+  cp -p *.* $HOME/build/
+  rm $HOME/build/dist/.gitignore
+  rm $HOME/build/gulpfile.js
+  git clean -fdx
+  git checkout -- .
+  git branch -d build --force
+  git checkout --orphan build
+  git rm -rf .
+  mv $HOME/build/* .
+  rmdir $HOME/build
+  git add --all *
+  git commit -m "Commit built version for $TRAVIS_COMMIT."
+  git push -u origin --force --quiet "https://${GH_TOKEN}@${GH_REF}" build
 install:
-  - |
-    wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
-    mkdir -p ~/.fonts
-    mv arial.ttf ~/.fonts
-    fc-cache -f -v
+- |
+  wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
+  mkdir -p ~/.fonts
+  mv arial.ttf ~/.fonts
+  fc-cache -f -v
