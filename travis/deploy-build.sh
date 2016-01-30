@@ -4,7 +4,7 @@
 # versions, but stable will always be checked against. This is to ensure that we
 # don't deploy twice on each build.
 
-if [ "${TRAVIS_NODE_VERSION}" = "stable" ]; then
+if [ "${TRAVIS_NODE_VERSION}" = "stable" ];
     # Create a clean distribution in a tmp folder
     mkdir ~/tmp
     cp -a dist ~/tmp/

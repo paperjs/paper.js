@@ -6,7 +6,7 @@ if [ ! -d ~/assets ];
     mkdir -p ~/assets
     wget http://sourceforge.net/p/tellmatic/git/ci/master/tree/img/arial.ttf?format=raw -O arial.ttf
     mv arial.ttf ~/assets
-fi;
+fi
 
 # Install fonts each time, as they can't be cached in Travis.
 mkdir -p ~/.fonts
