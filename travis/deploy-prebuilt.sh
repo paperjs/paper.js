@@ -17,17 +17,17 @@ git checkout -- . # Reset all tracked files to the original state.
 # Create a new orphaned buid/dist branch and switch to it.
 git checkout --orphan prebuilt/dist
 # Remove and delete all tracked files
-git rm -rf .
+git rm -rf --quiet .
 # Move the zipped dist file into the branch and commit.
 mv ~/tmp/dist/paperjs.zip .
 git add --all *
 git commit -m "Prebuilt distribution for commit ${TRAVIS_COMMIT}."
-# Push with --force since we're always overriding the previous built version
+# Push with --force since we're always overriding the previous built version.
 git push -u origin prebuilt/dist --force
 
-# Switch to the module branch and add and commit the rest.
-git fetch origin prebuilt/module
-git checkout prebuilt/module
+# Specifically fetch and check out the prebuilt/module branch from origin.
+git fetch origin +refs/heads/prebuilt/module:refs/remotes/origin/prebuilt/module
+git checkout -b prebuilt/module -t origin/prebuilt/module
 # Remove everything so we can fully replace it. Git will create the diffs.
 rm -fr *
 mv ~/tmp/* .

@@ -36,6 +36,6 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
                 // present and handles the loading transparently.
                 { path: '../dist/paper-full.js', namespace: 'paper' }
             ],
-            timeout: 20
+            timeout: 40
         }));
 });

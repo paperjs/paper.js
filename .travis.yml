@@ -12,8 +12,10 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
+    - git-core
     packages:
     - g++-4.9
+    - git
     - libcairo2-dev
     - libpango1.0-dev
     - libssl-dev
@@ -21,15 +23,15 @@ addons:
     - libgif-dev
 cache:
   directories:
-  - ~/assets
+  - ~/.assets
+  - ~/.nvm
   - node_modules
-  - gulp/jsdoc
 install:
 - travis/install-assets.sh
 before_script:
 - travis/setup-git.sh
-- git submodule update --init
-- npm install -g gulp
+- npm set progress=false
+- which gulp || npm install -g gulp
 - npm install
 script:
 - gulp jshint
