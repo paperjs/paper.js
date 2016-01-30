@@ -21,11 +21,11 @@ addons:
     - libgif-dev
 cache:
   directories:
+  - ~/assets
   - node_modules
   - gulp/jsdoc
-  - ~/.fonts
 install:
-- travis/install-fonts.sh
+- travis/install-assets.sh
 before_script:
 - travis/setup-git.sh
 - git submodule update --init

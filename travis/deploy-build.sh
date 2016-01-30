@@ -6,11 +6,11 @@
 
 if [ "${TRAVIS_NODE_VERSION}" = "stable" ]; then
     # Create a clean distribution in a tmp folder
-    mkdir $HOME/tmp
-    cp -a dist $HOME/tmp/
-    cp -p *.* $HOME/tmp/
-    rm $HOME/tmp/dist/.gitignore
-    rm $HOME/tmp/gulpfile.js
+    mkdir ~/tmp
+    cp -a dist ~/tmp/
+    cp -p *.* ~/tmp/
+    rm ~/tmp/dist/.gitignore
+    rm ~/tmp/gulpfile.js
     # Now reset the branch so we can switch to a new orphaned build branch
     git clean -fdx # Remove all ignored and untracked files from the build
     git checkout -- . # Reset all tracked files to the original state
@@ -19,8 +19,8 @@ if [ "${TRAVIS_NODE_VERSION}" = "stable" ]; then
     # Remove and delete all tracked files
     git rm -rf .
     # Now move the prepared build back into the branch and commit.
-    mv $HOME/tmp/* .
-    rmdir $HOME/tmp
+    mv ~/tmp/* .
+    rmdir ~/tmp
     git add --all *
     git commit -m "Build for ${TRAVIS_COMMIT}"
     # Push with --force since we're always overriding the previous built version
