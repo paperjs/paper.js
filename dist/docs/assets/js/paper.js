@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.25-HEAD - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.25-travis - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jan 30 16:37:43 2016 +0100
+ * Date: Sat Jan 30 16:45:14 2016 +0100
  *
  ***
  *
@@ -748,7 +748,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.9.25-HEAD",
+	version: "0.9.25-travis",
 
 	getView: function() {
 		var project = this.project;
