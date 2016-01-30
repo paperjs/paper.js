@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.9.25-travis - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.9.25-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jan 30 16:45:14 2016 +0100
+ * Date: Sat Jan 30 16:51:43 2016 +0100
  *
  ***
  *
@@ -748,7 +748,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.9.25-travis",
+	version: "0.9.25-develop",
 
 	getView: function() {
 		var project = this.project;
@@ -12476,6 +12476,10 @@ var CanvasProvider = {
 			clear = false;
 		}
 		var ctx = canvas.getContext('2d');
+		if (!ctx) {
+			throw new Error('Canvas ' + canvas +
+					' is unable toprovide a 2D context.');
+		}
 		if (canvas.width === width && canvas.height === height) {
 			if (clear)
 				ctx.clearRect(0, 0, width + 1, height + 1);
