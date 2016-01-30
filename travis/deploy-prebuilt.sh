@@ -11,7 +11,7 @@ rm ~/tmp/dist/.gitignore
 rm ~/tmp/gulpfile.js
 # Reset the branch so we can switch to the prebuilt/module and prebuilt/dist
 # branches
-git clean -fdx # Remove all ignored and untracked files from the build.
+git clean -fdx --quiet # Remove all ignored and untracked files from the build.
 git checkout -- . # Reset all tracked files to the original state.
 
 # Create a new orphaned buid/dist branch and switch to it.
@@ -21,7 +21,7 @@ git rm -rf --quiet .
 # Move the zipped dist file into the branch and commit.
 mv ~/tmp/dist/paperjs.zip .
 git add --all *
-git commit -m "Prebuilt distribution for commit ${TRAVIS_COMMIT}."
+git commit -m "Prebuilt package for commit ${TRAVIS_COMMIT}."
 # Push with --force since we're always overriding the previous built version.
 git push -u origin prebuilt/dist --force
 
