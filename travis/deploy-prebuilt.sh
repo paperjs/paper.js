@@ -1,27 +1,34 @@
 #!/bin/bash
 
-# Create clean distribution folder.
-mkdir ~/tmp
-# Copy everything to the distribution folder first, then clean up.
-cp -a dist ~/tmp/
+# Determine target for commit messages.
+if [ -n "$TRAVIS_TAG" ]; then
+    TARGET=$TRAVIS_TAG
+else
+    TARGET="commit ${TRAVIS_COMMIT}"
+fi
+
+# Set up a temporary folder to prepare distribution files.
+TMP=~/tmp
+mkdir $TMP
+# Copy everything to the this folder first, then clean up.
+cp -a dist $TMP/
 # Copy all visible root files (LICENSE.txt, README.md, package.json, etc.).
-cp -p *.* ~/tmp/
+cp -p *.* $TMP/
 # No need for .gitignore or build files.
-rm ~/tmp/dist/.gitignore
-rm ~/tmp/gulpfile.js
-# Reset the branch so we can switch to the prebuilt/module and prebuilt/dist
-# branches
+rm $TMP/dist/.gitignore
+rm $TMP/gulpfile.js
+# Reset the branch so we can switch to prebuilt/module and prebuilt/dist after.
 git clean -fdx --quiet # Remove all ignored and untracked files from the build.
 git checkout -- . # Reset all tracked files to the original state.
 
 # Create a new orphaned buid/dist branch and switch to it.
 git checkout --orphan prebuilt/dist
-# Remove and delete all tracked files
+# Remove and delete all tracked files left after the switch.
 git rm -rf --quiet .
 # Move the zipped dist file into the branch and commit.
-mv ~/tmp/dist/paperjs.zip .
+mv $TMP/dist/paperjs.zip .
 git add --all *
-git commit -m "Prebuilt package for commit ${TRAVIS_COMMIT}."
+git commit -m "Prebuilt package for ${TARGET}"
 # Push with --force since we're always overriding the previous built version.
 git push -u origin prebuilt/dist --force
 
@@ -30,8 +37,8 @@ git fetch origin +refs/heads/prebuilt/module:refs/remotes/origin/prebuilt/module
 git checkout -b prebuilt/module -t origin/prebuilt/module
 # Remove everything so we can fully replace it. Git will create the diffs.
 rm -fr *
-mv ~/tmp/* .
+mv $TMP/* .
 git add --all *
-git commit -m "Prebuilt module for commit ${TRAVIS_COMMIT}."
+git commit -m "Prebuilt module for ${TARGET}"
 git push -u origin prebuilt/module
-rmdir ~/tmp
+rmdir $TMP
