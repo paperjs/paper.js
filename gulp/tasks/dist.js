@@ -11,10 +11,11 @@
  */
 
 var gulp = require('gulp'),
+    del = require('del'),
     merge = require('merge-stream'),
     zip = require('gulp-zip');
 
-gulp.task('dist', ['minify', 'docs'], function() {
+gulp.task('dist', ['minify', 'docs', 'clean:dist'], function() {
     return merge(
             gulp.src([
                 'dist/paper-full*.js',
@@ -26,6 +27,12 @@ gulp.task('dist', ['minify', 'docs'], function() {
                 'dist/docs/**/*'
             ], { base: 'dist' })
         )
-        .pipe(zip('/paperjs.zip'))
+        .pipe(zip('paperjs.zip'))
         .pipe(gulp.dest('dist'));
+});
+
+gulp.task('clean:dist', function() {
+    return del([
+        'dist/paperjs.zip'
+    ]);
 });

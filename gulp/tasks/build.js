@@ -70,7 +70,7 @@ buildNames.forEach(function(name) {
 
     gulp.task('clean:build:' + name, function() {
         return del([
-            'dist/paper-' + name + '.js'
+            'dist/paper-' + name + '*.js'
         ]);
     });
 });
