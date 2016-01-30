@@ -29,6 +29,10 @@ var CanvasProvider = {
             clear = false; // It's already cleared through createElement().
         }
         var ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Canvas ' + canvas +
+                    ' is unable toprovide a 2D context.');
+        }
         // If they are not the same size, we don't need to clear them
         // using clearRect and visa versa.
         if (canvas.width === width && canvas.height === height) {
