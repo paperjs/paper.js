@@ -258,21 +258,23 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 		
 			
-<div id="symbols" class="member">
+<div id="symboldefinitions" class="member">
 <div class="member-link">
-<a name="symbols" href="#symbols"><tt><b>symbols</b></tt></a>
+<a name="symboldefinitions" href="#symboldefinitions"><tt><b>symbolDefinitions</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The symbols contained within the project.</p>
+	<p>The symbol definitions shared by all symbol items contained place ind project.</p>
+	
+		<p>Read only.</p>
 	
 	
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			Array of <a href="../classes/Symbol.html"><tt>Symbol</tt></a> objects
+			Array of <a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a> objects
 		</li>
 	</ul>
     
@@ -345,7 +347,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Clears the project by removing all <a href="../classes/Project.html#layers"><tt>project.layers</tt></a> and <a href="../classes/Project.html#symbols"><tt>project.symbols</tt></a>.</p>
+	<p>Clears the project by removing all <a href="../classes/Project.html#layers"><tt>project.layers</tt></a>.</p>
     
 	
 	
@@ -444,7 +446,7 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
-<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>PlacedSymbol</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
 <li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path items,  taking into account the setting of stroke color and width</li>
 <li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of  <a href="../classes/Path.html"><tt>Path</tt></a> items</li>

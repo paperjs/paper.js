@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Symbol</title>
+<title>SymbolDefinition</title>
 <base target="class-frame">
 <link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
 <script src="../assets/js/paper.js"></script>
@@ -13,7 +13,7 @@
 <body>
 <article class="reference"> 
 <div class="reference-class">
-<h1>Symbol</h1>
+<h1>SymbolDefinition</h1>
 
 <p>Symbols allow you to place multiple instances of an item in your project. This can save memory, since all instances of a symbol simply refer to the original item and it can speed up moving around complex objects, since internal properties such as segment lists and gradient positions don&rsquo;t need to be updated with every transformation.</p>
 
@@ -24,13 +24,13 @@
 	<h2>Constructors</h2>
 	
 		
-<div id="symbol-item" class="member">
+<div id="symboldefinition-item" class="member">
 <div class="member-link">
-<a name="symbol-item" href="#symbol-item"><tt><b>Symbol</b>(item[, dontCenter])</tt></a>
+<a name="symboldefinition-item" href="#symboldefinition-item"><tt><b>SymbolDefinition</b>(item[, dontCenter])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-    <p>Creates a Symbol item.</p>
+    <p>Creates a Symbol definition.</p>
     
     
 <ul class="member-list">
@@ -39,7 +39,7 @@
 	<li>
 <tt>item:</tt> 
 <a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the source item which is copied as the definition of the symbol
+&mdash;&nbsp;the source item which is removed from the scene graph  and becomes the symbol&rsquo;s definition.
 
 </li>
 	
@@ -57,7 +57,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Symbol.html"><tt>Symbol</tt></a></tt>
+<tt><a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a></tt>
 </li>
 		
 	</ul>
@@ -78,16 +78,13 @@ path.style = {
     strokeColor: 'black'
 };
 
-// Create a symbol from the path:
-var symbol = new Symbol(path);
+// Create a symbol definition from the path:
+var definition = new SymbolDefinition(path);
 
-// Remove the path:
-path.remove();
-
-// Place 100 instances of the symbol:
+// Place 100 instances of the symbol definition:
 for (var i = 0; i < 100; i++) {
-    // Place an instance of the symbol in the project:
-    var instance = symbol.place();
+    // Place an instance of the symbol definition in the project:
+    var instance = definition.place();
 
     // Move the instance to a random position within the view:
     instance.position = Point.random() * view.size;
@@ -147,14 +144,14 @@ for (var i = 0; i < 100; i++) {
 </div>
 		
 			
-<div id="definition" class="member">
+<div id="item" class="member">
 <div class="member-link">
-<a name="definition" href="#definition"><tt><b>definition</b></tt></a>
+<a name="item" href="#item"><tt><b>item</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The symbol definition.</p>
+	<p>The item used as the symbol&rsquo;s definition.</p>
 	
 	
 	
@@ -209,7 +206,7 @@ for (var i = 0; i < 100; i++) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/PlacedSymbol.html"><tt>PlacedSymbol</tt></a></tt>
+<tt><a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a></tt>
 </li>
 		
 	</ul>
@@ -235,7 +232,7 @@ for (var i = 0; i < 100; i++) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Symbol.html"><tt>Symbol</tt></a></tt>
+<tt><tt>Symbol</tt></tt>
 </li>
 		
 	</ul>
@@ -261,7 +258,7 @@ for (var i = 0; i < 100; i++) {
 	
 	<li>
 <tt>symbol:</tt> 
-<a href="../classes/Symbol.html"><tt>Symbol</tt></a>
+<tt>Symbol</tt>
 
 
 </li>

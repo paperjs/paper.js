@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 31 14:45:34 2016 +0100
+ * Date: Sun Jan 31 16:52:51 2016 +0100
  *
  ***
  *
@@ -2543,7 +2543,6 @@ var Project = PaperScopeItem.extend({
 		this._children = [];
 		this._namedChildren = {};
 		this._activeLayer = null;
-		this.symbols = [];
 		this._currentStyle = new Style(null, null, this);
 		this._view = View.create(this,
 				element || CanvasProvider.getCanvas(1, 1));
@@ -2580,7 +2579,6 @@ var Project = PaperScopeItem.extend({
 		var children = this._children;
 		for (var i = children.length - 1; i >= 0; i--)
 			children[i].remove();
-		this.symbols = [];
 	},
 
 	isEmpty: function() {
@@ -2622,6 +2620,26 @@ var Project = PaperScopeItem.extend({
 	getActiveLayer: function() {
 		return this._activeLayer || new Layer({ project: this });
 	},
+
+	getSymbolDefinitions: function() {
+		var definitions = [],
+			ids = {};
+		this.getItems({
+			class: SymbolItem,
+			match: function(item) {
+				var definition = item._definition,
+					id = definition._id;
+				if (!ids[id]) {
+					ids[id] = true;
+					definitions.push(definition);
+				}
+				return false;
+			}
+		});
+		return definitions;
+	},
+
+	getSymbols: 'getSymbolDefinitions',
 
 	getSelectedItems: function() {
 		var selectedItems = this._selectedItems,
@@ -2765,64 +2783,6 @@ var Project = PaperScopeItem.extend({
 				items[id]._drawSelection(ctx, matrix, size, items, version);
 			ctx.restore();
 		}
-	}
-});
-
-var Symbol = Base.extend({
-	_class: 'Symbol',
-
-	initialize: function Symbol(item, dontCenter) {
-		this._id = UID.get();
-		this.project = paper.project;
-		this.project.symbols.push(this);
-		if (item)
-			this.setDefinition(item, dontCenter);
-	},
-
-	_serialize: function(options, dictionary) {
-		return dictionary.add(this, function() {
-			return Base.serialize([this._class, this._definition],
-					options, false, dictionary);
-		});
-	},
-
-	_changed: function(flags) {
-		if (flags & 8)
-			Item._clearBoundsCache(this);
-		if (flags & 1)
-			this.project._changed(flags);
-	},
-
-	getDefinition: function() {
-		return this._definition;
-	},
-
-	setDefinition: function(item, _dontCenter) {
-		if (item._parentSymbol)
-			item = item.clone();
-		if (this._definition)
-			this._definition._parentSymbol = null;
-		this._definition = item;
-		item.remove();
-		item.setSelected(false);
-		if (!_dontCenter)
-			item.setPosition(new Point());
-		item._parentSymbol = this;
-		this._changed(9);
-	},
-
-	place: function(position) {
-		return new PlacedSymbol(this, position);
-	},
-
-	clone: function() {
-		return new Symbol(this._definition.clone(false));
-	},
-
-	equals: function(symbol) {
-		return symbol === this
-				|| symbol && this.definition.equals(symbol.definition)
-				|| false;
 	}
 });
 
@@ -5108,8 +5068,8 @@ var Raster = Item.extend({
 	}
 });
 
-var PlacedSymbol = Item.extend({
-	_class: 'PlacedSymbol',
+var SymbolItem = Item.extend({
+	_class: 'SymbolItem',
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_boundsGetter: { getBounds: 'getStrokeBounds' },
@@ -5118,51 +5078,115 @@ var PlacedSymbol = Item.extend({
 		symbol: null
 	},
 
-	initialize: function PlacedSymbol(arg0, arg1) {
+	initialize: function SymbolItem(arg0, arg1) {
 		if (!this._initialize(arg0,
 				arg1 !== undefined && Point.read(arguments, 1)))
-			this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
+			this.setDefinition(arg0 instanceof SymbolDefinition ?
+					arg0 : new SymbolDefinition(arg0));
 	},
 
 	_equals: function(item) {
-		return this._symbol === item._symbol;
+		return this._definition === item._definition;
 	},
 
 	copyContent: function(source) {
-		this.setSymbol(source._symbol);
+		this.setDefinition(source._definition);
 	},
 
-	getSymbol: function() {
-		return this._symbol;
+	getDefinition: function() {
+		return this._definition;
 	},
 
-	setSymbol: function(symbol) {
-		this._symbol = symbol;
+	setDefinition: function(definition) {
+		this._definition = definition;
 		this._changed(9);
 	},
 
+	getSymbol: '#getDefinition',
+	setSymbol: '#setDefinition',
+
 	isEmpty: function() {
-		return this._symbol._definition.isEmpty();
+		return this._definition._item.isEmpty();
 	},
 
 	_getBounds: function(getter, matrix, cacheItem, internal) {
-		var definition = this.symbol._definition;
-		return definition._getCachedBounds(getter,
-				matrix && matrix.appended(definition._matrix),
+		var item = this._definition._item;
+		return item._getCachedBounds(getter,
+				matrix && matrix.appended(item._matrix),
 				cacheItem, internal);
 	},
 
 	_hitTestSelf: function(point, options) {
-		var res = this._symbol._definition._hitTest(point, options);
+		var res = this._definition._item._hitTest(point, options);
 		if (res)
 			res.item = this;
 		return res;
 	},
 
 	_draw: function(ctx, param) {
-		this.symbol._definition.draw(ctx, param);
+		this._definition._item.draw(ctx, param);
 	}
 
+});
+
+var SymbolDefinition = Base.extend({
+	_class: 'SymbolDefinition',
+
+	initialize: function SymbolDefinition(item, dontCenter) {
+		this._id = UID.get();
+		this.project = paper.project;
+		if (item)
+			this.setItem(item, dontCenter);
+	},
+
+	_serialize: function(options, dictionary) {
+		return dictionary.add(this, function() {
+			return Base.serialize([this._class, this._item],
+					options, false, dictionary);
+		});
+	},
+
+	_changed: function(flags) {
+		if (flags & 8)
+			Item._clearBoundsCache(this);
+		if (flags & 1)
+			this.project._changed(flags);
+	},
+
+	getItem: function() {
+		return this._item;
+	},
+
+	setItem: function(item, _dontCenter) {
+		if (item._parentSymbol)
+			item = item.clone();
+		if (this._item)
+			this._item._parentSymbol = null;
+		this._item = item;
+		item.remove();
+		item.setSelected(false);
+		if (!_dontCenter)
+			item.setPosition(new Point());
+		item._parentSymbol = this;
+		this._changed(9);
+	},
+
+	getDefinition: '#getItem',
+	setDefinition: '#setItem',
+
+	place: function(position) {
+		return new SymbolItem(this, position);
+	},
+
+	clone: function() {
+		return new SymbolDefinition(this._item.clone(false));
+	},
+
+	equals: function(symbol) {
+		return symbol === this
+				|| symbol && this._item.equals(symbol._item)
+				|| false;
+	}
 });
 
 var HitResult = Base.extend({
@@ -12963,20 +12987,20 @@ new function() {
 		return createElement('path', attrs);
 	}
 
-	function exportPlacedSymbol(item, options) {
+	function exportSymbolItem(item, options) {
 		var attrs = getTransform(item._matrix, true),
-			symbol = item.getSymbol(),
-			symbolNode = getDefinition(symbol, 'symbol'),
-			definition = symbol.getDefinition(),
-			bounds = definition.getBounds();
-		if (!symbolNode) {
-			symbolNode = createElement('symbol', {
+			definition = item._definition,
+			node = getDefinition(definition, 'symbol'),
+			definitionItem = definition._item,
+			bounds = definitionItem.getBounds();
+		if (!node) {
+			node = createElement('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
-			symbolNode.appendChild(exportSVG(definition, options));
-			setDefinition(symbol, symbolNode, 'symbol');
+			node.appendChild(exportSVG(definitionItem, options));
+			setDefinition(definition, node, 'symbol');
 		}
-		attrs.href = '#' + symbolNode.id;
+		attrs.href = '#' + node.id;
 		attrs.x += bounds.x;
 		attrs.y += bounds.y;
 		attrs.width = formatter.number(bounds.width);
@@ -13047,7 +13071,7 @@ new function() {
 		Path: exportPath,
 		Shape: exportShape,
 		CompoundPath: exportCompoundPath,
-		PlacedSymbol: exportPlacedSymbol,
+		SymbolItem: exportSymbolItem,
 		PointText: exportText
 	};
 
@@ -13262,7 +13286,7 @@ new function() {
 			if (childNode.nodeType === 1
 					&& childNode.nodeName.toLowerCase() !== 'defs'
 					&& (child = importSVG(childNode, options, false))
-					&& !(child instanceof Symbol))
+					&& !(child instanceof SymbolDefinition))
 				children.push(child);
 		}
 		item.addChildren(children);
@@ -13374,7 +13398,8 @@ new function() {
 		},
 
 		symbol: function(node, type, options, isRoot) {
-			return new Symbol(importGroup(node, type, options, isRoot), true);
+			return new SymbolDefinition(
+					importGroup(node, type, options, isRoot), true);
 		},
 
 		defs: importGroup,
@@ -13384,7 +13409,7 @@ new function() {
 				definition = definitions[id],
 				point = getPoint(node, 'x', 'y');
 			return definition
-					? definition instanceof Symbol
+					? definition instanceof SymbolDefinition
 						? definition.place(point)
 						: definition.clone().translate(point)
 					: null;
@@ -13534,11 +13559,11 @@ new function() {
 				var scale = size ? rect.getSize().divide(size) : 1,
 					matrix = new Matrix().translate(rect.getPoint()).scale(scale);
 				item.transform(matrix.invert());
-			} else if (item instanceof Symbol) {
+			} else if (item instanceof SymbolDefinition) {
 				if (size)
 					rect.setSize(size);
 				var clip = getAttribute(node, 'overflow', styles) != 'visible',
-					group = item._definition;
+					group = item._item;
 				if (clip && !rect.contains(group.getBounds())) {
 					clip = new Shape.Rectangle(rect).transform(group._matrix);
 					clip.setClipMask(true);
@@ -13678,7 +13703,9 @@ paper = new (PaperScope.inject(Base.exports, {
 	DomEvent: DomEvent,
 	DomElement: DomElement,
 	document: document,
-	window: window
+	window: window,
+	Symbol: SymbolDefinition,
+	PlacedSymbol: SymbolItem
 }))();
 
 if (paper.agent.node)

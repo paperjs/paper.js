@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>PlacedSymbol</title>
+<title>SymbolItem</title>
 <base target="class-frame">
 <link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
 <script src="../assets/js/paper.js"></script>
@@ -13,11 +13,11 @@
 <body>
 <article class="reference"> 
 <div class="reference-class">
-<h1>PlacedSymbol</h1>
+<h1>SymbolItem</h1>
 
 <p> Extends <b><a href="../classes/Item.html"><tt>Item</tt></a></b></p>
 
-<p>A PlacedSymbol represents an instance of a symbol which has been placed in a Paper.js project.</p>
+<p>A symbol item represents an instance of a symbol which has been placed in a Paper.js project.</p>
 
 </div>
 
@@ -26,22 +26,22 @@
 	<h2>Constructors</h2>
 	
 		
-<div id="placedsymbol-symbol" class="member">
+<div id="symbolitem-definition" class="member">
 <div class="member-link">
-<a name="placedsymbol-symbol" href="#placedsymbol-symbol"><tt><b>PlacedSymbol</b>(symbol[, point])</tt></a>
+<a name="symbolitem-definition" href="#symbolitem-definition"><tt><b>SymbolItem</b>(definition[, point])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-    <p>Creates a new PlacedSymbol Item.</p>
+    <p>Creates a new symbol item.</p>
     
     
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>symbol:</tt> 
-<a href="../classes/Symbol.html"><tt>Symbol</tt></a>
-&mdash;&nbsp;the symbol to place
+<tt>definition:</tt> 
+<tt>Symbol</tt>
+&mdash;&nbsp;the symbol definition to place
 
 </li>
 	
@@ -59,7 +59,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/PlacedSymbol.html"><tt>PlacedSymbol</tt></a></tt>
+<tt><a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a></tt>
 </li>
 		
 	</ul>
@@ -83,16 +83,13 @@ var path = new Path.Star({
     strokeColor: 'black'
 });
 
-// Create a symbol from the path:
-var symbol = new Symbol(path);
-
-// Remove the path:
-path.remove();
+// Create a symbol definition from the path:
+var definition = new SymbolDefinition(path);
 
 // Place 100 instances of the symbol:
 for (var i = 0; i < 100; i++) {
     // Place an instance of the symbol in the project:
-    var instance = new PlacedSymbol(symbol);
+    var instance = new SymbolItem(definition);
 
     // Move the instance to a random position within the view:
     instance.position = Point.random() * view.size;
@@ -124,21 +121,21 @@ for (var i = 0; i < 100; i++) {
 		<h2>Properties</h2>
 		
 			
-<div id="symbol" class="member">
+<div id="definition" class="member">
 <div class="member-link">
-<a name="symbol" href="#symbol"><tt><b>symbol</b></tt></a>
+<a name="definition" href="#definition"><tt><b>definition</b></tt></a>
 </div>
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The symbol that the placed symbol refers to.</p>
+	<p>The symbol definition that the placed symbol refers to.</p>
 	
 	
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<a href="../classes/Symbol.html"><tt>Symbol</tt></a>
+			<a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a>
 		</li>
 	</ul>
     
@@ -202,7 +199,7 @@ for (var i = 0; i < 100; i++) {
 	
 		<ul class="member-list">
 			<h4>Values:</h4>
-			<li><tt>'Group'</tt>, <tt>'Layer'</tt>, <tt>'Path'</tt>, <tt>'CompoundPath'</tt>, <tt>'Shape'</tt>, <tt>'Raster'</tt>, <tt>'PlacedSymbol'</tt>, <tt>'PointText'</tt></li>
+			<li><tt>'Group'</tt>, <tt>'Layer'</tt>, <tt>'Path'</tt>, <tt>'CompoundPath'</tt>, <tt>'Shape'</tt>, <tt>'Raster'</tt>, <tt>'SymbolItem'</tt>, <tt>'PointText'</tt></li>
 		</ul>
 	
 	
@@ -3129,7 +3126,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
-<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>PlacedSymbol</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
 <li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items</li>
 <li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path and shape  items, taking into account the setting of stroke color and width</li>
 <li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of  <a href="../classes/Path.html"><tt>Path</tt></a> items</li>
