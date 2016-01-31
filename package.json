@@ -29,7 +29,7 @@
     "node": ">=0.10.0 <6.0.0"
   },
   "dependencies": {
-    "jsdom": "git://github.com/lehni/jsdom.git#3d55789d0f4d55392721b1e22890837fde472375",
+    "jsdom": "git://github.com/lehni/jsdom.git#bd86dd16666241edd5f25bc4f4e144f24da3c889",
     "source-map-support": "^0.4.0"
   },
   "optionalDependencies": {
