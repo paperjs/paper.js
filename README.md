@@ -8,25 +8,29 @@ from [http://paperjs.org/download/](http://paperjs.org/download/)
 - Discussion forum: <http://groups.google.com/group/paperjs>
 - Mainline source code: <https://github.com/paperjs/paper.js>
 - Twitter: [@paperjs](http://twitter.com/paperjs)
-- Daily development builds: <http://paperjs.org/download/>
+- Latest releases: <http://paperjs.org/download/>
+- Pre-built development versions: [`prebuilt/module`](https://github.com/paperjs/paper.js/tree/prebuilt/module)
+and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist) branches.
 
 ## Installing Paper.js
 
-You can download prebuilt packages from <http://paperjs.org/download/>.
-
 The recommended way to install and maintain Paper.js as a dependency in your
-project is through Bower for browsers, and through NPM for Node.js.
+project is through NPM or Bower for browsers, and through NPM for Node.js.
 
-If Bower is already installed installed, simply type this command in your
-project folder:
+If NPM or Bower is already installed installed, simply type one of these
+commands in your project folder:
 
+    npm install paper
+
+or:
+    
     bower install paper
 
 Upon execution, you will find a `paper` folder inside the project's
-`bower_components` folder.
+`node_modules` / `bower_components` folder.
 
-For more information on how to install Bower, read the chapter [Installing
-Node.js, NPM and Bower](#installing-nodejs-npm-and-bower).
+For more information on how to install NPM and Bower, read the chapter
+[Installing Node.js, NPM and Bower](#installing-nodejs-npm-and-bower).
 
 To learn more about its features for dependence tracking, see
 <http://bower.io/>.
@@ -176,11 +180,11 @@ more about this in [Which Version to Use?](#which-version-to-use).
 ### Running Directly from Separate Source Files
 
 As a handy alternative to building the library after each change to try it out
-in your scripts, there is the helper task `load`, that replaces the built
-libraries with symbolic links to the `scrc/load.js` script. This script then
-load the library directly from all the separate source files in the `src`
-folder, through the [Prepro.js](https://github.com/lehni/prepro.js) JavaScript
-preprocessing library.
+in your scripts, there is the `load` task, that replaces the built libraries
+with symbolic links to the `scrc/load.js` script. This script then load the
+library directly from all the separate source files in the `src` folder, through
+the [Prepro.js](https://github.com/lehni/prepro.js) JavaScript preprocessing
+library.
 
 This means you can switch between loading from sources and loading a built
 library simply by running.
@@ -207,11 +211,19 @@ And since `dist` is the default task, this is the same:
 
 ### Branch structure
 
-Since the release of version `v0.9.22`, Paper.js has adopted aspects of the
-Git-Flow workflow. For now, this just means that all development is taking place
-in the `develop` branch, which is only merged into `master` when a new release
-occurs. On this `develop` branch, `src/load.js` is used by default to load the
-library.
+Since the release of version `0.9.22`, Paper.js has adopted aspects of the Git-
+Flow workflow. All development is taking place in the
+[`develop`](https://github.com/paperjs/paper.js/tree/develop) branch, which is
+only merged into [`master`](https://github.com/paperjs/paper.js/tree/master)
+when a new release occurs.
+
+As of version `0.9.26`, the `dist` folder is excluded on all branches, and the
+building is now part of the `npm publish` process by way of the `prepublish`
+script.
+
+We also offer prebuilt versions of the latest state of the `develop` branch on
+[`prebuilt/module`](https://github.com/paperjs/paper.js/tree/prebuilt/module)
+and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist).
 
 ### Building the Documentation
 
