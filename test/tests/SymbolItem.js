@@ -12,7 +12,7 @@
 
 QUnit.module('Symbol & Placed Symbol');
 
-test('placedSymbol bounds', function() {
+test('SymbolItem#bounds', function() {
     var path = new Path.Circle([50, 50], 50);
     path.strokeColor = 'black';
     path.strokeWidth = 1;
@@ -21,30 +21,30 @@ test('placedSymbol bounds', function() {
     equals(path.strokeBounds,
         new Rectangle(-0.5, -0.5, 101, 101),
         'Path initial bounds');
-    var symbol = new Symbol(path);
-    var placedSymbol = new PlacedSymbol(symbol);
+    var definition = new SymbolDefinition(path);
+    var item = new SymbolItem(definition);
 
-    equals(placedSymbol.bounds,
+    equals(item.bounds,
         new Rectangle(-50.5, -50.5, 101, 101),
-        'PlacedSymbol initial bounds');
+        'SymbolItem initial bounds');
 
-    placedSymbol.scale(1, 0.5);
-    equals(placedSymbol.bounds,
+    item.scale(1, 0.5);
+    equals(item.bounds,
         new Rectangle(-50.5, -25.25, 101, 50.5),
         'Bounds after scale');
 
-    placedSymbol.rotate(40);
-    equals(placedSymbol.bounds,
+    item.rotate(40);
+    equals(item.bounds,
         new Rectangle(-41.96283, -37.79252, 83.92567, 75.58503),
         'Bounds after rotation');
 });
 
-test('bounds of group of symbol instances', function() {
+test('bounds of group of SymbolItem instances', function() {
     var path = new Path.Circle(new Point(), 10);
-    var symbol = new Symbol(path);
+    var definition = new SymbolDefinition(path);
     var instances = [];
     for (var i = 0; i < 10; i++) {
-        var instance = symbol.place(new Point(i * 20, 20));
+        var instance = definition.place(new Point(i * 20, 20));
         instances.push(instance);
     }
     var group = new Group(instances);
@@ -53,7 +53,7 @@ test('bounds of group of symbol instances', function() {
         'Group bounds');
 });
 
-test('bounds of a symbol that contains a group of items', function() {
+test('bounds of a SymbolItem that contains a group of items', function() {
     var path = new Path.Circle(new Point(), 10);
     var path2 = path.clone();
     path2.position.x += 20;
@@ -67,8 +67,8 @@ test('bounds of a symbol that contains a group of items', function() {
     equals(group.bounds,
         new Rectangle(-10, -10, 40, 20),
         'Group bounds');
-    var symbol = new Symbol(group);
-    var instance = symbol.place(new Point(50, 50));
+    var definition = new SymbolDefinition(group);
+    var instance = definition.place(new Point(50, 50));
     equals(instance.bounds,
         new Rectangle(30, 40, 40, 20),
         'Instance bounds');
@@ -77,16 +77,16 @@ test('bounds of a symbol that contains a group of items', function() {
 test('Changing the definition of a symbol should change the bounds of all instances of it.', function() {
     var path = new Path.Circle(new Point(), 10);
     var path2 = new Path.Circle(new Point(), 20);
-    var symbol = new Symbol(path);
-    var instance = symbol.place(new Point(0, 0));
+    var definition = new SymbolDefinition(path);
+    var instance = definition.place(new Point(0, 0));
     equals(instance.bounds,
         new Rectangle(-10, -10, 20, 20),
         'Initial bounds');
-    symbol.definition = path2;
+    definition.item = path2;
     equals(instance.bounds,
         new Rectangle(-20, -20, 40, 40),
         'Bounds after changing symbol definition');
-    symbol.definition.scale(0.5, 0.5);
+    definition.item.scale(0.5, 0.5);
     equals(instance.bounds,
         new Rectangle(-10, -10, 20, 20),
         'Bounds after modifying symbol definition');
@@ -95,25 +95,25 @@ test('Changing the definition of a symbol should change the bounds of all instan
 test('Symbol definition selection', function() {
     var path = new Path.Circle([50, 50], 50);
     path.selected = true;
-    var symbol = new Symbol(path);
+    var definition = new SymbolDefinition(path);
     equals(function() {
-        return symbol.definition.selected == false;
+        return definition.item.selected === false;
     }, true);
     equals(function() {
-        return paper.project.selectedItems.length == 0;
+        return paper.project.selectedItems.length === 0;
     }, true);
 });
 
 test('Symbol#place()', function() {
     var path = new Path.Circle([50, 50], 50);
-    var symbol = new Symbol(path);
-    var placedSymbol = symbol.place();
+    var definition = new SymbolDefinition(path);
+    var placedSymbol = definition.place();
     equals(function() {
         return placedSymbol.parent == paper.project.activeLayer;
     }, true);
 
     equals(function() {
-        return placedSymbol.symbol == symbol;
+        return placedSymbol.definition == definition;
     }, true);
 
     equals(function() {
@@ -123,8 +123,8 @@ test('Symbol#place()', function() {
 
 test('Symbol#place(position)', function() {
     var path = new Path.Circle([50, 50], 50);
-    var symbol = new Symbol(path);
-    var placedSymbol = symbol.place(new Point(100, 100));
+    var definition = new SymbolDefinition(path);
+    var placedSymbol = definition.place(new Point(100, 100));
     equals(function() {
         return placedSymbol.position.toString();
     }, '{ x: 100, y: 100 }');

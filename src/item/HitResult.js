@@ -109,7 +109,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
         getOptions: function(options) {
             return new Base({
                 // Type of item, for instanceof check: Group, Layer, Path,
-                // CompoundPath, Shape, Raster, PlacedSymbol, ...
+                // CompoundPath, Shape, Raster, SymbolItem, ...
                 type: null,
                 // Tolerance
                 tolerance: paper.settings.hitTolerance,

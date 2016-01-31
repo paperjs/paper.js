@@ -323,7 +323,7 @@ var Style = Base.extend(new function() {
     /**
      * @bean
      * @private
-     * @deprecated use {@link #fontFamily} instead.
+     * @deprecated use {@link #getFontFamily()} instead.
      */
     getFont: '#getFontFamily',
     setFont: '#setFontFamily',

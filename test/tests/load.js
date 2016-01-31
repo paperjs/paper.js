@@ -51,7 +51,7 @@
 
 /*#*/ include('PathItem_Contains.js');
 
-/*#*/ include('PlacedSymbol.js');
+/*#*/ include('SymbolItem.js');
 
 /*#*/ include('Raster.js');
 

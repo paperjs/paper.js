@@ -187,20 +187,20 @@ new function() {
         return createElement('path', attrs);
     }
 
-    function exportPlacedSymbol(item, options) {
+    function exportSymbolItem(item, options) {
         var attrs = getTransform(item._matrix, true),
-            symbol = item.getSymbol(),
-            symbolNode = getDefinition(symbol, 'symbol'),
-            definition = symbol.getDefinition(),
-            bounds = definition.getBounds();
-        if (!symbolNode) {
-            symbolNode = createElement('symbol', {
+            definition = item._definition,
+            node = getDefinition(definition, 'symbol'),
+            definitionItem = definition._item,
+            bounds = definitionItem.getBounds();
+        if (!node) {
+            node = createElement('symbol', {
                 viewBox: formatter.rectangle(bounds)
             });
-            symbolNode.appendChild(exportSVG(definition, options));
-            setDefinition(symbol, symbolNode, 'symbol');
+            node.appendChild(exportSVG(definitionItem, options));
+            setDefinition(definition, node, 'symbol');
         }
-        attrs.href = '#' + symbolNode.id;
+        attrs.href = '#' + node.id;
         attrs.x += bounds.x;
         attrs.y += bounds.y;
         attrs.width = formatter.number(bounds.width);
@@ -278,7 +278,7 @@ new function() {
         Path: exportPath,
         Shape: exportShape,
         CompoundPath: exportCompoundPath,
-        PlacedSymbol: exportPlacedSymbol,
+        SymbolItem: exportSymbolItem,
         PointText: exportText
     };
 

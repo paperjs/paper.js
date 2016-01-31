@@ -34,8 +34,7 @@ if (isNode) {
 }
 
 // The unit-tests expect the paper classes to be global.
-if (!('Base' in root))
-    paper.install(root);
+paper.install(root);
 
 // Override console.error, so that we can catch errors that are only logged to
 // the console.
@@ -109,7 +108,7 @@ var equals = function(actual, expected, message, options) {
 // A list of classes that should be identical after their owners were cloned.
 var identicalAfterCloning = {
     Gradient: true,
-    Symbol: true
+    SymbolDefinition: true
 };
 
 // Register a jsDump parser for Base.
@@ -337,11 +336,6 @@ var comparators = {
         }
     },
 
-    Symbol: function(actual, expected, message, options) {
-        equals(actual.definition, expected.definition, message + '.definition',
-                options);
-    },
-
     Segment: function(actual, expected, message, options) {
         compareProperties(actual, expected, ['handleIn', 'handleOut', 'point',
                 'selected'], message, options);
@@ -390,23 +384,28 @@ var comparators = {
                 ['shape', 'size', 'radius']);
     },
 
-    PlacedSymbol: function(actual, expected, message, options) {
+    PointText: function(actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+                ['content', 'point']);
+    },
+
+    SymbolItem: function(actual, expected, message, options) {
         compareItem(actual, expected, message,
-                // Cloning PlacedSymbols does not result in cloned Symbols
+                // Cloning SymbolItems does not result in cloned
+                // SymbolDefinitions
                 options && options.cloned
                         ? new Base(options, { cloned: false })
                         : options,
                 ['symbol']);
     },
 
-    PointText: function(actual, expected, message, options) {
-        compareItem(actual, expected, message, options,
-                ['content', 'point']);
+    SymbolDefinition: function(actual, expected, message, options) {
+        equals(actual.definition, expected.definition, message + '.definition',
+                options);
     },
 
     Project: function(actual, expected, message, options) {
-        compareProperties(actual, expected, ['symbols', 'layers'],
-                message, options);
+        compareProperties(actual, expected, ['layers'], message, options);
     }
 };
 

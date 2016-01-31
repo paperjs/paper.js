@@ -55,7 +55,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         this._children = [];
         this._namedChildren = {};
         this._activeLayer = null;
-        this.symbols = [];
         this._currentStyle = new Style(null, null, this);
         // If no view is provided, we create a 1x1 px canvas view just so we
         // have something to do size calculations with.
@@ -121,14 +120,12 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      */
 
     /**
-     * Clears the project by removing all {@link Project#layers} and
-     * {@link Project#symbols}.
+     * Clears the project by removing all {@link Project#layers}.
      */
     clear: function() {
         var children = this._children;
         for (var i = children.length - 1; i >= 0; i--)
             children[i].remove();
-        this.symbols = [];
     },
 
     /**
@@ -244,11 +241,35 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
-     * The symbols contained within the project.
+     * The symbol definitions shared by all symbol items contained place ind
+     * project.
      *
-     * @name Project#symbols
-     * @type Symbol[]
+     * @bean
+     * @type SymbolDefinition[]
      */
+    getSymbolDefinitions: function() {
+        var definitions = [],
+            ids = {};
+        this.getItems({
+            class: SymbolItem,
+            match: function(item) {
+                var definition = item._definition,
+                    id = definition._id;
+                if (!ids[id]) {
+                    ids[id] = true;
+                    definitions.push(definition);
+                }
+                return false; // No need to collect them.
+            }
+        });
+        return definitions;
+    },
+
+    /**
+     * @bean
+     * @deprecated use {@link #getSymbolDefinitions()} instead.
+     */
+    getSymbols: 'getSymbolDefinitions',
 
     /**
      * The selected items contained within the project.
@@ -318,7 +339,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
-     *     Shape, Raster, PlacedSymbol, PointText, ...}
+     *     Shape, Raster, SymbolItem, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path items,
      *     taking into account the setting of stroke color and width

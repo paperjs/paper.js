@@ -11,7 +11,7 @@
  */
 
 /**
- * @name Symbol
+ * @name SymbolDefinition
  *
  * @class Symbols allow you to place multiple instances of an item in your
  * project. This can save memory, since all instances of a symbol simply refer
@@ -19,14 +19,14 @@
  * internal properties such as segment lists and gradient positions don't need
  * to be updated with every transformation.
  */
-var Symbol = Base.extend(/** @lends Symbol# */{
-    _class: 'Symbol',
+var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
+    _class: 'SymbolDefinition',
 
     /**
-     * Creates a Symbol item.
+     * Creates a Symbol definition.
      *
-     * @param {Item} item the source item which is copied as the definition of
-     * the symbol
+     * @param {Item} item the source item which is removed from the scene graph
+     *     and becomes the symbol's definition.
      * @param {Boolean} [dontCenter=false]
      *
      * @example {@paperscript split=true height=240}
@@ -37,16 +37,13 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      *     strokeColor: 'black'
      * };
      *
-     * // Create a symbol from the path:
-     * var symbol = new Symbol(path);
+     * // Create a symbol definition from the path:
+     * var definition = new SymbolDefinition(path);
      *
-     * // Remove the path:
-     * path.remove();
-     *
-     * // Place 100 instances of the symbol:
+     * // Place 100 instances of the symbol definition:
      * for (var i = 0; i < 100; i++) {
-     *     // Place an instance of the symbol in the project:
-     *     var instance = symbol.place();
+     *     // Place an instance of the symbol definition in the project:
+     *     var instance = definition.place();
      *
      *     // Move the instance to a random position within the view:
      *     instance.position = Point.random() * view.size;
@@ -59,31 +56,26 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      *     instance.scale(0.25 + Math.random() * 0.75);
      * }
      */
-    initialize: function Symbol(item, dontCenter) {
-        // Define this Symbols's unique id.
+    initialize: function SymbolDefinition(item, dontCenter) {
         this._id = UID.get();
         this.project = paper.project;
-        this.project.symbols.push(this);
         if (item)
-            this.setDefinition(item, dontCenter);
+            this.setItem(item, dontCenter);
     },
 
     _serialize: function(options, dictionary) {
         return dictionary.add(this, function() {
-            return Base.serialize([this._class, this._definition],
+            return Base.serialize([this._class, this._item],
                     options, false, dictionary);
         });
     },
-
-    // TODO: Symbol#remove()
-    // TODO: Symbol#name (accessible by name through project#symbols)
 
     /**
      * The project that this symbol belongs to.
      *
      * @type Project
      * @readonly
-     * @name Symbol#project
+     * @name SymbolDefinition#project
      */
 
     /**
@@ -101,23 +93,23 @@ var Symbol = Base.extend(/** @lends Symbol# */{
     },
 
     /**
-     * The symbol definition.
+     * The item used as the symbol's definition.
      *
      * @bean
      * @type Item
      */
-    getDefinition: function() {
-        return this._definition;
+    getItem: function() {
+        return this._item;
     },
 
-    setDefinition: function(item, _dontCenter) {
+    setItem: function(item, _dontCenter) {
         // Make sure we're not stealing another symbol's definition
         if (item._parentSymbol)
             item = item.clone();
         // Remove previous definition's reference to this symbol
-        if (this._definition)
-            this._definition._parentSymbol = null;
-        this._definition = item;
+        if (this._item)
+            this._item._parentSymbol = null;
+        this._item = item;
         // Remove item from DOM, as it's embedded in Symbol now.
         item.remove();
         item.setSelected(false);
@@ -129,13 +121,20 @@ var Symbol = Base.extend(/** @lends Symbol# */{
     },
 
     /**
+     * @bean
+     * @deprecated use {@link #getItem()} instead.
+     */
+    getDefinition: '#getItem',
+    setDefinition: '#setItem',
+
+    /**
      * Places in instance of the symbol in the project.
      *
      * @param {Point} [position] the position of the placed symbol
-     * @return {PlacedSymbol}
+     * @return {SymbolItem}
      */
     place: function(position) {
-        return new PlacedSymbol(this, position);
+        return new SymbolItem(this, position);
     },
 
     /**
@@ -144,7 +143,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      * @return {Symbol}
      */
     clone: function() {
-        return new Symbol(this._definition.clone(false));
+        return new SymbolDefinition(this._item.clone(false));
     },
 
     /**
@@ -155,7 +154,7 @@ var Symbol = Base.extend(/** @lends Symbol# */{
      */
     equals: function(symbol) {
         return symbol === this
-                || symbol && this.definition.equals(symbol.definition)
+                || symbol && this._item.equals(symbol._item)
                 || false;
     }
 });

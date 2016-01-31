@@ -12,7 +12,7 @@ new Path.Rectangle(view.bounds).fillColor = 'black';
 var head = new Path.Ellipse([0, 0], [13, 8]);
 head.fillColor = 'white';
 head.strokeColor = null;
-var headSymbol = new Symbol(head);
+var headSymbol = new SymbolDefinition(head);
 
 var size = view.size;
 

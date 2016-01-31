@@ -46,7 +46,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     _class: 'Item',
     // All items apply their matrix by default.
-    // Exceptions are Raster, PlacedSymbol, Clip and Shape.
+    // Exceptions are Raster, SymbolItem, Clip and Shape.
     _applyMatrix: true,
     _canApplyMatrix: true,
     _canScaleStroke: false,
@@ -267,7 +267,7 @@ new function() { // // Scope to inject various item event handlers
      * @name Item#className
      * @type String
      * @values 'Group', 'Layer', 'Path', 'CompoundPath', 'Shape', 'Raster',
-     *     'PlacedSymbol', 'PointText'
+     *     'SymbolItem', 'PointText'
      */
 
     /**
@@ -833,7 +833,7 @@ new function() { // // Scope to inject various item event handlers
     _getBounds: function(getter, matrix, cacheItem, internal) {
         // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
-        // But cacheName is used in sub-classes such as PlacedSymbol and Raster.
+        // But cacheName is used in sub-classes such as SymbolItem and Raster.
         var children = this._children;
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
@@ -1702,7 +1702,7 @@ new function() { // // Scope to inject various item event handlers
      *     {Number} the tolerance of the hit-test
      * @option options.class {Function} only hit-test again a certain item class
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
-     *     Shape, Raster, PlacedSymbol, PointText, ...}
+     *     Shape, Raster, SymbolItem, PointText, ...}
      * @option options.fill {Boolean} hit-test the fill of items
      * @option options.stroke {Boolean} hit-test the stroke of path and shape
      *     items, taking into account the setting of stroke color and width
@@ -3182,7 +3182,7 @@ new function() { // // Scope to inject various item event handlers
             _matrix.prepend(matrix);
         // Call #_transformContent() now, if we need to directly apply the
         // internal _matrix transformations to the item's content.
-        // Application is not possible on Raster, PointText, PlacedSymbol, since
+        // Application is not possible on Raster, PointText, SymbolItem, since
         // the matrix is where the actual transformation state is stored.
         if (applyMatrix = applyMatrix && this._transformContent(_matrix,
                     _applyRecursively, _setApplyMatrix)) {

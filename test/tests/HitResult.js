@@ -521,7 +521,7 @@ test('hit-testing of items that come after a transformed group.', function() {
         return hitResult && hitResult.item;
     }, path2, 'Hit testing project for point2 should give us path2.');
 
-    group.translate(delta)
+    group.translate(delta);
 
     hitResult = paper.project.hitTest(point1);
     equals(function() {
@@ -561,8 +561,8 @@ test('hit-testing of placed symbols.', function() {
 
     var path = new Path.Circle([0, 0], 20);
     path.fillColor = 'black';
-    var symbol = new Symbol(path);
-    var placedItem = symbol.place(point);
+    var definition = new SymbolDefinition(path);
+    var placedItem = definition.place(point);
     var hitResult = placedItem.hitTest(point);
     equals(function() {
         return hitResult && hitResult.item == placedItem;

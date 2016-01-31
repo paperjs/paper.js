@@ -102,7 +102,7 @@ new function() {
             if (childNode.nodeType === 1
                     && childNode.nodeName.toLowerCase() !== 'defs'
                     && (child = importSVG(childNode, options, false))
-                    && !(child instanceof Symbol))
+                    && !(child instanceof SymbolDefinition))
                 children.push(child);
         }
         item.addChildren(children);
@@ -246,8 +246,9 @@ new function() {
 
         // http://www.w3.org/TR/SVG/struct.html#SymbolElement
         symbol: function(node, type, options, isRoot) {
-            // Pass true for dontCenter:
-            return new Symbol(importGroup(node, type, options, isRoot), true);
+            return new SymbolDefinition(
+                    // Pass true for dontCenter:
+                    importGroup(node, type, options, isRoot), true);
         },
 
         // http://www.w3.org/TR/SVG/struct.html#DefsElement
@@ -259,13 +260,13 @@ new function() {
             // as a property on node.
             // TODO: Support overflow and width, height, in combination with
             // overflow: hidden. Paper.js currently does not support
-            // PlacedSymbol clipping, but perhaps it should?
+            // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
                 definition = definitions[id],
                 point = getPoint(node, 'x', 'y');
             // Use place if we're dealing with a symbol:
             return definition
-                    ? definition instanceof Symbol
+                    ? definition instanceof SymbolDefinition
                         // When placing symbols, we nee to take both point and
                         // matrix into account. This just does the right thing:
                         ? definition.place(point)
@@ -459,7 +460,7 @@ new function() {
             // http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
             // TODO: implement preserveAspectRatio attribute
             // viewBox will be applied both to the group that's created for the
-            // content in Symbol.definition, and the Symbol itself.
+            // content in SymbolDefinition#item, and the SymbolItem itself.
             var rect = new Rectangle(convertValue(value, 'array')),
                 size = getSize(node, 'width', 'height', true);
             if (item instanceof Group) {
@@ -468,17 +469,17 @@ new function() {
                 var scale = size ? rect.getSize().divide(size) : 1,
                     matrix = new Matrix().translate(rect.getPoint()).scale(scale);
                 item.transform(matrix.invert());
-            } else if (item instanceof Symbol) {
+            } else if (item instanceof SymbolDefinition) {
                 // The symbol is wrapping a group. Note that viewBox was already
-                // applied to the group, and above code was executed for it.
-                // All that is left to handle here on the Symbol level is
+                // applied to the group, and the above code was executed for it.
+                // All that is left to handle here for SymbolDefinition is
                 // clipping. We can't do it at group level because
                 // applyAttributes() gets called for groups before their
                 // children are added, for styling reasons. See importGroup()
                 if (size)
                     rect.setSize(size);
                 var clip = getAttribute(node, 'overflow', styles) != 'visible',
-                    group = item._definition;
+                    group = item._item;
                 if (clip && !rect.contains(group.getBounds())) {
                     // Add a clip path at the top of this symbol's group
                     clip = new Shape.Rectangle(rect).transform(group._matrix);

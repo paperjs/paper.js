@@ -31,7 +31,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     // TODO: Implement type, width, height.
-    // TODO: Have PlacedSymbol & Raster inherit from a shared class?
+    // TODO: Have SymbolItem & Raster inherit from a shared class?
     /**
      * Creates a new raster item from the passed argument, and places it in the
      * active layer. `object` can either be a DOM Image, a Canvas, or a string
@@ -206,7 +206,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #resolution} instead.
+     * @deprecated use {@link #getResolution()} instead.
      */
     getPpi: '#getResolution',
 

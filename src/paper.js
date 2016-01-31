@@ -56,15 +56,14 @@ var paper = function(window, undefined) {
 /*#*/ include('basic/Matrix.js');
 /*#*/ include('basic/Line.js');
 
-/*#*/ include('project/Project.js');
-/*#*/ include('project/Symbol.js');
-
+/*#*/ include('item/Project.js');
 /*#*/ include('item/Item.js');
 /*#*/ include('item/Group.js');
 /*#*/ include('item/Layer.js');
 /*#*/ include('item/Shape.js');
 /*#*/ include('item/Raster.js');
-/*#*/ include('item/PlacedSymbol.js');
+/*#*/ include('item/SymbolItem.js');
+/*#*/ include('item/SymbolDefinition.js');
 /*#*/ include('item/HitResult.js');
 
 /*#*/ include('path/Segment.js');

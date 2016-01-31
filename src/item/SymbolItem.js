@@ -11,18 +11,18 @@
  */
 
 /**
- * @name PlacedSymbol
+ * @name SymbolItem
  *
- * @class A PlacedSymbol represents an instance of a symbol which has been
+ * @class A symbol item represents an instance of a symbol which has been
  * placed in a Paper.js project.
  *
  * @extends Item
  */
-var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
-    _class: 'PlacedSymbol',
+var SymbolItem = Item.extend(/** @lends SymbolItem# */{
+    _class: 'SymbolItem',
     _applyMatrix: false,
     _canApplyMatrix: false,
-    // PlacedSymbol uses strokeBounds for bounds
+    // SymbolItem uses strokeBounds for bounds
     _boundsGetter: { getBounds: 'getStrokeBounds' },
     _boundsSelected: true,
     _serializeFields: {
@@ -30,9 +30,9 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
     },
 
     /**
-     * Creates a new PlacedSymbol Item.
+     * Creates a new symbol item.
      *
-     * @param {Symbol} symbol the symbol to place
+     * @param {Symbol} definition the symbol definition to place
      * @param {Point} [point] the center point of the placed symbol
      *
      * @example {@paperscript split=true height=240}
@@ -47,16 +47,13 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
      *     strokeColor: 'black'
      * });
      *
-     * // Create a symbol from the path:
-     * var symbol = new Symbol(path);
-     *
-     * // Remove the path:
-     * path.remove();
+     * // Create a symbol definition from the path:
+     * var definition = new SymbolDefinition(path);
      *
      * // Place 100 instances of the symbol:
      * for (var i = 0; i < 100; i++) {
      *     // Place an instance of the symbol in the project:
-     *     var instance = new PlacedSymbol(symbol);
+     *     var instance = new SymbolItem(definition);
      *
      *     // Move the instance to a random position within the view:
      *     instance.position = Point.random() * view.size;
@@ -69,7 +66,7 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
      *     instance.scale(0.25 + Math.random() * 0.75);
      * }
      */
-    initialize: function PlacedSymbol(arg0, arg1) {
+    initialize: function SymbolItem(arg0, arg1) {
         // Support two forms of item initialization: Passing one object literal
         // describing all the different properties to be set, or a symbol (arg0)
         // and a point where it should be placed (arg1).
@@ -77,47 +74,56 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
         // Otherwise we need to set symbol from arg0.
         if (!this._initialize(arg0,
                 arg1 !== undefined && Point.read(arguments, 1)))
-            this.setSymbol(arg0 instanceof Symbol ? arg0 : new Symbol(arg0));
+            this.setDefinition(arg0 instanceof SymbolDefinition ?
+                    arg0 : new SymbolDefinition(arg0));
     },
 
     _equals: function(item) {
-        return this._symbol === item._symbol;
+        // TODO: Compare position too!
+        return this._definition === item._definition;
     },
 
     copyContent: function(source) {
-        this.setSymbol(source._symbol);
+        this.setDefinition(source._definition);
     },
 
     /**
-     * The symbol that the placed symbol refers to.
+     * The symbol definition that the placed symbol refers to.
      *
      * @bean
-     * @type Symbol
+     * @type SymbolDefinition
      */
-    getSymbol: function() {
-        return this._symbol;
+    getDefinition: function() {
+        return this._definition;
     },
 
-    setSymbol: function(symbol) {
-        this._symbol = symbol;
+    setDefinition: function(definition) {
+        this._definition = definition;
         this._changed(/*#=*/Change.GEOMETRY);
     },
 
+    /**
+     * @bean
+     * @deprecated use {@link #getDefinition()} instead.
+     */
+    getSymbol: '#getDefinition',
+    setSymbol: '#setDefinition',
+
     isEmpty: function() {
-        return this._symbol._definition.isEmpty();
+        return this._definition._item.isEmpty();
     },
 
 
     _getBounds: function(getter, matrix, cacheItem, internal) {
-        var definition = this.symbol._definition;
-        // Redirect the call to the symbol definition to calculate the bounds
-        return definition._getCachedBounds(getter,
-                matrix && matrix.appended(definition._matrix),
+        var item = this._definition._item;
+        // Redirect the call to the definition item to calculate the bounds.
+        return item._getCachedBounds(getter,
+                matrix && matrix.appended(item._matrix),
                 cacheItem, internal);
     },
 
     _hitTestSelf: function(point, options) {
-        var res = this._symbol._definition._hitTest(point, options);
+        var res = this._definition._item._hitTest(point, options);
         // TODO: When the symbol's definition is a path, should hitResult
         // contain information like HitResult#curve?
         if (res)
@@ -126,8 +132,8 @@ var PlacedSymbol = Item.extend(/** @lends PlacedSymbol# */{
     },
 
     _draw: function(ctx, param) {
-        this.symbol._definition.draw(ctx, param);
+        this._definition._item.draw(ctx, param);
     }
 
-    // TODO: PlacedSymbol#embed()
+    // TODO: SymbolItem#embed()
 });
