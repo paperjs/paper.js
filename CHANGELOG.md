@@ -22,6 +22,32 @@ All notable changes to Paper.js shall be documented in this file, following comm
   when the name is identical.
 - Update internal Acorn JavaScript parser to `0.5.0`, the last small version.
 - Update QUnit to `1.20.0`.
+- `#smooth()` now accepts an `options.type` string  specifying which smoothing
+  algorithm to use: 'asymmetric' (default), 'continuous', 'catmull-rom', and
+  'geometric' (#338).
+- Combine and simplify `Tool` mousedrag and mousemove code (#595).
+- Move `Tool#_fireEvent()` into private function in `Tool#_handleEvent()`.
+- Mouse handlers can to return `true` to cause browser default behavior.
+- `event.preventDefault()` is called by default after all mouse events except
+  'mousemove'. It will not be called if the event handler returns `false` nor
+  will it be called on a 'mousedown' event if the view or tools respond to
+  'mouseup'.
+- Add `_canScaleStroke` flag to selectively activate stroke-scaling on classes
+  that support it (#721).
+- Throw an exception if arguments to `smooth()` are segments or curves from
+  incorrect paths.
+- Many minor code and algorithm optimizations.
+- Performance optimization for monotone curves (#907).
+- Move to gulp build process.
+- Move `PaperScript#execute` URL argument into `options.url` (#902).
+- Rename `Matrix#concatenate()` to `#append()` and `preConcatenate()` to `#prepend()`.
+- Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functions.
+- Queue internal `View#update()` calls to minimize the number of times a canvas is redrawn (#830) (#925).
+- `Symbol` now clashes with ES6 definition of Symbol and has been changed (#770).
+    - `Symbol` -> `SymbolDefinition`
+    - `PlacedSymbol` -> `SymbolItem`
+    - `Symbol#definition` -> `SymbolDefinition#item`
+    - `PlacedSymbol#symbol` -> `SymbolItem#definition`
 
 ### Added
 - Multiple additions to SVG export (`#exportSVG()`):
@@ -35,9 +61,9 @@ All notable changes to Paper.js shall be documented in this file, following comm
       passed in combination with other options.
 - Add `Item#copyAttributes()` and `Item#copyContent()`, and use them in
   `Item#clone()`.
-- Add `insert` parameter to `Path#toShape()`, `Shape#toPath()`,
-  `Item#rasterize()`, controlling whether the created item is inserted into the
-  scene graph or not.
+- Add optional `insert` boolean argument to `Path#toShape()`, `Shape#toPath()`,
+  `Item#rasterize()`. Default is to insert, set to `false` to prevent the
+  created item from being inserted into the scene graph.
 - Add visual item comparison to QUnit, through rasterization and Resemble.js
   diffing.
 - Add many unit tests for known edge cases in boolean operations and curve
@@ -45,13 +71,41 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Start using automatic code testing through Travis CI.
 - Reach JSHint compliance and include regular linting in Travis CI tests.
 - Define code format standards in .editorconfig file
+- Add `getSquaredLineLength()` (removed `getEndDistanceSquared()`)
+- layers may now be given names (#491).
+- Add `Project#addLayer()` and `Project#insertLayer()` (#903).
+- Add `View#matrix` to allow matrix transformation to be used on the view (#832).
+- Add tests QUnit tests for leaked globals.
+- Add `Matrix#prepended` and `#appended` to return copies of the modified  matrix.
+- Add `Shape#hitTest()` boolean option `options.stroke` (#911).
+- Insert version number into docs.
+- Add `View#requestUpdate()` function to minimize number of actual canvas redraw.
+- Support `Raster#onLoad()` events on `Raster#setImage()` now (#924).
+- Add `Raster#onError()` event support (#849).
+- Add 'keydown' and 'keyup' events to `View` (#896).
+- Add mouse events to `View`.
+- Add `View#autoUpdate` boolean (default: true) to control  automatic updating of the canvas (#921).
+
+
 
 ### Deprecated
 - Deprecate `#windingRule` on `Item` and `Style` in favor of `#fillRule`.
+- `Matrix#concatenante` in favor of `#append`.
+- `Matrix#preConcatenate` in favor of `#prepend`.
+- `Matrix#chain` in favor of `#appended`.
+- `Project#symbols`in favor of `Project#getSymbolDefinitions()`
 
-<!--
+
 ### Removed
--->
+- Legacy `Color` constructors (removed in 0.9.25): `GrayColor`, `RgbColor`,
+  `HsbColor`, `HslColor`, and `GradientColor`. These have been replaced
+   with corresponding forms of the `Color` constructor.
+- Remove `getEndDistanceSquared()` (added `getSquaredLineLength()`)
+- `ctx.currentPath` caching optimization
+- Undocumented function `Project#addChild()` that added a layer to a project.
+  It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
+- Canvas attributes "resize" and "data-paper-resize" no longer will cause paper to resize the canvas when the viewport size changes; CSS is required since 0.9.22.
+
 
 ### Fixed
 - Improve hit-testing and `#contains()` checks on path with horizontal lines (#819).
@@ -69,5 +123,13 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Fix `Shape#strokeBounds` when `#strokeScaling` is false (#856).
 - Consistently interpret curves as straight or not-straight (#838).
 - Switch blendMode to 'lighter' in CandyCrash (#453).
+- Don't block touch actions when using paper in JavaScript mode (#686).
+- Convert touch event coordinates to project coordinates (#633).
+- Fix problems with group selection structures after `group#importJSON()` (#785).
+- Fix exceptions when a top-level layer is selected.
+- Don't allow layers to turn up in hit-tests (#608).
+- Correctly handle `#strokeScaling` when calculating `Path` and `Shape` bounds (#697).
+- Maintain `Raster#source` correctly on Node.js (#914).
+- Boolean operations correctly handle open `Path` items within `CompoundPath` (#912).
+- Don't modify an array of child items passed to `CompoundPath#insertChildren()` when it is a child items array of a `CompoundPath`.
 
-… and many more.
