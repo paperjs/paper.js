@@ -51,8 +51,8 @@ if (typeof window === 'object') {
         // dist/paper-node.js
         options = require('../src/options.js');
     // Override Node.js specific options.
-    options.version += '-load';
     options.load = true;
+    options.version += '-load';
     prepro.setup(function() {
         // Return objects to be defined in the preprocess-scope.
         // Note that this would be merge in with already existing objects.

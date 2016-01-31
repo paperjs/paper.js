@@ -17,7 +17,7 @@ var gulp = require('gulp'),
     whitespace = require('gulp-whitespace'),
     del = require('del'),
     extend = require('extend'),
-    options = require('../utils/options.js');
+    options = require('../utils/options.js')({ suffix: true });
 
 // Options to be used in Prepro.js preprocessing through the global __options
 // object, merged in with the options required above.

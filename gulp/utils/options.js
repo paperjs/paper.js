@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-var gitty = require('gitty');
+var gitty = require('gitty'),
+    extend = require('extend');
 
 // Require the __options object, so we have access to the version number and
 // make amendments, e.g. the release date.
@@ -27,8 +28,11 @@ function git(param) {
 // Get the date of the last commit from this branch for release date:
 options.date = git('log -1 --pretty=format:%ad');
 // If we're not on the master branch, append the branch name to the version:
-var branch = git('rev-parse --abbrev-ref HEAD');
-if (branch !== 'master')
-    options.version += '-' + branch;
+var branch = git('rev-parse --abbrev-ref HEAD'),
+    suffix = branch === 'master' ? '' : '-' + branch;
 
-module.exports = options;
+module.exports = function(opts) {
+    return extend({}, options, opts && opts.suffix && {
+        version: options.version + suffix
+    });
+};
