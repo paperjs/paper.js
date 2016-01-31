@@ -43,7 +43,11 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Rename `Matrix#concatenate()` to `#append()` and `preConcatenate()` to `#prepend()`.
 - Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functions.
 - Queue internal `View#update()` calls to minimize the number of times a canvas is redrawn (#830) (#925).
-
+- `Symbol` now clashes with ES6 definition of Symbol and has been changed (#770).
+    - `Symbol` -> `SymbolDefinition`
+    - `PlacedSymbol` -> `SymbolItem`
+    - `Symbol#definition` -> `SymbolDefinition#item`
+    - `PlacedSymbol#symbol` -> `SymbolItem#definition`
 
 ### Added
 - Multiple additions to SVG export (`#exportSVG()`):
@@ -89,6 +93,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - `Matrix#concatenante` in favor of `#append`.
 - `Matrix#preConcatenate` in favor of `#prepend`.
 - `Matrix#chain` in favor of `#appended`.
+- `Project#symbols`in favor of `Project#getSymbolDefinitions()`
 
 
 ### Removed
