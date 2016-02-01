@@ -111,7 +111,7 @@ var paper = function(window, undefined) {
 /*#*/ }
 
 /*#*/ if (__options.svg) {
-/*#*/     include('svg/SvgNode.js');
+/*#*/     include('svg/SvgElement.js');
 /*#*/     include('svg/SvgStyles.js');
 /*#*/     include('svg/SvgExport.js');
 /*#*/     include('svg/SvgImport.js');

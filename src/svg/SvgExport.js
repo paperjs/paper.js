@@ -61,16 +61,16 @@ new function() {
     function exportGroup(item, options) {
         var attrs = getTransform(item._matrix),
             children = item._children;
-        var node = SvgNode.create('g', attrs, formatter);
+        var node = SvgElement.create('g', attrs, formatter);
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
             var childNode = exportSVG(child, options);
             if (childNode) {
                 if (child.isClipMask()) {
-                    var clip =  SvgNode.create('clipPath');
+                    var clip =  SvgElement.create('clipPath');
                     clip.appendChild(childNode);
                     setDefinition(child, clip, 'clip');
-                     SvgNode.set(node, {
+                     SvgElement.set(node, {
                         'clip-path': 'url(#' + clip.id + ')'
                     });
                 } else {
