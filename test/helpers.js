@@ -426,7 +426,7 @@ var getFunctionMessage = function(func) {
 
 var createSVG = function(str, attrs) {
     if (attrs) {
-        // Similar to  SVGNode.create():
+        // Similar to SvgElement.create():
         var node = document.createElementNS('http://www.w3.org/2000/svg', str);
         for (var key in attrs)
             node.setAttribute(key, attrs[key]);

@@ -20,7 +20,7 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     function getValue(node, name, isString, allowNull) {
-        var value =  SVGNode.get(node, name);
+        var value =  SvgElement.get(node, name);
         // Interpret value as number. Never return NaN, but 0 instead.
         // If the value is a sequence of numbers, parseFloat will
         // return the first occurring number, which is enough for now.
@@ -186,7 +186,7 @@ new function() {
                     // at the end. This parent node also helps fix a bug on IE.
                     var body = document.body,
                         // No need to inherit styles on Node.js
-                        parent = !paper.agent.node && SVGNode.create('svg');
+                        parent = !paper.agent.node && SvgElement.create('svg');
                     if (parent) {
                         body.appendChild(parent);
                         // If no stroke-width is set, IE/Edge appears to have a
@@ -381,9 +381,9 @@ new function() {
     // since transform needs to be applied after fill color, as transformations
     // can affect gradient fills.
     // Use Base.set() to control sequence of attributes and have all entries in
-    // SVGStyles (e.g. 'stroke') before the additional attributes below (e.g.
+    // SvgStyles (e.g. 'stroke') before the additional attributes below (e.g.
     // 'stroke-opacity'). See issue #694.
-    var attributes = Base.set(Base.each(SVGStyles, function(entry) {
+    var attributes = Base.set(Base.each(SvgStyles, function(entry) {
         this[entry.attribute] = function(item, value) {
             item[entry.set](convertValue(value, entry.type, entry.fromSVG));
             // When applying gradient colors to shapes, we need to offset

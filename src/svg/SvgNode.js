@@ -11,11 +11,11 @@
  */
 
 /**
- * @name SVGNode
+ * @name SvgElement
  * @namespace
  * @private
  */
-var SVGNode = new function() {
+var SvgElement = new function() {
     // SVG related namespaces
     var svg = 'http://www.w3.org/2000/svg',
         xmlns = 'http://www.w3.org/2000/xmlns',
@@ -53,7 +53,7 @@ var SVGNode = new function() {
         return node;
     }
 
-    return /** @lends SVGNode */{
+    return /** @lends SvgElement */{
         // Export namespaces
         svg: svg,
         xmlns: xmlns,

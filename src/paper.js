@@ -111,10 +111,10 @@ var paper = function(window, undefined) {
 /*#*/ }
 
 /*#*/ if (__options.svg) {
-/*#*/     include('svg/SVGNode.js');
-/*#*/     include('svg/SVGStyles.js');
-/*#*/     include('svg/SVGExport.js');
-/*#*/     include('svg/SVGImport.js');
+/*#*/     include('svg/SvgNode.js');
+/*#*/     include('svg/SvgStyles.js');
+/*#*/     include('svg/SvgExport.js');
+/*#*/     include('svg/SvgImport.js');
 /*#*/ }
 
 /*#*/ if (__options.paperScript) {

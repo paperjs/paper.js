@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var SVGStyles = Base.each({
+var SvgStyles = Base.each({
     // Fill
     fillColor: ['fill', 'color'],
     fillRule: ['fill-rule', 'string'],

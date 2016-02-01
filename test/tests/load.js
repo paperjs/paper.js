@@ -61,5 +61,5 @@
 
 /*#*/ include('JSON.js');
 
-/*#*/ include('SVGImport.js');
-/*#*/ include('SVGExport.js');
+/*#*/ include('SvgImport.js');
+/*#*/ include('SvgExport.js');
