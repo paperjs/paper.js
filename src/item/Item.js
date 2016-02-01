@@ -2372,7 +2372,6 @@ new function() { // // Scope to inject various item event handlers
             } else {
                 child.remove();
             }
-            child.copyAttributes(this);
             return child;
         }
         return this;
