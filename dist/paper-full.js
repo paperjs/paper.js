@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 1 12:19:12 2016 +0100
+ * Date: Mon Feb 1 12:36:42 2016 +0100
  *
  ***
  *
@@ -12773,6 +12773,53 @@ var BlendMode = new function() {
 	};
 };
 
+var SVGNode = new function() {
+	var svg = 'http://www.w3.org/2000/svg',
+		xmlns = 'http://www.w3.org/2000/xmlns',
+		xlink = 'http://www.w3.org/1999/xlink',
+		attributeNamespace = {
+			href: xlink,
+			xlink: xmlns
+		};
+
+	function create(tag, attributes, formatter) {
+		return set(document.createElementNS(svg, tag), attributes, formatter);
+	}
+
+	function get(node, name) {
+		var namespace = attributeNamespace[name],
+			value = namespace
+				? node.getAttributeNS(namespace, name)
+				: node.getAttribute(name);
+		return value === 'null' ? null : value;
+	}
+
+	function set(node, attributes, formatter) {
+		for (var name in attributes) {
+			var value = attributes[name],
+				namespace = attributeNamespace[name];
+			if (typeof value === 'number' && formatter)
+				value = formatter.number(value);
+			if (namespace) {
+				node.setAttributeNS(namespace, name, value);
+			} else {
+				node.setAttribute(name, value);
+			}
+		}
+		return node;
+	}
+
+	return {
+		svg: svg,
+		xmlns: xmlns,
+		xlink: xlink,
+
+		create: create,
+		get: get,
+		set: set
+	};
+};
+
 var SVGStyles = Base.each({
 	fillColor: ['fill', 'color'],
 	fillRule: ['fill-rule', 'string'],
@@ -12819,33 +12866,8 @@ var SVGStyles = Base.each({
 	};
 }, {});
 
-var SVGNamespaces = {
-	href: 'http://www.w3.org/1999/xlink',
-	xlink: 'http://www.w3.org/2000/xmlns'
-};
-
 new function() {
 	var formatter;
-
-	function setAttributes(node, attrs) {
-		for (var key in attrs) {
-			var val = attrs[key],
-				namespace = SVGNamespaces[key];
-			if (typeof val === 'number')
-				val = formatter.number(val);
-			if (namespace) {
-				node.setAttributeNS(namespace, key, val);
-			} else {
-				node.setAttribute(key, val);
-			}
-		}
-		return node;
-	}
-
-	function createElement(tag, attrs) {
-		return setAttributes(
-			document.createElementNS('http://www.w3.org/2000/svg', tag), attrs);
-	}
 
 	function getTransform(matrix, coordinates, center) {
 		var attrs = new Base(),
@@ -12881,16 +12903,16 @@ new function() {
 	function exportGroup(item, options) {
 		var attrs = getTransform(item._matrix),
 			children = item._children;
-		var node = createElement('g', attrs);
+		var node = SVGNode.create('g', attrs, formatter);
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			var childNode = exportSVG(child, options);
 			if (childNode) {
 				if (child.isClipMask()) {
-					var clip = createElement('clipPath');
+					var clip =  SVGNode.create('clipPath');
 					clip.appendChild(childNode);
 					setDefinition(child, clip, 'clip');
-					setAttributes(node, {
+					 SVGNode.set(node, {
 						'clip-path': 'url(#' + clip.id + ')'
 					});
 				} else {
@@ -12911,7 +12933,7 @@ new function() {
 		attrs.height = size.height;
 		attrs.href = options.embedImages === false && image && image.src
 				|| item.toDataURL();
-		return createElement('image', attrs);
+		return  SVGNode.create('image', attrs, formatter);
 	}
 
 	function exportPath(item, options) {
@@ -12948,7 +12970,7 @@ new function() {
 			type = 'path';
 			attrs.d = item.getPathData(null, options.precision);
 		}
-		return createElement(type, attrs);
+		return  SVGNode.create(type, attrs, formatter);
 	}
 
 	function exportShape(item) {
@@ -12975,7 +12997,7 @@ new function() {
 				attrs.ry = radius.height;
 			}
 		}
-		return createElement(type, attrs);
+		return  SVGNode.create(type, attrs, formatter);
 	}
 
 	function exportCompoundPath(item, options) {
@@ -12983,7 +13005,7 @@ new function() {
 		var data = item.getPathData(null, options.precision);
 		if (data)
 			attrs.d = data;
-		return createElement('path', attrs);
+		return  SVGNode.create('path', attrs, formatter);
 	}
 
 	function exportSymbolItem(item, options) {
@@ -12993,7 +13015,7 @@ new function() {
 			definitionItem = definition._item,
 			bounds = definitionItem.getBounds();
 		if (!node) {
-			node = createElement('symbol', {
+			node =  SVGNode.create('symbol', {
 				viewBox: formatter.rectangle(bounds)
 			});
 			node.appendChild(exportSVG(definitionItem, options));
@@ -13002,10 +13024,10 @@ new function() {
 		attrs.href = '#' + node.id;
 		attrs.x += bounds.x;
 		attrs.y += bounds.y;
-		attrs.width = formatter.number(bounds.width);
-		attrs.height = formatter.number(bounds.height);
+		attrs.width = bounds.width;
+		attrs.height = bounds.height;
 		attrs.overflow = 'visible';
-		return createElement('use', attrs);
+		return  SVGNode.create('use', attrs, formatter);
 	}
 
 	function exportGradient(color) {
@@ -13037,8 +13059,8 @@ new function() {
 				};
 			}
 			attrs.gradientUnits = 'userSpaceOnUse';
-			gradientNode = createElement(
-					(radial ? 'radial' : 'linear') + 'Gradient', attrs);
+			gradientNode =  SVGNode.create((radial ? 'radial' : 'linear')
+					+ 'Gradient', attrs, formatter);
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
@@ -13050,7 +13072,8 @@ new function() {
 				};
 				if (alpha < 1)
 					attrs['stop-opacity'] = alpha;
-				gradientNode.appendChild(createElement('stop', attrs));
+				gradientNode.appendChild(
+						 SVGNode.create('stop', attrs, formatter));
 			}
 			setDefinition(color, gradientNode, 'color');
 		}
@@ -13058,7 +13081,8 @@ new function() {
 	}
 
 	function exportText(item) {
-		var node = createElement('text', getTransform(item._matrix, true));
+		var node =  SVGNode.create('text', getTransform(item._matrix, true),
+				formatter);
 		node.textContent = item._content;
 		return node;
 	}
@@ -13098,7 +13122,6 @@ new function() {
 					style.push(entry.attribute + ': ' + value);
 				} else {
 					attrs[entry.attribute] = value == null ? 'none'
-							: type === 'number' ? formatter.number(value)
 							: type === 'color' ? value.gradient
 								? exportGradient(value, item)
 								: value.toCSS(true)
@@ -13118,7 +13141,7 @@ new function() {
 		if (!item._visible)
 			attrs.visibility = 'hidden';
 
-		return setAttributes(node, attrs);
+		return  SVGNode.set(node, attrs, formatter);
 	}
 
 	var definitions;
@@ -13144,10 +13167,10 @@ new function() {
 			for (var i in definitions.svgs) {
 				if (!defs) {
 					if (!svg) {
-						svg = createElement('svg');
+						svg =  SVGNode.create('svg');
 						svg.appendChild(node);
 					}
-					defs = svg.insertBefore(createElement('defs'),
+					defs = svg.insertBefore( SVGNode.create('defs'),
 							svg.firstChild);
 				}
 				defs.appendChild(definitions.svgs[i]);
@@ -13193,20 +13216,20 @@ new function() {
 			var children = this._children,
 				view = this.getView(),
 				size = view.getViewSize(),
-				node = createElement('svg', {
+				node =  SVGNode.create('svg', {
 					x: 0,
 					y: 0,
 					width: size.width,
 					height: size.height,
 					version: '1.1',
-					xmlns: 'http://www.w3.org/2000/svg',
-					'xmlns:xlink': 'http://www.w3.org/1999/xlink'
-				}),
+					xmlns:  SVGNode.xmlns,
+					'xmlns:xlink':  SVGNode.xlink
+				}, formatter),
 				parent = node,
 				matrix = view._matrix;
 			if (!matrix.isIdentity())
-				parent = node.appendChild(
-						createElement('g', getTransform(matrix)));
+				parent = node.appendChild( SVGNode.create('g',
+						getTransform(matrix), formatter));
 			for (var i = 0, l = children.length; i < l; i++)
 				parent.appendChild(exportSVG(children[i], options, true));
 			return exportDefinitions(node, options);
@@ -13217,18 +13240,11 @@ new function() {
 new function() {
 
 	function getValue(node, name, isString, allowNull) {
-		var namespace = SVGNamespaces[name],
-			value = namespace
-				? node.getAttributeNS(namespace, name)
-				: node.getAttribute(name);
-		if (value === 'null')
-			value = null;
+		var value =  SVGNode.get(node, name);
 		return value == null
 				? allowNull
 					? null
-					: isString
-						? ''
-						: 0
+					: isString ? '' : 0
 				: isString
 					? value
 					: parseFloat(value);
@@ -13249,17 +13265,13 @@ new function() {
 	}
 
 	function convertValue(value, type, lookup) {
-		return value === 'none'
-				? null
-				: type === 'number'
-					? parseFloat(value)
-					: type === 'array'
-						? value ? value.split(/[\s,]+/g).map(parseFloat) : []
-						: type === 'color'
-							? getDefinition(value) || value
-							: type === 'lookup'
-								? lookup[value]
-								: value;
+		return value === 'none' ? null
+				: type === 'number' ? parseFloat(value)
+				: type === 'array' ?
+					value ? value.split(/[\s,]+/g).map(parseFloat) : []
+				: type === 'color' ? getDefinition(value) || value
+				: type === 'lookup' ? lookup[value]
+				: value;
 	}
 
 	function importGroup(node, type, options, isRoot) {
@@ -13353,18 +13365,22 @@ new function() {
 
 	var importers = {
 		'#document': function (node, type, options, isRoot) {
-			var nodes = node.childNodes,
-				move = !paper.agent.node;
+			var nodes = node.childNodes;
 			for (var i = 0, l = nodes.length; i < l; i++) {
 				var child = nodes[i],
 					next;
 				if (child.nodeType === 1) {
-					if (move) {
+					var body = document.body,
+						parent = !paper.agent.node && SVGNode.create('svg');
+					if (parent) {
+						body.appendChild(parent);
+						parent.style.strokeWidth = '1px';
 						next = child.nextSibling;
-						document.body.appendChild(child);
+						parent.appendChild(child);
 					}
 					var item = importSVG(child, options, isRoot);
-					if (move) {
+					if (parent) {
+						body.removeChild(parent);
 						if (next) {
 							node.insertBefore(child, next);
 						} else {
