@@ -3730,9 +3730,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.expandShapes: <tt>Boolean</tt></tt> &mdash; whether imported shape  items should be expanded to path items &mdash;&nbsp;default: <tt>false</tt></li>
-<li>[options.onLoad] {Function} the callback function to call once
-    the SVG content is loaded from the given URL. Only required when
-    loading from external files.</li>
+<li><tt>options.onLoad: <tt>Function</tt></tt> &mdash; the callback function to call once the  SVG content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external files.</li>
 <li><tt>options.applyMatrix: <tt>Boolean</tt></tt> &mdash; whether imported items should have their transformation  matrices applied to their contents or not &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.applyMatrix</tt></li>
 </ul>
 	
@@ -3794,7 +3792,7 @@ function onMouseDown(event) {
 	<li>
 <tt>onLoad:</tt> 
 <tt>Function</tt>
-&mdash;&nbsp;the callback function to call once the SVG  content is loaded from the given URL.
+&mdash;&nbsp;the callback function to call once the SVG  content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external files.
 
 </li>
 	

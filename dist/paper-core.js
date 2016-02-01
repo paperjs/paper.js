@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 1 12:58:52 2016 +0100
+ * Date: Mon Feb 1 20:15:37 2016 +0100
  *
  ***
  *
@@ -3801,7 +3801,6 @@ new function() {
 			} else {
 				child.remove();
 			}
-			child.copyAttributes(this);
 			return child;
 		}
 		return this;
@@ -4890,9 +4889,9 @@ var Raster = Item.extend({
 			image = document.getElementById(src) || new window.Image();
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
-		this.setImage(image);
 		if (!image.src)
 			image.src = src;
+		this.setImage(image);
 	},
 
 	getCrossOrigin: function() {
@@ -13641,7 +13640,7 @@ new function() {
 				onLoad = options.onLoad,
 				view = scope.project && scope.getView();
 			if (onLoad)
-				onLoad.call(this, item);
+				onLoad.call(this, item, svg);
 		}
 
 		if (isRoot) {

@@ -1084,11 +1084,9 @@ for (var i = 0; i < items.length; i++) {
 	<p>Converts the provided SVG content into Paper.js items and adds them to the active layer of this project. Note that the project is not cleared first. You can call <a href="../classes/Project.html#clear"><tt>project.clear</tt></a>() to do so.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>options.expandShapes: <tt>Boolean</tt></tt> &mdash; whether imported shape items should be expanded to path items &mdash;&nbsp;default: <tt>false</tt></li>
-<li>[options.onLoad] {Function} the callback function to call once
-the SVG content is loaded from the given URL. Only required when loading
-from external files.</li>
-<li><tt>options.applyMatrix: <tt>Boolean</tt></tt> &mdash; whether imported items should have their transformation matrices applied to their contents or not &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.applyMatrix</tt></li>
+<li><tt>options.expandShapes: <tt>Boolean</tt></tt> &mdash; whether imported shape  items should be expanded to path items &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.onLoad: undefined</tt> &mdash; (item, svg) {Function} the callback function to  call once the SVG content is loaded from the given URL receiving two  arguments: the converted <code>item</code> and the original <code>svg</code> data as a  string. Only required when loading from external files.</li>
+<li><tt>options.applyMatrix: <tt>Boolean</tt></tt> &mdash; whether imported items should have their transformation  matrices applied to their contents or not &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.applyMatrix</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -1097,7 +1095,7 @@ from external files.</li>
 	<li>
 <tt>svg:</tt> 
 <tt>SVGElement</tt>⟋<tt>String</tt>
-&mdash;&nbsp;the SVG content to import, either as a SVG DOM node, a string containing SVG content, or a string describing the URL of the SVG file to fetch.
+&mdash;&nbsp;the SVG content to import, either as a SVG  DOM node, a string containing SVG content, or a string describing the  URL of the SVG file to fetch.
 
 </li>
 	
@@ -1115,7 +1113,7 @@ from external files.</li>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted SVG content
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted  SVG content
 </li>
 		
 	</ul>
@@ -1149,7 +1147,7 @@ from external files.</li>
 	<li>
 <tt>onLoad:</tt> 
 <tt>Function</tt>
-&mdash;&nbsp;the callback function to call once the SVG content is loaded from the given URL.
+&mdash;&nbsp;the callback function to call once the SVG  content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external files.
 
 </li>
 	
@@ -1160,7 +1158,7 @@ from external files.</li>
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted SVG content
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted  SVG content
 </li>
 		
 	</ul>
