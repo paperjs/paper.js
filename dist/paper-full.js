@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 1 12:52:50 2016 +0100
+ * Date: Mon Feb 1 12:58:52 2016 +0100
  *
  ***
  *
@@ -12123,7 +12123,7 @@ var Key = new function() {
 
 			command: {
 				get: function() {
-				var agent = paper.agent;
+					var agent = paper && paper.agent;
 					return agent && agent.mac ? this.meta : this.control;
 				}
 			}
@@ -12152,7 +12152,7 @@ var Key = new function() {
 		}
 		if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
 			modifiers[name] = down;
-			var agent = paper.agent;
+			var agent = paper && paper.agent;
 			if (name === 'meta' && agent && agent.mac) {
 				if (down) {
 					metaFixMap = {};
@@ -12176,7 +12176,7 @@ var Key = new function() {
 	DomEvent.add(document, {
 		keydown: function(event) {
 			var key = getKey(event),
-				agent = paper.agent;
+				agent = paper && paper.agent;
 			if (key.length > 1 || agent && (agent.chrome && (event.altKey
 						|| agent.mac && event.metaKey
 						|| !agent.mac && event.ctrlKey))) {
