@@ -2121,9 +2121,10 @@ new function() { // // Scope to inject various item event handlers
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
-     * @option [options.onLoad] {Function} the callback function to call once
-     *     the SVG content is loaded from the given URL. Only required when
-     *     loading from external files.
+     * @option options.onLoad {Function} the callback function to call once the
+     *     SVG content is loaded from the given URL receiving two arguments: the
+     *     converted `item` and the original `svg` data as a string. Only
+     *     required when loading from external files.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether imported items should have their transformation
      *     matrices applied to their contents or not
@@ -2145,7 +2146,9 @@ new function() { // // Scope to inject various item event handlers
      *
      * @param {SVGElement|String} svg the URL of the SVG file to fetch.
      * @param {Function} onLoad the callback function to call once the SVG
-     *     content is loaded from the given URL.
+     *     content is loaded from the given URL receiving two arguments: the
+     *     converted `item` and the original `svg` data as a string. Only
+     *     required when loading from external files.
      * @return {Item} the newly created Paper.js item containing the converted
      *     SVG content
      */

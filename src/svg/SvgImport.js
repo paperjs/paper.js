@@ -563,7 +563,7 @@ new function() {
                 onLoad = options.onLoad,
                 view = scope.project && scope.getView();
             if (onLoad)
-                onLoad.call(this, item);
+                onLoad.call(this, item, svg);
         }
 
         if (isRoot) {
