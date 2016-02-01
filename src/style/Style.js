@@ -92,7 +92,6 @@ var Style = Base.extend(new function() {
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
         fontSize: 12,
-        font: 'sans-serif', // deprecated, links to fontFamily
         leading: null,
         // Paragraphs
         justification: 'left'
