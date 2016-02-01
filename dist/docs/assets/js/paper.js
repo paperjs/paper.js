@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 31 22:47:57 2016 +0100
+ * Date: Mon Feb 1 12:19:12 2016 +0100
  *
  ***
  *
@@ -10929,7 +10929,6 @@ var Style = Base.extend(new function() {
 		fontFamily: 'sans-serif',
 		fontWeight: 'normal',
 		fontSize: 12,
-		font: 'sans-serif',
 		leading: null,
 		justification: 'left'
 	},
