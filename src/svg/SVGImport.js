@@ -175,21 +175,31 @@ new function() {
     // nodeNames still.
     var importers = {
         '#document': function (node, type, options, isRoot) {
-            var nodes = node.childNodes,
-                move = !paper.agent.node;
+            var nodes = node.childNodes;
             for (var i = 0, l = nodes.length; i < l; i++) {
                 var child = nodes[i],
                     next;
                 if (child.nodeType === 1) {
-                    if (move) {
-                        // NOTE: We need to move the svg node into our current
-                        // document, so default styles apply!
+                    // NOTE: We need to move the SVG node to the current
+                    // document, so default styles apply! For this we create and
+                    // insert a temporary SVG parent node which is removed again
+                    // at the end. This parent node also helps fix a bug on IE.
+                    var body = document.body,
+                        // No need to inherit styles on Node.js
+                        parent = !paper.agent.node && SVGNode.create('svg');
+                    if (parent) {
+                        body.appendChild(parent);
+                        // If no stroke-width is set, IE/Edge appears to have a
+                        // default of 0.01px. We can set a default style on the
+                        // parent container as a more sensible fall-back.
+                        parent.style.strokeWidth = '1px';
                         next = child.nextSibling;
-                        document.body.appendChild(child);
+                        parent.appendChild(child);
                     }
                     var item = importSVG(child, options, isRoot);
-                    if (move) {
-                        //  After import, we move it back to where it was:
+                    if (parent) {
+                        //  After import, move things back to how they were:
+                        body.removeChild(parent);
                         if (next) {
                             node.insertBefore(child, next);
                         } else {
