@@ -67,7 +67,7 @@ var Key = new function() {
             // based on whichever key is used for commands.
             command: {
                 get: function() {
-                var agent = paper.agent;
+                    var agent = paper && paper.agent;
                     return agent && agent.mac ? this.meta : this.control;
                 }
             }
@@ -106,7 +106,7 @@ var Key = new function() {
         // Detect modifiers and mark them as pressed / released
         if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
             modifiers[name] = down;
-            var agent = paper.agent;
+            var agent = paper && paper.agent;
             if (name === 'meta' && agent && agent.mac) {
                 // Fix a strange behavior on Mac where no keyup events are
                 // received for any keys pressed while the meta key is down.
@@ -136,7 +136,7 @@ var Key = new function() {
     DomEvent.add(document, {
         keydown: function(event) {
             var key = getKey(event),
-                agent = paper.agent;
+                agent = paper && paper.agent;
             // Directly handle any special keys (key.length > 1) in keydown, as
             // not all of them will receive keypress events.
             // Chrome doesn't fire keypress events for command and alt keys,
