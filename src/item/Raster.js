@@ -373,10 +373,10 @@ var Raster = Item.extend(/** @lends Raster# */{
             image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        this.setImage(image);
         // A new image created above? Set the source now.
         if (!image.src)
             image.src = src;
+        this.setImage(image);
     },
 
     /**

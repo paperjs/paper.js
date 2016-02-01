@@ -11,6 +11,8 @@
  */
 
 var isNode = typeof global === 'object',
+    isPhantom = !!window.callPhantom,
+    isBrowser = !isNode && !isPhantom,
     root;
 
 if (isNode) {
@@ -135,8 +137,7 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
-var compareRasterized = function(actual, expected, message, options) {
-
+var comparePixels = function(actual, expected, message, options) {
     function rasterize(item, group, resolution) {
         var raster = null;
         if (group) {
@@ -152,10 +153,11 @@ var compareRasterized = function(actual, expected, message, options) {
                 + '" src="' + raster.source + '">';
     }
 
+    options = options || {};
     // In order to properly compare pixel by pixel, we need to put each item
     // into a group with a white background of the united dimensions of the
     // bounds of both items before rasterizing.
-    var resolution = options.rasterize === true ? 72 : options.rasterize,
+    var resolution = options.resolution || 72,
         actualBounds = actual.strokeBounds,
         expecedBounds = expected.strokeBounds,
         bounds = actualBounds.isEmpty()
@@ -164,7 +166,7 @@ var compareRasterized = function(actual, expected, message, options) {
                 ? actualBounds
                 : actualBounds.unite(expecedBounds);
     if (bounds.isEmpty()) {
-        QUnit.push(true, 'empty', 'empty', message);
+        QUnit.equal('empty', 'empty', message);
         return;
     }
     var group = actual && expected && new Group({
@@ -179,7 +181,7 @@ var compareRasterized = function(actual, expected, message, options) {
         actual = rasterize(actual, group, resolution),
         expected = rasterize(expected, group, resolution);
     if (!actual || !expected) {
-        QUnit.pushFailure('Unable to compare rasterized items: ' +
+        QUnit.push(false, null, null, 'Unable to compare rasterized items: ' +
                 (!actual ? 'actual' : 'expected') + ' item is null',
                 QUnit.stack(2));
     } else {
@@ -197,16 +199,18 @@ var compareRasterized = function(actual, expected, message, options) {
         }
         resemble(actual.getImageData())
             .compareTo(expected.getImageData())
+            .ignoreAntialiasing()
             // When working with imageData, this call is synchronous:
             .onComplete(function(data) { result = data; });
-        var tolerance = (options.tolerance || 1e-4) * 100, // percentages...
+         // Compare with tolerance in percentage...
+        var tolerance = (options.tolerance || 1e-4) * 100,
             fixed = ((1 / tolerance) + '').length - 1,
             identical = result ? 100 - result.misMatchPercentage : 0,
             reached = identical.toFixed(fixed),
             hundred = (100).toFixed(fixed),
-            ok = reached == hundred;
-        QUnit.push(ok, reached + '% identical', hundred + '% identical',
-                message);
+            ok = reached == hundred,
+            text = reached + '% identical';
+        QUnit.push(ok, text, hundred + '% identical', message);
         if (!ok && result && !isNode) {
             // Get the right entry for this unit test and assertion, and
             // replace the results with images
@@ -227,29 +231,30 @@ var compareRasterized = function(actual, expected, message, options) {
 var compareItem = function(actual, expected, message, options, properties) {
     options = options || {};
     if (options.rasterize) {
-        return compareRasterized(actual, expected, message, options);
+        comparePixels(actual, expected, message, options);
+    } else {
+        if (options.cloned)
+            QUnit.notStrictEqual(actual.id, expected.id,
+                    'not ' + message + '.id');
+        QUnit.strictEqual(actual.constructor, expected.constructor,
+                message + '.constructor');
+        // When item is cloned and has a name, the name will be versioned:
+        equals(actual.name,
+                options.cloned && expected.name
+                    ? expected.name + ' 1' : expected.name,
+                message + '.name');
+        compareProperties(actual, expected, ['children', 'bounds', 'position',
+                'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
+                'selected', 'fullySelected', 'clipMask', 'guide'],
+                message, options);
+        if (properties)
+            compareProperties(actual, expected, properties, message, options);
+        // Style
+        compareProperties(actual.style, expected.style, ['fillColor',
+                'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
+                'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
+                'justification'], message + '.style', options);
     }
-    if (options.cloned)
-        QUnit.notStrictEqual(actual.id, expected.id,
-                'not ' + message + '.id');
-    QUnit.strictEqual(actual.constructor, expected.constructor,
-            message + '.constructor');
-    // When item is cloned and has a name, the name will be versioned:
-    equals(actual.name,
-            options.cloned && expected.name
-                ? expected.name + ' 1' : expected.name,
-            message + '.name');
-    compareProperties(actual, expected, ['children', 'bounds', 'position',
-            'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
-            'selected', 'fullySelected', 'clipMask', 'guide'],
-            message, options);
-    if (properties)
-        compareProperties(actual, expected, properties, message, options);
-    // Style
-    compareProperties(actual.style, expected.style, ['fillColor',
-            'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
-            'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
-            'justification'], message + '.style', options);
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
@@ -373,10 +378,17 @@ var comparators = {
     },
 
     Raster: function(actual, expected, message, options) {
-        compareItem(actual, expected, message, options,
-                ['size', 'width', 'height', 'ppi', 'source', 'image']);
-        equals(actual.toDataURL(), expected.toDataURL(),
-                message + '.toDataUrl()');
+        var pixels = options && options.pixels,
+            properties = ['size', 'width', 'height', 'resolution'];
+        if (!pixels)
+            properties.push('source', 'image');
+        compareItem(actual, expected, message, options, properties);
+        if (pixels) {
+            comparePixels(actual, expected, message, options);
+        } else {
+            equals(actual.toDataURL(), expected.toDataURL(),
+                    message + '.toDataUrl()');
+        }
     },
 
     Shape: function(actual, expected, message, options) {

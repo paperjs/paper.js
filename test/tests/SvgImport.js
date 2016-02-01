@@ -119,3 +119,53 @@ test('Import complex CompoundPath and clone', function() {
     var item = paper.project.importSVG(svg);
     equals(item.clone(), item, null, { cloned: true });
 });
+
+if (!isNode) {
+    test('Import SVG clipping', function(assert) {
+        importSVG(assert, 'assets/clipping.svg',
+            'The imported SVG item should visually be the same as the rasterized original SVG data.');
+    });
+}
+
+function importSVG(assert, url, message, options) {
+        var done = assert.async();
+        project.importSVG(url, {
+            onLoad: function(item, svg) {
+                compareSVG(done, item, svg, message, options);
+            },
+            onError: function(error) {
+                // TODO: Implement in SvgImport first!
+                pushFailure('Loading SVG from a valid URL should not give an error.');
+                done();
+            }
+        });
+}
+
+function compareSVG(done, actual, expected, message, options) {
+    function getItem(item) {
+        return item instanceof Item
+            ? item
+            : typeof item === 'string'
+            ? new Raster('data:image/svg+xml;base64,' + btoa(item))
+            : null;
+    }
+
+    actual = getItem(actual);
+    expected = getItem(expected);
+    actual.position = expected.position;
+
+    if (typeof actual === 'function') {
+        if (!message)
+            message = getFunctionMessage(actual);
+        actual = actual();
+    }
+
+    expected.onLoad = function() {
+        comparePixels(actual, expected, message, Base.set({
+            tolerance: 1e-2,
+            resolution: 72
+        }, options));
+        done();
+    };
+}
+
