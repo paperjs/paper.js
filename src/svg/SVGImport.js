@@ -20,21 +20,14 @@ new function() {
     // index is option, and if passed, causes a lookup in a list.
 
     function getValue(node, name, isString, allowNull) {
-        var namespace = SVGNamespaces[name],
-            value = namespace
-                ? node.getAttributeNS(namespace, name)
-                : node.getAttribute(name);
-        if (value === 'null')
-            value = null;
+        var value =  SVGNode.get(node, name);
         // Interpret value as number. Never return NaN, but 0 instead.
         // If the value is a sequence of numbers, parseFloat will
         // return the first occurring number, which is enough for now.
         return value == null
                 ? allowNull
                     ? null
-                    : isString
-                        ? ''
-                        : 0
+                    : isString ? '' : 0
                 : isString
                     ? value
                     : parseFloat(value);
@@ -56,17 +49,13 @@ new function() {
 
     // Converts a string attribute value to the specified type
     function convertValue(value, type, lookup) {
-        return value === 'none'
-                ? null
-                : type === 'number'
-                    ? parseFloat(value)
-                    : type === 'array'
-                        ? value ? value.split(/[\s,]+/g).map(parseFloat) : []
-                        : type === 'color'
-                            ? getDefinition(value) || value
-                            : type === 'lookup'
-                                ? lookup[value]
-                                : value;
+        return value === 'none' ? null
+                : type === 'number' ? parseFloat(value)
+                : type === 'array' ?
+                    value ? value.split(/[\s,]+/g).map(parseFloat) : []
+                : type === 'color' ? getDefinition(value) || value
+                : type === 'lookup' ? lookup[value]
+                : value;
     }
 
     // Importer functions for various SVG node types

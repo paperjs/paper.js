@@ -266,7 +266,7 @@ var comparators = {
     Element: function(actual, expected, message, options) {
         // Convention: Loop through the attribute lists of both actual and
         // expected element, and compare values even if they may be inherited.
-        // This is to handle styling values on SVGElements more flexibly.
+        // This is to handle styling values on SVGElement items more flexibly.
         equals(actual && actual.tagName, expected.tagName,
                 (message || '') + '.tagName', options);
         for (var i = 0; i < expected.attributes.length; i++) {
@@ -426,7 +426,7 @@ var getFunctionMessage = function(func) {
 
 var createSVG = function(str, attrs) {
     if (attrs) {
-        // Similar to SVGExport's createElement / setAttributes.
+        // Similar to  SVGNode.create():
         var node = document.createElementNS('http://www.w3.org/2000/svg', str);
         for (var key in attrs)
             node.setAttribute(key, attrs[key]);

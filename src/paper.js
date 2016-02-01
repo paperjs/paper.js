@@ -111,8 +111,8 @@ var paper = function(window, undefined) {
 /*#*/ }
 
 /*#*/ if (__options.svg) {
+/*#*/     include('svg/SVGNode.js');
 /*#*/     include('svg/SVGStyles.js');
-/*#*/     include('svg/SVGNamespaces.js');
 /*#*/     include('svg/SVGExport.js');
 /*#*/     include('svg/SVGImport.js');
 /*#*/ }
