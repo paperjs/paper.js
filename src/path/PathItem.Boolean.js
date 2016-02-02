@@ -236,7 +236,7 @@ PathItem.inject(new function() {
             noHandles = false,
             clearCurves = [],
             prevCurve,
-            prevT;
+            prevTime;
 
         for (var i = locations.length - 1; i >= 0; i--) {
             var loc = locations[i];
