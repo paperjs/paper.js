@@ -227,3 +227,32 @@ test('path.strokeBounds with rectangles', function() {
             new Rectangle(75, 75, 150, 150),
             'path.strokeBounds');
 });
+
+test('path.strokeBounds without strokeScaling and zoomed view', function() {
+    var path = new Path.Circle({
+        center: [0, 0],
+        radius: 100,
+        strokeColor: 'black',
+        strokeWidth: 15,
+        strokeScaling: false
+    });
+
+    view.zoom = 2;
+
+    new Path.Rectangle({
+        rectangle: path.strokeBounds,
+        strokeColor: 'red',
+        strokeScaling: false
+    });
+
+    equals(path.strokeBounds,
+            new Rectangle(-103.75, -103.75, 207.5, 207.5),
+            'path.strokeBounds with zoomed view');
+
+    view.zoom = 1;
+
+    equals(path.strokeBounds,
+            new Rectangle(-107.5, -107.5, 215, 215),
+            'path.strokeBounds without zoomed view');
+});
+
