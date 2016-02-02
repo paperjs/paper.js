@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 14:03:25 2016 +0100
+ * Date: Tue Feb 2 17:30:38 2016 +0100
  *
  ***
  *
@@ -30,10 +30,12 @@
  *
  */
 
-var paper = function(window, undefined) {
+var paper = function(self, undefined) {
 
-window = window || require('./node/window');
-var document = window.document;
+var window = self ? self.window : require('./node/window'),
+	document = window && window.document;
+
+self = self || window;
 
 var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
@@ -713,7 +715,7 @@ var PaperScope = Base.extend({
 		PaperScope._scopes[this._id] = this;
 		var proto = PaperScope.prototype;
 		if (!this.support) {
-			var ctx = CanvasProvider.getContext(1, 1);
+			var ctx = CanvasProvider.getContext(1, 1) || {};
 			proto.support = {
 				nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
 				nativeBlendModes: BlendMode.nativeModes
@@ -721,7 +723,7 @@ var PaperScope = Base.extend({
 			CanvasProvider.release(ctx);
 		}
 		if (!this.agent) {
-			var user = window.navigator.userAgent.toLowerCase(),
+			var user = self.navigator.userAgent.toLowerCase(),
 				os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
 				platform =  os === 'darwin' ? 'mac' : os,
 				agent = proto.agent = proto.browser = { platform: platform };
@@ -10275,7 +10277,7 @@ var Color = Base.extend(new function() {
 				var value = +components[i];
 				components[i] = i < 3 ? value / 255 : value;
 			}
-		} else {
+		} else if (window) {
 			var cached = colorCache[string];
 			if (!cached) {
 				if (!colorCtx) {
@@ -10293,6 +10295,8 @@ var Color = Base.extend(new function() {
 				];
 			}
 			components = cached.slice();
+		} else {
+			components = [0, 0, 0];
 		}
 		return components;
 	}
@@ -11205,7 +11209,7 @@ var DomElement = new function() {
 		},
 
 		getPrefixed: function(el, name) {
-			return handlePrefix(el, name);
+			return el && handlePrefix(el, name);
 		},
 
 		setPrefixed: function(el, name, value) {
@@ -11221,20 +11225,24 @@ var DomElement = new function() {
 
 var DomEvent = {
 	add: function(el, events) {
-		for (var type in events) {
-			var func = events[type],
-				parts = type.split(/[\s,]+/g);
-			for (var i = 0, l = parts.length; i < l; i++)
-				el.addEventListener(parts[i], func, false);
+		if (el) {
+			for (var type in events) {
+				var func = events[type],
+					parts = type.split(/[\s,]+/g);
+				for (var i = 0, l = parts.length; i < l; i++)
+					el.addEventListener(parts[i], func, false);
+			}
 		}
 	},
 
 	remove: function(el, events) {
-		for (var type in events) {
-			var func = events[type],
-				parts = type.split(/[\s,]+/g);
-			for (var i = 0, l = parts.length; i < l; i++)
-				el.removeEventListener(parts[i], func, false);
+		if (el) {
+			for (var type in events) {
+				var func = events[type],
+					parts = type.split(/[\s,]+/g);
+				for (var i = 0, l = parts.length; i < l; i++)
+					el.removeEventListener(parts[i], func, false);
+			}
 		}
 	},
 
@@ -11317,23 +11325,6 @@ var View = Base.extend(Emitter, {
 	_class: 'View',
 
 	initialize: function View(project, element) {
-		this._project = project;
-		this._scope = project._scope;
-		this._element = element;
-		if (!this._pixelRatio)
-			this._pixelRatio = window.devicePixelRatio || 1;
-		this._id = element.getAttribute('id');
-		if (this._id == null)
-			element.setAttribute('id', this._id = 'view-' + View._id++);
-		DomEvent.add(element, this._viewEvents);
-		var none = 'none';
-		DomElement.setPrefixed(element.style, {
-			userDrag: none,
-			userSelect: none,
-			touchCallout: none,
-			contentZooming: none,
-			tapHighlightColor: 'rgba(0,0,0,0)'
-		});
 
 		function getSize(name) {
 			return element[name] || parseInt(element.getAttribute(name), 10);
@@ -11346,27 +11337,54 @@ var View = Base.extend(Emitter, {
 					: size;
 		}
 
-		if (PaperScope.hasAttribute(element, 'resize')) {
-			var that = this;
-			DomEvent.add(window, this._windowEvents = {
-				resize: function() {
-					that.setViewSize(getCanvasSize());
-				}
+		var size;
+		if (window && element) {
+			this._id = element.getAttribute('id');
+			if (this._id == null)
+				element.setAttribute('id', this._id = 'view-' + View._id++);
+			DomEvent.add(element, this._viewEvents);
+			var none = 'none';
+			DomElement.setPrefixed(element.style, {
+				userDrag: none,
+				userSelect: none,
+				touchCallout: none,
+				contentZooming: none,
+				tapHighlightColor: 'rgba(0,0,0,0)'
 			});
+
+			if (PaperScope.hasAttribute(element, 'resize')) {
+				var that = this;
+				DomEvent.add(window, this._windowEvents = {
+					resize: function() {
+						that.setViewSize(getCanvasSize());
+					}
+				});
+			}
+
+			size = getCanvasSize();
+
+			if (PaperScope.hasAttribute(element, 'stats')
+					&& typeof Stats !== 'undefined') {
+				this._stats = new Stats();
+				var stats = this._stats.domElement,
+					style = stats.style,
+					offset = DomElement.getOffset(element);
+				style.position = 'absolute';
+				style.left = offset.x + 'px';
+				style.top = offset.y + 'px';
+				document.body.appendChild(stats);
+			}
+		} else {
+			size = new Size(element);
+			element = null;
 		}
-		var size = this._viewSize = getCanvasSize();
-		this._setViewSize(size.width, size.height);
-		if (PaperScope.hasAttribute(element, 'stats')
-				&& typeof Stats !== 'undefined') {
-			this._stats = new Stats();
-			var stats = this._stats.domElement,
-				style = stats.style,
-				offset = DomElement.getOffset(element);
-			style.position = 'absolute';
-			style.left = offset.x + 'px';
-			style.top = offset.y + 'px';
-			document.body.appendChild(stats);
-		}
+		this._project = project;
+		this._scope = project._scope;
+		this._element = element;
+		if (!this._pixelRatio)
+			this._pixelRatio = window && window.devicePixelRatio || 1;
+		this._setElementSize(size.width, size.height);
+		this._viewSize = size;
 		View._views.push(this);
 		View._viewsById[this._id] = this;
 		(this._matrix = new Matrix())._owner = this;
@@ -11427,6 +11445,9 @@ var View = Base.extend(Emitter, {
 		this._autoUpdate = autoUpdate;
 		if (autoUpdate)
 			this.requestUpdate();
+	},
+
+	update: function() {
 	},
 
 	draw: function() {
@@ -11529,8 +11550,8 @@ var View = Base.extend(Emitter, {
 			delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
+		this._setElementSize(width, height);
 		this._viewSize.set(width, height);
-		this._setViewSize(width, height);
 		this.emit('resize', {
 			size: size,
 			delta: delta
@@ -11540,12 +11561,14 @@ var View = Base.extend(Emitter, {
 			this.requestUpdate();
 	},
 
-	_setViewSize: function(width, height) {
+	_setElementSize: function(width, height) {
 		var element = this._element;
-		if (element.width !== width)
-			element.width = width;
-		if (element.height !== height)
-			element.height = height;
+		if (element) {
+			if (element.width !== width)
+				element.width = width;
+			if (element.height !== height)
+				element.height = height;
+		}
 	},
 
 	getBounds: function() {
@@ -11593,6 +11616,26 @@ var View = Base.extend(Emitter, {
 
 	isInserted: function() {
 		return DomElement.isInserted(this._element);
+	},
+
+	getPixelSize: function(size) {
+		var element = this._element,
+			pixels;
+		if (element) {
+			var parent = element.parentNode,
+				temp = document.createElement('div');
+			temp.style.fontSize = size;
+			parent.appendChild(temp);
+			pixels = parseFloat(DomElement.getStyles(temp).fontSize);
+			parent.removeChild(temp);
+		} else {
+			pixels = parseFloat(pixels);
+		}
+		return pixels;
+	},
+
+	getTextWidth: function(font, lines) {
+		return 0;
 	}
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
 	var rotate = key === 'rotate';
@@ -11636,13 +11679,16 @@ var View = Base.extend(Emitter, {
 		_id: 0,
 
 		create: function(project, element) {
-			if (typeof element === 'string')
+			if (document && typeof element === 'string')
 				element = document.getElementById(element);
-			return new CanvasView(project, element);
+			var ctor = window ? CanvasView : View;
+			return new ctor(project, element);
 		}
 	}
 },
 new function() {
+	if (!window)
+		return;
 	var prevFocus,
 		tempFocus,
 		dragging = false,
@@ -11966,12 +12012,12 @@ var CanvasView = View.extend({
 						+ [].slice.call(arguments, 1));
 			canvas = CanvasProvider.getCanvas(size);
 		}
-		var context = this._context = canvas.getContext('2d');
-		context.save();
+		var ctx = this._context = canvas.getContext('2d');
+		ctx.save();
 		this._pixelRatio = 1;
 		if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
 			var deviceRatio = window.devicePixelRatio || 1,
-				backingStoreRatio = DomElement.getPrefixed(context,
+				backingStoreRatio = DomElement.getPrefixed(ctx,
 						'backingStorePixelRatio') || 1;
 			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}
@@ -11983,33 +12029,28 @@ var CanvasView = View.extend({
 		return remove.base.call(this);
 	},
 
-	_setViewSize: function _setViewSize(width, height) {
+	_setElementSize: function _setElementSize(width, height) {
 		var pixelRatio = this._pixelRatio;
-		_setViewSize.base.call(this, width * pixelRatio, height * pixelRatio);
+		_setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
 		if (pixelRatio !== 1) {
 			var element = this._element,
-				context = this._context;
+				ctx = this._context;
 			if (!PaperScope.hasAttribute(element, 'resize')) {
 				var style = element.style;
 				style.width = width + 'px';
 				style.height = height + 'px';
 			}
-			context.restore();
-			context.save();
-			context.scale(pixelRatio, pixelRatio);
+			ctx.restore();
+			ctx.save();
+			ctx.scale(pixelRatio, pixelRatio);
 		}
 	},
 
-	getPixelSize: function(size) {
+	getPixelSize: function getPixelSize(size) {
 		var agent = paper.agent,
 			pixels;
 		if (agent && agent.firefox) {
-			var parent = this._element.parentNode,
-				temp = document.createElement('div');
-			temp.style.fontSize = size;
-			parent.appendChild(temp);
-			pixels = parseFloat(DomElement.getStyles(temp).fontSize);
-			parent.removeChild(temp);
+			pixels = getPixelSize.base.call(this, size);
 		} else {
 			var ctx = this._context,
 				prevFont = ctx.font;
@@ -12500,6 +12541,8 @@ var CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height) {
+		if (!window)
+			return null;
 		var canvas,
 			clear = true;
 		if (typeof width === 'object') {
@@ -12529,13 +12572,16 @@ var CanvasProvider = {
 	},
 
 	getContext: function(width, height) {
-		return this.getCanvas(width, height).getContext('2d');
+		var canvas = this.getCanvas(width, height);
+		return canvas ? canvas.getContext('2d') : null;
 	},
 
 	release: function(obj) {
-		var canvas = obj.canvas ? obj.canvas : obj;
-		canvas.getContext('2d').restore();
-		this.canvases.push(canvas);
+		var canvas = obj && obj.canvas ? obj.canvas : obj;
+		if (canvas && canvas.getContext) {
+			canvas.getContext('2d').restore();
+			this.canvases.push(canvas);
+		}
 	}
 };
 
@@ -12726,24 +12772,27 @@ var BlendMode = new function() {
 	}, {});
 
 	var ctx = CanvasProvider.getContext(1, 1);
-	Base.each(modes, function(func, mode) {
-		var darken = mode === 'darken',
-			ok = false;
-		ctx.save();
-		try {
-			ctx.fillStyle = darken ? '#300' : '#a00';
-			ctx.fillRect(0, 0, 1, 1);
-			ctx.globalCompositeOperation = mode;
-			if (ctx.globalCompositeOperation === mode) {
-				ctx.fillStyle = darken ? '#a00' : '#300';
+	if (ctx) {
+		Base.each(modes, function(func, mode) {
+			var darken = mode === 'darken',
+				ok = false;
+			ctx.save();
+			try {
+				ctx.fillStyle = darken ? '#300' : '#a00';
 				ctx.fillRect(0, 0, 1, 1);
-				ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken ? 170 : 51;
-			}
-		} catch (e) {}
-		ctx.restore();
-		nativeModes[mode] = ok;
-	});
-	CanvasProvider.release(ctx);
+				ctx.globalCompositeOperation = mode;
+				if (ctx.globalCompositeOperation === mode) {
+					ctx.fillStyle = darken ? '#a00' : '#300';
+					ctx.fillRect(0, 0, 1, 1);
+					ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken
+							? 170 : 51;
+				}
+			} catch (e) {}
+			ctx.restore();
+			nativeModes[mode] = ok;
+		});
+		CanvasProvider.release(ctx);
+	}
 
 	this.process = function(mode, srcContext, dstContext, alpha, offset) {
 		var srcCanvas = srcContext.canvas,
@@ -13747,4 +13796,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-}(this.window);
+}(this.self);
