@@ -292,6 +292,31 @@ test('Simplifying a path with three segments of the same position should not thr
     }, 1);
 });
 
+test('Path#interpolate', function() {
+    var path = new Path(),
+        path0 = new Path.Circle({
+            center: [0, 0],
+            radius: 10
+        }),
+        path1 = new Path.Ellipse({
+            center: [10, 20],
+            radius: [20, 10]
+        }),
+        halfway = new Path.Ellipse({
+            center: [5, 10],
+            radius: [15, 10]
+        });
+
+    path.interpolate(path0, path1, 0);
+    equals(path, path0);
+
+    path.interpolate(path0, path1, 1);
+    equals(path, path1);
+
+    path.interpolate(path0, path1, 0.5);
+    equals(path, halfway);
+});
+
 QUnit.module('Path Curves');
 
 test('path.curves synchronisation', function() {

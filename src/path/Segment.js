@@ -580,6 +580,38 @@ var Segment = Base.extend(/** @lends Segment# */{
         this._changed();
     },
 
+    /**
+     * Interpolates between the two specified segments and sets the point and
+     * handles of this segment accordingly.
+     *
+     * @param {Segment} from the segment defining the geometry when `factor` is
+     *     `0`
+     * @param {Segment} to the segment defining the geometry when `factor` is
+     *     `1`
+     * @param {Number} factor the interpolation coefficient, typically between
+     *     `0` and `1`, but extrapolation is possible too
+     */
+    interpolate: function(from, to, factor) {
+        var u = 1 - factor,
+            v = factor,
+            point1 = from._point,
+            point2 = to._point,
+            handleIn1 = from._handleIn,
+            handleIn2 = to._handleIn,
+            handleOut2 = to._handleOut,
+            handleOut1 = from._handleOut;
+        this._point.set(
+                u * point1._x + v * point2._x,
+                u * point1._y + v * point2._y, true);
+        this._handleIn.set(
+                u * handleIn1._x + v * handleIn2._x,
+                u * handleIn1._y + v * handleIn2._y, true);
+        this._handleOut.set(
+                u * handleOut1._x + v * handleOut2._x,
+                u * handleOut1._y + v * handleOut2._y, true);
+        this._changed();
+    },
+
     _transformCoordinates: function(matrix, coords, change) {
         // Use matrix.transform version() that takes arrays of multiple
         // points for largely improved performance, as no calls to

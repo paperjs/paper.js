@@ -315,7 +315,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 && this._getWinding(point);
         return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
-    }
+    },
 
     // TODO: Write about negative indices, and add an example for ranges.
     /**
@@ -466,6 +466,47 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * // Smooth a range, using negative indices:
      * paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
      */
+
+    /**
+     * Interpolates between the two specified path items and uses the result
+     * as the geometry for this path item. The number of children and
+     * segments in the two paths involved in the operation should be the same.
+     *
+     * @param {PathItem} from the path item defining the geometry when `factor`
+     *     is `0`
+     * @param {PathItem} to the path item defining the geometry  when `factor`
+     *     is `1`
+     * @param {Number} factor the interpolation coefficient, typically between
+     *     `0` and `1`, but extrapolation is possible too
+     */
+    interpolate: function(from, to, factor) {
+        var isPath = !this._children,
+            name = isPath ? '_segments' : '_children',
+            itemsFrom = from[name],
+            itemsTo = to[name],
+            items = this[name];
+        if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
+            throw new Error('Invalid operands in interpolate() call: ' +
+                    from + ', ' + to);
+        }
+        var current = items.length,
+            length = itemsTo.length;
+        if (current < length) {
+            var ctor = isPath ? Segment : Path;
+            for (var i = current; i < length; i++) {
+                this.add(new ctor());
+            }
+        } else if (current > length) {
+            this[isPath ? 'removeSegments' : 'removeChildren'](length, current);
+        }
+        for (var i = 0; i < length; i++) {
+            items[i].interpolate(itemsFrom[i], itemsTo[i], factor);
+        }
+        if (isPath) {
+            this.setClosed(from._closed);
+            this._changed(/*#=*/Change.GEOMETRY);
+        }
+    },
 
     /**
      * {@grouptitle Postscript Style Drawing Commands}
