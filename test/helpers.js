@@ -248,10 +248,13 @@ var compareItem = function(actual, expected, message, options, properties) {
         if (properties)
             compareProperties(actual, expected, properties, message, options);
         // Style
-        compareProperties(actual.style, expected.style, ['fillColor',
+        var styles = ['fillColor',
                 'strokeColor', 'strokeCap', 'strokeJoin', 'dashArray',
-                'dashOffset', 'miterLimit', 'fontSize', 'font', 'leading',
-                'justification'], message + '.style', options);
+                'dashOffset', 'miterLimit'];
+        if (expected instanceof TextItem)
+            styles.push('fontSize', 'font', 'leading', 'justification');
+        compareProperties(actual.style, expected.style, styles,
+                message + '.style', options);
     }
 };
 

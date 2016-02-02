@@ -87,7 +87,11 @@ var Style = Base.extend(new function() {
         shadowBlur: 0,
         shadowOffset: new Point(),
         // Selection
-        selectedColor: undefined,
+        selectedColor: undefined
+    },
+    // For TextItem, override default fillColor and add text-specific properties
+    textDefaults = new Base(defaults, {
+        fillColor: new Color(), // black
         // Characters
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
@@ -95,7 +99,7 @@ var Style = Base.extend(new function() {
         leading: null,
         // Paragraphs
         justification: 'left'
-    },
+    }),
     flags = {
         strokeWidth: /*#=*/Change.STROKE,
         strokeCap: /*#=*/Change.STROKE,
@@ -116,15 +120,26 @@ var Style = Base.extend(new function() {
         beans: true
     },
     fields = {
+        _class: 'Style',
+
+        initialize: function Style(style, owner, project) {
+            // We keep values in a separate object that we can iterate over.
+            this._values = {};
+            this._owner = owner;
+            this._project = owner && owner._project || project || paper.project;
+            if (owner instanceof TextItem)
+                this._defaults = textDefaults;
+            if (style)
+                this.set(style);
+        },
+
         _defaults: defaults,
-        // Override default fillColor for text items
-        _textDefaults: new Base(defaults, {
-            fillColor: new Color() // black
-        }),
         beans: true
     };
 
-    Base.each(defaults, function(value, key) {
+    // Iterate over textDefaults to inject getters / setters, to cover all
+    // properties
+    Base.each(textDefaults, function(value, key) {
         var isColor = /Color$/.test(key),
             isPoint = key === 'shadowOffset',
             part = Base.capitalize(key),
@@ -149,7 +164,7 @@ var Style = Base.extend(new function() {
                     && !(owner instanceof CompoundPath)) {
                 for (var i = 0, l = children.length; i < l; i++)
                     children[i]._style[set](value);
-            } else {
+            } else if (key in this._defaults) {
                 var old = this._values[key];
                 if (old !== value) {
                     if (isColor) {
@@ -182,8 +197,8 @@ var Style = Base.extend(new function() {
             // If the owner has children, walk through all of them and see if
             // they all have the same style.
             // If true is passed for _dontMerge, don't merge children styles
-            if (!children || children.length === 0 || _dontMerge
-                    || owner instanceof CompoundPath) {
+            if (key in this._defaults && (!children || children.length === 0
+                    || _dontMerge || owner instanceof CompoundPath)) {
                 var value = this._values[key];
                 if (value === undefined) {
                     value = this._defaults[key];
@@ -200,16 +215,16 @@ var Style = Base.extend(new function() {
                             value._owner = owner;
                     }
                 }
-                return value;
-            }
-            for (var i = 0, l = children.length; i < l; i++) {
-                var childValue = children[i]._style[get]();
-                if (i === 0) {
-                    value = childValue;
-                } else if (!Base.equals(value, childValue)) {
-                    // If there is another child with a different
-                    // style, the style is not defined:
-                    return undefined;
+            } else if (children) {
+                for (var i = 0, l = children.length; i < l; i++) {
+                    var childValue = children[i]._style[get]();
+                    if (i === 0) {
+                        value = childValue;
+                    } else if (!Base.equals(value, childValue)) {
+                        // If there is another child with a different
+                        // style, the style is not defined:
+                        return undefined;
+                    }
                 }
             }
             return value;
@@ -242,19 +257,6 @@ var Style = Base.extend(new function() {
     Item.inject(item);
     return fields;
 }, /** @lends Style# */{
-    _class: 'Style',
-
-    initialize: function Style(style, _owner, _project) {
-        // We keep values in a separate object that we can iterate over.
-        this._values = {};
-        this._owner = _owner;
-        this._project = _owner && _owner._project || _project || paper.project;
-        if (_owner instanceof TextItem)
-            this._defaults = this._textDefaults;
-        if (style)
-            this.set(style);
-    },
-
     set: function(style) {
         // If the passed style object is also a Style, clone its clonable
         // fields rather than simply copying them.

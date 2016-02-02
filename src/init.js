@@ -27,4 +27,3 @@ var window = self ? self.window : require('./node/window'),
 // NOTE: We're not modifying the global `self` here. We receive its value passed
 // to the paper.js function scope, and this is the one that is modified here.
 self = self || window;
-
