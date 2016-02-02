@@ -91,11 +91,11 @@ var PathIterator = Base.extend({
         this.parts = parts;
         this.length = length;
         // Keep a current index from the part where we last where in
-        // getParameterAt(), to optimise for iterator-like usage of iterator.
+        // getTimeAt(), to optimise for iterator-like usage of iterator.
         this.index = 0;
     },
 
-    getParameterAt: function(offset) {
+    getTimeAt: function(offset) {
         // Make sure we're not beyond the requested offset already. Search the
         // start position backwards from where to then process the loop below.
         var i, j = this.index;
@@ -135,8 +135,8 @@ var PathIterator = Base.extend({
     },
 
     drawPart: function(ctx, from, to) {
-        from = this.getParameterAt(from);
-        to = this.getParameterAt(to);
+        from = this.getTimeAt(from);
+        to = this.getTimeAt(to);
         for (var i = from.index; i <= to.index; i++) {
             var curve = Curve.getPart(this.curves[i],
                     i == from.index ? from.value : 0,
@@ -149,7 +149,7 @@ var PathIterator = Base.extend({
 }, Base.each(Curve._evaluateMethods,
     function(name) {
         this[name + 'At'] = function(offset, weighted) {
-            var param = this.getParameterAt(offset);
+            var param = this.getTimeAt(offset);
             return Curve[name](this.curves[param.index], param.value, weighted);
         };
     }, {})

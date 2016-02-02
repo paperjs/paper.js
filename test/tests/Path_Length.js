@@ -21,16 +21,16 @@ test('path.length', function() {
     var length = path.length;
     equals(length, 172.10112809179614, 'path.length');
 
-    var param = path.curves[0].getParameterAt(length / 4);
-    equals(param, 0.2255849553116685, 'path.curves[0].getParameterAt(length / 4)');
+    var t = path.curves[0].getTimeAt(length / 4);
+    equals(t, 0.2255849553116685, 'path.curves[0].getTimeAt(length / 4)');
 });
 
-test('curve.getParameter with straight curve', function() {
+test('curve.getTimeAt() with straight curve', function() {
     var path = new Path();
     path.moveTo(100, 100);
     path.lineTo(500, 500);
     var curve = path.curves[0];
     var length = curve.length;
-    var t = curve.getParameterAt(length / 3);
+    var t = curve.getTimeAt(length / 3);
     equals(t, 0.3869631475722452);
 });

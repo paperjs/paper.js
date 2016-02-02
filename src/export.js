@@ -27,7 +27,7 @@ paper = new (PaperScope.inject(Base.exports, {
     // Export jsdom document and window too, for Node.js
     document: document,
     window: window,
-    // TODO: Remove in 2017 (deprecated January 2016):
+    // TODO: Remove in 1.0.0? (deprecated January 2016):
     Symbol: SymbolDefinition,
     PlacedSymbol: SymbolItem
 }))();

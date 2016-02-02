@@ -248,26 +248,26 @@ PathItem.inject(new function() {
                 results.unshift(loc);
             }
             var curve = loc._curve,
-                t = loc._parameter,
-                origT = t,
+                time = loc._time,
+                origTime = time,
                 segment;
             if (curve !== prevCurve) {
                 // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
-            } else if (prevT > 0) {
+            } else if (prevTime > 0) {
                 // Scale parameter when we are splitting same curve multiple
                 // times, but avoid dividing by zero.
-                t /= prevT;
+                time /= prevTime;
             }
-            if (t < tMin) {
+            if (time < tMin) {
                 segment = curve._segment1;
-            } else if (t > tMax) {
+            } else if (time > tMax) {
                 segment = curve._segment2;
             } else {
-                // Split the curve at t, passing true for _setHandles to always
-                // set the handles on the sub-curves even if the original curve
-                // had no handles.
-                var newCurve = curve.divide(t, true, true);
+                // Split the curve at time, passing true for _setHandles to
+                // always set the handles on the sub-curves even if the original
+                // curve had no handles.
+                var newCurve = curve.divideAtTime(time, true);
                 // Keep track of curves without handles, so they can be cleared
                 // again at the end.
                 if (noHandles)
@@ -294,7 +294,7 @@ PathItem.inject(new function() {
                 segment._intersection = dest;
             }
             prevCurve = curve;
-            prevT = origT;
+            prevTime = origTime;
         }
         // Clear segment handles if they were part of a curve with no handles,
         // once we are done with the entire curve.
@@ -445,9 +445,9 @@ PathItem.inject(new function() {
                     var curve = entry.curve,
                         path = curve._path,
                         parent = path._parent,
-                        t = curve.getParameterAt(length),
-                        pt = curve.getPointAt(t, true),
-                        hor = Math.abs(curve.getTangentAt(t, true).y)
+                        t = curve.getTimeAt(length),
+                        pt = curve.getPointAtTime(t),
+                        hor = Math.abs(curve.getTangentAtTime(t).y)
                                 < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
                     if (parent instanceof CompoundPath)
                         path = parent;

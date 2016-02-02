@@ -403,7 +403,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     /**
      * Creates a new curve as a sub-curve from this curve, its range defined by
-     * the given parameters. If `from` is larger than `to`, then
+     * the given curve-time parameters. If `from` is larger than `to`, then
      * the resulting curve will have its direction reversed.
      *
      * @param {Number} from the curve-time parameter at which the sub-curve
@@ -440,45 +440,43 @@ var Curve = Base.extend(/** @lends Curve# */{
     // TODO: adjustThroughPoint
 
     /**
-     * Private method that handles all types of offset / isParameter pairs and
-     * converts it to a curve parameter.
-     */
-    _getParameter: function(offset, isParameter) {
-        return isParameter
-                ? offset
-                // Accept CurveLocation objects, and objects that act like
-                // them:
-                : offset && offset.curve === this
-                    ? offset.parameter
-                    : offset === undefined && isParameter === undefined
-                        ? 0.5 // default is in the middle
-                        : this.getParameterAt(offset, 0);
-    },
-
-    /**
      * Divides the curve into two curves at the given offset. The curve itself
      * is modified and becomes the first part, the second part is returned as a
      * new curve. If the modified curve belongs to a path item, the second part
      * is also added to the path.
      *
-     * @name Curve#divide
-     * @function
-     * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *     or the curve time parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve at which to divide
      * @return {Curve} the second part of the divided curve, if the offset is
      *     within the valid range, {code null} otherwise.
+     * @see #divideAtTime(time)
      */
-    // TODO: Rename to divideAt()?
-    divide: function(offset, isParameter, _setHandles) {
-        var parameter = this._getParameter(offset, isParameter),
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+    divideAt: function(location) {
+        // Accept offsets and CurveLocation objects, as well as objects that act
+        // like them.
+        return this.divideAtTime(location && location.curve === this
+                ? location.time : location);
+    },
+
+    /**
+     * Divides the curve into two curves at the given curve-time parameter. The
+     * curve itself is modified and becomes the first part, the second part is
+     * returned as a new curve. If the modified curve belongs to a path item,
+     * the second part is also added to the path.
+     *
+     * @param {Number} time the curve-time parameter on the curve at which to
+     *     divide
+     * @return {Curve} the second part of the divided curve, if the offset is
+     *     within the valid range, {code null} otherwise.
+     * @see #divideAt(offset)
+     */
+    divideAtTime: function(time, _setHandles) {
+        // Only divide if not at the beginning or end.
+        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             res = null;
-        // Only divide if not at the beginning or end.
-        if (parameter >= tMin && parameter <= tMax) {
-            var parts = Curve.subdivide(this.getValues(), parameter),
+        if (time >= tMin && time <= tMax) {
+            var parts = Curve.subdivide(this.getValues(), time),
                 left = parts[0],
                 right = parts[1],
                 setHandles = _setHandles || this.hasHandles(),
@@ -519,21 +517,47 @@ var Curve = Base.extend(/** @lends Curve# */{
      * splitting, the path will be open. If the path was open already, splitting
      * will result in two paths.
      *
-     * @name Curve#split
-     * @function
-     * @param {Number} [offset=0.5] the offset on the curve at which to split,
-     *     or the curve time parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve at which to split
      * @return {Path} the newly created path after splitting, if any
-     * @see Path#split(index, parameter)
+     * @see Path#splitAt(offset)
      */
-    // TODO: Rename to splitAt()?
-    split: function(offset, isParameter) {
-        return this._path
-            ? this._path.split(this._segment1._index,
-                    this._getParameter(offset, isParameter))
-            : null;
+    splitAt: function(location) {
+        return this._path ? this._path.splitAt(location) : null;
+    },
+
+    /**
+     * Splits the path this curve belongs to at the given offset. After
+     * splitting, the path will be open. If the path was open already, splitting
+     * will result in two paths.
+     *
+     * @param {Number} time the curve-time parameter on the curve at which to
+     *     split
+     * @return {Path} the newly created path after splitting, if any
+     * @see Path#splitAt(offset)
+     */
+    splitAtTime: function(t) {
+        return this.splitAt(this.getLocationAtTime(t));
+    },
+
+    // TODO: Remove in 1.0.0? (deprecated January 2016):
+    /**
+     * @deprecated, use use {@link #divideAt(offset)} or
+     * {@link #divideAtTime(time)} instead.
+     */
+    divide: function(offset, isTime) {
+        return this.divideAtTime(offset === undefined ? 0.5 : isTime ? offset
+                : this.getTimeAt(offset));
+    },
+
+    // TODO: Remove in 1.0.0? (deprecated January 2016):
+    /**
+     * @deprecated, use use {@link #splitAt(offset)} or
+     * {@link #splitAtTime(time)} instead.
+     */
+    split: function(offset, isTime) {
+        return this.splitAtTime(offset === undefined ? 0.5 : isTime ? offset
+                : this.getTimeAt(offset));
     },
 
     /**
@@ -610,7 +634,7 @@ statics: {
         return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
     },
 
-    getParameterOf: function(v, point) {
+    getTimeOf: function(v, point) {
         // Before solving cubics, compare the beginning and end of the curve
         // with zero epsilon:
         var p1 = new Point(v[0], v[1]),
@@ -642,7 +666,7 @@ statics: {
              : null;
     },
 
-    getNearestParameter: function(v, point) {
+    getNearestTime: function(v, point) {
         if (Curve.isStraight(v)) {
             var p1x = v[0], p1y = v[1],
                 p2x = v[6], p2y = v[7],
@@ -656,7 +680,7 @@ statics: {
             var u = ((point.x - p1x) * vx + (point.y - p1y) * vy) / det;
             return u < /*#=*/Numerical.EPSILON ? 0
                  : u > /*#=*/(1 - Numerical.EPSILON) ? 1
-                 : Curve.getParameterOf(v,
+                 : Curve.getTimeOf(v,
                     new Point(p1x + u * vx, p1y + u * vy));
         }
 
@@ -951,7 +975,7 @@ statics: {
      * @return {Boolean} {@true if the line is horizontal}
      */
     isHorizontal: function() {
-        return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).y)
+        return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).y)
                 < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     },
 
@@ -961,59 +985,64 @@ statics: {
      * @return {Boolean} {@true if the line is vertical}
      */
     isVertical: function() {
-        return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).x)
+        return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).x)
                 < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
     }
 }), /** @lends Curve# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
-    // See #getParameterOf(), #getLocationOf(), #getNearestLocation(), ...
+    // See #getTimeOf(), #getLocationOf(), #getNearestLocation(), ...
     beans: false,
 
     /**
      * {@grouptitle Positions on Curves}
      *
-     * Calculates the curve time parameter of the specified offset on the path,
+     * Calculates the curve location at the specified offset on the curve.
+     *
+     * @param {Number} offset the offset on the curve
+     * @return {CurveLocation} the curve location at the specified the offset
+     */
+    getLocationAt: function(offset, _isTime) {
+        // TODO: Remove _isTime handling in 1.0.0? (deprecated Jan 2016):
+        return this.getLocationAtTime(
+                _isTime ? offset : this.getTimeAt(offset));
+    },
+
+    /**
+     * Calculates the curve location at the specified curve-time parameter on
+     * the curve.
+     *
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {CurveLocation} the curve location at the specified the location
+     */
+    getLocationAtTime: function(t) {
+        return t != null && t >= 0 && t <= 1
+                ? new CurveLocation(this, t)
+                : null;
+    },
+
+    /**
+     * Calculates the curve-time parameter of the specified offset on the path,
      * relative to the provided start parameter. If offset is a negative value,
      * the parameter is searched to the left of the start parameter. If no start
      * parameter is provided, a default of `0` for positive values of `offset`
      * and `1` for negative values of `offset`.
      *
-     * @param {Number} offset
-     * @param {Number} [start]
-     * @return {Number} the curve time parameter at the specified offset
+     * @param {Number} offset the offset at which to find the curve-time, in
+     *     curve length units
+     * @param {Number} [start] the curve-time in relation to which the offset is
+     *     determined
+     * @return {Number} the curve-time parameter at the specified location
      */
-    getParameterAt: function(offset, start) {
-        return Curve.getParameterAt(this.getValues(), offset, start);
+    getTimeAt: function(offset, start) {
+        return Curve.getTimeAt(this.getValues(), offset, start);
     },
 
+    // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * Returns the curve time parameter of the specified point if it lies on the
-     * curve, `null` otherwise.
-     *
-     * @param {Point} point the point on the curve
-     * @return {Number} the curve time parameter of the specified point
+     * @deprecated, use use {@link #getTimeOf(point)} instead.
      */
-    getParameterOf: function(/* point */) {
-        return Curve.getParameterOf(this.getValues(), Point.read(arguments));
-    },
-
-    /**
-     * Calculates the curve location at the specified offset or curve time
-     * parameter.
-     *
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {CurveLocation} the curve location at the specified the offset
-     */
-    getLocationAt: function(offset, isParameter) {
-        var t = isParameter ? offset : this.getParameterAt(offset);
-        return t != null && t >= 0 && t <= 1
-                ? new CurveLocation(this, t)
-                : null;
-    },
+    getParameterAt: '#getTimeAt',
 
     /**
      * Returns the curve location of the specified point if it lies on the
@@ -1023,8 +1052,7 @@ statics: {
      * @return {CurveLocation} the curve location of the specified point
      */
     getLocationOf: function(/* point */) {
-        return this.getLocationAt(this.getParameterOf(Point.read(arguments)),
-                true);
+        return this.getLocationAtTime(this.getTimeOf(Point.read(arguments)));
     },
 
     /**
@@ -1040,6 +1068,23 @@ statics: {
     },
 
     /**
+     * Returns the curve-time parameter of the specified point if it lies on the
+     * curve, `null` otherwise.
+     *
+     * @param {Point} point the point on the curve
+     * @return {Number} the curve-time parameter of the specified point
+     */
+    getTimeOf: function(/* point */) {
+        return Curve.getTimeOf(this.getValues(), Point.read(arguments));
+    },
+
+    // TODO: Remove in 1.0.0? (deprecated January 2016):
+    /**
+     * @deprecated, use use {@link #getTimeOf(point)} instead.
+     */
+    getParameterOf: '#getTimeOf',
+
+    /**
      * Returns the nearest location on the curve to the specified point.
      *
      * @function
@@ -1050,7 +1095,7 @@ statics: {
     getNearestLocation: function(/* point */) {
         var point = Point.read(arguments),
             values = this.getValues(),
-            t = Curve.getNearestParameter(values, point),
+            t = Curve.getNearestTime(values, point),
             pt = Curve.getPoint(values, t);
         return new CurveLocation(this, t, pt, null, point.getDistance(pt));
     },
@@ -1068,81 +1113,129 @@ statics: {
     }
 
     /**
-     * Calculates the point on the curve at the given offset.
+     * Calculates the point on the curve at the given location.
      *
      * @name Curve#getPointAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Point} the point on the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Point} the point on the curve at the given location
      */
 
     /**
      * Calculates the normalized tangent vector of the curve at the given
-     * offset.
+     * location.
      *
      * @name Curve#getTangentAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Point} the normalized tangent of the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Point} the normalized tangent of the curve at the given location
      */
 
     /**
-     * Calculates the normal vector of the curve at the given offset.
+     * Calculates the normal vector of the curve at the given location.
      *
      * @name Curve#getNormalAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Point} the normal of the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Point} the normal of the curve at the given location
      */
 
     /**
-     * Calculates the weighted tangent vector of the curve at the given offset,
-     * its length reflecting the curve velocity at that location.
+     * Calculates the weighted tangent vector of the curve at the given
+     * location, its length reflecting the curve velocity at that location.
      *
      * @name Curve#getWeightedTangentAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Point} the weighted tangent of the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Point} the weighted tangent of the curve at the given location
      */
 
     /**
-     * Calculates the weighted normal vector of the curve at the given offset,
+     * Calculates the weighted normal vector of the curve at the given location,
      * its length reflecting the curve velocity at that location.
      *
      * @name Curve#getWeightedNormalAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Point} the weighted normal of the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Point} the weighted normal of the curve at the given location
      */
 
     /**
-     * Calculates the curvature of the curve at the given offset. Curvatures
+     * Calculates the curvature of the curve at the given location. Curvatures
      * indicate how sharply a curve changes direction. A straight line has zero
      * curvature, where as a circle has a constant curvature. The curve's radius
-     * at the given offset is the reciprocal value of its curvature.
+     * at the given location is the reciprocal value of its curvature.
      *
      * @name Curve#getCurvatureAt
      * @function
-     * @param {Number} offset the offset on the curve, or the curve time
-     *     parameter if `isParameter` is `true`
-     * @param {Boolean} [isParameter=false] pass `true` if `offset` is a curve
-     *     time parameter
-     * @return {Number} the curvature of the curve at the given offset
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     curve
+     * @return {Number} the curvature of the curve at the given location
+     */
+
+    /**
+     * Calculates the point on the curve at the given location.
+     *
+     * @name Curve#getPointAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Point} the point on the curve at the given location
+     */
+
+    /**
+     * Calculates the normalized tangent vector of the curve at the given
+     * location.
+     *
+     * @name Curve#getTangentAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Point} the normalized tangent of the curve at the given location
+     */
+
+    /**
+     * Calculates the normal vector of the curve at the given location.
+     *
+     * @name Curve#getNormalAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Point} the normal of the curve at the given location
+     */
+
+    /**
+     * Calculates the weighted tangent vector of the curve at the given
+     * location, its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedTangentAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Point} the weighted tangent of the curve at the given location
+     */
+
+    /**
+     * Calculates the weighted normal vector of the curve at the given location,
+     * its length reflecting the curve velocity at that location.
+     *
+     * @name Curve#getWeightedNormalAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Point} the weighted normal of the curve at the given location
+     */
+
+    /**
+     * Calculates the curvature of the curve at the given location. Curvatures
+     * indicate how sharply a curve changes direction. A straight line has zero
+     * curvature, where as a circle has a constant curvature. The curve's radius
+     * at the given location is the reciprocal value of its curvature.
+     *
+     * @name Curve#getCurvatureAtTime
+     * @function
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Number} the curvature of the curve at the given location
      */
 },
 new function() { // // Scope to inject various curve evaluation methods
@@ -1152,11 +1245,18 @@ new function() { // // Scope to inject various curve evaluation methods
         function(name) {
             // NOTE: (For easier searching): This loop produces:
             // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
-            // getWeightedNormalAt, getCurvatureAt
-            this[name + 'At'] = function(offset, isParameter) {
+            // getWeightedNormalAt, getCurvatureAt, getPointAtTime,
+            // getTangentAtTime, getNormalAtTime, getWeightedTangentAtTime,
+            // getWeightedNormalAtTime, getCurvatureAtTime
+            // TODO: Remove _isTime handling in 1.0.0? (deprecated Jan 2016):
+            this[name + 'At'] = function(location, _isTime) {
                 var values = this.getValues();
-                return Curve[name](values, isParameter ? offset
-                        : Curve.getParameterAt(values, offset, 0));
+                return Curve[name](values, _isTime ? location
+                        : Curve.getTimeAt(values, location, 0));
+            };
+
+            this[name + 'AtTime'] = function(time) {
+                return Curve[name](this.getValues(), time);
             };
         }, {
             statics: {
@@ -1306,7 +1406,7 @@ new function() { // Scope for methods that require private functions
             return Numerical.integrate(ds, a, b, getIterations(a, b));
         },
 
-        getParameterAt: function(v, offset, start) {
+        getTimeAt: function(v, offset, start) {
             if (start === undefined)
                 start = offset < 0 ? 1 : 0;
             if (offset === 0)
@@ -1387,7 +1487,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (t1 == null)
-            t1 = Curve.getParameterOf(v1, p1);
+            t1 = Curve.getTimeOf(v1, p1);
         // Check t1 and t2 against correct bounds, based on excludeStart/End:
         // - excludeStart means the start of c1 connects to the end of c2
         // - endConneted means the end of c1 connects to the start of c2
@@ -1398,7 +1498,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         if (t1 !== null && t1 >= (excludeStart ? tMin : 0) &&
             t1 <= (excludeEnd ? tMax : 1)) {
             if (t2 == null)
-                t2 = Curve.getParameterOf(v2, p2);
+                t2 = Curve.getTimeOf(v2, p2);
             if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
                 t2 <= (excludeStart ? tMax : 1)) {
                 var renormalize = param.renormalize;
@@ -1643,7 +1743,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // the real curve and with that the location on the line.
             var tc = roots[i],
                 pc = Curve.getPoint(vc, tc),
-                tl = Curve.getParameterOf(vl, pc);
+                tl = Curve.getTimeOf(vl, pc);
             if (tl !== null) {
                 var pl = Curve.getPoint(vl, tl),
                     t1 = flip ? tl : tc,
@@ -1809,7 +1909,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     // the loop in case of a self intersection.
                     for (var i = 0, maxCurvature = 0; i < count; i++) {
                         var curvature = Math.abs(
-                                c1.getCurvatureAt(roots[i], true));
+                                c1.getCurvatureAtTime(roots[i]));
                         if (curvature > maxCurvature) {
                             maxCurvature = curvature;
                             tSplit = roots[i];
@@ -1894,7 +1994,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             for (var i = 0, t1 = 0;
                     i < 2 && pairs.length < 2;
                     i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-                var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
+                var t2 = Curve.getTimeOf(v[i ^ 1], new Point(
                         v[i][t1 === 0 ? 0 : 6],
                         v[i][t1 === 0 ? 1 : 7]));
                 if (t2 != null) {  // If point is on curve

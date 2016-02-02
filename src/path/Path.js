@@ -1092,56 +1092,12 @@ var Path = PathItem.extend(/** @lends Path# */{
     // TODO: reduceSegments([flatness])
 
     /**
-     * Splits the path at the given offset. After splitting, the path will be
-     * open. If the path was open already, splitting will result in two paths.
+     * Splits the path at the given offset or location. After splitting, the
+     * path will be open. If the path was open already, splitting will result in
+     * two paths.
      *
-     * @name Path#split
-     * @function
-     * @param {Number} offset the offset at which to split the path
-     * as a number between 0 and {@link Path#length}
-     * @return {Path} the newly created path after splitting, if any
-     *
-     * @example {@paperscript} // Splitting an open path
-     * var path = new Path();
-     * path.strokeColor = 'black';
-     * path.add(20, 20);
-     *
-     * // Add an arc through {x: 90, y: 80} to {x: 160, y: 20}
-     * path.arcTo([90, 80], [160, 20]);
-     *
-     * // Split the path at 30% of its length:
-     * var path2 = path.split(path.length * 0.3);
-     * path2.strokeColor = 'red';
-     *
-     * // Move the newly created path 40px to the right:
-     * path2.position.x += 40;
-     *
-     * @example {@paperscript} // Splitting a closed path
-     * var path = new Path.Rectangle({
-     *     from: [20, 20],
-     *     to: [80, 80],
-     *     strokeColor: 'black'
-     * });
-     *
-     * // Split the path at 60% of its length:
-     * path.split(path.length * 0.6);
-     *
-     * // Move the first segment, to show where the path
-     * // was split:
-     * path.firstSegment.point.x += 20;
-     *
-     * // Select the first segment:
-     * path.firstSegment.selected = true;
-     */
-    /**
-     * Splits the path at the given curve location. After splitting, the path
-     * will be open. If the path was open already, splitting will result in two
-     * paths.
-     *
-     * @name Path#split
-     * @function
-     * @param {CurveLocation} location the curve location at which to split
-     * the path
+     * @param {Number|CurveLocation} location the offset or location at which to
+     *     split the path
      * @return {Path} the newly created path after splitting, if any
      *
      * @example {@paperscript}
@@ -1156,23 +1112,18 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     angle: 30
      * };
      *
-     * var curveLocation = path.getNearestLocation(pointOnCircle);
+     * var location = path.getNearestLocation(pointOnCircle);
      *
-     * path.split(curveLocation);
+     * path.splitAt(location);
      * path.lastSegment.selected = true;
-     */
-    /**
-     * Splits the path at the given curve index and parameter. After splitting,
-     * the path will be open. If the path was open already, splitting will
-     * result in two paths.
      *
      * @example {@paperscript} // Splitting an open path
      * // Draw a V shaped path:
      * var path = new Path([20, 20], [50, 80], [80, 20]);
      * path.strokeColor = 'black';
      *
-     * // Split the path half-way down its second curve:
-     * var path2 = path.split(1, 0.5);
+     * // Split the path half-way:
+     * var path2 = path.splitAt(path2.length / 2);
      *
      * // Give the resulting path a red stroke-color
      * // and move it 20px to the right:
@@ -1186,8 +1137,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      *     strokeColor: 'black'
      * });
      *
-     * // Split the path half-way down its second curve:
-     * path.split(2, 0.5);
+     * // Split the path half-way:
+     * path.splitAt(path.length / 2);
      *
      * // Move the first segment, to show where the path
      * // was split:
@@ -1195,44 +1146,27 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * // Select the first segment:
      * path.firstSegment.selected = true;
-     *
-     * @param {Number} index the index of the curve in the {@link Path#curves}
-     * array at which to split
-     * @param {Number} parameter the curve-time parameter at which the curve
-     * will be split
-     * @return {Path} the newly created path after splitting, if any
      */
-    split: function(index, parameter) {
-        if (parameter === null)
-            return null;
-        if (arguments.length === 1) {
-            var arg = index;
-            // split(offset), convert offset to location
-            if (typeof arg === 'number')
-                arg = this.getLocationAt(arg);
-            if (!arg)
-                return null;
-            // split(location)
-            index = arg.index;
-            parameter = arg.parameter;
-        }
-        var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+    splitAt: function(location) {
+        var index = location && location.index,
+            time = location && location.time,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
-        if (parameter >= tMax) {
-            // t == 1 is the same as t == 0 and index ++
+        if (time >= tMax) {
+            // time == 1 is the same location as time == 0 and index++
             index++;
-            parameter--;
+            time = 0;
         }
         var curves = this.getCurves();
         if (index >= 0 && index < curves.length) {
             // Only divide curves if we're not on an existing segment already.
-            if (parameter >= tMin) {
-                // Divide the curve with the index at given parameter.
+            if (time >= tMin) {
+                // Divide the curve with the index at the given curve-time.
                 // Increase because dividing adds more segments to the path.
-                curves[index++].divide(parameter, true);
+                curves[index++].divideAtTime(time);
             }
             // Create the new path with the segments to the right of given
-            // parameter, which are removed from the current path. Pass true
+            // curve-time, which are removed from the current path. Pass true
             // for includeCurves, since we want to preserve and move them to
             // the new path through _add(), allowing us to have CurveLocation
             // keep the connection to the new path through moved curves.
@@ -1259,6 +1193,17 @@ var Path = PathItem.extend(/** @lends Path# */{
             return path;
         }
         return null;
+    },
+
+    /**
+     * @deprecated, use use {@link #splitAt(offset)} instead.
+     */
+    split: function(index, time) {
+        var curve,
+            location = time === undefined ? index
+                : (curve = this.getCurves()[index])
+                    && curve.getLocationAtTime(time);
+        return location ? this.splitAt(location) : null;
     },
 
     /**
@@ -1649,8 +1594,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Now see if we're on a segment, and if so, check for its
                 // stroke join / cap first. If not, do a normal radius check
                 // for round strokes.
-                var parameter = loc.getParameter();
-                if (parameter === 0 || parameter === 1 && numSegments > 1) {
+                var time = loc.getTime();
+                if (time === 0 || time === 1 && numSegments > 1) {
                     if (!checkSegmentStroke(loc.getSegment()))
                         loc = null;
                 } else if (!isCloseEnough(loc.getPoint(), strokePadding)) {
@@ -1693,8 +1638,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         // NOTE: (For easier searching): This loop produces:
         // getPointAt, getTangentAt, getNormalAt, getWeightedTangentAt,
         // getWeightedNormalAt, getCurvatureAt
-        this[name + 'At'] = function(offset, isParameter) {
-            var loc = this.getLocationAt(offset, isParameter);
+        this[name + 'At'] = function(offset) {
+            var loc = this.getLocationAt(offset);
             return loc && loc[name]();
         };
     },
@@ -1741,19 +1686,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      *
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {CurveLocation} the curve location at the specified offset
      */
-    getLocationAt: function(offset, isParameter) {
+    getLocationAt: function(offset) {
         var curves = this.getCurves(),
             length = 0;
-        if (isParameter) {
-            // offset consists of curve index and curve parameter, before and
-            // after the fractional digit.
-            var index = ~~offset, // = Math.floor()
-                curve = curves[index];
-            return curve ? curve.getLocationAt(offset - index, true) : null;
-        }
         for (var i = 0, l = curves.length; i < l; i++) {
             var start = length,
                 curve = curves[i];
@@ -1777,7 +1714,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Point} the point at the given offset
      *
      * @example {@paperscript height=150}
@@ -1840,7 +1776,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Point} the normalized tangent vector at the given offset
      *
      * @example {@paperscript height=150}
@@ -1907,7 +1842,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Point} the normal vector at the given offset
      *
      * @example {@paperscript height=150}
@@ -1974,7 +1908,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Point} the weighted tangent vector at the given offset
      */
 
@@ -1985,7 +1918,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Point} the weighted normal vector at the given offset
      */
 
@@ -1999,7 +1931,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @function
      * @param {Number} offset the offset on the path, where `0` is at
      * the beginning of the path and {@link Path#length} at the end
-     * @param {Boolean} [isParameter=false]
      * @return {Number} the normal vector at the given offset
      */
 
@@ -2878,9 +2809,9 @@ statics: {
         // Handles both 'bevel' and 'miter' joins, as they share a lot of code.
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
-            point = curve2.getPointAt(0, true),
-            normal1 = curve1.getNormalAt(1, true),
-            normal2 = curve2.getNormalAt(0, true),
+            point = curve2.getPointAtTime(0),
+            normal1 = curve1.getNormalAtTime(1),
+            normal2 = curve2.getNormalAtTime(0),
             step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
         normal1.setLength(step);
         normal2.setLength(step);
@@ -2923,11 +2854,12 @@ statics: {
         }
         // For square caps, we need to step away from point in the direction of
         // the tangent, which is the rotated normal.
-        // Checking loc.getParameter() for 0 is to see whether this is the first
+        // Checking loc.getTime() for 0 is to see whether this is the first
         // or the last segment of the open path, in order to determine in which
         // direction to move the point.
         if (cap === 'square')
-            point = point.add(normal.rotate(loc.getParameter() === 0 ? -90 : 90));
+            point = point.add(normal.rotate(
+                    loc.getTime() === 0 ? -90 : 90));
         addPoint(point.add(normal));
         addPoint(point.subtract(normal));
     },

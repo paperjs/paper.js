@@ -12,31 +12,7 @@
 
 QUnit.module('Curve');
 
-test('Curve#getParameterOf()', function() {
-    // For issue #708:
-    var path = new Path.Rectangle({
-        center: new Point(300, 100),
-        size: new Point(100, 100),
-        strokeColor: 'black'
-    });
-
-    for (var pos = 0; pos < path.length; pos += 10) {
-        var point1 = path.getPointAt(pos),
-            point2 = null;
-        for (var i = 0; i < path.curves.length; i++) {
-            var curve = path.curves[i];
-            var parameter = curve.getParameterOf(point1);
-            if (parameter) {
-                point2 = curve.getLocationAt(parameter, true).point;
-                break;
-            }
-        }
-        equals(point1, point2, 'curve.getLocationAt(curve.getParameterOf('
-                + point1 + ')).point;');
-    }
-});
-
-test('Curve#getPointAt()', function() {
+test('Curve#getPointAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
         radius: 100
@@ -52,15 +28,18 @@ test('Curve#getPointAt()', function() {
 
     for (var i = 0; i < points.length; i++) {
         var entry = points[i];
+        equals(curve.getPointAtTime(entry[0]), entry[1],
+                'curve.getPointAtTime(' + entry[0] + ');');
+        // Legacy version:
         equals(curve.getPointAt(entry[0], true), entry[1],
-                'curve.getPointAt(' + entry[0] + ', true);');
+                'Legacy: curve.getPointAt(' + entry[0] + ', true);');
     }
 
     equals(curve.getPointAt(curve.length + 1), null,
             'Should return null when offset is out of range.');
 });
 
-test('Curve#getTangentAt()', function() {
+test('Curve#getTangentAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
         radius: 100
@@ -76,14 +55,19 @@ test('Curve#getTangentAt()', function() {
 
     for (var i = 0; i < tangents.length; i++) {
         var entry = tangents[i];
+        equals(curve.getTangentAtTime(entry[0]), entry[1].normalize(),
+                'curve.getTangentAtTime(' + entry[0] + ');');
+        equals(curve.getWeightedTangentAtTime(entry[0]), entry[1],
+                'curve.getWeightedTangentAtTime(' + entry[0] + ');');
+        // Legacy version:
         equals(curve.getTangentAt(entry[0], true), entry[1].normalize(),
-                'curve.getTangentAt(' + entry[0] + ', true);');
+                'Legacy: curve.getTangentAt(' + entry[0] + ', true);');
         equals(curve.getWeightedTangentAt(entry[0], true), entry[1],
-                'curve.getWeightedTangentAt(' + entry[0] + ', true);');
+                'Legacy: curve.getWeightedTangentAt(' + entry[0] + ', true);');
     }
 });
 
-test('Curve#getNormalAt()', function() {
+test('Curve#getNormalAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
         radius: 100
@@ -99,14 +83,19 @@ test('Curve#getNormalAt()', function() {
 
     for (var i = 0; i < normals.length; i++) {
         var entry = normals[i];
+        equals(curve.getNormalAtTime(entry[0]), entry[1].normalize(),
+                'curve.getNormalAtTime(' + entry[0] + ');');
+        equals(curve.getWeightedNormalAtTime(entry[0]), entry[1],
+                'curve.getWeightedNormalAtTime(' + entry[0] + ');');
+        // Legacy version:
         equals(curve.getNormalAt(entry[0], true), entry[1].normalize(),
-                'curve.getNormalAt(' + entry[0] + ', true);');
+                'Legacy: curve.getNormalAt(' + entry[0] + ', true);');
         equals(curve.getWeightedNormalAt(entry[0], true), entry[1],
-                'curve.getWeightedNormalAt(' + entry[0] + ', true);');
+                'Legacy: curve.getWeightedNormalAt(' + entry[0] + ', true);');
     }
 });
 
-test('Curve#getCurvatureAt()', function() {
+test('Curve#getCurvatureAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
         radius: 100
@@ -122,12 +111,15 @@ test('Curve#getCurvatureAt()', function() {
 
     for (var i = 0; i < curvatures.length; i++) {
         var entry = curvatures[i];
+        equals(curve.getCurvatureAtTime(entry[0]), entry[1],
+                'curve.getCurvatureAtTime(' + entry[0] + ');');
+        // Legacy version:
         equals(curve.getCurvatureAt(entry[0], true), entry[1],
-                'curve.getCurvatureAt(' + entry[0] + ', true);');
+                'Legacy: curve.getCurvatureAt(' + entry[0] + ', true);');
     }
 });
 
-test('Curve#getCurvatureAt()', function() {
+test('Curve#getCurvatureAtTime()', function() {
     var curve = new Path.Line({
         from: [100, 100],
         to: [200, 200],
@@ -143,12 +135,15 @@ test('Curve#getCurvatureAt()', function() {
 
     for (var i = 0; i < curvatures.length; i++) {
         var entry = curvatures[i];
+        equals(curve.getCurvatureAtTime(entry[0]), entry[1],
+                'curve.getCurvatureAtTime(' + entry[0] + ');');
+        // Legacy version:
         equals(curve.getCurvatureAt(entry[0], true), entry[1],
-                'curve.getCurvatureAt(' + entry[0] + ', true);');
+                'Legacy: curve.getCurvatureAt(' + entry[0] + ', true);');
     }
 });
 
-test('Curve#getParameterAt()', function() {
+test('Curve#getTimeAt()', function() {
     var curve = new Path([
         [[0, 0], [0, 0], [100, 0]],
         [[200, 200]],
@@ -157,14 +152,16 @@ test('Curve#getParameterAt()', function() {
     for (var f = 0; f <= 1; f += 0.1) {
         var o1 = curve.length * f;
         var o2 = -curve.length * (1 - f);
-        var t1 = curve.getParameterAt(o1);
-        var t2 = curve.getParameterAt(o2);
-        equals(t1, t2, 'Curve parameter at offset ' + o1
-                + ' should be the same value as at offset' + o2,
+        var message = 'Curve-time parameter at offset ' + o1
+                + ' should be the same value as at offset' + o2;
+        equals(curve.getTimeAt(o1), curve.getTimeAt(o2), message,
                 Numerical.CURVETIME_EPSILON);
+        // Legacy version:
+        equals(curve.getParameterAt(o1), curve.getParameterAt(o2),
+                'Legacy: ' + message, Numerical.CURVETIME_EPSILON);
     }
 
-    equals(curve.getParameterAt(curve.length + 1), null,
+    equals(curve.getTimeAt(curve.length + 1), null,
             'Should return null when offset is out of range.');
 });
 
@@ -176,7 +173,6 @@ test('Curve#getLocationAt()', function() {
 
     equals(curve.getLocationAt(curve.length + 1), null,
             'Should return null when offset is out of range.');
-//            'Should return null when point is not on the curve.');
 });
 
 test('Curve#isStraight()', function() {
@@ -222,4 +218,32 @@ test('Curve#isLinear()', function() {
     equals(function() {
         return new Curve([100, 100], null, null, [200, 200]).isLinear();
     }, false);
+});
+
+test('Curve#getTimeOf()', function() {
+    // For issue #708:
+    var path = new Path.Rectangle({
+        center: new Point(300, 100),
+        size: new Point(100, 100),
+        strokeColor: 'black'
+    });
+
+    for (var pos = 0; pos < path.length; pos += 10) {
+        var point1 = path.getPointAt(pos),
+            point2 = null;
+        for (var i = 0; i < path.curves.length; i++) {
+            var curve = path.curves[i];
+            var time = curve.getTimeOf(point1);
+            if (time) {
+                // Legacy-check-hack:
+                equals(curve.getParameterOf(point1), time,
+                        'Legacy: curve.getParameterOf() should return the same'
+                        + ' as curve.getTimeOf()');
+                point2 = curve.getLocationAtTime(time).point;
+                break;
+            }
+        }
+        equals(point1, point2, 'curve.getLocationAt(curve.getTimeOf('
+                + point1 + ')).point;');
+    }
 });
