@@ -23,29 +23,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
     _class: 'View',
 
     initialize: function View(project, element) {
-        // Store reference to the currently active global paper scope, and the
-        // active project, which will be represented by this view
-        this._project = project;
-        this._scope = project._scope;
-        this._element = element;
-        // Sub-classes may set _pixelRatio first
-        if (!this._pixelRatio)
-            this._pixelRatio = window.devicePixelRatio || 1;
-        // Generate an id for this view / element if it does not have one
-        this._id = element.getAttribute('id');
-        if (this._id == null)
-            element.setAttribute('id', this._id = 'view-' + View._id++);
-        // Install event handlers
-        DomEvent.add(element, this._viewEvents);
-        // Borrowed from Hammer.js:
-        var none = 'none';
-        DomElement.setPrefixed(element.style, {
-            userDrag: none,
-            userSelect: none,
-            touchCallout: none,
-            contentZooming: none,
-            tapHighlightColor: 'rgba(0,0,0,0)'
-        });
 
         function getSize(name) {
             return element[name] || parseInt(element.getAttribute(name), 10);
@@ -63,35 +40,68 @@ var View = Base.extend(Emitter, /** @lends View# */{
                     : size;
         }
 
-        // If the element has the resize attribute, listen to resize events and
-        // update its coordinate space accordingly
-        if (PaperScope.hasAttribute(element, 'resize')) {
-            var that = this;
-            DomEvent.add(window, this._windowEvents = {
-                resize: function() {
-                    that.setViewSize(getCanvasSize());
-                }
+        var size;
+        if (window && element) {
+            // Generate an id for this view / element if it does not have one
+            this._id = element.getAttribute('id');
+            if (this._id == null)
+                element.setAttribute('id', this._id = 'view-' + View._id++);
+            // Install event handlers
+            DomEvent.add(element, this._viewEvents);
+            // Borrowed from Hammer.js:
+            var none = 'none';
+            DomElement.setPrefixed(element.style, {
+                userDrag: none,
+                userSelect: none,
+                touchCallout: none,
+                contentZooming: none,
+                tapHighlightColor: 'rgba(0,0,0,0)'
             });
+
+            // If the element has the resize attribute, listen to resize events
+            // and update its coordinate space accordingly
+            if (PaperScope.hasAttribute(element, 'resize')) {
+                var that = this;
+                DomEvent.add(window, this._windowEvents = {
+                    resize: function() {
+                        that.setViewSize(getCanvasSize());
+                    }
+                });
+            }
+
+            size = getCanvasSize();
+
+            if (PaperScope.hasAttribute(element, 'stats')
+                    && typeof Stats !== 'undefined') {
+                this._stats = new Stats();
+                // Align top-left to the element
+                var stats = this._stats.domElement,
+                    style = stats.style,
+                    offset = DomElement.getOffset(element);
+                style.position = 'absolute';
+                style.left = offset.x + 'px';
+                style.top = offset.y + 'px';
+                document.body.appendChild(stats);
+            }
+        } else {
+            // For web-workers: Allow calling of `paper.setup(new Size(x, y));`
+            size = new Size(element);
+            element = null;
         }
+        // Store reference to the currently active global paper scope, and the
+        // active project, which will be represented by this view
+        this._project = project;
+        this._scope = project._scope;
+        this._element = element;
+        // Sub-classes may set _pixelRatio first
+        if (!this._pixelRatio)
+            this._pixelRatio = window && window.devicePixelRatio || 1;
         // Set canvas size even if we just determined the size from it, since
         // it might have been set to a % size, in which case it would use some
         // default internal size (300x150 on WebKit) and scale up the pixels.
         // We also need this call here for HiDPI support.
-        var size = this._viewSize = getCanvasSize();
-        this._setViewSize(size.width, size.height);
-        // TODO: Test this on IE:
-        if (PaperScope.hasAttribute(element, 'stats')
-                && typeof Stats !== 'undefined') {
-            this._stats = new Stats();
-            // Align top-left to the element
-            var stats = this._stats.domElement,
-                style = stats.style,
-                offset = DomElement.getOffset(element);
-            style.position = 'absolute';
-            style.left = offset.x + 'px';
-            style.top = offset.y + 'px';
-            document.body.appendChild(stats);
-        }
+        this._setElementSize(size.width, size.height);
+        this._viewSize = size;
         // Keep track of views internally
         View._views.push(this);
         // Link this id to our view
@@ -192,14 +202,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @return {Boolean} {@true if the view was updated}
      */
-    // update: function() {
-    // },
+    update: function() {
+    },
 
     /**
      * Updates the view if there are changes.
      *
      * @deprecated use {@link #update()} instead.
      */
+    // NOTE: We cannot use draw: '#update'` as that would not work on CanvasView
     draw: function() {
         this.update();
     },
@@ -369,8 +380,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
             delta = size.subtract(this._viewSize);
         if (delta.isZero())
             return;
+        this._setElementSize(width, height);
         this._viewSize.set(width, height);
-        this._setViewSize(width, height);
         // Call onResize handler on any size change
         this.emit('resize', {
             size: size,
@@ -384,12 +395,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
     /**
      * Private method, overridden in CanvasView for HiDPI support.
      */
-    _setViewSize: function(width, height) {
+    _setElementSize: function(width, height) {
         var element = this._element;
-        if (element.width !== width)
-            element.width = width;
-        if (element.height !== height)
-            element.height = height;
+        if (element) {
+            if (element.width !== width)
+                element.width = width;
+            if (element.height !== height)
+                element.height = height;
+        }
     },
 
     /**
@@ -482,6 +495,32 @@ var View = Base.extend(Emitter, /** @lends View# */{
      */
     isInserted: function() {
         return DomElement.isInserted(this._element);
+    },
+
+    // Empty stubs of #getPixelSize() and #getTextWidth(), around so that
+    // web-workers don't fail. Overridden with proper functionality in
+    // CanvasView.
+    getPixelSize: function(size) {
+        var element = this._element,
+            pixels;
+        if (element) {
+            // this code is part of the Firefox workaround in CanvasView, but
+            // also provides a way to determine pixel-size that does not involve
+            // a Canvas. It still does not work in a web-worker though.
+            var parent = element.parentNode,
+                temp = document.createElement('div');
+            temp.style.fontSize = size;
+            parent.appendChild(temp);
+            pixels = parseFloat(DomElement.getStyles(temp).fontSize);
+            parent.removeChild(temp);
+        } else {
+            pixels = parseFloat(pixels);
+        }
+        return pixels;
+    },
+
+    getTextWidth: function(font, lines) {
+        return 0;
     }
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';
@@ -924,15 +963,18 @@ var View = Base.extend(Emitter, /** @lends View# */{
         _id: 0,
 
         create: function(project, element) {
-            if (typeof element === 'string')
+            if (document && typeof element === 'string')
                 element = document.getElementById(element);
             // Factory to provide the right View subclass for a given element.
-            // Produces only CanvasViews for now:
-            return new CanvasView(project, element);
+            // Produces only CanvasView or View items (for workers) for now:
+            var ctor = window ? CanvasView : View;
+            return new ctor(project, element);
         }
     }
 },
 new function() { // Injection scope for event handling on the browser
+    if (!window)
+        return;
     /**
      * Native event handling, coordinate conversion, focus handling and
      * delegation to view and tool objects.

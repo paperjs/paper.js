@@ -32,7 +32,7 @@
 
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
-var paper = function(window, undefined) {
+var paper = function(self, undefined) {
 /*#*/ include('init.js');
 // Inline Straps.js core (the Base class) inside the paper scope first:
 /*#*/ include('../node_modules/straps/straps.js');
@@ -123,4 +123,4 @@ var paper = function(window, undefined) {
 
 /*#*/ include('export.js');
 return paper;
-}(this.window);
+}(this.self);

@@ -16,6 +16,8 @@ var CanvasProvider = {
     canvases: [],
 
     getCanvas: function(width, height) {
+        if (!window)
+            return null;
         var canvas,
             clear = true;
         if (typeof width === 'object') {
@@ -49,14 +51,17 @@ var CanvasProvider = {
     },
 
     getContext: function(width, height) {
-        return this.getCanvas(width, height).getContext('2d');
+        var canvas = this.getCanvas(width, height);
+        return canvas ? canvas.getContext('2d') : null;
     },
 
      // release can receive either a canvas or a context.
     release: function(obj) {
-        var canvas = obj.canvas ? obj.canvas : obj;
-        // We restore contexts on release(), see getCanvas()
-        canvas.getContext('2d').restore();
-        this.canvases.push(canvas);
+        var canvas = obj && obj.canvas ? obj.canvas : obj;
+        if (canvas && canvas.getContext) {
+            // We restore contexts on release(), see getCanvas()
+            canvas.getContext('2d').restore();
+            this.canvases.push(canvas);
+        }
     }
 };

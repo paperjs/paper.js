@@ -64,7 +64,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.
-            var ctx = CanvasProvider.getContext(1, 1);
+            var ctx = CanvasProvider.getContext(1, 1) || {};
             proto.support = {
                 nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
                 nativeBlendModes: BlendMode.nativeModes
@@ -72,7 +72,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             CanvasProvider.release(ctx);
         }
         if (!this.agent) {
-            var user = window.navigator.userAgent.toLowerCase(),
+            // Use self.instead of window, to cover handle web-workers too.
+            var user = self.navigator.userAgent.toLowerCase(),
                 // Detect basic platforms, only mac internally required for now.
                 os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
                 platform =  os === 'darwin' ? 'mac' : os,

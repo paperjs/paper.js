@@ -56,9 +56,9 @@ if (typeof window === 'object') {
     prepro.setup(function() {
         // Return objects to be defined in the preprocess-scope.
         // Note that this would be merge in with already existing objects.
-        // We're defining window here since the paper-scope argument is only
+        // We're defining self here since the paper-scope argument is only
         // available in the included scripts when the library is actually built.
-        return { __options: options, window: null };
+        return { __options: options, self: undefined };
     });
     // Load constants.js, required by the on-the-fly preprocessing:
     prepro.include('../src/constants.js');

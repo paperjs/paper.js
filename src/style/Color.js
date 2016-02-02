@@ -75,7 +75,7 @@ var Color = Base.extend(new function() {
                 var value = +components[i];
                 components[i] = i < 3 ? value / 255 : value;
             }
-        } else {
+        } else if (window) {
             // Named
             var cached = colorCache[string];
             if (!cached) {
@@ -102,6 +102,9 @@ var Color = Base.extend(new function() {
                 ];
             }
             components = cached.slice();
+        } else {
+            // Web-workers can't resolve CSS color names, for now.
+            components = [0, 0, 0];
         }
         return components;
     }

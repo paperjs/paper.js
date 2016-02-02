@@ -42,16 +42,16 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
                         + [].slice.call(arguments, 1));
             canvas = CanvasProvider.getCanvas(size);
         }
-        var context = this._context = canvas.getContext('2d');
+        var ctx = this._context = canvas.getContext('2d');
         // Save context right away, and restore in #remove(). Also restore() and
-        // save() again in _setViewSize(), to prevent accumulation of scaling.
-        context.save();
+        // save() again in _setElementSize() to prevent accumulation of scaling.
+        ctx.save();
         this._pixelRatio = 1;
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
             // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,
-                backingStoreRatio = DomElement.getPrefixed(context,
+                backingStoreRatio = DomElement.getPrefixed(ctx,
                         'backingStorePixelRatio') || 1;
             this._pixelRatio = deviceRatio / backingStoreRatio;
         }
@@ -63,13 +63,13 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         return remove.base.call(this);
     },
 
-    _setViewSize: function _setViewSize(width, height) {
+    _setElementSize: function _setElementSize(width, height) {
         var pixelRatio = this._pixelRatio;
         // Upscale the canvas if the pixel ratio is more than 1.
-        _setViewSize.base.call(this, width * pixelRatio, height * pixelRatio);
+        _setElementSize.base.call(this, width * pixelRatio, height * pixelRatio);
         if (pixelRatio !== 1) {
             var element = this._element,
-                context = this._context;
+                ctx = this._context;
             // We need to set the correct size on non-resizable canvases through
             // their style when HiDPI is active, as otherwise they would appear
             // too big.
@@ -80,9 +80,9 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             }
             // Scale the context to counter the fact that we've manually scaled
             // our canvas element.
-            context.restore();
-            context.save();
-            context.scale(pixelRatio, pixelRatio);
+            ctx.restore();
+            ctx.save();
+            ctx.scale(pixelRatio, pixelRatio);
         }
     },
 
@@ -90,18 +90,13 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * Converts the provide size in any of the units allowed in the browser to
      * pixels.
      */
-    getPixelSize: function(size) {
+    getPixelSize: function getPixelSize(size) {
         var agent = paper.agent,
             pixels;
+        // Firefox doesn't appear to convert context.font sizes to pixels,
+        // while other browsers do. Fall-back to View#getPixelSize.
         if (agent && agent.firefox) {
-            // Firefox doesn't appear to convert context.font sizes to pixels,
-            // while other browsers do. Workaround:
-            var parent = this._element.parentNode,
-                temp = document.createElement('div');
-            temp.style.fontSize = size;
-            parent.appendChild(temp);
-            pixels = parseFloat(DomElement.getStyles(temp).fontSize);
-            parent.removeChild(temp);
+            pixels = getPixelSize.base.call(this, size);
         } else {
             var ctx = this._context,
                 prevFont = ctx.font;

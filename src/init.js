@@ -17,5 +17,14 @@
 // their shared scope.
 
 /* global document:true, window:true */
-window = window || require('./node/window');
-var document = window.document;
+// Use typeof self to detect both browsers and web-workers.
+// In workers, window will then be null, so we can use the validity of the
+// window object to decide if we're in a worker-like context in the rest of
+// the library.
+var window = self ? self.window : require('./node/window'),
+    document = window && window.document;
+// Make sure 'self' always points to a window object, also on Node.js.
+// NOTE: We're not modifying the global `self` here. We receive its value passed
+// to the paper.js function scope, and this is the one that is modified here.
+self = self || window;
+

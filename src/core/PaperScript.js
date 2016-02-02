@@ -300,7 +300,7 @@ Base.exports.PaperScript = (function() {
                 // -2 required to remove function header:
                 // https://code.google.com/p/chromium/issues/detail?id=331655
                 offset -= 2;
-            } else if (url && window.location.href.indexOf(url) === 0) {
+            } else if (window && url && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML;
@@ -440,7 +440,8 @@ Base.exports.PaperScript = (function() {
         if (handlers)
             code += '\nreturn { ' + handlers + ' };';
         var agent = paper.agent;
-        if (agent.chrome || agent.firefox && agent.versionNumber < 40) {
+        if (document && (agent.chrome
+                || agent.firefox && agent.versionNumber < 40)) {
             // On older Firefox, all error numbers inside dynamically compiled
             // code are relative to the line where the eval / compilation
             // happened. To fix this issue, we're temporarily inserting a new
@@ -536,7 +537,8 @@ Base.exports.PaperScript = (function() {
     }
 
     function loadAll() {
-        Base.each(document.getElementsByTagName('script'), loadScript);
+        Base.each(document && document.getElementsByTagName('script'),
+                loadScript);
     }
 
    /**
@@ -560,13 +562,15 @@ Base.exports.PaperScript = (function() {
         return script ? loadScript(script) : loadAll();
     }
 
-    // Catch cases where paper.js is loaded after the browser event has already
-    // occurred.
-    if (document.readyState === 'complete') {
-        // Handle it asynchronously
-        setTimeout(loadAll);
-    } else {
-        DomEvent.add(window, { load: loadAll });
+    if (window) {
+        // Catch cases where paper.js is loaded after the browser event has
+        // already occurred.
+        if (document.readyState === 'complete') {
+            // Handle it asynchronously
+            setTimeout(loadAll);
+        } else {
+            DomEvent.add(window, { load: loadAll });
+        }
     }
 
     return {

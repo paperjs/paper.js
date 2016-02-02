@@ -17,20 +17,27 @@
  */
 var DomEvent = /** @lends DomEvent */{
     add: function(el, events) {
-        for (var type in events) {
-            var func = events[type],
-                parts = type.split(/[\s,]+/g);
-            for (var i = 0, l = parts.length; i < l; i++)
-                el.addEventListener(parts[i], func, false);
+        // Do not fail if el is not defined, that way we can keep the code that
+        // should not fail in web-workers to a minimum.
+        if (el) {
+            for (var type in events) {
+                var func = events[type],
+                    parts = type.split(/[\s,]+/g);
+                for (var i = 0, l = parts.length; i < l; i++)
+                    el.addEventListener(parts[i], func, false);
+            }
         }
     },
 
     remove: function(el, events) {
-        for (var type in events) {
-            var func = events[type],
-                parts = type.split(/[\s,]+/g);
-            for (var i = 0, l = parts.length; i < l; i++)
-                el.removeEventListener(parts[i], func, false);
+        // See DomEvent.add() for an explanation of this check:
+        if (el) {
+            for (var type in events) {
+                var func = events[type],
+                    parts = type.split(/[\s,]+/g);
+                for (var i = 0, l = parts.length; i < l; i++)
+                    el.removeEventListener(parts[i], func, false);
+            }
         }
     },
 

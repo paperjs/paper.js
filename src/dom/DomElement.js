@@ -113,7 +113,7 @@ var DomElement = new function() {
          * prefix variants.
          */
         getPrefixed: function(el, name) {
-            return handlePrefix(el, name);
+            return el && handlePrefix(el, name);
         },
 
         setPrefixed: function(el, name, value) {
