@@ -794,7 +794,10 @@ new function() { // // Scope to inject various item event handlers
         // cache gets messed up.
         var getter = 'get' + Base.capitalize(key),
             match = key.match(/^internal(.*)$/),
-            internal = match ? 'get' + match[1] : null;
+            internal = match ? 'get' + match[1] : null,
+            // Determine if the stroke is involved in the calculation of the
+            // bounds: strokeBounds, roughBounds,internalRoughBounds
+            stroke = /^stroke|rough/i.test(key);
         this[getter] = function(_matrix) {
             // TODO: If we're getting stroke based bounds (strokeBounds,
             // roughBounds, internalRoughBounds), and the object does not have
@@ -809,7 +812,15 @@ new function() { // // Scope to inject various item event handlers
                 name = !internal && (typeof boundsGetter === 'string'
                         ? boundsGetter : boundsGetter && boundsGetter[getter])
                         || getter,
-                bounds = this._getCachedBounds(name, _matrix, this, internal);
+                // We can only cache the bounds if the path uses stroke-scaling,
+                // or if no stroke is involved in the calculation of the bounds.
+                // When strokeScaling is false, the bounds are affected by the
+                // zoom level of the view, hence we can't cache.
+                canCache = !stroke || this.getStrokeScaling(),
+                // If we're caching bounds, pass on this item as cacheItem, so
+                // the children can setup _boundsCache structures for it.
+                bounds = this._getCachedBounds(name, _matrix, canCache && this,
+                        internal);
             // If we're returning 'bounds', create a LinkedRectangle that uses
             // the setBounds() setter to update the Item whenever the bounds are
             // changed:
@@ -839,9 +850,9 @@ new function() { // // Scope to inject various item event handlers
         // Scriptographer behaves weirdly then too.
         if (!children || children.length === 0)
             return new Rectangle();
-        // Call _updateBoundsCache() even when the group is currently empty
-        // (or only holds empty / invisible items), so future changes in these
-        // items will cause right handling of _boundsCache.
+        // Call _updateBoundsCache() even when the group only holds empty /
+        // invisible items), so future changes in these items will cause right
+        // handling of _boundsCache.
         Item._updateBoundsCache(this, cacheItem);
         var x1 = Infinity,
             x2 = -x1,
@@ -896,17 +907,12 @@ new function() { // // Scope to inject various item event handlers
         matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix if there is a internal getter
         var _matrix = internal ? null : this._matrix._orNullIfIdentity(),
-            cache = (!matrix || matrix.equals(_matrix)) && getter;
+            cache = cacheItem && (!matrix || matrix.equals(_matrix)) && getter;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
         if (cache && this._bounds && this._bounds[cache])
             return this._bounds[cache].clone();
-        // If we're caching bounds on this item, pass it on as cacheItem, so the
-        // children can setup the _boundsCache structures for it.
-        // getInternalBounds is getBounds untransformed. Do not replace earlier,
-        // so we can cache both separately, since they're not in the same
-        // transformation space!
         var bounds = this._getBounds(internal || getter, matrix || _matrix,
                 cacheItem, internal);
         // If we can cache the result, update the _bounds cache structure
