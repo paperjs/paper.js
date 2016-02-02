@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 17:30:38 2016 +0100
+ * Date: Tue Feb 2 21:43:44 2016 +0100
  *
  ***
  *
@@ -10943,13 +10943,16 @@ var Style = Base.extend(new function() {
 		shadowColor: undefined,
 		shadowBlur: 0,
 		shadowOffset: new Point(),
-		selectedColor: undefined,
+		selectedColor: undefined
+	},
+	textDefaults = new Base(defaults, {
+		fillColor: new Color(),
 		fontFamily: 'sans-serif',
 		fontWeight: 'normal',
 		fontSize: 12,
 		leading: null,
 		justification: 'left'
-	},
+	}),
 	flags = {
 		strokeWidth: 97,
 		strokeCap: 97,
@@ -10967,14 +10970,23 @@ var Style = Base.extend(new function() {
 		beans: true
 	},
 	fields = {
+		_class: 'Style',
+
+		initialize: function Style(style, owner, project) {
+			this._values = {};
+			this._owner = owner;
+			this._project = owner && owner._project || project || paper.project;
+			if (owner instanceof TextItem)
+				this._defaults = textDefaults;
+			if (style)
+				this.set(style);
+		},
+
 		_defaults: defaults,
-		_textDefaults: new Base(defaults, {
-			fillColor: new Color()
-		}),
 		beans: true
 	};
 
-	Base.each(defaults, function(value, key) {
+	Base.each(textDefaults, function(value, key) {
 		var isColor = /Color$/.test(key),
 			isPoint = key === 'shadowOffset',
 			part = Base.capitalize(key),
@@ -10989,7 +11001,7 @@ var Style = Base.extend(new function() {
 					&& !(owner instanceof CompoundPath)) {
 				for (var i = 0, l = children.length; i < l; i++)
 					children[i]._style[set](value);
-			} else {
+			} else if (key in this._defaults) {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
@@ -11012,8 +11024,8 @@ var Style = Base.extend(new function() {
 			var owner = this._owner,
 				children = owner && owner._children,
 				value;
-			if (!children || children.length === 0 || _dontMerge
-					|| owner instanceof CompoundPath) {
+			if (key in this._defaults && (!children || children.length === 0
+					|| _dontMerge || owner instanceof CompoundPath)) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
@@ -11028,14 +11040,14 @@ var Style = Base.extend(new function() {
 							value._owner = owner;
 					}
 				}
-				return value;
-			}
-			for (var i = 0, l = children.length; i < l; i++) {
-				var childValue = children[i]._style[get]();
-				if (i === 0) {
-					value = childValue;
-				} else if (!Base.equals(value, childValue)) {
-					return undefined;
+			} else if (children) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childValue = children[i]._style[get]();
+					if (i === 0) {
+						value = childValue;
+					} else if (!Base.equals(value, childValue)) {
+						return undefined;
+					}
 				}
 			}
 			return value;
@@ -11063,18 +11075,6 @@ var Style = Base.extend(new function() {
 	Item.inject(item);
 	return fields;
 }, {
-	_class: 'Style',
-
-	initialize: function Style(style, _owner, _project) {
-		this._values = {};
-		this._owner = _owner;
-		this._project = _owner && _owner._project || _project || paper.project;
-		if (_owner instanceof TextItem)
-			this._defaults = this._textDefaults;
-		if (style)
-			this.set(style);
-	},
-
 	set: function(style) {
 		var isStyle = style instanceof Style,
 			values = isStyle ? style._values : style;
