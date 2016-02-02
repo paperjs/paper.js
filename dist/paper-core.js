@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 13:56:08 2016 +0100
+ * Date: Tue Feb 2 14:03:25 2016 +0100
  *
  ***
  *
@@ -9296,7 +9296,7 @@ PathItem.inject(new function() {
 			noHandles = false,
 			clearCurves = [],
 			prevCurve,
-			prevT;
+			prevTime;
 
 		for (var i = locations.length - 1; i >= 0; i--) {
 			var loc = locations[i];
