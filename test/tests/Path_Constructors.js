@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-QUnit.module('Predefined Path Shapes');
+QUnit.module('Path Constructors');
 
 test('new Path.Rectangle([50, 50], [100, 100])', function() {
     var path = new Path.Rectangle([50, 50], [100, 100]);
@@ -36,13 +36,13 @@ test('new Path.Circle({ center: [100, 100], radius: 50 })', function() {
 });
 
 test('new Path.Ellipse(rect)', function() {
-    var rect = new Rectangle([500, 500], [1000, 750])
+    var rect = new Rectangle([500, 500], [1000, 750]);
     var path = new Path.Ellipse(rect);
     equals(path.segments.toString(), '{ point: { x: 500, y: 875 }, handleIn: { x: 0, y: 207.10678 }, handleOut: { x: 0, y: -207.10678 } },{ point: { x: 1000, y: 500 }, handleIn: { x: -276.14237, y: 0 }, handleOut: { x: 276.14237, y: 0 } },{ point: { x: 1500, y: 875 }, handleIn: { x: 0, y: -207.10678 }, handleOut: { x: 0, y: 207.10678 } },{ point: { x: 1000, y: 1250 }, handleIn: { x: 276.14237, y: 0 }, handleOut: { x: -276.14237, y: 0 } }');
 });
 
 test('new Path.Rectangle(rectangle, radius)', function() {
-    var rectangle = new Rectangle([50, 50], [200, 100])
+    var rectangle = new Rectangle([50, 50], [200, 100]);
     var path = new Path.Rectangle(rectangle, 20);
     equals(path.segments.toString(), '{ point: { x: 70, y: 150 }, handleOut: { x: -11.04569, y: 0 } },{ point: { x: 50, y: 130 }, handleIn: { x: 0, y: 11.04569 } },{ point: { x: 50, y: 70 }, handleOut: { x: 0, y: -11.04569 } },{ point: { x: 70, y: 50 }, handleIn: { x: -11.04569, y: 0 } },{ point: { x: 230, y: 50 }, handleOut: { x: 11.04569, y: 0 } },{ point: { x: 250, y: 70 }, handleIn: { x: 0, y: -11.04569 } },{ point: { x: 250, y: 130 }, handleOut: { x: 0, y: 11.04569 } },{ point: { x: 230, y: 150 }, handleIn: { x: 11.04569, y: 0 } }');
 });
@@ -60,7 +60,7 @@ test('new Path.Rectangle({ rectangle: rectangle, radius: radius })', function() 
 });
 
 test('new Path.Rectangle(rect, size) - too large size', function() {
-    var rect = new Rectangle([50, 50], [200, 100])
+    var rect = new Rectangle([50, 50], [200, 100]);
     var path = new Path.Rectangle(rect, 200);
     equals(path.segments.toString(), '{ point: { x: 150, y: 150 }, handleOut: { x: -55.22847, y: 0 } },{ point: { x: 50, y: 100 }, handleIn: { x: 0, y: 27.61424 } },{ point: { x: 50, y: 100 }, handleOut: { x: 0, y: -27.61424 } },{ point: { x: 150, y: 50 }, handleIn: { x: -55.22847, y: 0 } },{ point: { x: 150, y: 50 }, handleOut: { x: 55.22847, y: 0 } },{ point: { x: 250, y: 100 }, handleIn: { x: 0, y: -27.61424 } },{ point: { x: 250, y: 100 }, handleOut: { x: 0, y: 27.61424 } },{ point: { x: 150, y: 150 }, handleIn: { x: 55.22847, y: 0 } }');
 });
