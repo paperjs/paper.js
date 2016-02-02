@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 21:43:44 2016 +0100
+ * Date: Tue Feb 2 21:45:04 2016 +0100
  *
  ***
  *
@@ -9383,45 +9383,41 @@ PathItem.inject(new function() {
 		} else {
 			var xBefore = px - epsilon,
 				xAfter = px + epsilon,
-				start,
-				end = 0;
-			while (end < length) {
-				start = end;
-				var curve = curves[start],
-					last = curve.last,
-					prevWinding = last.winding,
-					prevXEnd = last.values[6];
-				end = start + curve.length;
-				for (var i = start; i < end; i++) {
-					var curve = curves[i],
-						winding = curve.winding,
-						values = curve.values,
-						yStart = values[1],
-						yEnd = values[7];
-					if (winding && (py >= yStart && py <= yEnd
-							|| py >= yEnd && py <= yStart)) {
-						var x = py === yStart ? values[0]
-							:   py === yEnd   ? values[6]
-							: Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
-								? Curve.getPoint(values, roots[0]).x
-								: null;
-						if (x != null) {
-							var isWindingChange = winding === -prevWinding;
-							if (py !== yStart || isWindingChange
-									|| (x - px) * (prevXEnd - px) < 0) {
-								if (x < xBefore) {
-									windLeft += winding;
-								} else if (x > xAfter) {
-									windRight += winding;
-								} else if (py === yStart && isWindingChange) {
-									++windLeft;
-									++windRight;
-								}
+				prevWinding,
+				prevXEnd;
+			for (var i = 0; i < length; i++) {
+				var curve = curves[i],
+					winding = curve.winding,
+					values = curve.values,
+					yStart = values[1],
+					yEnd = values[7];
+				if (curve.last) {
+					prevWinding = curve.last.winding;
+					prevXEnd = curve.last.values[6];
+				}
+				if (winding && (py >= yStart && py <= yEnd
+						|| py >= yEnd && py <= yStart)) {
+					var x = py === yStart ? values[0]
+						:   py === yEnd   ? values[6]
+						: Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
+							? Curve.getPoint(values, roots[0]).x
+							: null;
+					if (x != null) {
+						var isWindingChange = winding === -prevWinding;
+						if (py !== yStart || isWindingChange
+								|| (x - px) * (prevXEnd - px) < 0) {
+							if (x < xBefore) {
+								windLeft += winding;
+							} else if (x > xAfter) {
+								windRight += winding;
+							} else if (py === yStart && isWindingChange) {
+								++windLeft;
+								++windRight;
 							}
 						}
-						prevWinding = winding;
-						prevXEnd = values[6];
 					}
+					prevWinding = winding;
+					prevXEnd = values[6];
 				}
 			}
 		}
@@ -9777,9 +9773,7 @@ Path.inject({
 				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
 			}
 			if (monoCurves.length > 0) {
-				var first = monoCurves[0];
-				first.length = monoCurves.length;
-				first.last = last;
+				monoCurves[0].last = last;
 			}
 		}
 		return monoCurves;
