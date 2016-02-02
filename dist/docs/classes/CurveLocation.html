@@ -15,7 +15,7 @@
 <div class="reference-class">
 <h1>CurveLocation</h1>
 
-<p>CurveLocation objects describe a location on <a href="../classes/Curve.html"><tt>Curve</tt></a> objects, as  defined by the curve-time <a href="../classes/CurveLocation.html#parameter"><tt>parameter</tt></a>, a value between <code>0</code>  (beginning of the curve) and <code>1</code> (end of the curve). If the curve is part  of a <a href="../classes/Path.html"><tt>Path</tt></a> item, its <a href="../classes/CurveLocation.html#index"><tt>index</tt></a> inside the <a href="../classes/Path.html#curves"><tt>path.curves</tt></a>  array is also provided.</p>
+<p>CurveLocation objects describe a location on <a href="../classes/Curve.html"><tt>Curve</tt></a> objects, as  defined by the curve-time <a href="../classes/CurveLocation.html#time"><tt>time</tt></a>, a value between <code>0</code> (beginning  of the curve) and <code>1</code> (end of the curve). If the curve is part of a  <a href="../classes/Path.html"><tt>Path</tt></a> item, its <a href="../classes/CurveLocation.html#index"><tt>index</tt></a> inside the <a href="../classes/Path.html#curves"><tt>path.curves</tt></a>  array is also provided.</p>
 <p>The class is in use in many places, such as <a href="../classes/Path.html#getlocationat-offset"><tt>path.getLocationAt(offset)</tt></a>, <a href="../classes/Path.html#getlocationof-point"><tt>path.getLocationOf(point)</tt></a>, <a href="../classes/Path.html#getnearestlocation-point"><tt>path.getNearestLocation(point)</tt></a>, <a href="../classes/PathItem.html#getintersections-path"><tt>pathItem.getIntersections(path)</tt></a>, etc.</p>
 
 </div>
@@ -25,9 +25,9 @@
 	<h2>Constructors</h2>
 	
 		
-<div id="curvelocation-curve-parameter" class="member">
+<div id="curvelocation-curve-time" class="member">
 <div class="member-link">
-<a name="curvelocation-curve-parameter" href="#curvelocation-curve-parameter"><tt><b>CurveLocation</b>(curve, parameter[, point])</tt></a>
+<a name="curvelocation-curve-time" href="#curvelocation-curve-time"><tt><b>CurveLocation</b>(curve, time[, point])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -45,7 +45,7 @@
 </li>
 	
 	<li>
-<tt>parameter:</tt> 
+<tt>time:</tt> 
 <tt>Number</tt>
 
 
@@ -199,9 +199,9 @@
 </div>
 		
 			
-<div id="parameter" class="member">
+<div id="time" class="member">
 <div class="member-link">
-<a name="parameter" href="#parameter"><tt><b>parameter</b></tt></a>
+<a name="time" href="#time"><tt><b>time</b></tt></a>
 </div>
 <div class="member-description hidden">
 
@@ -234,7 +234,7 @@
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The point which is defined by the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> and <a href="../classes/CurveLocation.html#parameter"><tt>parameter</tt></a>.</p>
+	<p>The point which is defined by the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> and <a href="../classes/CurveLocation.html#time"><tt>time</tt></a>.</p>
 	
 		<p>Read only.</p>
 	
@@ -476,7 +476,7 @@
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks whether tow CurveLocation objects are describing the same location on a path, by applying the same tolerances as elsewhere when dealing with curve time parameters.</p>
+	<p>Checks whether tow CurveLocation objects are describing the same location on a path, by applying the same tolerances as elsewhere when dealing with curve-time parameters.</p>
     
 	
 <ul class="member-list">

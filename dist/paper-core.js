@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 1 20:20:38 2016 +0100
+ * Date: Tue Feb 2 11:59:53 2016 +0100
  *
  ***
  *
@@ -5822,23 +5822,17 @@ var Curve = Base.extend({
 				this, curve, [], {});
 	},
 
-	_getParameter: function(offset, isParameter) {
-		return isParameter
-				? offset
-				: offset && offset.curve === this
-					? offset.parameter
-					: offset === undefined && isParameter === undefined
-						? 0.5
-						: this.getParameterAt(offset, 0);
+	divideAt: function(location) {
+		return this.divideAtTime(location && location.curve === this
+				? location.time : location);
 	},
 
-	divide: function(offset, isParameter, _setHandles) {
-		var parameter = this._getParameter(offset, isParameter),
-			tMin = 4e-7,
+	divideAtTime: function(time, _setHandles) {
+		var tMin = 4e-7,
 			tMax = 1 - tMin,
 			res = null;
-		if (parameter >= tMin && parameter <= tMax) {
-			var parts = Curve.subdivide(this.getValues(), parameter),
+		if (time >= tMin && time <= tMax) {
+			var parts = Curve.subdivide(this.getValues(), time),
 				left = parts[0],
 				right = parts[1],
 				setHandles = _setHandles || this.hasHandles(),
@@ -5864,11 +5858,22 @@ var Curve = Base.extend({
 		return res;
 	},
 
-	split: function(offset, isParameter) {
-		return this._path
-			? this._path.split(this._segment1._index,
-					this._getParameter(offset, isParameter))
-			: null;
+	splitAt: function(location) {
+		return this._path ? this._path.splitAt(location) : null;
+	},
+
+	splitAtTime: function(t) {
+		return this.splitAt(this.getLocationAtTime(t));
+	},
+
+	divide: function(offset, isTime) {
+		return this.divideAtTime(offset === undefined ? 0.5 : isTime ? offset
+				: this.getTimeAt(offset));
+	},
+
+	split: function(offset, isTime) {
+		return this.splitAtTime(offset === undefined ? 0.5 : isTime ? offset
+				: this.getTimeAt(offset));
 	},
 
 	reversed: function() {
@@ -5928,7 +5933,7 @@ statics: {
 		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 	},
 
-	getParameterOf: function(v, point) {
+	getTimeOf: function(v, point) {
 		var p1 = new Point(v[0], v[1]),
 			p2 = new Point(v[6], v[7]),
 			epsilon = 1e-12,
@@ -5953,7 +5958,7 @@ statics: {
 			 : null;
 	},
 
-	getNearestParameter: function(v, point) {
+	getNearestTime: function(v, point) {
 		if (Curve.isStraight(v)) {
 			var p1x = v[0], p1y = v[1],
 				p2x = v[6], p2y = v[7],
@@ -5964,7 +5969,7 @@ statics: {
 			var u = ((point.x - p1x) * vx + (point.y - p1y) * vy) / det;
 			return u < 1e-12 ? 0
 				 : u > 0.999999999999 ? 1
-				 : Curve.getParameterOf(v,
+				 : Curve.getTimeOf(v,
 					new Point(p1x + u * vx, p1y + u * vy));
 		}
 
@@ -6137,35 +6142,36 @@ statics: {
 	},
 
 	isHorizontal: function() {
-		return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).y)
+		return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).y)
 				< 1e-7;
 	},
 
 	isVertical: function() {
-		return this.isStraight() && Math.abs(this.getTangentAt(0.5, true).x)
+		return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).x)
 				< 1e-7;
 	}
 }), {
 	beans: false,
 
-	getParameterAt: function(offset, start) {
-		return Curve.getParameterAt(this.getValues(), offset, start);
+	getLocationAt: function(offset, _isTime) {
+		return this.getLocationAtTime(
+				_isTime ? offset : this.getTimeAt(offset));
 	},
 
-	getParameterOf: function() {
-		return Curve.getParameterOf(this.getValues(), Point.read(arguments));
-	},
-
-	getLocationAt: function(offset, isParameter) {
-		var t = isParameter ? offset : this.getParameterAt(offset);
+	getLocationAtTime: function(t) {
 		return t != null && t >= 0 && t <= 1
 				? new CurveLocation(this, t)
 				: null;
 	},
 
+	getTimeAt: function(offset, start) {
+		return Curve.getTimeAt(this.getValues(), offset, start);
+	},
+
+	getParameterAt: '#getTimeAt',
+
 	getLocationOf: function() {
-		return this.getLocationAt(this.getParameterOf(Point.read(arguments)),
-				true);
+		return this.getLocationAtTime(this.getTimeOf(Point.read(arguments)));
 	},
 
 	getOffsetOf: function() {
@@ -6173,10 +6179,16 @@ statics: {
 		return loc ? loc.getOffset() : null;
 	},
 
+	getTimeOf: function() {
+		return Curve.getTimeOf(this.getValues(), Point.read(arguments));
+	},
+
+	getParameterOf: '#getTimeOf',
+
 	getNearestLocation: function() {
 		var point = Point.read(arguments),
 			values = this.getValues(),
-			t = Curve.getNearestParameter(values, point),
+			t = Curve.getNearestTime(values, point),
 			pt = Curve.getPoint(values, t);
 		return new CurveLocation(this, t, pt, null, point.getDistance(pt));
 	},
@@ -6191,10 +6203,14 @@ new function() {
 		'getWeightedNormal', 'getCurvature'];
 	return Base.each(methods,
 		function(name) {
-			this[name + 'At'] = function(offset, isParameter) {
+			this[name + 'At'] = function(location, _isTime) {
 				var values = this.getValues();
-				return Curve[name](values, isParameter ? offset
-						: Curve.getParameterAt(values, offset, 0));
+				return Curve[name](values, _isTime ? location
+						: Curve.getTimeAt(values, location, 0));
+			};
+
+			this[name + 'AtTime'] = function(time) {
+				return Curve[name](this.getValues(), time);
 			};
 		}, {
 			statics: {
@@ -6314,7 +6330,7 @@ new function() {
 			return Numerical.integrate(ds, a, b, getIterations(a, b));
 		},
 
-		getParameterAt: function(v, offset, start) {
+		getTimeAt: function(v, offset, start) {
 			if (start === undefined)
 				start = offset < 0 ? 1 : 0;
 			if (offset === 0)
@@ -6377,11 +6393,11 @@ new function() {
 			tMin = 4e-7,
 			tMax = 1 - tMin;
 		if (t1 == null)
-			t1 = Curve.getParameterOf(v1, p1);
+			t1 = Curve.getTimeOf(v1, p1);
 		if (t1 !== null && t1 >= (excludeStart ? tMin : 0) &&
 			t1 <= (excludeEnd ? tMax : 1)) {
 			if (t2 == null)
-				t2 = Curve.getParameterOf(v2, p2);
+				t2 = Curve.getTimeOf(v2, p2);
 			if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
 				t2 <= (excludeStart ? tMax : 1)) {
 				var renormalize = param.renormalize;
@@ -6545,7 +6561,7 @@ new function() {
 		for (var i = 0; i < count; i++) {
 			var tc = roots[i],
 				pc = Curve.getPoint(vc, tc),
-				tl = Curve.getParameterOf(vl, pc);
+				tl = Curve.getTimeOf(vl, pc);
 			if (tl !== null) {
 				var pl = Curve.getPoint(vl, tl),
 					t1 = flip ? tl : tc,
@@ -6671,7 +6687,7 @@ new function() {
 				if (count > 0) {
 					for (var i = 0, maxCurvature = 0; i < count; i++) {
 						var curvature = Math.abs(
-								c1.getCurvatureAt(roots[i], true));
+								c1.getCurvatureAtTime(roots[i]));
 						if (curvature > maxCurvature) {
 							maxCurvature = curvature;
 							tSplit = roots[i];
@@ -6728,7 +6744,7 @@ new function() {
 			for (var i = 0, t1 = 0;
 					i < 2 && pairs.length < 2;
 					i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-				var t2 = Curve.getParameterOf(v[i ^ 1], new Point(
+				var t2 = Curve.getTimeOf(v[i ^ 1], new Point(
 						v[i][t1 === 0 ? 0 : 6],
 						v[i][t1 === 0 ? 1 : 7]));
 				if (t2 != null) {
@@ -6761,19 +6777,18 @@ var CurveLocation = Base.extend({
 	_class: 'CurveLocation',
 	beans: true,
 
-	initialize: function CurveLocation(curve, parameter, point,
-			_overlap, _distance) {
-		if (parameter > 0.9999996) {
+	initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
+		if (time > 0.9999996) {
 			var next = curve.getNext();
 			if (next) {
-				parameter = 0;
+				time = 0;
 				curve = next;
 			}
 		}
 		this._id = UID.get(CurveLocation);
 		this._setCurve(curve);
-		this._parameter = parameter;
-		this._point = point || curve.getPointAt(parameter, true);
+		this._time = time;
+		this._point = point || curve.getPointAtTime(time);
 		this._overlap = _overlap;
 		this._distance = _distance;
 		this._intersection = this._next = this._prev = null;
@@ -6792,7 +6807,7 @@ var CurveLocation = Base.extend({
 	_setSegment: function(segment) {
 		this._setCurve(segment.getCurve());
 		this._segment = segment;
-		this._parameter = segment === this._segment1 ? 0 : 1;
+		this._time = segment === this._segment1 ? 0 : 1;
 		this._point = segment._point.clone();
 	},
 
@@ -6800,14 +6815,14 @@ var CurveLocation = Base.extend({
 		var curve = this.getCurve(),
 			segment = this._segment;
 		if (!segment) {
-			var parameter = this.getParameter();
-			if (parameter === 0) {
+			var time = this.getTime();
+			if (time === 0) {
 				segment = curve._segment1;
-			} else if (parameter === 1) {
+			} else if (time === 1) {
 				segment = curve._segment2;
-			} else if (parameter != null) {
-				segment = curve.getPartLength(0, parameter)
-					< curve.getPartLength(parameter, 1)
+			} else if (time != null) {
+				segment = curve.getPartLength(0, time)
+					< curve.getPartLength(time, 1)
 						? curve._segment1
 						: curve._segment2;
 			}
@@ -6820,12 +6835,12 @@ var CurveLocation = Base.extend({
 		var path = this._path,
 			that = this;
 		if (path && path._version !== this._version) {
-			this._parameter = this._curve = this._offset = null;
+			this._time = this._curve = this._offset = null;
 		}
 
 		function trySegment(segment) {
 			var curve = segment && segment.getCurve();
-			if (curve && (that._parameter = curve.getParameterOf(that._point))
+			if (curve && (that._time = curve.getTimeOf(that._point))
 					!= null) {
 				that._setCurve(curve);
 				that._segment = segment;
@@ -6849,13 +6864,15 @@ var CurveLocation = Base.extend({
 		return curve && curve.getIndex();
 	},
 
-	getParameter: function() {
+	getTime: function() {
 		var curve = this.getCurve(),
-			parameter = this._parameter;
-		return curve && parameter == null
-			? this._parameter = curve.getParameterOf(this._point)
-			: parameter;
+			time = this._time;
+		return curve && time == null
+			? this._time = curve.getTimeOf(this._point)
+			: time;
 	},
+
+	getParameter: '#getTime',
 
 	getPoint: function() {
 		return this._point;
@@ -6879,8 +6896,8 @@ var CurveLocation = Base.extend({
 
 	getCurveOffset: function() {
 		var curve = this.getCurve(),
-			parameter = this.getParameter();
-		return parameter != null && curve && curve.getPartLength(0, parameter);
+			time = this.getTime();
+		return time != null && curve && curve.getPartLength(0, time);
 	},
 
 	getIntersection: function() {
@@ -6895,7 +6912,7 @@ var CurveLocation = Base.extend({
 		var curve = this.getCurve(),
 			res = null;
 		if (curve) {
-			res = curve.divide(this.getParameter(), true);
+			res = curve.divideAtTime(this.getTime());
 			if (res)
 				this._setSegment(res._segment1);
 		}
@@ -6904,7 +6921,7 @@ var CurveLocation = Base.extend({
 
 	split: function() {
 		var curve = this.getCurve();
-		return curve ? curve.split(this.getParameter(), true) : null;
+		return curve ? curve.splitAtTime(this.getTime()) : null;
 	},
 
 	equals: function(loc, _ignoreOther) {
@@ -6918,9 +6935,9 @@ var CurveLocation = Base.extend({
 				abs = Math.abs,
 				diff = abs(
 					((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
-							+ this.getParameter()) -
+							+ this.getTime()) -
 					((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-							+ loc.getParameter()));
+							+ loc.getTime()));
 			res = (diff < 4e-7
 				|| ((diff = abs(this.getOffset() - loc.getOffset())) < epsilon
 					|| abs(this.getPath().getLength() - diff) < epsilon))
@@ -6941,9 +6958,9 @@ var CurveLocation = Base.extend({
 		var index = this.getIndex();
 		if (index != null)
 			parts.push('index: ' + index);
-		var parameter = this.getParameter();
-		if (parameter != null)
-			parts.push('parameter: ' + f.number(parameter));
+		var time = this.getTime();
+		if (time != null)
+			parts.push('time: ' + f.number(time));
 		if (this._distance != null)
 			parts.push('distance: ' + f.number(this._distance));
 		return '{ ' + parts.join(', ') + ' }';
@@ -6964,8 +6981,8 @@ var CurveLocation = Base.extend({
 		var inter = this._intersection;
 		if (!inter)
 			return false;
-		var t1 = this.getParameter(),
-			t2 = inter.getParameter(),
+		var t1 = this.getTime(),
+			t2 = inter.getTime(),
 			tMin = 4e-7,
 			tMax = 1 - tMin,
 			t1Inside = t1 > tMin && t1 < tMax,
@@ -7003,10 +7020,10 @@ var CurveLocation = Base.extend({
 				: angle > min && angle <= 180 || angle >= -180 && angle < max;
 		}
 
-		var v2 = c2.getTangentAt(t1Inside ? t1 : tMin, true),
-			v1 = (t1Inside ? v2 : c1.getTangentAt(tMax, true)).negate(),
-			v4 = c4.getTangentAt(t2Inside ? t2 : tMin, true),
-			v3 = (t2Inside ? v4 : c3.getTangentAt(tMax, true)).negate(),
+		var v2 = c2.getTangentAtTime(t1Inside ? t1 : tMin),
+			v1 = (t1Inside ? v2 : c1.getTangentAtTime(tMax)).negate(),
+			v4 = c4.getTangentAtTime(t2Inside ? t2 : tMin),
+			v3 = (t2Inside ? v4 : c3.getTangentAtTime(tMax)).negate(),
 			a1 = v1.getAngle(),
 			a2 = v2.getAngle(),
 			a3 = v3.getAngle(),
@@ -7024,9 +7041,9 @@ var CurveLocation = Base.extend({
 }, Base.each(Curve._evaluateMethods, function(name) {
 	var get = name + 'At';
 	this[name] = function() {
-		var parameter = this.getParameter(),
-			curve = this.getCurve();
-		return parameter != null && curve && curve[get](parameter, true);
+		var curve = this.getCurve(),
+			time = this.getTime();
+		return time != null && curve && curve[get](time, true);
 	};
 }, {
 	preserve: true
@@ -7064,8 +7081,8 @@ new function() {
 		var path1 = loc.getPath(),
 			path2 = loc2.getPath(),
 			diff = path1 === path2
-				? (loc.getIndex() + loc.getParameter())
-				- (loc2.getIndex() + loc2.getParameter())
+				? (loc.getIndex() + loc.getTime())
+				- (loc2.getIndex() + loc2.getTime())
 				: path1._id - path2._id;
 			if (diff < 0) {
 				r = m - 1;
@@ -7726,28 +7743,19 @@ var Path = PathItem.extend({
 		}
 	},
 
-	split: function(index, parameter) {
-		if (parameter === null)
-			return null;
-		if (arguments.length === 1) {
-			var arg = index;
-			if (typeof arg === 'number')
-				arg = this.getLocationAt(arg);
-			if (!arg)
-				return null;
-			index = arg.index;
-			parameter = arg.parameter;
-		}
-		var tMin = 4e-7,
+	splitAt: function(location) {
+		var index = location && location.index,
+			time = location && location.time,
+			tMin = 4e-7,
 			tMax = 1 - tMin;
-		if (parameter >= tMax) {
+		if (time >= tMax) {
 			index++;
-			parameter--;
+			time = 0;
 		}
 		var curves = this.getCurves();
 		if (index >= 0 && index < curves.length) {
-			if (parameter >= tMin) {
-				curves[index++].divide(parameter, true);
+			if (time >= tMin) {
+				curves[index++].divideAtTime(time);
 			}
 			var segs = this.removeSegments(index, this._segments.length, true),
 				path;
@@ -7764,6 +7772,14 @@ var Path = PathItem.extend({
 			return path;
 		}
 		return null;
+	},
+
+	split: function(index, time) {
+		var curve,
+			location = time === undefined ? index
+				: (curve = this.getCurves()[index])
+					&& curve.getLocationAtTime(time);
+		return location ? this.splitAt(location) : null;
 	},
 
 	reverse: function() {
@@ -8013,8 +8029,8 @@ var Path = PathItem.extend({
 		if (strokeRadius !== null) {
 			loc = this.getNearestLocation(point);
 			if (loc) {
-				var parameter = loc.getParameter();
-				if (parameter === 0 || parameter === 1 && numSegments > 1) {
+				var time = loc.getTime();
+				if (time === 0 || time === 1 && numSegments > 1) {
 					if (!checkSegmentStroke(loc.getSegment()))
 						loc = null;
 				} else if (!isCloseEnough(loc.getPoint(), strokePadding)) {
@@ -8045,8 +8061,8 @@ var Path = PathItem.extend({
 
 }, Base.each(Curve._evaluateMethods,
 	function(name) {
-		this[name + 'At'] = function(offset, isParameter) {
-			var loc = this.getLocationAt(offset, isParameter);
+		this[name + 'At'] = function(offset) {
+			var loc = this.getLocationAt(offset);
 			return loc && loc[name]();
 		};
 	},
@@ -8069,14 +8085,9 @@ var Path = PathItem.extend({
 		return loc ? loc.getOffset() : null;
 	},
 
-	getLocationAt: function(offset, isParameter) {
+	getLocationAt: function(offset) {
 		var curves = this.getCurves(),
 			length = 0;
-		if (isParameter) {
-			var index = ~~offset,
-				curve = curves[index];
-			return curve ? curve.getLocationAt(offset - index, true) : null;
-		}
 		for (var i = 0, l = curves.length; i < l; i++) {
 			var start = length,
 				curve = curves[i];
@@ -8716,9 +8727,9 @@ statics: {
 	_addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
-			point = curve2.getPointAt(0, true),
-			normal1 = curve1.getNormalAt(1, true),
-			normal2 = curve2.getNormalAt(0, true),
+			point = curve2.getPointAtTime(0),
+			normal1 = curve1.getNormalAtTime(1),
+			normal2 = curve2.getNormalAtTime(0),
 			step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
 		normal1.setLength(step);
 		normal2.setLength(step);
@@ -8754,7 +8765,8 @@ statics: {
 			addPoint(point.add(normal));
 		}
 		if (cap === 'square')
-			point = point.add(normal.rotate(loc.getParameter() === 0 ? -90 : 90));
+			point = point.add(normal.rotate(
+					loc.getTime() === 0 ? -90 : 90));
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
 	},
@@ -9291,20 +9303,20 @@ PathItem.inject(new function() {
 				results.unshift(loc);
 			}
 			var curve = loc._curve,
-				t = loc._parameter,
-				origT = t,
+				time = loc._time,
+				origTime = time,
 				segment;
 			if (curve !== prevCurve) {
 				noHandles = !curve.hasHandles();
-			} else if (prevT > 0) {
-				t /= prevT;
+			} else if (prevTime > 0) {
+				time /= prevTime;
 			}
-			if (t < tMin) {
+			if (time < tMin) {
 				segment = curve._segment1;
-			} else if (t > tMax) {
+			} else if (time > tMax) {
 				segment = curve._segment2;
 			} else {
-				var newCurve = curve.divide(t, true, true);
+				var newCurve = curve.divideAtTime(time, true);
 				if (noHandles)
 					clearCurves.push(curve, newCurve);
 				segment = newCurve._segment1;
@@ -9323,7 +9335,7 @@ PathItem.inject(new function() {
 				segment._intersection = dest;
 			}
 			prevCurve = curve;
-			prevT = origT;
+			prevTime = origTime;
 		}
 		for (var i = 0, l = clearCurves.length; i < l; i++) {
 			clearCurves[i].clearHandles();
@@ -9432,9 +9444,9 @@ PathItem.inject(new function() {
 					var curve = entry.curve,
 						path = curve._path,
 						parent = path._parent,
-						t = curve.getParameterAt(length),
-						pt = curve.getPointAt(t, true),
-						hor = Math.abs(curve.getTangentAt(t, true).y)
+						t = curve.getTimeAt(length),
+						pt = curve.getPointAtTime(t),
+						hor = Math.abs(curve.getTangentAtTime(t).y)
 								< 1e-7;
 					if (parent instanceof CompoundPath)
 						path = parent;
@@ -9859,7 +9871,7 @@ var PathIterator = Base.extend({
 		this.index = 0;
 	},
 
-	getParameterAt: function(offset) {
+	getTimeAt: function(offset) {
 		var i, j = this.index;
 		for (;;) {
 			i = j;
@@ -9888,8 +9900,8 @@ var PathIterator = Base.extend({
 	},
 
 	drawPart: function(ctx, from, to) {
-		from = this.getParameterAt(from);
-		to = this.getParameterAt(to);
+		from = this.getTimeAt(from);
+		to = this.getTimeAt(to);
 		for (var i = from.index; i <= to.index; i++) {
 			var curve = Curve.getPart(this.curves[i],
 					i == from.index ? from.value : 0,
@@ -9902,7 +9914,7 @@ var PathIterator = Base.extend({
 }, Base.each(Curve._evaluateMethods,
 	function(name) {
 		this[name + 'At'] = function(offset, weighted) {
-			var param = this.getParameterAt(offset);
+			var param = this.getTimeAt(offset);
 			return Curve[name](this.curves[param.index], param.value, weighted);
 		};
 	}, {})
