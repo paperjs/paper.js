@@ -554,6 +554,49 @@ paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 </div>
 
 	
+<div id="interpolate-from-to-factor" class="member">
+<div class="member-link">
+<a name="interpolate-from-to-factor" href="#interpolate-from-to-factor"><tt><b>interpolate</b>(from, to, factor)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Interpolates between the two specified path items and uses the result as the geometry for this path item. The number of children and segments in the two paths involved in the operation should be the same.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>from:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path item defining the geometry when <code>factor</code>  is <code>0</code>
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path item defining the geometry when <code>factor</code>  is <code>1</code>
+
+</li>
+	
+	<li>
+<tt>factor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the interpolation coefficient, typically between  <code>0</code> and <code>1</code>, but extrapolation is possible too
+
+</li>
+	
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
 <h3>Postscript Style Drawing Commands</h3>
 
 <div id="moveto-point" class="member">

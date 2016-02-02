@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 21:45:04 2016 +0100
+ * Date: Tue Feb 2 22:11:06 2016 +0100
  *
  ***
  *
@@ -5492,6 +5492,27 @@ var Segment = Base.extend({
 		this._changed();
 	},
 
+	interpolate: function(from, to, factor) {
+		var u = 1 - factor,
+			v = factor,
+			point1 = from._point,
+			point2 = to._point,
+			handleIn1 = from._handleIn,
+			handleIn2 = to._handleIn,
+			handleOut2 = to._handleOut,
+			handleOut1 = from._handleOut;
+		this._point.set(
+				u * point1._x + v * point2._x,
+				u * point1._y + v * point2._y, true);
+		this._handleIn.set(
+				u * handleIn1._x + v * handleIn2._x,
+				u * handleIn1._y + v * handleIn2._y, true);
+		this._handleOut.set(
+				u * handleOut1._x + v * handleOut2._x,
+				u * handleOut1._y + v * handleOut2._y, true);
+		this._changed();
+	},
+
 	_transformCoordinates: function(matrix, coords, change) {
 		var point = this._point,
 			handleIn = !change || !this._handleIn.isZero()
@@ -7297,7 +7318,36 @@ var PathItem = Item.extend({
 		var winding = point.isInside(this.getInternalHandleBounds())
 				&& this._getWinding(point);
 		return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
-	}
+	},
+
+	interpolate: function(from, to, factor) {
+		var isPath = !this._children,
+			name = isPath ? '_segments' : '_children',
+			itemsFrom = from[name],
+			itemsTo = to[name],
+			items = this[name];
+		if (!itemsFrom || !itemsTo || itemsFrom.length !== itemsTo.length) {
+			throw new Error('Invalid operands in interpolate() call: ' +
+					from + ', ' + to);
+		}
+		var current = items.length,
+			length = itemsTo.length;
+		if (current < length) {
+			var ctor = isPath ? Segment : Path;
+			for (var i = current; i < length; i++) {
+				this.add(new ctor());
+			}
+		} else if (current > length) {
+			this[isPath ? 'removeSegments' : 'removeChildren'](length, current);
+		}
+		for (var i = 0; i < length; i++) {
+			items[i].interpolate(itemsFrom[i], itemsTo[i], factor);
+		}
+		if (isPath) {
+			this.setClosed(from._closed);
+			this._changed(9);
+		}
+	},
 
 });
 
