@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 13:28:06 2016 +0100
+ * Date: Tue Feb 2 13:56:08 2016 +0100
  *
  ***
  *
@@ -3106,13 +3106,16 @@ new function() {
 	function(key) {
 		var getter = 'get' + Base.capitalize(key),
 			match = key.match(/^internal(.*)$/),
-			internal = match ? 'get' + match[1] : null;
+			internal = match ? 'get' + match[1] : null,
+			stroke = /^stroke|rough/i.test(key);
 		this[getter] = function(_matrix) {
 			var boundsGetter = this._boundsGetter,
 				name = !internal && (typeof boundsGetter === 'string'
 						? boundsGetter : boundsGetter && boundsGetter[getter])
 						|| getter,
-				bounds = this._getCachedBounds(name, _matrix, this, internal);
+				canCache = !stroke || this.getStrokeScaling(),
+				bounds = this._getCachedBounds(name, _matrix, canCache && this,
+						internal);
 			return key === 'bounds'
 					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
 							bounds.height, this, 'setBounds')
@@ -3167,7 +3170,7 @@ new function() {
 	_getCachedBounds: function(getter, matrix, cacheItem, internal) {
 		matrix = matrix && matrix._orNullIfIdentity();
 		var _matrix = internal ? null : this._matrix._orNullIfIdentity(),
-			cache = (!matrix || matrix.equals(_matrix)) && getter;
+			cache = cacheItem && (!matrix || matrix.equals(_matrix)) && getter;
 		Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
 		if (cache && this._bounds && this._bounds[cache])
 			return this._bounds[cache].clone();
