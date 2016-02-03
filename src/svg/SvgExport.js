@@ -407,7 +407,7 @@ new function() {
                     width: size.width,
                     height: size.height,
                     version: '1.1',
-                    xmlns:  SvgElement.xmlns,
+                    xmlns:  SvgElement.svg,
                     'xmlns:xlink':  SvgElement.xlink
                 }, formatter),
                 parent = node,
