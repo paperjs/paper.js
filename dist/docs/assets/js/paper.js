@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 2 22:11:06 2016 +0100
+ * Date: Wed Feb 3 09:47:49 2016 +0100
  *
  ***
  *
@@ -488,7 +488,7 @@ Base.inject({
 				if (type) {
 					var args = res;
 					if (create) {
-						res = create(type, args);
+						res = create(type, args, isRoot);
 					} else {
 						res = Base.create(type.prototype);
 						type.apply(res, args);
@@ -516,8 +516,9 @@ Base.inject({
 		importJSON: function(json, target) {
 			return Base.deserialize(
 					typeof json === 'string' ? JSON.parse(json) : json,
-					function(ctor, args) {
-						var useTarget = target && target.constructor === ctor,
+					function(ctor, args, isRoot) {
+						var useTarget = isRoot && target
+								&& target.constructor === ctor,
 							obj = useTarget ? target
 								: Base.create(ctor.prototype),
 							init = useTarget ? obj._initialize || obj._set
@@ -653,16 +654,18 @@ var Emitter = {
 	fire: '#emit',
 
 	_installEvents: function(install) {
-		var handlers = this._callbacks,
+		var types = this._eventTypes,
+			handlers = this._callbacks,
 			key = install ? 'install' : 'uninstall';
-		for (var type in handlers) {
-			if (handlers[type].length > 0) {
-				var types = this._eventTypes,
-					entry = types && types[type],
-					func = entry && entry[key];
-				if (func)
-					func.call(this, type);
-			}
+		if (types) {
+			for (var type in handlers) {
+				if (handlers[type].length > 0) {
+					var entry = types[type],
+						func = entry && entry[key];
+					if (func)
+						func.call(this, type);
+				}
+		}
 		}
 	},
 
@@ -2801,6 +2804,7 @@ var Item = Base.extend(Emitter, {
 	},
 
 	_class: 'Item',
+	_name: null,
 	_applyMatrix: true,
 	_canApplyMatrix: true,
 	_canScaleStroke: false,
