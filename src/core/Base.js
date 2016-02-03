@@ -444,7 +444,7 @@ Base.inject(/** @lends Base# */{
                     // creation. This is used in #importJSON() to pass
                     // on insert = false to all items except layers.
                     if (create) {
-                        res = create(type, args);
+                        res = create(type, args, isRoot);
                     } else {
                         res = Base.create(type.prototype);
                         type.apply(res, args);
@@ -476,10 +476,11 @@ Base.inject(/** @lends Base# */{
                     typeof json === 'string' ? JSON.parse(json) : json,
                     // Provide our own create function to handle target and
                     // insertion.
-                    function(ctor, args) {
-                        // If a target is provided and its of the right type,
-                        // import right into it.
-                        var useTarget = target && target.constructor === ctor,
+                    function(ctor, args, isRoot) {
+                        // If a target is provided and its of the right type
+                        // for the root item, import right into it.
+                        var useTarget = isRoot && target
+                                && target.constructor === ctor,
                             obj = useTarget ? target
                                 : Base.create(ctor.prototype),
                             // When reusing an object, try to initialize it
