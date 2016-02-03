@@ -45,6 +45,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     _class: 'Item',
+    _name: null,
     // All items apply their matrix by default.
     // Exceptions are Raster, SymbolItem, Clip and Shape.
     _applyMatrix: true,
