@@ -107,16 +107,18 @@ var Emitter = {
     fire: '#emit',
 
     _installEvents: function(install) {
-        var handlers = this._callbacks,
+        var types = this._eventTypes,
+            handlers = this._callbacks,
             key = install ? 'install' : 'uninstall';
-        for (var type in handlers) {
-            if (handlers[type].length > 0) {
-                var types = this._eventTypes,
-                    entry = types && types[type],
-                    func = entry && entry[key];
-                if (func)
-                    func.call(this, type);
-            }
+        if (types) {
+            for (var type in handlers) {
+                if (handlers[type].length > 0) {
+                    var entry = types[type],
+                        func = entry && entry[key];
+                    if (func)
+                        func.call(this, type);
+                }
+        }
         }
     },
 
