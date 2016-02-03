@@ -2644,9 +2644,8 @@ new function() { // PostScript-style drawing commands
     // Curve. But not all of them use all these parameters, and some define
     // additional ones after.
 
-    _getBounds: function(getter, matrix, cacheItem, internal) {
-        return Path[getter](this._segments, this._closed, this, matrix,
-                internal);
+    _getBounds: function(getter, matrix) {
+        return Path[getter](this._segments, this._closed, this, matrix);
     },
 
 // Mess with indentation in order to get more line-space below:
