@@ -597,14 +597,29 @@ test('path.strokeBounds without strokeScaling and zoomed view', function() {
         strokeScaling: false
     });
 
-    equals(path.strokeBounds,
-            new Rectangle(-103.75, -103.75, 207.5, 207.5),
+    equals(path.strokeBounds, new Rectangle(-103.75, -103.75, 207.5, 207.5),
             'path.strokeBounds with zoomed view');
 
     view.zoom = 1;
 
-    equals(path.strokeBounds,
-            new Rectangle(-107.5, -107.5, 215, 215),
+    equals(path.strokeBounds, new Rectangle(-107.5, -107.5, 215, 215),
             'path.strokeBounds without zoomed view');
 });
 
+test('path.internalBounds', function() {
+    // To test for a strange strokeBounds regression caused by commit
+    // 1ac8e46d55643f663e439d2cb5d05a40fc68d011
+
+    var path = new Path.Circle({
+        center: [0, 0],
+        radius: 100
+    });
+
+    equals(path.internalBounds, new Rectangle(-100, -100, 200, 200),
+            'path.internalBounds');
+
+    path.rotate(45);
+
+    equals(path.internalBounds, new Rectangle(-100, -100, 200, 200),
+            'path.internalBounds');
+});
