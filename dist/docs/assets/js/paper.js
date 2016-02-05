@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 5 20:25:25 2016 +0100
+ * Date: Fri Feb 5 20:31:58 2016 +0100
  *
  ***
  *
@@ -9407,10 +9407,10 @@ PathItem.inject(new function() {
 			py = point.y,
 			windLeft = 0,
 			windRight = 0,
+			isOnCurve = false,
 			length = curves.length,
 			roots = [],
-			abs = Math.abs,
-			isOnCurve = false;
+			abs = Math.abs;
 		if (horizontal) {
 			var yTop = -Infinity,
 				yBottom = Infinity,
