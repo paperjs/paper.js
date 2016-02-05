@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 3 18:39:00 2016 +0100
+ * Date: Fri Feb 5 20:25:25 2016 +0100
  *
  ***
  *
@@ -9409,7 +9409,8 @@ PathItem.inject(new function() {
 			windRight = 0,
 			length = curves.length,
 			roots = [],
-			abs = Math.abs;
+			abs = Math.abs,
+			isOnCurve = false;
 		if (horizontal) {
 			var yTop = -Infinity,
 				yBottom = Infinity,
@@ -9448,33 +9449,36 @@ PathItem.inject(new function() {
 					prevWinding = curve.last.winding;
 					prevXEnd = curve.last.values[6];
 				}
-				if (winding && (py >= yStart && py <= yEnd
-						|| py >= yEnd && py <= yStart)) {
-					var x = py === yStart ? values[0]
-						:   py === yEnd   ? values[6]
-						: Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
+				if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
+					if (winding) {
+						var x = py === yStart ? values[0]
+							: py === yEnd ? values[6]
+							: Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
 							? Curve.getPoint(values, roots[0]).x
 							: null;
-					if (x != null) {
-						var isWindingChange = winding === -prevWinding;
-						if (py !== yStart || isWindingChange
-								|| (x - px) * (prevXEnd - px) < 0) {
-							if (x < xBefore) {
-								windLeft += winding;
-							} else if (x > xAfter) {
-								windRight += winding;
-							} else if (py === yStart && isWindingChange) {
-								++windLeft;
-								++windRight;
+						if (x != null) {
+							if (x >= xBefore && x <= xAfter) {
+								isOnCurve = true;
+							} else if (
+								(py !== yStart || winding !== prevWinding)
+								&& !(py === yStart
+									&& (px - x) * (px - prevXEnd) < 0)) {
+								if (x < xBefore) {
+									windLeft += winding;
+								} else if (x > xAfter) {
+									windRight += winding;
+								}
 							}
 						}
+						prevWinding = winding;
+						prevXEnd = values[6];
+					} else if ((px - values[0]) * (px - values[6]) <= 0) {
+						isOnCurve = true;
 					}
-					prevWinding = winding;
-					prevXEnd = values[6];
 				}
 			}
 		}
-		return Math.max(abs(windLeft), abs(windRight));
+		return Math.max(abs(windLeft), abs(windRight), isOnCurve ? 1 : 0);
 	}
 
 	function propagateWinding(segment, path1, path2, monoCurves, operator) {
