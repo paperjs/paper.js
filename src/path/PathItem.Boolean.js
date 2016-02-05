@@ -380,23 +380,21 @@ PathItem.inject(new function() {
                             ? Curve.getPoint(values, roots[0]).x
                             : null;
                         if (x != null) {
-                            // determine if the point is on the horizontal
-                            // connection between the last non-horizontal curve's
-                            // end point and the current curve's start point
-                            var isOnHorizontal =
-                                (py === yStart && (px - x) * (px - prevXEnd) < 0);
-                            // Test if the point is on the current monocurve
+                            // Test if the point is on the current mono-curve.
                             if (x >= xBefore && x <= xAfter) {
                                 isOnCurve = true;
-                            // Count the intersection of the ray with the
-                            // monotonic curve if:
-                            // - the crossing is not the start of the curve
-                            //   except if the winding changes.
-                            // - and the point is not on the curve or on the
-                            //   horizontal connection between the previous
-                            //   curve and the current curve
-                            } else if ((py != yStart || winding !== prevWinding)
-                                    && !isOnHorizontal) {
+                            } else if (
+                                // Count the intersection of the ray with the
+                                // monotonic curve if the crossing is not the
+                                // start of the curve, except if the winding
+                                // changes...
+                                (py !== yStart || winding !== prevWinding)
+                                // ...and the point is not on the curve or on
+                                // the horizontal connection between the last
+                                // non-horizontal curve's end point and the
+                                // current curve's start point.
+                                && !(py === yStart
+                                    && (px - x) * (px - prevXEnd) < 0)) {
                                 if (x < xBefore) {
                                     windLeft += winding;
                                 } else if (x > xAfter) {
@@ -415,8 +413,8 @@ PathItem.inject(new function() {
                 }
             }
         }
-        // If the point was on a monocurve, we are on the path by definition.
-        // In this case ensure that the winding is at least 1.
+        // If the point was on a monotonic curve, we are on the path by
+        // definition. In this case ensure that the winding is at least 1.
         return Math.max(abs(windLeft), abs(windRight), isOnCurve ? 1 : 0);
     }
 
