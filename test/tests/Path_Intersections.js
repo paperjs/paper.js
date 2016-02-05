@@ -86,7 +86,6 @@ test('#571', function() {
     ]);
 });
 
-
 test('overlapping circles', function() {
     var path1 = new Path.Circle(new paper.Point(50, 50), 50);
     var path2 = new Path.Circle(new paper.Point(100, 100), 50);
@@ -95,7 +94,6 @@ test('overlapping circles', function() {
         { point: { x: 50, y: 100 }, index: 3, crossing: true }
     ]);
 });
-
 
 test('circle and square (existing segments overlaps on curves)', function() {
     var path1 = new Path.Circle(new Point(110, 110), 80);

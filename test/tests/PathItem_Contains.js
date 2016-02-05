@@ -266,19 +266,31 @@ test('Path#contains() (straight curves with zero-winding)', function() {
     for (var i = 0; i < pointData.length; i++) {
         points.push(pointData[i][0]);
     }
-    var path = new paper.Path({segments: points, closed: true});
-    path.setWindingRule("evenodd");
-
-    var offsetPoint = function(p, xOffs, yOffs) {
-        return new paper.Point(p.x + xOffs, p.y + yOffs);
-    }
+    var path = new Path({
+        segments: points,
+        fillRule: 'evenodd',
+        closed: true
+    });
 
     for (var i = 0; i < pointData.length; i++) {
-        var p = new paper.Point(points[i]);
+        var p = new Point(points[i]);
         testPoint(path, p, true); // point is a segment of the path, must be inside
-        testPoint(path, offsetPoint(p, 10, 0), pointData[i][1]);
-        testPoint(path, offsetPoint(p, -10, 0), pointData[i][2]);
-        testPoint(path, offsetPoint(p, 0, 10), pointData[i][3]);
-        testPoint(path, offsetPoint(p, 0, -10), pointData[i][4]);
+        testPoint(path, p.add(10, 0), pointData[i][1]);
+        testPoint(path, p.add(-10, 0), pointData[i][2]);
+        testPoint(path, p.add(0, 10), pointData[i][3]);
+        testPoint(path, p.add(0, -10), pointData[i][4]);
     }
-})
+});
+
+test('CompoundPath#contains() (nested touching circles)', function() {
+    var c1 = new Path.Circle({
+        center: [200, 200],
+        radius: 100
+    });
+    var c2 = new Path.Circle({
+        center: [150, 200],
+        radius: 50
+    });
+    var cp = new CompoundPath([c1, c2]);
+    testPoint(cp, new Point(100, 200), true);
+});
