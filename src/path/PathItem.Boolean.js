@@ -306,7 +306,7 @@ PathItem.inject(new function() {
 
     /**
      * Private method that returns the winding contribution of the given point
-     * with respect to a given set of monotone curves.
+     * with respect to a given set of monotonic curves.
      */
     function getWinding(point, curves, horizontal) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
@@ -314,10 +314,10 @@ PathItem.inject(new function() {
             py = point.y,
             windLeft = 0,
             windRight = 0,
+            isOnCurve = false,
             length = curves.length,
             roots = [],
-            abs = Math.abs,
-            isOnCurve = false;
+            abs = Math.abs;
         // Horizontal curves may return wrong results, since the curves are
         // monotonic in y direction and this is an indeterminate state.
         if (horizontal) {
@@ -357,9 +357,8 @@ PathItem.inject(new function() {
                     values = curve.values,
                     yStart = values[1],
                     yEnd = values[7];
-                // The first curve of a loop holds the last curve with
-                // non-zero winding.
-                // Retrieve and use it here (See _getMonoCurve()).
+                // The first curve of a loop holds the last curve with non-zero
+                // winding. Retrieve and use it here (See _getMonoCurve()).
                 if (curve.last) {
                     // Get the end x coordinate and winding of the last
                     // non-horizontal curve, which will be the previous
@@ -367,10 +366,10 @@ PathItem.inject(new function() {
                     prevWinding = curve.last.winding;
                     prevXEnd = curve.last.values[6];
                 }
-                // Since the curves are monotone in y direction, we can just
-                // compare the endpoints of the curve to determine if the
-                // ray from query point along +-x direction will intersect
-                // the monotone curve.
+                // Since the curves are monotonic in y direction, we can just
+                // compare the endpoints of the curve to determine if the ray
+                // from query point along +-x direction will intersect the
+                // monotonic curve.
                 if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
                     if (winding) {
                         // Calculate the x value for the ray's intersection.
@@ -925,7 +924,7 @@ Path.inject(/** @lends Path# */{
             if (Curve.isStraight(v)
                     || y0 >= y1 === y1 >= y2 && y1 >= y2 === y2 >= y3) {
                 // Straight curves and curves with end and control points sorted
-                // in y direction are guaranteed to be monotone in y direction.
+                // in y direction are guaranteed to be monotonic in y direction.
                 insertCurve(v);
             } else {
                 // Split the curve at y extrema, to get bezier curves with clear
