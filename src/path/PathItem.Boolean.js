@@ -316,7 +316,8 @@ PathItem.inject(new function() {
             windRight = 0,
             length = curves.length,
             roots = [],
-            abs = Math.abs;
+            abs = Math.abs,
+            isOnCurve = false;
         // Horizontal curves may return wrong results, since the curves are
         // monotonic in y direction and this is an indeterminate state.
         if (horizontal) {
@@ -360,9 +361,9 @@ PathItem.inject(new function() {
                 // non-zero winding.
                 // Retrieve and use it here (See _getMonoCurve()).
                 if (curve.last) {
-                    // Get the values of to the end x coordinate and winding of
-                    // the last non-horizontal curve, which will be the previous
-                    // non-horizontal curve for the first curve of the loop.
+                    // Get the end x coordinate and winding of the last
+                    // non-horizontal curve, which will be the previous
+                    // non-horizontal curve for the first curve in the loop.
                     prevWinding = curve.last.winding;
                     prevXEnd = curve.last.values[6];
                 }
@@ -370,47 +371,51 @@ PathItem.inject(new function() {
                 // compare the endpoints of the curve to determine if the
                 // ray from query point along +-x direction will intersect
                 // the monotone curve.
-                // Horizontal curves with winding == 0 will be completely
-                // ignored.
-                if (winding && (py >= yStart && py <= yEnd
-                        || py >= yEnd && py <= yStart)) {
-                    // Calculate the x value for the ray's intersection.
-                    var x = py === yStart ? values[0]
-                        :   py === yEnd   ? values[6]
-                        : Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
+                if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
+                    if (winding) {
+                        // Calculate the x value for the ray's intersection.
+                        var x = py === yStart ? values[0]
+                            : py === yEnd ? values[6]
+                            : Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
                             ? Curve.getPoint(values, roots[0]).x
                             : null;
-                    if (x != null) {
-                        // Count the intersection of the ray with the
-                        // monotonic curve if:
-                        // - the crossing is not at the start of the curve
-                        // - or the windings are opposite (intersect at a
-                        //   vertical extremum)
-                        // - or the start of the current curve and the end
-                        //   of the prev curve are on opposite sides of px
-                        var isWindingChange = winding === -prevWinding;
-                        if (py !== yStart || isWindingChange
-                                || (x - px) * (prevXEnd - px) < 0) {
-                            if (x < xBefore) {
-                                windLeft += winding;
-                            } else if (x > xAfter) {
-                                windRight += winding;
-                            } else if (py === yStart && isWindingChange) {
-                                // The point is a vertical extremum of the
-                                // path.
-                                ++windLeft;
-                                ++windRight;
+                        if (x != null) {
+                            // Test if the point is on the current mono-curve.
+                            if (x >= xBefore && x <= xAfter) {
+                                isOnCurve = true;
+                            } else if (
+                                // Count the intersection of the ray with the
+                                // monotonic curve if the crossing is not the
+                                // start of the curve, except if the winding
+                                // changes...
+                                (py !== yStart || winding !== prevWinding)
+                                // ...and the point is not on the curve or on
+                                // the horizontal connection between the last
+                                // non-horizontal curve's end point and the
+                                // current curve's start point.
+                                && !(py === yStart
+                                    && (px - x) * (px - prevXEnd) < 0)) {
+                                if (x < xBefore) {
+                                    windLeft += winding;
+                                } else if (x > xAfter) {
+                                    windRight += winding;
+                                }
                             }
                         }
+                        // Update previous winding and end coordinate whenever
+                        // the ray intersects a non-horizontal curve.
+                        prevWinding = winding;
+                        prevXEnd = values[6];
+                    // Test if the point is on the horizontal curve
+                    } else if ((px - values[0]) * (px - values[6]) <= 0) {
+                        isOnCurve = true;
                     }
-                    // Update previous winding and end coordinate whenever
-                    // the ray intersects a non-horizontal curve.
-                    prevWinding = winding;
-                    prevXEnd = values[6];
                 }
             }
         }
-        return Math.max(abs(windLeft), abs(windRight));
+        // If the point was on a monotonic curve, we are on the path by
+        // definition. In this case ensure that the winding is at least 1.
+        return Math.max(abs(windLeft), abs(windRight), isOnCurve ? 1 : 0);
     }
 
     function propagateWinding(segment, path1, path2, monoCurves, operator) {
