@@ -1306,10 +1306,7 @@ new function() { // Scope for methods that require private functions
             c1x = v[2], c1y = v[3],
             c2x = v[4], c2y = v[5],
             p2x = v[6], p2y = v[7],
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin,
-            isZero = Numerical.isZero,
-            x, y;
+            isZero = Numerical.isZero;
         // If the curve handles are almost zero, reset the control points to the
         // anchors.
         if (isZero(c1x - p1x) && isZero(c1y - p1y)) {
@@ -1320,69 +1317,68 @@ new function() { // Scope for methods that require private functions
             c2x = p2x;
             c2y = p2y;
         }
-        // Handle special case at beginning / end of curve
-        if (type === 0 && (t < tMin || t > tMax)) {
-            var zero = t < tMin;
-            x = zero ? p1x : p2x;
-            y = zero ? p1y : p2y;
+        // Calculate the polynomial coefficients.
+        var cx = 3 * (c1x - p1x),
+            bx = 3 * (c2x - c1x) - cx,
+            ax = p2x - p1x - cx - bx,
+            cy = 3 * (c1y - p1y),
+            by = 3 * (c2y - c1y) - cy,
+            ay = p2y - p1y - cy - by,
+            x, y;
+        if (type === 0) {
+            // type === 0: getPoint()
+            // Calculate the curve point at parameter value t
+            x = ((ax * t + bx) * t + cx) * t + p1x;
+            y = ((ay * t + by) * t + cy) * t + p1y;
         } else {
-            // Calculate the polynomial coefficients.
-            var cx = 3 * (c1x - p1x),
-                bx = 3 * (c2x - c1x) - cx,
-                ax = p2x - p1x - cx - bx,
-
-                cy = 3 * (c1y - p1y),
-                by = 3 * (c2y - c1y) - cy,
-                ay = p2y - p1y - cy - by;
-            if (type === 0) {
-                // Calculate the curve point at parameter value t
-                x = ((ax * t + bx) * t + cx) * t + p1x;
-                y = ((ay * t + by) * t + cy) * t + p1y;
+            // type === 1: getTangent()
+            // type === 2: getNormal()
+            // type === 3: getCurvature()
+            var tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+                tMax = 1 - tMin;
+            // 1: tangent, 1st derivative
+            // 2: normal, 1st derivative
+            // 3: curvature, 1st derivative & 2nd derivative
+            // Simply use the derivation of the bezier function for both
+            // the x and y coordinates:
+            // Prevent tangents and normals of length 0:
+            // http://stackoverflow.com/questions/10506868/
+            if (t < tMin) {
+                x = cx;
+                y = cy;
+            } else if (t > tMax) {
+                x = 3 * (p2x - c2x);
+                y = 3 * (p2y - c2y);
             } else {
-                // 1: tangent, 1st derivative
-                // 2: normal, 1st derivative
-                // 3: curvature, 1st derivative & 2nd derivative
-                // Simply use the derivation of the bezier function for both
-                // the x and y coordinates:
-                // Prevent tangents and normals of length 0:
-                // http://stackoverflow.com/questions/10506868/
-                if (t < tMin) {
-                    x = cx;
-                    y = cy;
-                } else if (t > tMax) {
-                    x = 3 * (p2x - c2x);
-                    y = 3 * (p2y - c2y);
-                } else {
-                    x = (3 * ax * t + 2 * bx) * t + cx;
-                    y = (3 * ay * t + 2 * by) * t + cy;
+                x = (3 * ax * t + 2 * bx) * t + cx;
+                y = (3 * ay * t + 2 * by) * t + cy;
+            }
+            if (normalized) {
+                // When the tangent at t is zero and we're at the beginning
+                // or the end, we can use the vector between the handles,
+                // but only when normalizing as its weighted length is 0.
+                if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
+                    x = c2x - c1x;
+                    y = c2y - c1y;
                 }
-                if (normalized) {
-                    // When the tangent at t is zero and we're at the beginning
-                    // or the end, we can use the vector between the handles,
-                    // but only when normalizing as its weighted length is 0.
-                    if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
-                        x = c2x - c1x;
-                        y = c2y - c1y;
-                    }
-                    // Now normalize x & y
-                    var len = Math.sqrt(x * x + y * y);
-                    if (len) {
-                        x /= len;
-                        y /= len;
-                    }
+                // Now normalize x & y
+                var len = Math.sqrt(x * x + y * y);
+                if (len) {
+                    x /= len;
+                    y /= len;
                 }
-                if (type === 3) {
-                    // Calculate 2nd derivative, and curvature from there:
-                    // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
-                    // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
-                    var x2 = 6 * ax * t + 2 * bx,
-                        y2 = 6 * ay * t + 2 * by,
-                        d = Math.pow(x * x + y * y, 3 / 2);
-                    // For JS optimizations we always return a Point, although
-                    // curvature is just a numeric value, stored in x:
-                    x = d !== 0 ? (x * y2 - y * x2) / d : 0;
-                    y = 0;
-                }
+            }
+            if (type === 3) {
+                // Calculate 2nd derivative, and curvature from there:
+                // http://cagd.cs.byu.edu/~557/text/ch2.pdf page#31
+                // k = |dx * d2y - dy * d2x| / (( dx^2 + dy^2 )^(3/2))
+                var x2 = 6 * ax * t + 2 * bx,
+                    y2 = 6 * ay * t + 2 * by,
+                    d = Math.pow(x * x + y * y, 3 / 2);
+                // For JS optimizations we always return a Point, although
+                // curvature is just a numeric value, stored in x:
+                x = d !== 0 ? (x * y2 - y * x2) / d : 0;
+                y = 0;
             }
         }
         // The normal is simply the rotated tangent:
