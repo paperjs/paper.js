@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 5 21:18:16 2016 +0100
+ * Date: Sat Feb 6 15:12:35 2016 +0100
  *
  ***
  *
@@ -964,7 +964,7 @@ var Numerical = new function() {
 		GEOMETRIC_EPSILON: 2e-7,
 		WINDING_EPSILON: 2e-7,
 		TRIGONOMETRIC_EPSILON: 1e-7,
-		CLIPPING_EPSILON: 1e-7,
+		CLIPPING_EPSILON: 1e-9,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
@@ -6283,10 +6283,7 @@ new function() {
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
 			p2x = v[6], p2y = v[7],
-			tMin = 4e-7,
-			tMax = 1 - tMin,
-			isZero = Numerical.isZero,
-			x, y;
+			isZero = Numerical.isZero;
 		if (isZero(c1x - p1x) && isZero(c1y - p1y)) {
 			c1x = p1x;
 			c1y = p1y;
@@ -6295,50 +6292,46 @@ new function() {
 			c2x = p2x;
 			c2y = p2y;
 		}
-		if (type === 0 && (t < tMin || t > tMax)) {
-			var zero = t < tMin;
-			x = zero ? p1x : p2x;
-			y = zero ? p1y : p2y;
+		var cx = 3 * (c1x - p1x),
+			bx = 3 * (c2x - c1x) - cx,
+			ax = p2x - p1x - cx - bx,
+			cy = 3 * (c1y - p1y),
+			by = 3 * (c2y - c1y) - cy,
+			ay = p2y - p1y - cy - by,
+			x, y;
+		if (type === 0) {
+			x = ((ax * t + bx) * t + cx) * t + p1x;
+			y = ((ay * t + by) * t + cy) * t + p1y;
 		} else {
-			var cx = 3 * (c1x - p1x),
-				bx = 3 * (c2x - c1x) - cx,
-				ax = p2x - p1x - cx - bx,
-
-				cy = 3 * (c1y - p1y),
-				by = 3 * (c2y - c1y) - cy,
-				ay = p2y - p1y - cy - by;
-			if (type === 0) {
-				x = ((ax * t + bx) * t + cx) * t + p1x;
-				y = ((ay * t + by) * t + cy) * t + p1y;
+			var tMin = 4e-7,
+				tMax = 1 - tMin;
+			if (t < tMin) {
+				x = cx;
+				y = cy;
+			} else if (t > tMax) {
+				x = 3 * (p2x - c2x);
+				y = 3 * (p2y - c2y);
 			} else {
-				if (t < tMin) {
-					x = cx;
-					y = cy;
-				} else if (t > tMax) {
-					x = 3 * (p2x - c2x);
-					y = 3 * (p2y - c2y);
-				} else {
-					x = (3 * ax * t + 2 * bx) * t + cx;
-					y = (3 * ay * t + 2 * by) * t + cy;
+				x = (3 * ax * t + 2 * bx) * t + cx;
+				y = (3 * ay * t + 2 * by) * t + cy;
+			}
+			if (normalized) {
+				if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
+					x = c2x - c1x;
+					y = c2y - c1y;
 				}
-				if (normalized) {
-					if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
-						x = c2x - c1x;
-						y = c2y - c1y;
-					}
-					var len = Math.sqrt(x * x + y * y);
-					if (len) {
-						x /= len;
-						y /= len;
-					}
+				var len = Math.sqrt(x * x + y * y);
+				if (len) {
+					x /= len;
+					y /= len;
 				}
-				if (type === 3) {
-					var x2 = 6 * ax * t + 2 * bx,
-						y2 = 6 * ay * t + 2 * by,
-						d = Math.pow(x * x + y * y, 3 / 2);
-					x = d !== 0 ? (x * y2 - y * x2) / d : 0;
-					y = 0;
-				}
+			}
+			if (type === 3) {
+				var x2 = 6 * ax * t + 2 * bx,
+					y2 = 6 * ay * t + 2 * by,
+					d = Math.pow(x * x + y * y, 3 / 2);
+				x = d !== 0 ? (x * y2 - y * x2) / d : 0;
+				y = 0;
 			}
 		}
 		return type === 2 ? new Point(y, -x) : new Point(x, y);
@@ -6482,7 +6475,7 @@ new function() {
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
 		if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-				< 1e-7) {
+				< 1e-9) {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
