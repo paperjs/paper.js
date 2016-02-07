@@ -4,8 +4,8 @@ All notable changes to Paper.js shall be documented in this file, following comm
 ## `0.10.0` (Unreleased)
 
 ### Changed
-- Significant overhaul and improvement of boolean path operations (`#unite()`,
-  `#subtract()`, `#intersect()`, `#exclude()`, `#divide()`):
+- Significant overhaul and improvement of boolean path operations `#unite()`,
+  `#subtract()`, `#intersect()`, `#exclude()`, `#divide()` (#936):
     - Improve handling of self-intersecting paths and non-zero fill-rules.
     - Handle operations on identical paths.
     - Improve handling of near-collinear lines.
@@ -48,6 +48,21 @@ All notable changes to Paper.js shall be documented in this file, following comm
     - `PlacedSymbol` -> `SymbolItem`
     - `Symbol#definition` -> `SymbolDefinition#item`
     - `PlacedSymbol#symbol` -> `SymbolItem#definition`
+- Don't serialize deprecated `Style#font` property.
+- Don't serialize text-styles in non-text items (#934).
+- Methods that accepted a `time` parameter or boolean second parameter causing the argument to be interpreted as `time` instead of `offset` are now separate functions with distinct names (#563):
+    - `Curve#getNormalAt(time, true)` -> `#getNormalAtTime(true)`
+    - `Curve#divide()` -> `#divideAt(offset)` / ` #divideAtTime(time)`
+    - `Curve#split()` -> `#splitAt(offset)` / `#splitAtTime(time)`
+    - `Curve#getParameterAt(offset)` -> `#getTimeAt(offset)`
+    - `Curve#getParameterOf(point)` -> `getTimeOf(point)`
+    - `Curve#getPointAt(time, true)` -> `#getPointAtTime(time)`
+    - `Curve#getTangentAt(time, true)` -> `#getTangenttTime(time)`
+    - `Curve#getNormalAt(time, true)` -> `#getNormalAtTime(time)`
+    - `Curve#getCurvatureAt(time, true)` -> `#getCurvatureAtTime(time)`
+    - `CurveLocation#parameter` -> `#time`
+    - `Path#split(offset/location)` -> `#splitAt(offset/location)`
+
 
 ### Added
 - Multiple additions to SVG export (`#exportSVG()`):
@@ -85,7 +100,11 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Add 'keydown' and 'keyup' events to `View` (#896).
 - Add mouse events to `View`.
 - Add `View#autoUpdate` boolean (default: true) to control  automatic updating of the canvas (#921).
-
+- Allow running without a canvas for Web Workers, nodejs (#561, #582, #634).
+- Unify node and browser versions and enable npm install (#739).
+- Set 1px default `strokeWidth` for SVG imports to fix IE/Edge default (#467).
+- `ImportSVG` passes imported SVG data as second parameter to `onLoad` callback.
+- Add `#interpolate` for `Segment`, `Path`, and `CompoundPath` (#624).
 
 
 ### Deprecated
@@ -132,4 +151,6 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Maintain `Raster#source` correctly on Node.js (#914).
 - Boolean operations correctly handle open `Path` items within `CompoundPath` (#912).
 - Don't modify an array of child items passed to `CompoundPath#insertChildren()` when it is a child items array of a `CompoundPath`.
-
+- Fix incorrect handling of `strokeScaling` for `Shape` and mouse detection (#697).
+- `#importJSON` no longer generates "callstack exceeded" (#764).
+- Fix incorrect `hitResult` and `#contains` cases (#819, #884)
