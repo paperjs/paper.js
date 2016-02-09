@@ -1735,7 +1735,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 /** @lends Path# */{
     // Explicitly deactivate the creation of beans, as we have functions here
     // that look like bean getters but actually read arguments.
-    // See #getLocationOf(), #getNearestLocation(), #getNearestPoint()
+    // See #getLocationOf(), #getOffsetOf(), #getLocationAt()
     beans: false,
 
     /**
@@ -1794,7 +1794,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (curves.length > 0 && offset <= this.getLength())
             return new CurveLocation(curves[curves.length - 1], 1);
         return null;
-    },
+    }
 
     /**
      * Calculates the point on the path at the given offset.
@@ -2022,65 +2022,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the beginning of the path and {@link Path#length} at the end
      * @return {Number} the normal vector at the given offset
      */
-
-    /**
-     * Returns the nearest location on the path to the specified point.
-     *
-     * @function
-     * @param {Point} point the point for which we search the nearest location
-     * @return {CurveLocation} the location on the path that's the closest to
-     * the specified point
-     */
-    getNearestLocation: function(/* point */) {
-        var point = Point.read(arguments),
-            curves = this.getCurves(),
-            minDist = Infinity,
-            minLoc = null;
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var loc = curves[i].getNearestLocation(point);
-            if (loc._distance < minDist) {
-                minDist = loc._distance;
-                minLoc = loc;
-            }
-        }
-        return minLoc;
-    },
-
-    /**
-     * Returns the nearest point on the path to the specified point.
-     *
-     * @function
-     * @param {Point} point the point for which we search the nearest point
-     * @return {Point} the point on the path that's the closest to the specified
-     * point
-     *
-     * @example {@paperscript height=200}
-     * var star = new Path.Star({
-     *     center: view.center,
-     *     points: 10,
-     *     radius1: 30,
-     *     radius2: 60,
-     *     strokeColor: 'black'
-     * });
-     *
-     * var circle = new Path.Circle({
-     *     center: view.center,
-     *     radius: 3,
-     *     fillColor: 'red'
-     * });
-     *
-     * function onMouseMove(event) {
-     *     // Get the nearest point from the mouse position
-     *     // to the star shaped path:
-     *     var nearestPoint = star.getNearestPoint(event.point);
-     *
-     *     // Move the red circle to the nearest point:
-     *     circle.position = nearestPoint;
-     * }
-     */
-    getNearestPoint: function(/* point */) {
-        return this.getNearestLocation.apply(this, arguments).getPoint();
-    }
 }),
 new function() { // Scope for drawing
 

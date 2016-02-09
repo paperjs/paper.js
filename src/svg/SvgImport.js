@@ -637,14 +637,14 @@ new function() {
         return item;
     }
 
-    // NOTE: Documentation is in Item.js
+    // NOTE: Documentation is in Item#importSVG()
     Item.inject({
         importSVG: function(node, options) {
             return this.addChild(importSVG(node, options, true));
         }
     });
 
-    // NOTE: Documentation is in Project.js
+    // NOTE: Documentation is in Project#importSVG()
     Project.inject({
         importSVG: function(node, options) {
             this.activate();

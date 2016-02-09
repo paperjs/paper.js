@@ -27,141 +27,6 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // Do nothing.
     },
 
-    /**
-     * Returns all intersections between two {@link PathItem} items as an array
-     * of {@link CurveLocation} objects. {@link CompoundPath} items are also
-     * supported.
-     *
-     * @param {PathItem} path the other item to find the intersections with
-     * @param {Function} [include] a callback function that can be used to
-     *     filter out undesired locations right while they are collected. When
-     *     defined, it shall return {@true to include a location}.
-     * @return {CurveLocation[]} the locations of all intersection between the
-     *     paths
-     * @see #getCrossings(path)
-     * @example {@paperscript} // Finding the intersections between two paths
-     * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
-     * path.strokeColor = 'black';
-     *
-     * var secondPath = path.clone();
-     * var intersectionGroup = new Group();
-     *
-     * function onFrame(event) {
-     *     secondPath.rotate(1);
-     *
-     *     var intersections = path.getIntersections(secondPath);
-     *     intersectionGroup.removeChildren();
-     *
-     *     for (var i = 0; i < intersections.length; i++) {
-     *         var intersectionPath = new Path.Circle({
-     *             center: intersections[i].point,
-     *             radius: 4,
-     *             fillColor: 'red',
-     *             parent: intersectionGroup
-     *         });
-     *     }
-     * }
-     */
-    getIntersections: function(path, include, _matrix, _returnFirst) {
-        // NOTE: For self-intersection, path is null. This means you can also
-        // just call path.getIntersections() without an argument to get self
-        // intersections.
-        // NOTE: The hidden argument _matrix is used internally to override the
-        // passed path's transformation matrix.
-        var self = this === path || !path, // self-intersections?
-            matrix1 = this._matrix._orNullIfIdentity(),
-            matrix2 = self ? matrix1
-                : (_matrix || path._matrix)._orNullIfIdentity();
-        // First check the bounds of the two paths. If they don't intersect,
-        // we don't need to iterate through their curves.
-        if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
-            return [];
-        var curves1 = this.getCurves(),
-            curves2 = self ? curves1 : path.getCurves(),
-            length1 = curves1.length,
-            length2 = self ? length1 : curves2.length,
-            values2 = [],
-            arrays = [],
-            locations,
-            path;
-        // Cache values for curves2 as we re-iterate them for each in curves1.
-        for (var i = 0; i < length2; i++)
-            values2[i] = curves2[i].getValues(matrix2);
-        for (var i = 0; i < length1; i++) {
-            var curve1 = curves1[i],
-                values1 = self ? values2[i] : curve1.getValues(matrix1),
-                path1 = curve1.getPath();
-            // NOTE: Due to the nature of Curve._getIntersections(), we need to
-            // use separate location arrays per path1, to make sure the
-            // circularity checks are not getting confused by locations on
-            // separate paths. We are flattening the separate arrays at the end.
-            if (path1 !== path) {
-                path = path1;
-                locations = [];
-                arrays.push(locations);
-            }
-            if (self) {
-                // First check for self-intersections within the same curve.
-                Curve._getSelfIntersection(values1, curve1, locations, {
-                    include: include,
-                    // Only possible if there is only one closed curve:
-                    excludeStart: length1 === 1 &&
-                            curve1.getPoint1().equals(curve1.getPoint2())
-                });
-            }
-            // Check for intersections with other curves. For self intersection,
-            // we can start at i + 1 instead of 0
-            for (var j = self ? i + 1 : 0; j < length2; j++) {
-                // There might be already one location from the above
-                // self-intersection check:
-                if (_returnFirst && locations.length)
-                    return locations;
-                var curve2 = curves2[j];
-                // Avoid end point intersections on consecutive curves when
-                // self intersecting.
-                Curve._getIntersections(
-                    values1, values2[j], curve1, curve2, locations,
-                    {
-                        include: include,
-                        // Do not compare indices here to determine connection,
-                        // since one array of curves can contain curves from
-                        // separate sup-paths of a compound path.
-                        excludeStart: self && curve1.getPrevious() === curve2,
-                        excludeEnd: self && curve1.getNext() === curve2
-                    }
-                );
-            }
-        }
-        // Now flatten the list of location arrays to one array and return it.
-        locations = [];
-        for (var i = 0, l = arrays.length; i < l; i++) {
-            locations.push.apply(locations, arrays[i]);
-        }
-        return locations;
-    },
-
-    /**
-     * Returns all crossings between two {@link PathItem} items as an array of
-     * {@link CurveLocation} objects. {@link CompoundPath} items are also
-     * supported. Crossings are intersections where the paths actually are
-     * crossing each other, as opposed to simply touching.
-     *
-     * @param {PathItem} path the other item to find the crossings with
-     * @see #getIntersections(path)
-     */
-    getCrossings: function(path) {
-        return this.getIntersections(path, function(inter) {
-            // TODO: Only return overlaps that are actually crossings! For this
-            // we need proper overlap range detection / merging first...
-            // But as we call #resolveCrossings() first in boolean operations,
-            // removing all self-touching areas in paths, this currently works
-            // as it should in the known use cases.
-            // The ideal implementation would deal with it in a way outlined in:
-            // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-            return inter._overlap || inter.isCrossing();
-        });
-    },
-
     _asPathItem: function() {
         // See Item#_asPathItem()
         return this;
@@ -318,6 +183,202 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     /**
+     * {@grouptitle Path Intersections and Locations}
+     *
+     * Returns all intersections between two {@link PathItem} items as an array
+     * of {@link CurveLocation} objects. {@link CompoundPath} items are also
+     * supported.
+     *
+     * @param {PathItem} path the other item to find the intersections with
+     * @param {Function} [include] a callback function that can be used to
+     *     filter out undesired locations right while they are collected. When
+     *     defined, it shall return {@true to include a location}.
+     * @return {CurveLocation[]} the locations of all intersection between the
+     *     paths
+     * @see #getCrossings(path)
+     * @example {@paperscript} // Finding the intersections between two paths
+     * var path = new Path.Rectangle(new Point(30, 25), new Size(50, 50));
+     * path.strokeColor = 'black';
+     *
+     * var secondPath = path.clone();
+     * var intersectionGroup = new Group();
+     *
+     * function onFrame(event) {
+     *     secondPath.rotate(1);
+     *
+     *     var intersections = path.getIntersections(secondPath);
+     *     intersectionGroup.removeChildren();
+     *
+     *     for (var i = 0; i < intersections.length; i++) {
+     *         var intersectionPath = new Path.Circle({
+     *             center: intersections[i].point,
+     *             radius: 4,
+     *             fillColor: 'red',
+     *             parent: intersectionGroup
+     *         });
+     *     }
+     * }
+     */
+    getIntersections: function(path, include, _matrix, _returnFirst) {
+        // NOTE: For self-intersection, path is null. This means you can also
+        // just call path.getIntersections() without an argument to get self
+        // intersections.
+        // NOTE: The hidden argument _matrix is used internally to override the
+        // passed path's transformation matrix.
+        var self = this === path || !path, // self-intersections?
+            matrix1 = this._matrix._orNullIfIdentity(),
+            matrix2 = self ? matrix1
+                : (_matrix || path._matrix)._orNullIfIdentity();
+        // First check the bounds of the two paths. If they don't intersect,
+        // we don't need to iterate through their curves.
+        if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
+            return [];
+        var curves1 = this.getCurves(),
+            curves2 = self ? curves1 : path.getCurves(),
+            length1 = curves1.length,
+            length2 = self ? length1 : curves2.length,
+            values2 = [],
+            arrays = [],
+            locations,
+            path;
+        // Cache values for curves2 as we re-iterate them for each in curves1.
+        for (var i = 0; i < length2; i++)
+            values2[i] = curves2[i].getValues(matrix2);
+        for (var i = 0; i < length1; i++) {
+            var curve1 = curves1[i],
+                values1 = self ? values2[i] : curve1.getValues(matrix1),
+                path1 = curve1.getPath();
+            // NOTE: Due to the nature of Curve._getIntersections(), we need to
+            // use separate location arrays per path1, to make sure the
+            // circularity checks are not getting confused by locations on
+            // separate paths. We are flattening the separate arrays at the end.
+            if (path1 !== path) {
+                path = path1;
+                locations = [];
+                arrays.push(locations);
+            }
+            if (self) {
+                // First check for self-intersections within the same curve.
+                Curve._getSelfIntersection(values1, curve1, locations, {
+                    include: include,
+                    // Only possible if there is only one closed curve:
+                    excludeStart: length1 === 1 &&
+                            curve1.getPoint1().equals(curve1.getPoint2())
+                });
+            }
+            // Check for intersections with other curves. For self intersection,
+            // we can start at i + 1 instead of 0
+            for (var j = self ? i + 1 : 0; j < length2; j++) {
+                // There might be already one location from the above
+                // self-intersection check:
+                if (_returnFirst && locations.length)
+                    return locations;
+                var curve2 = curves2[j];
+                // Avoid end point intersections on consecutive curves when
+                // self intersecting.
+                Curve._getIntersections(
+                    values1, values2[j], curve1, curve2, locations,
+                    {
+                        include: include,
+                        // Do not compare indices here to determine connection,
+                        // since one array of curves can contain curves from
+                        // separate sup-paths of a compound path.
+                        excludeStart: self && curve1.getPrevious() === curve2,
+                        excludeEnd: self && curve1.getNext() === curve2
+                    }
+                );
+            }
+        }
+        // Now flatten the list of location arrays to one array and return it.
+        locations = [];
+        for (var i = 0, l = arrays.length; i < l; i++) {
+            locations.push.apply(locations, arrays[i]);
+        }
+        return locations;
+    },
+
+    /**
+     * Returns all crossings between two {@link PathItem} items as an array of
+     * {@link CurveLocation} objects. {@link CompoundPath} items are also
+     * supported. Crossings are intersections where the paths actually are
+     * crossing each other, as opposed to simply touching.
+     *
+     * @param {PathItem} path the other item to find the crossings with
+     * @see #getIntersections(path)
+     */
+    getCrossings: function(path) {
+        return this.getIntersections(path, function(inter) {
+            // TODO: Only return overlaps that are actually crossings! For this
+            // we need proper overlap range detection / merging first...
+            // But as we call #resolveCrossings() first in boolean operations,
+            // removing all self-touching areas in paths, this currently works
+            // as it should in the known use cases.
+            // The ideal implementation would deal with it in a way outlined in:
+            // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
+            return inter._overlap || inter.isCrossing();
+        });
+    },
+
+    /**
+     * Returns the nearest location on the path item to the specified point.
+     *
+     * @param {Point} point the point for which we search the nearest location
+     * @return {CurveLocation} the location on the path that's the closest to
+     * the specified point
+     */
+    getNearestLocation: function(/* point */) {
+        var point = Point.read(arguments),
+            curves = this.getCurves(),
+            minDist = Infinity,
+            minLoc = null;
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var loc = curves[i].getNearestLocation(point);
+            if (loc._distance < minDist) {
+                minDist = loc._distance;
+                minLoc = loc;
+            }
+        }
+        return minLoc;
+    },
+
+    /**
+     * Returns the nearest point on the path item to the specified point.
+     *
+     * @param {Point} point the point for which we search the nearest point
+     * @return {Point} the point on the path that's the closest to the specified
+     * point
+     *
+     * @example {@paperscript height=200}
+     * var star = new Path.Star({
+     *     center: view.center,
+     *     points: 10,
+     *     radius1: 30,
+     *     radius2: 60,
+     *     strokeColor: 'black'
+     * });
+     *
+     * var circle = new Path.Circle({
+     *     center: view.center,
+     *     radius: 3,
+     *     fillColor: 'red'
+     * });
+     *
+     * function onMouseMove(event) {
+     *     // Get the nearest point from the mouse position
+     *     // to the star shaped path:
+     *     var nearestPoint = star.getNearestPoint(event.point);
+     *
+     *     // Move the red circle to the nearest point:
+     *     circle.position = nearestPoint;
+     * }
+     */
+    getNearestPoint: function(/* point */) {
+        return this.getNearestLocation.apply(this, arguments).getPoint();
+    },
+
+    /**
+     * {@grouptitle Path Manipulation}
+     *
      * Reverses the orientation of the path item. When called on
      * {@link CompoundPath} items, each of the nested paths is reversed. On
      * {@link Path} items, the sequence of {@link Path#segments} is reversed.
@@ -610,6 +671,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#moveTo
      * @function
+     *
      * @param {Point} point
      */
 
@@ -617,6 +679,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#lineTo
      * @function
+     *
      * @param {Point} point
      */
 
@@ -626,6 +689,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#cubicCurveTo
      * @function
+     *
      * @param {Point} handle1
      * @param {Point} handle2
      * @param {Point} to
@@ -637,6 +701,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#quadraticCurveTo
      * @function
+     *
      * @param {Point} handle
      * @param {Point} to
      */
@@ -649,6 +714,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#curveTo
      * @function
+     *
      * @param {Point} through the point through which the curve should go
      * @param {Point} to the point where the curve should end
      * @param {Number} [parameter=0.5]
@@ -684,6 +750,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#arcTo
      * @function
+     *
      * @param {Point} through the point where the arc should pass through
      * @param {Point} to the point where the arc should end
      *
@@ -743,6 +810,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#arcTo
      * @function
+     *
      * @param {Point} to the point where the arc should end
      * @param {Boolean} [clockwise=true] specifies whether the arc should be
      *     drawn in clockwise direction
@@ -792,6 +860,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#closePath
      * @function
+     *
      * @param {Boolean} join controls whether the method should attempt to merge
      *     the first segment with the last if they lie in the same location
      * @see Path#closed
@@ -806,6 +875,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#moveBy
      * @function
+     *
      * @param {Point} to
      */
 
@@ -814,6 +884,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @name PathItem#lineBy
      * @function
+     *
      * @param {Point} to the vector which is added to the position of the last
      *     segment of the path, to get to the position of the new segment
      *
@@ -863,6 +934,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#curveBy
      * @function
+     *
      * @param {Point} through
      * @param {Point} to
      * @param {Number} [parameter=0.5]
@@ -872,6 +944,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#cubicCurveBy
      * @function
+     *
      * @param {Point} handle1
      * @param {Point} handle2
      * @param {Point} to
@@ -881,6 +954,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#quadraticCurveBy
      * @function
+     *
      * @param {Point} handle
      * @param {Point} to
      */
@@ -889,6 +963,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#arcBy
      * @function
+     *
      * @param {Point} through
      * @param {Point} to
      */
@@ -897,6 +972,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     /**
      * @name PathItem#arcBy
      * @function
+     *
      * @param {Point} to
      * @param {Boolean} [clockwise=true]
      */
