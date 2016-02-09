@@ -1836,12 +1836,14 @@ new function() { // // Scope to inject various item event handlers
         return res;
     },
 
-    _hitTestChildren: function(point, options) {
+    _hitTestChildren: function(point, options, _exclude) {
+        // NOTE: _exclude is only used in Group#_hitTestChildren()
         var children = this._children;
         if (children) {
             // Loop backwards, so items that get drawn last are tested first
             for (var i = children.length - 1; i >= 0; i--) {
-                var res = children[i]._hitTest(point, options);
+                var child = children[i];
+                var res = child !== _exclude && child._hitTest(point, options);
                 if (res)
                     return res;
             }

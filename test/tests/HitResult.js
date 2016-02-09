@@ -684,7 +684,7 @@ test('hit-testing compound-paths', function() {
         var result = paper.project.hitTest(center, {
             fill: true
         });
-        return result === null  ;
+        return result === null;
     }, true);
     // When asking specifically for paths, she should get the top-most path in
     // the center (the one that cuts out the hole)
@@ -694,6 +694,36 @@ test('hit-testing compound-paths', function() {
             fill: true
         });
         return result && result.item === path2;
+    }, true);
+});
+
+test('hit-testing clipped items', function() {
+    var rect = new Path.Rectangle({
+        point: [50, 150],
+        size: [100, 50],
+        fillColor: 'red'
+    });
+    var circle = new Path.Circle({
+        center: [100, 200],
+        radius: 20,
+        fillColor: 'green'
+    });
+    var group = new Group({
+        children: [rect, circle]
+    });
+    group.clipped = true;
+
+    var point1 = new Point(100, 190);
+    var point2 = new Point(100, 210);
+
+    equals(function() {
+        var result = paper.project.hitTest(point1);
+        return result && result.item === circle;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTest(point2);
+        return result === null;
     }, true);
 });
 

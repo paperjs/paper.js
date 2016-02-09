@@ -167,6 +167,12 @@ var Group = Item.extend(/** @lends Group# */{
             child.setClipMask(clipped);
     },
 
+    _hitTestChildren: function _hitTestChildren(point, options) {
+        var clipItem = this._getClipItem();
+        return (!clipItem || clipItem.contains(point))
+                && _hitTestChildren.base.call(this, point, options, clipItem);
+    },
+
     _draw: function(ctx, param) {
         var clip = param.clip,
             clipItem = !clip && this._getClipItem();
