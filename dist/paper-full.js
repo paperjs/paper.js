@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 16:01:06 2016 +0100
+ * Date: Tue Feb 9 16:11:38 2016 +0100
  *
  ***
  *
@@ -3411,8 +3411,9 @@ new function() {
 	clone: function(options) {
 		var copy = new this.constructor(Item.NO_INSERT),
 			children = this._children,
-			insert = Base.pick(options && options.insert, true),
-			deep = Base.pick(options && options.deep, true);
+			insert = Base.pick(options ? options.insert : undefined,
+					options === undefined || options === true),
+			deep = Base.pick(options ? options.deep : undefined, true);
 		if (children)
 			copy.copyAttributes(this);
 		if (!children || deep)
