@@ -672,81 +672,24 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @name PathItem#moveTo
      * @function
      *
-     * @param {Point} point
+     * @param {Point} point the point in which to start the path
      */
 
-    // DOCS: Document #lineTo()
     /**
+     * Adds a straight curve to the path, from the the last segment in the path
+     * to the specified point.
+     *
      * @name PathItem#lineTo
      * @function
      *
-     * @param {Point} point
+     * @param {Point} point the destination point of the newly added straight
+     *     curve
      */
 
     /**
-     * Adds a cubic bezier curve to the path, defined by two handles and a to
-     * point.
-     *
-     * @name PathItem#cubicCurveTo
-     * @function
-     *
-     * @param {Point} handle1
-     * @param {Point} handle2
-     * @param {Point} to
-     */
-
-    /**
-     * Adds a quadratic bezier curve to the path, defined by a handle and a to
-     * point.
-     *
-     * @name PathItem#quadraticCurveTo
-     * @function
-     *
-     * @param {Point} handle
-     * @param {Point} to
-     */
-
-    // DOCS: Document PathItem#curveTo() 'paramater' param.
-    /**
-     * Draws a curve from the position of the last segment point in the path
-     * that goes through the specified `through` point, to the specified `to`
-     * point by adding one segment to the path.
-     *
-     * @name PathItem#curveTo
-     * @function
-     *
-     * @param {Point} through the point through which the curve should go
-     * @param {Point} to the point where the curve should end
-     * @param {Number} [parameter=0.5]
-     *
-     * @example {@paperscript height=300}
-     * // Interactive example. Move your mouse around the view below:
-     *
-     * var myPath;
-     * function onMouseMove(event) {
-     *     // If we created a path before, remove it:
-     *     if (myPath) {
-     *         myPath.remove();
-     *     }
-     *
-     *     // Create a new path and add a segment point to it
-     *     // at {x: 150, y: 150):
-     *     myPath = new Path();
-     *     myPath.add(150, 150);
-     *
-     *     // Draw a curve through the position of the mouse to 'toPoint'
-     *     var toPoint = new Point(350, 150);
-     *     myPath.curveTo(event.point, toPoint);
-     *
-     *     // Select the path, so we can see its segments:
-     *     myPath.selected = true;
-     * }
-     */
-
-    /**
-     * Draws an arc from the position of the last segment point in the path that
-     * goes through the specified `through` point, to the specified `to` point
-     * by adding one or more segments to the path.
+     * Adds an arc from the position of the last segment in the path, passing
+     * through the specified `through` point, to the specified `to` point, by
+     * adding one or more segments to the path.
      *
      * @name PathItem#arcTo
      * @function
@@ -805,8 +748,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * }
      */
     /**
-     * Draws an arc from the position of the last segment point in the path to
-     * the specified point by adding one or more segments to the path.
+     * Adds an arc from the position of the last segment in the path to
+     * the specified point, by adding one or more segments to the path.
      *
      * @name PathItem#arcTo
      * @function
@@ -855,6 +798,79 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     // DOCS: PathItem#arcTo(to, radius, rotation, clockwise, large)
 
     /**
+     * Adds a curve from the last segment in the path through the specified
+     * `through` point, to the specified destination point by adding one segment
+     * to the path.
+     *
+     * @name PathItem#curveTo
+     * @function
+     *
+     * @param {Point} through the point through which the curve should pass
+     * @param {Point} to the destination point of the newly added curve
+     * @param {Number} [time=0.5] the curve-time parameter at which the
+     *     `through` point is to be located
+     *
+     * @example {@paperscript height=300}
+     * // Interactive example. Move your mouse around the view below:
+     *
+     * var myPath;
+     * function onMouseMove(event) {
+     *     // If we created a path before, remove it:
+     *     if (myPath) {
+     *         myPath.remove();
+     *     }
+     *
+     *     // Create a new path and add a segment point to it
+     *     // at {x: 150, y: 150):
+     *     myPath = new Path();
+     *     myPath.add(150, 150);
+     *
+     *     // Draw a curve through the position of the mouse to 'toPoint'
+     *     var toPoint = new Point(350, 150);
+     *     myPath.curveTo(event.point, toPoint);
+     *
+     *     // Select the path, so we can see its segments:
+     *     myPath.selected = true;
+     * }
+     */
+
+    /**
+     * Adds a cubic bezier curve to the path, from the last segment to the
+     * specified destination point, with the curve itself defined by two
+     * specified handles.
+     *
+     * @name PathItem#cubicCurveTo
+     * @function
+     *
+     * @param {Point} handle1 the location of the first handle of the newly
+     *     added curve in absolute coordinates, out of which the relative values
+     *     for {@link Segment#handleOut} of its first segment are calculated
+     * @param {Point} handle2 the location of the second handle of the newly
+     *     added curve in absolute coordinates, out of which the relative values
+     *     for {@link Segment#handleIn} of its second segment are calculated
+     * @param {Point} to the destination point of the newly added curve
+     */
+
+    /**
+     * Adds a quadratic bezier curve to the path, from the last segment to the
+     * specified destination point, with the curve itself defined by the
+     * specified handle.
+     *
+     * Note that Paper.js only stores cubic curves, so the handle is actually
+     * converted.
+     *
+     * @name PathItem#quadraticCurveTo
+     * @function
+     *
+     * @param {Point} handle the location of the handle of the newly added
+     *     quadratic curve in absolute coordinates, out of which the relative
+     *     values for {@link Segment#handleOut} of the resulting cubic curve's
+     *     first segment and {@link Segment#handleIn} of its second segment are
+     *     calculated
+     * @param {Point} to the destination point of the newly added curve
+     */
+
+    /**
      * Closes the path. When closed, Paper.js connects the first and last
      * segment of the path with an additional curve.
      *
@@ -880,13 +896,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
 
     /**
-     * Adds a segment relative to the last segment point of the path.
+     * Adds a straight curve to the path, from the the last segment in the path
+     * to the `to` vector specified relatively to it.
      *
      * @name PathItem#lineBy
      * @function
      *
-     * @param {Point} to the vector which is added to the position of the last
-     *     segment of the path, to get to the position of the new segment
+     * @param {Point} point the vector describing the destination of the newly
+     *     added straight curve
      *
      * @example {@paperscript}
      * var path = new Path();
@@ -930,50 +947,76 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * // path.selected = true;
      */
 
-    // DOCS: Document Path#curveBy()
     /**
+     * Adds an arc from the position of the last segment in the path, passing
+     * through the specified `through` vector, to the specified `to` vector, all
+     * specified relatively to it by these given vectors, by adding one or more
+     * segments to the path.
+     *
+     * @name PathItem#arcBy
+     * @function
+     *
+     * @param {Point} through the vector where the arc should pass through
+     * @param {Point} to the vector where the arc should end
+     */
+
+    /**
+     * Adds an arc from the position of the last segment in the path to the `to`
+     * vector specified relatively to it, by adding one or more segments to the
+     * path.
+     *
+     * @name PathItem#arcBy
+     * @function
+     *
+     * @param {Point} to the vector where the arc should end
+     * @param {Boolean} [clockwise=true] specifies whether the arc should be
+     *     drawn in clockwise direction
+     */
+
+    /**
+     * Adds a curve from the last segment in the path through the specified
+     * `through` vector, to the specified `to` vector, all specified relatively
+     * to it by these given vectors, by adding one segment to the path.
+     *
      * @name PathItem#curveBy
      * @function
      *
-     * @param {Point} through
-     * @param {Point} to
-     * @param {Number} [parameter=0.5]
+     * @param {Point} through the vector through which the curve should pass
+     * @param {Point} to the destination vector of the newly added curve
+     * @param {Number} [time=0.5] the curve-time parameter at which the
+     *     `through` point is to be located
      */
 
-    // DOCS: Document Path#cubicCurveBy()
     /**
+     * Adds a cubic bezier curve to the path, from the last segment to the
+     * to the specified `to` vector, with the curve itself defined by two
+     * specified handles.
+     *
      * @name PathItem#cubicCurveBy
      * @function
      *
-     * @param {Point} handle1
-     * @param {Point} handle2
-     * @param {Point} to
+     * @param {Point} handle1 the location of the first handle of the newly
+     *     added curve
+     * @param {Point} handle2 the location of the second handle of the newly
+     *     added curve
+     * @param {Point} to the destination point of the newly added curve
      */
 
-    // DOCS: Document Path#quadraticCurveBy()
     /**
+     * Adds a quadratic bezier curve to the path, from the last segment to the
+     * specified destination point, with the curve itself defined by the
+     * specified handle.
+     *
+     * Note that Paper.js only stores cubic curves, so the handle is actually
+     * converted.
+     *
      * @name PathItem#quadraticCurveBy
      * @function
      *
-     * @param {Point} handle
-     * @param {Point} to
-     */
-
-    // DOCS: Document Path#arcBy(through, to)
-    /**
-     * @name PathItem#arcBy
-     * @function
-     *
-     * @param {Point} through
-     * @param {Point} to
-     */
-
-    // DOCS: Document Path#arcBy(to, clockwise)
-    /**
-     * @name PathItem#arcBy
-     * @function
-     *
-     * @param {Point} to
-     * @param {Boolean} [clockwise=true]
+     * @param {Point} handle the handle of the newly added quadratic curve out
+     *     of which the values for {@link Segment#handleOut} of the resulting
+     *     cubic curve's first segment and {@link Segment#handleIn} of its
+     *     second segment are calculated
+     * @param {Point} to the destination point of the newly added curve
      */
 });

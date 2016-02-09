@@ -2282,7 +2282,7 @@ new function() { // PostScript-style drawing commands
             );
         },
 
-        curveTo: function(/* through, to, parameter */) {
+        curveTo: function(/* through, to, time */) {
             var through = Point.read(arguments),
                 to = Point.read(arguments),
                 t = Base.pick(Base.read(arguments), 0.5),
