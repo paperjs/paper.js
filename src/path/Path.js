@@ -975,123 +975,6 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Converts the curves in a path to straight lines with an even distribution
-     * of points. The distance between the produced segments is as close as
-     * possible to the value specified by the `maxDistance` parameter.
-     *
-     * @param {Number} maxDistance the maximum distance between the points
-     *
-     * @example {@paperscript}
-     * // Flattening a circle shaped path:
-     *
-     * // Create a circle shaped path at { x: 80, y: 50 }
-     * // with a radius of 35:
-     * var path = new Path.Circle({
-     *     center: new Size(80, 50),
-     *     radius: 35
-     * });
-     *
-     * // Select the path, so we can inspect its segments:
-     * path.selected = true;
-     *
-     * // Create a copy of the path and move it 150 points to the right:
-     * var copy = path.clone();
-     * copy.position.x += 150;
-     *
-     * // Convert its curves to points, with a max distance of 20:
-     * copy.flatten(20);
-     */
-    flatten: function(maxDistance) {
-        var iterator = new PathIterator(this, 64, 0.1),
-            pos = 0,
-            // Adapt step = maxDistance so the points distribute evenly.
-            step = iterator.length / Math.ceil(iterator.length / maxDistance),
-            // Add/remove half of step to end, so imprecisions are ok too.
-            // For closed paths, remove it, because we don't want to add last
-            // segment again
-            end = iterator.length + (this._closed ? -step : step) / 2;
-        // Iterate over path and evaluate and add points at given offsets
-        var segments = [];
-        while (pos <= end) {
-            segments.push(new Segment(iterator.getPointAt(pos)));
-            pos += step;
-        }
-        this.setSegments(segments);
-    },
-
-    /**
-     * Reduces the path by removing curves that have a length of 0,
-     * and unnecessary segments between two collinear curves.
-     */
-    reduce: function(options) {
-        var curves = this.getCurves(),
-            simplify = options && options.simplify,
-            // When not simplifying, only remove curves if their length is
-            // absolutely 0.
-            tolerance = simplify ? /*#=*/Numerical.GEOMETRIC_EPSILON : 0;
-        for (var i = curves.length - 1; i >= 0; i--) {
-            var curve = curves[i];
-            // When simplifying, compare curves with isCollinear() will remove
-            // any collinear neighboring curves regardless of their orientation.
-            // This serves as a reliable way to remove linear overlaps but only
-            // as long as the lines are truly overlapping.
-            if (!curve.hasHandles() && (curve.getLength() < tolerance
-                    || simplify && curve.isCollinear(curve.getNext())))
-                curve.remove();
-        }
-        return this;
-    },
-
-    /**
-     * Smooths a path by simplifying it. The {@link Path#segments} array is
-     * analyzed and replaced by a more optimal set of segments, reducing memory
-     * usage and speeding up drawing.
-     *
-     * @param {Number} [tolerance=2.5]
-     *
-     * @example {@paperscript height=300}
-     * // Click and drag below to draw to draw a line, when you release the
-     * // mouse, the is made smooth using path.simplify():
-     *
-     * var path;
-     * function onMouseDown(event) {
-     *     // If we already made a path before, deselect it:
-     *     if (path) {
-     *         path.selected = false;
-     *     }
-     *
-     *     // Create a new path and add the position of the mouse
-     *     // as its first segment. Select it, so we can see the
-     *     // segment points:
-     *     path = new Path({
-     *         segments: [event.point],
-     *         strokeColor: 'black',
-     *         selected: true
-     *     });
-     * }
-     *
-     * function onMouseDrag(event) {
-     *     // On every drag event, add a segment to the path
-     *     // at the position of the mouse:
-     *     path.add(event.point);
-     * }
-     *
-     * function onMouseUp(event) {
-     *     // When the mouse is released, simplify the path:
-     *     path.simplify();
-     *     path.selected = true;
-     * }
-     */
-    simplify: function(tolerance) {
-        if (this._segments.length > 2) {
-            var fitter = new PathFitter(this, tolerance || 2.5);
-            this.setSegments(fitter.fit());
-        }
-    },
-
-    // TODO: reduceSegments([flatness])
-
-    /**
      * Splits the path at the given offset or location. After splitting, the
      * path will be open. If the path was open already, splitting will result in
      * two paths.
@@ -1206,27 +1089,6 @@ var Path = PathItem.extend(/** @lends Path# */{
         return location ? this.splitAt(location) : null;
     },
 
-    /**
-     * Reverses the orientation of the path, by reversing all its segments.
-     */
-    reverse: function() {
-        this._segments.reverse();
-        // Reverse the handles:
-        for (var i = 0, l = this._segments.length; i < l; i++) {
-            var segment = this._segments[i];
-            var handleIn = segment._handleIn;
-            segment._handleIn = segment._handleOut;
-            segment._handleOut = handleIn;
-            segment._index = i;
-        }
-        // Clear curves since it all has changed.
-        this._curves = null;
-        // Flip clockwise state if it's defined
-        if (this._clockwise !== undefined)
-            this._clockwise = !this._clockwise;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
-
     // DOCS: document Path#join(path) in more detail.
     // DOCS: document Path#join() (joining with itself)
     // TODO: Consider adding a distance / tolerance parameter for merging.
@@ -1339,6 +1201,302 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         return this;
     },
+
+    /**
+     * Reverses the orientation of the path, by reversing all its segments.
+     */
+    reverse: function() {
+        this._segments.reverse();
+        // Reverse the handles:
+        for (var i = 0, l = this._segments.length; i < l; i++) {
+            var segment = this._segments[i];
+            var handleIn = segment._handleIn;
+            segment._handleIn = segment._handleOut;
+            segment._handleOut = handleIn;
+            segment._index = i;
+        }
+        // Clear curves since it all has changed.
+        this._curves = null;
+        // Flip clockwise state if it's defined
+        if (this._clockwise !== undefined)
+            this._clockwise = !this._clockwise;
+        this._changed(/*#=*/Change.GEOMETRY);
+    },
+
+    /**
+     * Converts the curves in a path to straight lines with an even distribution
+     * of points. The distance between the produced segments is as close as
+     * possible to the value specified by the `maxDistance` parameter.
+     *
+     * @param {Number} maxDistance the maximum distance between the points
+     *
+     * @example {@paperscript}
+     * // Flattening a circle shaped path:
+     *
+     * // Create a circle shaped path at { x: 80, y: 50 }
+     * // with a radius of 35:
+     * var path = new Path.Circle({
+     *     center: new Size(80, 50),
+     *     radius: 35
+     * });
+     *
+     * // Select the path, so we can inspect its segments:
+     * path.selected = true;
+     *
+     * // Create a copy of the path and move it 150 points to the right:
+     * var copy = path.clone();
+     * copy.position.x += 150;
+     *
+     * // Convert its curves to points, with a max distance of 20:
+     * copy.flatten(20);
+     */
+    flatten: function(maxDistance) {
+        var iterator = new PathIterator(this, 64, 0.1),
+            pos = 0,
+            // Adapt step = maxDistance so the points distribute evenly.
+            step = iterator.length / Math.ceil(iterator.length / maxDistance),
+            // Add/remove half of step to end, so imprecisions are ok too.
+            // For closed paths, remove it, because we don't want to add last
+            // segment again
+            end = iterator.length + (this._closed ? -step : step) / 2;
+        // Iterate over path and evaluate and add points at given offsets
+        var segments = [];
+        while (pos <= end) {
+            segments.push(new Segment(iterator.getPointAt(pos)));
+            pos += step;
+        }
+        this.setSegments(segments);
+    },
+
+    /**
+     * Reduces the path by removing curves that have a length of 0,
+     * and unnecessary segments between two collinear flat curves.
+     */
+    reduce: function(options) {
+        var curves = this.getCurves(),
+            simplify = options && options.simplify,
+            // When not simplifying, only remove curves if their length is
+            // absolutely 0.
+            tolerance = simplify ? /*#=*/Numerical.GEOMETRIC_EPSILON : 0;
+        for (var i = curves.length - 1; i >= 0; i--) {
+            var curve = curves[i];
+            // When simplifying, compare curves with isCollinear() will remove
+            // any collinear neighboring curves regardless of their orientation.
+            // This serves as a reliable way to remove linear overlaps but only
+            // as long as the lines are truly overlapping.
+            if (!curve.hasHandles() && (curve.getLength() < tolerance
+                    || simplify && curve.isCollinear(curve.getNext())))
+                curve.remove();
+        }
+        return this;
+    },
+
+    /**
+     * Smooths a path by simplifying it. The {@link Path#segments} array is
+     * analyzed and replaced by a more optimal set of segments, reducing memory
+     * usage and speeding up drawing.
+     *
+     * @param {Number} [tolerance=2.5]
+     *
+     * @example {@paperscript height=300}
+     * // Click and drag below to draw to draw a line, when you release the
+     * // mouse, the is made smooth using path.simplify():
+     *
+     * var path;
+     * function onMouseDown(event) {
+     *     // If we already made a path before, deselect it:
+     *     if (path) {
+     *         path.selected = false;
+     *     }
+     *
+     *     // Create a new path and add the position of the mouse
+     *     // as its first segment. Select it, so we can see the
+     *     // segment points:
+     *     path = new Path({
+     *         segments: [event.point],
+     *         strokeColor: 'black',
+     *         selected: true
+     *     });
+     * }
+     *
+     * function onMouseDrag(event) {
+     *     // On every drag event, add a segment to the path
+     *     // at the position of the mouse:
+     *     path.add(event.point);
+     * }
+     *
+     * function onMouseUp(event) {
+     *     // When the mouse is released, simplify the path:
+     *     path.simplify();
+     *     path.selected = true;
+     * }
+     */
+    simplify: function(tolerance) {
+        if (this._segments.length > 2) {
+            var fitter = new PathFitter(this, tolerance || 2.5);
+            this.setSegments(fitter.fit());
+        }
+    },
+
+    // NOTE: Documentation is in PathItem#smooth()
+    smooth: function(options) {
+        // Helper method to pick the right from / to indices.
+        // Supports numbers and segment objects.
+        // For numbers, the `to` index is exclusive, while for segments and
+        // curves, it is inclusive, handled by the `offset` parameter.
+        function getIndex(value, _default) {
+            // Support both Segment and Curve through #index getter.
+            var index = value && value.index;
+            if (index != null) {
+                // Make sure the segment / curve is not from a wrong path.
+                var path = value.path;
+                if (path && path !== that)
+                    throw new Error(value._class + ' ' + index + ' of ' + path
+                            + ' is not part of ' + that);
+                // Add offset of 1 to curves to reach their end segment.
+                if (_default && value instanceof Curve)
+                    index++;
+            } else {
+                index = typeof value === 'number' ? value : _default;
+            }
+            // Handle negative values based on whether a path is open or not:
+            // Ranges on closed paths are allowed to wrapped around the
+            // beginning/end (e.g. start near the end, end near the beginning),
+            // while ranges on open paths stay within the path's open range.
+            return Math.min(index < 0 && closed
+                    ? index % length
+                    : index < 0 ? index + length : index, length - 1);
+        }
+
+        var that = this,
+            opts = options || {},
+            type = opts.type || 'asymmetric',
+            segments = this._segments,
+            length = segments.length,
+            closed = this._closed,
+            loop = closed && opts.from === undefined && opts.to === undefined,
+            from = getIndex(opts.from, 0),
+            to = getIndex(opts.to, length - 1);
+        if (from > to) {
+            if (closed) {
+                from -= length;
+            } else {
+                var tmp = from;
+                from = to;
+                to = tmp;
+            }
+        }
+        if (/^(?:asymmetric|continuous)$/.test(type)) {
+            // Continuous smoothing approach based on work by Lubos Brieda,
+            // Particle In Cell Consulting LLC, but further simplified by
+            // addressing handle symmetry across segments, and the possibility
+            // to process x and y coordinates simultaneously. Also added
+            // handling of closed paths.
+            // https://www.particleincell.com/2012/bezier-splines/
+            //
+            // We use different parameters for the two supported smooth methods
+            // that use this algorithm: continuous and asymmetric. asymmetric
+            // was the only approach available in v0.9.25 & below.
+            var asymmetric = type === 'asymmetric',
+                min = Math.min,
+                amount = to - from + 1,
+                n = amount - 1,
+                // Overlap by up to 4 points on closed paths since a current
+                // segment is affected by its 4 neighbors on both sides (?).
+                padding = loop ? min(amount, 4) : 1,
+                paddingLeft = padding,
+                paddingRight = padding,
+                knots = [];
+            if (!closed) {
+                // If the path is open and a range is defined, try using a
+                // padding of 1 on either side.
+                paddingLeft = min(1, from);
+                paddingRight = min(1, length - to - 1);
+            }
+            // Set up the knots array now, taking the paddings into account.
+            n += paddingLeft + paddingRight;
+            if (n <= 1)
+                return;
+            for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+                knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
+            }
+
+            // In the algorithm we treat these 3 cases:
+            // - left most segment (L)
+            // - internal segments (I)
+            // - right most segment (R)
+            //
+            // In both the continuous and asymmetric method, c takes these
+            // values and can hence be removed from the loop starting in n - 2:
+            // c = 1 (L), 1 (I), 0 (R)
+            //
+            // continuous:
+            // a = 0 (L), 1 (I), 2 (R)
+            // b = 2 (L), 4 (I), 7 (R)
+            // u = 1 (L), 4 (I), 8 (R)
+            // v = 2 (L), 2 (I), 1 (R)
+            //
+            // asymmetric:
+            // a = 0 (L), 1 (I), 1 (R)
+            // b = 2 (L), 4 (I), 2 (R)
+            // u = 1 (L), 4 (I), 3 (R)
+            // v = 2 (L), 2 (I), 0 (R)
+
+            // (L): u = 1, v = 2
+            var x = knots[0]._x + 2 * knots[1]._x,
+                y = knots[0]._y + 2 * knots[1]._y,
+                f = 2,
+                n_1 = n - 1,
+                rx = [x],
+                ry = [y],
+                rf = [f],
+                px = [],
+                py = [];
+            // Solve with the Thomas algorithm
+            for (var i = 1; i < n; i++) {
+                var internal = i < n_1,
+                    //  internal--(I)  asymmetric--(R) (R)--continuous
+                    a = internal ? 1 : asymmetric ? 1 : 2,
+                    b = internal ? 4 : asymmetric ? 2 : 7,
+                    u = internal ? 4 : asymmetric ? 3 : 8,
+                    v = internal ? 2 : asymmetric ? 0 : 1,
+                    m = a / f;
+                f = rf[i] = b - m;
+                x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x;
+                y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y;
+            }
+
+            px[n_1] = rx[n_1] / rf[n_1];
+            py[n_1] = ry[n_1] / rf[n_1];
+            for (var i = n - 2; i >= 0; i--) {
+                px[i] = (rx[i] - px[i + 1]) / rf[i];
+                py[i] = (ry[i] - py[i + 1]) / rf[i];
+            }
+            px[n] = (3 * knots[n]._x - px[n_1]) / 2;
+            py[n] = (3 * knots[n]._y - py[n_1]) / 2;
+
+            // Now update the segments
+            for (var i = paddingLeft, max = n - paddingRight, j = from;
+                    i <= max; i++, j++) {
+                var segment = segments[j < 0 ? j + length : j],
+                    pt = segment._point,
+                    hx = px[i] - pt._x,
+                    hy = py[i] - pt._y;
+                if (loop || i < max)
+                    segment.setHandleOut(hx, hy);
+                if (loop || i > paddingLeft)
+                    segment.setHandleIn(-hx, -hy);
+            }
+        } else {
+            // All other smoothing methods are handled directly on the segments:
+            for (var i = from; i <= to; i++) {
+                segments[i < 0 ? i + length : i].smooth(opts,
+                        !loop && i === from, !loop && i === to);
+            }
+        }
+    },
+
+    // TODO: reduceSegments([flatness])
 
     /**
      * Attempts to create a new shape item with same geometry as this path item,
@@ -1991,164 +2149,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     getNearestPoint: function(/* point */) {
         return this.getNearestLocation.apply(this, arguments).getPoint();
-    },
-
-    // NOTE: Documentation is in PathItem.js
-    smooth: function(options) {
-        // Helper method to pick the right from / to indices.
-        // Supports numbers and segment objects.
-        // For numbers, the `to` index is exclusive, while for segments and
-        // curves, it is inclusive, handled by the `offset` parameter.
-        function getIndex(value, _default) {
-            // Support both Segment and Curve through #index getter.
-            var index = value && value.index;
-            if (index != null) {
-                // Make sure the segment / curve is not from a wrong path.
-                var path = value.path;
-                if (path && path !== that)
-                    throw new Error(value._class + ' ' + index + ' of ' + path
-                            + ' is not part of ' + that);
-                // Add offset of 1 to curves to reach their end segment.
-                if (_default && value instanceof Curve)
-                    index++;
-            } else {
-                index = typeof value === 'number' ? value : _default;
-            }
-            // Handle negative values based on whether a path is open or not:
-            // Ranges on closed paths are allowed to wrapped around the
-            // beginning/end (e.g. start near the end, end near the beginning),
-            // while ranges on open paths stay within the path's open range.
-            return Math.min(index < 0 && closed
-                    ? index % length
-                    : index < 0 ? index + length : index, length - 1);
-        }
-
-        var that = this,
-            opts = options || {},
-            type = opts.type || 'asymmetric',
-            segments = this._segments,
-            length = segments.length,
-            closed = this._closed,
-            loop = closed && opts.from === undefined && opts.to === undefined,
-            from = getIndex(opts.from, 0),
-            to = getIndex(opts.to, length - 1);
-        if (from > to) {
-            if (closed) {
-                from -= length;
-            } else {
-                var tmp = from;
-                from = to;
-                to = tmp;
-            }
-        }
-        if (/^(?:asymmetric|continuous)$/.test(type)) {
-            // Continuous smoothing approach based on work by Lubos Brieda,
-            // Particle In Cell Consulting LLC, but further simplified by
-            // addressing handle symmetry across segments, and the possibility
-            // to process x and y coordinates simultaneously. Also added
-            // handling of closed paths.
-            // https://www.particleincell.com/2012/bezier-splines/
-            //
-            // We use different parameters for the two supported smooth methods
-            // that use this algorithm: continuous and asymmetric. asymmetric
-            // was the only approach available in v0.9.25 & below.
-            var asymmetric = type === 'asymmetric',
-                min = Math.min,
-                amount = to - from + 1,
-                n = amount - 1,
-                // Overlap by up to 4 points on closed paths since a current
-                // segment is affected by its 4 neighbors on both sides (?).
-                padding = loop ? min(amount, 4) : 1,
-                paddingLeft = padding,
-                paddingRight = padding,
-                knots = [];
-            if (!closed) {
-                // If the path is open and a range is defined, try using a
-                // padding of 1 on either side.
-                paddingLeft = min(1, from);
-                paddingRight = min(1, length - to - 1);
-            }
-            // Set up the knots array now, taking the paddings into account.
-            n += paddingLeft + paddingRight;
-            if (n <= 1)
-                return;
-            for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
-                knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
-            }
-
-            // In the algorithm we treat these 3 cases:
-            // - left most segment (L)
-            // - internal segments (I)
-            // - right most segment (R)
-            //
-            // In both the continuous and asymmetric method, c takes these
-            // values and can hence be removed from the loop starting in n - 2:
-            // c = 1 (L), 1 (I), 0 (R)
-            //
-            // continuous:
-            // a = 0 (L), 1 (I), 2 (R)
-            // b = 2 (L), 4 (I), 7 (R)
-            // u = 1 (L), 4 (I), 8 (R)
-            // v = 2 (L), 2 (I), 1 (R)
-            //
-            // asymmetric:
-            // a = 0 (L), 1 (I), 1 (R)
-            // b = 2 (L), 4 (I), 2 (R)
-            // u = 1 (L), 4 (I), 3 (R)
-            // v = 2 (L), 2 (I), 0 (R)
-
-            // (L): u = 1, v = 2
-            var x = knots[0]._x + 2 * knots[1]._x,
-                y = knots[0]._y + 2 * knots[1]._y,
-                f = 2,
-                n_1 = n - 1,
-                rx = [x],
-                ry = [y],
-                rf = [f],
-                px = [],
-                py = [];
-            // Solve with the Thomas algorithm
-            for (var i = 1; i < n; i++) {
-                var internal = i < n_1,
-                    //  internal--(I)  asymmetric--(R) (R)--continuous
-                    a = internal ? 1 : asymmetric ? 1 : 2,
-                    b = internal ? 4 : asymmetric ? 2 : 7,
-                    u = internal ? 4 : asymmetric ? 3 : 8,
-                    v = internal ? 2 : asymmetric ? 0 : 1,
-                    m = a / f;
-                f = rf[i] = b - m;
-                x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x;
-                y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y;
-            }
-
-            px[n_1] = rx[n_1] / rf[n_1];
-            py[n_1] = ry[n_1] / rf[n_1];
-            for (var i = n - 2; i >= 0; i--) {
-                px[i] = (rx[i] - px[i + 1]) / rf[i];
-                py[i] = (ry[i] - py[i + 1]) / rf[i];
-            }
-            px[n] = (3 * knots[n]._x - px[n_1]) / 2;
-            py[n] = (3 * knots[n]._y - py[n_1]) / 2;
-
-            // Now update the segments
-            for (var i = paddingLeft, max = n - paddingRight, j = from;
-                    i <= max; i++, j++) {
-                var segment = segments[j < 0 ? j + length : j],
-                    pt = segment._point,
-                    hx = px[i] - pt._x,
-                    hy = py[i] - pt._y;
-                if (loop || i < max)
-                    segment.setHandleOut(hx, hy);
-                if (loop || i > paddingLeft)
-                    segment.setHandleIn(-hx, -hy);
-            }
-        } else {
-            // All other smoothing methods are handled directly on the segments:
-            for (var i = from; i <= to; i++) {
-                segments[i < 0 ? i + length : i].smooth(opts,
-                        !loop && i === from, !loop && i === to);
-            }
-        }
     }
 }),
 new function() { // Scope for drawing
