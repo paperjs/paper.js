@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 16:11:38 2016 +0100
+ * Date: Tue Feb 9 16:52:55 2016 +0100
  *
  ***
  *
@@ -3576,24 +3576,28 @@ new function() {
 			}
 		}
 
-		options._viewMatrix = viewMatrix;
-		options._strokeMatrix = strokeMatrix;
-		var children = !res && this._children;
-		if (children) {
-			var opts = this._getChildHitTestOptions(options);
-			for (var i = children.length - 1; i >= 0 && !res; i--)
-				res = children[i]._hitTest(point, opts);
+		if (!res) {
+			options._viewMatrix = viewMatrix;
+			options._strokeMatrix = strokeMatrix;
+			res = this._hitTestChildren(point, options)
+					|| checkSelf && this._hitTestSelf(point, options)
+					|| null;
+			options._viewMatrix = parentViewMatrix;
 		}
-		if (!res && checkSelf)
-			res = this._hitTestSelf(point, options);
 		if (res && res.point)
 			res.point = matrix.transform(res.point);
-		options._viewMatrix = parentViewMatrix;
 		return res;
 	},
 
-	_getChildHitTestOptions: function(options) {
-		return options;
+	_hitTestChildren: function(point, options) {
+		var children = this._children;
+		if (children) {
+			for (var i = children.length - 1; i >= 0; i--) {
+				var res = children[i]._hitTest(point, options);
+				if (res)
+					return res;
+			}
+		}
 	},
 
 	_hitTestSelf: function(point, options) {
@@ -9122,10 +9126,10 @@ var CompoundPath = PathItem.extend({
 		return paths.join(' ');
 	}
 }, {
-	_getChildHitTestOptions: function(options) {
-		return options.class === Path || options.type === 'path'
-				? options
-				: new Base(options, { fill: false });
+	_hitTestChildren: function _hitTestChildren(point, options) {
+		return _hitTestChildren.base.call(this, point,
+				options.class === Path || options.type === 'path' ? options
+					: new Base(options, { fill: false }));
 	},
 
 	_draw: function(ctx, param, strokeMatrix) {
