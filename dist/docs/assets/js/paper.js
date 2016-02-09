@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 14:13:30 2016 +0100
+ * Date: Tue Feb 9 14:34:21 2016 +0100
  *
  ***
  *
@@ -7139,66 +7139,6 @@ var PathItem = Item.extend({
 	initialize: function PathItem() {
 	},
 
-	getIntersections: function(path, include, _matrix, _returnFirst) {
-		var self = this === path || !path,
-			matrix1 = this._matrix._orNullIfIdentity(),
-			matrix2 = self ? matrix1
-				: (_matrix || path._matrix)._orNullIfIdentity();
-		if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
-			return [];
-		var curves1 = this.getCurves(),
-			curves2 = self ? curves1 : path.getCurves(),
-			length1 = curves1.length,
-			length2 = self ? length1 : curves2.length,
-			values2 = [],
-			arrays = [],
-			locations,
-			path;
-		for (var i = 0; i < length2; i++)
-			values2[i] = curves2[i].getValues(matrix2);
-		for (var i = 0; i < length1; i++) {
-			var curve1 = curves1[i],
-				values1 = self ? values2[i] : curve1.getValues(matrix1),
-				path1 = curve1.getPath();
-			if (path1 !== path) {
-				path = path1;
-				locations = [];
-				arrays.push(locations);
-			}
-			if (self) {
-				Curve._getSelfIntersection(values1, curve1, locations, {
-					include: include,
-					excludeStart: length1 === 1 &&
-							curve1.getPoint1().equals(curve1.getPoint2())
-				});
-			}
-			for (var j = self ? i + 1 : 0; j < length2; j++) {
-				if (_returnFirst && locations.length)
-					return locations;
-				var curve2 = curves2[j];
-				Curve._getIntersections(
-					values1, values2[j], curve1, curve2, locations,
-					{
-						include: include,
-						excludeStart: self && curve1.getPrevious() === curve2,
-						excludeEnd: self && curve1.getNext() === curve2
-					}
-				);
-			}
-		}
-		locations = [];
-		for (var i = 0, l = arrays.length; i < l; i++) {
-			locations.push.apply(locations, arrays[i]);
-		}
-		return locations;
-	},
-
-	getCrossings: function(path) {
-		return this.getIntersections(path, function(inter) {
-			return inter._overlap || inter.isCrossing();
-		});
-	},
-
 	_asPathItem: function() {
 		return this;
 	},
@@ -7317,6 +7257,85 @@ var PathItem = Item.extend({
 		var winding = point.isInside(this.getInternalHandleBounds())
 				&& this._getWinding(point);
 		return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
+	},
+
+	getIntersections: function(path, include, _matrix, _returnFirst) {
+		var self = this === path || !path,
+			matrix1 = this._matrix._orNullIfIdentity(),
+			matrix2 = self ? matrix1
+				: (_matrix || path._matrix)._orNullIfIdentity();
+		if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
+			return [];
+		var curves1 = this.getCurves(),
+			curves2 = self ? curves1 : path.getCurves(),
+			length1 = curves1.length,
+			length2 = self ? length1 : curves2.length,
+			values2 = [],
+			arrays = [],
+			locations,
+			path;
+		for (var i = 0; i < length2; i++)
+			values2[i] = curves2[i].getValues(matrix2);
+		for (var i = 0; i < length1; i++) {
+			var curve1 = curves1[i],
+				values1 = self ? values2[i] : curve1.getValues(matrix1),
+				path1 = curve1.getPath();
+			if (path1 !== path) {
+				path = path1;
+				locations = [];
+				arrays.push(locations);
+			}
+			if (self) {
+				Curve._getSelfIntersection(values1, curve1, locations, {
+					include: include,
+					excludeStart: length1 === 1 &&
+							curve1.getPoint1().equals(curve1.getPoint2())
+				});
+			}
+			for (var j = self ? i + 1 : 0; j < length2; j++) {
+				if (_returnFirst && locations.length)
+					return locations;
+				var curve2 = curves2[j];
+				Curve._getIntersections(
+					values1, values2[j], curve1, curve2, locations,
+					{
+						include: include,
+						excludeStart: self && curve1.getPrevious() === curve2,
+						excludeEnd: self && curve1.getNext() === curve2
+					}
+				);
+			}
+		}
+		locations = [];
+		for (var i = 0, l = arrays.length; i < l; i++) {
+			locations.push.apply(locations, arrays[i]);
+		}
+		return locations;
+	},
+
+	getCrossings: function(path) {
+		return this.getIntersections(path, function(inter) {
+			return inter._overlap || inter.isCrossing();
+		});
+	},
+
+	getNearestLocation: function() {
+		var point = Point.read(arguments),
+			curves = this.getCurves(),
+			minDist = Infinity,
+			minLoc = null;
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var loc = curves[i].getNearestLocation(point);
+			if (loc._distance < minDist) {
+				minDist = loc._distance;
+				minLoc = loc;
+			}
+		}
+		return minLoc;
+	},
+
+	getNearestPoint: function() {
+		return this.getNearestLocation.apply(this, arguments).getPoint();
 	},
 
 	interpolate: function(from, to, factor) {
@@ -8258,26 +8277,8 @@ var Path = PathItem.extend({
 		if (curves.length > 0 && offset <= this.getLength())
 			return new CurveLocation(curves[curves.length - 1], 1);
 		return null;
-	},
-
-	getNearestLocation: function() {
-		var point = Point.read(arguments),
-			curves = this.getCurves(),
-			minDist = Infinity,
-			minLoc = null;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var loc = curves[i].getNearestLocation(point);
-			if (loc._distance < minDist) {
-				minDist = loc._distance;
-				minLoc = loc;
-			}
-		}
-		return minLoc;
-	},
-
-	getNearestPoint: function() {
-		return this.getNearestLocation.apply(this, arguments).getPoint();
 	}
+
 }),
 new function() {
 
