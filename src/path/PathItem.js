@@ -317,6 +317,46 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
     },
 
+    /**
+     * Reverses the orientation of the path item. When called on
+     * {@link CompoundPath} items, each of the nested paths is reversed. On
+     * {@link Path} items, the sequence of {@link Path#segments} is reversed.
+     *
+     * @name PathItem#reverse
+     * @function
+     */
+
+    /**
+     * Converts the curves in a path to straight lines with an even distribution
+     * of points. The distance between the produced segments is as close as
+     * possible to the value specified by the `maxDistance` parameter.
+     *
+     * @name PathItem#flatten
+     * @function
+     *
+     * @param {Number} maxDistance the maximum distance between the points
+     *
+     * @example {@paperscript}
+     * // Flattening a circle shaped path:
+     *
+     * // Create a circle shaped path at { x: 80, y: 50 }
+     * // with a radius of 35:
+     * var path = new Path.Circle({
+     *     center: new Size(80, 50),
+     *     radius: 35
+     * });
+     *
+     * // Select the path, so we can inspect its segments:
+     * path.selected = true;
+     *
+     * // Create a copy of the path and move it 150 points to the right:
+     * var copy = path.clone();
+     * copy.position.x += 150;
+     *
+     * // Convert its curves to points, with a max distance of 20:
+     * copy.flatten(20);
+     */
+
     // TODO: Write about negative indices, and add an example for ranges.
     /**
      * Smooths the path item without changing the amount of segments in the path
@@ -465,6 +505,59 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * // Smooth a range, using negative indices:
      * paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
+     */
+
+    /**
+     * Fits a sequence of as few curves as possible through the path's anchor
+     * points, ignoring the path items's curve-handles, with an allowed maximum
+     * error. When called on {@link CompoundPath} items, each of the nested
+     * paths is simplified. On {@link Path} items, the {@link Path#segments}
+     * array is processed and replaced by the resulting sequence of fitted
+     * curves.
+     *
+     * This method can be used to process and simplify the point data received
+     * from a mouse or touch device.
+     *
+     * @name PathItem#simplify
+     * @function
+     *
+     * @param {Number} [tolerance=2.5] the allowed maximum error when fitting
+     *     the curves through the segment points
+     * @return {Boolean} {@true if the method was capable of fitting curves
+     *     through the path's segment points}
+     *
+     * @example {@paperscript height=300}
+     * // Click and drag below to draw to draw a line, when you release the
+     * // mouse, the is made smooth using path.simplify():
+     *
+     * var path;
+     * function onMouseDown(event) {
+     *     // If we already made a path before, deselect it:
+     *     if (path) {
+     *         path.selected = false;
+     *     }
+     *
+     *     // Create a new path and add the position of the mouse
+     *     // as its first segment. Select it, so we can see the
+     *     // segment points:
+     *     path = new Path({
+     *         segments: [event.point],
+     *         strokeColor: 'black',
+     *         selected: true
+     *     });
+     * }
+     *
+     * function onMouseDrag(event) {
+     *     // On every drag event, add a segment to the path
+     *     // at the position of the mouse:
+     *     path.add(event.point);
+     * }
+     *
+     * function onMouseUp(event) {
+     *     // When the mouse is released, simplify the path:
+     *     path.simplify();
+     *     path.selected = true;
+     * }
      */
 
     /**

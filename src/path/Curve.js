@@ -1070,6 +1070,8 @@ statics: {
     /**
      * Returns the curve-time parameter of the specified point if it lies on the
      * curve, `null` otherwise.
+     * Note that if there is more than one possible solution in a
+     * self-intersecting curve, the first found result is returned.
      *
      * @param {Point} point the point on the curve
      * @return {Number} the curve-time parameter of the specified point

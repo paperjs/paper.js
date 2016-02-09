@@ -134,15 +134,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         return items;
     },
 
-    /**
-     * Reverses the orientation of all nested paths.
-     */
-    reverse: function() {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].reverse();
-    },
-
     // DOCS: reduce()
     // TEST: reduce()
     reduce: function reduce(options) {
@@ -160,13 +151,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             return path;
         }
         return reduce.base.call(this);
-    },
-
-    // NOTE: Documentation is in PathItem.js
-    smooth: function(options) {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].smooth(options);
     },
 
     /**
@@ -331,42 +315,50 @@ new function() { // Injection scope for PostScript-like drawing functions
         return children[children.length - 1];
     }
 
-    var fields = {
-        // NOTE: Documentation for these methods is found in PathItem, as they
-        // are considered abstract methods of PathItem and need to be defined in
-        // all implementing classes.
-        moveTo: function(/* point */) {
-            var current = getCurrentPath(this),
-                // Reuse current path if nothing was added yet
-                path = current && current.isEmpty() ? current
-                        : new Path(Item.NO_INSERT);
-            if (path !== current)
-                this.addChild(path);
-            path.moveTo.apply(path, arguments);
-        },
-
-        moveBy: function(/* point */) {
-            var current = getCurrentPath(this, true),
-                last = current && current.getLastSegment(),
-                point = Point.read(arguments);
-            this.moveTo(last ? point.add(last._point) : point);
-        },
-
-        closePath: function(join) {
-            getCurrentPath(this, true).closePath(join);
-        }
-    };
-
     // Redirect all other drawing commands to the current path
-    Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
-            'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
-            function(key) {
-                fields[key] = function() {
-                    var path = getCurrentPath(this, true);
-                    path[key].apply(path, arguments);
-                };
-            }
-    );
+    return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+            'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
+            'arcBy'],
+        function(key) {
+            this[key] = function() {
+                var path = getCurrentPath(this, true);
+                path[key].apply(path, arguments);
+            };
+        }, {
+            // NOTE: Documentation for these methods is found in PathItem, as
+            // they are considered abstract methods of PathItem and need to be
+            // defined in all implementing classes.
+            moveTo: function(/* point */) {
+                var current = getCurrentPath(this),
+                    // Reuse current path if nothing was added yet
+                    path = current && current.isEmpty() ? current
+                            : new Path(Item.NO_INSERT);
+                if (path !== current)
+                    this.addChild(path);
+                path.moveTo.apply(path, arguments);
+            },
 
-    return fields;
-});
+            moveBy: function(/* point */) {
+                var current = getCurrentPath(this, true),
+                    last = current && current.getLastSegment(),
+                    point = Point.read(arguments);
+                this.moveTo(last ? point.add(last._point) : point);
+            },
+
+            closePath: function(join) {
+                getCurrentPath(this, true).closePath(join);
+            }
+        }
+    );
+}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+    // Injection scope for methods forwarded to the child paths.
+    // NOTE: Documentation is in PathItem
+    this[key] = function(param) {
+        var children = this._children,
+            res;
+        for (var i = 0, l = children.length; i < l; i++) {
+            res = children[i][key](param) || res;
+        }
+        return res;
+    };
+}, {}));
