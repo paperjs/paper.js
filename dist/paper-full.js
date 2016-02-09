@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 15:09:39 2016 +0100
+ * Date: Tue Feb 9 16:01:06 2016 +0100
  *
  ***
  *
@@ -3408,15 +3408,18 @@ new function() {
 		return Base.equals(this._children, item._children);
 	},
 
-	clone: function(insert) {
+	clone: function(options) {
 		var copy = new this.constructor(Item.NO_INSERT),
-			children = this._children;
+			children = this._children,
+			insert = Base.pick(options && options.insert, true),
+			deep = Base.pick(options && options.deep, true);
 		if (children)
 			copy.copyAttributes(this);
-		copy.copyContent(this);
+		if (!children || deep)
+			copy.copyContent(this);
 		if (!children)
 			copy.copyAttributes(this);
-		if (insert === undefined || insert)
+		if (insert)
 			copy.insertAbove(this);
 		var name = this._name,
 			parent = this._parent;
