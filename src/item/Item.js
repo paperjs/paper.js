@@ -1474,6 +1474,7 @@ new function() { // // Scope to inject various item event handlers
             children = this._children,
             // Both `insert` and `deep` are true by default:
             insert = Base.pick(options ? options.insert : undefined,
+                    // Also support boolean parameter for insert, default: true.
                     options === undefined || options === true),
             deep = Base.pick(options ? options.deep : undefined, true);
         // On items with children, for performance reasons due to the way that
@@ -1819,29 +1820,32 @@ new function() { // // Scope to inject various item event handlers
             }
         }
 
-        options._viewMatrix = viewMatrix;
-        options._strokeMatrix = strokeMatrix;
-        var children = !res && this._children;
-        if (children) {
-            var opts = this._getChildHitTestOptions(options);
-            // Loop backwards, so items that get drawn last are tested first
-            for (var i = children.length - 1; i >= 0 && !res; i--)
-                res = children[i]._hitTest(point, opts);
+        if (!res) {
+            options._viewMatrix = viewMatrix;
+            options._strokeMatrix = strokeMatrix;
+            res = this._hitTestChildren(point, options)
+                    || checkSelf && this._hitTestSelf(point, options)
+                    || null;
+            // Restore viewMatrix for next child, so appended matrix chains are
+            // calculated correctly.
+            options._viewMatrix = parentViewMatrix;
         }
-        if (!res && checkSelf)
-            res = this._hitTestSelf(point, options);
         // Transform the point back to the outer coordinate system.
         if (res && res.point)
             res.point = matrix.transform(res.point);
-        // Restore viewMatrix for next child, so appended matrix chains are
-        // calculated correctly.
-        options._viewMatrix = parentViewMatrix;
         return res;
     },
 
-    _getChildHitTestOptions: function(options) {
-        // This is overridden in CompoundPath, for treatment of type === 'path'.
-        return options;
+    _hitTestChildren: function(point, options) {
+        var children = this._children;
+        if (children) {
+            // Loop backwards, so items that get drawn last are tested first
+            for (var i = children.length - 1; i >= 0; i--) {
+                var res = children[i]._hitTest(point, options);
+                if (res)
+                    return res;
+            }
+        }
     },
 
     _hitTestSelf: function(point, options) {

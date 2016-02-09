@@ -259,14 +259,14 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         return paths.join(' ');
     }
 }, /** @lends CompoundPath# */{
-    _getChildHitTestOptions: function(options) {
-        // If we're not specifically asked to returns paths through
-        // options.class == Path, do not test children for fill, since a
-        // compound path forms one shape.
-        // Also support legacy format `type: 'path'`.
-        return options.class === Path || options.type === 'path'
-                ? options
-                : new Base(options, { fill: false });
+    _hitTestChildren: function _hitTestChildren(point, options) {
+        return _hitTestChildren.base.call(this, point,
+                // If we're not specifically asked to returns paths through
+                // options.class == Path, do not test children for fill, since a
+                // compound path forms one shape.
+                // Also support legacy format `type: 'path'`.
+                options.class === Path || options.type === 'path' ? options
+                    : new Base(options, { fill: false }));
     },
 
     _draw: function(ctx, param, strokeMatrix) {
