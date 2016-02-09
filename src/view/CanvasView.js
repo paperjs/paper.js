@@ -56,6 +56,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             this._pixelRatio = deviceRatio / backingStoreRatio;
         }
         View.call(this, project, canvas);
+        // We can't be sure the canvas is clear
+        this._needsUpdate = true;
     },
 
     remove: function remove() {
@@ -128,14 +130,14 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * @return {Boolean} {@true if the view was updated}
      */
     update: function() {
-        var project = this._project;
-        if (!project || !project._needsUpdate)
+        if (!this._needsUpdate)
             return false;
-        var ctx = this._context,
+        var project = this._project,
+            ctx = this._context,
             size = this._viewSize;
         ctx.clearRect(0, 0, size.width + 1, size.height + 1);
         project.draw(ctx, this._matrix, this._pixelRatio);
-        project._needsUpdate = false;
+        this._needsUpdate = false;
         return true;
     }
 });

@@ -87,13 +87,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      */
     _changed: function(flags, item) {
         if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-            // Never draw changes right away. Simply mark the project as "dirty"
-            // and request a view update through window.requestAnimationFrame()
-            // (via  view.requestUpdate()), which handles the smooth updates.
-            this._needsUpdate = true;
             var view = this._view;
-            if (view && !view._requested && view._autoUpdate)
-                view.requestUpdate();
+            if (view) {
+                // Never draw changes right away. Simply mark view as "dirty"
+                // and request an update through view.requestUpdate().
+                view._needsUpdate = true;
+                if (!view._requested && view._autoUpdate)
+                    view.requestUpdate();
+            }
         }
         // Have project keep track of changed items so they can be iterated.
         // This can be used for example to update the SVG tree. Needs to be

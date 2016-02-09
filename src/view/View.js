@@ -119,6 +119,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         this._itemEvents = { native: {}, virtual: {} };
         // Do not set _autoUpdate on Node.js by default:
         this._autoUpdate = !paper.agent.node;
+        this._needsUpdate = false;
     },
 
     /**
@@ -198,8 +199,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * event hanlders for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
-     * @name View#update
-     * @function
      * @return {Boolean} {@true if the view was updated}
      */
     update: function() {
@@ -220,8 +219,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * requestAnimationFrame() mechanism for smooth animation. Note that when
      * using built-in event handlers for interaction, animation and load events,
      * updates are automatically invoked for you automatically at the end.
-     *
-     * @function
      */
     requestUpdate: function() {
         if (!this._requested) {
@@ -234,13 +231,24 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 if (that._animate) {
                     // Request next update before handling the current frame
                     that.requestUpdate();
-                    that._handleFrame();
+                    var element = that._element;
+                    // Only keep animating if we're allowed to, based on whether
+                    // the document is visible and the setting of keepalive. We
+                    // keep requesting frame regardless though, so the animation
+                    // picks up again as soon as the view is visible.
+                    if ((!DomElement.getPrefixed(document, 'hidden')
+                            || PaperScope.getAttribute(element, 'keepalive')
+                                === 'true') && DomElement.isInView(element)) {
+                        that._handleFrame();
+                    }
                 }
                 // Even if we're not animating, update the view now since this
-                // might have been a request for a single redraw after a change
+                // might have been a request for a single redraw after a change.
+                // NOTE: If nothing has changed (e.g. _handleFrame() wasn't
+                // called above), then this does not actually do anything.
                 if (that._autoUpdate)
                     that.update();
-            }, this._element);
+            });
             this._requested = true;
         }
     },

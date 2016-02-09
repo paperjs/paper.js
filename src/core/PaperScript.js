@@ -482,6 +482,10 @@ Base.exports.PaperScript = (function() {
             });
             if (res.onFrame)
                 view.setOnFrame(res.onFrame);
+            // Automatically request an update at the end. This is only needed
+            // if the script does not actually produce anything yet, and the
+            // used canvas contains previous content.
+            view.requestUpdate();
         }
         return compiled;
     }
