@@ -1332,10 +1332,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * }
      */
     simplify: function(tolerance) {
-        if (this._segments.length > 2) {
-            var fitter = new PathFitter(this, tolerance || 2.5);
-            this.setSegments(fitter.fit());
-        }
+        var segments = new PathFitter(this).fit(tolerance || 2.5);
+        if (segments)
+            this.setSegments(segments);
+        return !!segments;
     },
 
     // NOTE: Documentation is in PathItem#smooth()
