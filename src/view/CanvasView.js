@@ -136,7 +136,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             ctx = this._context,
             size = this._viewSize;
         ctx.clearRect(0, 0, size.width + 1, size.height + 1);
-        project.draw(ctx, this._matrix, this._pixelRatio);
+        if (project)
+            project.draw(ctx, this._matrix, this._pixelRatio);
         this._needsUpdate = false;
         return true;
     }
