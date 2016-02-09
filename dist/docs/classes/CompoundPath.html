@@ -7098,7 +7098,7 @@ function onMouseUp(event) {
 	<li>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-
+&mdash;&nbsp;the point in which to start the path
 
 </li>
 	
@@ -7118,7 +7118,7 @@ function onMouseUp(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	
+	<p>Adds a straight curve to the path, from the the last segment in the path to the specified point.</p>
     
 	
 <ul class="member-list">
@@ -7127,50 +7127,7 @@ function onMouseUp(event) {
 	<li>
 <tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-</ul>
-
-	
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="cubiccurveto-handle1-handle2-to" class="member">
-<div class="member-link">
-<a name="cubiccurveto-handle1-handle2-to" href="#cubiccurveto-handle1-handle2-to"><tt><b>cubicCurveTo</b>(handle1, handle2, to)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Adds a cubic bezier curve to the path, defined by two handles and a to point.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>handle1:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>handle2:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
+&mdash;&nbsp;the destination point of the newly added straight  curve
 
 </li>
 	
@@ -7179,117 +7136,6 @@ function onMouseUp(event) {
 	
 	
 	
-</div>
-</div>
-</div>
-
-	
-<div id="quadraticcurveto-handle-to" class="member">
-<div class="member-link">
-<a name="quadraticcurveto-handle-to" href="#quadraticcurveto-handle-to"><tt><b>quadraticCurveTo</b>(handle, to)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Adds a quadratic bezier curve to the path, defined by a handle and a to point.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>handle:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-</ul>
-
-	
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="curveto-through-to" class="member">
-<div class="member-link">
-<a name="curveto-through-to" href="#curveto-through-to"><tt><b>curveTo</b>(through, to[, parameter])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Draws a curve from the position of the last segment point in the path that goes through the specified <code>through</code> point, to the specified <code>to</code> point by adding one segment to the path.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>through:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the point through which the curve should go
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the point where the curve should end
-
-</li>
-	
-	<li>
-<tt>parameter:</tt> 
-<tt>Number</tt>
-
-&mdash;&nbsp;optional, default: <tt>0.5</tt>
-</li>
-	
-</ul>
-
-	
-	
-	<h4>Example:<span class="description">Interactive example. Move your mouse around the view below:</span></h4>
-
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
-</div>
-
-<script type="text/paperscript" canvas="canvas-62">
-var myPath;
-function onMouseMove(event) {
-    // If we created a path before, remove it:
-    if (myPath) {
-        myPath.remove();
-    }
-
-    // Create a new path and add a segment point to it
-    // at {x: 150, y: 150):
-    myPath = new Path();
-    myPath.add(150, 150);
-
-    // Draw a curve through the position of the mouse to 'toPoint'
-    var toPoint = new Point(350, 150);
-    myPath.curveTo(event.point, toPoint);
-
-    // Select the path, so we can see its segments:
-    myPath.selected = true;
-}
-</script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-62"></canvas></div>
-</div>
-
-
 </div>
 </div>
 </div>
@@ -7301,7 +7147,7 @@ function onMouseMove(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Draws an arc from the position of the last segment point in the path that goes through the specified <code>through</code> point, to the specified <code>to</code> point by adding one or more segments to the path.</p>
+	<p>Adds an arc from the position of the last segment in the path, passing through the specified <code>through</code> point, to the specified <code>to</code> point, by adding one or more segments to the path.</p>
     
 	
 <ul class="member-list">
@@ -7333,7 +7179,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-63">
+<script type="text/paperscript" canvas="canvas-62">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7353,7 +7199,7 @@ path.arcTo(throughPoint, toPoint);
 var circle = new Path.Circle(throughPoint, 3);
 circle.fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-63"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
 </div>
 
 
@@ -7365,7 +7211,7 @@ circle.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-64">
+<script type="text/paperscript" canvas="canvas-63">
 var myPath;
 function onMouseDrag(event) {
     // If we created a path before, remove it:
@@ -7393,7 +7239,7 @@ function onMouseUp(event) {
     myPath.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-64"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-63"></canvas></div>
 </div>
 
 
@@ -7408,7 +7254,7 @@ function onMouseUp(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Draws an arc from the position of the last segment point in the path to the specified point by adding one or more segments to the path.</p>
+	<p>Adds an arc from the position of the last segment in the path to the specified point, by adding one or more segments to the path.</p>
     
 	
 <ul class="member-list">
@@ -7440,7 +7286,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-65">
+<script type="text/paperscript" canvas="canvas-64">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7455,7 +7301,7 @@ path2.add(new Point(180, 25));
 // we pass `false` as the second argument to arcTo:
 path2.arcTo(new Point(280, 25), false);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-65"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
 </div>
 
 
@@ -7467,7 +7313,7 @@ path2.arcTo(new Point(280, 25), false);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-66">
+<script type="text/paperscript" canvas="canvas-65">
 var myPath;
 
 // The mouse has to move at least 20 points before
@@ -7488,10 +7334,165 @@ function onMouseDrag(event) {
     myPath.arcTo(event.point);
 }
 </script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-65"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="curveto-through-to" class="member">
+<div class="member-link">
+<a name="curveto-through-to" href="#curveto-through-to"><tt><b>curveTo</b>(through, to[, time])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a curve from the last segment in the path through the specified <code>through</code> point, to the specified destination point by adding one segment to the path.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>through:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point through which the curve should pass
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination point of the newly added curve
+
+</li>
+	
+	<li>
+<tt>time:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the curve-time parameter at which the  <code>through</code> point is to be located
+&mdash;&nbsp;optional, default: <tt>0.5</tt>
+</li>
+	
+</ul>
+
+	
+	
+	<h4>Example:<span class="description">Interactive example. Move your mouse around the view below:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-66">
+var myPath;
+function onMouseMove(event) {
+    // If we created a path before, remove it:
+    if (myPath) {
+        myPath.remove();
+    }
+
+    // Create a new path and add a segment point to it
+    // at {x: 150, y: 150):
+    myPath = new Path();
+    myPath.add(150, 150);
+
+    // Draw a curve through the position of the mouse to 'toPoint'
+    var toPoint = new Point(350, 150);
+    myPath.curveTo(event.point, toPoint);
+
+    // Select the path, so we can see its segments:
+    myPath.selected = true;
+}
+</script>
 <div class="canvas"><canvas width="516" height="300" id="canvas-66"></canvas></div>
 </div>
 
 
+</div>
+</div>
+</div>
+
+	
+<div id="cubiccurveto-handle1-handle2-to" class="member">
+<div class="member-link">
+<a name="cubiccurveto-handle1-handle2-to" href="#cubiccurveto-handle1-handle2-to"><tt><b>cubicCurveTo</b>(handle1, handle2, to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a cubic bezier curve to the path, from the last segment to the specified destination point, with the curve itself defined by two specified handles.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>handle1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the first handle of the newly  added curve in absolute coordinates, out of which the relative values  for <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a> of its first segment are calculated
+
+</li>
+	
+	<li>
+<tt>handle2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the second handle of the newly  added curve in absolute coordinates, out of which the relative values  for <a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> of its second segment are calculated
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination point of the newly added curve
+
+</li>
+	
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="quadraticcurveto-handle-to" class="member">
+<div class="member-link">
+<a name="quadraticcurveto-handle-to" href="#quadraticcurveto-handle-to"><tt><b>quadraticCurveTo</b>(handle, to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a quadratic bezier curve to the path, from the last segment to the specified destination point, with the curve itself defined by the specified handle.</p>
+<p>Note that Paper.js only stores cubic curves, so the handle is actually converted.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>handle:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the handle of the newly added  quadratic curve in absolute coordinates, out of which the relative  values for <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a> of the resulting cubic curve&rsquo;s  first segment and <a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> of its second segment are  calculated
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination point of the newly added curve
+
+</li>
+	
+</ul>
+
+	
+	
+	
 </div>
 </div>
 </div>
@@ -7564,22 +7565,22 @@ function onMouseDrag(event) {
 </div>
 
 	
-<div id="lineby-to" class="member">
+<div id="lineby-point" class="member">
 <div class="member-link">
-<a name="lineby-to" href="#lineby-to"><tt><b>lineBy</b>(to)</tt></a>
+<a name="lineby-point" href="#lineby-point"><tt><b>lineBy</b>(point)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Adds a segment relative to the last segment point of the path.</p>
+	<p>Adds a straight curve to the path, from the the last segment in the path to the <code>to</code> vector specified relatively to it.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>to:</tt> 
+<tt>point:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the vector which is added to the position of the last  segment of the path, to get to the position of the new segment
+&mdash;&nbsp;the vector describing the destination of the newly  added straight curve
 
 </li>
 	
@@ -7656,135 +7657,13 @@ path.smooth();
 </div>
 
 	
-<div id="curveby-through-to" class="member">
-<div class="member-link">
-<a name="curveby-through-to" href="#curveby-through-to"><tt><b>curveBy</b>(through, to[, parameter])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>through:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>parameter:</tt> 
-<tt>Number</tt>
-
-&mdash;&nbsp;optional, default: <tt>0.5</tt>
-</li>
-	
-</ul>
-
-	
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="cubiccurveby-handle1-handle2-to" class="member">
-<div class="member-link">
-<a name="cubiccurveby-handle1-handle2-to" href="#cubiccurveby-handle1-handle2-to"><tt><b>cubicCurveBy</b>(handle1, handle2, to)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>handle1:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>handle2:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-</ul>
-
-	
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="quadraticcurveby-handle-to" class="member">
-<div class="member-link">
-<a name="quadraticcurveby-handle-to" href="#quadraticcurveby-handle-to"><tt><b>quadraticCurveBy</b>(handle, to)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>handle:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-	<li>
-<tt>to:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-
-
-</li>
-	
-</ul>
-
-	
-	
-	
-</div>
-</div>
-</div>
-
-	
 <div id="arcby-through-to" class="member">
 <div class="member-link">
 <a name="arcby-through-to" href="#arcby-through-to"><tt><b>arcBy</b>(through, to)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	
+	<p>Adds an arc from the position of the last segment in the path, passing through the specified <code>through</code> vector, to the specified <code>to</code> vector, all specified relatively to it by these given vectors, by adding one or more segments to the path.</p>
     
 	
 <ul class="member-list">
@@ -7793,14 +7672,14 @@ path.smooth();
 	<li>
 <tt>through:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-
+&mdash;&nbsp;the vector where the arc should pass through
 
 </li>
 	
 	<li>
 <tt>to:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-
+&mdash;&nbsp;the vector where the arc should end
 
 </li>
 	
@@ -7820,7 +7699,7 @@ path.smooth();
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	
+	<p>Adds an arc from the position of the last segment in the path to the <code>to</code> vector specified relatively to it, by adding one or more segments to the path.</p>
     
 	
 <ul class="member-list">
@@ -7829,15 +7708,138 @@ path.smooth();
 	<li>
 <tt>to:</tt> 
 <a href="../classes/Point.html"><tt>Point</tt></a>
-
+&mdash;&nbsp;the vector where the arc should end
 
 </li>
 	
 	<li>
 <tt>clockwise:</tt> 
 <tt>Boolean</tt>
-
+&mdash;&nbsp;specifies whether the arc should be  drawn in clockwise direction
 &mdash;&nbsp;optional, default: <tt>true</tt>
+</li>
+	
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="curveby-through-to" class="member">
+<div class="member-link">
+<a name="curveby-through-to" href="#curveby-through-to"><tt><b>curveBy</b>(through, to[, time])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a curve from the last segment in the path through the specified <code>through</code> vector, to the specified <code>to</code> vector, all specified relatively to it by these given vectors, by adding one segment to the path.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>through:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the vector through which the curve should pass
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination vector of the newly added curve
+
+</li>
+	
+	<li>
+<tt>time:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the curve-time parameter at which the  <code>through</code> point is to be located
+&mdash;&nbsp;optional, default: <tt>0.5</tt>
+</li>
+	
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="cubiccurveby-handle1-handle2-to" class="member">
+<div class="member-link">
+<a name="cubiccurveby-handle1-handle2-to" href="#cubiccurveby-handle1-handle2-to"><tt><b>cubicCurveBy</b>(handle1, handle2, to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a cubic bezier curve to the path, from the last segment to the to the specified <code>to</code> vector, with the curve itself defined by two specified handles.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>handle1:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the first handle of the newly  added curve
+
+</li>
+	
+	<li>
+<tt>handle2:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the location of the second handle of the newly  added curve
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination point of the newly added curve
+
+</li>
+	
+</ul>
+
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="quadraticcurveby-handle-to" class="member">
+<div class="member-link">
+<a name="quadraticcurveby-handle-to" href="#quadraticcurveby-handle-to"><tt><b>quadraticCurveBy</b>(handle, to)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds a quadratic bezier curve to the path, from the last segment to the specified destination point, with the curve itself defined by the specified handle.</p>
+<p>Note that Paper.js only stores cubic curves, so the handle is actually converted.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>handle:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the handle of the newly added quadratic curve out  of which the values for <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a> of the resulting  cubic curve&rsquo;s first segment and <a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> of its  second segment are calculated
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the destination point of the newly added curve
+
 </li>
 	
 </ul>
