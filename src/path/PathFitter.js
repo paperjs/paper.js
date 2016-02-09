@@ -51,10 +51,10 @@ var PathFitter = Base.extend({
             segments = [new Segment(points[0])];
             if (length > 1) {
                 this.fitCubic(segments, error, 0, length - 1,
-                    // Left Tangent
-                    points[1].subtract(points[0]).normalize(),
-                    // Right Tangent
-                    points[length - 2].subtract(points[length - 1]).normalize());
+                        // Left Tangent
+                        points[1].subtract(points[0]),
+                        // Right Tangent
+                        points[length - 2].subtract(points[length - 1]));
                 // Remove the duplicated segments for closed paths again.
                 if (this.closed) {
                     segments.shift();
@@ -99,8 +99,7 @@ var PathFitter = Base.extend({
             maxError = max.error;
         }
         // Fitting failed -- split at max error point and fit recursively
-        var tanCenter = points[split - 1].subtract(points[split + 1])
-                .normalize();
+        var tanCenter = points[split - 1].subtract(points[split + 1]);
         this.fitCubic(segments, error, first, split, tan1, tanCenter);
         this.fitCubic(segments, error, split, last, tanCenter.negate(), tan2);
     },
