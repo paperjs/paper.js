@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 8 14:17:16 2016 +0100
+ * Date: Tue Feb 9 09:59:19 2016 +0100
  *
  ***
  *
@@ -2562,10 +2562,12 @@ var Project = PaperScopeItem.extend({
 
 	_changed: function(flags, item) {
 		if (flags & 1) {
-			this._needsUpdate = true;
 			var view = this._view;
-			if (view && !view._requested && view._autoUpdate)
-				view.requestUpdate();
+			if (view) {
+				view._needsUpdate = true;
+				if (!view._requested && view._autoUpdate)
+					view.requestUpdate();
+			}
 		}
 		var changes = this._changes;
 		if (changes && item) {
@@ -11320,40 +11322,20 @@ DomEvent.requestAnimationFrame = new function() {
 	var nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame'),
 		requested = false,
 		callbacks = [],
-		focused = true,
 		timer;
 
-	DomEvent.add(window, {
-		focus: function() {
-			focused = true;
-		},
-		blur: function() {
-			focused = false;
-		}
-	});
-
 	function handleCallbacks() {
-		for (var i = callbacks.length - 1; i >= 0; i--) {
-			var entry = callbacks[i],
-				func = entry[0],
-				el = entry[1];
-			if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
-					|| focused) && DomElement.isInView(el)) {
-				callbacks.splice(i, 1);
-				func();
-			}
-		}
-		if (nativeRequest) {
-			if (callbacks.length) {
-				nativeRequest(handleCallbacks);
-			} else {
-				requested = false;
-			}
-		}
+		var functions = callbacks;
+		callbacks = [];
+		for (var i = 0, l = functions.length; i < l; i++)
+			functions[i]();
+		requested = nativeRequest && callbacks.length;
+		if (requested)
+			nativeRequest(handleCallbacks);
 	}
 
-	return function(callback, element) {
-		callbacks.push([callback, element]);
+	return function(callback) {
+		callbacks.push(callback);
 		if (nativeRequest) {
 			if (!requested) {
 				nativeRequest(handleCallbacks);
@@ -11439,6 +11421,7 @@ var View = Base.extend(Emitter, {
 		this._frameItemCount = 0;
 		this._itemEvents = { native: {}, virtual: {} };
 		this._autoUpdate = !paper.agent.node;
+		this._needsUpdate = false;
 	},
 
 	remove: function() {
@@ -11505,11 +11488,16 @@ var View = Base.extend(Emitter, {
 				that._requested = false;
 				if (that._animate) {
 					that.requestUpdate();
-					that._handleFrame();
+					var element = that._element;
+					if ((!DomElement.getPrefixed(document, 'hidden')
+							|| PaperScope.getAttribute(element, 'keepalive')
+								=== 'true') && DomElement.isInView(element)) {
+						that._handleFrame();
+					}
 				}
 				if (that._autoUpdate)
 					that.update();
-			}, this._element);
+			});
 			this._requested = true;
 		}
 	},
@@ -12066,6 +12054,7 @@ var CanvasView = View.extend({
 			this._pixelRatio = deviceRatio / backingStoreRatio;
 		}
 		View.call(this, project, canvas);
+		this._needsUpdate = true;
 	},
 
 	remove: function remove() {
@@ -12117,14 +12106,14 @@ var CanvasView = View.extend({
 	},
 
 	update: function() {
-		var project = this._project;
-		if (!project || !project._needsUpdate)
+		if (!this._needsUpdate)
 			return false;
-		var ctx = this._context,
+		var project = this._project,
+			ctx = this._context,
 			size = this._viewSize;
 		ctx.clearRect(0, 0, size.width + 1, size.height + 1);
 		project.draw(ctx, this._matrix, this._pixelRatio);
-		project._needsUpdate = false;
+		this._needsUpdate = false;
 		return true;
 	}
 });
