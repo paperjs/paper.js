@@ -119,7 +119,7 @@ var Style = Base.extend(new function() {
         // see _dontMerge argument below.
         beans: true
     },
-    fields = {
+    fields = /** @lends Style# */{
         _class: 'Style',
 
         initialize: function Style(style, owner, project) {
