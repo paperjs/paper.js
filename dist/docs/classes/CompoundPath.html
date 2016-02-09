@@ -355,31 +355,6 @@ path.fillColor = 'black';
 
 
 
-<!-- ============================== methods ================================ -->
-	<div class="reference-members">
-		<h2>Methods</h2>
-		
-	
-<div id="reverse" class="member">
-<div class="member-link">
-<a name="reverse" href="#reverse"><tt><b>reverse</b>()</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Reverses the orientation of all nested paths.</p>
-    
-	
-	
-	
-	
-</div>
-</div>
-</div>
-
-
-		
-	</div>
-
 
 
 
@@ -6619,6 +6594,81 @@ function onFrame(event) {
 </div>
 
 	
+<div id="reverse" class="member">
+<div class="member-link">
+<a name="reverse" href="#reverse"><tt><b>reverse</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Reverses the orientation of the path item. When called on <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> items, each of the nested paths is reversed. On <a href="../classes/Path.html"><tt>Path</tt></a> items, the sequence of <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> is reversed.</p>
+    
+	
+	
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="flatten-maxDistance" class="member">
+<div class="member-link">
+<a name="flatten-maxDistance" href="#flatten-maxDistance"><tt><b>flatten</b>(maxDistance)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Converts the curves in a path to straight lines with an even distribution of points. The distance between the produced segments is as close as possible to the value specified by the <code>maxDistance</code> parameter.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>maxDistance:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the maximum distance between the points
+
+</li>
+	
+</ul>
+
+	
+	
+	<h4>Example:<span class="description">Flattening a circle shaped path:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-56">
+// Create a circle shaped path at { x: 80, y: 50 }
+// with a radius of 35:
+var path = new Path.Circle({
+    center: new Size(80, 50),
+    radius: 35
+});
+
+// Select the path, so we can inspect its segments:
+path.selected = true;
+
+// Create a copy of the path and move it 150 points to the right:
+var copy = path.clone();
+copy.position.x += 150;
+
+// Convert its curves to points, with a max distance of 20:
+copy.flatten(20);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-56"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
 <div id="smooth" class="member">
 <div class="member-link">
 <a name="smooth" href="#smooth"><tt><b>smooth</b>([options])</tt></a>
@@ -6686,7 +6736,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-56">
+<script type="text/paperscript" canvas="canvas-57">
 // Create a rectangular path with its top-left point at
 // {x: 30, y: 25} and a size of {width: 50, height: 50}:
 var path = new Path.Rectangle({
@@ -6705,7 +6755,7 @@ copy.position.x += 100;
 // Smooth the segments of the copy:
 copy.smooth({ type: 'continuous' });
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-56"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-57"></canvas></div>
 </div>
 
 
@@ -6717,7 +6767,7 @@ copy.smooth({ type: 'continuous' });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-57">
+<script type="text/paperscript" canvas="canvas-58">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -6742,7 +6792,7 @@ copy.fullySelected = true;
 // Smooth the path using centripetal Catmull-Rom splines:
 copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 </script>
-<div class="canvas"><canvas width="516" height="220" id="canvas-57"></canvas></div>
+<div class="canvas"><canvas width="516" height="220" id="canvas-58"></canvas></div>
 </div>
 
 
@@ -6754,7 +6804,7 @@ copy.smooth({ type: 'catmull-rom', factor: 0.5 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-58">
+<script type="text/paperscript" canvas="canvas-59">
 // Create 5 rectangles, next to each other:
 var paths = [];
 for (var i = 0; i < 5; i++) {
@@ -6784,7 +6834,87 @@ paths[3].smooth({ type: 'continuous', from: 0, to: 2 });
 // Smooth a range, using negative indices:
 paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 </script>
-<div class="canvas"><canvas width="516" height="110" id="canvas-58"></canvas></div>
+<div class="canvas"><canvas width="516" height="110" id="canvas-59"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="simplify" class="member">
+<div class="member-link">
+<a name="simplify" href="#simplify"><tt><b>simplify</b>([tolerance])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Fits a sequence of as few curves as possible through the path&rsquo;s anchor points, ignoring the path items&rsquo;s curve-handles, with an allowed maximum error. When called on <a href="../classes/CompoundPath.html"><tt>CompoundPath</tt></a> items, each of the nested paths is simplified. On <a href="../classes/Path.html"><tt>Path</tt></a> items, the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array is processed and replaced by the resulting sequence of fitted curves.</p>
+<p>This method can be used to process and simplify the point data received from a mouse or touch device.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>tolerance:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the allowed maximum error when fitting  the curves through the segment points
+&mdash;&nbsp;optional, default: <tt>2.5</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the method was capable of fitting curves  through the path&rsquo;s segment points, <tt>false</tt> otherwise
+</li>
+		
+	</ul>
+
+	
+	<h4>Example:<span class="description">Click and drag below to draw to draw a line, when you release the mouse, the is made smooth using path.simplify():</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-60">
+var path;
+function onMouseDown(event) {
+    // If we already made a path before, deselect it:
+    if (path) {
+        path.selected = false;
+    }
+
+    // Create a new path and add the position of the mouse
+    // as its first segment. Select it, so we can see the
+    // segment points:
+    path = new Path({
+        segments: [event.point],
+        strokeColor: 'black',
+        selected: true
+    });
+}
+
+function onMouseDrag(event) {
+    // On every drag event, add a segment to the path
+    // at the position of the mouse:
+    path.add(event.point);
+}
+
+function onMouseUp(event) {
+    // When the mouse is released, simplify the path:
+    path.simplify();
+    path.selected = true;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-60"></canvas></div>
 </div>
 
 
@@ -7020,7 +7150,7 @@ paths[4].smooth({ type: 'continuous', from: -1, to: 1 });
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-59">
+<script type="text/paperscript" canvas="canvas-61">
 var myPath;
 function onMouseMove(event) {
     // If we created a path before, remove it:
@@ -7041,7 +7171,7 @@ function onMouseMove(event) {
     myPath.selected = true;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-59"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-61"></canvas></div>
 </div>
 
 
@@ -7088,7 +7218,7 @@ function onMouseMove(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-60">
+<script type="text/paperscript" canvas="canvas-62">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7108,7 +7238,7 @@ path.arcTo(throughPoint, toPoint);
 var circle = new Path.Circle(throughPoint, 3);
 circle.fillColor = 'red';
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-60"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
 </div>
 
 
@@ -7120,7 +7250,7 @@ circle.fillColor = 'red';
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-61">
+<script type="text/paperscript" canvas="canvas-63">
 var myPath;
 function onMouseDrag(event) {
     // If we created a path before, remove it:
@@ -7148,7 +7278,7 @@ function onMouseUp(event) {
     myPath.fillColor = 'black';
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-61"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-63"></canvas></div>
 </div>
 
 
@@ -7195,7 +7325,7 @@ function onMouseUp(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-62">
+<script type="text/paperscript" canvas="canvas-64">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7210,7 +7340,7 @@ path2.add(new Point(180, 25));
 // we pass `false` as the second argument to arcTo:
 path2.arcTo(new Point(280, 25), false);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-62"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
 </div>
 
 
@@ -7222,7 +7352,7 @@ path2.arcTo(new Point(280, 25), false);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-63">
+<script type="text/paperscript" canvas="canvas-65">
 var myPath;
 
 // The mouse has to move at least 20 points before
@@ -7243,7 +7373,7 @@ function onMouseDrag(event) {
     myPath.arcTo(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-63"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-65"></canvas></div>
 </div>
 
 
@@ -7350,7 +7480,7 @@ function onMouseDrag(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-64">
+<script type="text/paperscript" canvas="canvas-66">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7364,7 +7494,7 @@ path.lineBy(50, 0);
 // 0 in x direction and 50 in y direction, becomes {x: 75, y: 75}
 path.lineBy(0, 50);
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-66"></canvas></div>
 </div>
 
 
@@ -7376,7 +7506,7 @@ path.lineBy(0, 50);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-65">
+<script type="text/paperscript" canvas="canvas-67">
 var path = new Path();
 path.strokeColor = 'black';
 
@@ -7402,7 +7532,7 @@ path.smooth();
 // the construction of the path:
 // path.selected = true;
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-65"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-67"></canvas></div>
 </div>
 
 

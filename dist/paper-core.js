@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 10:07:28 2016 +0100
+ * Date: Tue Feb 9 14:13:30 2016 +0100
  *
  ***
  *
@@ -7764,39 +7764,6 @@ var Path = PathItem.extend({
 			this.setSelected(true);
 	},
 
-	flatten: function(maxDistance) {
-		var iterator = new PathIterator(this, 64, 0.1),
-			pos = 0,
-			step = iterator.length / Math.ceil(iterator.length / maxDistance),
-			end = iterator.length + (this._closed ? -step : step) / 2;
-		var segments = [];
-		while (pos <= end) {
-			segments.push(new Segment(iterator.getPointAt(pos)));
-			pos += step;
-		}
-		this.setSegments(segments);
-	},
-
-	reduce: function(options) {
-		var curves = this.getCurves(),
-			simplify = options && options.simplify,
-			tolerance = simplify ? 2e-7 : 0;
-		for (var i = curves.length - 1; i >= 0; i--) {
-			var curve = curves[i];
-			if (!curve.hasHandles() && (curve.getLength() < tolerance
-					|| simplify && curve.isCollinear(curve.getNext())))
-				curve.remove();
-		}
-		return this;
-	},
-
-	simplify: function(tolerance) {
-		if (this._segments.length > 2) {
-			var fitter = new PathFitter(this, tolerance || 2.5);
-			this.setSegments(fitter.fit());
-		}
-	},
-
 	splitAt: function(location) {
 		var index = location && location.index,
 			time = location && location.time,
@@ -7836,21 +7803,6 @@ var Path = PathItem.extend({
 		return location ? this.splitAt(location) : null;
 	},
 
-	reverse: function() {
-		this._segments.reverse();
-		for (var i = 0, l = this._segments.length; i < l; i++) {
-			var segment = this._segments[i];
-			var handleIn = segment._handleIn;
-			segment._handleIn = segment._handleOut;
-			segment._handleOut = handleIn;
-			segment._index = i;
-		}
-		this._curves = null;
-		if (this._clockwise !== undefined)
-			this._clockwise = !this._clockwise;
-		this._changed(9);
-	},
-
 	join: function(path) {
 		if (path) {
 			var segments = path._segments,
@@ -7888,6 +7840,159 @@ var Path = PathItem.extend({
 			this.setClosed(true);
 		}
 		return this;
+	},
+
+	reverse: function() {
+		this._segments.reverse();
+		for (var i = 0, l = this._segments.length; i < l; i++) {
+			var segment = this._segments[i];
+			var handleIn = segment._handleIn;
+			segment._handleIn = segment._handleOut;
+			segment._handleOut = handleIn;
+			segment._index = i;
+		}
+		this._curves = null;
+		if (this._clockwise !== undefined)
+			this._clockwise = !this._clockwise;
+		this._changed(9);
+	},
+
+	flatten: function(maxDistance) {
+		var iterator = new PathIterator(this, 64, 0.1),
+			pos = 0,
+			step = iterator.length / Math.ceil(iterator.length / maxDistance),
+			end = iterator.length + (this._closed ? -step : step) / 2;
+		var segments = [];
+		while (pos <= end) {
+			segments.push(new Segment(iterator.getPointAt(pos)));
+			pos += step;
+		}
+		this.setSegments(segments);
+	},
+
+	reduce: function(options) {
+		var curves = this.getCurves(),
+			simplify = options && options.simplify,
+			tolerance = simplify ? 2e-7 : 0;
+		for (var i = curves.length - 1; i >= 0; i--) {
+			var curve = curves[i];
+			if (!curve.hasHandles() && (curve.getLength() < tolerance
+					|| simplify && curve.isCollinear(curve.getNext())))
+				curve.remove();
+		}
+		return this;
+	},
+
+	simplify: function(tolerance) {
+		var segments = new PathFitter(this).fit(tolerance || 2.5);
+		if (segments)
+			this.setSegments(segments);
+		return !!segments;
+	},
+
+	smooth: function(options) {
+		function getIndex(value, _default) {
+			var index = value && value.index;
+			if (index != null) {
+				var path = value.path;
+				if (path && path !== that)
+					throw new Error(value._class + ' ' + index + ' of ' + path
+							+ ' is not part of ' + that);
+				if (_default && value instanceof Curve)
+					index++;
+			} else {
+				index = typeof value === 'number' ? value : _default;
+			}
+			return Math.min(index < 0 && closed
+					? index % length
+					: index < 0 ? index + length : index, length - 1);
+		}
+
+		var that = this,
+			opts = options || {},
+			type = opts.type || 'asymmetric',
+			segments = this._segments,
+			length = segments.length,
+			closed = this._closed,
+			loop = closed && opts.from === undefined && opts.to === undefined,
+			from = getIndex(opts.from, 0),
+			to = getIndex(opts.to, length - 1);
+		if (from > to) {
+			if (closed) {
+				from -= length;
+			} else {
+				var tmp = from;
+				from = to;
+				to = tmp;
+			}
+		}
+		if (/^(?:asymmetric|continuous)$/.test(type)) {
+			var asymmetric = type === 'asymmetric',
+				min = Math.min,
+				amount = to - from + 1,
+				n = amount - 1,
+				padding = loop ? min(amount, 4) : 1,
+				paddingLeft = padding,
+				paddingRight = padding,
+				knots = [];
+			if (!closed) {
+				paddingLeft = min(1, from);
+				paddingRight = min(1, length - to - 1);
+			}
+			n += paddingLeft + paddingRight;
+			if (n <= 1)
+				return;
+			for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
+				knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
+			}
+
+			var x = knots[0]._x + 2 * knots[1]._x,
+				y = knots[0]._y + 2 * knots[1]._y,
+				f = 2,
+				n_1 = n - 1,
+				rx = [x],
+				ry = [y],
+				rf = [f],
+				px = [],
+				py = [];
+			for (var i = 1; i < n; i++) {
+				var internal = i < n_1,
+					a = internal ? 1 : asymmetric ? 1 : 2,
+					b = internal ? 4 : asymmetric ? 2 : 7,
+					u = internal ? 4 : asymmetric ? 3 : 8,
+					v = internal ? 2 : asymmetric ? 0 : 1,
+					m = a / f;
+				f = rf[i] = b - m;
+				x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x;
+				y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y;
+			}
+
+			px[n_1] = rx[n_1] / rf[n_1];
+			py[n_1] = ry[n_1] / rf[n_1];
+			for (var i = n - 2; i >= 0; i--) {
+				px[i] = (rx[i] - px[i + 1]) / rf[i];
+				py[i] = (ry[i] - py[i + 1]) / rf[i];
+			}
+			px[n] = (3 * knots[n]._x - px[n_1]) / 2;
+			py[n] = (3 * knots[n]._y - py[n_1]) / 2;
+
+			for (var i = paddingLeft, max = n - paddingRight, j = from;
+					i <= max; i++, j++) {
+				var segment = segments[j < 0 ? j + length : j],
+					pt = segment._point,
+					hx = px[i] - pt._x,
+					hy = py[i] - pt._y;
+				if (loop || i < max)
+					segment.setHandleOut(hx, hy);
+				if (loop || i > paddingLeft)
+					segment.setHandleIn(-hx, -hy);
+			}
+		} else {
+			for (var i = from; i <= to; i++) {
+				segments[i < 0 ? i + length : i].smooth(opts,
+						!loop && i === from, !loop && i === to);
+			}
+		}
 	},
 
 	toShape: function(insert) {
@@ -8172,111 +8277,6 @@ var Path = PathItem.extend({
 
 	getNearestPoint: function() {
 		return this.getNearestLocation.apply(this, arguments).getPoint();
-	},
-
-	smooth: function(options) {
-		function getIndex(value, _default) {
-			var index = value && value.index;
-			if (index != null) {
-				var path = value.path;
-				if (path && path !== that)
-					throw new Error(value._class + ' ' + index + ' of ' + path
-							+ ' is not part of ' + that);
-				if (_default && value instanceof Curve)
-					index++;
-			} else {
-				index = typeof value === 'number' ? value : _default;
-			}
-			return Math.min(index < 0 && closed
-					? index % length
-					: index < 0 ? index + length : index, length - 1);
-		}
-
-		var that = this,
-			opts = options || {},
-			type = opts.type || 'asymmetric',
-			segments = this._segments,
-			length = segments.length,
-			closed = this._closed,
-			loop = closed && opts.from === undefined && opts.to === undefined,
-			from = getIndex(opts.from, 0),
-			to = getIndex(opts.to, length - 1);
-		if (from > to) {
-			if (closed) {
-				from -= length;
-			} else {
-				var tmp = from;
-				from = to;
-				to = tmp;
-			}
-		}
-		if (/^(?:asymmetric|continuous)$/.test(type)) {
-			var asymmetric = type === 'asymmetric',
-				min = Math.min,
-				amount = to - from + 1,
-				n = amount - 1,
-				padding = loop ? min(amount, 4) : 1,
-				paddingLeft = padding,
-				paddingRight = padding,
-				knots = [];
-			if (!closed) {
-				paddingLeft = min(1, from);
-				paddingRight = min(1, length - to - 1);
-			}
-			n += paddingLeft + paddingRight;
-			if (n <= 1)
-				return;
-			for (var i = 0, j = from - paddingLeft; i <= n; i++, j++) {
-				knots[i] = segments[(j < 0 ? j + length : j) % length]._point;
-			}
-
-			var x = knots[0]._x + 2 * knots[1]._x,
-				y = knots[0]._y + 2 * knots[1]._y,
-				f = 2,
-				n_1 = n - 1,
-				rx = [x],
-				ry = [y],
-				rf = [f],
-				px = [],
-				py = [];
-			for (var i = 1; i < n; i++) {
-				var internal = i < n_1,
-					a = internal ? 1 : asymmetric ? 1 : 2,
-					b = internal ? 4 : asymmetric ? 2 : 7,
-					u = internal ? 4 : asymmetric ? 3 : 8,
-					v = internal ? 2 : asymmetric ? 0 : 1,
-					m = a / f;
-				f = rf[i] = b - m;
-				x = rx[i] = u * knots[i]._x + v * knots[i + 1]._x - m * x;
-				y = ry[i] = u * knots[i]._y + v * knots[i + 1]._y - m * y;
-			}
-
-			px[n_1] = rx[n_1] / rf[n_1];
-			py[n_1] = ry[n_1] / rf[n_1];
-			for (var i = n - 2; i >= 0; i--) {
-				px[i] = (rx[i] - px[i + 1]) / rf[i];
-				py[i] = (ry[i] - py[i + 1]) / rf[i];
-			}
-			px[n] = (3 * knots[n]._x - px[n_1]) / 2;
-			py[n] = (3 * knots[n]._y - py[n_1]) / 2;
-
-			for (var i = paddingLeft, max = n - paddingRight, j = from;
-					i <= max; i++, j++) {
-				var segment = segments[j < 0 ? j + length : j],
-					pt = segment._point,
-					hx = px[i] - pt._x,
-					hy = py[i] - pt._y;
-				if (loop || i < max)
-					segment.setHandleOut(hx, hy);
-				if (loop || i > paddingLeft)
-					segment.setHandleIn(-hx, -hy);
-			}
-		} else {
-			for (var i = from; i <= to; i++) {
-				segments[i < 0 ? i + length : i].smooth(opts,
-						!loop && i === from, !loop && i === to);
-			}
-		}
 	}
 }),
 new function() {
@@ -9040,12 +9040,6 @@ var CompoundPath = PathItem.extend({
 		return items;
 	},
 
-	reverse: function() {
-		var children = this._children;
-		for (var i = 0, l = children.length; i < l; i++)
-			children[i].reverse();
-	},
-
 	reduce: function reduce(options) {
 		var children = this._children;
 		for (var i = children.length - 1; i >= 0; i--) {
@@ -9061,12 +9055,6 @@ var CompoundPath = PathItem.extend({
 			return path;
 		}
 		return reduce.base.call(this);
-	},
-
-	smooth: function(options) {
-		var children = this._children;
-		for (var i = 0, l = children.length; i < l; i++)
-			children[i].smooth(options);
 	},
 
 	isClockwise: function() {
@@ -9176,40 +9164,46 @@ new function() {
 		return children[children.length - 1];
 	}
 
-	var fields = {
-		moveTo: function() {
-			var current = getCurrentPath(this),
-				path = current && current.isEmpty() ? current
-						: new Path(Item.NO_INSERT);
-			if (path !== current)
-				this.addChild(path);
-			path.moveTo.apply(path, arguments);
-		},
+	return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+			'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
+			'arcBy'],
+		function(key) {
+			this[key] = function() {
+				var path = getCurrentPath(this, true);
+				path[key].apply(path, arguments);
+			};
+		}, {
+			moveTo: function() {
+				var current = getCurrentPath(this),
+					path = current && current.isEmpty() ? current
+							: new Path(Item.NO_INSERT);
+				if (path !== current)
+					this.addChild(path);
+				path.moveTo.apply(path, arguments);
+			},
 
-		moveBy: function() {
-			var current = getCurrentPath(this, true),
-				last = current && current.getLastSegment(),
-				point = Point.read(arguments);
-			this.moveTo(last ? point.add(last._point) : point);
-		},
+			moveBy: function() {
+				var current = getCurrentPath(this, true),
+					last = current && current.getLastSegment(),
+					point = Point.read(arguments);
+				this.moveTo(last ? point.add(last._point) : point);
+			},
 
-		closePath: function(join) {
-			getCurrentPath(this, true).closePath(join);
-		}
-	};
-
-	Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
-			'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
-			function(key) {
-				fields[key] = function() {
-					var path = getCurrentPath(this, true);
-					path[key].apply(path, arguments);
-				};
+			closePath: function(join) {
+				getCurrentPath(this, true).closePath(join);
 			}
+		}
 	);
-
-	return fields;
-});
+}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+	this[key] = function(param) {
+		var children = this._children,
+			res;
+		for (var i = 0, l = children.length; i < l; i++) {
+			res = children[i][key](param) || res;
+		}
+		return res;
+	};
+}, {}));
 
 PathItem.inject(new function() {
 	var operators = {
@@ -9972,63 +9966,61 @@ var PathIterator = Base.extend({
 );
 
 var PathFitter = Base.extend({
-	initialize: function(path, error) {
+	initialize: function(path) {
 		var points = this.points = [],
 			segments = path._segments,
-			prev;
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var point = segments[i].point.clone();
+			closed = path._closed;
+		for (var i = 0, prev, l = segments.length; i < l; i++) {
+			var point = segments[i].point;
 			if (!prev || !prev.equals(point)) {
-				points.push(point);
-				prev = point;
+				points.push(prev = point.clone());
 			}
 		}
-
-		if (path._closed) {
-			this.closed = true;
+		if (closed) {
 			points.unshift(points[points.length - 1]);
 			points.push(points[1]);
 		}
-
-		this.error = error;
+		this.closed = closed;
 	},
 
-	fit: function() {
+	fit: function(error) {
 		var points = this.points,
 			length = points.length,
-			segments = this.segments = length > 0
-					? [new Segment(points[0])] : [];
-		if (length > 1)
-			this.fitCubic(0, length - 1,
-				points[1].subtract(points[0]).normalize(),
-				points[length - 2].subtract(points[length - 1]).normalize());
-
-		if (this.closed) {
-			segments.shift();
-			segments.pop();
+			segments = null;
+		if (length > 0) {
+			segments = [new Segment(points[0])];
+			if (length > 1) {
+				this.fitCubic(segments, error, 0, length - 1,
+						points[1].subtract(points[0]),
+						points[length - 2].subtract(points[length - 1]));
+				if (this.closed) {
+					segments.shift();
+					segments.pop();
+				}
+			}
 		}
-
 		return segments;
 	},
 
-	fitCubic: function(first, last, tan1, tan2) {
-		if (last - first == 1) {
-			var pt1 = this.points[first],
-				pt2 = this.points[last],
+	fitCubic: function(segments, error, first, last, tan1, tan2) {
+		var points = this.points;
+		if (last - first === 1) {
+			var pt1 = points[first],
+				pt2 = points[last],
 				dist = pt1.getDistance(pt2) / 3;
-			this.addCurve([pt1, pt1.add(tan1.normalize(dist)),
+			this.addCurve(segments, [pt1, pt1.add(tan1.normalize(dist)),
 					pt2.add(tan2.normalize(dist)), pt2]);
 			return;
 		}
 		var uPrime = this.chordLengthParameterize(first, last),
-			maxError = Math.max(this.error, this.error * this.error),
+			maxError = Math.max(error, error * error),
 			split,
 			parametersInOrder = true;
 		for (var i = 0; i <= 4; i++) {
 			var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
 			var max = this.findMaxError(first, last, curve, uPrime);
-			if (max.error < this.error && parametersInOrder) {
-				this.addCurve(curve);
+			if (max.error < error && parametersInOrder) {
+				this.addCurve(segments, curve);
 				return;
 			}
 			split = max.index;
@@ -10037,23 +10029,23 @@ var PathFitter = Base.extend({
 			parametersInOrder = this.reparameterize(first, last, uPrime, curve);
 			maxError = max.error;
 		}
-		var tanCenter = this.points[split - 1].subtract(this.points[split + 1])
-				.normalize();
-		this.fitCubic(first, split, tan1, tanCenter);
-		this.fitCubic(split, last, tanCenter.negate(), tan2);
+		var tanCenter = points[split - 1].subtract(points[split + 1]);
+		this.fitCubic(segments, error, first, split, tan1, tanCenter);
+		this.fitCubic(segments, error, split, last, tanCenter.negate(), tan2);
 	},
 
-	addCurve: function(curve) {
-		var prev = this.segments[this.segments.length - 1];
+	addCurve: function(segments, curve) {
+		var prev = segments[segments.length - 1];
 		prev.setHandleOut(curve[1].subtract(curve[0]));
-		this.segments.push(
-				new Segment(curve[3], curve[2].subtract(curve[3])));
+		segments.push(new Segment(curve[3], curve[2].subtract(curve[3])));
 	},
 
 	generateBezier: function(first, last, uPrime, tan1, tan2) {
 		var epsilon = 1e-12,
-			pt1 = this.points[first],
-			pt2 = this.points[last],
+			abs = Math.abs,
+			points = this.points,
+			pt1 = points[first],
+			pt2 = points[last],
 			C = [[0, 0], [0, 0]],
 			X = [0, 0];
 
@@ -10067,7 +10059,7 @@ var PathFitter = Base.extend({
 				b3 = u * u * u,
 				a1 = tan1.normalize(b1),
 				a2 = tan2.normalize(b2),
-				tmp = this.points[first + i]
+				tmp = points[first + i]
 					.subtract(pt1.multiply(b0 + b1))
 					.subtract(pt2.multiply(b2 + b3));
 			C[0][0] += a1.dot(a1);
@@ -10080,7 +10072,7 @@ var PathFitter = Base.extend({
 
 		var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
 			alpha1, alpha2;
-		if (Math.abs(detC0C1) > epsilon) {
+		if (abs(detC0C1) > epsilon) {
 			var detC0X  = C[0][0] * X[1]    - C[1][0] * X[0],
 				detXC1  = X[0]    * C[1][1] - X[1]    * C[0][1];
 			alpha1 = detXC1 / detC0C1;
@@ -10088,9 +10080,9 @@ var PathFitter = Base.extend({
 		} else {
 			var c0 = C[0][0] + C[0][1],
 				c1 = C[1][0] + C[1][1];
-			if (Math.abs(c0) > epsilon) {
+			if (abs(c0) > epsilon) {
 				alpha1 = alpha2 = X[0] / c0;
-			} else if (Math.abs(c1) > epsilon) {
+			} else if (abs(c1) > epsilon) {
 				alpha1 = alpha2 = X[1] / c1;
 			} else {
 				alpha1 = alpha2 = 0;
@@ -10113,8 +10105,10 @@ var PathFitter = Base.extend({
 			}
 		}
 
-		return [pt1, pt1.add(handle1 || tan1.normalize(alpha1)),
-				pt2.add(handle2 || tan2.normalize(alpha2)), pt2];
+		return [pt1,
+				pt1.add(handle1 || tan1.normalize(alpha1)),
+				pt2.add(handle2 || tan2.normalize(alpha2)),
+				pt2];
 	},
 
 	reparameterize: function(first, last, u, curve) {
