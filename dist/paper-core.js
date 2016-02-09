@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 16:52:55 2016 +0100
+ * Date: Tue Feb 9 17:02:03 2016 +0100
  *
  ***
  *
@@ -3589,11 +3589,12 @@ new function() {
 		return res;
 	},
 
-	_hitTestChildren: function(point, options) {
+	_hitTestChildren: function(point, options, _exclude) {
 		var children = this._children;
 		if (children) {
 			for (var i = children.length - 1; i >= 0; i--) {
-				var res = children[i]._hitTest(point, options);
+				var child = children[i];
+				var res = child !== _exclude && child._hitTest(point, options);
 				if (res)
 					return res;
 			}
@@ -4345,6 +4346,12 @@ var Group = Item.extend({
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	_hitTestChildren: function _hitTestChildren(point, options) {
+		var clipItem = this._getClipItem();
+		return (!clipItem || clipItem.contains(point))
+				&& _hitTestChildren.base.call(this, point, options, clipItem);
 	},
 
 	_draw: function(ctx, param) {
