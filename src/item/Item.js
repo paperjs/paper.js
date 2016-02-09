@@ -1473,8 +1473,9 @@ new function() { // // Scope to inject various item event handlers
         var copy = new this.constructor(Item.NO_INSERT),
             children = this._children,
             // Both `insert` and `deep` are true by default:
-            insert = Base.pick(options && options.insert, true),
-            deep = Base.pick(options && options.deep, true);
+            insert = Base.pick(options ? options.insert : undefined,
+                    options === undefined || options === true),
+            deep = Base.pick(options ? options.deep : undefined, true);
         // On items with children, for performance reasons due to the way that
         // styles are currently "flattened" into existing children, we need to
         // clone attributes first, then content.
