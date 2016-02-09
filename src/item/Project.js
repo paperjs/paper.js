@@ -341,11 +341,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @option options.class {Function} only hit-test again a certain item class
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
      *     Shape, Raster, SymbolItem, PointText, ...}
-     * @option options.fill {Boolean} hit-test the fill of items
-     * @option options.stroke {Boolean} hit-test the stroke of path items,
-     *     taking into account the setting of stroke color and width
-     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     *     {@link Path} items
+     * @option [options.fill=true] {Boolean} hit-test the fill of items
+     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
+     *     items, taking into account the setting of stroke color and width
+     * @option [options.segments=true] {Boolean} hit-test for {@link
+     *     Segment#point} of {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
@@ -362,7 +362,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     *     tolerance: true }]
+     *     tolerance: settings.hitTolerance }]
      * @return {HitResult} a hit result object that contains more information
      *     about what exactly was hit or `null` if nothing was hit
      */

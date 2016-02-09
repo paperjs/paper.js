@@ -1443,9 +1443,14 @@ new function() { // // Scope to inject various item event handlers
      * Clones the item within the same project and places the copy above the
      * item.
      *
-     * @param {Boolean} [insert=true] specifies whether the copy should be
+     * @option [insert=true] specifies whether the copy should be
      *     inserted into the scene graph. When set to `true`, it is inserted
      *     above the original
+     * @option [deep=true] specifies whether the item's children should also be
+     *     cloned
+     *
+     * @param {Object} [options={ insert: true, deep: true }]
+     *
      * @return {Item} the newly cloned item
      *
      * @example {@paperscript}
@@ -1464,9 +1469,12 @@ new function() { // // Scope to inject various item event handlers
      *     copy.position.x += i * copy.bounds.width;
      * }
      */
-    clone: function(insert) {
+    clone: function(options) {
         var copy = new this.constructor(Item.NO_INSERT),
-            children = this._children;
+            children = this._children,
+            // Both `insert` and `deep` are true by default:
+            insert = Base.pick(options && options.insert, true),
+            deep = Base.pick(options && options.deep, true);
         // On items with children, for performance reasons due to the way that
         // styles are currently "flattened" into existing children, we need to
         // clone attributes first, then content.
@@ -1474,11 +1482,13 @@ new function() { // // Scope to inject various item event handlers
         // attributes might have an impact on their content.
         if (children)
             copy.copyAttributes(this);
-        copy.copyContent(this);
+        // Only copy content if we don't have children or if we're ask to create
+        // a deep clone, which is the default.
+        if (!children || deep)
+            copy.copyContent(this);
         if (!children)
             copy.copyAttributes(this);
-        // Insert is true by default.
-        if (insert === undefined || insert)
+        if (insert)
             copy.insertAbove(this);
         // Make sure we're not overriding the original name in the same parent
         var name = this._name,
@@ -1710,15 +1720,15 @@ new function() { // // Scope to inject various item event handlers
      * @option options.class {Function} only hit-test again a certain item class
      *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
      *     Shape, Raster, SymbolItem, PointText, ...}
-     * @option options.fill {Boolean} hit-test the fill of items
-     * @option options.stroke {Boolean} hit-test the stroke of path and shape
+     * @option [options.fill=true] {Boolean} hit-test the fill of items
+     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
      *     items, taking into account the setting of stroke color and width
-     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     *     {@link Path} items
+     * @option [options.segments=true] {Boolean} hit-test for {@link
+     *     Segment#point} of {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
-     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments
+     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
      *     segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
@@ -1731,7 +1741,7 @@ new function() { // // Scope to inject various item event handlers
      *
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     *     tolerance: 2 }]
+     *     tolerance: settings.hitTolerance }]
      * @return {HitResult} a hit result object that contains more information
      *     about what exactly was hit or `null` if nothing was hit
      */
