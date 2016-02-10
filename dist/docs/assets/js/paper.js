@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 10 17:46:39 2016 +0100
+ * Date: Wed Feb 10 18:13:13 2016 +0100
  *
  ***
  *
@@ -13486,7 +13486,6 @@ new function() {
 				var child = nodes[i],
 					next;
 				if (child.nodeType === 1) {
-					rootSize = getSize(child);
 					var body = document.body,
 						parent = !paper.agent.node && SvgElement.create('svg');
 					if (parent) {
@@ -13695,7 +13694,7 @@ new function() {
 
 		viewBox: function(item, value, name, node, styles) {
 			var rect = new Rectangle(convertValue(value, 'array')),
-				size = getSize(node, 'width', 'height', true);
+				size = getSize(node, null, null, true);
 			if (item instanceof Group) {
 				var scale = size ? rect.getSize().divide(size) : 1,
 					matrix = new Matrix().translate(rect.getPoint()).scale(scale);
@@ -13743,8 +13742,13 @@ new function() {
 
 	var definitions = {};
 	function getDefinition(value) {
-		var match = value && value.match(/\((?:["'#]*)([^"')]+)/);
-		return match && definitions[match[1]];
+		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
+			res = match && definitions[match[1]];
+		if (res && res._scaleToBounds) {
+			res = res.clone();
+			res._scaleToBounds = true;
+		}
+		return res;
 	}
 
 	function importSVG(source, options, isRoot) {
@@ -13780,24 +13784,28 @@ new function() {
 			}
 		}
 
-		if (typeof source === 'string')
+		if (typeof source === 'string') {
 			node = new window.DOMParser().parseFromString(source,
 					'image/svg+xml');
+		}
 		if (!node.nodeName)
 			throw new Error('Unsupported SVG source: ' + source);
 		var type = node.nodeName.toLowerCase(),
+			isElement = type !== '#document',
 			importer = importers[type],
 			item,
-			data = node.getAttribute && node.getAttribute('data-paper-data'),
+			data = isElement && node.getAttribute('data-paper-data'),
 			settings = scope.settings,
 			applyMatrix = settings.applyMatrix;
-		if (isRoot)
-			rootSize = scope.getView().getSize();
+		if (isRoot && isElement) {
+			rootSize = getSize(node, null, null, true)
+					|| scope.getView().getSize();
+		}
 		settings.applyMatrix = false;
 		item = importer && importer(node, type, options, isRoot) || null;
 		settings.applyMatrix = applyMatrix;
 		if (item) {
-			if (type !== '#document' && !(item instanceof Group))
+			if (isElement && !(item instanceof Group))
 				item = applyAttributes(item, node, isRoot);
 			var onImport = options.onImport;
 			if (onImport)
