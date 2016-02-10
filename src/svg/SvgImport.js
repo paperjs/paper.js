@@ -21,7 +21,7 @@ new function() {
 
     var rootSize;
 
-    function getValue(node, name, isString, allowNull) {
+    function getValue(node, name, isString, allowNull, allowPercent) {
         // Interpret value as number. Never return NaN, but 0 instead.
         // If the value is a sequence of numbers, parseFloat will
         // return the first occurring number, which is enough for now.
@@ -37,21 +37,21 @@ new function() {
         // is not set (e.g. during <defs>), just scale the percentage value to
         // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
         return /%\s*$/.test(value)
-            ? (res / 100) * (rootSize ? rootSize[
-                /x|^width/.test(name) ? 'width' : 'height'] : 1)
+            ? (res / 100) * (allowPercent ? 1
+                : rootSize[/x|^width/.test(name) ? 'width' : 'height'])
             : res;
     }
 
-    function getPoint(node, x, y, allowNull) {
-        x = getValue(node, x || 'x', false, allowNull);
-        y = getValue(node, y || 'y', false, allowNull);
+    function getPoint(node, x, y, allowNull, allowPercent) {
+        x = getValue(node, x || 'x', false, allowNull, allowPercent);
+        y = getValue(node, y || 'y', false, allowNull, allowPercent);
         return allowNull && (x == null || y == null) ? null
                 : new Point(x, y);
     }
 
-    function getSize(node, w, h, allowNull) {
-        w = getValue(node, w || 'width', false, allowNull);
-        h = getValue(node, h || 'height', false, allowNull);
+    function getSize(node, w, h, allowNull, allowPercent) {
+        w = getValue(node, w || 'width', false, allowNull, allowPercent);
+        h = getValue(node, h || 'height', false, allowNull, allowPercent);
         return allowNull && (w == null || h == null) ? null
                 : new Size(w, h);
     }
@@ -147,20 +147,18 @@ new function() {
 
     function importGradient(node, type) {
         var id = (getValue(node, 'href', true) || '').substring(1),
-            isRadial = type === 'radialgradient',
-            gradient,
-            scaleToBounds = getValue(node, 'gradientUnits', true) !==
-                'userSpaceOnUse';
-            prevSize = rootSize;
-        // Clear rootSize during import so that percentage sizes don't get
-        // scaled yet.
-        if (scaleToBounds)
-            rootSize = null;
+            radial = type === 'radialgradient',
+            gradient;
         if (id) {
             // Gradients are always wrapped in a Color object, so get the
             // gradient object from there.
             // TODO: Handle exception if there is no definition for this id.
             gradient = definitions[id].getGradient();
+            // Create a clone if radial setting is different:
+            if (gradient._radial ^ radial) {
+                gradient = gradient.clone();
+                gradient._radial = radial;
+            }
         } else {
             var nodes = node.childNodes,
                 stops = [];
@@ -169,22 +167,25 @@ new function() {
                 if (child.nodeType === 1)
                     stops.push(applyAttributes(new GradientStop(), child));
             }
-            gradient = new Gradient(stops, isRadial);
+            gradient = new Gradient(stops, radial);
         }
-        var origin, destination, highlight;
-        if (isRadial) {
-            origin = getPoint(node, 'cx', 'cy');
-            destination = origin.add(getValue(node, 'r'), 0);
-            highlight = getPoint(node, 'fx', 'fy', true);
+        var origin, destination, highlight,
+            scaleToBounds = getValue(node, 'gradientUnits', true) !==
+                'userSpaceOnUse';
+        // Allow percentages in all values if scaleToBounds is true:
+        if (radial) {
+            origin = getPoint(node, 'cx', 'cy', false, scaleToBounds);
+            destination = origin.add(
+                    getValue(node, 'r', false, false, scaleToBounds), 0);
+            highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds);
         } else {
-            origin = getPoint(node, 'x1', 'y1');
-            destination = getPoint(node, 'x2', 'y2');
+            origin = getPoint(node, 'x1', 'y1', false, scaleToBounds);
+            destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
         }
         var color = applyAttributes(
             new Color(gradient, origin, destination, highlight), node);
         // TODO: Consider adding support for _scaleToBounds to Color instead?
         color._scaleToBounds = scaleToBounds;
-        rootSize = prevSize;
         // We don't return the gradient, since we only need a reference to it in
         // definitions, which is created in applyAttributes()
         return null;
