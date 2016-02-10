@@ -9551,22 +9551,22 @@ function onMouseMove(event) {
 </div>
 
 	
-<div id="flatten-maxDistance" class="member">
+<div id="flatten-flatness" class="member">
 <div class="member-link">
-<a name="flatten-maxDistance" href="#flatten-maxDistance"><tt><b>flatten</b>(maxDistance)</tt></a>
+<a name="flatten-flatness" href="#flatten-flatness"><tt><b>flatten</b>(flatness)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Converts the curves in a path to straight lines with an even distribution of points. The distance between the produced segments is as close as possible to the value specified by the <code>maxDistance</code> parameter.</p>
+	<p>Flattens the curves in path items to a sequence of straight lines, by subdividing them enough times until the specified maximum error is met.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>maxDistance:</tt> 
+<tt>flatness:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;the maximum distance between the points
+&mdash;&nbsp;the maximum error between the flattened lines  and the original curves
 
 </li>
 	
@@ -9597,8 +9597,8 @@ path.selected = true;
 var copy = path.clone();
 copy.position.x += 150;
 
-// Convert its curves to points, with a max distance of 20:
-copy.flatten(20);
+// Convert its curves to points, with a maximum error of 10:
+copy.flatten(10);
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-104"></canvas></div>
 </div>

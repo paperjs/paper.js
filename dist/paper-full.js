@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 10 13:26:40 2016 +0100
+ * Date: Wed Feb 10 14:58:40 2016 +0100
  *
  ***
  *
@@ -6062,7 +6062,7 @@ statics: {
 				: v;
 	},
 
-	isFlatEnough: function(v, tolerance) {
+	isFlatEnough: function(v, flatness) {
 		var p1x = v[0], p1y = v[1],
 			c1x = v[2], c1y = v[3],
 			c2x = v[4], c2y = v[5],
@@ -6072,7 +6072,7 @@ statics: {
 			vx = 3 * c2x - 2 * p2x - p1x,
 			vy = 3 * c2y - 2 * p2y - p1y;
 		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
-				< 10 * tolerance * tolerance;
+				<= 16 * flatness * flatness;
 	},
 
 	getArea: function(v) {
@@ -7875,6 +7875,19 @@ var Path = PathItem.extend({
 		return this;
 	},
 
+	reduce: function(options) {
+		var curves = this.getCurves(),
+			simplify = options && options.simplify,
+			tolerance = simplify ? 2e-7 : 0;
+		for (var i = curves.length - 1; i >= 0; i--) {
+			var curve = curves[i];
+			if (!curve.hasHandles() && (curve.getLength() < tolerance
+					|| simplify && curve.isCollinear(curve.getNext())))
+				curve.remove();
+		}
+		return this;
+	},
+
 	reverse: function() {
 		this._segments.reverse();
 		for (var i = 0, l = this._segments.length; i < l; i++) {
@@ -7890,30 +7903,14 @@ var Path = PathItem.extend({
 		this._changed(9);
 	},
 
-	flatten: function(maxDistance) {
-		var iterator = new PathIterator(this, 64, 0.1),
-			pos = 0,
-			step = iterator.length / Math.ceil(iterator.length / maxDistance),
-			end = iterator.length + (this._closed ? -step : step) / 2;
-		var segments = [];
-		while (pos <= end) {
-			segments.push(new Segment(iterator.getPointAt(pos)));
-			pos += step;
+	flatten: function(flatness) {
+		var iterator = new PathIterator(this, flatness || 0.25, 256, true),
+			parts = iterator.parts,
+			segments = [];
+		for (var i = 0, l = parts.length; i < l; i++) {
+			segments.push(new Segment(parts[i].curve.slice(0, 2)));
 		}
 		this.setSegments(segments);
-	},
-
-	reduce: function(options) {
-		var curves = this.getCurves(),
-			simplify = options && options.simplify,
-			tolerance = simplify ? 2e-7 : 0;
-		for (var i = curves.length - 1; i >= 0; i--) {
-			var curve = curves[i];
-			if (!curve.hasHandles() && (curve.getLength() < tolerance
-					|| simplify && curve.isCollinear(curve.getNext())))
-				curve.remove();
-		}
-		return this;
 	},
 
 	simplify: function(tolerance) {
@@ -8425,7 +8422,7 @@ new function() {
 					if (dashLength) {
 						if (!dontStart)
 							ctx.beginPath();
-						var iterator = new PathIterator(this, 32, 0.25,
+						var iterator = new PathIterator(this, 0.25, 32, false,
 								strokeMatrix),
 							length = iterator.length,
 							from = -style.getDashOffset(), to,
@@ -9880,11 +9877,11 @@ CompoundPath.inject({
 var PathIterator = Base.extend({
 	_class: 'PathIterator',
 
-	initialize: function(path, maxRecursion, tolerance, matrix) {
+	initialize: function(path, flatness, maxRecursion, ignoreStraight, matrix) {
 		var curves = [],
 			parts = [],
 			length = 0,
-			minDifference = 1 / (maxRecursion || 32),
+			minSpan = 1 / (maxRecursion || 32),
 			segments = path._segments,
 			segment1 = segments[0],
 			segment2;
@@ -9895,23 +9892,25 @@ var PathIterator = Base.extend({
 			computeParts(curve, segment1._index, 0, 1);
 		}
 
-		function computeParts(curve, index, minT, maxT) {
-			if ((maxT - minT) > minDifference
-					&& !Curve.isFlatEnough(curve, tolerance || 0.25)) {
-				var split = Curve.subdivide(curve, 0.5),
-					halfT = (minT + maxT) / 2;
-				computeParts(split[0], index, minT, halfT);
-				computeParts(split[1], index, halfT, maxT);
+		function computeParts(curve, index, t1, t2) {
+			if ((t2 - t1) > minSpan
+					&& !(ignoreStraight && Curve.isStraight(curve))
+					&& !Curve.isFlatEnough(curve, flatness || 0.25)) {
+				var halves = Curve.subdivide(curve, 0.5),
+					tMid = (t1 + t2) / 2;
+				computeParts(halves[0], index, t1, tMid);
+				computeParts(halves[1], index, tMid, t2);
 			} else {
-				var x = curve[6] - curve[0],
-					y = curve[7] - curve[1],
-					dist = Math.sqrt(x * x + y * y);
-				if (dist > 1e-6) {
+				var dx = curve[6] - curve[0],
+					dy = curve[7] - curve[1],
+					dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist > 0) {
 					length += dist;
 					parts.push({
 						offset: length,
-						value: maxT,
-						index: index
+						curve: curve,
+						index: index,
+						time: t2,
 					});
 				}
 			}
@@ -9924,14 +9923,13 @@ var PathIterator = Base.extend({
 		}
 		if (path._closed)
 			addCurve(segment2, segments[0]);
-
 		this.curves = curves;
 		this.parts = parts;
 		this.length = length;
 		this.index = 0;
 	},
 
-	getTimeAt: function(offset) {
+	_get: function(offset) {
 		var i, j = this.index;
 		for (;;) {
 			i = j;
@@ -9943,39 +9941,39 @@ var PathIterator = Base.extend({
 			if (part.offset >= offset) {
 				this.index = i;
 				var prev = this.parts[i - 1];
-				var prevVal = prev && prev.index == part.index ? prev.value : 0,
-					prevLen = prev ? prev.offset : 0;
+				var prevTime = prev && prev.index === part.index ? prev.time : 0,
+					prevOffset = prev ? prev.offset : 0;
 				return {
-					value: prevVal + (part.value - prevVal)
-						* (offset - prevLen) / (part.offset - prevLen),
-					index: part.index
+					index: part.index,
+					time: prevTime + (part.time - prevTime)
+						* (offset - prevOffset) / (part.offset - prevOffset)
 				};
 			}
 		}
 		var part = this.parts[this.parts.length - 1];
 		return {
-			value: 1,
-			index: part.index
+			index: part.index,
+			time: 1
 		};
 	},
 
 	drawPart: function(ctx, from, to) {
-		from = this.getTimeAt(from);
-		to = this.getTimeAt(to);
-		for (var i = from.index; i <= to.index; i++) {
+		var start = this._get(from),
+			end =  this._get(to);
+		for (var i = start.index, l = end.index; i <= l; i++) {
 			var curve = Curve.getPart(this.curves[i],
-					i == from.index ? from.value : 0,
-					i == to.index ? to.value : 1);
-			if (i == from.index)
+					i === start.index ? start.time : 0,
+					i === end.index ? end.time : 1);
+			if (i === start.index)
 				ctx.moveTo(curve[0], curve[1]);
 			ctx.bezierCurveTo.apply(ctx, curve.slice(2));
 		}
 	}
 }, Base.each(Curve._evaluateMethods,
 	function(name) {
-		this[name + 'At'] = function(offset, weighted) {
-			var param = this.getTimeAt(offset);
-			return Curve[name](this.curves[param.index], param.value, weighted);
+		this[name + 'At'] = function(offset) {
+			var param = this._get(offset);
+			return Curve[name](this.curves[param.index], param.time);
 		};
 	}, {})
 );
