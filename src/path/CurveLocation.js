@@ -51,17 +51,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 curve = next;
             }
         }
-        // Define this CurveLocation's unique id.
-        // NOTE: We do not use the same pool as the rest of the library here,
-        // since this is only required to be unique at runtime among other
-        // CurveLocation objects.
-        this._id = UID.get(CurveLocation);
         this._setCurve(curve);
         this._time = time;
         this._point = point || curve.getPointAtTime(time);
         this._overlap = _overlap;
         this._distance = _distance;
-        this._intersection = this._next = this._prev = null;
+        // Properties related to linked intersection locations
+        this._intersection = this._next = this._previous = null;
     },
 
     _setCurve: function(curve) {

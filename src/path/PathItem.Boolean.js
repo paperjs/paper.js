@@ -206,7 +206,7 @@ PathItem.inject(new function() {
         while (prev) {
             if (prev === to)
                 return;
-            prev = prev._prev;
+            prev = prev._previous;
         }
         // Now walk to the end of the existing chain to find an empty spot, but
         // stop if we find `to`, to avoid adding it again.
@@ -215,10 +215,10 @@ PathItem.inject(new function() {
         // If we're reached the end of the list, we can add it.
         if (!from._next) {
             // Go back to beginning of the other chain, and link the two up.
-            while (to._prev)
-                to = to._prev;
+            while (to._previous)
+                to = to._previous;
             from._next = to;
-            to._prev = from;
+            to._previous = from;
         }
     }
 
