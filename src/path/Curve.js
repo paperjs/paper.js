@@ -730,7 +730,15 @@ statics: {
                 : v;
     },
 
-    isFlatEnough: function(v, tolerance) {
+    /**
+     * Determines if a curve is sufficiently flat, meaning it appears as a
+     * straight line and has curve-time that is enough linear, as specified by
+     * the given `flatness` parameter.
+     *
+     * @param {Number} flatness the maximum error allowed for the straight line
+     *     to deviate from the curve
+     */
+    isFlatEnough: function(v, flatness) {
         // Thanks to Kaspar Fischer and Roger Willcocks for the following:
         // http://hcklbrrfnn.files.wordpress.com/2012/08/bez.pdf
         var p1x = v[0], p1y = v[1],
@@ -742,7 +750,7 @@ statics: {
             vx = 3 * c2x - 2 * p2x - p1x,
             vy = 3 * c2y - 2 * p2y - p1y;
         return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
-                < 10 * tolerance * tolerance;
+                <= 16 * flatness * flatness;
     },
 
     getArea: function(v) {

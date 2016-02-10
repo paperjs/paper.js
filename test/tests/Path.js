@@ -370,8 +370,12 @@ test('path.curves on closed paths', function() {
 test('path.flatten(maxDistance)', function() {
     var path = new Path.Circle(new Size(80, 50), 35);
 
-    // Convert its curves to points, with a max distance of 20:
-    path.flatten(20);
+    // Convert its curves to points, with a flatness of 5:
+    path.flatten(5);
+
+    equals(function() {
+        return path.segments.length;
+    }, 8, 'Using a flatness of 10, we should end up with 8 segments.');
 
     equals(function() {
         return path.lastSegment.point.equals(path.firstSegment.point);

@@ -1202,42 +1202,6 @@ var Path = PathItem.extend(/** @lends Path# */{
         return this;
     },
 
-    reverse: function() {
-        this._segments.reverse();
-        // Reverse the handles:
-        for (var i = 0, l = this._segments.length; i < l; i++) {
-            var segment = this._segments[i];
-            var handleIn = segment._handleIn;
-            segment._handleIn = segment._handleOut;
-            segment._handleOut = handleIn;
-            segment._index = i;
-        }
-        // Clear curves since it all has changed.
-        this._curves = null;
-        // Flip clockwise state if it's defined
-        if (this._clockwise !== undefined)
-            this._clockwise = !this._clockwise;
-        this._changed(/*#=*/Change.GEOMETRY);
-    },
-
-    flatten: function(maxDistance) {
-        var iterator = new PathIterator(this, 64, 0.1),
-            pos = 0,
-            // Adapt step = maxDistance so the points distribute evenly.
-            step = iterator.length / Math.ceil(iterator.length / maxDistance),
-            // Add/remove half of step to end, so imprecisions are ok too.
-            // For closed paths, remove it, because we don't want to add last
-            // segment again
-            end = iterator.length + (this._closed ? -step : step) / 2;
-        // Iterate over path and evaluate and add points at given offsets
-        var segments = [];
-        while (pos <= end) {
-            segments.push(new Segment(iterator.getPointAt(pos)));
-            pos += step;
-        }
-        this.setSegments(segments);
-    },
-
     /**
      * Reduces the path by removing curves that have a length of 0,
      * and unnecessary segments between two collinear flat curves.
@@ -1259,6 +1223,38 @@ var Path = PathItem.extend(/** @lends Path# */{
                 curve.remove();
         }
         return this;
+    },
+
+    // NOTE: Documentation is in PathItem#reverse()
+    reverse: function() {
+        this._segments.reverse();
+        // Reverse the handles:
+        for (var i = 0, l = this._segments.length; i < l; i++) {
+            var segment = this._segments[i];
+            var handleIn = segment._handleIn;
+            segment._handleIn = segment._handleOut;
+            segment._handleOut = handleIn;
+            segment._index = i;
+        }
+        // Clear curves since it all has changed.
+        this._curves = null;
+        // Flip clockwise state if it's defined
+        if (this._clockwise !== undefined)
+            this._clockwise = !this._clockwise;
+        this._changed(/*#=*/Change.GEOMETRY);
+    },
+
+    // NOTE: Documentation is in PathItem#flatten()
+    flatten: function(flatness) {
+        // Use PathIterator to subdivide the curves into parts that are flat
+        // enough, as specified by `flatness` / Curve.isFlatEnough():
+        var iterator = new PathIterator(this, flatness || 0.25, 256, true),
+            parts = iterator.parts,
+            segments = [];
+        for (var i = 0, l = parts.length; i < l; i++) {
+            segments.push(new Segment(parts[i].curve.slice(0, 2)));
+        }
+        this.setSegments(segments);
     },
 
     // NOTE: Documentation is in PathItem#simplify()
@@ -2183,7 +2179,7 @@ new function() { // Scope for drawing
                         // Use PathIterator to draw dashed paths:
                         if (!dontStart)
                             ctx.beginPath();
-                        var iterator = new PathIterator(this, 32, 0.25,
+                        var iterator = new PathIterator(this, 0.25, 32, false,
                                 strokeMatrix),
                             length = iterator.length,
                             from = -style.getDashOffset(), to,

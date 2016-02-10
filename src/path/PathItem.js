@@ -388,14 +388,14 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
 
     /**
-     * Converts the curves in a path to straight lines with an even distribution
-     * of points. The distance between the produced segments is as close as
-     * possible to the value specified by the `maxDistance` parameter.
+     * Flattens the curves in path items to a sequence of straight lines, by
+     * subdividing them enough times until the specified maximum error is met.
      *
      * @name PathItem#flatten
      * @function
      *
-     * @param {Number} maxDistance the maximum distance between the points
+     * @param {Number} flatness the maximum error between the flattened lines
+     *     and the original curves
      *
      * @example {@paperscript}
      * // Flattening a circle shaped path:
@@ -414,8 +414,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * var copy = path.clone();
      * copy.position.x += 150;
      *
-     * // Convert its curves to points, with a max distance of 20:
-     * copy.flatten(20);
+     * // Convert its curves to points, with a maximum error of 10:
+     * copy.flatten(10);
      */
 
     // TODO: Write about negative indices, and add an example for ranges.
