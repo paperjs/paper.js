@@ -19,30 +19,36 @@ new function() {
     // objects, dealing with baseVal, and item lists.
     // index is option, and if passed, causes a lookup in a list.
 
+    var rootSize;
+
     function getValue(node, name, isString, allowNull) {
-        var value =  SvgElement.get(node, name);
         // Interpret value as number. Never return NaN, but 0 instead.
         // If the value is a sequence of numbers, parseFloat will
         // return the first occurring number, which is enough for now.
-        return value == null
+        var value = SvgElement.get(node, name),
+            res = value == null
                 ? allowNull
                     ? null
                     : isString ? '' : 0
                 : isString
                     ? value
                     : parseFloat(value);
+        // Support for dimensions in percentage of the root size:
+        return rootSize && /%\s*$/.test(value)
+            ? rootSize[/x|^width/.test(name) ? 'width' : 'height'] * res / 100
+            : res;
     }
 
     function getPoint(node, x, y, allowNull) {
-        x = getValue(node, x, false, allowNull);
-        y = getValue(node, y, false, allowNull);
+        x = getValue(node, x || 'x', false, allowNull);
+        y = getValue(node, y || 'y', false, allowNull);
         return allowNull && (x == null || y == null) ? null
                 : new Point(x, y);
     }
 
     function getSize(node, w, h, allowNull) {
-        w = getValue(node, w, false, allowNull);
-        h = getValue(node, h, false, allowNull);
+        w = getValue(node, w || 'width', false, allowNull);
+        h = getValue(node, h || 'height', false, allowNull);
         return allowNull && (w == null || h == null) ? null
                 : new Size(w, h);
     }
@@ -180,6 +186,7 @@ new function() {
                 var child = nodes[i],
                     next;
                 if (child.nodeType === 1) {
+                    rootSize = getSize(child);
                     // NOTE: We need to move the SVG node to the current
                     // document, so default styles apply! For this we create and
                     // insert a temporary SVG parent node which is removed again
@@ -230,14 +237,14 @@ new function() {
         image: function (node) {
             var raster = new Raster(getValue(node, 'href', true));
             raster.on('load', function() {
-                var size = getSize(node, 'width', 'height');
+                var size = getSize(node);
                 this.setSize(size);
                 // Since x and y start from the top left of an image, add
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
                 var center = this._matrix._transformPoint(
-                        getPoint(node, 'x', 'y').add(size.divide(2)));
+                        getPoint(node).add(size.divide(2)));
                 this.translate(center);
             });
             return raster;
@@ -262,20 +269,22 @@ new function() {
             // SymbolItem clipping, but perhaps it should?
             var id = (getValue(node, 'href', true) || '').substring(1),
                 definition = definitions[id],
-                point = getPoint(node, 'x', 'y');
+                point = getPoint(node);
             // Use place if we're dealing with a symbol:
             return definition
                     ? definition instanceof SymbolDefinition
-                        // When placing symbols, we nee to take both point and
+                        // When placing symbols, we need to take both point and
                         // matrix into account. This just does the right thing:
                         ? definition.place(point)
+                        // Gradient?
                         : definition.clone().translate(point)
                     : null;
         },
 
         // http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
         circle: function(node) {
-            return new Shape.Circle(getPoint(node, 'cx', 'cy'),
+            return new Shape.Circle(
+                    getPoint(node, 'cx', 'cy'),
                     getValue(node, 'r'));
         },
 
@@ -291,15 +300,16 @@ new function() {
 
         // http://www.w3.org/TR/SVG/shapes.html#RectElement
         rect: function(node) {
-            var point = getPoint(node, 'x', 'y'),
-                size = getSize(node, 'width', 'height'),
-                radius = getSize(node, 'rx', 'ry');
-            return new Shape.Rectangle(new Rectangle(point, size), radius);
-        },
+            return new Shape.Rectangle(new Rectangle(
+                        getPoint(node),
+                        getSize(node)
+                    ), getSize(node, 'rx', 'ry'));
+            },
 
         // http://www.w3.org/TR/SVG/shapes.html#LineElement
         line: function(node) {
-            return new Path.Line(getPoint(node, 'x1', 'y1'),
+            return new Path.Line(
+                    getPoint(node, 'x1', 'y1'),
                     getPoint(node, 'x2', 'y2'));
         },
 
@@ -312,8 +322,8 @@ new function() {
             // TODO: Support for these is missing in Paper.js right now
             // rotate: character rotation
             // lengthAdjust:
-            var text = new PointText(getPoint(node, 'x', 'y')
-                    .add(getPoint(node, 'dx', 'dy')));
+            var text = new PointText(getPoint(node).add(
+                    getPoint(node, 'dx', 'dy')));
             text.setContent(node.textContent.trim() || '');
             return text;
         }
@@ -344,8 +354,7 @@ new function() {
                 v[j] = parseFloat(v[j]);
             switch (command) {
             case 'matrix':
-                matrix.append(
-                        new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
+                matrix.append(new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
                 break;
             case 'rotate':
                 matrix.rotate(v[0], v[1], v[2]);
@@ -450,8 +459,7 @@ new function() {
         offset: function(item, value) {
             // http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
             var percentage = value.match(/(.*)%$/);
-            item.setRampPoint(percentage
-                    ? percentage[1] / 100
+            item.setRampPoint(percentage ? percentage[1] / 100
                     : parseFloat(value));
         },
 
@@ -504,11 +512,9 @@ new function() {
         }
         // Return undefined if attribute is not defined, but null if it's
         // defined as not set (e.g. fill / stroke).
-        return !value
-                ? undefined
-                : value === 'none'
-                    ? null
-                    : value;
+        return !value ? undefined
+                : value === 'none' ? null
+                : value;
     }
 
     /**
@@ -547,12 +553,8 @@ new function() {
     function importSVG(source, options, isRoot) {
         if (!source)
             return null;
-        if (!options) {
-            options = {};
-        } else if (typeof options === 'function') {
-            options = { onLoad: options };
-        }
-
+        options = typeof options === 'function' ? { onLoad: options }
+                : options || {};
         var node = source,
             // Remember current scope so we can restore it in onLoad.
             scope = paper;
