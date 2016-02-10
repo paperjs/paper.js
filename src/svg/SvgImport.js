@@ -33,9 +33,12 @@ new function() {
                 : isString
                     ? value
                     : parseFloat(value);
-        // Support for dimensions in percentage of the root size:
-        return rootSize && /%\s*$/.test(value)
-            ? rootSize[/x|^width/.test(name) ? 'width' : 'height'] * res / 100
+        // Support for dimensions in percentage of the root size. If root-size
+        // is not set (e.g. during <defs>), just scale the percentage value to
+        // 0..1, as required by gradients with gradientUnits="objectBoundingBox"
+        return /%\s*$/.test(value)
+            ? (res / 100) * (rootSize ? rootSize[
+                /x|^width/.test(name) ? 'width' : 'height'] : 1)
             : res;
     }
 
@@ -145,7 +148,14 @@ new function() {
     function importGradient(node, type) {
         var id = (getValue(node, 'href', true) || '').substring(1),
             isRadial = type === 'radialgradient',
-            gradient;
+            gradient,
+            scaleToBounds = getValue(node, 'gradientUnits', true) !==
+                'userSpaceOnUse';
+            prevSize = rootSize;
+        // Clear rootSize during import so that percentage sizes don't get
+        // scaled yet.
+        if (scaleToBounds)
+            rootSize = null;
         if (id) {
             // Gradients are always wrapped in a Color object, so get the
             // gradient object from there.
@@ -170,8 +180,11 @@ new function() {
             origin = getPoint(node, 'x1', 'y1');
             destination = getPoint(node, 'x2', 'y2');
         }
-        applyAttributes(
+        var color = applyAttributes(
             new Color(gradient, origin, destination, highlight), node);
+        // TODO: Consider adding support for _scaleToBounds to Color instead?
+        color._scaleToBounds = scaleToBounds;
+        rootSize = prevSize;
         // We don't return the gradient, since we only need a reference to it in
         // definitions, which is created in applyAttributes()
         return null;
@@ -270,13 +283,12 @@ new function() {
             var id = (getValue(node, 'href', true) || '').substring(1),
                 definition = definitions[id],
                 point = getPoint(node);
-            // Use place if we're dealing with a symbol:
             return definition
                     ? definition instanceof SymbolDefinition
                         // When placing symbols, we need to take both point and
-                        // matrix into account. This just does the right thing:
+                        // matrix into account. place() does the right thing:
                         ? definition.place(point)
-                        // Gradient?
+                        // A normal item: Clone and translate it.
                         : definition.clone().translate(point)
                     : null;
         },
@@ -395,15 +407,26 @@ new function() {
     var attributes = Base.set(Base.each(SvgStyles, function(entry) {
         this[entry.attribute] = function(item, value) {
             item[entry.set](convertValue(value, entry.type, entry.fromSVG));
-            // When applying gradient colors to shapes, we need to offset
-            // the shape's initial position to get the same results as SVG.
-            if (entry.type === 'color' && item instanceof Shape) {
+            if (entry.type === 'color') {
                 // Do not use result of convertValue() above, since calling
                 // the setter will produce a new cloned color.
                 var color = item[entry.get]();
-                if (color)
-                    color.transform(new Matrix().translate(
-                            item.getPosition(true).negate()));
+                if (color) {
+                    // Emulate SVG's gradientUnits="objectBoundingBox"
+                    if (color._scaleToBounds) {
+                        var bounds = item.getBounds();
+                        color.transform(new Matrix()
+                            .translate(bounds.getPoint())
+                            .scale(bounds.getSize()));
+                    }
+                    if (item instanceof Shape) {
+                        // When applying gradient colors to shapes, we need to
+                        // offset the shape's initial position to get the same
+                        // results as SVG.
+                        color.transform(new Matrix()
+                                .translate(item.getPosition(true).negate()));
+                    }
+                }
             }
         };
     }, {}), {
@@ -562,8 +585,7 @@ new function() {
         function onLoadCallback(svg) {
             paper = scope;
             var item = importSVG(svg, options, isRoot),
-                onLoad = options.onLoad,
-                view = scope.project && scope.getView();
+                onLoad = options.onLoad;
             if (onLoad)
                 onLoad.call(this, item, svg);
         }
@@ -605,6 +627,9 @@ new function() {
             data = node.getAttribute && node.getAttribute('data-paper-data'),
             settings = scope.settings,
             applyMatrix = settings.applyMatrix;
+        // Set rootSize to the view size in the beginning.
+        if (isRoot)
+            rootSize = scope.getView().getSize();
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
         // current setting so we can restore it after.
