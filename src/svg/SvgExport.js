@@ -192,15 +192,15 @@ new function() {
     function exportGradient(color) {
         // NOTE: As long as the fillTransform attribute is not implemented,
         // we need to create a separate gradient object for each gradient,
-        // even when they share the same gradient defintion.
+        // even when they share the same gradient definition.
         // http://www.svgopen.org/2011/papers/20-Separating_gradients_from_geometry/
         // TODO: Implement gradient merging in SvgImport
         var gradientNode = getDefinition(color, 'color');
         if (!gradientNode) {
             var gradient = color.getGradient(),
                 radial = gradient._radial,
-                origin = color.getOrigin().transform(),
-                destination = color.getDestination().transform(),
+                origin = color.getOrigin(),
+                destination = color.getDestination(),
                 attrs;
             if (radial) {
                 attrs = {
@@ -210,7 +210,6 @@ new function() {
                 };
                 var highlight = color.getHighlight();
                 if (highlight) {
-                    highlight = highlight.transform();
                     attrs.fx = highlight.x;
                     attrs.fy = highlight.y;
                 }
