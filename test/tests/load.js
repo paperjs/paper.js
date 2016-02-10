@@ -33,7 +33,6 @@
 
 /*#*/ include('Path.js');
 /*#*/ include('Path_Constructors.js');
-/*#*/ include('Path_Curves.js');
 /*#*/ include('Path_Intersections.js');
 /*#*/ include('Path_Boolean.js');
 /*#*/ include('PathItem_Contains.js');

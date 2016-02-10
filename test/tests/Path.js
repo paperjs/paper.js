@@ -378,7 +378,7 @@ test('path.flatten(maxDistance)', function() {
     }, false, 'The points of the last and first segments should not be the same.');
 
     equals(function() {
-        return path.lastSegment.point.toString() != path.segments[path.segments.length - 2].point.toString();
+        return path.lastSegment.point.toString() != path.lastSegment.previous.point.toString();
     }, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
 });
 
