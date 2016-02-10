@@ -145,7 +145,7 @@ var PathIterator = Base.extend({
 
     drawPart: function(ctx, from, to) {
         var start = this._get(from),
-            end =  this._get(to);
+            end = this._get(to);
         for (var i = start.index, l = end.index; i <= l; i++) {
             var curve = Curve.getPart(this.curves[i],
                     i === start.index ? start.time : 0,

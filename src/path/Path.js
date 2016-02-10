@@ -2339,8 +2339,8 @@ new function() { // PostScript-style drawing commands
                     ry = abs(radius.height),
                     rxSq = rx * rx,
                     rySq = ry * ry,
-                    xSq =  x * x,
-                    ySq =  y * y;
+                    xSq = x * x,
+                    ySq = y * y;
                 // "...ensure radii are large enough"
                 var factor = Math.sqrt(xSq / rxSq + ySq / rySq);
                 if (factor > 1) {

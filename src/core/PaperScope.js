@@ -76,7 +76,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             var user = self.navigator.userAgent.toLowerCase(),
                 // Detect basic platforms, only mac internally required for now.
                 os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
-                platform =  os === 'darwin' ? 'mac' : os,
+                platform = os === 'darwin' ? 'mac' : os,
                 agent = proto.agent = proto.browser = { platform: platform };
             if (platform)
                 agent[platform] = true;

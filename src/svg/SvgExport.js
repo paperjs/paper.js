@@ -67,7 +67,7 @@ new function() {
             var childNode = exportSVG(child, options);
             if (childNode) {
                 if (child.isClipMask()) {
-                    var clip =  SvgElement.create('clipPath');
+                    var clip = SvgElement.create('clipPath');
                     clip.appendChild(childNode);
                     setDefinition(child, clip, 'clip');
                      SvgElement.set(node, {
