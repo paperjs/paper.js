@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 10 14:58:40 2016 +0100
+ * Date: Wed Feb 10 15:34:22 2016 +0100
  *
  ***
  *
@@ -13139,8 +13139,8 @@ new function() {
 		if (!gradientNode) {
 			var gradient = color.getGradient(),
 				radial = gradient._radial,
-				origin = color.getOrigin().transform(),
-				destination = color.getDestination().transform(),
+				origin = color.getOrigin(),
+				destination = color.getDestination(),
 				attrs;
 			if (radial) {
 				attrs = {
@@ -13150,7 +13150,6 @@ new function() {
 				};
 				var highlight = color.getHighlight();
 				if (highlight) {
-					highlight = highlight.transform();
 					attrs.fx = highlight.x;
 					attrs.fy = highlight.y;
 				}
