@@ -199,7 +199,6 @@ new function() {
                 var child = nodes[i],
                     next;
                 if (child.nodeType === 1) {
-                    rootSize = getSize(child);
                     // NOTE: We need to move the SVG node to the current
                     // document, so default styles apply! For this we create and
                     // insert a temporary SVG parent node which is removed again
@@ -409,7 +408,7 @@ new function() {
             item[entry.set](convertValue(value, entry.type, entry.fromSVG));
             if (entry.type === 'color') {
                 // Do not use result of convertValue() above, since calling
-                // the setter will produce a new cloned color.
+                // the setter will convert a color and clone it if necessary.
                 var color = item[entry.get]();
                 if (color) {
                     // Emulate SVG's gradientUnits="objectBoundingBox"
@@ -492,7 +491,7 @@ new function() {
             // viewBox will be applied both to the group that's created for the
             // content in SymbolDefinition#item, and the SymbolItem itself.
             var rect = new Rectangle(convertValue(value, 'array')),
-                size = getSize(node, 'width', 'height', true);
+                size = getSize(node, null, null, true);
             if (item instanceof Group) {
                 // This is either a top-level svg node, or the container for a
                 // symbol.
@@ -569,8 +568,16 @@ new function() {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
-        var match = value && value.match(/\((?:["'#]*)([^"')]+)/);
-        return match && definitions[match[1]];
+        var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
+            res = match && definitions[match[1]];
+        // Patch in support for SVG's gradientUnits="objectBoundingBox" through
+        // Color#_scaleToBounds
+        if (res && res._scaleToBounds) {
+            // Always create a clone, so it can be transformed when used.
+            res = res.clone();
+            res._scaleToBounds = true;
+        }
+        return res;
     }
 
     function importSVG(source, options, isRoot) {
@@ -615,21 +622,25 @@ new function() {
             }
         }
 
-        if (typeof source === 'string')
+        if (typeof source === 'string') {
             node = new window.DOMParser().parseFromString(source,
                     'image/svg+xml');
+        }
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
         // jsdom in Node.js uses uppercase values for nodeName...
         var type = node.nodeName.toLowerCase(),
+            isElement = type !== '#document',
             importer = importers[type],
             item,
-            data = node.getAttribute && node.getAttribute('data-paper-data'),
+            data = isElement && node.getAttribute('data-paper-data'),
             settings = scope.settings,
             applyMatrix = settings.applyMatrix;
-        // Set rootSize to the view size in the beginning.
-        if (isRoot)
-            rootSize = scope.getView().getSize();
+        if (isRoot && isElement) {
+            // Set rootSize root element size, fall-back to view size.
+            rootSize = getSize(node, null, null, true)
+                    || scope.getView().getSize();
+        }
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
         // current setting so we can restore it after.
@@ -639,7 +650,7 @@ new function() {
         if (item) {
             // Do not apply attributes if this is a #document node.
             // See importGroup() for an explanation of filtering for Group:
-            if (type !== '#document' && !(item instanceof Group))
+            if (isElement && !(item instanceof Group))
                 item = applyAttributes(item, node, isRoot);
             // Support onImportItem callback, to provide mechanism to handle
             // special attributes (e.g. inkscape:transform-center)
