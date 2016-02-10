@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 10 16:15:35 2016 +0100
+ * Date: Wed Feb 10 17:46:39 2016 +0100
  *
  ***
  *
@@ -13353,8 +13353,9 @@ new function() {
 				: isString
 					? value
 					: parseFloat(value);
-		return rootSize && /%\s*$/.test(value)
-			? rootSize[/x|^width/.test(name) ? 'width' : 'height'] * res / 100
+		return /%\s*$/.test(value)
+			? (res / 100) * (rootSize ? rootSize[
+				/x|^width/.test(name) ? 'width' : 'height'] : 1)
 			: res;
 	}
 
@@ -13444,7 +13445,12 @@ new function() {
 	function importGradient(node, type) {
 		var id = (getValue(node, 'href', true) || '').substring(1),
 			isRadial = type === 'radialgradient',
-			gradient;
+			gradient,
+			scaleToBounds = getValue(node, 'gradientUnits', true) !==
+				'userSpaceOnUse';
+			prevSize = rootSize;
+		if (scaleToBounds)
+			rootSize = null;
 		if (id) {
 			gradient = definitions[id].getGradient();
 		} else {
@@ -13466,8 +13472,10 @@ new function() {
 			origin = getPoint(node, 'x1', 'y1');
 			destination = getPoint(node, 'x2', 'y2');
 		}
-		applyAttributes(
+		var color = applyAttributes(
 			new Color(gradient, origin, destination, highlight), node);
+		color._scaleToBounds = scaleToBounds;
+		rootSize = prevSize;
 		return null;
 	}
 
@@ -13619,11 +13627,20 @@ new function() {
 	var attributes = Base.set(Base.each(SvgStyles, function(entry) {
 		this[entry.attribute] = function(item, value) {
 			item[entry.set](convertValue(value, entry.type, entry.fromSVG));
-			if (entry.type === 'color' && item instanceof Shape) {
+			if (entry.type === 'color') {
 				var color = item[entry.get]();
-				if (color)
-					color.transform(new Matrix().translate(
-							item.getPosition(true).negate()));
+				if (color) {
+					if (color._scaleToBounds) {
+						var bounds = item.getBounds();
+						color.transform(new Matrix()
+							.translate(bounds.getPoint())
+							.scale(bounds.getSize()));
+					}
+					if (item instanceof Shape) {
+						color.transform(new Matrix()
+								.translate(item.getPosition(true).negate()));
+					}
+				}
 			}
 		};
 	}, {}), {
@@ -13741,8 +13758,7 @@ new function() {
 		function onLoadCallback(svg) {
 			paper = scope;
 			var item = importSVG(svg, options, isRoot),
-				onLoad = options.onLoad,
-				view = scope.project && scope.getView();
+				onLoad = options.onLoad;
 			if (onLoad)
 				onLoad.call(this, item, svg);
 		}
@@ -13775,6 +13791,8 @@ new function() {
 			data = node.getAttribute && node.getAttribute('data-paper-data'),
 			settings = scope.settings,
 			applyMatrix = settings.applyMatrix;
+		if (isRoot)
+			rootSize = scope.getView().getSize();
 		settings.applyMatrix = false;
 		item = importer && importer(node, type, options, isRoot) || null;
 		settings.applyMatrix = applyMatrix;
