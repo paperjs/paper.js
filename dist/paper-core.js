@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 9 17:02:03 2016 +0100
+ * Date: Wed Feb 10 13:26:40 2016 +0100
  *
  ***
  *
@@ -6825,13 +6825,12 @@ var CurveLocation = Base.extend({
 				curve = next;
 			}
 		}
-		this._id = UID.get(CurveLocation);
 		this._setCurve(curve);
 		this._time = time;
 		this._point = point || curve.getPointAtTime(time);
 		this._overlap = _overlap;
 		this._distance = _distance;
-		this._intersection = this._next = this._prev = null;
+		this._intersection = this._next = this._previous = null;
 	},
 
 	_setCurve: function(curve) {
@@ -9337,15 +9336,15 @@ PathItem.inject(new function() {
 		while (prev) {
 			if (prev === to)
 				return;
-			prev = prev._prev;
+			prev = prev._previous;
 		}
 		while (from._next && from._next !== to)
 			from = from._next;
 		if (!from._next) {
-			while (to._prev)
-				to = to._prev;
+			while (to._previous)
+				to = to._previous;
 			from._next = to;
-			to._prev = from;
+			to._previous = from;
 		}
 	}
 
