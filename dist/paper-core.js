@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 10 15:34:22 2016 +0100
+ * Date: Wed Feb 10 16:15:35 2016 +0100
  *
  ***
  *
@@ -728,7 +728,7 @@ var PaperScope = Base.extend({
 		if (!this.agent) {
 			var user = self.navigator.userAgent.toLowerCase(),
 				os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
-				platform =  os === 'darwin' ? 'mac' : os,
+				platform = os === 'darwin' ? 'mac' : os,
 				agent = proto.agent = proto.browser = { platform: platform };
 			if (platform)
 				agent[platform] = true;
@@ -8542,8 +8542,8 @@ new function() {
 					ry = abs(radius.height),
 					rxSq = rx * rx,
 					rySq = ry * ry,
-					xSq =  x * x,
-					ySq =  y * y;
+					xSq = x * x,
+					ySq = y * y;
 				var factor = Math.sqrt(xSq / rxSq + ySq / rySq);
 				if (factor > 1) {
 					rx *= factor;
@@ -9959,7 +9959,7 @@ var PathIterator = Base.extend({
 
 	drawPart: function(ctx, from, to) {
 		var start = this._get(from),
-			end =  this._get(to);
+			end = this._get(to);
 		for (var i = start.index, l = end.index; i <= l; i++) {
 			var curve = Curve.getPart(this.curves[i],
 					i === start.index ? start.time : 0,
@@ -13013,7 +13013,7 @@ new function() {
 			var childNode = exportSVG(child, options);
 			if (childNode) {
 				if (child.isClipMask()) {
-					var clip =  SvgElement.create('clipPath');
+					var clip = SvgElement.create('clipPath');
 					clip.appendChild(childNode);
 					setDefinition(child, clip, 'clip');
 					 SvgElement.set(node, {
@@ -13342,27 +13342,32 @@ new function() {
 
 new function() {
 
+	var rootSize;
+
 	function getValue(node, name, isString, allowNull) {
-		var value =  SvgElement.get(node, name);
-		return value == null
+		var value = SvgElement.get(node, name),
+			res = value == null
 				? allowNull
 					? null
 					: isString ? '' : 0
 				: isString
 					? value
 					: parseFloat(value);
+		return rootSize && /%\s*$/.test(value)
+			? rootSize[/x|^width/.test(name) ? 'width' : 'height'] * res / 100
+			: res;
 	}
 
 	function getPoint(node, x, y, allowNull) {
-		x = getValue(node, x, false, allowNull);
-		y = getValue(node, y, false, allowNull);
+		x = getValue(node, x || 'x', false, allowNull);
+		y = getValue(node, y || 'y', false, allowNull);
 		return allowNull && (x == null || y == null) ? null
 				: new Point(x, y);
 	}
 
 	function getSize(node, w, h, allowNull) {
-		w = getValue(node, w, false, allowNull);
-		h = getValue(node, h, false, allowNull);
+		w = getValue(node, w || 'width', false, allowNull);
+		h = getValue(node, h || 'height', false, allowNull);
 		return allowNull && (w == null || h == null) ? null
 				: new Size(w, h);
 	}
@@ -13473,6 +13478,7 @@ new function() {
 				var child = nodes[i],
 					next;
 				if (child.nodeType === 1) {
+					rootSize = getSize(child);
 					var body = document.body,
 						parent = !paper.agent.node && SvgElement.create('svg');
 					if (parent) {
@@ -13506,10 +13512,10 @@ new function() {
 		image: function (node) {
 			var raster = new Raster(getValue(node, 'href', true));
 			raster.on('load', function() {
-				var size = getSize(node, 'width', 'height');
+				var size = getSize(node);
 				this.setSize(size);
 				var center = this._matrix._transformPoint(
-						getPoint(node, 'x', 'y').add(size.divide(2)));
+						getPoint(node).add(size.divide(2)));
 				this.translate(center);
 			});
 			return raster;
@@ -13525,7 +13531,7 @@ new function() {
 		use: function(node) {
 			var id = (getValue(node, 'href', true) || '').substring(1),
 				definition = definitions[id],
-				point = getPoint(node, 'x', 'y');
+				point = getPoint(node);
 			return definition
 					? definition instanceof SymbolDefinition
 						? definition.place(point)
@@ -13534,7 +13540,8 @@ new function() {
 		},
 
 		circle: function(node) {
-			return new Shape.Circle(getPoint(node, 'cx', 'cy'),
+			return new Shape.Circle(
+					getPoint(node, 'cx', 'cy'),
 					getValue(node, 'r'));
 		},
 
@@ -13546,20 +13553,21 @@ new function() {
 		},
 
 		rect: function(node) {
-			var point = getPoint(node, 'x', 'y'),
-				size = getSize(node, 'width', 'height'),
-				radius = getSize(node, 'rx', 'ry');
-			return new Shape.Rectangle(new Rectangle(point, size), radius);
-		},
+			return new Shape.Rectangle(new Rectangle(
+						getPoint(node),
+						getSize(node)
+					), getSize(node, 'rx', 'ry'));
+			},
 
 		line: function(node) {
-			return new Path.Line(getPoint(node, 'x1', 'y1'),
+			return new Path.Line(
+					getPoint(node, 'x1', 'y1'),
 					getPoint(node, 'x2', 'y2'));
 		},
 
 		text: function(node) {
-			var text = new PointText(getPoint(node, 'x', 'y')
-					.add(getPoint(node, 'dx', 'dy')));
+			var text = new PointText(getPoint(node).add(
+					getPoint(node, 'dx', 'dy')));
 			text.setContent(node.textContent.trim() || '');
 			return text;
 		}
@@ -13579,8 +13587,7 @@ new function() {
 				v[j] = parseFloat(v[j]);
 			switch (command) {
 			case 'matrix':
-				matrix.append(
-						new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
+				matrix.append(new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
 				break;
 			case 'rotate':
 				matrix.rotate(v[0], v[1], v[2]);
@@ -13665,8 +13672,7 @@ new function() {
 
 		offset: function(item, value) {
 			var percentage = value.match(/(.*)%$/);
-			item.setRampPoint(percentage
-					? percentage[1] / 100
+			item.setRampPoint(percentage ? percentage[1] / 100
 					: parseFloat(value));
 		},
 
@@ -13700,11 +13706,9 @@ new function() {
 			if (!value && styles.node[style] !== styles.parent[style])
 				value = styles.node[style];
 		}
-		return !value
-				? undefined
-				: value === 'none'
-					? null
-					: value;
+		return !value ? undefined
+				: value === 'none' ? null
+				: value;
 	}
 
 	function applyAttributes(item, node, isRoot) {
@@ -13729,12 +13733,8 @@ new function() {
 	function importSVG(source, options, isRoot) {
 		if (!source)
 			return null;
-		if (!options) {
-			options = {};
-		} else if (typeof options === 'function') {
-			options = { onLoad: options };
-		}
-
+		options = typeof options === 'function' ? { onLoad: options }
+				: options || {};
 		var node = source,
 			scope = paper;
 
