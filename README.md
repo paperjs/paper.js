@@ -242,7 +242,23 @@ folder in your web browser. There should be a green bar at the top, meaning all
 tests have passed. If the bar is red, some tests have not passed. These will be
 highlighted and become visible when scrolling down.
 
-You can also run the unit tests through Gulp.js on the command line:
+If you are testing on Chrome, some of the tests will fail due to the browser's
+CORS restrictions. In order to run the browser based tests on Chrome, you need
+to run a local web-server through Gulp.js. The following command will handle it
+for you, and will also open the browser at the right address straight away:
+
+    gulp test:browser
+
+You can also run the unit tests through PhantomJS in Gulp directly on the
+command line:
+
+    gulp test:phantom
+
+To test the Node.js version of Paper.js, use this command:
+
+    gulp test:node
+
+And to test both the PhantomJS and Node.js environments together, simply run:
 
     gulp test
 

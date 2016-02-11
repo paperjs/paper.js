@@ -53,6 +53,7 @@
     "gulp-uglify": "^1.5.1",
     "gulp-uncomment": "^0.3.0",
     "gulp-util": "^3.0.0",
+    "gulp-webserver": "^0.9.1",
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^3.0.2",
     "jshint": "2.8.x",
