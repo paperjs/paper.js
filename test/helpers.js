@@ -464,6 +464,8 @@ var createSVG = function(str, attrs) {
         var node = document.createElementNS('http://www.w3.org/2000/svg', str);
         for (var key in attrs)
             node.setAttribute(key, attrs[key]);
+        // Paper.js paths do not have a fill by default, SVG does.
+        node.setAttribute('fill', 'none');
         return node;
     } else {
         return new window.DOMParser().parseFromString(

@@ -72,11 +72,12 @@ new function() {
     function importGroup(node, type, options, isRoot) {
         var nodes = node.childNodes,
             isClip = type === 'clippath',
+            isDefs = type === 'defs',
             item = new Group(),
             project = item._project,
             currentStyle = project._currentStyle,
             children = [];
-        if (!isClip) {
+        if (!isClip && !isDefs) {
             item = applyAttributes(item, node, isRoot);
             // Style on items needs to be handled differently than all other
             // items: We first apply the style to the item, then use it as the
@@ -90,7 +91,7 @@ new function() {
             // e.g. Affinity Designer exports defs as last.
             var defs = node.querySelectorAll('defs');
             for (var i = 0, l = defs.length; i < l; i++) {
-                importSVG(defs[i], options, false);
+                importNode(defs[i], options, false);
             }
         }
         // Collect the children in an array and apply them all at once.
@@ -99,7 +100,7 @@ new function() {
                 child;
             if (childNode.nodeType === 1
                     && childNode.nodeName.toLowerCase() !== 'defs'
-                    && (child = importSVG(childNode, options, false))
+                    && (child = importNode(childNode, options, false))
                     && !(child instanceof SymbolDefinition))
                 children.push(child);
         }
@@ -110,7 +111,7 @@ new function() {
             item = applyAttributes(item.reduce(), node, isRoot);
         // Restore currentStyle
         project._currentStyle = currentStyle;
-        if (isClip || type === 'defs') {
+        if (isClip || isDefs) {
             // We don't want the defs in the DOM. But we might want to use
             // Symbols for them to save memory?
             item.remove();
@@ -197,37 +198,9 @@ new function() {
         '#document': function (node, type, options, isRoot) {
             var nodes = node.childNodes;
             for (var i = 0, l = nodes.length; i < l; i++) {
-                var child = nodes[i],
-                    next;
-                if (child.nodeType === 1) {
-                    // NOTE: We need to move the SVG node to the current
-                    // document, so default styles apply! For this we create and
-                    // insert a temporary SVG parent node which is removed again
-                    // at the end. This parent node also helps fix a bug on IE.
-                    var body = document.body,
-                        // No need to inherit styles on Node.js
-                        parent = !paper.agent.node && SvgElement.create('svg');
-                    if (parent) {
-                        body.appendChild(parent);
-                        // If no stroke-width is set, IE/Edge appears to have a
-                        // default of 0.01px. We can set a default style on the
-                        // parent container as a more sensible fall-back.
-                        parent.style.strokeWidth = '1px';
-                        next = child.nextSibling;
-                        parent.appendChild(child);
-                    }
-                    var item = importSVG(child, options, isRoot);
-                    if (parent) {
-                        //  After import, move things back to how they were:
-                        body.removeChild(parent);
-                        if (next) {
-                            node.insertBefore(child, next);
-                        } else {
-                            node.appendChild(child);
-                        }
-                    }
-                    return item;
-                }
+                var child = nodes[i];
+                if (child.nodeType === 1)
+                    return importNode(child, options, isRoot);
             }
         },
         // http://www.w3.org/TR/SVG/struct.html#Groups
@@ -581,6 +554,85 @@ new function() {
         return res;
     }
 
+    function importNode(node, options, isRoot) {
+        // jsdom in Node.js uses uppercase values for nodeName...
+        var type = node.nodeName.toLowerCase(),
+            isElement = type !== '#document',
+            body = document.body,
+            container,
+            parent,
+            next;
+        if (isRoot && isElement) {
+            // Set rootSize root element size, fall-back to view size.
+            rootSize = getSize(node, null, null, true)
+                    || paper.getView().getSize();
+            // We need to move the SVG node to the current document, so default
+            // styles apply! For this we create and insert a temporary SVG
+            // container which is removed again at the end. This container also
+            // helps fix a bug on IE. No need to inherit styles on Node.js
+            container = !paper.agent.node && SvgElement.create('svg', {
+                // If no stroke-width is set, IE/Edge appears to have a
+                // default of 0.01px. We can set a default style on the
+                // parent container as a more sensible fall-back. Also, browsers
+                // have a default miter-limit of 4, while Paper.js has 10
+                style: 'stroke-width: 1px; stroke-miterlimit: 10'
+            });
+            if (container) {
+                body.appendChild(container);
+                parent = node.parentNode;
+                next = node.nextSibling;
+                container.appendChild(node);
+            }
+        }
+        // Have items imported from SVG not bake in all transformations to their
+        // content and children, as this is how SVG works too, but preserve the
+        // current setting so we can restore it after.
+        var settings = paper.settings,
+            applyMatrix = settings.applyMatrix;
+        settings.applyMatrix = false;
+        var importer = importers[type],
+            item = importer && importer(node, type, options, isRoot) || null;
+        settings.applyMatrix = applyMatrix;
+        if (item) {
+            // Do not apply attributes if this is a #document node.
+            // See importGroup() for an explanation of filtering for Group:
+            if (isElement && !(item instanceof Group))
+                item = applyAttributes(item, node, isRoot);
+            // Support onImportItem callback, to provide mechanism to handle
+            // special attributes (e.g. inkscape:transform-center)
+            var onImport = options.onImport,
+                data = isElement && node.getAttribute('data-paper-data');
+            if (onImport)
+                item = onImport(node, item, options) || item;
+            if (options.expandShapes && item instanceof Shape) {
+                item.remove();
+                item = item.toPath();
+            }
+            if (data)
+                item._data = JSON.parse(data);
+        }
+        if (container) {
+            //  After import, move things back to how they were:
+            body.removeChild(container);
+            if (parent) {
+                if (next) {
+                    parent.insertBefore(node, next);
+                } else {
+                    parent.appendChild(node);
+                }
+            }
+        }
+        // Clear definitions at the end of import?
+        if (isRoot) {
+            definitions = {};
+            // Now if settings.applyMatrix was set, apply recursively and set
+            // #applyMatrix = true on the item and all children.
+            if (item && Base.pick(options.applyMatrix, applyMatrix))
+                item.matrix.apply(true, true);
+        }
+        return item;
+    }
+
     function importSVG(source, options, isRoot) {
         if (!source)
             return null;
@@ -622,58 +674,13 @@ new function() {
                 return reader.readAsText(source);
             }
         }
-
         if (typeof source === 'string') {
             node = new window.DOMParser().parseFromString(source,
                     'image/svg+xml');
         }
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
-        // jsdom in Node.js uses uppercase values for nodeName...
-        var type = node.nodeName.toLowerCase(),
-            isElement = type !== '#document',
-            importer = importers[type],
-            item,
-            data = isElement && node.getAttribute('data-paper-data'),
-            settings = scope.settings,
-            applyMatrix = settings.applyMatrix;
-        if (isRoot && isElement) {
-            // Set rootSize root element size, fall-back to view size.
-            rootSize = getSize(node, null, null, true)
-                    || scope.getView().getSize();
-        }
-        // Have items imported from SVG not bake in all transformations to their
-        // content and children, as this is how SVG works too, but preserve the
-        // current setting so we can restore it after.
-        settings.applyMatrix = false;
-        item = importer && importer(node, type, options, isRoot) || null;
-        settings.applyMatrix = applyMatrix;
-        if (item) {
-            // Do not apply attributes if this is a #document node.
-            // See importGroup() for an explanation of filtering for Group:
-            if (isElement && !(item instanceof Group))
-                item = applyAttributes(item, node, isRoot);
-            // Support onImportItem callback, to provide mechanism to handle
-            // special attributes (e.g. inkscape:transform-center)
-            var onImport = options.onImport;
-            if (onImport)
-                item = onImport(node, item, options) || item;
-            if (options.expandShapes && item instanceof Shape) {
-                item.remove();
-                item = item.toPath();
-            }
-            if (data)
-                item._data = JSON.parse(data);
-        }
-        // Clear definitions at the end of import?
-        if (isRoot) {
-            definitions = {};
-            // Now if settings.applyMatrix was set, apply recursively and set
-            // #applyMatrix = true on the item and all children.
-            if (item && Base.pick(options.applyMatrix, applyMatrix))
-                item.matrix.apply(true, true);
-        }
-        return item;
+        return importNode(node, options, isRoot);
     }
 
     // NOTE: Documentation is in Item#importSVG()

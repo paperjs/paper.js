@@ -54,7 +54,7 @@ test('Export SVG ellipse', function() {
         cy: 80,
         rx: 100,
         ry: 50
-    }
+    };
     var path = new Path.Ellipse({
         center: new Point(attrs.cx, attrs.cy),
         radius: new Point(attrs.rx, attrs.ry)
@@ -67,7 +67,7 @@ test('Export SVG circle', function() {
         cx: 100,
         cy: 80,
         r: 50
-    }
+    };
     var path = new Path.Circle({
         center: new Point(attrs.cx, attrs.cy),
         radius: attrs.r

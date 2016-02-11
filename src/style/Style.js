@@ -72,9 +72,9 @@ var Style = Base.extend(new function() {
     // not supported.
     var defaults = {
         // Paths
-        fillColor: undefined,
+        fillColor: null,
         fillRule: 'nonzero',
-        strokeColor: undefined,
+        strokeColor: null,
         strokeWidth: 1,
         strokeCap: 'butt',
         strokeJoin: 'miter',
@@ -83,11 +83,11 @@ var Style = Base.extend(new function() {
         dashOffset: 0,
         dashArray: [],
         // Shadows
-        shadowColor: undefined,
+        shadowColor: null,
         shadowBlur: 0,
         shadowOffset: new Point(),
         // Selection
-        selectedColor: undefined
+        selectedColor: null
     },
     // For TextItem, override default fillColor and add text-specific properties
     textDefaults = new Base(defaults, {
