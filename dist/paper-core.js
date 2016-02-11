@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 11 11:20:32 2016 +0100
+ * Date: Thu Feb 11 12:51:48 2016 +0100
  *
  ***
  *
@@ -4346,6 +4346,21 @@ var Group = Item.extend({
 		var child = this.getFirstChild();
 		if (child)
 			child.setClipMask(clipped);
+	},
+
+	_getBounds: function _getBounds(getter, matrix, cacheItem, internal) {
+		var clipItem = this._getClipItem(),
+			clipBoundsGetter = {
+				getStrokeBounds: 'getBounds',
+				getRoughBounds: 'getHandleBounds',
+				getInternalRoughBounds: 'getInternalBounds'
+			};
+		return clipItem
+				? clipItem._getCachedBounds(clipBoundsGetter[getter] || getter,
+					matrix && matrix.appended(clipItem._matrix),
+					cacheItem, internal)
+				: _getBounds.base.call(this, getter, matrix, cacheItem,
+					internal);
 	},
 
 	_hitTestChildren: function _hitTestChildren(point, options) {
@@ -13677,22 +13692,26 @@ new function() {
 
 		viewBox: function(item, value, name, node, styles) {
 			var rect = new Rectangle(convertValue(value, 'array')),
-				size = getSize(node, null, null, true);
+				size = getSize(node, null, null, true),
+				group,
+				matrix;
 			if (item instanceof Group) {
-				var scale = size ? rect.getSize().divide(size) : 1,
-					matrix = new Matrix().translate(rect.getPoint()).scale(scale);
-				item.transform(matrix.invert());
+				var scale = size ? size.divide(rect.getSize()) : 1,
+				matrix = new Matrix().scale(scale).translate(rect.getPoint().negate());
+				group = item;
 			} else if (item instanceof SymbolDefinition) {
 				if (size)
 					rect.setSize(size);
-				var clip = getAttribute(node, 'overflow', styles) != 'visible',
-					group = item._item;
-				if (clip && !rect.contains(group.getBounds())) {
-					clip = new Shape.Rectangle(rect).transform(group._matrix);
-					clip.setClipMask(true);
-					group.addChild(clip);
-				}
+				group = item._item;
 			}
+			var clip = getAttribute(node, 'overflow', styles) != 'visible';
+			if (clip && !rect.contains(group.getBounds())) {
+				clip = new Shape.Rectangle(rect).transform(group._matrix);
+				clip.setClipMask(true);
+				group.addChild(clip);
+			}
+			if (matrix)
+				group.transform(matrix);
 		}
 	});
 
