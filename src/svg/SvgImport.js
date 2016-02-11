@@ -465,13 +465,15 @@ new function() {
             // viewBox will be applied both to the group that's created for the
             // content in SymbolDefinition#item, and the SymbolItem itself.
             var rect = new Rectangle(convertValue(value, 'array')),
-                size = getSize(node, null, null, true);
+                size = getSize(node, null, null, true),
+                group,
+                matrix;
             if (item instanceof Group) {
                 // This is either a top-level svg node, or the container for a
                 // symbol.
-                var scale = size ? rect.getSize().divide(size) : 1,
-                    matrix = new Matrix().translate(rect.getPoint()).scale(scale);
-                item.transform(matrix.invert());
+                var scale = size ? size.divide(rect.getSize()) : 1,
+                matrix = new Matrix().scale(scale).translate(rect.getPoint().negate());
+                group = item;
             } else if (item instanceof SymbolDefinition) {
                 // The symbol is wrapping a group. Note that viewBox was already
                 // applied to the group, and the above code was executed for it.
@@ -481,15 +483,17 @@ new function() {
                 // children are added, for styling reasons. See importGroup()
                 if (size)
                     rect.setSize(size);
-                var clip = getAttribute(node, 'overflow', styles) != 'visible',
-                    group = item._item;
-                if (clip && !rect.contains(group.getBounds())) {
-                    // Add a clip path at the top of this symbol's group
-                    clip = new Shape.Rectangle(rect).transform(group._matrix);
-                    clip.setClipMask(true);
-                    group.addChild(clip);
-                }
+                group = item._item;
             }
+            var clip = getAttribute(node, 'overflow', styles) != 'visible';
+            if (clip && !rect.contains(group.getBounds())) {
+                // Add a clip path at the top of this symbol's group
+                clip = new Shape.Rectangle(rect).transform(group._matrix);
+                clip.setClipMask(true);
+                group.addChild(clip);
+            }
+            if (matrix)
+                group.transform(matrix);
         }
     });
 
