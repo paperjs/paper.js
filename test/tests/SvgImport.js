@@ -120,23 +120,48 @@ test('Import complex CompoundPath and clone', function() {
     equals(item.clone(), item, null, { cloned: true });
 });
 
-if (!isNode) {
-    test('Import SVG clipping', function(assert) {
-        importSVG(assert, 'assets/clipping.svg',
-            'The imported SVG item should visually be the same as the rasterized original SVG data.');
+function importSVG(assert, url, message, options) {
+    var done = assert.async();
+    if (!message)
+        message = 'The imported SVG "' + url + '" should visually be the same '
+            + 'as the rasterized original SVG data.';
+    project.importSVG(url, {
+        onLoad: function(item, svg) {
+            function getValue(name) {
+                return parseFloat(svg.getAttribute(name));
+            }
+            /*
+            var size = new Size(getValue('width'), getValue('height'));
+            var group = new Group({
+                children: [
+                    new Shape.Rectangle({
+                        clipMask: true,
+                        size: size
+                    }),
+                    item
+                ]
+            });
+            */
+            compareSVG(done, item, svg, message, options);
+        },
+        onError: function(error) {
+            // TODO: Implement in SvgImport first!
+            pushFailure('Loading SVG from a valid URL should not give an error.');
+            done();
+        }
     });
 }
 
-function importSVG(assert, url, message, options) {
-        var done = assert.async();
-        project.importSVG(url, {
-            onLoad: function(item, svg) {
-                compareSVG(done, item, svg, message, options);
-            },
-            onError: function(error) {
-                // TODO: Implement in SvgImport first!
-                pushFailure('Loading SVG from a valid URL should not give an error.');
-                done();
-            }
+if (!isNode) {
+    // JSDom does not have SVG rendering, so we can't test there.
+    var svgFiles = ['viewbox', 'clipping', 'gradients-1'];
+    // TODO: Investigate why Phantom struggles with this file:
+    if (!isPhantom)
+        svgFiles.push('gradients-2');
+    svgFiles.forEach(function(name) {
+        name += '.svg';
+        test('Import ' + name, function(assert) {
+            importSVG(assert, 'assets/' + name);
         });
+    });
 }

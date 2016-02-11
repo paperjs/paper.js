@@ -11,6 +11,7 @@
  */
 
 var isNode = typeof global === 'object',
+    isPhantom = !!window.callPhantom,
     root;
 
 if (isNode) {
