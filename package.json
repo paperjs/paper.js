@@ -16,7 +16,8 @@
   "main": "dist/paper-full.js",
   "scripts": {
     "lint": "jshint src",
-    "prepublish": "gulp minify"
+    "prepublish": "gulp minify",
+    "test": "gulp test"
   },
   "files": [
     "AUTHORS.md",

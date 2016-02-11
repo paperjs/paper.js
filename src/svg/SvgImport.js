@@ -567,22 +567,20 @@ new function() {
             rootSize = getSize(node, null, null, true)
                     || paper.getView().getSize();
             // We need to move the SVG node to the current document, so default
-            // styles apply! For this we create and insert a temporary SVG
-            // container which is removed again at the end. This container also
-            // helps fix a bug on IE. No need to inherit styles on Node.js
-            container = !paper.agent.node && SvgElement.create('svg', {
+            // styles are correctly inherited! For this we create and insert a
+            // temporary SVG container which is removed again at the end. This
+            // container also helps fix a bug on IE.
+            container = SvgElement.create('svg', {
                 // If no stroke-width is set, IE/Edge appears to have a
                 // default of 0.01px. We can set a default style on the
                 // parent container as a more sensible fall-back. Also, browsers
                 // have a default miter-limit of 4, while Paper.js has 10
                 style: 'stroke-width: 1px; stroke-miterlimit: 10'
             });
-            if (container) {
-                body.appendChild(container);
-                parent = node.parentNode;
-                next = node.nextSibling;
-                container.appendChild(node);
-            }
+            parent = node.parentNode;
+            next = node.nextSibling;
+            container.appendChild(node);
+            body.appendChild(container);
         }
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
