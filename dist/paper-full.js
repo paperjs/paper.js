@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 11 11:06:09 2016 +0100
+ * Date: Thu Feb 11 11:20:32 2016 +0100
  *
  ***
  *
@@ -13744,15 +13744,13 @@ new function() {
 		if (isRoot && isElement) {
 			rootSize = getSize(node, null, null, true)
 					|| paper.getView().getSize();
-			container = !paper.agent.node && SvgElement.create('svg', {
+			container = SvgElement.create('svg', {
 				style: 'stroke-width: 1px; stroke-miterlimit: 10'
 			});
-			if (container) {
-				body.appendChild(container);
-				parent = node.parentNode;
-				next = node.nextSibling;
-				container.appendChild(node);
-			}
+			parent = node.parentNode;
+			next = node.nextSibling;
+			container.appendChild(node);
+			body.appendChild(container);
 		}
 		var settings = paper.settings,
 			applyMatrix = settings.applyMatrix;
