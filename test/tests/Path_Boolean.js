@@ -12,27 +12,6 @@
 
 QUnit.module('Path Boolean Operations');
 
-function createPath(str) {
-    var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;
-    return new ctor(str);
-}
-
-function compareBoolean(actual, expected, message, options) {
-    expected = typeof expected === 'string'
-            ? createPath(expected)
-            : expected;
-    if (typeof actual === 'function') {
-        if (!message)
-            message = getFunctionMessage(actual);
-        actual = actual();
-    }
-    actual.style = expected.style = {
-        strokeColor: 'black',
-        fillColor: expected.closed ? 'yellow' : null
-    };
-    equals(actual, expected, message, Base.set({ rasterize: true }, options));
-}
-
 test('#541', function() {
     var shape0 = new Path.Rectangle({
         insert: false,

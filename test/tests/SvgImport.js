@@ -140,32 +140,3 @@ function importSVG(assert, url, message, options) {
             }
         });
 }
-
-function compareSVG(done, actual, expected, message, options) {
-    function getItem(item) {
-        return item instanceof Item
-            ? item
-            : typeof item === 'string'
-            ? new Raster('data:image/svg+xml;base64,' + btoa(item))
-            : null;
-    }
-
-    actual = getItem(actual);
-    expected = getItem(expected);
-    actual.position = expected.position;
-
-    if (typeof actual === 'function') {
-        if (!message)
-            message = getFunctionMessage(actual);
-        actual = actual();
-    }
-
-    expected.onLoad = function() {
-        comparePixels(actual, expected, message, Base.set({
-            tolerance: 1e-2,
-            resolution: 72
-        }, options));
-        done();
-    };
-}
-

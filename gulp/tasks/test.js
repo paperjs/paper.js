@@ -12,11 +12,12 @@
 
 var gulp = require('gulp'),
     qunits = require('gulp-qunits'),
-    gutil = require('gulp-util');
+    gutil = require('gulp-util'),
+    webserver = require('gulp-webserver');
 
-gulp.task('test', ['test:browser', 'test:node']);
+gulp.task('test', ['test:phantom', 'test:node']);
 
-gulp.task('test:browser', ['minify:acorn'], function() {
+gulp.task('test:phantom', ['minify:acorn'], function() {
     return gulp.src('index.html', { cwd: 'test' })
         .pipe(qunits({
             checkGlobals: true,
@@ -39,3 +40,11 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
             timeout: 40
         }));
 });
+
+gulp.task('test:browser', ['minify:acorn'], function() {
+    gulp.src('.')
+        .pipe(webserver({
+            open: '/test'
+        }));
+});
+

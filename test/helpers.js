@@ -437,6 +437,27 @@ var getFunctionMessage = function(func) {
     return message;
 };
 
+var createPath = function(str) {
+    var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;
+    return new ctor(str);
+};
+
+var compareBoolean = function(actual, expected, message, options) {
+    expected = typeof expected === 'string'
+            ? createPath(expected)
+            : expected;
+    if (typeof actual === 'function') {
+        if (!message)
+            message = getFunctionMessage(actual);
+        actual = actual();
+    }
+    actual.style = expected.style = {
+        strokeColor: 'black',
+        fillColor: expected.closed ? 'yellow' : null
+    };
+    equals(actual, expected, message, Base.set({ rasterize: true }, options));
+};
+
 var createSVG = function(str, attrs) {
     if (attrs) {
         // Similar to SvgElement.create():
@@ -451,3 +472,30 @@ var createSVG = function(str, attrs) {
     }
 };
 
+var compareSVG = function(done, actual, expected, message, options) {
+    function getItem(item) {
+        return item instanceof Item
+            ? item
+            : typeof item === 'string'
+            ? new Raster('data:image/svg+xml;base64,' + btoa(item))
+            : null;
+    }
+
+    actual = getItem(actual);
+    expected = getItem(expected);
+    actual.position = expected.position;
+
+    if (typeof actual === 'function') {
+        if (!message)
+            message = getFunctionMessage(actual);
+        actual = actual();
+    }
+
+    expected.onLoad = function() {
+        comparePixels(actual, expected, message, Base.set({
+            tolerance: 1e-2,
+            resolution: 72
+        }, options));
+        done();
+    };
+};
