@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 11 10:05:21 2016 +0100
+ * Date: Thu Feb 11 11:06:09 2016 +0100
  *
  ***
  *
@@ -10983,9 +10983,9 @@ var GradientStop = Base.extend({
 
 var Style = Base.extend(new function() {
 	var defaults = {
-		fillColor: undefined,
+		fillColor: null,
 		fillRule: 'nonzero',
-		strokeColor: undefined,
+		strokeColor: null,
 		strokeWidth: 1,
 		strokeCap: 'butt',
 		strokeJoin: 'miter',
@@ -10993,10 +10993,10 @@ var Style = Base.extend(new function() {
 		miterLimit: 10,
 		dashOffset: 0,
 		dashArray: [],
-		shadowColor: undefined,
+		shadowColor: null,
 		shadowBlur: 0,
 		shadowOffset: new Point(),
-		selectedColor: undefined
+		selectedColor: null
 	},
 	textDefaults = new Base(defaults, {
 		fillColor: new Color(),
@@ -13386,18 +13386,19 @@ new function() {
 	function importGroup(node, type, options, isRoot) {
 		var nodes = node.childNodes,
 			isClip = type === 'clippath',
+			isDefs = type === 'defs',
 			item = new Group(),
 			project = item._project,
 			currentStyle = project._currentStyle,
 			children = [];
-		if (!isClip) {
+		if (!isClip && !isDefs) {
 			item = applyAttributes(item, node, isRoot);
 			project._currentStyle = item._style.clone();
 		}
 		if (isRoot) {
 			var defs = node.querySelectorAll('defs');
 			for (var i = 0, l = defs.length; i < l; i++) {
-				importSVG(defs[i], options, false);
+				importNode(defs[i], options, false);
 			}
 		}
 		for (var i = 0, l = nodes.length; i < l; i++) {
@@ -13405,7 +13406,7 @@ new function() {
 				child;
 			if (childNode.nodeType === 1
 					&& childNode.nodeName.toLowerCase() !== 'defs'
-					&& (child = importSVG(childNode, options, false))
+					&& (child = importNode(childNode, options, false))
 					&& !(child instanceof SymbolDefinition))
 				children.push(child);
 		}
@@ -13413,7 +13414,7 @@ new function() {
 		if (isClip)
 			item = applyAttributes(item.reduce(), node, isRoot);
 		project._currentStyle = currentStyle;
-		if (isClip || type === 'defs') {
+		if (isClip || isDefs) {
 			item.remove();
 			item = null;
 		}
@@ -13484,28 +13485,9 @@ new function() {
 		'#document': function (node, type, options, isRoot) {
 			var nodes = node.childNodes;
 			for (var i = 0, l = nodes.length; i < l; i++) {
-				var child = nodes[i],
-					next;
-				if (child.nodeType === 1) {
-					var body = document.body,
-						parent = !paper.agent.node && SvgElement.create('svg');
-					if (parent) {
-						body.appendChild(parent);
-						parent.style.strokeWidth = '1px';
-						next = child.nextSibling;
-						parent.appendChild(child);
-					}
-					var item = importSVG(child, options, isRoot);
-					if (parent) {
-						body.removeChild(parent);
-						if (next) {
-							node.insertBefore(child, next);
-						} else {
-							node.appendChild(child);
-						}
-					}
-					return item;
-				}
+				var child = nodes[i];
+				if (child.nodeType === 1)
+					return importNode(child, options, isRoot);
 			}
 		},
 		g: importGroup,
@@ -13752,6 +13734,64 @@ new function() {
 		return res;
 	}
 
+	function importNode(node, options, isRoot) {
+		var type = node.nodeName.toLowerCase(),
+			isElement = type !== '#document',
+			body = document.body,
+			container,
+			parent,
+			next;
+		if (isRoot && isElement) {
+			rootSize = getSize(node, null, null, true)
+					|| paper.getView().getSize();
+			container = !paper.agent.node && SvgElement.create('svg', {
+				style: 'stroke-width: 1px; stroke-miterlimit: 10'
+			});
+			if (container) {
+				body.appendChild(container);
+				parent = node.parentNode;
+				next = node.nextSibling;
+				container.appendChild(node);
+			}
+		}
+		var settings = paper.settings,
+			applyMatrix = settings.applyMatrix;
+		settings.applyMatrix = false;
+		var importer = importers[type],
+			item = importer && importer(node, type, options, isRoot) || null;
+		settings.applyMatrix = applyMatrix;
+		if (item) {
+			if (isElement && !(item instanceof Group))
+				item = applyAttributes(item, node, isRoot);
+			var onImport = options.onImport,
+				data = isElement && node.getAttribute('data-paper-data');
+			if (onImport)
+				item = onImport(node, item, options) || item;
+			if (options.expandShapes && item instanceof Shape) {
+				item.remove();
+				item = item.toPath();
+			}
+			if (data)
+				item._data = JSON.parse(data);
+		}
+		if (container) {
+			body.removeChild(container);
+			if (parent) {
+				if (next) {
+					parent.insertBefore(node, next);
+				} else {
+					parent.appendChild(node);
+				}
+			}
+		}
+		if (isRoot) {
+			definitions = {};
+			if (item && Base.pick(options.applyMatrix, applyMatrix))
+				item.matrix.apply(true, true);
+		}
+		return item;
+	}
+
 	function importSVG(source, options, isRoot) {
 		if (!source)
 			return null;
@@ -13784,46 +13824,13 @@ new function() {
 				return reader.readAsText(source);
 			}
 		}
-
 		if (typeof source === 'string') {
 			node = new window.DOMParser().parseFromString(source,
 					'image/svg+xml');
 		}
 		if (!node.nodeName)
 			throw new Error('Unsupported SVG source: ' + source);
-		var type = node.nodeName.toLowerCase(),
-			isElement = type !== '#document',
-			importer = importers[type],
-			item,
-			data = isElement && node.getAttribute('data-paper-data'),
-			settings = scope.settings,
-			applyMatrix = settings.applyMatrix;
-		if (isRoot && isElement) {
-			rootSize = getSize(node, null, null, true)
-					|| scope.getView().getSize();
-		}
-		settings.applyMatrix = false;
-		item = importer && importer(node, type, options, isRoot) || null;
-		settings.applyMatrix = applyMatrix;
-		if (item) {
-			if (isElement && !(item instanceof Group))
-				item = applyAttributes(item, node, isRoot);
-			var onImport = options.onImport;
-			if (onImport)
-				item = onImport(node, item, options) || item;
-			if (options.expandShapes && item instanceof Shape) {
-				item.remove();
-				item = item.toPath();
-			}
-			if (data)
-				item._data = JSON.parse(data);
-		}
-		if (isRoot) {
-			definitions = {};
-			if (item && Base.pick(options.applyMatrix, applyMatrix))
-				item.matrix.apply(true, true);
-		}
-		return item;
+		return importNode(node, options, isRoot);
 	}
 
 	Item.inject({
