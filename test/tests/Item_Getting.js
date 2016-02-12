@@ -215,13 +215,51 @@ test('Project#getItems() overlapping', function() {
         fillColor: 'red'
     });
 
-    var rect = new Rectangle(0, 0, 400, 400);
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: [0, 0, 400, 400]
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
 
     equals(function() {
         var matches = project.getItems({
             class: Path,
-            overlapping: rect
+            overlapping: [200, 0, 400, 400]
         });
         return matches.length == 1 && matches[0] == path;
+    }, true);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: [400, 0, 400, 400]
+        });
+        return matches.length == 0;
+    }, true);
+});
+
+test('Project#getItems() inside', function() {
+    var path = new Path.Circle({
+        radius: 100,
+        center: [200, 200],
+        fillColor: 'red'
+    });
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            inside: [0, 0, 400, 400]
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            inside: [200, 0, 400, 400]
+        });
+        return matches.length == 0;
     }, true);
 });
