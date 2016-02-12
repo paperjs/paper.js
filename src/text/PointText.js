@@ -85,16 +85,16 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             hasFill = style.hasFill(),
             hasStroke = style.hasStroke(),
             leading = style.getLeading(),
-            shadowBlur = ctx.shadowBlur;
+            shadowColor = ctx.shadowColor;
         ctx.font = style.getFontStyle();
         ctx.textAlign = style.getJustification();
         for (var i = 0, l = lines.length; i < l; i++) {
-            // See Path._draw() for explanation about ctx.shadowBlur
-            ctx.shadowBlur = shadowBlur;
+            // See Path._draw() for explanation about ctx.shadowColor
+            ctx.shadowColor = shadowColor;
             var line = lines[i];
             if (hasFill) {
                 ctx.fillText(line, 0, 0);
-                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (hasStroke)
                 ctx.strokeText(line, 0, 0);

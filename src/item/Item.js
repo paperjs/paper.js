@@ -3954,11 +3954,13 @@ new function() { // // Scope to inject various item event handlers
             }
         }
         if (shadowColor) {
-            var shadowBlur = style.getShadowBlur();
-            if (shadowBlur > 0) {
+            var blur = style.getShadowBlur(),
+                offset = this.getShadowOffset();
+            // In order to draw a shadow, we need either a shadow blur or an
+            // offset, or both.
+            if (blur > 0 || !offset.isZero()) {
                 ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-                ctx.shadowBlur = shadowBlur;
-                var offset = this.getShadowOffset();
+                ctx.shadowBlur = blur;
                 ctx.shadowOffsetX = offset.x;
                 ctx.shadowOffsetY = offset.y;
             }

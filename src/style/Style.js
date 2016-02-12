@@ -293,7 +293,7 @@ var Style = Base.extend(new function() {
 
     // DOCS: Style#hasShadow()
     hasShadow: function() {
-        return !!this.getShadowColor() && this.getShadowBlur() > 0;
+        return !!this.getShadowColor();
     },
 
     /**
