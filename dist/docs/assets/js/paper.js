@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 19:14:27 2016 +0100
+ * Date: Fri Feb 12 19:58:32 2016 +0100
  *
  ***
  *
@@ -273,19 +273,9 @@ Base.inject({
 		return Base.serialize(this);
 	},
 
-	_set: function(props, exclude, dontCheck) {
-		if (props && (dontCheck || Base.isPlainObject(props))) {
-			var keys = Object.keys(props._filtering || props);
-			for (var i = 0, l = keys.length; i < l; i++) {
-				var key = keys[i];
-				if (!(exclude && exclude[key])) {
-					var value = props[key];
-					if (value !== undefined)
-						this[key] = value;
-				}
-			}
-			return props;
-		}
+	_set: function(props) {
+		if (props && Base.isPlainObject(props))
+			return Base.filter(this, props);
 	},
 
 	statics: {
@@ -410,6 +400,19 @@ Base.inject({
 
 		hasNamed: function(list, name) {
 			return !!this.getNamed(list, name);
+		},
+
+		filter: function(dest, source, exclude) {
+			var keys = Object.keys(source._filtering || source);
+			for (var i = 0, l = keys.length; i < l; i++) {
+				var key = keys[i];
+				if (!(exclude && exclude[key])) {
+					var value = source[key];
+					if (value !== undefined)
+						dest[key] = value;
+				}
+			}
+			return dest;
 		},
 
 		isPlainValue: function(obj, asString) {
@@ -2889,9 +2892,9 @@ new function() {
 					._insertItem(undefined, this, true, true);
 		}
 		if (hasProps && props !== Item.NO_INSERT) {
-			this._set(props,
-				{ internal: true, insert: true, project: true, parent: true },
-				true);
+			Base.filter(this, props, {
+				internal: true, insert: true, project: true, parent: true
+			});
 		}
 		return hasProps;
 	},
@@ -3698,7 +3701,7 @@ new function() {
 					})
 				};
 				if (obj) {
-					match = new Base()._set(match, {
+					match = Base.filter({}, match, {
 						recursive: true, inside: true, overlapping: true
 					});
 				}
