@@ -3918,16 +3918,13 @@ new function() { // // Scope to inject various item event handlers
     _setStyles: function(ctx) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
-        var style = this._style,
-            fillColor = style.getFillColor(),
-            strokeColor = style.getStrokeColor(),
-            shadowColor = style.getShadowColor();
-        if (fillColor)
-            ctx.fillStyle = fillColor.toCanvasStyle(ctx);
-        if (strokeColor) {
+        var style = this._style;
+        if (style.hasFill())
+            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+        if (style.hasStroke()) {
             var strokeWidth = style.getStrokeWidth();
             if (strokeWidth > 0) {
-                ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
+                ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
                 ctx.lineWidth = strokeWidth;
                 var strokeJoin = style.getStrokeJoin(),
                     strokeCap = style.getStrokeCap(),
@@ -3953,17 +3950,12 @@ new function() { // // Scope to inject various item event handlers
                 }
             }
         }
-        if (shadowColor) {
-            var blur = style.getShadowBlur(),
-                offset = this.getShadowOffset();
-            // In order to draw a shadow, we need either a shadow blur or an
-            // offset, or both.
-            if (blur > 0 || !offset.isZero()) {
-                ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-                ctx.shadowBlur = blur;
-                ctx.shadowOffsetX = offset.x;
-                ctx.shadowOffsetY = offset.y;
-            }
+        if (style.hasShadow()) {
+            var offset = this.getShadowOffset();
+            ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
+            ctx.shadowBlur = style.getShadowBlur();
+            ctx.shadowOffsetX = offset.x;
+            ctx.shadowOffsetY = offset.y;
         }
     },
 

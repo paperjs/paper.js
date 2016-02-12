@@ -283,17 +283,23 @@ var Style = Base.extend(new function() {
 
     // DOCS: Style#hasFill()
     hasFill: function() {
-        return !!this.getFillColor();
+        var color = this.getFillColor();
+        return !!color && color.alpha > 0;
     },
 
     // DOCS: Style#hasStroke()
     hasStroke: function() {
-        return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
+        var color = this.getStrokeColor();
+        return !!color && color.alpha > 0 && this.getStrokeWidth() > 0;
     },
 
     // DOCS: Style#hasShadow()
     hasShadow: function() {
-        return !!this.getShadowColor();
+        var color = this.getShadowColor();
+        // In order to draw a shadow, we need either a shadow blur or an
+        // offset, or both.
+        return !!color && color.alpha > 0 && (this.getShadowBlur() > 0
+                || !this.getShadowOffset().isZero());
     },
 
     /**
