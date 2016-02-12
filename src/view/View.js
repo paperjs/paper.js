@@ -1147,11 +1147,13 @@ new function() { // Injection scope for event handling on the browser
             mousedrag: 'mousemove'
         };
 
-    // Returns true if event was stopped, false otherwise.
+    // Returns true if event was prevented, false otherwise.
     function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
         var target = obj,
+            prevented = false,
             mouseEvent;
 
+        // Returns true if the event was stopped, false otherwise.
         function emit(obj, type) {
             if (obj.responds(type)) {
                 // Only produce the event object if we really need it, and then
@@ -1163,6 +1165,8 @@ new function() { // Injection scope for event handling on the browser
                 }
                 if (obj.emit(type, mouseEvent)) {
                     called = true;
+                    if (mouseEvent.prevented)
+                        prevented = true;
                     // Bail out if propagation is stopped
                     if (mouseEvent.stopped)
                         return true;
@@ -1177,13 +1181,13 @@ new function() { // Injection scope for event handling on the browser
         // Bubble up the parents and emit this event until we're told to stop.
         while (obj && obj !== stopItem) {
             if (emit(obj, type))
-                return true;
+                break;
             obj = obj._parent;
         }
-        return false;
+        return prevented;
     }
 
-    // Returns true if event was stopped, false otherwise.
+    // Returns true if event was prevented, false otherwise.
     function emitMouseEvents(view, item, type, event, point, prevPoint) {
         // Before handling events, process removeOn() calls for cleanup.
         // NOTE: As soon as there is one event handler receiving mousedrag
@@ -1327,7 +1331,7 @@ new function() { // Injection scope for event handling on the browser
             // We emit mousedown only when in the view, and mouseup regardless,
             // as long as the mousedown event was inside.
             if (mouse.down && inView || mouse.up && downPoint) {
-                var stopped = emitMouseEvents(this, item, type, event, point,
+                var prevented = emitMouseEvents(this, item, type, event, point,
                         downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
@@ -1337,12 +1341,12 @@ new function() { // Injection scope for event handling on the browser
                         && (Date.now() - clickTime < 300);
                     downItem = clickItem = item;
                     // Only start dragging if the mousedown event has not
-                    // stopped propagation.
-                    dragItem = !stopped && item;
+                    // prevented the default.
+                    dragItem = !prevented && item;
                     downPoint = lastPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on item, not view
-                    if (!stopped && item === downItem) {
+                    if (!prevented && item === downItem) {
                         clickTime = Date.now();
                         emitMouseEvents(this, item,
                                 dblClick ? 'doubleclick' : 'click',
