@@ -585,25 +585,69 @@ test('path.strokeBounds without strokeScaling and zoomed view', function() {
         center: [0, 0],
         radius: 100,
         strokeColor: 'black',
-        strokeWidth: 15,
+        strokeWidth: 20,
+        strokeScaling: false,
+        applyMatrix: false
+    });
+
+    view.zoom = 2;
+
+    equals(path.strokeBounds, new Rectangle(-105, -105, 210, 210),
+            'path.strokeBounds with zoomed view');
+
+    view.zoom = 1;
+
+    equals(path.strokeBounds, new Rectangle(-110, -110, 220, 220),
+            'path.strokeBounds without zoomed view');
+
+    path.scale(0.5, 1);
+
+    view.zoom = 2;
+
+    // Internal stroke bounds need to apply stroke deformation with
+    // strokeScaling:
+    equals(path.getBounds({ internal: true, stroke: true }),
+            new Rectangle(-110, -105, 220, 210),
+            'path.getBounds({ internal: true, stroke: true })'
+                + ' with path.applyMatrix = false, path.scale(0.5, 1);');
+
+    path.applyMatrix = true;
+
+    equals(path.getBounds({ internal: true, stroke: true }),
+            new Rectangle(-55, -105, 110, 210),
+            'path.getBounds({ internal: true, stroke: true })'
+                + ' with path.applyMatrix = true, path.scale(0.5, 1);');
+});
+
+test('shape.strokeBounds without strokeScaling and zoomed view', function() {
+    var shape = new Shape.Circle({
+        center: [0, 0],
+        radius: 100,
+        strokeColor: 'black',
+        strokeWidth: 20,
         strokeScaling: false
     });
 
     view.zoom = 2;
 
-    new Path.Rectangle({
-        rectangle: path.strokeBounds,
-        strokeColor: 'red',
-        strokeScaling: false
-    });
-
-    equals(path.strokeBounds, new Rectangle(-103.75, -103.75, 207.5, 207.5),
-            'path.strokeBounds with zoomed view');
+    equals(shape.strokeBounds, new Rectangle(-105, -105, 210, 210),
+            'shape.strokeBounds with zoomed view');
 
     view.zoom = 1;
 
-    equals(path.strokeBounds, new Rectangle(-107.5, -107.5, 215, 215),
-            'path.strokeBounds without zoomed view');
+    equals(shape.strokeBounds, new Rectangle(-110, -110, 220, 220),
+            'shape.strokeBounds without zoomed view');
+
+    shape.scale(0.5, 1);
+
+    view.zoom = 2;
+
+    // Internal stroke bounds need to apply stroke deformation with
+    // strokeScaling:
+    equals(shape.getBounds({ internal: true, stroke: true }),
+            new Rectangle(-110, -105, 220, 210),
+            'shape.getBounds({ internal: true, stroke: true })'
+                + ' with shape.scale(0.5, 1);');
 });
 
 test('path.internalBounds', function() {

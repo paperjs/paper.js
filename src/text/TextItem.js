@@ -31,7 +31,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     },
     // TextItem doesn't make the distinction between the different bounds,
     // so use the same name for all of them
-    _boundsGetter: 'getBounds',
+    _boundsOptions: { stroke: false, handle: false },
 
     initialize: function TextItem(arg) {
         this._content = '';

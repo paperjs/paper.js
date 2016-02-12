@@ -92,7 +92,7 @@ Base.inject(/** @lends Base# */{
                         this[key] = value;
                 }
             }
-            return true;
+            return props;
         }
     },
 

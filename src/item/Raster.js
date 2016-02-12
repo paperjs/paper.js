@@ -23,7 +23,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _canApplyMatrix: false,
     // Raster doesn't make the distinction between the different bounds,
     // so use the same name for all of them
-    _boundsGetter: 'getBounds',
+    _boundsOptions: { stroke: false, handle: false },
     _boundsSelected: true,
     _serializeFields: {
         crossOrigin: null, // NOTE: Needs to be set before source to work!
@@ -690,7 +690,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @type Function
      */
 
-    _getBounds: function(getter, matrix) {
+    _getBounds: function(matrix, options) {
         var rect = new Rectangle(this._size).setCenter(0, 0);
         return matrix ? matrix._transformBounds(rect) : rect;
     },

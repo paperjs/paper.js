@@ -102,7 +102,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         }
     },
 
-    _getBounds: function(getter, matrix) {
+    _getBounds: function(matrix, options) {
         var style = this._style,
             lines = this._lines,
             numLines = lines.length,

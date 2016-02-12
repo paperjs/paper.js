@@ -23,7 +23,7 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     _applyMatrix: false,
     _canApplyMatrix: false,
     // SymbolItem uses strokeBounds for bounds
-    _boundsGetter: { getBounds: 'getStrokeBounds' },
+    _boundsOptions: { stroke: true },
     _boundsSelected: true,
     _serializeFields: {
         symbol: null
@@ -114,12 +114,11 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     },
 
 
-    _getBounds: function(getter, matrix, cacheItem, internal) {
+    _getBounds: function(matrix, options) {
         var item = this._definition._item;
         // Redirect the call to the definition item to calculate the bounds.
-        return item._getCachedBounds(getter,
-                matrix && matrix.appended(item._matrix),
-                cacheItem, internal);
+        return item._getCachedBounds(matrix && matrix.appended(item._matrix),
+                options);
     },
 
     _hitTestSelf: function(point, options) {

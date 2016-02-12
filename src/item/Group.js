@@ -167,21 +167,13 @@ var Group = Item.extend(/** @lends Group# */{
             child.setClipMask(clipped);
     },
 
-    _getBounds: function _getBounds(getter, matrix, cacheItem, internal) {
-        var clipItem = this._getClipItem(),
-            // We need to fall-back to bounds getter that do not take stroke
-            // into account
-            clipBoundsGetter = {
-                getStrokeBounds: 'getBounds',
-                getRoughBounds: 'getHandleBounds',
-                getInternalRoughBounds: 'getInternalBounds'
-            };
+    _getBounds: function _getBounds(matrix, options) {
+        var clipItem = this._getClipItem();
         return clipItem
-                ? clipItem._getCachedBounds(clipBoundsGetter[getter] || getter,
-                    matrix && matrix.appended(clipItem._matrix),
-                    cacheItem, internal)
-                : _getBounds.base.call(this, getter, matrix, cacheItem,
-                    internal);
+            ? clipItem._getCachedBounds(
+                matrix && matrix.appended(clipItem._matrix),
+                Base.set({}, options, { stroke: false }))
+            : _getBounds.base.call(this, matrix, options);
     },
 
     _hitTestChildren: function _hitTestChildren(point, options) {
