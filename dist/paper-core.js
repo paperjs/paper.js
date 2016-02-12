@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 19:58:32 2016 +0100
+ * Date: Fri Feb 12 20:10:21 2016 +0100
  *
  ***
  *
@@ -6345,8 +6345,8 @@ new function() {
 			ay = p2y - p1y - cy - by,
 			x, y;
 		if (type === 0) {
-			x = ((ax * t + bx) * t + cx) * t + p1x;
-			y = ((ay * t + by) * t + cy) * t + p1y;
+			x = t === 1 ? p2x : ((ax * t + bx) * t + cx) * t + p1x;
+			y = t === 1 ? p2y : ((ay * t + by) * t + cy) * t + p1y;
 		} else {
 			var tMin = 4e-7,
 				tMax = 1 - tMin;
