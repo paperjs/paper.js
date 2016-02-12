@@ -65,7 +65,7 @@
     "require-dir": "^0.3.0",
     "resemblejs": "^2.1.0",
     "stats.js": "0.0.14-master",
-    "straps": "^1.8.0"
+    "straps": "^1.9.0"
   },
   "keywords": [
     "vector",

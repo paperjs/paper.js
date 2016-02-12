@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 17:59:37 2016 +0100
+ * Date: Fri Feb 12 18:20:40 2016 +0100
  *
  ***
  *
@@ -139,16 +139,18 @@ var Base = new function() {
 		return bind;
 	}
 
-	function set(obj, props, exclude) {
-		for (var key in props)
-			if (props.hasOwnProperty(key) && !(exclude && exclude[key]))
-				obj[key] = props[key];
+	function set(obj, args, start) {
+		for (var i = start, l = args.length; i < l; i++) {
+			var props = args[i];
+			for (var key in props)
+				if (props.hasOwnProperty(key))
+					obj[key] = props[key];
+		}
 		return obj;
 	}
 
 	return inject(function Base() {
-		for (var i = 0, l = arguments.length; i < l; i++)
-			set(this, arguments[i]);
+		return set(this, arguments, 0);
 	}, {
 		inject: function(src) {
 			if (src) {
@@ -205,8 +207,8 @@ var Base = new function() {
 			return each(this, iter, bind);
 		},
 
-		set: function(props) {
-			return set(this, props);
+		set: function() {
+			return set(this, arguments, 0);
 		},
 
 		clone: function() {
@@ -218,10 +220,13 @@ var Base = new function() {
 			create: create,
 			define: define,
 			describe: describe,
-			set: set,
+
+			set: function(obj) {
+				return set(obj, arguments, 1);
+			},
 
 			clone: function(obj) {
-				return set(new obj.constructor(), obj);
+				return set(new obj.constructor(), arguments, 0);
 			},
 
 			isPlainObject: function(obj) {
