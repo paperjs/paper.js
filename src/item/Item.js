@@ -3919,41 +3919,39 @@ new function() { // // Scope to inject various item event handlers
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
         var style = this._style;
-        if (style.hasFill())
+        if (style.hasFill()) {
             ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+        }
         if (style.hasStroke()) {
-            var strokeWidth = style.getStrokeWidth();
-            if (strokeWidth > 0) {
-                ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
-                ctx.lineWidth = strokeWidth;
-                var strokeJoin = style.getStrokeJoin(),
-                    strokeCap = style.getStrokeCap(),
-                    miterLimit = style.getMiterLimit();
-                if (strokeJoin)
-                    ctx.lineJoin = strokeJoin;
-                if (strokeCap)
-                    ctx.lineCap = strokeCap;
-                if (miterLimit)
-                    ctx.miterLimit = miterLimit;
-                if (paper.support.nativeDash) {
-                    var dashArray = style.getDashArray(),
-                        dashOffset = style.getDashOffset();
-                    if (dashArray && dashArray.length) {
-                        if ('setLineDash' in ctx) {
-                            ctx.setLineDash(dashArray);
-                            ctx.lineDashOffset = dashOffset;
-                        } else {
-                            ctx.mozDash = dashArray;
-                            ctx.mozDashOffset = dashOffset;
-                        }
+            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
+            ctx.lineWidth = style.getStrokeWidth();
+            var strokeJoin = style.getStrokeJoin(),
+                strokeCap = style.getStrokeCap(),
+                miterLimit = style.getMiterLimit();
+            if (strokeJoin)
+                ctx.lineJoin = strokeJoin;
+            if (strokeCap)
+                ctx.lineCap = strokeCap;
+            if (miterLimit)
+                ctx.miterLimit = miterLimit;
+            if (paper.support.nativeDash) {
+                var dashArray = style.getDashArray(),
+                    dashOffset = style.getDashOffset();
+                if (dashArray && dashArray.length) {
+                    if ('setLineDash' in ctx) {
+                        ctx.setLineDash(dashArray);
+                        ctx.lineDashOffset = dashOffset;
+                    } else {
+                        ctx.mozDash = dashArray;
+                        ctx.mozDashOffset = dashOffset;
                     }
                 }
             }
         }
         if (style.hasShadow()) {
-            var offset = this.getShadowOffset();
             ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
             ctx.shadowBlur = style.getShadowBlur();
+            var offset = this.getShadowOffset();
             ctx.shadowOffsetX = offset.x;
             ctx.shadowOffsetY = offset.y;
         }
