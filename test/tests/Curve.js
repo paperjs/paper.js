@@ -37,6 +37,16 @@ test('Curve#getPointAtTime()', function() {
 
     equals(curve.getPointAt(curve.length + 1), null,
             'Should return null when offset is out of range.');
+
+    // #960:
+    var curve = new Curve({
+        segment1: [178.58559999999994, 333.41440000000006],
+        segment2: [178.58559999999994, 178.58560000000008]
+    });
+    equals(curve.getPointAtTime(0).y, curve.point1.y,
+            'Point at t=0 should not deviate from the actual coordinates.');
+    equals(curve.getPointAtTime(1).y, curve.point2.y,
+            'Point at t=1 should not deviate from the actual coordinates.');
 });
 
 test('Curve#getTangentAtTime()', function() {

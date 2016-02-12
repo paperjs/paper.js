@@ -1338,8 +1338,12 @@ new function() { // Scope for methods that require private functions
         if (type === 0) {
             // type === 0: getPoint()
             // Calculate the curve point at parameter value t
-            x = t === 1 ? p2x : ((ax * t + bx) * t + cx) * t + p1x;
-            y = t === 1 ? p2y : ((ay * t + by) * t + cy) * t + p1y;
+            // Use special handling at t === 0 / 1, to avoid imprecisions.
+            // See #960
+            x = t === 0 ? p1x : t === 1 ? p2x
+                    : ((ax * t + bx) * t + cx) * t + p1x;
+            y = t === 0 ? p1y : t === 1 ? p2y
+                    : ((ay * t + by) * t + cy) * t + p1y;
         } else {
             // type === 1: getTangent()
             // type === 2: getNormal()
