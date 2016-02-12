@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 18:54:06 2016 +0100
+ * Date: Fri Feb 12 19:01:34 2016 +0100
  *
  ***
  *
@@ -11880,6 +11880,7 @@ new function() {
 
 	function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
 		var target = obj,
+			prevented = false,
 			mouseEvent;
 
 		function emit(obj, type) {
@@ -11890,6 +11891,8 @@ new function() {
 				}
 				if (obj.emit(type, mouseEvent)) {
 					called = true;
+					if (mouseEvent.prevented)
+						prevented = true;
 					if (mouseEvent.stopped)
 						return true;
 				}
@@ -11902,10 +11905,10 @@ new function() {
 
 		while (obj && obj !== stopItem) {
 			if (emit(obj, type))
-				return true;
+				break;
 			obj = obj._parent;
 		}
-		return false;
+		return prevented;
 	}
 
 	function emitMouseEvents(view, item, type, event, point, prevPoint) {
@@ -12001,16 +12004,16 @@ new function() {
 			}
 			wasInView = inView;
 			if (mouse.down && inView || mouse.up && downPoint) {
-				var stopped = emitMouseEvents(this, item, type, event, point,
+				var prevented = emitMouseEvents(this, item, type, event, point,
 						downPoint);
 				if (mouse.down) {
 					dblClick = item === clickItem
 						&& (Date.now() - clickTime < 300);
 					downItem = clickItem = item;
-					dragItem = !stopped && item;
+					dragItem = !prevented && item;
 					downPoint = lastPoint = point;
 				} else if (mouse.up) {
-					if (!stopped && item === downItem) {
+					if (!prevented && item === downItem) {
 						clickTime = Date.now();
 						emitMouseEvents(this, item,
 								dblClick ? 'doubleclick' : 'click',
