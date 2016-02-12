@@ -440,28 +440,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             c4 = c4.getNext();
         if (!c1 || !c2 || !c3 || !c4)
             return false;
-        // Before performing any detailed angle range checks, we need to handle
-        // a rare edge case where the intersection occurs in the middle of a
-        // straight curve with another straight curve that run almost parallel,
-        // in which case we want the outcome to be the same as if
-        // Line.intersect() was used (see addLineIntersection() in Curve).
-        if (t1Inside || t2Inside) {
-            // Pick the with the intersection inside:
-            var c = t1Inside ? c2 : c4;
-            if (c.isStraight()) {
-                // Now pick the other two potential intersecting curves,
-                // and check against each if they are straight:
-                var l = c.getLine(),
-                    l1 = t1Inside ? c3 : c1,
-                    l2 = t1Inside ? c4 : c2,
-                    straight1 = l1.isStraight(),
-                    straight2 = l2.isStraight();
-                if (straight1 || straight2) {
-                    return straight1 && l.intersect(l1.getLine()) ||
-                           straight2 && l.intersect(l2.getLine());
-                }
-            }
-        }
 
         function isInRange(angle, min, max) {
             return min < max
