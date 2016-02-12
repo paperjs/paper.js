@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 18:20:40 2016 +0100
+ * Date: Fri Feb 12 18:54:06 2016 +0100
  *
  ***
  *
@@ -6151,7 +6151,7 @@ statics: {
 		}
 	}
 }}, Base.each(
-	['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+	['getBounds', 'getStrokeBounds', 'getHandleBounds'],
 	function(name) {
 		this[name] = function() {
 			if (!this._bounds)
@@ -7552,7 +7552,7 @@ var Path = PathItem.extend({
 			parts = [];
 
 		function addSegment(segment, skipLine) {
-			segment._transformCoordinates(_matrix, coords, false);
+			segment._transformCoordinates(_matrix, coords);
 			curX = coords[0];
 			curY = coords[1];
 			if (first) {
@@ -8339,7 +8339,7 @@ new function() {
 		var coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
-			segment._transformCoordinates(matrix, coords, false);
+			segment._transformCoordinates(matrix, coords);
 			var state = segment._selectionState,
 				pX = coords[0],
 				pY = coords[1];
@@ -8369,7 +8369,7 @@ new function() {
 
 		function drawSegment(segment) {
 			if (matrix) {
-				segment._transformCoordinates(matrix, coords, false);
+				segment._transformCoordinates(matrix, coords);
 				curX = coords[0];
 				curY = coords[1];
 			} else {
@@ -8705,9 +8705,7 @@ new function() {
 
 	_getBounds: function(matrix, options) {
 		var method = options.handle
-				? options.stroke
-					? 'getRoughBounds'
-					: 'getHandleBounds'
+				? 'getHandleBounds'
 				: options.stroke
 				? 'getStrokeBounds'
 				: 'getBounds';
@@ -8720,13 +8718,13 @@ statics: {
 		if (!first)
 			return new Rectangle();
 		var coords = new Array(6),
-			prevCoords = first._transformCoordinates(matrix, new Array(6), false),
+			prevCoords = first._transformCoordinates(matrix, new Array(6)),
 			min = prevCoords.slice(0, 2),
 			max = min.slice(),
 			roots = new Array(2);
 
 		function processSegment(segment) {
-			segment._transformCoordinates(matrix, coords, false);
+			segment._transformCoordinates(matrix, coords);
 			for (var i = 0; i < 2; i++) {
 				Curve._addBounds(
 					prevCoords[i],
@@ -8748,16 +8746,17 @@ statics: {
 	},
 
 	getStrokeBounds: function(segments, closed, path, matrix, options) {
-		var style = path._style;
-		if (!style.hasStroke())
-			return Path.getBounds(segments, closed, path, matrix, options);
-		var length = segments.length - (closed ? 0 : 1),
+		var style = path._style,
+			stroke = style.hasStroke(),
 			strokeWidth = style.getStrokeWidth(),
-			strokeRadius = strokeWidth / 2,
-			strokeMatrix = path._getStrokeMatrix(matrix, options),
-			strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
+			strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
+			strokePadding = stroke && Path._getStrokePadding(strokeWidth,
+				strokeMatrix),
 			bounds = Path.getBounds(segments, closed, path, matrix, options,
-					strokePadding),
+				strokePadding);
+		if (!stroke)
+			return bounds;
+		var strokeRadius = strokeWidth / 2,
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
 			miterLimit = strokeRadius * style.getMiterLimit(),
@@ -8793,6 +8792,7 @@ statics: {
 			}
 		}
 
+		var length = segments.length - (closed ? 0 : 1);
 		for (var i = 1; i < length; i++)
 			addJoin(segments[i], join);
 		if (closed) {
@@ -8869,8 +8869,22 @@ statics: {
 		addPoint(point.subtract(normal));
 	},
 
-	getHandleBounds: function(segments, closed, path, matrix, options,
-			strokePadding, joinPadding) {
+	getHandleBounds: function(segments, closed, path, matrix, options) {
+		var style = path._style,
+			stroke = options.stroke && style.hasStroke(),
+			strokePadding,
+			joinPadding;
+		if (stroke) {
+			var strokeMatrix = path._getStrokeMatrix(matrix, options),
+				strokeRadius = style.getStrokeWidth() / 2,
+				joinRadius = strokeRadius;
+			if (style.getStrokeJoin() === 'miter')
+				joinRadius = strokeRadius * style.getMiterLimit();
+			if (style.getStrokeCap() === 'square')
+				joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
+			strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
+			joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
+		}
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
@@ -8878,7 +8892,7 @@ statics: {
 			y2 = x2;
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
-			segment._transformCoordinates(matrix, coords, false);
+			segment._transformCoordinates(matrix, coords);
 			for (var j = 0; j < 6; j += 2) {
 				var padding = j === 0 ? joinPadding : strokePadding,
 					paddingX = padding ? padding[0] : 0,
@@ -8896,23 +8910,6 @@ statics: {
 			}
 		}
 		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
-	},
-
-	getRoughBounds: function(segments, closed, path, matrix, options) {
-		var style = path._style,
-			strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
-			joinRadius = strokeRadius,
-			strokeMatrix = strokeRadius &&
-				path._getStrokeMatrix(matrix, options);
-		if (strokeRadius > 0) {
-			if (style.getStrokeJoin() === 'miter')
-				joinRadius = strokeRadius * style.getMiterLimit();
-			if (style.getStrokeCap() === 'square')
-				joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
-		}
-		return Path.getHandleBounds(segments, closed, path, matrix, options,
-				Path._getStrokePadding(strokeRadius, strokeMatrix),
-				Path._getStrokePadding(joinRadius, strokeMatrix));
 	}
 }});
 
