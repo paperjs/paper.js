@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 21:05:05 2016 +0100
+ * Date: Fri Feb 12 21:22:30 2016 +0100
  *
  ***
  *
@@ -4127,16 +4127,13 @@ new function() {
 }), {
 
 	_setStyles: function(ctx) {
-		var style = this._style,
-			fillColor = style.getFillColor(),
-			strokeColor = style.getStrokeColor(),
-			shadowColor = style.getShadowColor();
-		if (fillColor)
-			ctx.fillStyle = fillColor.toCanvasStyle(ctx);
-		if (strokeColor) {
+		var style = this._style;
+		if (style.hasFill())
+			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+		if (style.hasStroke()) {
 			var strokeWidth = style.getStrokeWidth();
 			if (strokeWidth > 0) {
-				ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
+				ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
 				ctx.lineWidth = strokeWidth;
 				var strokeJoin = style.getStrokeJoin(),
 					strokeCap = style.getStrokeCap(),
@@ -4162,15 +4159,12 @@ new function() {
 				}
 			}
 		}
-		if (shadowColor) {
-			var blur = style.getShadowBlur(),
-				offset = this.getShadowOffset();
-			if (blur > 0 || !offset.isZero()) {
-				ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-				ctx.shadowBlur = blur;
-				ctx.shadowOffsetX = offset.x;
-				ctx.shadowOffsetY = offset.y;
-			}
+		if (style.hasShadow()) {
+			var offset = this.getShadowOffset();
+			ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
+			ctx.shadowBlur = style.getShadowBlur();
+			ctx.shadowOffsetX = offset.x;
+			ctx.shadowOffsetY = offset.y;
 		}
 	},
 
@@ -11170,15 +11164,19 @@ var Style = Base.extend(new function() {
 	},
 
 	hasFill: function() {
-		return !!this.getFillColor();
+		var color = this.getFillColor();
+		return !!color && color.alpha > 0;
 	},
 
 	hasStroke: function() {
-		return !!this.getStrokeColor() && this.getStrokeWidth() > 0;
+		var color = this.getStrokeColor();
+		return !!color && color.alpha > 0 && this.getStrokeWidth() > 0;
 	},
 
 	hasShadow: function() {
-		return !!this.getShadowColor();
+		var color = this.getShadowColor();
+		return !!color && color.alpha > 0 && (this.getShadowBlur() > 0
+				|| !this.getShadowOffset().isZero());
 	},
 
 	getView: function() {
