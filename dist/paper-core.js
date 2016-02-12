@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 20:19:40 2016 +0100
+ * Date: Fri Feb 12 20:52:19 2016 +0100
  *
  ***
  *
@@ -7068,20 +7068,6 @@ var CurveLocation = Base.extend({
 			c4 = c4.getNext();
 		if (!c1 || !c2 || !c3 || !c4)
 			return false;
-		if (t1Inside || t2Inside) {
-			var c = t1Inside ? c2 : c4;
-			if (c.isStraight()) {
-				var l = c.getLine(),
-					l1 = t1Inside ? c3 : c1,
-					l2 = t1Inside ? c4 : c2,
-					straight1 = l1.isStraight(),
-					straight2 = l2.isStraight();
-				if (straight1 || straight2) {
-					return straight1 && l.intersect(l1.getLine()) ||
-						   straight2 && l.intersect(l2.getLine());
-				}
-			}
-		}
 
 		function isInRange(angle, min, max) {
 			return min < max
