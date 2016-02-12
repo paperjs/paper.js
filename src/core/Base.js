@@ -76,24 +76,9 @@ Base.inject(/** @lends Base# */{
      * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
      */
-    _set: function(props, exclude, dontCheck) {
-        if (props && (dontCheck || Base.isPlainObject(props))) {
-            // If props is a filtering object, we need to execute hasOwnProperty
-            // on the original object (it's parent / prototype). See _filtered
-            // inheritance trick in the argument reading code.
-            var keys = Object.keys(props._filtering || props);
-            for (var i = 0, l = keys.length; i < l; i++) {
-                var key = keys[i];
-                if (!(exclude && exclude[key])) {
-                    // Due to the _filtered inheritance trick, undefined is used
-                    // to mask already consumed named arguments.
-                    var value = props[key];
-                    if (value !== undefined)
-                        this[key] = value;
-                }
-            }
-            return props;
-        }
+    _set: function(props) {
+        if (props && Base.isPlainObject(props))
+            return Base.filter(this, props);
     },
 
     statics: /** @lends Base */{
@@ -306,6 +291,29 @@ Base.inject(/** @lends Base# */{
          */
         hasNamed: function(list, name) {
             return !!this.getNamed(list, name);
+        },
+
+        /**
+         * Copies all properties from `source` over to `dest`, supporting
+         * _filtered handling as required by Base.readNamed() mechanism, as well
+         * as an optional exclude` object that lists properties to exclude.
+         */
+        filter: function(dest, source, exclude) {
+            // If source is a filtering object, we need to get the keys from the
+            // the original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            var keys = Object.keys(source._filtering || source);
+            for (var i = 0, l = keys.length; i < l; i++) {
+                var key = keys[i];
+                if (!(exclude && exclude[key])) {
+                    // Due to the _filtered inheritance trick, undefined is used
+                    // to mask already consumed named arguments.
+                    var value = source[key];
+                    if (value !== undefined)
+                        dest[key] = value;
+                }
+            }
+            return dest;
         },
 
         /**

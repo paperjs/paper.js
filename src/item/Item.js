@@ -150,10 +150,9 @@ new function() { // // Scope to inject various item event handlers
         if (hasProps && props !== Item.NO_INSERT) {
             // Filter out internal, insert, parent and project properties as
             // these were handled above.
-            this._set(props,
-                { internal: true, insert: true, project: true, parent: true },
-                // Don't check for plain object, as that's handled by hasProps.
-                true);
+            Base.filter(this, props, {
+                internal: true, insert: true, project: true, parent: true
+            });
         }
         return hasProps;
     },
@@ -2031,7 +2030,7 @@ new function() { // // Scope to inject various item event handlers
                 if (obj) {
                     // Create a copy of the match object that doesn't contain
                     // these special properties:
-                    match = new Base()._set(match, {
+                    match = Base.filter({}, match, {
                         recursive: true, inside: true, overlapping: true
                     });
                 }

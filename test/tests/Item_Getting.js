@@ -207,3 +207,21 @@ test('Project#getItems() empty: true', function() {
         }).length;
     }, 2);
 });
+
+test('Project#getItems() overlapping', function() {
+    var path = new Path.Circle({
+        radius: 100,
+        center: [200, 200],
+        fillColor: 'red'
+    });
+
+    var rect = new Rectangle(0, 0, 400, 400);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: rect
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
+});
