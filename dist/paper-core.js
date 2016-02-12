@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 21:22:30 2016 +0100
+ * Date: Fri Feb 12 21:23:47 2016 +0100
  *
  ***
  *
@@ -4128,41 +4128,39 @@ new function() {
 
 	_setStyles: function(ctx) {
 		var style = this._style;
-		if (style.hasFill())
+		if (style.hasFill()) {
 			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+		}
 		if (style.hasStroke()) {
-			var strokeWidth = style.getStrokeWidth();
-			if (strokeWidth > 0) {
-				ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
-				ctx.lineWidth = strokeWidth;
-				var strokeJoin = style.getStrokeJoin(),
-					strokeCap = style.getStrokeCap(),
-					miterLimit = style.getMiterLimit();
-				if (strokeJoin)
-					ctx.lineJoin = strokeJoin;
-				if (strokeCap)
-					ctx.lineCap = strokeCap;
-				if (miterLimit)
-					ctx.miterLimit = miterLimit;
-				if (paper.support.nativeDash) {
-					var dashArray = style.getDashArray(),
-						dashOffset = style.getDashOffset();
-					if (dashArray && dashArray.length) {
-						if ('setLineDash' in ctx) {
-							ctx.setLineDash(dashArray);
-							ctx.lineDashOffset = dashOffset;
-						} else {
-							ctx.mozDash = dashArray;
-							ctx.mozDashOffset = dashOffset;
-						}
+			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
+			ctx.lineWidth = style.getStrokeWidth();
+			var strokeJoin = style.getStrokeJoin(),
+				strokeCap = style.getStrokeCap(),
+				miterLimit = style.getMiterLimit();
+			if (strokeJoin)
+				ctx.lineJoin = strokeJoin;
+			if (strokeCap)
+				ctx.lineCap = strokeCap;
+			if (miterLimit)
+				ctx.miterLimit = miterLimit;
+			if (paper.support.nativeDash) {
+				var dashArray = style.getDashArray(),
+					dashOffset = style.getDashOffset();
+				if (dashArray && dashArray.length) {
+					if ('setLineDash' in ctx) {
+						ctx.setLineDash(dashArray);
+						ctx.lineDashOffset = dashOffset;
+					} else {
+						ctx.mozDash = dashArray;
+						ctx.mozDashOffset = dashOffset;
 					}
 				}
 			}
 		}
 		if (style.hasShadow()) {
-			var offset = this.getShadowOffset();
 			ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
 			ctx.shadowBlur = style.getShadowBlur();
+			var offset = this.getShadowOffset();
 			ctx.shadowOffsetX = offset.x;
 			ctx.shadowOffsetY = offset.y;
 		}
