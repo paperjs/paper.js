@@ -833,7 +833,7 @@ statics: {
         }
     }
 }}, Base.each(
-    ['getBounds', 'getStrokeBounds', 'getHandleBounds', 'getRoughBounds'],
+    ['getBounds', 'getStrokeBounds', 'getHandleBounds'],
     // NOTE: Although Curve.getBounds() exists, we are using Path.getBounds() to
     // determine the bounds of Curve objects with defined segment1 and segment2
     // values Curve.getBounds() can be used directly on curve arrays, without

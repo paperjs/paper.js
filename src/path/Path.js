@@ -308,7 +308,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             parts = [];
 
         function addSegment(segment, skipLine) {
-            segment._transformCoordinates(_matrix, coords, false);
+            segment._transformCoordinates(_matrix, coords);
             curX = coords[0];
             curY = coords[1];
             if (first) {
@@ -2050,7 +2050,7 @@ new function() { // Scope for drawing
         var coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++) {
             var segment = segments[i];
-            segment._transformCoordinates(matrix, coords, false);
+            segment._transformCoordinates(matrix, coords);
             var state = segment._selectionState,
                 pX = coords[0],
                 pY = coords[1];
@@ -2087,7 +2087,7 @@ new function() { // Scope for drawing
             // drawing paths. Matrix is only used for drawing selections and
             // when #strokeScaling is false.
             if (matrix) {
-                segment._transformCoordinates(matrix, coords, false);
+                segment._transformCoordinates(matrix, coords);
                 curX = coords[0];
                 curY = coords[1];
             } else {
@@ -2514,9 +2514,7 @@ new function() { // PostScript-style drawing commands
 
     _getBounds: function(matrix, options) {
         var method = options.handle
-                ? options.stroke
-                    ? 'getRoughBounds'
-                    : 'getHandleBounds'
+                ? 'getHandleBounds'
                 : options.stroke
                 ? 'getStrokeBounds'
                 : 'getBounds';
@@ -2538,13 +2536,13 @@ statics: {
             return new Rectangle();
         var coords = new Array(6),
             // Make coordinates for first segment available in prevCoords.
-            prevCoords = first._transformCoordinates(matrix, new Array(6), false),
+            prevCoords = first._transformCoordinates(matrix, new Array(6)),
             min = prevCoords.slice(0, 2), // Start with values of first point
             max = min.slice(), // clone
             roots = new Array(2);
 
         function processSegment(segment) {
-            segment._transformCoordinates(matrix, coords, false);
+            segment._transformCoordinates(matrix, coords);
             for (var i = 0; i < 2; i++) {
                 Curve._addBounds(
                     prevCoords[i], // prev.point
@@ -2572,18 +2570,19 @@ statics: {
      * @private
      */
     getStrokeBounds: function(segments, closed, path, matrix, options) {
-        var style = path._style;
-        if (!style.hasStroke())
-            return Path.getBounds(segments, closed, path, matrix, options);
-        var length = segments.length - (closed ? 0 : 1),
+        var style = path._style,
+            stroke = style.hasStroke(),
             strokeWidth = style.getStrokeWidth(),
-            strokeRadius = strokeWidth / 2,
-            strokeMatrix = path._getStrokeMatrix(matrix, options),
-            strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
+            strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
+            strokePadding = stroke && Path._getStrokePadding(strokeWidth,
+                strokeMatrix),
             // Start with normal path bounds with added stroke padding. Then we
             // only need to look at each segment and handle join / cap / miter.
             bounds = Path.getBounds(segments, closed, path, matrix, options,
-                    strokePadding),
+                strokePadding);
+        if (!stroke)
+            return bounds;
+        var strokeRadius = strokeWidth / 2,
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
             miterLimit = strokeRadius * style.getMiterLimit(),
@@ -2625,11 +2624,14 @@ statics: {
             }
         }
 
+        var length = segments.length - (closed ? 0 : 1);
         for (var i = 1; i < length; i++)
             addJoin(segments[i], join);
         if (closed) {
+            // Go back to the beginning
             addJoin(segments[0], join);
         } else if (length > 0) {
+            // Handle caps on open paths
             addCap(segments[0], cap);
             addCap(segments[segments.length - 1], cap);
         }
@@ -2743,8 +2745,22 @@ statics: {
      *
      * @private
      */
-    getHandleBounds: function(segments, closed, path, matrix, options,
-            strokePadding, joinPadding) {
+    getHandleBounds: function(segments, closed, path, matrix, options) {
+        var style = path._style,
+            stroke = options.stroke && style.hasStroke(),
+            strokePadding,
+            joinPadding;
+        if (stroke) {
+            var strokeMatrix = path._getStrokeMatrix(matrix, options),
+                strokeRadius = style.getStrokeWidth() / 2,
+                joinRadius = strokeRadius;
+            if (style.getStrokeJoin() === 'miter')
+                joinRadius = strokeRadius * style.getMiterLimit();
+            if (style.getStrokeCap() === 'square')
+                joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
+            strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
+            joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
+        }
         var coords = new Array(6),
             x1 = Infinity,
             x2 = -x1,
@@ -2752,7 +2768,7 @@ statics: {
             y2 = x2;
         for (var i = 0, l = segments.length; i < l; i++) {
             var segment = segments[i];
-            segment._transformCoordinates(matrix, coords, false);
+            segment._transformCoordinates(matrix, coords);
             for (var j = 0; j < 6; j += 2) {
                 // Use different padding for points or handles
                 var padding = j === 0 ? joinPadding : strokePadding,
@@ -2771,31 +2787,5 @@ statics: {
             }
         }
         return new Rectangle(x1, y1, x2 - x1, y2 - y1);
-    },
-
-    /**
-     * Returns the rough bounding rectangle of the item that is sure to include
-     * all of the drawing, including stroke width.
-     *
-     * @private
-     */
-    getRoughBounds: function(segments, closed, path, matrix, options) {
-        // Delegate to handleBounds, but pass on radius values for stroke and
-        // joins. Handle miter joins specially, by passing the largest radius
-        // possible.
-        var style = path._style,
-            strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
-            joinRadius = strokeRadius,
-            strokeMatrix = strokeRadius &&
-                path._getStrokeMatrix(matrix, options);
-        if (strokeRadius > 0) {
-            if (style.getStrokeJoin() === 'miter')
-                joinRadius = strokeRadius * style.getMiterLimit();
-            if (style.getStrokeCap() === 'square')
-                joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
-        }
-        return Path.getHandleBounds(segments, closed, path, matrix, options,
-                Path._getStrokePadding(strokeRadius, strokeMatrix),
-                Path._getStrokePadding(joinRadius, strokeMatrix));
     }
 }});
