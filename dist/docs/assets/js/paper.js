@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 20:52:19 2016 +0100
+ * Date: Fri Feb 12 21:05:05 2016 +0100
  *
  ***
  *
@@ -4163,11 +4163,11 @@ new function() {
 			}
 		}
 		if (shadowColor) {
-			var shadowBlur = style.getShadowBlur();
-			if (shadowBlur > 0) {
+			var blur = style.getShadowBlur(),
+				offset = this.getShadowOffset();
+			if (blur > 0 || !offset.isZero()) {
 				ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-				ctx.shadowBlur = shadowBlur;
-				var offset = this.getShadowOffset();
+				ctx.shadowBlur = blur;
 				ctx.shadowOffsetX = offset.x;
 				ctx.shadowOffsetY = offset.y;
 			}
@@ -4613,7 +4613,7 @@ var Shape = Item.extend({
 			this._setStyles(ctx);
 			if (hasFill) {
 				ctx.fill(style.getFillRule());
-				ctx.shadowBlur = 0;
+				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
 			if (hasStroke)
 				ctx.stroke();
@@ -8433,7 +8433,7 @@ new function() {
 				this._setStyles(ctx);
 				if (hasFill) {
 					ctx.fill(style.getFillRule());
-					ctx.shadowBlur = 0;
+					ctx.shadowColor = 'rgba(0,0,0,0)';
 				}
 				if (hasStroke) {
 					if (dashLength) {
@@ -9171,7 +9171,7 @@ var CompoundPath = PathItem.extend({
 			var style = this._style;
 			if (style.hasFill()) {
 				ctx.fill(style.getFillRule());
-				ctx.shadowBlur = 0;
+				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
 			if (style.hasStroke())
 				ctx.stroke();
@@ -10289,15 +10289,15 @@ var PointText = TextItem.extend({
 			hasFill = style.hasFill(),
 			hasStroke = style.hasStroke(),
 			leading = style.getLeading(),
-			shadowBlur = ctx.shadowBlur;
+			shadowColor = ctx.shadowColor;
 		ctx.font = style.getFontStyle();
 		ctx.textAlign = style.getJustification();
 		for (var i = 0, l = lines.length; i < l; i++) {
-			ctx.shadowBlur = shadowBlur;
+			ctx.shadowColor = shadowColor;
 			var line = lines[i];
 			if (hasFill) {
 				ctx.fillText(line, 0, 0);
-				ctx.shadowBlur = 0;
+				ctx.shadowColor = 'rgba(0,0,0,0)';
 			}
 			if (hasStroke)
 				ctx.strokeText(line, 0, 0);
@@ -11178,7 +11178,7 @@ var Style = Base.extend(new function() {
 	},
 
 	hasShadow: function() {
-		return !!this.getShadowColor() && this.getShadowBlur() > 0;
+		return !!this.getShadowColor();
 	},
 
 	getView: function() {
