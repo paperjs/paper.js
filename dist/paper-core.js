@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 11 12:58:06 2016 +0100
+ * Date: Fri Feb 12 17:59:37 2016 +0100
  *
  ***
  *
@@ -279,7 +279,7 @@ Base.inject({
 						this[key] = value;
 				}
 			}
-			return true;
+			return props;
 		}
 	},
 
@@ -3109,35 +3109,37 @@ new function() {
 	},
 
 	_pivot: null,
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
-		'internalBounds', 'internalHandleBounds', 'internalRoughBounds'],
-	function(key) {
-		var getter = 'get' + Base.capitalize(key),
-			match = key.match(/^internal(.*)$/),
-			internal = match ? 'get' + match[1] : null,
-			stroke = /^stroke|rough/i.test(key);
-		this[getter] = function(_matrix) {
-			var boundsGetter = this._boundsGetter,
-				name = !internal && (typeof boundsGetter === 'string'
-						? boundsGetter : boundsGetter && boundsGetter[getter])
-						|| getter,
-				canCache = !stroke || this.getStrokeScaling(),
-				bounds = this._getCachedBounds(name, _matrix, canCache && this,
-						internal);
-			return key === 'bounds'
-					? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
-							bounds.height, this, 'setBounds')
-					: bounds;
+}, Base.each({
+		getStrokeBounds: { stroke: true },
+		getHandleBounds: { handle: true },
+		getInternalBounds: { internal: true }
+	},
+	function(options, key) {
+		this[key] = function(matrix) {
+			return this.getBounds(matrix, options);
 		};
 	},
 {
 	beans: true,
 
-	_getBounds: function(getter, matrix, cacheItem, internal) {
+	getBounds: function(matrix, options) {
+		var hasMatrix = options || matrix instanceof Matrix,
+			opts = Base.set({}, hasMatrix ? options : matrix,
+					this._boundsOptions);
+		if (!opts.stroke || this.getStrokeScaling())
+			opts.cacheItem = this;
+		var bounds = this._getCachedBounds(hasMatrix && matrix, opts);
+		return arguments.length === 0
+				? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
+						bounds.height, this, 'setBounds')
+				: bounds;
+	},
+
+	_getBounds: function(matrix, options) {
 		var children = this._children;
 		if (!children || children.length === 0)
 			return new Rectangle();
-		Item._updateBoundsCache(this, cacheItem);
+		Item._updateBoundsCache(this, options.cacheItem);
 		var x1 = Infinity,
 			x2 = -x1,
 			y1 = x1,
@@ -3145,9 +3147,8 @@ new function() {
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i];
 			if (child._visible && !child.isEmpty()) {
-				var rect = child._getCachedBounds(getter,
-						matrix && matrix.appended(child._matrix),
-						cacheItem, internal);
+				var rect = child._getCachedBounds(
+					matrix && matrix.appended(child._matrix), options);
 				x1 = Math.min(rect.x, x1);
 				y1 = Math.min(rect.y, y1);
 				x2 = Math.max(rect.x + rect.width, x2);
@@ -3175,33 +3176,39 @@ new function() {
 		this.transform(matrix);
 	},
 
-	_getCachedBounds: function(getter, matrix, cacheItem, internal) {
+	_getCachedBounds: function(matrix, options) {
 		matrix = matrix && matrix._orNullIfIdentity();
-		var _matrix = internal ? null : this._matrix._orNullIfIdentity(),
-			cache = cacheItem && (!matrix || matrix.equals(_matrix)) && getter;
+		var internal = options.internal,
+			cacheItem = options.cacheItem,
+			_matrix = internal ? null : this._matrix._orNullIfIdentity(),
+			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix)) && [
+				options.stroke ? 1 : 0,
+				options.handle ? 1 : 0,
+				internal ? 1 : 0
+			].join('');
 		Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
-		if (cache && this._bounds && this._bounds[cache])
-			return this._bounds[cache].clone();
-		var bounds = this._getBounds(internal || getter, matrix || _matrix,
-				cacheItem, internal);
-		if (cache) {
+		if (cacheKey && this._bounds && cacheKey in this._bounds)
+			return this._bounds[cacheKey].rect.clone();
+		var bounds = this._getBounds(matrix || _matrix, options);
+		if (cacheKey) {
 			if (!this._bounds)
 				this._bounds = {};
-			var cached = this._bounds[cache] = bounds.clone();
-			cached._internal = !!internal;
+			var cached = this._bounds[cacheKey] = {
+				rect: bounds.clone(),
+				internal: options.internal
+			};
 		}
 		return bounds;
 	},
 
-	_getStrokeMatrix: function(matrix, internal) {
-		return this.getStrokeScaling() ? matrix
-				: (internal ? this : this._parent).getViewMatrix()
-					.invert()._shiftless();
+	_getStrokeMatrix: function(matrix, options) {
+		return this.getStrokeScaling() ? matrix : (options && options.internal
+				? this : this._parent).getViewMatrix().invert()._shiftless();
 	},
 
 	statics: {
 		_updateBoundsCache: function(parent, item) {
-			if (parent) {
+			if (parent && item) {
 				var id = item._id,
 					ref = parent._boundsCache = parent._boundsCache || {
 						ids: {},
@@ -3545,8 +3552,9 @@ new function() {
 			tolerancePadding = options._tolerancePadding = new Size(
 					Path._getStrokePadding(tolerance, strokeMatrix));
 		point = matrix._inverseTransform(point);
-		if (!point || !this._children && !this.getInternalRoughBounds()
-				.expand(tolerancePadding.multiply(2))._containsPoint(point))
+		if (!point || !this._children &&
+				!this.getBounds({ internal: true, stroke: true, handle: true })
+					.expand(tolerancePadding.multiply(2))._containsPoint(point))
 			return null;
 		var checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
@@ -3685,7 +3693,7 @@ new function() {
 					})
 				};
 				if (obj) {
-					match = Base.set({}, match, {
+					match = new Base()._set(match, {
 						recursive: true, inside: true, overlapping: true
 					});
 				}
@@ -4050,9 +4058,11 @@ new function() {
 		var decomp = bounds && matrix && matrix.decompose();
 		if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
-				var rect = bounds[key];
-				if (applyMatrix || !rect._internal)
+				var cache = bounds[key];
+				if (applyMatrix || !cache.internal) {
+					var rect = cache.rect;
 					matrix._transformBounds(rect, rect);
+				}
 			}
 			var getter = this._boundsGetter,
 				rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
@@ -4263,7 +4273,8 @@ new function() {
 				this._drawSelected(ctx, mx, selectedItems);
 			if (this._boundsSelected) {
 				var half = size / 2,
-					coords = mx._transformCorners(this.getInternalBounds());
+					coords = mx._transformCorners(
+							this.getInternalBounds());
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++)
 					ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
@@ -4348,19 +4359,13 @@ var Group = Item.extend({
 			child.setClipMask(clipped);
 	},
 
-	_getBounds: function _getBounds(getter, matrix, cacheItem, internal) {
-		var clipItem = this._getClipItem(),
-			clipBoundsGetter = {
-				getStrokeBounds: 'getBounds',
-				getRoughBounds: 'getHandleBounds',
-				getInternalRoughBounds: 'getInternalBounds'
-			};
+	_getBounds: function _getBounds(matrix, options) {
+		var clipItem = this._getClipItem();
 		return clipItem
-				? clipItem._getCachedBounds(clipBoundsGetter[getter] || getter,
-					matrix && matrix.appended(clipItem._matrix),
-					cacheItem, internal)
-				: _getBounds.base.call(this, getter, matrix, cacheItem,
-					internal);
+			? clipItem._getCachedBounds(
+				matrix && matrix.appended(clipItem._matrix),
+				Base.set({}, options, { stroke: false }))
+			: _getBounds.base.call(this, matrix, options);
 	},
 
 	_hitTestChildren: function _hitTestChildren(point, options) {
@@ -4611,16 +4616,17 @@ var Shape = Item.extend({
 		return !(this.hasFill() && this.hasStroke());
 	},
 
-	_getBounds: function(getter, matrix, cacheItem, internal) {
+	_getBounds: function(matrix, options) {
 		var rect = new Rectangle(this._size).setCenter(0, 0),
 			style = this._style,
-			strokeWidth = style.hasStroke() &&
-				/^get(?:Stroke|Rough)Bounds$/.test(getter) &&
-				style.getStrokeWidth();
+			strokeWidth = options.stroke && style.hasStroke()
+					&& style.getStrokeWidth();
 		if (matrix)
 			rect = matrix._transformBounds(rect);
-		return strokeWidth ? rect.expand(Path._getStrokePadding(
-				strokeWidth, this._getStrokeMatrix(matrix, internal))) : rect;
+		return strokeWidth
+				? rect.expand(Path._getStrokePadding(strokeWidth,
+					this._getStrokeMatrix(matrix, options)))
+				: rect;
 	}
 },
 new function() {
@@ -4745,7 +4751,7 @@ var Raster = Item.extend({
 	_class: 'Raster',
 	_applyMatrix: false,
 	_canApplyMatrix: false,
-	_boundsGetter: 'getBounds',
+	_boundsOptions: { stroke: false, handle: false },
 	_boundsSelected: true,
 	_serializeFields: {
 		crossOrigin: null,
@@ -5075,7 +5081,7 @@ var Raster = Item.extend({
 		this.getContext(true).putImageData(data, point.x, point.y);
 	},
 
-	_getBounds: function(getter, matrix) {
+	_getBounds: function(matrix, options) {
 		var rect = new Rectangle(this._size).setCenter(0, 0);
 		return matrix ? matrix._transformBounds(rect) : rect;
 	},
@@ -5112,7 +5118,7 @@ var SymbolItem = Item.extend({
 	_class: 'SymbolItem',
 	_applyMatrix: false,
 	_canApplyMatrix: false,
-	_boundsGetter: { getBounds: 'getStrokeBounds' },
+	_boundsOptions: { stroke: true },
 	_boundsSelected: true,
 	_serializeFields: {
 		symbol: null
@@ -5149,11 +5155,10 @@ var SymbolItem = Item.extend({
 		return this._definition._item.isEmpty();
 	},
 
-	_getBounds: function(getter, matrix, cacheItem, internal) {
+	_getBounds: function(matrix, options) {
 		var item = this._definition._item;
-		return item._getCachedBounds(getter,
-				matrix && matrix.appended(item._matrix),
-				cacheItem, internal);
+		return item._getCachedBounds(matrix && matrix.appended(item._matrix),
+				options);
 	},
 
 	_hitTestSelf: function(point, options) {
@@ -7283,8 +7288,9 @@ var PathItem = Item.extend({
 	},
 
 	_contains: function(point) {
-		var winding = point.isInside(this.getInternalHandleBounds())
-				&& this._getWinding(point);
+		var winding = point.isInside(
+				this.getBounds({ internal: true, handle: true }))
+					&& this._getWinding(point);
 		return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
 	},
 
@@ -8692,12 +8698,19 @@ new function() {
 	};
 }, {
 
-	_getBounds: function(getter, matrix) {
-		return Path[getter](this._segments, this._closed, this, matrix);
+	_getBounds: function(matrix, options) {
+		var method = options.handle
+				? options.stroke
+					? 'getRoughBounds'
+					: 'getHandleBounds'
+				: options.stroke
+				? 'getStrokeBounds'
+				: 'getBounds';
+		return Path[method](this._segments, this._closed, this, matrix, options);
 	},
 
 statics: {
-	getBounds: function(segments, closed, path, matrix, strokePadding) {
+	getBounds: function(segments, closed, path, matrix, options, strokePadding) {
 		var first = segments[0];
 		if (!first)
 			return new Rectangle();
@@ -8729,16 +8742,16 @@ statics: {
 		return new Rectangle(min[0], min[1], max[0] - min[0], max[1] - min[1]);
 	},
 
-	getStrokeBounds: function(segments, closed, path, matrix, internal) {
+	getStrokeBounds: function(segments, closed, path, matrix, options) {
 		var style = path._style;
 		if (!style.hasStroke())
-			return Path.getBounds(segments, closed, path, matrix);
+			return Path.getBounds(segments, closed, path, matrix, options);
 		var length = segments.length - (closed ? 0 : 1),
 			strokeWidth = style.getStrokeWidth(),
 			strokeRadius = strokeWidth / 2,
-			strokeMatrix = path._getStrokeMatrix(matrix, internal),
+			strokeMatrix = path._getStrokeMatrix(matrix, options),
 			strokePadding = Path._getStrokePadding(strokeWidth, strokeMatrix),
-			bounds = Path.getBounds(segments, closed, path, matrix,
+			bounds = Path.getBounds(segments, closed, path, matrix, options,
 					strokePadding),
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
@@ -8851,8 +8864,8 @@ statics: {
 		addPoint(point.subtract(normal));
 	},
 
-	getHandleBounds: function(segments, closed, path, matrix, strokePadding,
-			joinPadding) {
+	getHandleBounds: function(segments, closed, path, matrix, options,
+			strokePadding, joinPadding) {
 		var coords = new Array(6),
 			x1 = Infinity,
 			x2 = -x1,
@@ -8880,19 +8893,19 @@ statics: {
 		return new Rectangle(x1, y1, x2 - x1, y2 - y1);
 	},
 
-	getRoughBounds: function(segments, closed, path, matrix, internal) {
+	getRoughBounds: function(segments, closed, path, matrix, options) {
 		var style = path._style,
 			strokeRadius = style.hasStroke() ? style.getStrokeWidth() / 2 : 0,
 			joinRadius = strokeRadius,
 			strokeMatrix = strokeRadius &&
-				path._getStrokeMatrix(matrix, internal);
+				path._getStrokeMatrix(matrix, options);
 		if (strokeRadius > 0) {
 			if (style.getStrokeJoin() === 'miter')
 				joinRadius = strokeRadius * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
 				joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
 		}
-		return Path.getHandleBounds(segments, closed, path, matrix,
+		return Path.getHandleBounds(segments, closed, path, matrix, options,
 				Path._getStrokePadding(strokeRadius, strokeMatrix),
 				Path._getStrokePadding(joinRadius, strokeMatrix));
 	}
@@ -10218,7 +10231,7 @@ var TextItem = Item.extend({
 	_serializeFields: {
 		content: null
 	},
-	_boundsGetter: 'getBounds',
+	_boundsOptions: { stroke: false, handle: false },
 
 	initialize: function TextItem(arg) {
 		this._content = '';
@@ -10299,7 +10312,7 @@ var PointText = TextItem.extend({
 		}
 	},
 
-	_getBounds: function(getter, matrix) {
+	_getBounds: function(matrix, options) {
 		var style = this._style,
 			lines = this._lines,
 			numLines = lines.length,
