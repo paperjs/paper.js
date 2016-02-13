@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 13 22:41:09 2016 +0100
+ * Date: Sat Feb 13 22:58:42 2016 +0100
  *
  ***
  *
@@ -9570,16 +9570,16 @@ PathItem.inject(new function() {
 				handleIn;
 			if (!seg._visited && seg._path._overlapsOnly) {
 				var path1 = seg._path,
-					path2 = inter._segment._path;
-				if (path1.equals(path2)) {
+					path2 = inter._segment._path,
+					segments1 = path1._segments,
+					segments2 = path2._segments;
+				if (Base.equals(segments1, segments2)) {
 					if ((operator.unite || operator.intersect)
 							&& path1.getArea()) {
 						paths.push(path1.clone(false));
 					}
-					var segs1 = path1._segments,
-						segs2 = path2._segments;
-					for (var j = 0, m = segs1.length; j < m; j++) {
-						segs1[j]._visited = segs2[j]._visited = true;
+					for (var j = 0, k = segments1.length; j < k; j++) {
+						segments1[j]._visited = segments2[j]._visited = true;
 					}
 				}
 			}
