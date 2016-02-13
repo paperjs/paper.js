@@ -19,8 +19,14 @@
 <p>The global <code>tool</code> variable only exists in scripts that contain mouse handler functions (<a href="../classes/Tool.html#onmousemove"><tt>onMouseMove</tt></a>, <a href="../classes/Tool.html#onmousedown"><tt>onMouseDown</tt></a>, <a href="../classes/Tool.html#onmousedrag"><tt>onMouseDrag</tt></a>, <a href="../classes/Tool.html#onmouseup"><tt>onMouseUp</tt></a>) or a keyboard handler function (<a href="../classes/Tool.html#onkeydown"><tt>onKeyDown</tt></a>, <a href="../classes/Tool.html#onkeyup"><tt>onKeyUp</tt></a>).</p>
 <h4>Example:</h4>
 
+<div class="paperscript split">
 
-<pre><code>var path;
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var path;
 
 // Only execute onMouseDrag when the mouse
 // has moved at least 10 points:
@@ -36,7 +42,11 @@ tool.onMouseDown = function(event) {
 tool.onMouseDrag = function(event) {
     // Add a point to the path every time the mouse is dragged
     path.add(event.point);
-}</code></pre>
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-0"></canvas></div>
+</div>
+
 
 </div>
 
@@ -156,7 +166,7 @@ tool.onMouseDrag = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-0">
+<script type="text/paperscript" canvas="canvas-1">
 tool.onMouseDown = function(event) {
     // Create a new circle shaped path with a radius of 10
     // at the position of the mouse (event.point):
@@ -167,7 +177,7 @@ tool.onMouseDown = function(event) {
     });
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
 </div>
 
 
@@ -204,7 +214,7 @@ tool.onMouseDown = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-1">
+<script type="text/paperscript" canvas="canvas-2">
 // Create an empty path:
 var path = new Path({
     strokeColor: 'black'
@@ -215,7 +225,7 @@ tool.onMouseDrag = function(event) {
     path.add(event.point);
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
 
 
@@ -252,7 +262,7 @@ tool.onMouseDrag = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-3">
 // Create a circle shaped path with a radius of 10 at {x: 0, y: 0}:
 var path = new Path.Circle({
     center: [0, 0],
@@ -266,7 +276,7 @@ tool.onMouseMove = function(event) {
     path.position = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
 </div>
 
 
@@ -303,7 +313,7 @@ tool.onMouseMove = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-3">
+<script type="text/paperscript" canvas="canvas-4">
 tool.onMouseUp = function(event) {
     // Create a new circle shaped path with a radius of 10
     // at the position of the mouse (event.point):
@@ -314,7 +324,7 @@ tool.onMouseUp = function(event) {
     });
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
 </div>
 
 
@@ -354,7 +364,7 @@ tool.onMouseUp = function(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-4">
+<script type="text/paperscript" canvas="canvas-5">
 // Create a circle shaped path:
     var path = new Path.Circle({
         center: new Point(50, 50),
@@ -372,7 +382,7 @@ tool.onKeyDown = function(event) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
 </div>
 
 

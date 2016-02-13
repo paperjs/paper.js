@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 13 22:58:42 2016 +0100
+ * Date: Sat Feb 13 23:31:54 2016 +0100
  *
  ***
  *
@@ -2805,8 +2805,8 @@ var Item = Base.extend(Emitter, {
 	statics: {
 		extend: function extend(src) {
 			if (src._serializeFields)
-				src._serializeFields = new Base(
-						this.prototype._serializeFields, src._serializeFields);
+				src._serializeFields = Base.set({},
+					this.prototype._serializeFields, src._serializeFields);
 			return extend.base.apply(this, arguments);
 		},
 
@@ -5248,7 +5248,7 @@ var HitResult = Base.extend({
 
 	statics: {
 		getOptions: function(options) {
-			return new Base({
+			return Base.set({
 				type: null,
 				tolerance: paper.settings.hitTolerance,
 				fill: !options,
@@ -9145,7 +9145,7 @@ var CompoundPath = PathItem.extend({
 	_hitTestChildren: function _hitTestChildren(point, options) {
 		return _hitTestChildren.base.call(this, point,
 				options.class === Path || options.type === 'path' ? options
-					: new Base(options, { fill: false }));
+					: Base.set({}, options, { fill: false }));
 	},
 
 	_draw: function(ctx, param, strokeMatrix) {
@@ -11019,7 +11019,7 @@ var Style = Base.extend(new function() {
 		shadowOffset: new Point(),
 		selectedColor: null
 	},
-	textDefaults = new Base(defaults, {
+	textDefaults = Base.set({}, defaults, {
 		fillColor: new Color(),
 		fontFamily: 'sans-serif',
 		fontWeight: 'normal',
