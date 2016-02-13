@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 12 21:23:47 2016 +0100
+ * Date: Sat Feb 13 22:41:09 2016 +0100
  *
  ***
  *
@@ -9244,18 +9244,14 @@ PathItem.inject(new function() {
 		return resolve ? res.resolveCrossings() : res;
 	}
 
-	function finishResult(result, path1, path2) {
-		result.insertAbove(path2 && path1.isSibling(path2)
-				&& path1.getIndex() < path2.getIndex() ? path2 : path1);
-		result.copyAttributes(path1, true);
-		return result;
-	}
-
-	function createResult(ctor, paths, reduce) {
+	function createResult(ctor, paths, reduce, path1, path2) {
 		var result = new ctor(Item.NO_INSERT);
 		result.addChildren(paths, true);
 		if (reduce)
 			result = result.reduce({ simplify: true });
+		result.insertAbove(path2 && path1.isSibling(path2)
+				&& path1.getIndex() < path2.getIndex() ? path2 : path1);
+		result.copyAttributes(path1, true);
 		return result;
 	}
 
@@ -9272,15 +9268,14 @@ PathItem.inject(new function() {
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
 			segments = [],
-			monoCurves = [],
-			overlapsOnly = true,
-			validOverlapsOnly = true;
+			monoCurves = [];
 
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
 				segments.push.apply(segments, path._segments);
 				monoCurves.push.apply(monoCurves, path._getMonoCurves());
+				path._overlapsOnly = path._validOverlapsOnly = true;
 			}
 		}
 
@@ -9298,18 +9293,14 @@ PathItem.inject(new function() {
 				propagateWinding(segment, _path1, _path2, monoCurves, operator);
 			}
 			if (!(inter && inter._overlap)) {
-				overlapsOnly = false;
+				var path = segment._path;
+				path._overlapsOnly = false;
 				if (operator[segment._winding])
-					validOverlapsOnly = false;
+					path._validOverlapsOnly = false;
 			}
 		}
-		return finishResult(overlapsOnly
-				? (operator.unite || operator.intersect) && path1.getArea()
-					? path1.clone(false)
-					: new Path(Item.NO_INSERT)
-				: createResult(CompoundPath,
-					tracePaths(segments, operator, validOverlapsOnly),
-					!overlapsOnly), path1, path2);
+		return createResult(CompoundPath, tracePaths(segments, operator), true,
+					path1, path2);
 	}
 
 	function computeOpenBoolean(path1, path2, operator) {
@@ -9338,7 +9329,7 @@ PathItem.inject(new function() {
 			}
 		}
 		addPath(_path1);
-		return finishResult(createResult(Group, paths), path1, path2);
+		return createResult(Group, paths, false, path1, path2);
 	}
 
 	function linkIntersections(from, to) {
@@ -9536,7 +9527,7 @@ PathItem.inject(new function() {
 			chain[j].segment._winding = winding;
 	}
 
-	function tracePaths(segments, operator, validOverlapsOnly) {
+	function tracePaths(segments, operator) {
 		var paths = [],
 			start,
 			otherStart;
@@ -9549,14 +9540,14 @@ PathItem.inject(new function() {
 			return seg === start || seg === otherStart;
 		}
 
-		function findBestIntersection(inter, strict) {
+		function findBestIntersection(inter, exclude, strict) {
 			if (!inter._next)
 				return inter;
 			while (inter) {
 				var seg = inter._segment,
 					nextSeg = seg.getNext(),
 					nextInter = nextSeg._intersection;
-				if (isStart(seg) || isStart(nextSeg)
+				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
 					|| !seg._visited && !nextSeg._visited
 					&& (!operator
 						|| (!strict || isValid(seg))
@@ -9564,7 +9555,7 @@ PathItem.inject(new function() {
 							&& isValid(nextSeg)
 							|| !strict && nextInter
 							&& isValid(nextInter._segment))
-					))
+					)))
 					return inter;
 				inter = inter._next;
 			}
@@ -9577,13 +9568,28 @@ PathItem.inject(new function() {
 				seg = segments[i],
 				inter = seg._intersection,
 				handleIn;
-			if (!isValid(seg) || !validOverlapsOnly
+			if (!seg._visited && seg._path._overlapsOnly) {
+				var path1 = seg._path,
+					path2 = inter._segment._path;
+				if (path1.equals(path2)) {
+					if ((operator.unite || operator.intersect)
+							&& path1.getArea()) {
+						paths.push(path1.clone(false));
+					}
+					var segs1 = path1._segments,
+						segs2 = path2._segments;
+					for (var j = 0, m = segs1.length; j < m; j++) {
+						segs1[j]._visited = segs2[j]._visited = true;
+					}
+				}
+			}
+			if (!isValid(seg) || !seg._path._validOverlapsOnly
 					&& inter && seg._winding && inter._overlap)
 				continue;
 			start = otherStart = null;
 			while (true) {
-				inter = inter && (findBestIntersection(inter, true)
-						|| findBestIntersection(inter, false)) || inter;
+				inter = inter && (findBestIntersection(inter, seg, true)
+						|| findBestIntersection(inter, seg, false)) || inter;
 				var other = inter && inter._segment;
 				if (isStart(seg)) {
 					finished = true;
@@ -9592,8 +9598,10 @@ PathItem.inject(new function() {
 						finished = true;
 						seg = other;
 					} else if (isValid(other)) {
-						if (operator && operator.intersect && inter._overlap)
+						if (operator && inter._overlap
+								&& (operator.intersect || operator.subtract)) {
 							seg._visited = true;
+						}
 						seg = other;
 					}
 				}
@@ -9601,7 +9609,7 @@ PathItem.inject(new function() {
 					seg._visited = true;
 					break;
 				}
-				if (validOverlapsOnly && !isValid(seg))
+				if (seg._path._validOverlapsOnly && !isValid(seg))
 					break;
 				if (!path) {
 					path = new Path(Item.NO_INSERT);
@@ -9659,8 +9667,8 @@ PathItem.inject(new function() {
 		},
 
 		divide: function(path) {
-			return finishResult(createResult(Group,
-				[this.subtract(path), this.intersect(path)], true), this, path);
+			return createResult(Group, [this.subtract(path),
+					this.intersect(path)], true, this, path);
 		},
 
 		resolveCrossings: function() {
