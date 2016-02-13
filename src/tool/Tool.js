@@ -23,7 +23,7 @@
  * {@link #onMouseUp}) or a keyboard handler function ({@link #onKeyDown},
  * {@link #onKeyUp}).
  *
- * @classexample
+ * @classexample {@paperscript height=300}
  * var path;
  *
  * // Only execute onMouseDrag when the mouse
