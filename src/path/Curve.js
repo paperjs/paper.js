@@ -579,7 +579,7 @@ var Curve = Base.extend(/** @lends Curve# */{
         this._segment2._handleIn.set(0, 0);
     },
 
-statics: {
+statics: /** @lends Curve */{
     getValues: function(segment1, segment2, matrix) {
         var p1 = segment1._point,
             h1 = segment1._handleOut,
@@ -737,6 +737,8 @@ statics: {
      *
      * @param {Number} flatness the maximum error allowed for the straight line
      *     to deviate from the curve
+     *
+     * @private
      */
     isFlatEnough: function(v, flatness) {
         // Thanks to Kaspar Fischer and Roger Willcocks for the following:
