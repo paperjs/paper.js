@@ -53,22 +53,18 @@ PathItem.inject(new function() {
         return resolve ? res.resolveCrossings() : res;
     }
 
-    function finishResult(result, path1, path2) {
+    function createResult(ctor, paths, reduce, path1, path2) {
+        var result = new ctor(Item.NO_INSERT);
+        result.addChildren(paths, true);
+        // See if the item can be reduced to just a simple Path.
+        if (reduce)
+            result = result.reduce({ simplify: true });
         // Insert the resulting path above whichever of the two paths appear
         // further up in the stack.
         result.insertAbove(path2 && path1.isSibling(path2)
                 && path1.getIndex() < path2.getIndex() ? path2 : path1);
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
-        return result;
-    }
-
-    function createResult(ctor, paths, reduce) {
-        var result = new ctor(Item.NO_INSERT);
-        result.addChildren(paths, true);
-        // See if the item can be reduced to just a simple Path.
-        if (reduce)
-            result = result.reduce({ simplify: true });
         return result;
     }
 
@@ -98,16 +94,16 @@ PathItem.inject(new function() {
                 CurveLocation.expand(_path1.getCrossings(_path2))),
             segments = [],
             // Aggregate of all curves in both operands, monotonic in y.
-            monoCurves = [],
-            // Keep track if all encountered segments are overlaps.
-            overlapsOnly = true,
-            validOverlapsOnly = true;
+            monoCurves = [];
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
                 monoCurves.push.apply(monoCurves, path._getMonoCurves());
+                // Keep track if there are valid intersections other than
+                // overlaps in each path.
+                path._overlapsOnly = path._validOverlapsOnly = true;
             }
         }
 
@@ -131,24 +127,19 @@ PathItem.inject(new function() {
                 propagateWinding(segment, _path1, _path2, monoCurves, operator);
             }
             // See if there are any valid segments that aren't part of overlaps.
-            // This information is used further down to determine where to start
-            // tracing the path, and how to treat encountered invalid segments.
+            // This information is used to determine where to start tracing the
+            // path, and how to treat encountered invalid segments.
             if (!(inter && inter._overlap)) {
-                overlapsOnly = false;
+                var path = segment._path;
+                path._overlapsOnly = false;
+                // This is not an overlap. If it is valid, take note that there
+                // are valid intersections other than overlaps in this path.
                 if (operator[segment._winding])
-                    validOverlapsOnly = false;
+                    path._validOverlapsOnly = false;
             }
         }
-        // If all encountered are overlaps (regardless if valid or not), we have
-        // two fully overlapping paths and can just return a clone of the first,
-        // or an empty path, depending on the operation.
-        return finishResult(overlapsOnly
-                ? (operator.unite || operator.intersect) && path1.getArea()
-                    ? path1.clone(false)
-                    : new Path(Item.NO_INSERT)
-                : createResult(CompoundPath,
-                    tracePaths(segments, operator, validOverlapsOnly),
-                    !overlapsOnly), path1, path2);
+        return createResult(CompoundPath, tracePaths(segments, operator), true,
+                    path1, path2);
     }
 
     function computeOpenBoolean(path1, path2, operator) {
@@ -189,7 +180,7 @@ PathItem.inject(new function() {
         }
         // At the end, check what's left from our path after all the splitting.
         addPath(_path1);
-        return finishResult(createResult(Group, paths), path1, path2);
+        return createResult(Group, paths, false, path1, path2);
     }
 
     /*
@@ -479,7 +470,7 @@ PathItem.inject(new function() {
      *     value indicating whether the curve should be included in result
      * @return {Path[]} the traced closed paths
      */
-    function tracePaths(segments, operator, validOverlapsOnly) {
+    function tracePaths(segments, operator) {
         var paths = [],
             start,
             otherStart;
@@ -495,7 +486,7 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the one that's
         // either connecting back to start or is not visited yet, and will be
         // part of the boolean result:
-        function findBestIntersection(inter, strict) {
+        function findBestIntersection(inter, exclude, strict) {
             if (!inter._next)
                 return inter;
             while (inter) {
@@ -513,7 +504,7 @@ PathItem.inject(new function() {
                 // If this pass does not yield a result, the non-strict mode is
                 // used, in which invalid current segments are tolerated, and
                 // overlaps for the next segment are allowed.
-                if (isStart(seg) || isStart(nextSeg)
+                if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
@@ -527,7 +518,7 @@ PathItem.inject(new function() {
                             // to which we may switch might be, so check that.
                             || !strict && nextInter
                             && isValid(nextInter._segment))
-                    ))
+                    )))
                     return inter;
                 // If it's no match, continue with the next linked intersection.
                 inter = inter._next;
@@ -541,19 +532,40 @@ PathItem.inject(new function() {
                 seg = segments[i],
                 inter = seg._intersection,
                 handleIn;
+            // If all encountered segments in a path are overlaps (regardless if
+            // valid or not), we may have two fully overlapping paths that need
+            // special handling.
+            if (!seg._visited && seg._path._overlapsOnly) {
+                // TODO: Don't we also need to check for multiple overlaps?
+                var path1 = seg._path,
+                    path2 = inter._segment._path;
+                if (path1.equals(path2)) {
+                    // Only add the path to the result if it has an area.
+                    if ((operator.unite || operator.intersect)
+                            && path1.getArea()) {
+                        paths.push(path1.clone(false));
+                    }
+                    // Now mark all involved segments as visited.
+                    var segs1 = path1._segments,
+                        segs2 = path2._segments;
+                    for (var j = 0, m = segs1.length; j < m; j++) {
+                        segs1[j]._visited = segs2[j]._visited = true;
+                    }
+                }
+            }
             // Do not start paths with invalid segments (segments that were
             // already visited, or that are not going to be part of the result).
             // Also don't start in overlaps, unless all segments are part of
             // overlaps, in which case we have no other choice.
-            if (!isValid(seg) || !validOverlapsOnly
+            if (!isValid(seg) || !seg._path._validOverlapsOnly
                     && inter && seg._winding && inter._overlap)
                 continue;
             start = otherStart = null;
             while (true) {
                 // For each segment we encounter, see if there are multiple
                 // intersections, and if so, pick the best one:
-                inter = inter && (findBestIntersection(inter, true)
-                        || findBestIntersection(inter, false)) || inter;
+                inter = inter && (findBestIntersection(inter, seg, true)
+                        || findBestIntersection(inter, seg, false)) || inter;
                 // Get the reference to the other segment on the intersection.
                 var other = inter && inter._segment;
                 if (isStart(seg)) {
@@ -567,9 +579,11 @@ PathItem.inject(new function() {
                         // We are at a crossing and the other segment is part of
                         // the boolean result, switch over.
                         // We need to mark overlap segments as visited when
-                        // processing intersection.
-                        if (operator && operator.intersect && inter._overlap)
+                        // processing intersection and subtraction.
+                        if (operator && inter._overlap
+                                && (operator.intersect || operator.subtract)) {
                             seg._visited = true;
+                        }
                         seg = other;
                     }
                 }
@@ -580,10 +594,10 @@ PathItem.inject(new function() {
                     seg._visited = true;
                     break;
                 }
-                // If there are only valid overlap segments and we encounter
-                // and invalid segment, bail out immediately. Otherwise we need
-                // to be more tolerant due to complex situations of crossing.
-                if (validOverlapsOnly && !isValid(seg))
+                // If there are only valid overlaps and we encounter and invalid
+                // segment, bail out immediately. Otherwise we need to be more
+                // tolerant due to complex situations of crossing.
+                if (seg._path._validOverlapsOnly && !isValid(seg))
                     break;
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
@@ -706,8 +720,8 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         divide: function(path) {
-            return finishResult(createResult(Group,
-                [this.subtract(path), this.intersect(path)], true), this, path);
+            return createResult(Group, [this.subtract(path),
+                    this.intersect(path)], true, this, path);
         },
 
         /*

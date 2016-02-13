@@ -454,7 +454,7 @@ var compareBoolean = function(actual, expected, message, options) {
     }
     actual.style = expected.style = {
         strokeColor: 'black',
-        fillColor: expected.closed ? 'yellow' : null
+        fillColor: expected.closed || expected.children ? 'yellow' : null
     };
     equals(actual, expected, message, Base.set({ rasterize: true }, options));
 };
