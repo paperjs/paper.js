@@ -30,8 +30,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
          */
         extend: function extend(src) {
             if (src._serializeFields)
-                src._serializeFields = new Base(
-                        this.prototype._serializeFields, src._serializeFields);
+                src._serializeFields = Base.set({},
+                    this.prototype._serializeFields, src._serializeFields);
             return extend.base.apply(this, arguments);
         },
 

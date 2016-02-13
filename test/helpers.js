@@ -408,7 +408,7 @@ var comparators = {
                 // Cloning SymbolItems does not result in cloned
                 // SymbolDefinitions
                 options && options.cloned
-                        ? new Base(options, { cloned: false })
+                        ? Base.set({}, options, { cloned: false })
                         : options,
                 ['symbol']);
     },

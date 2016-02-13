@@ -90,7 +90,7 @@ var Style = Base.extend(new function() {
         selectedColor: null
     },
     // For TextItem, override default fillColor and add text-specific properties
-    textDefaults = new Base(defaults, {
+    textDefaults = Base.set({}, defaults, {
         fillColor: new Color(), // black
         // Characters
         fontFamily: 'sans-serif',

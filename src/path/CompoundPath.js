@@ -266,7 +266,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 // compound path forms one shape.
                 // Also support legacy format `type: 'path'`.
                 options.class === Path || options.type === 'path' ? options
-                    : new Base(options, { fill: false }));
+                    : Base.set({}, options, { fill: false }));
     },
 
     _draw: function(ctx, param, strokeMatrix) {
