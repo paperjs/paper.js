@@ -34,6 +34,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     _class: 'Project',
     _list: 'projects',
     _reference: 'project',
+    _compactSerialize: true, // Never include the class name for Project
 
     // TODO: Add arguments to define pages
     /**
@@ -75,7 +76,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // into the active project automatically. We might want to add proper
         // project serialization later, but deserialization of a layers array
         // will always work.
-        // Pass true for compact, so 'Project' does not get added as the class
         return Base.serialize(this._children, options, true, dictionary);
     },
 

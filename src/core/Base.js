@@ -47,6 +47,17 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
+     * Imports (deserializes) the stored JSON data into the object, if the
+     * classes match. If they do not match, a newly created object is returned
+     * instead.
+     *
+     * @param {String} json the JSON data to import from
+     */
+    importJSON: function(json) {
+        return Base.importJSON(json, this);
+    },
+
+    /**
      * Exports (serializes) this object to a JSON data object or string.
      *
      * @option [options.asString=true] {Boolean} whether the JSON is returned as
@@ -332,9 +343,9 @@ Base.inject(/** @lends Base# */{
         serialize: function(obj, options, compact, dictionary) {
             options = options || {};
 
-            var root = !dictionary,
+            var isRoot = !dictionary,
                 res;
-            if (root) {
+            if (isRoot) {
                 options.formatter = new Formatter(options.precision);
                 // Create a simple dictionary object that handles all the
                 // storing and retrieving of dictionary definitions and
@@ -376,17 +387,17 @@ Base.inject(/** @lends Base# */{
                 // identifier), see if _serialize didn't already add the class,
                 // e.g. for classes that do not support compact form.
                 var name = obj._class;
-                if (name && !compact && !res._compact && res[0] !== name)
+                // Enforce class names on root level, except if the class
+                // explicitly asks to be serialized in compact form (Project).
+                if (name && !obj._compactSerialize && (isRoot || !compact)
+                        && res[0] !== name) {
                     res.unshift(name);
+                }
             } else if (Array.isArray(obj)) {
                 res = [];
                 for (var i = 0, l = obj.length; i < l; i++)
                     res[i] = Base.serialize(obj[i], options, compact,
                             dictionary);
-                // Mark array as compact, so obj._serialize handling above
-                // doesn't add the class name again.
-                if (compact)
-                    res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
                 var keys = Object.keys(obj);
@@ -400,7 +411,7 @@ Base.inject(/** @lends Base# */{
             } else {
                 res = obj;
             }
-            return root && dictionary.length > 0
+            return isRoot && dictionary.length > 0
                     ? [['dictionary', dictionary.definitions], res]
                     : res;
         },
@@ -414,9 +425,11 @@ Base.inject(/** @lends Base# */{
          * The passed json data is recoursively traversed and converted, leaves
          * first
          */
-        deserialize: function(json, create, _data, _isDictionary) {
+        deserialize: function(json, create, _data, _setDictionary, _isRoot) {
             var res = json,
-                isRoot = !_data;
+                isFirst = !_data,
+                hasDictionary = isFirst && json && json.length
+                    && json[0][0] === 'dictionary';
             // A _data side-car to deserialize that can hold any kind of
             // 'global' data across a deserialization. It's currently only used
             // to hold dictionary definitions.
@@ -431,19 +444,18 @@ Base.inject(/** @lends Base# */{
                     isDictionary = type === 'dictionary';
                 // First see if this is perhaps a dictionary reference, and
                 // if so return its definition instead.
-                if (json.length == 1 && /^#/.test(type))
+                if (json.length == 1 && /^#/.test(type)) {
                     return _data.dictionary[type];
+                }
                 type = Base.exports[type];
                 res = [];
-                // We need to set the dictionary object before further
-                // deserialization, because serialized symbols may contain
-                // references to serialized gradients
-                if (_isDictionary)
-                    _data.dictionary = res;
                 // Skip first type entry for arguments
-                for (var i = type ? 1 : 0, l = json.length; i < l; i++)
+                // Pass true for _isRoot in children if we have a dictionary,
+                // in which case we need to shift the root level one down.
+                for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
                     res.push(Base.deserialize(json[i], create, _data,
-                            isDictionary));
+                            isDictionary, hasDictionary));
+                }
                 if (type) {
                     // Create serialized type and pass collected arguments to
                     // constructor().
@@ -452,7 +464,7 @@ Base.inject(/** @lends Base# */{
                     // creation. This is used in #importJSON() to pass
                     // on insert = false to all items except layers.
                     if (create) {
-                        res = create(type, args, isRoot);
+                        res = create(type, args, isFirst || _isRoot);
                     } else {
                         res = Base.create(type.prototype);
                         type.apply(res, args);
@@ -460,16 +472,16 @@ Base.inject(/** @lends Base# */{
                 }
             } else if (Base.isPlainObject(json)) {
                 res = {};
-                // See above why we have to set this before Base.deserialize()
-                if (_isDictionary)
+                // We need to set the dictionary object before further
+                // deserialization, because serialized symbols may contain
+                // references to serialized gradients
+                if (_setDictionary)
                     _data.dictionary = res;
                 for (var key in json)
                     res[key] = Base.deserialize(json[key], create, _data);
             }
-            // Filter out deserialized dictionary.
-            return isRoot && json && json.length && json[0][0] === 'dictionary'
-                    ? res[1]
-                    : res;
+            // Filter out deserialized dictionary:
+            return hasDictionary ? res[1] : res;
         },
 
         exportJSON: function(obj, options) {
@@ -491,9 +503,11 @@ Base.inject(/** @lends Base# */{
                                 && target.constructor === ctor,
                             obj = useTarget ? target
                                 : Base.create(ctor.prototype),
-                            // When reusing an object, try to initialize it
-                            // through _initialize (Item), fall-back to _set.
-                            init = useTarget ? obj._initialize || obj._set
+                            // When reusing an object, try to (re)initialize it
+                            // through _initialize (Item), fall-back to
+                            // initialize (Color & co), then _set.
+                            init = useTarget
+                                ? obj._initialize || obj.initialize || obj._set
                                 : ctor;
                         // NOTE: We don't set insert false for layers since we
                         // want these to be created on the fly in the active

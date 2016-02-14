@@ -207,3 +207,37 @@ test('Color', function() {
     });
     testExportImportJSON(paper.project);
 });
+
+test('Color#importJSON()', function() {
+    var topLeft = [100, 100];
+    var bottomRight = [200, 200];
+
+    var path = new Path.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        // Fill the path with a gradient of three color stops
+        // that runs between the two points we defined earlier:
+        fillColor: {
+            gradient: {
+                stops: ['yellow', 'red', 'blue']
+            },
+            origin: topLeft,
+            destination: bottomRight
+        }
+    });
+
+    var json = path.fillColor.exportJSON(),
+        id = path.fillColor.gradient._id,
+        color = new Color(),
+        str = '[["dictionary",{"#' + id + '":["Gradient",[[[1,1,0],0],[[1,0,0],0.5],[[0,0,1],1]],false]}],["Color","gradient",["#' + id + '"],[100,100],[200,200]]]';
+
+    equals(json, str);
+
+    equals(function() {
+        return color.importJSON(json) === color;
+    }, true);
+
+    equals(function() {
+        return color.equals(path.fillColor);
+    }, true);
+});
