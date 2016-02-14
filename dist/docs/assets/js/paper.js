@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 22:06:55 2016 +0100
+ * Date: Sun Feb 14 22:15:55 2016 +0100
  *
  ***
  *
@@ -9508,8 +9508,7 @@ PathItem.inject(new function() {
 				prevXEnd,
 				windLeftOnCurve = 0,
 				windRightOnCurve = 0,
-				isOnCurve = false,
-				leftIntersVal;
+				isOnCurve = false;
 			for (var i = 0; i < length; i++) {
 				var curve = curves[i],
 					winding = curve.winding,
@@ -9520,7 +9519,6 @@ PathItem.inject(new function() {
 					prevWinding = curve.last.winding;
 					prevXEnd = curve.last.values[6];
 					isOnCurve = false;
-					leftIntersVal = null;
 				}
 				if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
 					if (winding) {
@@ -9549,16 +9547,9 @@ PathItem.inject(new function() {
 						isOnCurve = true;
 					}
 				}
-				if (i == length - 1 || curves[i + 1].last) {
-					if (isOnCurve) {
-						if (leftIntersVal && leftIntersVal[1] < 0) {
-							windLeftOnCurve -= 1;
-							windRightOnCurve += 1;
-						} else {
-							windLeftOnCurve += 1;
-							windRightOnCurve -= 1;
-						}
-					}
+				if (isOnCurve && (i >= length - 1 || curves[i + 1].last)) {
+					windLeftOnCurve += 1;
+					windRightOnCurve -= 1;
 				}
 			}
 			if (windLeft === 0 && windRight === 0) {
