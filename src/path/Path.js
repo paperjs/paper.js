@@ -2320,11 +2320,12 @@ new function() { // PostScript-style drawing commands
             } else {
                 // #3: arcTo(to, radius, rotation, clockwise, large)
                 // Drawing arcs in SVG style:
-                var radius = Size.read(arguments);
+                var radius = Size.read(arguments),
+                    isZero = Numerical.isZero;
                 // If rx = 0 or ry = 0 then this arc is treated as a
                 // straight line joining the endpoints.
-                if (Numerical.isZero(radius.width)
-                    || Numerical.isZero(radius.height))
+                // NOTE: radius.isZero() would require both values to be 0.
+                if (isZero(radius.width) || isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
                 // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
