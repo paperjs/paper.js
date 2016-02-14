@@ -759,13 +759,30 @@ test('Item#applyMatrix', function() {
 test('PaperScope#settings.insertItems', function() {
     var insertItems = paper.settings.insertItems;
     paper.settings.insertItems = true;
+
+    var path1, path2;
+
     equals(function() {
-        return new Path().parent === project.activeLayer;
+        path1 = new Path();
+        return path1.parent === project.activeLayer;
     }, true);
     paper.settings.insertItems = false;
+
     equals(function() {
-        return new Path().parent === null;
+        path2 = new Path();
+        return path2.parent === null;
     }, true);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 1);
+
+    project.activeLayer.addChild(path2);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 2);
+
     paper.settings.insertItems = insertItems;
 });
 
