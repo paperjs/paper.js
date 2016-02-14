@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 13:49:40 2016 +0100
+ * Date: Mon Jan 11 15:54:07 2016 +0500
  *
  ***
  *
@@ -6310,7 +6310,8 @@ statics: {
 	},
 
 	getNearestPoint: function() {
-		return this.getNearestLocation.apply(this, arguments).getPoint();
+		var loc = this.getNearestLocation.apply(this, arguments);
+		return loc ? loc.getPoint() : loc;
 	}
 
 },
@@ -7407,7 +7408,8 @@ var PathItem = Item.extend({
 	},
 
 	getNearestPoint: function() {
-		return this.getNearestLocation.apply(this, arguments).getPoint();
+		var loc = this.getNearestLocation.apply(this, arguments);
+		return loc ? loc.getPoint() : loc;
 	},
 
 	interpolate: function(from, to, factor) {
