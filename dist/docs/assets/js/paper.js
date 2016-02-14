@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 13:33:56 2016 +0100
+ * Date: Sun Feb 14 13:49:40 2016 +0100
  *
  ***
  *
@@ -4169,7 +4169,7 @@ new function() {
 	}
 }), {
 
-	_setStyles: function(ctx) {
+	_setStyles: function(ctx, param, viewMatrix) {
 		var style = this._style;
 		if (style.hasFill()) {
 			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
@@ -4201,9 +4201,13 @@ new function() {
 			}
 		}
 		if (style.hasShadow()) {
+			var pixelRatio = param.pixelRatio || 1,
+				mx = viewMatrix._shiftless().prepend(
+					new Matrix().scale(pixelRatio, pixelRatio)),
+				blur = mx.transform(new Point(style.getShadowBlur(), 0)),
+				offset = mx.transform(this.getShadowOffset());
 			ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
-			ctx.shadowBlur = style.getShadowBlur();
-			var offset = this.getShadowOffset();
+			ctx.shadowBlur = blur.getLength();
 			ctx.shadowOffsetX = offset.x;
 			ctx.shadowOffsetY = offset.y;
 		}
@@ -4220,9 +4224,8 @@ new function() {
 		if (!globalMatrix.isInvertible())
 			return;
 
-		function getViewMatrix(matrix) {
-			return viewMatrix ? viewMatrix.appended(matrix) : matrix;
-		}
+		viewMatrix = viewMatrix ? viewMatrix.appended(globalMatrix)
+				: globalMatrix;
 
 		matrices.push(globalMatrix);
 		if (param.updateMatrix) {
@@ -4242,7 +4245,7 @@ new function() {
 			pixelRatio = param.pixelRatio || 1,
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
-			var bounds = this.getStrokeBounds(getViewMatrix(globalMatrix));
+			var bounds = this.getStrokeBounds(viewMatrix);
 			if (!bounds.width || !bounds.height)
 				return;
 			prevOffset = param.offset;
@@ -4257,7 +4260,7 @@ new function() {
 		var strokeMatrix = parentStrokeMatrix
 				? parentStrokeMatrix.appended(matrix)
 				: this._canScaleStroke && !this.getStrokeScaling(true)
-					&& getViewMatrix(globalMatrix),
+					&& viewMatrix,
 			clip = !direct && param.clipItem,
 			transform = !strokeMatrix || clip;
 		if (direct) {
@@ -4267,17 +4270,19 @@ new function() {
 		} else if (transform) {
 			ctx.translate(-itemOffset.x, -itemOffset.y);
 		}
-		if (transform)
-			(direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
-		if (clip)
+		if (transform) {
+			(direct ? matrix : viewMatrix).applyToContext(ctx);
+		}
+		if (clip) {
 			param.clipItem.draw(ctx, param.extend({ clip: true }));
+		}
 		if (strokeMatrix) {
 			ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 			var offset = param.offset;
 			if (offset)
 				ctx.translate(-offset.x, -offset.y);
 		}
-		this._draw(ctx, param, strokeMatrix);
+		this._draw(ctx, param, viewMatrix, strokeMatrix);
 		ctx.restore();
 		matrices.pop();
 		if (param.clip && !param.dontFinish)
@@ -4581,7 +4586,7 @@ var Shape = Item.extend({
 
 	toShape: '#clone',
 
-	_draw: function(ctx, param, strokeMatrix) {
+	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
 		var style = this._style,
 			hasFill = style.hasFill(),
 			hasStroke = style.hasStroke(),
@@ -4645,7 +4650,7 @@ var Shape = Item.extend({
 			ctx.closePath();
 		}
 		if (!dontPaint && (hasFill || hasStroke)) {
-			this._setStyles(ctx);
+			this._setStyles(ctx, param, viewMatrix);
 			if (hasFill) {
 				ctx.fill(style.getFillRule());
 				ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -8442,7 +8447,7 @@ new function() {
 	}
 
 	return {
-		_draw: function(ctx, param, strokeMatrix) {
+		_draw: function(ctx, param, viewMatrix, strokeMatrix) {
 			var dontStart = param.dontStart,
 				dontPaint = param.dontFinish || param.clip,
 				style = this.getStyle(),
@@ -8466,7 +8471,7 @@ new function() {
 			}
 
 			if (!dontPaint && (hasFill || hasStroke)) {
-				this._setStyles(ctx);
+				this._setStyles(ctx, param, viewMatrix);
 				if (hasFill) {
 					ctx.fill(style.getFillRule());
 					ctx.shadowColor = 'rgba(0,0,0,0)';
@@ -9193,7 +9198,7 @@ var CompoundPath = PathItem.extend({
 				viewMatrix);
 	},
 
-	_draw: function(ctx, param, strokeMatrix) {
+	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
 		var children = this._children;
 		if (children.length === 0)
 			return;
@@ -9204,7 +9209,7 @@ var CompoundPath = PathItem.extend({
 			children[i].draw(ctx, param, strokeMatrix);
 
 		if (!param.clip) {
-			this._setStyles(ctx);
+			this._setStyles(ctx, param, viewMatrix);
 			var style = this._style;
 			if (style.hasFill()) {
 				ctx.fill(style.getFillRule());
@@ -10325,10 +10330,10 @@ var PointText = TextItem.extend({
 		this.translate(point.subtract(this._matrix.getTranslation()));
 	},
 
-	_draw: function(ctx) {
+	_draw: function(ctx, param, viewMatrix) {
 		if (!this._content)
 			return;
-		this._setStyles(ctx);
+		this._setStyles(ctx, param, viewMatrix);
 		var lines = this._lines,
 			style = this._style,
 			hasFill = style.hasFill(),
