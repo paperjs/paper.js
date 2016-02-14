@@ -344,10 +344,7 @@ PathItem.inject(new function() {
                 // Separately count the windings for points on curves.
                 windLeftOnCurve = 0,
                 windRightOnCurve = 0,
-                isOnCurve = false,
-                // Use the winding at the leftmost intersection to determine
-                // the orientation of the loop (clockwise / anti-clockwise).
-                leftIntersVal;
+                isOnCurve = false;
             for (var i = 0; i < length; i++) {
                 var curve = curves[i],
                     winding = curve.winding,
@@ -362,10 +359,8 @@ PathItem.inject(new function() {
                     // non-horizontal curve for the first curve in the loop.
                     prevWinding = curve.last.winding;
                     prevXEnd = curve.last.values[6];
-                    // Reset the on curve flag and the leftmost intersection
-                    // values for each loop.
+                    // Reset the on curve flag for each loop.
                     isOnCurve = false;
-                    leftIntersVal = null;
                 }
                 // Since the curves are monotonic in y direction, we can just
                 // compare the endpoints of the curve to determine if the ray
@@ -411,25 +406,17 @@ PathItem.inject(new function() {
                         isOnCurve = true;
                     }
                 }
-                // If we are at the end of a loop and the point was on a curve of the
-                // loop, we increment / decrement the on-curve winding numbers as if
-                // the point was inside the path.
-                if (i == length - 1 || curves[i + 1].last) {
-                    if (isOnCurve) {
-                        if (leftIntersVal && leftIntersVal[1] < 0) {
-                            windLeftOnCurve -= 1;
-                            windRightOnCurve += 1;
-                        } else {
-                            windLeftOnCurve += 1;
-                            windRightOnCurve -= 1;
-                        }
-                    }
+                // If we are at the end of a loop and the point was on a curve
+                // of the loop, we increment / decrement the on-curve winding
+                // numbers as if the point was inside the path.
+                if (isOnCurve && (i >= length - 1 || curves[i + 1].last)) {
+                    windLeftOnCurve += 1;
+                    windRightOnCurve -= 1;
                 }
             }
-            // Use the on-curve windings if no other intersections were
-            // found or if they canceled each other. On single paths
-            // this ensures that the overally winding is 1 if the
-            // point was on a monotonic curve.
+            // Use the on-curve windings if no other intersections were found or
+            // if they canceled each other. On single paths this ensures that
+            // the overall winding is 1 if the point was on a monotonic curve.
             if (windLeft === 0 && windRight === 0) {
                 windLeft = windLeftOnCurve;
                 windRight = windRightOnCurve;
