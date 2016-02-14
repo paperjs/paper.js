@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 21:34:35 2016 +0100
+ * Date: Sun Feb 14 21:55:26 2016 +0100
  *
  ***
  *
@@ -3815,9 +3815,9 @@ new function() {
 				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
-					var parent = item._parent,
-						shift = parent === this && item._index < index;
-					if (parent && item._remove(false, true) && shift)
+					var owner = item._getOwner(),
+						shift = owner === this && item._index < index;
+					if (owner && item._remove(false, true) && shift)
 						index--;
 				}
 			}
