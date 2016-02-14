@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 17:16:40 2016 +0100
+ * Date: Sun Feb 14 21:34:35 2016 +0100
  *
  ***
  *
@@ -720,6 +720,7 @@ var PaperScope = Base.extend({
 		paper = this;
 		this.settings = new Base({
 			applyMatrix: true,
+			insertItems: true,
 			handleSize: 4,
 			hitTolerance: 0
 		});
@@ -2641,7 +2642,7 @@ var Project = PaperScopeItem.extend({
 	},
 
 	getActiveLayer: function() {
-		return this._activeLayer || new Layer({ project: this });
+		return this._activeLayer || new Layer({ project: this, insert: true });
 	},
 
 	getSymbolDefinitions: function() {
@@ -2874,15 +2875,17 @@ new function() {
 		var hasProps = props && Base.isPlainObject(props),
 			internal = hasProps && props.internal === true,
 			matrix = this._matrix = new Matrix(),
-			project = hasProps && props.project || paper.project;
+			project = hasProps && props.project || paper.project,
+			settings = paper.settings;
 		this._id = internal ? null : UID.get();
 		this._parent = this._index = null;
-		this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
+		this._applyMatrix = this._canApplyMatrix && settings.applyMatrix;
 		if (point)
 			matrix.translate(point);
 		matrix._owner = this;
 		this._style = new Style(project._currentStyle, this, project);
-		if (internal || hasProps && props.insert === false) {
+		if (internal || hasProps && props.insert === false
+			|| !settings.insertItems && !(hasProps && props.insert === true)) {
 			this._setProject(project);
 		} else {
 			(hasProps && props.parent || project)
@@ -3812,8 +3815,9 @@ new function() {
 				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
-					var shift = item._parent === this && item._index < index;
-					if (item._remove(false, true) && shift)
+					var parent = item._parent,
+						shift = parent === this && item._index < index;
+					if (parent && item._remove(false, true) && shift)
 						index--;
 				}
 			}
