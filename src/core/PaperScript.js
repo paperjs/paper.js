@@ -386,11 +386,10 @@ Base.exports.PaperScript = (function() {
         // Set currently active scope.
         paper = scope;
         var view = scope.getView(),
-            // Only create a tool object if something resembling a tool handler
-            // definition is contained in the code.
-            tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/.test(code)
-                    ? new Tool()
-                    : null,
+            // Only create a tool if the tool object is accessed or something
+            // resembling a global tool handler is contained in the code.
+            tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
+                    .test(code) ? new Tool() : null,
             toolHandlers = tool ? tool._events : [],
             // Compile a list of all handlers that can be defined globally
             // inside the PaperScript. These are passed on to the function as
