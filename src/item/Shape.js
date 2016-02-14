@@ -341,7 +341,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
             }
         },
 
-        _hitTestSelf: function _hitTestSelf(point, options) {
+        _hitTestSelf: function _hitTestSelf(point, options, strokeMatrix) {
             var hit = false,
                 style = this._style;
             if (options.stroke && style.hasStroke()) {
@@ -350,8 +350,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                     strokeWidth = style.getStrokeWidth(),
                     strokePadding = options._tolerancePadding.add(
                         Path._getStrokePadding(strokeWidth / 2,
-                            !style.getStrokeScaling() &&
-                                options._strokeMatrix));
+                            !style.getStrokeScaling() && strokeMatrix));
                 if (type === 'rectangle') {
                     var padding = strokePadding.multiply(2),
                         center = getCornerCenter(this, point, padding);

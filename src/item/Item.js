@@ -70,7 +70,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         data: {}
     }
 },
-new function() { // // Scope to inject various item event handlers
+new function() { // Injection scope for various item event handlers
     var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
             'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
     return Base.each(handlers,
@@ -1628,6 +1628,8 @@ new function() { // // Scope to inject various item event handlers
     },
 
     /**
+     * {@grouptitle Geometric Tests}
+     *
      * Checks whether the item's geometry contains the given point.
      *
      * @example {@paperscript} // Click within and outside the star below
@@ -1710,20 +1712,79 @@ new function() { // // Scope to inject various item event handlers
         // found, because all we care for here is there are some or none:
         return this._asPathItem().getIntersections(item._asPathItem(), null,
                 _matrix, true).length > 0;
-    },
+    }
+},
+new function() { // Injection scope for hit-test functions shared with project
+    function hitTest(/* point, options */) {
+        return this._hitTest(
+                Point.read(arguments),
+                HitResult.getOptions(arguments));
+    }
 
+    function hitTestAll(/* point, options */) {
+        var point = Point.read(arguments),
+            options = HitResult.getOptions(arguments),
+            callback = options.match,
+            results = [];
+        options = Base.set({}, options, {
+            match: function(hit) {
+                if (!callback || callback(hit))
+                    results.push(hit);
+            }
+        });
+        this._hitTest(point, options);
+        return results;
+    }
+
+    function hitTestChildren(point, options, _exclude) {
+        // NOTE: _exclude is only used in Group#_hitTestChildren()
+        var children = this._children;
+        if (children) {
+            // Loop backwards, so items that get drawn last are tested first.
+            for (var i = children.length - 1; i >= 0; i--) {
+                var child = children[i];
+                var res = child !== _exclude && child._hitTest(point, options);
+                if (res)
+                    return res;
+            }
+        }
+        return null;
+    }
+
+    Project.inject({
+        hitTest: hitTest,
+        hitTestAll: hitTestAll,
+        _hitTest: hitTestChildren
+    });
+
+    return {
+        // NOTE: Documentation is in the scope that follows.
+        hitTest: hitTest,
+        hitTestAll: hitTestAll,
+        _hitTestChildren: hitTestChildren,
+    };
+}, /** @lends Item# */{
     /**
-     * Perform a hit-test on the item (and its children, if it is a {@link
-     * Group} or {@link Layer}) at the location of the specified point.
+     * {@grouptitle Hit-testing, Fetching and Matching Items}
      *
-     * The options object allows you to control the specifics of the hit-test
-     * and may contain a combination of the following values:
+     * Performs a hit-test on the item and its children (if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point,
+     * returning the first found hit.
+     *
+     * The options object allows you to control the specifics of the hit-
+     * test and may contain a combination of the following values:
+     *
+     * @name Item#hitTest
+     * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item class
-     *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
-     *     Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.class {Function} only hit-test again a certain item
+     *     class and its sub-classes: {@values Group, Layer, Path,
+     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.match {Function} a match function to be called for each
+     *     found hit result: Return `true` to return the result, `false` to keep
+     *     searching
      * @option [options.fill=true] {Boolean} hit-test the fill of items
      * @option [options.stroke=true] {Boolean} hit-test the stroke of path
      *     items, taking into account the setting of stroke color and width
@@ -1746,19 +1807,33 @@ new function() { // // Scope to inject various item event handlers
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: settings.hitTolerance }]
-     * @return {HitResult} a hit result object that contains more information
-     *     about what exactly was hit or `null` if nothing was hit
+     * @return {HitResult} a hit result object describing what exactly was hit
+     *     or `null` if nothing was hit
      */
-    hitTest: function(/* point, options */) {
-        return this._hitTest(
-                Point.read(arguments),
-                HitResult.getOptions(Base.read(arguments)));
-    },
+
+    /**
+     * Performs a hit-test on the item and its children (if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point,
+     * returning all found hits.
+     *
+     * The options object allows you to control the specifics of the hit-
+     * test. See {@link #hitTest(point[, options])} for a list of all options.
+     *
+     * @name Item#hitTestAll
+     * @function
+     * @param {Point} point the point where the hit-test should be performed
+     * @param {Object} [options={ fill: true, stroke: true, segments: true,
+     *     tolerance: settings.hitTolerance }]
+     * @return {HitResult[]} hit result objects for all hits, describing what
+     *     exactly was hit or `null` if nothing was hit
+     * @see #hitTest(point[, options]);
+     */
 
     _hitTest: function(point, options) {
         if (this._locked || !this._visible || this._guide && !options.guides
-                || this.isEmpty())
+                || this.isEmpty()) {
             return null;
+        }
 
         // Check if the point is withing roughBounds + tolerance, but only if
         // this item does not have children, since we'd have to travel up the
@@ -1783,26 +1858,35 @@ new function() { // // Scope to inject various item event handlers
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
         if (!point || !this._children &&
-                !this.getBounds({ internal: true, stroke: true, handle: true })
-                    .expand(tolerancePadding.multiply(2))._containsPoint(point))
+            !this.getBounds({ internal: true, stroke: true, handle: true })
+                .expand(tolerancePadding.multiply(2))._containsPoint(point)) {
             return null;
-        // Filter for type, guides and selected items if that's required.
+        }
+
+        // See if we should check self (own content), by filtering for type,
+        // guides and selected items if that's required.
         var checkSelf = !(options.guides && !this._guide
                 || options.selected && !this._selected
                 // Support legacy Item#type property to match hyphenated
                 // class-names.
                 || options.type && options.type !== Base.hyphenate(this._class)
                 || options.class && !(this instanceof options.class)),
+            callback = options.match,
             that = this,
             res;
+
+        function match(hit) {
+            return !callback || hit && callback(hit) ? hit : null;
+        }
 
         function checkBounds(type, part) {
             var pt = bounds['get' + part]();
             // Since there are transformations, we cannot simply use a numerical
             // tolerance value. Instead, we divide by a padding size, see above.
-            if (point.subtract(pt).divide(tolerancePadding).length <= 1)
+            if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
                 return new HitResult(type, that,
                         { name: Base.hyphenate(part), point: pt });
+            }
         }
 
         // Ignore top level layers by checking for _parent:
@@ -1810,47 +1894,39 @@ new function() { // // Scope to inject various item event handlers
             // Don't get the transformed bounds, check against transformed
             // points instead
             var bounds = this.getInternalBounds();
-            if (options.center)
+            if (options.center) {
                 res = checkBounds('center', 'Center');
+            }
             if (!res && options.bounds) {
                 // TODO: Move these into a private scope
                 var points = [
                     'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
                     'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
                 ];
-                for (var i = 0; i < 8 && !res; i++)
+                for (var i = 0; i < 8 && !res; i++) {
                     res = checkBounds('bounds', points[i]);
+                }
             }
+            res = match(res);
         }
 
         if (!res) {
             options._viewMatrix = viewMatrix;
-            options._strokeMatrix = strokeMatrix;
             res = this._hitTestChildren(point, options)
-                    || checkSelf && this._hitTestSelf(point, options)
-                    || null;
+                // NOTE: We don't call callback on _hitTestChildren()
+                // because that's already called internally.
+                || checkSelf
+                    && match(this._hitTestSelf(point, options, strokeMatrix))
+                || null;
             // Restore viewMatrix for next child, so appended matrix chains are
             // calculated correctly.
             options._viewMatrix = parentViewMatrix;
         }
         // Transform the point back to the outer coordinate system.
-        if (res && res.point)
+        if (res && res.point) {
             res.point = matrix.transform(res.point);
-        return res;
-    },
-
-    _hitTestChildren: function(point, options, _exclude) {
-        // NOTE: _exclude is only used in Group#_hitTestChildren()
-        var children = this._children;
-        if (children) {
-            // Loop backwards, so items that get drawn last are tested first
-            for (var i = children.length - 1; i >= 0; i--) {
-                var child = children[i];
-                var res = child !== _exclude && child._hitTest(point, options);
-                if (res)
-                    return res;
-            }
         }
+        return res;
     },
 
     _hitTestSelf: function(point, options) {
@@ -1860,21 +1936,19 @@ new function() { // // Scope to inject various item event handlers
     },
 
     /**
-     * {@grouptitle Fetching and matching items}
-     *
      * Checks whether the item matches the criteria described by the given
      * object, by iterating over all of its properties and matching against
      * their values through {@link #matches(name, compare)}.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
      * @name Item#matches
      * @function
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Boolean} {@true if the item matches all the criteria}
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     /**
      * Checks whether the item matches the given criteria. Extended matching is
@@ -1884,7 +1958,7 @@ new function() { // // Scope to inject various item event handlers
      * points with that x-value). Partial matching does work for
      * {@link Item#data}.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
      * @name Item#matches
@@ -1894,7 +1968,7 @@ new function() { // // Scope to inject various item event handlers
      * @param {Object} compare the value, function or regular expression to
      * compare against
      * @return {Boolean} {@true if the item matches the state}
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     matches: function(name, compare) {
         // matchObject() is used to match against objects in a nested manner.
@@ -1965,31 +2039,31 @@ new function() { // // Scope to inject various item event handlers
      * that x-value). Partial matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either `match.inside` or `match.overlapping` to a rectangle describing
+     * either `options.inside` or `options.overlapping` to a rectangle describing
      * the area in which the items either have to be fully or partly contained.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
-     * @option [match.recursive=true] {Boolean} whether to loop recursively
+     * @option [options.recursive=true] {Boolean} whether to loop recursively
      *     through all children, or stop at the current level
-     * @option match.match {Function} a match function to be called for each
+     * @option options.match {Function} a match function to be called for each
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
-     *     this function can also be passed instead of the `match` object
-     * @option match.class {Function} the constructor function of the item type
+     *     this function can also be passed instead of the `options` object
+     * @option options.class {Function} the constructor function of the item type
      *     to match against
-     * @option match.inside {Rectangle} the rectangle in which the items need to
+     * @option options.inside {Rectangle} the rectangle in which the items need to
      *     be fully contained
-     * @option match.overlapping {Rectangle} the rectangle with which the items
+     * @option options.overlapping {Rectangle} the rectangle with which the items
      *     need to at least partly overlap
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Item[]} the list of matching descendant items
-     * @see #matches(match)
+     * @see #matches(options)
      */
-    getItems: function(match) {
-        return Item._getItems(this, match, this._matrix);
+    getItems: function(options) {
+        return Item._getItems(this, options, this._matrix);
     },
 
     /**
@@ -2007,19 +2081,20 @@ new function() { // // Scope to inject various item event handlers
      * @return {Item} the first descendant item matching the given criteria
      * @see #getItems(match)
      */
-    getItem: function(match) {
-        return Item._getItems(this, match, this._matrix, null, true)[0] || null;
+    getItem: function(options) {
+        return Item._getItems(this, options, this._matrix, null, true)[0]
+                || null;
     },
 
     statics: {
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
-        _getItems: function _getItems(item, match, matrix, param, firstOnly) {
+        _getItems: function _getItems(item, options, matrix, param, firstOnly) {
             if (!param) {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
                 // inside / overlapping:
-                var obj = typeof match === 'object' && match,
+                var obj = typeof options === 'object' && options,
                     overlapping = obj && obj.overlapping,
                     inside = obj && obj.inside,
                     // If overlapping is set, we also perform the inside check:
@@ -2037,9 +2112,9 @@ new function() { // // Scope to inject various item event handlers
                     })
                 };
                 if (obj) {
-                    // Create a copy of the match object that doesn't contain
+                    // Create a copy of the options object that doesn't contain
                     // these special properties:
-                    match = Base.filter({}, match, {
+                    options = Base.filter({}, options, {
                         recursive: true, inside: true, overlapping: true
                     });
                 }
@@ -2067,13 +2142,13 @@ new function() { // // Scope to inject various item event handlers
                                 || param.path.intersects(child, childMatrix))))
                         add = false;
                 }
-                if (add && child.matches(match)) {
+                if (add && child.matches(options)) {
                     items.push(child);
                     if (firstOnly)
                         break;
                 }
                 if (param.recursive !== false) {
-                    _getItems(child, match, childMatrix, param, firstOnly);
+                    _getItems(child, options, childMatrix, param, firstOnly);
                 }
                 if (firstOnly && items.length > 0)
                     break;

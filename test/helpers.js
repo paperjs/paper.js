@@ -132,7 +132,8 @@ QUnit.jsDump.setParser('object', function (obj, stack) {
 var compareProperties = function(actual, expected, properties, message, options) {
     for (var i = 0, l = properties.length; i < l; i++) {
         var key = properties[i];
-        equals(actual[key], expected[key], message + '.' + key, options);
+        equals(actual[key], expected[key],
+                message + ' (#' + key + ')', options);
     }
 };
 
@@ -234,14 +235,14 @@ var compareItem = function(actual, expected, message, options, properties) {
     } else {
         if (options.cloned)
             QUnit.notStrictEqual(actual.id, expected.id,
-                    'not ' + message + '.id');
+                    message + ' (not #id)');
         QUnit.strictEqual(actual.constructor, expected.constructor,
-                message + '.constructor');
+                message + ' (#constructor)');
         // When item is cloned and has a name, the name will be versioned:
         equals(actual.name,
                 options.cloned && expected.name
                     ? expected.name + ' 1' : expected.name,
-                message + '.name');
+                message + ' (#name)');
         compareProperties(actual, expected, ['children', 'bounds', 'position',
                 'matrix', 'data', 'opacity', 'locked', 'visible', 'blendMode',
                 'selected', 'fullySelected', 'clipMask', 'guide'],
@@ -255,7 +256,7 @@ var compareItem = function(actual, expected, message, options, properties) {
         if (expected instanceof TextItem)
             styles.push('fontSize', 'font', 'leading', 'justification');
         compareProperties(actual.style, expected.style, styles,
-                message + '.style', options);
+                message + ' (#style)', options);
     }
 };
 
@@ -275,19 +276,19 @@ var comparators = {
         // expected element, and compare values even if they may be inherited.
         // This is to handle styling values on SVGElement items more flexibly.
         equals(actual && actual.tagName, expected.tagName,
-                (message || '') + '.tagName', options);
+                (message || '') + ' (#tagName)', options);
         for (var i = 0; i < expected.attributes.length; i++) {
             var attr = expected.attributes[i];
             if (attr.specified) {
                 equals(actual && actual.getAttribute(attr.name), attr.value,
-                        (message || '') + '.' + attr.name, options);
+                        (message || '') + ' (#' + attr.name + ')', options);
             }
         }
         for (var i = 0; i < actual && actual.attributes.length; i++) {
             var attr = actual.attributes[i];
             if (attr.specified) {
                 equals(attr.value, expected.getAttribute(attr.name)
-                        (message || '') + '.' + attr.name, options);
+                        (message || '') + ' #(' + attr.name + ')', options);
             }
         }
     },
@@ -304,7 +305,8 @@ var comparators = {
     },
 
     Array: function(actual, expected, message, options) {
-        QUnit.strictEqual(actual.length, expected.length, message + '.length');
+        QUnit.strictEqual(actual.length, expected.length, message
+                + ' (#length)');
         for (var i = 0, l = actual.length; i < l; i++) {
             equals(actual[i], expected[i], (message || '') + '[' + i + ']',
                 options);
@@ -312,15 +314,15 @@ var comparators = {
     },
 
     Point: function(actual, expected, message, options) {
-        comparators.Number(actual.x, expected.x, message + '.x', options);
-        comparators.Number(actual.y, expected.y, message + '.y', options);
+        comparators.Number(actual.x, expected.x, message + ' (#x)', options);
+        comparators.Number(actual.y, expected.y, message + ' (#y)', options);
     },
 
     Size: function(actual, expected, message, options) {
-        comparators.Number(actual.width, expected.width, message + '.width',
-                options);
-        comparators.Number(actual.height, expected.height, message + '.height',
-                options);
+        comparators.Number(actual.width, expected.width,
+                message + ' (#width)', options);
+        comparators.Number(actual.height, expected.height,
+                message + ' (#height)', options);
     },
 
     Rectangle: function(actual, expected, message, options) {
@@ -334,10 +336,10 @@ var comparators = {
 
     Color: function(actual, expected, message, options) {
         if (actual && expected) {
-            equals(actual.type, expected.type, message + '.type', options);
+            equals(actual.type, expected.type, message + ' (#type)', options);
             // NOTE: This also compares gradients, with identity checks and all.
             equals(actual.components, expected.components,
-                    message + '.components', options);
+                    message + ' (#components)', options);
         } else {
             QUnit.strictEqual(actual, expected, message);
         }
@@ -351,7 +353,7 @@ var comparators = {
     SegmentPoint: function(actual, expected, message, options) {
         comparators.Point(actual, expected, message, options);
         comparators.Boolean(actual.selected, expected.selected,
-                message + '.selected', options);
+                message + ' (#selected)', options);
     },
 
     Item: compareItem,
@@ -367,7 +369,7 @@ var comparators = {
         QUnit.push(sharedProject ? sameProject : !sameProject,
                 actual.project,
                 sharedProject ? expected.project : 'not ' + expected.project,
-                message + '.project');
+                message + ' (#project)');
     },
 
     Path: function(actual, expected, message, options) {
@@ -389,7 +391,7 @@ var comparators = {
             comparePixels(actual, expected, message, options);
         } else {
             equals(actual.toDataURL(), expected.toDataURL(),
-                    message + '.toDataUrl()');
+                    message + ' (#toDataUrl())');
         }
     },
 
@@ -414,8 +416,8 @@ var comparators = {
     },
 
     SymbolDefinition: function(actual, expected, message, options) {
-        equals(actual.definition, expected.definition, message + '.definition',
-                options);
+        equals(actual.definition, expected.definition,
+                message + ' (#definition)', options);
     },
 
     Project: function(actual, expected, message, options) {

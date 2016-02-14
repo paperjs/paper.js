@@ -1548,7 +1548,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
-    _hitTestSelf: function(point, options) {
+    _hitTestSelf: function(point, options, strokeMatrix) {
         var that = this,
             style = this.getStyle(),
             segments = this._segments,
@@ -1579,7 +1579,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // #strokeScaling into account through _getStrokeMatrix().
                 strokePadding = tolerancePadding.add(
                     Path._getStrokePadding(strokeRadius,
-                        !style.getStrokeScaling() && options._strokeMatrix));
+                        !style.getStrokeScaling() && strokeMatrix));
             } else {
                 join = cap = 'round';
             }

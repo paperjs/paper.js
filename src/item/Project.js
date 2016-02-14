@@ -330,57 +330,6 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
-     * Perform a hit-test on the items contained within the project at the
-     * location of the specified point.
-     *
-     * The options object allows you to control the specifics of the hit-test
-     * and may contain a combination of the following values:
-     *
-     * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
-     *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item class
-     *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
-     *     Shape, Raster, SymbolItem, PointText, ...}
-     * @option [options.fill=true] {Boolean} hit-test the fill of items
-     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
-     *     items, taking into account the setting of stroke color and width
-     * @option [options.segments=true] {Boolean} hit-test for {@link
-     *     Segment#point} of {@link Path} items
-     * @option options.curves {Boolean} hit-test the curves of path items,
-     *     without taking the stroke color or width into account
-     * @option options.handles {Boolean} hit-test for the handles ({@link
-     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
-     * @option options.ends {Boolean} only hit-test for the first or last
-     *     segment points of open path items
-     * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     *     the bounding rectangle of items ({@link Item#bounds})
-     * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
-     *     the bounding rectangle of items ({@link Item#bounds})
-     * @option options.guides {Boolean} hit-test items that have {@link
-     *     Item#guide} set to `true`
-     * @option options.selected {Boolean} only hit selected items
-     *
-     * @param {Point} point the point where the hit-test should be performed
-     * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     *     tolerance: settings.hitTolerance }]
-     * @return {HitResult} a hit result object that contains more information
-     *     about what exactly was hit or `null` if nothing was hit
-     */
-    hitTest: function(/* point, options */) {
-        // We don't need to do this here, but it speeds up things since we won't
-        // repeatedly convert in Item#hitTest() then.
-        var point = Point.read(arguments),
-            options = HitResult.getOptions(Base.read(arguments)),
-            children = this._children;
-        // Loop backwards, so layers that get drawn last are tested first
-        for (var i = children.length - 1; i >= 0; i--) {
-            var res = children[i]._hitTest(point, options);
-            if (res) return res;
-        }
-        return null;
-    },
-
-    /**
      * {@grouptitle Hierarchy Operations}
      *
      * Adds the specified layer at the end of the this project's {@link #layers}
@@ -436,7 +385,72 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     },
 
     /**
-     * {@grouptitle Fetching and matching items}
+     * {@grouptitle Hit-testing, Fetching and Matching Items}
+     *
+     * Performs a hit-test on the items contained within the project at the
+     * location of the specified point.
+     *
+     * The options object allows you to control the specifics of the hit-test
+     * and may contain a combination of the following values:
+     *
+     * @name Project#hitTest
+     * @function
+     *
+     * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
+     *     {Number} the tolerance of the hit-test
+     * @option options.class {Function} only hit-test again a certain item
+     *     class and its sub-classes: {@values Group, Layer, Path,
+     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.match {Function} a match function to be called for each
+     *     found hit result: Return `true` to return the result, `false` to keep
+     *     searching
+     * @option [options.fill=true] {Boolean} hit-test the fill of items
+     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
+     *     items, taking into account the setting of stroke color and width
+     * @option [options.segments=true] {Boolean} hit-test for {@link
+     *     Segment#point} of {@link Path} items
+     * @option options.curves {Boolean} hit-test the curves of path items,
+     *     without taking the stroke color or width into account
+     * @option options.handles {Boolean} hit-test for the handles ({@link
+     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
+     * @option options.ends {Boolean} only hit-test for the first or last
+     *     segment points of open path items
+     * @option options.bounds {Boolean} hit-test the corners and side-centers of
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.guides {Boolean} hit-test items that have {@link
+     *     Item#guide} set to `true`
+     * @option options.selected {Boolean} only hit selected items
+     *
+     * @param {Point} point the point where the hit-test should be performed
+     * @param {Object} [options={ fill: true, stroke: true, segments: true,
+     *     tolerance: settings.hitTolerance }]
+     * @return {HitResult} a hit result object that contains more information
+     *     about what exactly was hit or `null` if nothing was hit
+     */
+    // NOTE: Implementation is in Item#hitTest()
+
+    /**
+     * Performs a hit-test on the item and its children (if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point,
+     * returning all found hits.
+     *
+     * The options object allows you to control the specifics of the hit-
+     * test. See {@link #hitTest(point[, options])} for a list of all options.
+     *
+     * @name Item#hitTestAll
+     * @function
+     * @param {Point} point the point where the hit-test should be performed
+     * @param {Object} [options={ fill: true, stroke: true, segments: true,
+     *     tolerance: settings.hitTolerance }]
+     * @return {HitResult[]} hit result objects for all hits, describing what
+     *     exactly was hit or `null` if nothing was hit
+     * @see #hitTest(point[, options]);
+     */
+    // NOTE: Implementation is in Item#hitTestAll()
+
+    /**
      *
      * Fetch items contained within the project whose properties match the
      * criteria in the specified object.
@@ -448,21 +462,27 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either `match.inside` or `match.overlapping` to a rectangle describing
-     * the area in which the items either have to be fully or partly contained.
+     * either `options.inside` or `options.overlapping` to a rectangle
+     * describing the area in which the items either have to be fully or partly
+     * contained.
      *
-     * @option [match.recursive=true] {Boolean} whether to loop recursively
+     * @option [options.recursive=true] {Boolean} whether to loop recursively
      *     through all children, or stop at the current level
-     * @option match.match {Function} a match function to be called for each
+     * @option options.match {Function} a match function to be called for each
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
      *     this function can also be passed instead of the `match` object
-     * @option match.class {Function} the constructor function of the item type
-     *     to match against
-     * @option match.inside {Rectangle} the rectangle in which the items need to
-     *     be fully contained
-     * @option match.overlapping {Rectangle} the rectangle with which the items
-     *     need to at least partly overlap
+     * @option options.class {Function} the constructor function of the item
+     *     type to match against
+     * @option options.inside {Rectangle} the rectangle in which the items need
+     *     to be fully contained
+     * @option options.overlapping {Rectangle} the rectangle with which the
+     *     items need to at least partly overlap
+     *
+     * @see Item#matches(options)
+     * @see Item#getItems(options)
+     * @param {Object|Function} options the criteria to match against
+     * @return {Item[]} the list of matching items contained in the project
      *
      * @example {@paperscript} // Fetch all selected path items:
      * var path1 = new Path.Circle({
@@ -666,14 +686,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * for (var i = 0; i < items.length; i++) {
      *  items[i].fillColor = 'red';
      * }
-     *
-     * @see Item#matches(match)
-     * @see Item#getItems(match)
-     * @param {Object|Function} match the criteria to match against
-     * @return {Item[]} the list of matching items contained in the project
      */
-    getItems: function(match) {
-        return Item._getItems(this, match);
+    getItems: function(options) {
+        return Item._getItems(this, options);
     },
 
     /**
@@ -684,13 +699,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * of the full object, not partial matching (e.g. only providing the x-
      * coordinate to match all points with that x-value). Partial matching
      * does work for {@link Item#data}.
-     * See {@link #getItems(match)} for a selection of illustrated examples.
      *
-     * @param {Object|Function} match the criteria to match against
+     * See {@link #getItems(options)} for a selection of illustrated examples.
+     *
+     * @param {Object|Function} options the criteria to match against
      * @return {Item} the first item in the project matching the given criteria
      */
-    getItem: function(match) {
-        return Item._getItems(this, match, null, null, true)[0] || null;
+    getItem: function(options) {
+        return Item._getItems(this, options, null, null, true)[0] || null;
     },
 
     /**

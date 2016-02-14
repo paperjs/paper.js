@@ -727,5 +727,111 @@ test('hit-testing clipped items', function() {
     }, true);
 });
 
+test('hit-testing with a match function', function() {
+    var point = new Point(100, 100),
+        red = new Color('red'),
+        green = new Color('green'),
+        blue = new Color('blue');
+    var c1 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: red
+    });
+    var c2 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: green
+    });
+    var c3 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: blue
+    });
+
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == red;
+            }
+        });
+        return result && result.item === c1;
+    }, true);
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == green;
+            }
+        });
+        return result && result.item === c2;
+    }, true);
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == blue;
+            }
+        });
+        return result && result.item === c3;
+    }, true);
+});
+
+test('hit-testing for all items', function() {
+    var c1 = new Path.Circle({
+        center: [100, 100],
+        radius: 40,
+        fillColor: 'red'
+    });
+    var c2 = new Path.Circle({
+        center: [120, 120],
+        radius: 40,
+        fillColor: 'green'
+    });
+    var c3 = new Path.Circle({
+        center: [140, 140],
+        radius: 40,
+        fillColor: 'blue'
+    });
+
+    equals(function() {
+        var result = paper.project.hitTestAll([60, 60]);
+        return result.length === 0;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([80, 80]);
+        return result.length === 1 && result[0].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([100, 100]);
+        return result.length === 2 && result[0].item === c2
+                && result[1].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([120, 120]);
+        return result.length === 3 && result[0].item === c3
+                && result[1].item === c2
+                && result[2].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([140, 140]);
+        return result.length === 2 && result[0].item === c3
+                && result[1].item === c2;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([160, 160]);
+        return result.length === 1 && result[0].item === c3;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([180, 180]);
+        return result.length === 0;
+    }, true);
+});
 // TODO: project.hitTest(point, {type: AnItemType});
 

@@ -106,7 +106,8 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          *
          * @private
          */
-        getOptions: function(options) {
+        getOptions: function(args) {
+            var options = args && Base.read(args);
             return Base.set({
                 // Type of item, for instanceof check: Group, Layer, Path,
                 // CompoundPath, Shape, Raster, SymbolItem, ...

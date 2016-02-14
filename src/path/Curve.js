@@ -1250,7 +1250,7 @@ statics: /** @lends Curve */{
      * @return {Number} the curvature of the curve at the given location
      */
 },
-new function() { // // Scope to inject various curve evaluation methods
+new function() { // Injection scope for various curve evaluation methods
     var methods = ['getPoint', 'getTangent', 'getNormal', 'getWeightedTangent',
         'getWeightedNormal', 'getCurvature'];
     return Base.each(methods,
