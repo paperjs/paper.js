@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 01:45:16 2016 +0100
+ * Date: Sun Feb 14 10:44:41 2016 +0100
  *
  ***
  *
@@ -3171,13 +3171,19 @@ new function() {
 	setBounds: function() {
 		var rect = Rectangle.read(arguments),
 			bounds = this.getBounds(),
+			_matrix = this._matrix,
 			matrix = new Matrix(),
 			center = rect.getCenter();
 		matrix.translate(center);
 		if (rect.width != bounds.width || rect.height != bounds.height) {
+			if (!_matrix.isInvertible()) {
+				_matrix.initialize(_matrix._backup
+						|| new Matrix().translate(_matrix.getTranslation()));
+				bounds = this.getBounds();
+			}
 			matrix.scale(
-					bounds.width !== 0 ? rect.width / bounds.width : 1,
-					bounds.height !== 0 ? rect.height / bounds.height : 1);
+					bounds.width !== 0 ? rect.width / bounds.width : 0,
+					bounds.height !== 0 ? rect.height / bounds.height : 0);
 		}
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
@@ -4042,8 +4048,11 @@ new function() {
 						|| _applyMatrix && _applyRecursively && this._children);
 		if (!matrix && !applyMatrix)
 			return this;
-		if (matrix)
+		if (matrix) {
+			if (!matrix.isInvertible() && _matrix.isInvertible())
+				_matrix._backup = _matrix.getValues();
 			_matrix.prepend(matrix);
+		}
 		if (applyMatrix = applyMatrix && this._transformContent(_matrix,
 					_applyRecursively, _setApplyMatrix)) {
 			var pivot = this._pivot,
