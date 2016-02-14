@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 12:39:35 2016 +0100
+ * Date: Sun Feb 14 13:33:56 2016 +0100
  *
  ***
  *
@@ -3558,12 +3558,13 @@ new function() {
 		return results;
 	}
 
-	function hitTestChildren(point, options, _exclude) {
+	function hitTestChildren(point, options, viewMatrix, _exclude) {
 		var children = this._children;
 		if (children) {
 			for (var i = children.length - 1; i >= 0; i--) {
 				var child = children[i];
-				var res = child !== _exclude && child._hitTest(point, options);
+				var res = child !== _exclude && child._hitTest(point, options,
+						viewMatrix);
 				if (res)
 					return res;
 			}
@@ -3584,14 +3585,13 @@ new function() {
 	};
 }, {
 
-	_hitTest: function(point, options) {
+	_hitTest: function(point, options, parentViewMatrix) {
 		if (this._locked || !this._visible || this._guide && !options.guides
 				|| this.isEmpty()) {
 			return null;
 		}
 
 		var matrix = this._matrix,
-			parentViewMatrix = options._viewMatrix,
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
 					: this.getGlobalMatrix().prepend(this.getView()._matrix),
@@ -3644,12 +3644,11 @@ new function() {
 		}
 
 		if (!res) {
-			options._viewMatrix = viewMatrix;
-			res = this._hitTestChildren(point, options)
+			res = this._hitTestChildren(point, options, viewMatrix)
 				|| checkSelf
-					&& match(this._hitTestSelf(point, options, strokeMatrix))
+					&& match(this._hitTestSelf(point, options, viewMatrix,
+						strokeMatrix))
 				|| null;
-			options._viewMatrix = parentViewMatrix;
 		}
 		if (res && res.point) {
 			res.point = matrix.transform(res.point);
@@ -4412,10 +4411,11 @@ var Group = Item.extend({
 			: _getBounds.base.call(this, matrix, options);
 	},
 
-	_hitTestChildren: function _hitTestChildren(point, options) {
+	_hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
 		var clipItem = this._getClipItem();
 		return (!clipItem || clipItem.contains(point))
-				&& _hitTestChildren.base.call(this, point, options, clipItem);
+				&& _hitTestChildren.base.call(this, point, options, viewMatrix,
+					clipItem);
 	},
 
 	_draw: function(ctx, param) {
@@ -4457,7 +4457,6 @@ var Layer = Group.extend({
 	},
 
 	_hitTestSelf: function() {
-		return null;
 	}
 });
 
@@ -4709,7 +4708,8 @@ new function() {
 			}
 		},
 
-		_hitTestSelf: function _hitTestSelf(point, options, strokeMatrix) {
+		_hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
+				strokeMatrix) {
 			var hit = false,
 				style = this._style;
 			if (options.stroke && style.hasStroke()) {
@@ -5204,8 +5204,8 @@ var SymbolItem = Item.extend({
 				options);
 	},
 
-	_hitTestSelf: function(point, options, strokeMatrix) {
-		var res = this._definition._item._hitTest(point, options, strokeMatrix);
+	_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+		var res = this._definition._item._hitTest(point, options, viewMatrix);
 		if (res)
 			res.item = this;
 		return res;
@@ -8176,7 +8176,7 @@ var Path = PathItem.extend({
 
 	toPath: '#clone',
 
-	_hitTestSelf: function(point, options, strokeMatrix) {
+	_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
 		var that = this,
 			style = this.getStyle(),
 			segments = this._segments,
@@ -9186,10 +9186,11 @@ var CompoundPath = PathItem.extend({
 		return paths.join(' ');
 	}
 }, {
-	_hitTestChildren: function _hitTestChildren(point, options) {
+	_hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
 		return _hitTestChildren.base.call(this, point,
 				options.class === Path || options.type === 'path' ? options
-					: Base.set({}, options, { fill: false }));
+					: Base.set({}, options, { fill: false }),
+				viewMatrix);
 	},
 
 	_draw: function(ctx, param, strokeMatrix) {
