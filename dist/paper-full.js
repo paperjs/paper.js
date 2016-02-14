@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 23:22:39 2016 +0100
+ * Date: Mon Feb 15 00:13:38 2016 +0100
  *
  ***
  *
@@ -3143,31 +3143,6 @@ new function() {
 				: bounds;
 	},
 
-	_getBounds: function(matrix, options) {
-		var children = this._children;
-		if (!children || children.length === 0)
-			return new Rectangle();
-		Item._updateBoundsCache(this, options.cacheItem);
-		var x1 = Infinity,
-			x2 = -x1,
-			y1 = x1,
-			y2 = x2;
-		for (var i = 0, l = children.length; i < l; i++) {
-			var child = children[i];
-			if (child._visible && !child.isEmpty()) {
-				var rect = child._getCachedBounds(
-					matrix && matrix.appended(child._matrix), options);
-				x1 = Math.min(rect.x, x1);
-				y1 = Math.min(rect.y, y1);
-				x2 = Math.max(rect.x + rect.width, x2);
-				y2 = Math.max(rect.y + rect.height, y2);
-			}
-		}
-		return isFinite(x1)
-				? new Rectangle(x1, y1, x2 - x1, y2 - y1)
-				: new Rectangle();
-	},
-
 	setBounds: function() {
 		var rect = Rectangle.read(arguments),
 			bounds = this.getBounds(),
@@ -3188,6 +3163,14 @@ new function() {
 		center = bounds.getCenter();
 		matrix.translate(-center.x, -center.y);
 		this.transform(matrix);
+	},
+
+	_getBounds: function(matrix, options) {
+		var children = this._children;
+		if (!children || children.length === 0)
+			return new Rectangle();
+		Item._updateBoundsCache(this, options.cacheItem);
+		return Item._getBounds(children, matrix, options);
 	},
 
 	_getCachedBounds: function(matrix, options) {
@@ -3248,6 +3231,28 @@ new function() {
 					}
 				}
 			}
+		},
+
+		_getBounds: function(items, matrix, options) {
+			var x1 = Infinity,
+				x2 = -x1,
+				y1 = x1,
+				y2 = x2;
+			options = options || {};
+			for (var i = 0, l = items.length; i < l; i++) {
+				var item = items[i];
+				if (item._visible && !item.isEmpty()) {
+					var rect = item._getCachedBounds(
+						matrix && matrix.appended(item._matrix), options);
+					x1 = Math.min(rect.x, x1);
+					y1 = Math.min(rect.y, y1);
+					x2 = Math.max(rect.x + rect.width, x2);
+					y2 = Math.max(rect.y + rect.height, y2);
+				}
+			}
+			return isFinite(x1)
+					? new Rectangle(x1, y1, x2 - x1, y2 - y1)
+					: new Rectangle();
 		}
 	}
 
@@ -13140,7 +13145,7 @@ new function() {
 					var clip = SvgElement.create('clipPath');
 					clip.appendChild(childNode);
 					setDefinition(child, clip, 'clip');
-					 SvgElement.set(node, {
+					SvgElement.set(node, {
 						'clip-path': 'url(#' + clip.id + ')'
 					});
 				} else {
@@ -13368,7 +13373,7 @@ new function() {
 		if (!item._visible)
 			attrs.visibility = 'hidden';
 
-		return  SvgElement.set(node, attrs, formatter);
+		return SvgElement.set(node, attrs, formatter);
 	}
 
 	var definitions;
@@ -13442,23 +13447,35 @@ new function() {
 			options = setOptions(options);
 			var children = this._children,
 				view = this.getView(),
-				size = view.getViewSize(),
-				node = SvgElement.create('svg', {
-					x: 0,
-					y: 0,
-					width: size.width,
-					height: size.height,
+				bounds = Base.pick(options.bounds, 'view'),
+				matrix = Matrix.read(
+						[options.matrix || bounds === 'view' && view._matrix],
+						0, { readNull: true }),
+				rect = bounds === 'view'
+					? new Rectangle([0, 0], view.getViewSize())
+					: bounds === 'content'
+						? Item._getBounds(children, matrix, { stroke: true })
+						: Rectangle.read([bounds], 0, { readNull: true });
+				attrs = {
 					version: '1.1',
-					xmlns:  SvgElement.svg,
-					'xmlns:xlink':  SvgElement.xlink
-				}, formatter),
-				parent = node,
-				matrix = view._matrix;
-			if (!matrix.isIdentity())
+					xmlns: SvgElement.svg,
+					'xmlns:xlink': SvgElement.xlink,
+				};
+			if (rect) {
+				attrs.width = rect.width;
+				attrs.height = rect.height;
+				if (rect.x || rect.y)
+					attrs.viewBox = formatter.rectangle(rect);
+			}
+			var node = SvgElement.create('svg', attrs, formatter),
+				parent = node;
+			if (matrix && !matrix.isIdentity()) {
 				parent = node.appendChild(SvgElement.create('g',
 						getTransform(matrix), formatter));
-			for (var i = 0, l = children.length; i < l; i++)
+			}
+			for (var i = 0, l = children.length; i < l; i++) {
 				parent.appendChild(exportSVG(children[i], options, true));
+			}
 			return exportDefinitions(node, options);
 		}
 	});
