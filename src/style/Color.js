@@ -631,7 +631,7 @@ var Color = Base.extend(new function() {
         _serialize: function(options, dictionary) {
             var components = this.getComponents();
             return Base.serialize(
-                    // We can ommit the type for gray and rgb:
+                    // We can omit the type for gray and rgb:
                     /^(gray|rgb)$/.test(this._type)
                         ? components
                         : [this._type].concat(components),
