@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 15:12:52 2016 +0100
+ * Date: Sun Feb 14 17:16:40 2016 +0100
  *
  ***
  *
@@ -265,6 +265,10 @@ Base.inject({
 		return this._class || '';
 	},
 
+	importJSON: function(json) {
+		return Base.importJSON(json, this);
+	},
+
 	exportJSON: function(options) {
 		return Base.exportJSON(this, options);
 	},
@@ -423,9 +427,9 @@ Base.inject({
 		serialize: function(obj, options, compact, dictionary) {
 			options = options || {};
 
-			var root = !dictionary,
+			var isRoot = !dictionary,
 				res;
-			if (root) {
+			if (isRoot) {
 				options.formatter = new Formatter(options.precision);
 				dictionary = {
 					length: 0,
@@ -450,15 +454,15 @@ Base.inject({
 			if (obj && obj._serialize) {
 				res = obj._serialize(options, dictionary);
 				var name = obj._class;
-				if (name && !compact && !res._compact && res[0] !== name)
+				if (name && !obj._compactSerialize && (isRoot || !compact)
+						&& res[0] !== name) {
 					res.unshift(name);
+				}
 			} else if (Array.isArray(obj)) {
 				res = [];
 				for (var i = 0, l = obj.length; i < l; i++)
 					res[i] = Base.serialize(obj[i], options, compact,
 							dictionary);
-				if (compact)
-					res._compact = true;
 			} else if (Base.isPlainObject(obj)) {
 				res = {};
 				var keys = Object.keys(obj);
@@ -472,31 +476,33 @@ Base.inject({
 			} else {
 				res = obj;
 			}
-			return root && dictionary.length > 0
+			return isRoot && dictionary.length > 0
 					? [['dictionary', dictionary.definitions], res]
 					: res;
 		},
 
-		deserialize: function(json, create, _data, _isDictionary) {
+		deserialize: function(json, create, _data, _setDictionary, _isRoot) {
 			var res = json,
-				isRoot = !_data;
+				isFirst = !_data,
+				hasDictionary = isFirst && json && json.length
+					&& json[0][0] === 'dictionary';
 			_data = _data || {};
 			if (Array.isArray(json)) {
 				var type = json[0],
 					isDictionary = type === 'dictionary';
-				if (json.length == 1 && /^#/.test(type))
+				if (json.length == 1 && /^#/.test(type)) {
 					return _data.dictionary[type];
+				}
 				type = Base.exports[type];
 				res = [];
-				if (_isDictionary)
-					_data.dictionary = res;
-				for (var i = type ? 1 : 0, l = json.length; i < l; i++)
+				for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
 					res.push(Base.deserialize(json[i], create, _data,
-							isDictionary));
+							isDictionary, hasDictionary));
+				}
 				if (type) {
 					var args = res;
 					if (create) {
-						res = create(type, args, isRoot);
+						res = create(type, args, isFirst || _isRoot);
 					} else {
 						res = Base.create(type.prototype);
 						type.apply(res, args);
@@ -504,14 +510,12 @@ Base.inject({
 				}
 			} else if (Base.isPlainObject(json)) {
 				res = {};
-				if (_isDictionary)
+				if (_setDictionary)
 					_data.dictionary = res;
 				for (var key in json)
 					res[key] = Base.deserialize(json[key], create, _data);
 			}
-			return isRoot && json && json.length && json[0][0] === 'dictionary'
-					? res[1]
-					: res;
+			return hasDictionary ? res[1] : res;
 		},
 
 		exportJSON: function(obj, options) {
@@ -529,7 +533,8 @@ Base.inject({
 								&& target.constructor === ctor,
 							obj = useTarget ? target
 								: Base.create(ctor.prototype),
-							init = useTarget ? obj._initialize || obj._set
+							init = useTarget
+								? obj._initialize || obj.initialize || obj._set
 								: ctor;
 						if (args.length === 1 && obj instanceof Item
 								&& (useTarget || !(obj instanceof Layer))) {
@@ -2552,6 +2557,7 @@ var Project = PaperScopeItem.extend({
 	_class: 'Project',
 	_list: 'projects',
 	_reference: 'project',
+	_compactSerialize: true,
 
 	initialize: function Project(element) {
 		PaperScopeItem.call(this, true);
