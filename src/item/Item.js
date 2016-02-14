@@ -864,6 +864,7 @@ new function() { // // Scope to inject various item event handlers
     setBounds: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             bounds = this.getBounds(),
+            _matrix = this._matrix,
             matrix = new Matrix(),
             center = rect.getCenter();
         // Read this from bottom to top:
@@ -871,9 +872,17 @@ new function() { // // Scope to inject various item event handlers
         matrix.translate(center);
         // Scale to new Size, if size changes and avoid divisions by 0:
         if (rect.width != bounds.width || rect.height != bounds.height) {
+            // If a previous transformation resulted in a non-invertible matrix,
+            // Restore to the last revertible matrix stored in _backup, and get
+            // the bounds again. That way, we can prevent collapsing to 0-size.
+            if (!_matrix.isInvertible()) {
+                _matrix.initialize(_matrix._backup
+                        || new Matrix().translate(_matrix.getTranslation()));
+                bounds = this.getBounds();
+            }
             matrix.scale(
-                    bounds.width !== 0 ? rect.width / bounds.width : 1,
-                    bounds.height !== 0 ? rect.height / bounds.height : 1);
+                    bounds.width !== 0 ? rect.width / bounds.width : 0,
+                    bounds.height !== 0 ? rect.height / bounds.height : 0);
         }
         // Translate to bounds center:
         center = bounds.getCenter();
@@ -3198,8 +3207,13 @@ new function() { // // Scope to inject various item event handlers
         if (!matrix && !applyMatrix)
             return this;
         // Simply prepend the internal matrix with the passed one:
-        if (matrix)
+        if (matrix) {
+            // Keep a backup of the last valid state before the matrix becomes
+            // non-invertible. This is then used again in setBounds to restore.
+            if (!matrix.isInvertible() && _matrix.isInvertible())
+                _matrix._backup = _matrix.getValues();
             _matrix.prepend(matrix);
+        }
         // Call #_transformContent() now, if we need to directly apply the
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, SymbolItem, since
