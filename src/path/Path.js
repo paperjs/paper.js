@@ -2323,7 +2323,8 @@ new function() { // PostScript-style drawing commands
                 var radius = Size.read(arguments);
                 // If rx = 0 or ry = 0 then this arc is treated as a
                 // straight line joining the endpoints.
-                if (radius.isZero())
+                if (Numerical.isZero(radius.width)
+                    || Numerical.isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
                 // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
