@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 14:15:17 2016 +0100
+ * Date: Sun Feb 14 14:52:37 2016 +0100
  *
  ***
  *
@@ -12637,22 +12637,31 @@ var Tool = PaperScopeItem.extend({
 });
 
 var Http = {
-	request: function(method, url, callback, async) {
-		async = (async === undefined) ? true : async;
+	request: function(options) {
 		var ctor = window.ActiveXObject || window.XMLHttpRequest,
 			xhr = new ctor('Microsoft.XMLHTTP');
-		xhr.open(method.toUpperCase(), url, async);
+		xhr.open((options.method || 'get').toUpperCase(), options.url,
+				Base.pick(options.async, true));
 		if ('overrideMimeType' in xhr)
 			xhr.overrideMimeType('text/plain');
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4) {
-				var status = xhr.status;
-				if (status === 0 || status === 200) {
-					callback.call(xhr, xhr.responseText);
-				} else {
-					throw new Error('Could not load ' + url + ' (Error '
-							+ status + ')');
+		xhr.onload = function() {
+			var status = xhr.status;
+			if (status === 0 || status === 200) {
+				if (options.onLoad) {
+					options.onLoad.call(xhr, xhr.responseText);
 				}
+			} else {
+				xhr.onerror();
+			}
+		};
+		xhr.onerror = function() {
+			var status = xhr.status,
+				message = 'Could not load "' + options.url + '" (Status: '
+						+ status + ')';
+			if (options.onError) {
+				options.onError(message, status);
+			} else {
+				throw new Error(message);
 			}
 		};
 		return xhr.send(null);
@@ -13880,7 +13889,7 @@ new function() {
 		return item;
 	}
 
-	function importSVG(source, options, isRoot) {
+	function importSVG(source, options) {
 		if (!source)
 			return null;
 		options = typeof options === 'function' ? { onLoad: options }
@@ -13888,49 +13897,63 @@ new function() {
 		var node = source,
 			scope = paper;
 
-		function onLoadCallback(svg) {
+		function onLoad(svg) {
 			paper = scope;
-			var item = importSVG(svg, options, isRoot),
+			var item = importSVG(svg, options, true),
 				onLoad = options.onLoad;
 			if (onLoad)
 				onLoad.call(this, item, svg);
 		}
 
-		if (isRoot) {
-			if (typeof source === 'string' && !/^.*</.test(source)) {
-				node = document.getElementById(source);
-				if (node) {
-					source = null;
-				} else {
-					return Http.request('get', source, onLoadCallback);
-				}
-			} else if (typeof File !== 'undefined' && source instanceof File) {
-				var reader = new FileReader();
-				reader.onload = function() {
-					onLoadCallback(reader.result);
-				};
-				return reader.readAsText(source);
+		function onError(message, status) {
+			var onError = options.onError;
+			if (onError) {
+				onError.call(this, message, status);
+			} else {
+				throw new Error(message);
 			}
 		}
+
+		if (typeof source === 'string' && !/^.*</.test(source)) {
+			node = document.getElementById(source);
+			if (node) {
+				source = null;
+			} else {
+				Http.request({
+					url: source, async: true,
+					onLoad: onLoad, onError: onError
+				});
+			}
+		} else if (typeof File !== 'undefined' && source instanceof File) {
+			var reader = new FileReader();
+			reader.onload = function() {
+				onLoad(reader.result);
+			};
+			reader.onerror = function() {
+				onError(reader.error);
+			};
+			return reader.readAsText(source);
+		}
+
 		if (typeof source === 'string') {
 			node = new window.DOMParser().parseFromString(source,
 					'image/svg+xml');
 		}
 		if (!node.nodeName)
 			throw new Error('Unsupported SVG source: ' + source);
-		return importNode(node, options, isRoot);
+		return importNode(node, options, true);
 	}
 
 	Item.inject({
 		importSVG: function(node, options) {
-			return this.addChild(importSVG(node, options, true));
+			return this.addChild(importSVG(node, options));
 		}
 	});
 
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, options, true);
+			return importSVG(node, options);
 		}
 	});
 };
