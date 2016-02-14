@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 14:11:52 2016 +0100
+ * Date: Sun Feb 14 14:15:17 2016 +0100
  *
  ***
  *
@@ -8587,9 +8587,9 @@ new function() {
 				through = to;
 				to = Point.read(arguments);
 			} else {
-				var radius = Size.read(arguments);
-				if (Numerical.isZero(radius.width)
-					|| Numerical.isZero(radius.height))
+				var radius = Size.read(arguments),
+					isZero = Numerical.isZero;
+				if (isZero(radius.width) || isZero(radius.height))
 					return this.lineTo(to);
 				var rotation = Base.read(arguments),
 					clockwise = !!Base.read(arguments),
