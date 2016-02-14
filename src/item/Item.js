@@ -21,7 +21,7 @@
  * that they inherit from Item.
  */
 var Item = Base.extend(Emitter, /** @lends Item# */{
-    statics: {
+    statics: /** @lends Item */{
         /**
          * Override Item.extend() to merge the subclass' _serializeFields with
          * the parent class' _serializeFields.
@@ -824,45 +824,6 @@ new function() { // Injection scope for various item event handlers
                 : bounds;
     },
 
-    /**
-     * Protected method used in all the bounds getters. It loops through all the
-     * children, gets their bounds and finds the bounds around all of them.
-     * Subclasses override it to define calculations for the various required
-     * bounding types.
-     */
-    _getBounds: function(matrix, options) {
-        // NOTE: We cannot cache these results here, since we do not get
-        // _changed() notifications here for changing geometry in children.
-        // But cacheName is used in sub-classes such as SymbolItem and Raster.
-        var children = this._children;
-        // TODO: What to return if nothing is defined, e.g. empty Groups?
-        // Scriptographer behaves weirdly then too.
-        if (!children || children.length === 0)
-            return new Rectangle();
-        // Call _updateBoundsCache() even when the group only holds empty /
-        // invisible items), so future changes in these items will cause right
-        // handling of _boundsCache.
-        Item._updateBoundsCache(this, options.cacheItem);
-        var x1 = Infinity,
-            x2 = -x1,
-            y1 = x1,
-            y2 = x2;
-        for (var i = 0, l = children.length; i < l; i++) {
-            var child = children[i];
-            if (child._visible && !child.isEmpty()) {
-                var rect = child._getCachedBounds(
-                    matrix && matrix.appended(child._matrix), options);
-                x1 = Math.min(rect.x, x1);
-                y1 = Math.min(rect.y, y1);
-                x2 = Math.max(rect.x + rect.width, x2);
-                y2 = Math.max(rect.y + rect.height, y2);
-            }
-        }
-        return isFinite(x1)
-                ? new Rectangle(x1, y1, x2 - x1, y2 - y1)
-                : new Rectangle();
-    },
-
     setBounds: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             bounds = this.getBounds(),
@@ -891,6 +852,28 @@ new function() { // Injection scope for various item event handlers
         matrix.translate(-center.x, -center.y);
         // Now execute the transformation
         this.transform(matrix);
+    },
+
+    /**
+     * Protected method used in all the bounds getters. It loops through all the
+     * children, gets their bounds and finds the bounds around all of them.
+     * Subclasses override it to define calculations for the various required
+     * bounding types.
+     */
+    _getBounds: function(matrix, options) {
+        // NOTE: We cannot cache these results here, since we do not get
+        // _changed() notifications here for changing geometry in children.
+        // But cacheName is used in sub-classes such as SymbolItem and Raster.
+        var children = this._children;
+        // TODO: What to return if nothing is defined, e.g. empty Groups?
+        // Scriptographer behaves weirdly then too.
+        if (!children || children.length === 0)
+            return new Rectangle();
+        // Call _updateBoundsCache() even when the group only holds empty /
+        // invisible items), so future changes in these items will cause right
+        // handling of _boundsCache.
+        Item._updateBoundsCache(this, options.cacheItem);
+        return Item._getBounds(children, matrix, options);
     },
 
     /**
@@ -943,7 +926,7 @@ new function() { // Injection scope for various item event handlers
                 ? this : this._parent).getViewMatrix().invert()._shiftless();
     },
 
-    statics: {
+    statics: /** @lends Item */{
         /**
          * Set up a boundsCache structure that keeps track of items that keep
          * cached bounds that depend on this item. We store this in the parent,
@@ -996,6 +979,31 @@ new function() { // Injection scope for various item event handlers
                     }
                 }
             }
+        },
+
+        /**
+         * Gets the combined bounds of all specified items.
+         */
+        _getBounds: function(items, matrix, options) {
+            var x1 = Infinity,
+                x2 = -x1,
+                y1 = x1,
+                y2 = x2;
+            options = options || {};
+            for (var i = 0, l = items.length; i < l; i++) {
+                var item = items[i];
+                if (item._visible && !item.isEmpty()) {
+                    var rect = item._getCachedBounds(
+                        matrix && matrix.appended(item._matrix), options);
+                    x1 = Math.min(rect.x, x1);
+                    y1 = Math.min(rect.y, y1);
+                    x2 = Math.max(rect.x + rect.width, x2);
+                    y2 = Math.max(rect.y + rect.height, y2);
+                }
+            }
+            return isFinite(x1)
+                    ? new Rectangle(x1, y1, x2 - x1, y2 - y1)
+                    : new Rectangle();
         }
     }
 
@@ -2085,7 +2093,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 || null;
     },
 
-    statics: {
+    statics: /** @lends Item */{
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
         _getItems: function _getItems(item, options, matrix, param, firstOnly) {

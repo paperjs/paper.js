@@ -485,11 +485,19 @@ var compareSVG = function(done, actual, expected, message, options) {
         actual = actual();
     }
 
-    expected.onLoad = function() {
+    function compare() {
         comparePixels(actual, expected, message, Base.set({
             tolerance: 1e-2,
             resolution: 72
         }, options));
         done();
-    };
+    }
+
+    if (expected instanceof Raster) {
+        expected.onLoad = compare;
+    } else if (actual instanceof Raster) {
+        actual.onLoad = compare;
+    } else {
+        compare();
+    }
 };
