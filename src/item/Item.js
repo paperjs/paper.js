@@ -127,20 +127,22 @@ new function() { // Injection scope for various item event handlers
             internal = hasProps && props.internal === true,
             matrix = this._matrix = new Matrix(),
             // Allow setting another project than the currently active one.
-            project = hasProps && props.project || paper.project;
+            project = hasProps && props.project || paper.project,
+            settings = paper.settings;
         this._id = internal ? null : UID.get();
         this._parent = this._index = null;
-        // Inherit the applyMatrix setting from paper.settings.applyMatrix
-        this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
+        // Inherit the applyMatrix setting from settings.applyMatrix
+        this._applyMatrix = this._canApplyMatrix && settings.applyMatrix;
         // Handle matrix before everything else, to avoid issues with
         // #addChild() calling _changed() and accessing _matrix already.
         if (point)
             matrix.translate(point);
         matrix._owner = this;
         this._style = new Style(project._currentStyle, this, project);
-        // Do not add to the project if it's an internal path, if props.insert
-        // is false, or if the props are setting a different parent anyway.
-        if (internal || hasProps && props.insert === false) {
+        // Do not add to the project if it's an internal path,  or if
+        // props.insert  or settings.isnertItems is false.
+        if (internal || hasProps && props.insert === false
+            || !settings.insertItems && !(hasProps && props.insert === true)) {
             this._setProject(project);
         } else {
             (hasProps && props.parent || project)
@@ -2327,10 +2329,11 @@ new function() { // Injection scope for hit-test functions shared with project
                 } else {
                     // If the item is removed and inserted it again further
                     /// above, the index needs to be adjusted accordingly.
-                    var shift = item._parent === this && item._index < index;
+                    var parent = item._parent,
+                        shift = parent === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
                     // as we're doing so when adding it to the new parent below.
-                    if (item._remove(false, true) && shift)
+                    if (parent && item._remove(false, true) && shift)
                         index--;
                 }
             }

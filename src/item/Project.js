@@ -238,7 +238,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @type Layer
      */
     getActiveLayer: function() {
-        return this._activeLayer || new Layer({ project: this });
+        return this._activeLayer || new Layer({ project: this, insert: true });
     },
 
     /**
