@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 23:04:48 2016 +0100
+ * Date: Sun Feb 14 23:16:22 2016 +0100
  *
  ***
  *
@@ -7221,6 +7221,14 @@ var PathItem = Item.extend({
 	initialize: function PathItem() {
 	},
 
+	statics: {
+		create: function(pathData) {
+			var ctor = (pathData && pathData.match(/m/gi) || []).length > 1
+					|| /z\s*\S+/i.test(pathData) ? CompoundPath : Path;
+			return new ctor(pathData);
+		}
+	},
+
 	_asPathItem: function() {
 		return this;
 	},
@@ -13552,11 +13560,7 @@ new function() {
 	}
 
 	function importPath(node) {
-		var data = node.getAttribute('d'),
-			param = { pathData: data };
-		return (data && data.match(/m/gi) || []).length > 1 || /z\b/i.test(data)
-				? new CompoundPath(param)
-				: new Path(param);
+		return PathItem.create(node.getAttribute('d'));
 	}
 
 	function importGradient(node, type) {
