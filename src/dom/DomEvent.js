@@ -17,20 +17,27 @@
  */
 var DomEvent = /** @lends DomEvent */{
     add: function(el, events) {
-        for (var type in events) {
-            var func = events[type],
-                parts = type.split(/[\s,]+/g);
-            for (var i = 0, l = parts.length; i < l; i++)
-                el.addEventListener(parts[i], func, false);
+        // Do not fail if el is not defined, that way we can keep the code that
+        // should not fail in web-workers to a minimum.
+        if (el) {
+            for (var type in events) {
+                var func = events[type],
+                    parts = type.split(/[\s,]+/g);
+                for (var i = 0, l = parts.length; i < l; i++)
+                    el.addEventListener(parts[i], func, false);
+            }
         }
     },
 
     remove: function(el, events) {
-        for (var type in events) {
-            var func = events[type],
-                parts = type.split(/[\s,]+/g);
-            for (var i = 0, l = parts.length; i < l; i++)
-                el.removeEventListener(parts[i], func, false);
+        // See DomEvent.add() for an explanation of this check:
+        if (el) {
+            for (var type in events) {
+                var func = events[type],
+                    parts = type.split(/[\s,]+/g);
+                for (var i = 0, l = parts.length; i < l; i++)
+                    el.removeEventListener(parts[i], func, false);
+            }
         }
     },
 
@@ -58,11 +65,6 @@ var DomEvent = /** @lends DomEvent */{
         // Remove target offsets from page coordinates
         return DomEvent.getPoint(event).subtract(DomElement.getOffset(
                 target || DomEvent.getTarget(event)));
-    },
-
-    stop: function(event) {
-        event.stopPropagation();
-        event.preventDefault();
     }
 };
 
@@ -70,49 +72,28 @@ DomEvent.requestAnimationFrame = new function() {
     var nativeRequest = DomElement.getPrefixed(window, 'requestAnimationFrame'),
         requested = false,
         callbacks = [],
-        focused = true,
         timer;
 
-    DomEvent.add(window, {
-        focus: function() {
-            focused = true;
-        },
-        blur: function() {
-            focused = false;
-        }
-    });
-
     function handleCallbacks() {
-        // Checks all installed callbacks for element visibility and
-        // execute if needed.
-        for (var i = callbacks.length - 1; i >= 0; i--) {
-            var entry = callbacks[i],
-                func = entry[0],
-                el = entry[1];
-            if (!el || (PaperScope.getAttribute(el, 'keepalive') == 'true'
-                    || focused) && DomElement.isInView(el)) {
-                // Only remove from the list once the callback was called. This
-                // could take a long time based on visibility. But this way we
-                // are sure to keep the animation loop running.
-                callbacks.splice(i, 1);
-                func();
-            }
-        }
-        if (nativeRequest) {
-            if (callbacks.length) {
-                // If we haven't processed all callbacks yet, we need to keep
-                // the loop running, as otherwise it would die off.
-                nativeRequest(handleCallbacks);
-            } else {
-                requested = false;
-            }
-        }
+        // Make a local references to the current callbacks array and set
+        // callbacks to a new empty array, so it can collect the functions for
+        // the new requests.
+        var functions = callbacks;
+        callbacks = [];
+        // Call the collected callback functions.
+        for (var i = 0, l = functions.length; i < l; i++)
+            functions[i]();
+        // Now see if the above calls have collected new callbacks. Keep
+        // requesting new frames as long as we have callbacks.
+        requested = nativeRequest && callbacks.length;
+        if (requested)
+            nativeRequest(handleCallbacks);
     }
 
-    return function(callback, element) {
+    return function(callback) {
         // Add to the list of callbacks to be called in the next animation
         // frame.
-        callbacks.push([callback, element]);
+        callbacks.push(callback);
         if (nativeRequest) {
             // Handle animation natively. We only need to request the frame
             // once for all collected callbacks.
@@ -123,7 +104,7 @@ DomEvent.requestAnimationFrame = new function() {
         } else if (!timer) {
             // Install interval timer that checks all callbacks. This
             // results in faster animations than repeatedly installing
-            // timout timers.
+            // timeout timers.
             timer = setInterval(handleCallbacks, 1000 / 60);
         }
     };

@@ -21,7 +21,7 @@
             curve.segment2.point = point;
             var length = curve.length;
             var step = 10;
-            var iteratively = false;
+            var iteratively = true;
             var flatten = true;
             var num = Math.floor(length / step);
             var prev = 0;
@@ -39,9 +39,9 @@
             } else {
                 for (var i = 0, pos = 0; i <= num; i++, pos += step) {
                     var t = iteratively
-                            ? curve.getParameterAt(step, prev)
-                            : curve.getParameterAt(pos);
-                    var point = curve.getPointAt(t, true);
+                            ? curve.getTimeAt(step, prev)
+                            : curve.getTimeAt(pos);
+                    var point = curve.getPointAtTime(t);
                     var circle = new Path.Circle(point, step / 2);
                     circle.strokeColor = 'red';
                     if (remove)

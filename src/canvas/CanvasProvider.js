@@ -16,6 +16,8 @@ var CanvasProvider = {
     canvases: [],
 
     getCanvas: function(width, height) {
+        if (!window)
+            return null;
         var canvas,
             clear = true;
         if (typeof width === 'object') {
@@ -25,14 +27,14 @@ var CanvasProvider = {
         if (this.canvases.length) {
             canvas = this.canvases.pop();
         } else {
-/*#*/ if (__options.environment == 'browser') {
             canvas = document.createElement('canvas');
-/*#*/ } else { // __options.environment != 'browser'
-            canvas = new Canvas(width, height);
-            clear = false; // It's already cleared through constructor.
-/*#*/ } // __options.environment != 'browser'
+            clear = false; // It's already cleared through createElement().
         }
         var ctx = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Canvas ' + canvas +
+                    ' is unable toprovide a 2D context.');
+        }
         // If they are not the same size, we don't need to clear them
         // using clearRect and visa versa.
         if (canvas.width === width && canvas.height === height) {
@@ -49,14 +51,17 @@ var CanvasProvider = {
     },
 
     getContext: function(width, height) {
-        return this.getCanvas(width, height).getContext('2d');
+        var canvas = this.getCanvas(width, height);
+        return canvas ? canvas.getContext('2d') : null;
     },
 
      // release can receive either a canvas or a context.
     release: function(obj) {
-        var canvas = obj.canvas ? obj.canvas : obj;
-        // We restore contexts on release(), see getCanvas()
-        canvas.getContext('2d').restore();
-        this.canvases.push(canvas);
+        var canvas = obj && obj.canvas ? obj.canvas : obj;
+        if (canvas && canvas.getContext) {
+            // We restore contexts on release(), see getCanvas()
+            canvas.getContext('2d').restore();
+            this.canvases.push(canvas);
+        }
     }
 };

@@ -5,9 +5,9 @@
     <title>Voronoi</title>
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
-    <script type="text/javascript" src="http://jonathanpuckey.com/static/rhill-voronoi-core.js"></script>
+    <script type="text/javascript" src="http://paperjs.org/assets/js/rhill-voronoi-core.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        var voronoi =  new Voronoi();
+        var voronoi = new Voronoi();
         var sites = generateBeeHivePoints(view.size / 200, true);
         var bbox, diagram;
         var oldSize = view.size;

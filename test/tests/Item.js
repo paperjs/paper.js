@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item');
+QUnit.module('Item');
 
 test('copyTo(project)', function() {
     var project = paper.project;
@@ -612,7 +612,8 @@ test('Item#className', function() {
     equals(new Path().className, 'Path');
     equals(new CompoundPath().className, 'CompoundPath');
     equals(new Raster().className, 'Raster');
-    equals(new PlacedSymbol().className, 'PlacedSymbol');
+    equals(new SymbolItem().className, 'SymbolItem');
+    equals(new PlacedSymbol().className, 'SymbolItem'); // deprecated
     equals(new PointText().className, 'PointText');
 });
 

@@ -10,6 +10,8 @@
  * All rights reserved.
  */
 
+QUnit.module('Item Order');
+
 test('Item Order', function() {
     var line = new Path();
     line.add([0, 0], [100, 100]);

@@ -1,0 +1,11 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+<defs>
+<radialGradient id="grey_blue" cx="50%" cy="50%" r="50%" fx="50%" fy="50%" gradientUnits="userSpaceOnUse">
+  <stop offset="0%" style="stop-color:red;"/>
+  <stop offset="30%" style="stop-color:#0000ff;"/>
+  <stop offset="60%" style="stop-color:rgb(0,153,153);"/>
+  <stop offset="100%" style="stop-color:blue;"/>
+</radialGradient>
+</defs>
+<ellipse cx="150" cy="150" rx="150" ry="150" style="fill:url(#grey_blue)"/>
+</svg>

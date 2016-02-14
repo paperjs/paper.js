@@ -108,10 +108,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     insertChildren: function insertChildren(index, items, _preserve) {
         // Convert CompoundPath items in the children list by adding their
-        // children to the list and removing their parent.
+        // children to the list, replacing their parent.
         for (var i = items.length - 1; i >= 0; i--) {
             var item = items[i];
             if (item instanceof CompoundPath) {
+                // Clone the items array before modifying it, as it may be a
+                // passed children array from another item.
+                items = items.slice();
                 items.splice.apply(items, [i, 1].concat(item.removeChildren()));
                 item.remove();
             }
@@ -129,21 +132,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 item.setClockwise(item._index === 0);
         }
         return items;
-    },
-
-    /**
-     * Reverses the orientation of all nested paths.
-     */
-    reverse: function() {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].reverse();
-    },
-
-    smooth: function() {
-        var children = this._children;
-        for (var i = 0, l = children.length; i < l; i++)
-            children[i].smooth();
     },
 
     // DOCS: reduce()
@@ -177,8 +165,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     setClockwise: function(clockwise) {
-        /* jshint -W018 */
-        if (this.isClockwise() !== !!clockwise)
+        if (this.isClockwise() ^ !!clockwise)
             this.reverse();
     },
 
@@ -267,22 +254,23 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             var child = children[i],
                 mx = child._matrix;
             paths.push(child.getPathData(_matrix && !mx.isIdentity()
-                    ? _matrix.chain(mx) : _matrix, _precision));
+                    ? _matrix.appended(mx) : _matrix, _precision));
         }
         return paths.join(' ');
     }
 }, /** @lends CompoundPath# */{
-    _getChildHitTestOptions: function(options) {
-        // If we're not specifically asked to returns paths through
-        // options.class == Path, do not test children for fill, since a
-        // compound path forms one shape.
-        // Also support legacy format `type: 'path'`.
-        return options.class === Path || options.type === 'path'
-                ? options
-                : new Base(options, { fill: false });
+    _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
+        return _hitTestChildren.base.call(this, point,
+                // If we're not specifically asked to returns paths through
+                // options.class == Path, do not test children for fill, since a
+                // compound path forms one shape.
+                // Also support legacy format `type: 'path'`.
+                options.class === Path || options.type === 'path' ? options
+                    : Base.set({}, options, { fill: false }),
+                viewMatrix);
     },
 
-    _draw: function(ctx, param, strokeMatrix) {
+    _draw: function(ctx, param, viewMatrix, strokeMatrix) {
         var children = this._children;
         // Return early if the compound path doesn't have any children:
         if (children.length === 0)
@@ -294,11 +282,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             children[i].draw(ctx, param, strokeMatrix);
 
         if (!param.clip) {
-            this._setStyles(ctx);
+            this._setStyles(ctx, param, viewMatrix);
             var style = this._style;
             if (style.hasFill()) {
                 ctx.fill(style.getFillRule());
-                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (style.hasStroke())
                 ctx.stroke();
@@ -312,7 +300,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 mx = child._matrix;
             if (!selectedItems[child._id])
                 child._drawSelected(ctx, mx.isIdentity() ? matrix
-                        : matrix.chain(mx));
+                        : matrix.appended(mx));
         }
     }
 },
@@ -328,42 +316,50 @@ new function() { // Injection scope for PostScript-like drawing functions
         return children[children.length - 1];
     }
 
-    var fields = {
-        // NOTE: Documentation for these methods is found in PathItem, as they
-        // are considered abstract methods of PathItem and need to be defined in
-        // all implementing classes.
-        moveTo: function(/* point */) {
-            var current = getCurrentPath(this),
-                // Reuse current path if nothing was added yet
-                path = current && current.isEmpty() ? current
-                        : new Path(Item.NO_INSERT);
-            if (path !== current)
-                this.addChild(path);
-            path.moveTo.apply(path, arguments);
-        },
-
-        moveBy: function(/* point */) {
-            var current = getCurrentPath(this, true),
-                last = current && current.getLastSegment(),
-                point = Point.read(arguments);
-            this.moveTo(last ? point.add(last._point) : point);
-        },
-
-        closePath: function(join) {
-            getCurrentPath(this, true).closePath(join);
-        }
-    };
-
     // Redirect all other drawing commands to the current path
-    Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo', 'arcTo',
-            'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy', 'arcBy'],
-            function(key) {
-                fields[key] = function() {
-                    var path = getCurrentPath(this, true);
-                    path[key].apply(path, arguments);
-                };
-            }
-    );
+    return Base.each(['lineTo', 'cubicCurveTo', 'quadraticCurveTo', 'curveTo',
+            'arcTo', 'lineBy', 'cubicCurveBy', 'quadraticCurveBy', 'curveBy',
+            'arcBy'],
+        function(key) {
+            this[key] = function() {
+                var path = getCurrentPath(this, true);
+                path[key].apply(path, arguments);
+            };
+        }, {
+            // NOTE: Documentation for these methods is found in PathItem, as
+            // they are considered abstract methods of PathItem and need to be
+            // defined in all implementing classes.
+            moveTo: function(/* point */) {
+                var current = getCurrentPath(this),
+                    // Reuse current path if nothing was added yet
+                    path = current && current.isEmpty() ? current
+                            : new Path(Item.NO_INSERT);
+                if (path !== current)
+                    this.addChild(path);
+                path.moveTo.apply(path, arguments);
+            },
 
-    return fields;
-});
+            moveBy: function(/* point */) {
+                var current = getCurrentPath(this, true),
+                    last = current && current.getLastSegment(),
+                    point = Point.read(arguments);
+                this.moveTo(last ? point.add(last._point) : point);
+            },
+
+            closePath: function(join) {
+                getCurrentPath(this, true).closePath(join);
+            }
+        }
+    );
+}, Base.each(['reverse', 'flatten', 'simplify', 'smooth'], function(key) {
+    // Injection scope for methods forwarded to the child paths.
+    // NOTE: Documentation is in PathItem
+    this[key] = function(param) {
+        var children = this._children,
+            res;
+        for (var i = 0, l = children.length; i < l; i++) {
+            res = children[i][key](param) || res;
+        }
+        return res;
+    };
+}, {}));

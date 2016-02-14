@@ -23,7 +23,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _canApplyMatrix: false,
     // Raster doesn't make the distinction between the different bounds,
     // so use the same name for all of them
-    _boundsGetter: 'getBounds',
+    _boundsOptions: { stroke: false, handle: false },
     _boundsSelected: true,
     _serializeFields: {
         crossOrigin: null, // NOTE: Needs to be set before source to work!
@@ -31,7 +31,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     // TODO: Implement type, width, height.
-    // TODO: Have PlacedSymbol & Raster inherit from a shared class?
+    // TODO: Have SymbolItem & Raster inherit from a shared class?
     /**
      * Creates a new raster item from the passed argument, and places it in the
      * active layer. `object` can either be a DOM Image, a Canvas, or a string
@@ -105,13 +105,13 @@ var Raster = Item.extend(/** @lends Raster# */{
         var image = source._image,
             canvas = source._canvas;
         if (image) {
-            this.setImage(image);
+            this._setImage(image);
         } else if (canvas) {
             // If the Raster contains a Canvas object, we need to create a new
             // one and draw this raster's canvas on it.
             var copyCanvas = CanvasProvider.getCanvas(source._size);
             copyCanvas.getContext('2d').drawImage(canvas, 0, 0);
-            this.setImage(copyCanvas);
+            this._setImage(copyCanvas);
         }
         // TODO: Shouldn't this be copied with attributes instead of content?
         this._crossOrigin = source._crossOrigin;
@@ -136,8 +136,8 @@ var Raster = Item.extend(/** @lends Raster# */{
                 // Get reference to image before changing canvas.
                 var element = this.getElement();
                 // NOTE: Setting canvas internally sets _size.
-                // NOTE: No need to release previous canvas as #setImage() does.
-                this.setImage(CanvasProvider.getCanvas(size));
+                // NOTE: No need to release canvas because #_setImage() does so.
+                this._setImage(CanvasProvider.getCanvas(size));
                 // Draw element back onto new canvas.
                 if (element)
                     this.getContext(true).drawImage(element, 0, 0,
@@ -206,34 +206,72 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #resolution} instead.
+     * @deprecated use {@link #getResolution()} instead.
      */
     getPpi: '#getResolution',
 
     /**
-     * The HTMLImageElement of the raster, if one is associated.
+     * The HTMLImageElement or Canvas element of the raster, if one is
+     * associated.
+     * Note that for consistency, a {@link #onLoad} event will be triggered on
+     * the raster even if the image has already finished loading before, or if
+     * we are setting the raster to a canvas.
      *
      * @bean
-     * @type HTMLImageElement|Canvas
+     * @type HTMLImageElement|HTMLCanvasElement
      */
     getImage: function() {
         return this._image;
     },
 
     setImage: function(image) {
+        var that = this;
+
+        function emit(event) {
+            var view = that.getView(),
+                type = event && event.type || 'load';
+            if (view && that.responds(type)) {
+                paper = view._scope;
+                that.emit(type, new Event(event));
+            }
+        }
+
+        this._setImage(image);
+        if (this._loaded) {
+            // Emit load event with a delay, so behavior is the same as when
+            // it's actually loaded and we give the code time to install event.
+            setTimeout(emit, 0);
+        } else if (image) {
+            // Trigger the load event on the image once it's loaded
+            DomEvent.add(image, {
+                load: function(event) {
+                    that._setImage(image);
+                    emit(event);
+                },
+                error: emit
+            });
+        }
+    },
+
+    /**
+     * Internal version of {@link #setImage(image)} that does not trigger
+     * events. This is used by #setImage(), but also in other places where
+     * underlying canvases are replaced, resized, etc.
+     */
+    _setImage: function(image) {
         if (this._canvas)
             CanvasProvider.release(this._canvas);
         // Due to similarities, we can handle both canvas and image types here.
         if (image && image.getContext) {
-            // A canvas object
+            // A Canvas object
             this._image = null;
             this._canvas = image;
             this._loaded = true;
         } else {
-            // A image object
+            // A Image object
             this._image = image;
             this._canvas = null;
-            this._loaded = image && image.complete;
+            this._loaded = !!(image && image.src && image.complete);
         }
         // Both canvas and image have width / height attributes. Due to IE,
         // naturalWidth / Height needs to be checked for a swell, because it
@@ -253,7 +291,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * case `null` is returned instead.
      *
      * @bean
-     * @type Canvas
+     * @type HTMLCanvasELement
      */
     getCanvas: function() {
         if (!this._canvas) {
@@ -307,6 +345,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      * ID of a DOM element to get the image from (either a DOM Image or a
      * Canvas). Reading this property will return the url of the source image or
      * a data-url.
+     * Note that for consistency, a {@link #onLoad} event will be triggered on
+     * the raster even if the image has already finished loading before.
      *
      * @bean
      * @type HTMLImageElement|HTMLCanvasElement|String
@@ -323,80 +363,20 @@ var Raster = Item.extend(/** @lends Raster# */{
      * });
      */
     getSource: function() {
-        return this._image && this._image.src || this.toDataURL();
+        var image = this._image;
+        return image && image.src || this.toDataURL();
     },
 
     setSource: function(src) {
-        var that = this,
-            crossOrigin = this._crossOrigin,
-            image;
-
-        function loaded() {
-            var view = that.getView();
-            if (view) {
-                paper = view._scope;
-                that.setImage(image);
-                that.emit('load');
-                view.update();
-            }
-        }
-
-/*#*/ if (__options.environment == 'browser') {
-        // src can be an URL or a DOM ID to load the image from
-        image = document.getElementById(src) || new Image();
+        var crossOrigin = this._crossOrigin,
+            // src can be an URL or a DOM ID to load the image from:
+            image = document.getElementById(src) || new window.Image();
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        // IE has naturalWidth / Height defined, but width / height set to 0
-        // when the image is invisible in the document.
-        if (image.naturalWidth && image.naturalHeight) {
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            setTimeout(loaded, 0);
-        } else {
-            // Trigger the load event on the image once it's loaded
-            DomEvent.add(image, { load: loaded });
-            // A new image created above? Set the source now.
-            if (!image.src)
-                image.src = src;
-        }
+        // A new image created above? Set the source now.
+        if (!image.src)
+            image.src = src;
         this.setImage(image);
-/*#*/ } else if (__options.environment == 'node') {
-        image = new Image();
-        if (crossOrigin)
-            image.crossOrigin = crossOrigin;
-        // If we're running on the server and it's a string,
-        // check if it is a data URL
-        if (/^data:/.test(src)) {
-            // Preserve the data in this._data since canvas-node eats it.
-            // TODO: Fix canvas-node instead
-            image.src = this._data = src;
-            // Emit load event with a delay, so behavior is the same as when
-            // it's actually loaded and we give the code time to install event.
-            setTimeout(loaded, 0);
-        } else if (/^https?:\/\//.test(src)) {
-            // Load it from remote location:
-            require('request').get({
-                url: src,
-                encoding: null // So the response data is a Buffer
-            }, function (err, response, data) {
-                if (err)
-                    throw err;
-                if (response.statusCode == 200) {
-                    image.src = this._data = data;
-                    loaded();
-                }
-            });
-        } else {
-            // Load it from disk:
-            require('fs').readFile(src, function (err, data) {
-                if (err)
-                    throw err;
-                image.src = this._data = data;
-                loaded();
-            });
-        }
-        this.setImage(image);
-/*#*/ } // __options.environment == 'node'
     },
 
     /**
@@ -446,7 +426,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @param {Rectangle} rect the boundaries of the sub image in pixel
      * coordinates
      *
-     * @return {Canvas} the sub image as a Canvas object
+     * @return {HTMLCanvasELement} the sub image as a Canvas object
      */
     getSubCanvas: function(/* rect */) {
         var rect = Rectangle.read(arguments),
@@ -468,9 +448,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     getSubRaster: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             raster = new Raster(Item.NO_INSERT);
-        raster.setImage(this.getSubCanvas(rect));
+        raster._setImage(this.getSubCanvas(rect));
         raster.translate(rect.getCenter().subtract(this.getSize().divide(2)));
-        raster._matrix.preConcatenate(this._matrix);
+        raster._matrix.prepend(this._matrix);
         raster.insertAbove(this);
         return raster;
     },
@@ -483,17 +463,10 @@ var Raster = Item.extend(/** @lends Raster# */{
     toDataURL: function() {
         // See if the linked image is base64 encoded already, if so reuse it,
         // otherwise try using canvas.toDataURL()
-/*#*/ if (__options.environment == 'node') {
-        if (this._data) {
-            if (this._data instanceof Buffer)
-                this._data = this._data.toString('base64');
-            return this._data;
-        }
-/*#*/ } else {
-        var src = this._image && this._image.src;
+        var image = this._image,
+            src = image && image.src;
         if (/^data:/.test(src))
             return src;
-/*#*/ }
         var canvas = this.getCanvas();
         return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
     },
@@ -501,7 +474,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * Draws an image on the raster.
      *
-     * @param {HTMLImageELement|Canvas} image
+     * @param {HTMLImageELement|HTMLCanvasELement} image
      * @param {Point} point the offset of the image as a point in pixel
      * coordinates
      */
@@ -678,7 +651,46 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.getContext(true).putImageData(data, point.x, point.y);
     },
 
-    _getBounds: function(getter, matrix) {
+    /**
+     * {@grouptitle Event Handlers}
+     *
+     * The event handler function to be called when the underlying image has
+     * finished loading and is ready to be used. This is also triggered when
+     * the image is already loaded, or when a canvas is used instead of an
+     * image.
+     *
+     * @name Raster#onLoad
+     * @property
+     * @type Function
+     *
+     * @example
+     * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
+     * var raster = new Raster(url);
+     *
+     * // If you create a Raster using a url, you can use the onLoad
+     * // handler to do something once it is loaded:
+     * raster.onLoad = function() {
+     *     console.log('The image has finished loading.');
+     * };
+     *
+     * // As with all events in paper.js, you can also use this notation instead
+     * // to install multiple handlers:
+     * raster.on('load', function() {
+     *     console.log('Now the image is definitely ready.');
+     * });
+     */
+
+    /**
+     *
+     * The event handler function to be called when there is an error loading
+     * the underlying image.
+     *
+     * @name Raster#onError
+     * @property
+     * @type Function
+     */
+
+    _getBounds: function(matrix, options) {
         var rect = new Rectangle(this._size).setCenter(0, 0);
         return matrix ? matrix._transformBounds(rect) : rect;
     },

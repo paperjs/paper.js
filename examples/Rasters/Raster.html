@@ -19,7 +19,10 @@
             var scale = (Math.sin(event.time * 2) + 1) / 2;
             raster.scale(scale / lastScale);
             lastScale = scale;
-            raster.position = center + [Math.sin(event.time * 3) * 256, Math.sin(event.time * 2.5) * 256];
+            raster.position = center + [
+                Math.sin(event.time * 3) * 256,
+                Math.sin(event.time * 2.5) * 256
+            ];
             raster.rotate(event.delta * 120);
         }
     </script>

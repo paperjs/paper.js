@@ -257,7 +257,7 @@
         // pathB.style = pathStyleBoolean;
 
         // // var ixs = pathA.getIntersections(pathB);
-        // // ixs.map(function(a) { console.log("(" + a.path.id + " , " + a.curve.index + " , "+ a.parameter +")");
+        // // ixs.map(function(a) { console.log("(" + a.path.id + " , " + a.curve.index + " , "+ a.time +")");
         // // markPoint(a.point, " ") });
         // // ixs.map(function(a) { markPoint(a.point, " "); });
 
@@ -273,8 +273,6 @@
         // var nup = unite(pathA, pathB);
         // console.timeEnd('unite');
         // // nup.style = booleanStyle;
-
-        // view.update();
     }
 
     var booleanStyle = {
@@ -307,7 +305,6 @@
             var boolPathU = _p1U.unite(_p2U);
             console.timeEnd('Union');
             boolPathU.style = booleanStyle;
-            view.update();
         }
 
         if (operations.intersection) {
@@ -318,7 +315,6 @@
             var boolPathI = _p1I.intersect(_p2I);
             console.timeEnd('Intersection');
             boolPathI.style = booleanStyle;
-            view.update();
         }
 
         if (operations.subtraction) {
@@ -329,7 +325,6 @@
             var boolPathS = _p1S.subtract(_p2S);
             console.timeEnd('Subtraction');
             boolPathS.style = booleanStyle;
-            view.update();
         }
 
         if (operations.exclusion) {
@@ -340,7 +335,6 @@
             var boolPathE = _p1E.exclude(_p2E);
             console.timeEnd('Exclusion');
             boolPathE.style = booleanStyle;
-            view.update();
         }
 
         if (operations.division) {
@@ -352,7 +346,6 @@
             console.timeEnd('Division');
             disperse(boolPathD);
             boolPathD.style = booleanStyle;
-            view.update();
         }
     }
 
@@ -409,7 +402,7 @@
         t = t || s.index;
         if (remove === undefined) { remove = true; }
         var crv = s.curve;
-        var t1 = crv.getNormalAt(0, true).normalize(10);
+        var t1 = crv.getNormalAtTime(0).normalize(10);
         var p = s.point.clone().add(t1);
         var cir = new Path.Circle(s.point, 2);
         cir.style.fillColor = c;
@@ -434,12 +427,12 @@
         tc = tc || '#ccc';
         t = t || crv.index;
         if (remove === undefined) { remove = true; }
-        var p = crv.getPointAt(0.57, true);
-        var t1 = crv.getTangentAt(0.57, true).normalize(-10);
+        var p = crv.getPointAtTime(0.57);
+        var t1 = crv.getTangentAtTime(0.57).normalize(-10);
         var p2 = p.clone().add(t1);
         var l = new Path.Line(p, p2).rotate(30, p);
         var l2 = new Path.Line(p, p2).rotate(-30, p);
-        p = crv.getPointAt(0.43, true);
+        p = crv.getPointAtTime(0.43);
         var cir = new Path.Circle(p, 8);
         var text = new PointText(p.subtract([0, -4]));
         text.justification = 'center';

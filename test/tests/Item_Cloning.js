@@ -10,6 +10,8 @@
  * All rights reserved.
  */
 
+QUnit.module('Item Cloning');
+
 function cloneAndCompare(item) {
     var copy = item.clone();
     equals(function() {
@@ -111,13 +113,13 @@ test('PointText#clone()', function() {
     cloneAndCompare(pointText);
 });
 
-test('PlacedSymbol#clone()', function() {
+test('SymbolItem#clone()', function() {
     var path = new Path.Circle([150, 150], 60);
-    var symbol = new Symbol(path);
-    var placedSymbol = new PlacedSymbol(symbol);
-    placedSymbol.position = [100, 100];
-    placedSymbol.rotate(90);
-    cloneAndCompare(placedSymbol);
+    var definition = new SymbolDefinition(path);
+    var item = new SymbolItem(definition);
+    item.position = [100, 100];
+    item.rotate(90);
+    cloneAndCompare(item);
 });
 
 test('Symbol#clone()', function() {
@@ -132,14 +134,11 @@ test('Symbol#clone()', function() {
         miterLimit: 5
     };
     path.selected = true;
-    var symbol = new Symbol(path);
-    var copy = symbol.clone();
-    equals(symbol.definition, copy.definition, 'symbol.definition');
+    var definition = new SymbolDefinition(path);
+    var copy = definition.clone();
+    equals(definition.item, copy.item, 'definition.item');
     equals(function() {
-        return symbol.project == copy.project;
-    }, true);
-    equals(function() {
-        return paper.project.symbols.length == 2;
+        return definition.project == copy.project;
     }, true);
 });
 

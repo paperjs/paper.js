@@ -67,8 +67,8 @@ var Key = new function() {
             // based on whichever key is used for commands.
             command: {
                 get: function() {
-                var browser = paper.browser;
-                    return browser && browser.mac ? this.meta : this.control;
+                    var agent = paper && paper.agent;
+                    return agent && agent.mac ? this.meta : this.control;
                 }
             }
         });
@@ -91,8 +91,6 @@ var Key = new function() {
     function handleKey(down, key, character, event) {
         var type = down ? 'keydown' : 'keyup',
             view = View._focused,
-            scope = view && view.isVisible() && view._scope,
-            tool = scope && scope.tool,
             name;
         keyMap[key] = down;
         // Link the key from keydown with the character form keypress, so keyup
@@ -108,8 +106,8 @@ var Key = new function() {
         // Detect modifiers and mark them as pressed / released
         if (key.length > 1 && (name = Base.camelize(key)) in modifiers) {
             modifiers[name] = down;
-            var browser = paper.browser;
-            if (name === 'meta' && browser && browser.mac) {
+            var agent = paper && paper.agent;
+            if (name === 'meta' && agent && agent.mac) {
                 // Fix a strange behavior on Mac where no keyup events are
                 // received for any keys pressed while the meta key is down.
                 // Keep track of the normal keys being pressed and trigger keyup
@@ -129,27 +127,23 @@ var Key = new function() {
             // A normal key, add it to metaFixMap if that's defined.
             metaFixMap[key] = character;
         }
-        if (tool && tool.responds(type)) {
-            // Update global reference to this scope.
-            paper = scope;
-            // Call the onKeyDown or onKeyUp handler if present
-            tool.emit(type, new KeyEvent(down, key, character, event));
-            if (view)
-                view.update();
+        if (view) {
+            view._handleKeyEvent(down ? 'keydown' : 'keyup', event, key,
+                    character);
         }
     }
 
     DomEvent.add(document, {
         keydown: function(event) {
             var key = getKey(event),
-                browser = paper.browser;
+                agent = paper && paper.agent;
             // Directly handle any special keys (key.length > 1) in keydown, as
             // not all of them will receive keypress events.
             // Chrome doesn't fire keypress events for command and alt keys,
             // so we need to handle this in a way that works across all OSes.
-            if (key.length > 1 || browser && (browser.chrome && (event.altKey
-                        || browser.mac && event.metaKey
-                        || !browser.mac && event.ctrlKey))) {
+            if (key.length > 1 || agent && (agent.chrome && (event.altKey
+                        || agent.mac && event.metaKey
+                        || !agent.mac && event.ctrlKey))) {
                 handleKey(true, key,
                         charLookup[key] || (key.length > 1 ? '' : key), event);
             } else {

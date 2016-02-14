@@ -17,7 +17,7 @@
             destination: path.bounds.rightCenter
         }
 
-        var symbol = new Symbol(path);
+        var symbol = new SymbolDefinition(path);
         symbol.place(view.center);
 
         window._json = project.exportJSON();

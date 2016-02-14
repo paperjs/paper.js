@@ -229,29 +229,33 @@ var BlendMode = new function() {
     // is sticky is not enough, as Chome 27 pretends for blend-modes to work,
     // but does not actually apply them.
     var ctx = CanvasProvider.getContext(1, 1);
-    Base.each(modes, function(func, mode) {
-        // Blend #330000 (51) and #aa0000 (170):
-        // Multiplying should lead to #220000 (34)
-        // For darken we need to reverse color parameters in order to test mode.
-        var darken = mode === 'darken',
-            ok = false;
-        ctx.save();
-        // FF 3.6 throws exception when setting globalCompositeOperation to
-        // unsupported values.
-        try {
-            ctx.fillStyle = darken ? '#300' : '#a00';
-            ctx.fillRect(0, 0, 1, 1);
-            ctx.globalCompositeOperation = mode;
-            if (ctx.globalCompositeOperation === mode) {
-                ctx.fillStyle = darken ? '#a00' : '#300';
+    if (ctx) {
+        Base.each(modes, function(func, mode) {
+            // Blend #330000 (51) and #aa0000 (170):
+            // Multiplying should lead to #220000 (34)
+            var darken = mode === 'darken',
+                ok = false;
+            ctx.save();
+            // FF 3.6 throws exception when setting globalCompositeOperation to
+            // unsupported values.
+            try {
+                // For darken we need to reverse color parameters in order to
+                // test mode.
+                ctx.fillStyle = darken ? '#300' : '#a00';
                 ctx.fillRect(0, 0, 1, 1);
-                ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken ? 170 : 51;
-            }
-        } catch (e) {}
-        ctx.restore();
-        nativeModes[mode] = ok;
-    });
-    CanvasProvider.release(ctx);
+                ctx.globalCompositeOperation = mode;
+                if (ctx.globalCompositeOperation === mode) {
+                    ctx.fillStyle = darken ? '#a00' : '#300';
+                    ctx.fillRect(0, 0, 1, 1);
+                    ok = ctx.getImageData(0, 0, 1, 1).data[0] !== darken
+                            ? 170 : 51;
+                }
+            } catch (e) {}
+            ctx.restore();
+            nativeModes[mode] = ok;
+        });
+        CanvasProvider.release(ctx);
+    }
 
     this.process = function(mode, srcContext, dstContext, alpha, offset) {
         var srcCanvas = srcContext.canvas,

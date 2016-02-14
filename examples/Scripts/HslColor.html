@@ -21,7 +21,7 @@
         };
 
         function createWheel(center, radius, steps, lightness) {
-            var hUnit =  360 / steps.hue;
+            var hUnit = 360 / steps.hue;
             for (var h = 0; h < steps.hue; h++) {
                 var hue = h * hUnit;
                 var vector = new Point({
