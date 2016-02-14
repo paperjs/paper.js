@@ -440,14 +440,9 @@ var getFunctionMessage = function(func) {
     return message;
 };
 
-var createPath = function(str) {
-    var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;
-    return new ctor(str);
-};
-
 var compareBoolean = function(actual, expected, message, options) {
     expected = typeof expected === 'string'
-            ? createPath(expected)
+            ? PathItem.create(expected)
             : expected;
     if (typeof actual === 'function') {
         if (!message)
