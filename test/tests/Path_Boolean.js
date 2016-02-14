@@ -502,6 +502,28 @@ test('#958', function() {
         'M100,220l0,-20l200,0l0,20z M140,100l20,0l0,20l-20,0z');
 });
 
+test('#968', function() {
+    var p1 = new paper.Path({
+        segments: [
+            [352, 280, 0, -26.5, 0, 0],
+            [352, 356, 0, 0, 0, 2.1999999999999886],
+            [348, 360, 2.1999999999999886, 0, -72, 0]
+        ],
+        closed: true
+    });
+    var p2 = new paper.Path({
+        segments: [
+            [352, 344, 0, 0, 0, 0],
+            [352, 356, 0, 0, 0, 2.1999999999999886],
+            [348, 360, 2.1999999999999886, 0, 0, 0],
+            [232, 360, 0, 0, -2.1999999999999886, 0]
+        ],
+        closed: true
+    });
+    compareBoolean(function() { return p1.subtract(p2); },
+        'M352,280l0,64c0,0 -13.69105,1.79261 -31.82528,4.17778c-15.66463,-26.96617 31.82528,-89.12564 31.82528,-68.17778z');
+});
+
 test('frame.intersect(rect);', function() {
     var frame = new CompoundPath();
     frame.addChild(new Path.Rectangle(new Point(140, 10), [100, 300]));
