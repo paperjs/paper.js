@@ -2229,8 +2229,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.onError {Function} the callback function to call if an
      *     error occurs during loading. Only required when loading from external
      *     resources.
+     * @option [options.insert=true] {Boolean} whether the imported items should
+     *     be added to the item that `importSVG()` is called on
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
-     *     {Boolean} whether imported items should have their transformation
+     *     {Boolean} whether the imported items should have their transformation
      *     matrices applied to their contents or not
      *
      * @param {SVGElement|String} svg the SVG content to import, either as a SVG
