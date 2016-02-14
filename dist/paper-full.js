@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 13 23:32:29 2016 +0100
+ * Date: Sun Feb 14 01:45:16 2016 +0100
  *
  ***
  *
@@ -14127,9 +14127,8 @@ Base.exports.PaperScript = (function() {
 	function execute(code, scope, options) {
 		paper = scope;
 		var view = scope.getView(),
-			tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/.test(code)
-					? new Tool()
-					: null,
+			tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
+					.test(code) ? new Tool() : null,
 			toolHandlers = tool ? tool._events : [],
 			handlers = ['onFrame', 'onResize'].concat(toolHandlers),
 			params = [],
