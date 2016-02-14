@@ -27,6 +27,24 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // Do nothing.
     },
 
+    statics: /** @lends PathItem */{
+        /**
+         * Creates a path item from the given SVG path-data, determining if the
+         * data describes a plain path or a compound-path with multiple
+         * sub-paths.
+         *
+         * @param {String} pathData the SVG path-data to parse
+         * @return {Path|CompoundPath} the newly created path item
+         */
+        create: function(pathData) {
+            // If there are multiple moveTo commands or a closePath command
+            // followed by other commands, we have a CompoundPath.
+            var ctor = (pathData && pathData.match(/m/gi) || []).length > 1
+                    || /z\s*\S+/i.test(pathData) ? CompoundPath : Path;
+            return new ctor(pathData);
+        }
+    },
+
     _asPathItem: function() {
         // See Item#_asPathItem()
         return this;
