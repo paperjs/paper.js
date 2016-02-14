@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 10:59:57 2016 +0100
+ * Date: Sun Feb 14 12:39:35 2016 +0100
  *
  ***
  *
@@ -2699,17 +2699,6 @@ var Project = PaperScopeItem.extend({
 			selectedItems[i].setFullySelected(false);
 	},
 
-	hitTest: function() {
-		var point = Point.read(arguments),
-			options = HitResult.getOptions(Base.read(arguments)),
-			children = this._children;
-		for (var i = children.length - 1; i >= 0; i--) {
-			var res = children[i]._hitTest(point, options);
-			if (res) return res;
-		}
-		return null;
-	},
-
 	addLayer: function(layer) {
 		return this.insertLayer(undefined, layer);
 	},
@@ -2739,12 +2728,12 @@ var Project = PaperScopeItem.extend({
 		return item;
 	},
 
-	getItems: function(match) {
-		return Item._getItems(this, match);
+	getItems: function(options) {
+		return Item._getItems(this, options);
 	},
 
-	getItem: function(match) {
-		return Item._getItems(this, match, null, null, true)[0] || null;
+	getItem: function(options) {
+		return Item._getItems(this, options, null, null, true)[0] || null;
 	},
 
 	importJSON: function(json) {
@@ -3545,18 +3534,61 @@ new function() {
 			return false;
 		return this._asPathItem().getIntersections(item._asPathItem(), null,
 				_matrix, true).length > 0;
-	},
-
-	hitTest: function() {
+	}
+},
+new function() {
+	function hitTest() {
 		return this._hitTest(
 				Point.read(arguments),
-				HitResult.getOptions(Base.read(arguments)));
-	},
+				HitResult.getOptions(arguments));
+	}
+
+	function hitTestAll() {
+		var point = Point.read(arguments),
+			options = HitResult.getOptions(arguments),
+			callback = options.match,
+			results = [];
+		options = Base.set({}, options, {
+			match: function(hit) {
+				if (!callback || callback(hit))
+					results.push(hit);
+			}
+		});
+		this._hitTest(point, options);
+		return results;
+	}
+
+	function hitTestChildren(point, options, _exclude) {
+		var children = this._children;
+		if (children) {
+			for (var i = children.length - 1; i >= 0; i--) {
+				var child = children[i];
+				var res = child !== _exclude && child._hitTest(point, options);
+				if (res)
+					return res;
+			}
+		}
+		return null;
+	}
+
+	Project.inject({
+		hitTest: hitTest,
+		hitTestAll: hitTestAll,
+		_hitTest: hitTestChildren
+	});
+
+	return {
+		hitTest: hitTest,
+		hitTestAll: hitTestAll,
+		_hitTestChildren: hitTestChildren,
+	};
+}, {
 
 	_hitTest: function(point, options) {
 		if (this._locked || !this._visible || this._guide && !options.guides
-				|| this.isEmpty())
+				|| this.isEmpty()) {
 			return null;
+		}
 
 		var matrix = this._matrix,
 			parentViewMatrix = options._viewMatrix,
@@ -3569,60 +3601,60 @@ new function() {
 					Path._getStrokePadding(tolerance, strokeMatrix));
 		point = matrix._inverseTransform(point);
 		if (!point || !this._children &&
-				!this.getBounds({ internal: true, stroke: true, handle: true })
-					.expand(tolerancePadding.multiply(2))._containsPoint(point))
+			!this.getBounds({ internal: true, stroke: true, handle: true })
+				.expand(tolerancePadding.multiply(2))._containsPoint(point)) {
 			return null;
+		}
+
 		var checkSelf = !(options.guides && !this._guide
 				|| options.selected && !this._selected
 				|| options.type && options.type !== Base.hyphenate(this._class)
 				|| options.class && !(this instanceof options.class)),
+			callback = options.match,
 			that = this,
 			res;
 
+		function match(hit) {
+			return !callback || hit && callback(hit) ? hit : null;
+		}
+
 		function checkBounds(type, part) {
 			var pt = bounds['get' + part]();
-			if (point.subtract(pt).divide(tolerancePadding).length <= 1)
+			if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
 				return new HitResult(type, that,
 						{ name: Base.hyphenate(part), point: pt });
+			}
 		}
 
 		if (checkSelf && (options.center || options.bounds) && this._parent) {
 			var bounds = this.getInternalBounds();
-			if (options.center)
+			if (options.center) {
 				res = checkBounds('center', 'Center');
+			}
 			if (!res && options.bounds) {
 				var points = [
 					'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 					'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
 				];
-				for (var i = 0; i < 8 && !res; i++)
+				for (var i = 0; i < 8 && !res; i++) {
 					res = checkBounds('bounds', points[i]);
+				}
 			}
+			res = match(res);
 		}
 
 		if (!res) {
 			options._viewMatrix = viewMatrix;
-			options._strokeMatrix = strokeMatrix;
 			res = this._hitTestChildren(point, options)
-					|| checkSelf && this._hitTestSelf(point, options)
-					|| null;
+				|| checkSelf
+					&& match(this._hitTestSelf(point, options, strokeMatrix))
+				|| null;
 			options._viewMatrix = parentViewMatrix;
 		}
-		if (res && res.point)
+		if (res && res.point) {
 			res.point = matrix.transform(res.point);
-		return res;
-	},
-
-	_hitTestChildren: function(point, options, _exclude) {
-		var children = this._children;
-		if (children) {
-			for (var i = children.length - 1; i >= 0; i--) {
-				var child = children[i];
-				var res = child !== _exclude && child._hitTest(point, options);
-				if (res)
-					return res;
-			}
 		}
+		return res;
 	},
 
 	_hitTestSelf: function(point, options) {
@@ -3681,18 +3713,19 @@ new function() {
 		}
 	},
 
-	getItems: function(match) {
-		return Item._getItems(this, match, this._matrix);
+	getItems: function(options) {
+		return Item._getItems(this, options, this._matrix);
 	},
 
-	getItem: function(match) {
-		return Item._getItems(this, match, this._matrix, null, true)[0] || null;
+	getItem: function(options) {
+		return Item._getItems(this, options, this._matrix, null, true)[0]
+				|| null;
 	},
 
 	statics: {
-		_getItems: function _getItems(item, match, matrix, param, firstOnly) {
+		_getItems: function _getItems(item, options, matrix, param, firstOnly) {
 			if (!param) {
-				var obj = typeof match === 'object' && match,
+				var obj = typeof options === 'object' && options,
 					overlapping = obj && obj.overlapping,
 					inside = obj && obj.inside,
 					bounds = overlapping || inside,
@@ -3709,7 +3742,7 @@ new function() {
 					})
 				};
 				if (obj) {
-					match = Base.filter({}, match, {
+					options = Base.filter({}, options, {
 						recursive: true, inside: true, overlapping: true
 					});
 				}
@@ -3731,13 +3764,13 @@ new function() {
 								|| param.path.intersects(child, childMatrix))))
 						add = false;
 				}
-				if (add && child.matches(match)) {
+				if (add && child.matches(options)) {
 					items.push(child);
 					if (firstOnly)
 						break;
 				}
 				if (param.recursive !== false) {
-					_getItems(child, match, childMatrix, param, firstOnly);
+					_getItems(child, options, childMatrix, param, firstOnly);
 				}
 				if (firstOnly && items.length > 0)
 					break;
@@ -4676,7 +4709,7 @@ new function() {
 			}
 		},
 
-		_hitTestSelf: function _hitTestSelf(point, options) {
+		_hitTestSelf: function _hitTestSelf(point, options, strokeMatrix) {
 			var hit = false,
 				style = this._style;
 			if (options.stroke && style.hasStroke()) {
@@ -4685,8 +4718,7 @@ new function() {
 					strokeWidth = style.getStrokeWidth(),
 					strokePadding = options._tolerancePadding.add(
 						Path._getStrokePadding(strokeWidth / 2,
-							!style.getStrokeScaling() &&
-								options._strokeMatrix));
+							!style.getStrokeScaling() && strokeMatrix));
 				if (type === 'rectangle') {
 					var padding = strokePadding.multiply(2),
 						center = getCornerCenter(this, point, padding);
@@ -5172,8 +5204,8 @@ var SymbolItem = Item.extend({
 				options);
 	},
 
-	_hitTestSelf: function(point, options) {
-		var res = this._definition._item._hitTest(point, options);
+	_hitTestSelf: function(point, options, strokeMatrix) {
+		var res = this._definition._item._hitTest(point, options, strokeMatrix);
 		if (res)
 			res.item = this;
 		return res;
@@ -5258,7 +5290,8 @@ var HitResult = Base.extend({
 	},
 
 	statics: {
-		getOptions: function(options) {
+		getOptions: function(args) {
+			var options = args && Base.read(args);
 			return Base.set({
 				type: null,
 				tolerance: paper.settings.hitTolerance,
@@ -8143,7 +8176,7 @@ var Path = PathItem.extend({
 
 	toPath: '#clone',
 
-	_hitTestSelf: function(point, options) {
+	_hitTestSelf: function(point, options, strokeMatrix) {
 		var that = this,
 			style = this.getStyle(),
 			segments = this._segments,
@@ -8167,7 +8200,7 @@ var Path = PathItem.extend({
 				miterLimit = strokeRadius * style.getMiterLimit();
 				strokePadding = tolerancePadding.add(
 					Path._getStrokePadding(strokeRadius,
-						!style.getStrokeScaling() && options._strokeMatrix));
+						!style.getStrokeScaling() && strokeMatrix));
 			} else {
 				join = cap = 'round';
 			}

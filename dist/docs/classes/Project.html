@@ -435,66 +435,6 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 
 	
-<div id="hittest-point" class="member">
-<div class="member-link">
-<a name="hittest-point" href="#hittest-point"><tt><b>hitTest</b>(point[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Perform a hit-test on the items contained within the project at the location of the specified point.</p>
-<p>The options object allows you to control the specifics of the hit-test and may contain a combination of the following values:</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
-<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
-<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
-<li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
-<li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
-<li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
-<li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
-<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
-<li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>point:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the point where the hit-test should be performed
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-
-&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;a hit result object that contains more information  about what exactly was hit or <code>null</code> if nothing was hit
-</li>
-		
-	</ul>
-
-	
-	
-</div>
-</div>
-</div>
-
-	
 <h3>Hierarchy Operations</h3>
 
 <div id="addlayer-layer" class="member">
@@ -580,31 +520,92 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 </div>
 
 	
-<h3>Fetching and matching items</h3>
+<h3>Hit-testing, Fetching and Matching Items</h3>
 
-<div id="getitems-match" class="member">
+<div id="hittest-point" class="member">
 <div class="member-link">
-<a name="getitems-match" href="#getitems-match"><tt><b>getItems</b>(match)</tt></a>
+<a name="hittest-point" href="#hittest-point"><tt><b>hitTest</b>(point[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Fetch items contained within the project whose properties match the criteria in the specified object.</p>
-<p>Extended matching of properties is possible by providing a comparator function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
-<p>Matching items against a rectangular area is also possible, by setting either <code>match.inside</code> or <code>match.overlapping</code> to a rectangle describing the area in which the items either have to be fully or partly contained.</p>
+	<p>Performs a hit-test on the items contained within the project at the location of the specified point.</p>
+<p>The options object allows you to control the specifics of the hit-test and may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>match.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>match.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>match</code> object</li>
-<li><tt>match.class: <tt>Function</tt></tt> &mdash; the constructor function of the item type  to match against</li>
-<li><tt>match.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need to  be fully contained</li>
-<li><tt>match.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the items  need to at least partly overlap</li>
+<li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item  class and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
+<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
+<li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
+<li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
+<li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
+<li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
+<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
+<li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
 </ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>match:</tt> 
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;a hit result object that contains more information  about what exactly was hit or <code>null</code> if nothing was hit
+</li>
+		
+	</ul>
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="getitems-options" class="member">
+<div class="member-link">
+<a name="getitems-options" href="#getitems-options"><tt><b>getItems</b>(options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Fetch items contained within the project whose properties match the criteria in the specified object.</p>
+<p>Extended matching of properties is possible by providing a comparator function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
+<p>Matching items against a rectangular area is also possible, by setting either <code>options.inside</code> or <code>options.overlapping</code> to a rectangle describing the area in which the items either have to be fully or partly contained.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>match</code> object</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; the constructor function of the item  type to match against</li>
+<li><tt>options.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need  to be fully contained</li>
+<li><tt>options.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the  items need to at least partly overlap</li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
 <tt>Object</tt>⟋<tt>Function</tt>
 &mdash;&nbsp;the criteria to match against
 
@@ -626,9 +627,9 @@ var path2 = new Path.Circle(new Point(175, 50), 20);
 	<ul class="member-list">
 		<h4>See also:</h4>
 		
-			<li><tt><a href="../classes/Item.html#matches-match"><tt>item.matches(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#matches-options"><tt>item.matches(options)</tt></a></tt></li>
 		
-			<li><tt><a href="../classes/Item.html#getitems-match"><tt>item.getItems(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#getitems-options"><tt>item.getItems(options)</tt></a></tt></li>
 		
 	</ul>
 
@@ -920,20 +921,21 @@ for (var i = 0; i < items.length; i++) {
 </div>
 
 	
-<div id="getitem-match" class="member">
+<div id="getitem-options" class="member">
 <div class="member-link">
-<a name="getitem-match" href="#getitem-match"><tt><b>getItem</b>(match)</tt></a>
+<a name="getitem-options" href="#getitem-options"><tt><b>getItem</b>(options)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Fetch the first item contained within the project whose properties match the criteria in the specified object. Extended matching is possible by providing a compare function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>. See <a href="../classes/Project.html#getitems-match"><tt>getItems(match)</tt></a> for a selection of illustrated examples.</p>
+	<p>Fetch the first item contained within the project whose properties match the criteria in the specified object. Extended matching is possible by providing a compare function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
+<p>See <a href="../classes/Project.html#getitems-options"><tt>getItems(options)</tt></a> for a selection of illustrated examples.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>match:</tt> 
+<tt>options:</tt> 
 <tt>Object</tt>⟋<tt>Function</tt>
 &mdash;&nbsp;the criteria to match against
 

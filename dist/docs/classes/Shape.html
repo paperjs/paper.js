@@ -3566,6 +3566,8 @@ raster.scale(5);
 </div>
 
 	
+<h3>Geometric Tests</h3>
+
 <div id="contains-point" class="member">
 <div class="member-link">
 <a name="contains-point" href="#contains-point"><tt><b>contains</b>(point)</tt></a>
@@ -3703,18 +3705,21 @@ function onMouseDown(event) {
 </div>
 
 	
+<h3>Hit-testing, Fetching and Matching Items</h3>
+
 <div id="hittest-point" class="member">
 <div class="member-link">
 <a name="hittest-point" href="#hittest-point"><tt><b>hitTest</b>(point[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Perform a hit-test on the item (and its children, if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point.</p>
-<p>The options object allows you to control the specifics of the hit-test and may contain a combination of the following values:</p>
+	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning the first found hit.</p>
+<p>The options object allows you to control the specifics of the hit- test and may contain a combination of the following values:</p>
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
-<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item class  and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test again a certain item  class and its sub-classes: <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
 <li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
 <li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
 <li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
@@ -3751,7 +3756,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;a hit result object that contains more information  about what exactly was hit or <code>null</code> if nothing was hit
+<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;a hit result object describing what exactly was hit  or <code>null</code> if nothing was hit
 </li>
 		
 	</ul>
@@ -3763,23 +3768,74 @@ function onMouseDown(event) {
 </div>
 
 	
-<h3>Fetching and matching items</h3>
-
-<div id="matches-match" class="member">
+<div id="hittestall-point" class="member">
 <div class="member-link">
-<a name="matches-match" href="#matches-match"><tt><b>matches</b>(match)</tt></a>
+<a name="hittestall-point" href="#hittestall-point"><tt><b>hitTestAll</b>(point[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Checks whether the item matches the criteria described by the given object, by iterating over all of its properties and matching against their values through <a href="../classes/Item.html#matches-name-compare"><tt>matches(name, compare)</tt></a>.</p>
-<p>See <a href="../classes/Project.html#getitems-match"><tt>project.getItems(match)</tt></a> for a selection of illustrated examples.</p>
+	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning all found hits.</p>
+<p>The options object allows you to control the specifics of the hit- test. See <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a> for a list of all options.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>match:</tt> 
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/HitResult.html"><tt>HitResult</tt></a> objects</tt>&nbsp;&mdash;&nbsp;hit result objects for all hits, describing what  exactly was hit or <code>null</code> if nothing was hit
+</li>
+		
+	</ul>
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>;</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="matches-options" class="member">
+<div class="member-link">
+<a name="matches-options" href="#matches-options"><tt><b>matches</b>(options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the item matches the criteria described by the given object, by iterating over all of its properties and matching against their values through <a href="../classes/Item.html#matches-name-compare"><tt>matches(name, compare)</tt></a>.</p>
+<p>See <a href="../classes/Project.html#getitems-options"><tt>project.getItems(options)</tt></a> for a selection of illustrated examples.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
 <tt>Object</tt>⟋<tt>Function</tt>
 &mdash;&nbsp;the criteria to match against
 
@@ -3801,7 +3857,7 @@ function onMouseDown(event) {
 	<ul class="member-list">
 		<h4>See also:</h4>
 		
-			<li><tt><a href="../classes/Item.html#getitems-match"><tt>getItems(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#getitems-options"><tt>getItems(options)</tt></a></tt></li>
 		
 	</ul>
 
@@ -3818,7 +3874,7 @@ function onMouseDown(event) {
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Checks whether the item matches the given criteria. Extended matching is possible by providing a compare function or a regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x-coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
-<p>See <a href="../classes/Project.html#getitems-match"><tt>project.getItems(match)</tt></a> for a selection of illustrated examples.</p>
+<p>See <a href="../classes/Project.html#getitems-options"><tt>project.getItems(options)</tt></a> for a selection of illustrated examples.</p>
     
 	
 <ul class="member-list">
@@ -3854,7 +3910,7 @@ function onMouseDown(event) {
 	<ul class="member-list">
 		<h4>See also:</h4>
 		
-			<li><tt><a href="../classes/Item.html#getitems-match"><tt>getItems(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#getitems-options"><tt>getItems(options)</tt></a></tt></li>
 		
 	</ul>
 
@@ -3864,29 +3920,29 @@ function onMouseDown(event) {
 </div>
 
 	
-<div id="getitems-match" class="member">
+<div id="getitems-options" class="member">
 <div class="member-link">
-<a name="getitems-match" href="#getitems-match"><tt><b>getItems</b>(match)</tt></a>
+<a name="getitems-options" href="#getitems-options"><tt><b>getItems</b>(options)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Fetch the descendants (children or children of children) of this item that match the properties in the specified object. Extended matching is possible by providing a compare function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
-<p>Matching items against a rectangular area is also possible, by setting either <code>match.inside</code> or <code>match.overlapping</code> to a rectangle describing the area in which the items either have to be fully or partly contained.</p>
-<p>See <a href="../classes/Project.html#getitems-match"><tt>project.getItems(match)</tt></a> for a selection of illustrated examples.</p>
+<p>Matching items against a rectangular area is also possible, by setting either <code>options.inside</code> or <code>options.overlapping</code> to a rectangle describing the area in which the items either have to be fully or partly contained.</p>
+<p>See <a href="../classes/Project.html#getitems-options"><tt>project.getItems(options)</tt></a> for a selection of illustrated examples.</p>
     <ul class="member-list">
 <h4>Options:</h4>
-<li><tt>match.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>match.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>match</code> object</li>
-<li><tt>match.class: <tt>Function</tt></tt> &mdash; the constructor function of the item type  to match against</li>
-<li><tt>match.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need to  be fully contained</li>
-<li><tt>match.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the items  need to at least partly overlap</li>
+<li><tt>options.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>options</code> object</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; the constructor function of the item type  to match against</li>
+<li><tt>options.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need to  be fully contained</li>
+<li><tt>options.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the items  need to at least partly overlap</li>
 </ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>match:</tt> 
+<tt>options:</tt> 
 <tt>Object</tt>⟋<tt>Function</tt>
 &mdash;&nbsp;the criteria to match against
 
@@ -3908,7 +3964,7 @@ function onMouseDown(event) {
 	<ul class="member-list">
 		<h4>See also:</h4>
 		
-			<li><tt><a href="../classes/Item.html#matches-match"><tt>matches(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#matches-options"><tt>matches(options)</tt></a></tt></li>
 		
 	</ul>
 
@@ -6621,6 +6677,59 @@ function onMouseDown(event) {
 </div>
 
 
+</div>
+</div>
+</div>
+
+	
+<div id="hittestall-point" class="member">
+<div class="member-link">
+<a name="hittestall-point" href="#hittestall-point"><tt><b>hitTestAll</b>(point[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning all found hits.</p>
+<p>The options object allows you to control the specifics of the hit- test. See <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a> for a list of all options.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/HitResult.html"><tt>HitResult</tt></a> objects</tt>&nbsp;&mdash;&nbsp;hit result objects for all hits, describing what  exactly was hit or <code>null</code> if nothing was hit
+</li>
+		
+	</ul>
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>;</tt></li>
+		
+	</ul>
+
+	
 </div>
 </div>
 </div>
