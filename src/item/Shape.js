@@ -189,7 +189,7 @@ var Shape = Item.extend(/** @lends Shape# */{
 
     toShape: '#clone',
 
-    _draw: function(ctx, param, strokeMatrix) {
+    _draw: function(ctx, param, viewMatrix, strokeMatrix) {
         var style = this._style,
             hasFill = style.hasFill(),
             hasStroke = style.hasStroke(),
@@ -259,7 +259,7 @@ var Shape = Item.extend(/** @lends Shape# */{
             ctx.closePath();
         }
         if (!dontPaint && (hasFill || hasStroke)) {
-            this._setStyles(ctx);
+            this._setStyles(ctx, param, viewMatrix);
             if (hasFill) {
                 ctx.fill(style.getFillRule());
                 ctx.shadowColor = 'rgba(0,0,0,0)';

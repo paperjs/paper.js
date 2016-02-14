@@ -4001,7 +4001,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * Not defined in Path as it is required by other classes too,
      * e.g. PointText.
      */
-    _setStyles: function(ctx) {
+    _setStyles: function(ctx, param, viewMatrix) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
         var style = this._style;
@@ -4035,9 +4035,18 @@ new function() { // Injection scope for hit-test functions shared with project
             }
         }
         if (style.hasShadow()) {
+            // In Canvas, shadows unfortunately ignore all transformations
+            // completely. As almost no browser supports ctx.currentTransform,
+            // we need to calculate our own here, and then use it to transform
+            // the shadow-blur and offset accordingly.
+            var pixelRatio = param.pixelRatio || 1,
+                mx = viewMatrix._shiftless().prepend(
+                    new Matrix().scale(pixelRatio, pixelRatio)),
+                // Transform the blur value as a vector and use its new length:
+                blur = mx.transform(new Point(style.getShadowBlur(), 0)),
+                offset = mx.transform(this.getShadowOffset());
             ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
-            ctx.shadowBlur = style.getShadowBlur();
-            var offset = this.getShadowOffset();
+            ctx.shadowBlur = blur.getLength();
             ctx.shadowOffsetX = offset.x;
             ctx.shadowOffsetY = offset.y;
         }
@@ -4066,10 +4075,9 @@ new function() { // Injection scope for hit-test functions shared with project
         // Since globalMatrix does not take the view's matrix into account (we
         // could have multiple views with different zooms), we may have to
         // prepend the view's matrix.
-        // Note that it's only provided if it isn't the identity matrix.
-        function getViewMatrix(matrix) {
-            return viewMatrix ? viewMatrix.appended(matrix) : matrix;
-        }
+        // NOTE: viewMatrix is only provided if it isn't the identity matrix.
+        viewMatrix = viewMatrix ? viewMatrix.appended(globalMatrix)
+                : globalMatrix;
 
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
@@ -4104,7 +4112,7 @@ new function() { // Injection scope for hit-test functions shared with project
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
-            var bounds = this.getStrokeBounds(getViewMatrix(globalMatrix));
+            var bounds = this.getStrokeBounds(viewMatrix);
             if (!bounds.width || !bounds.height)
                 return;
             // Store previous offset and save the main context, so we can
@@ -4127,7 +4135,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 ? parentStrokeMatrix.appended(matrix)
                 // pass `true` for dontMerge
                 : this._canScaleStroke && !this.getStrokeScaling(true)
-                    && getViewMatrix(globalMatrix),
+                    && viewMatrix,
             // If we're drawing into a separate canvas and a clipItem is defined
             // for the current rendering loop, we need to draw the clip item
             // again.
@@ -4148,10 +4156,12 @@ new function() { // Injection scope for hit-test functions shared with project
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
         // Apply globalMatrix when drawing into temporary canvas.
-        if (transform)
-            (direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
-        if (clip)
+        if (transform) {
+            (direct ? matrix : viewMatrix).applyToContext(ctx);
+        }
+        if (clip) {
             param.clipItem.draw(ctx, param.extend({ clip: true }));
+        }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.
             ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -4162,7 +4172,7 @@ new function() { // Injection scope for hit-test functions shared with project
             if (offset)
                 ctx.translate(-offset.x, -offset.y);
         }
-        this._draw(ctx, param, strokeMatrix);
+        this._draw(ctx, param, viewMatrix, strokeMatrix);
         ctx.restore();
         matrices.pop();
         if (param.clip && !param.dontFinish)

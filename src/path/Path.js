@@ -2134,7 +2134,7 @@ new function() { // Scope for drawing
     }
 
     return {
-        _draw: function(ctx, param, strokeMatrix) {
+        _draw: function(ctx, param, viewMatrix, strokeMatrix) {
             var dontStart = param.dontStart,
                 dontPaint = param.dontFinish || param.clip,
                 style = this.getStyle(),
@@ -2165,7 +2165,7 @@ new function() { // Scope for drawing
             if (!dontPaint && (hasFill || hasStroke)) {
                 // If the path is part of a compound path or doesn't have a fill
                 // or stroke, there is no need to continue.
-                this._setStyles(ctx);
+                this._setStyles(ctx, param, viewMatrix);
                 if (hasFill) {
                     ctx.fill(style.getFillRule());
                     // If shadowColor is defined, clear it after fill, so it

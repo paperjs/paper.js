@@ -270,7 +270,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                 viewMatrix);
     },
 
-    _draw: function(ctx, param, strokeMatrix) {
+    _draw: function(ctx, param, viewMatrix, strokeMatrix) {
         var children = this._children;
         // Return early if the compound path doesn't have any children:
         if (children.length === 0)
@@ -282,7 +282,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             children[i].draw(ctx, param, strokeMatrix);
 
         if (!param.clip) {
-            this._setStyles(ctx);
+            this._setStyles(ctx, param, viewMatrix);
             var style = this._style;
             if (style.hasFill()) {
                 ctx.fill(style.getFillRule());
