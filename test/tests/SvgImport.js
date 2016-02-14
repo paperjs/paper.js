@@ -122,31 +122,18 @@ test('Import complex CompoundPath and clone', function() {
 
 function importSVG(assert, url, message, options) {
     var done = assert.async();
-    if (!message)
-        message = 'The imported SVG "' + url + '" should visually be the same '
-            + 'as the rasterized original SVG data.';
     project.importSVG(url, {
         onLoad: function(item, svg) {
-            function getValue(name) {
-                return parseFloat(svg.getAttribute(name));
+            if (!message) {
+                message = 'The imported SVG "' + url + '" should visually be '
+                    + 'the same as the rasterized original SVG data.';
             }
-            /*
-            var size = new Size(getValue('width'), getValue('height'));
-            var group = new Group({
-                children: [
-                    new Shape.Rectangle({
-                        clipMask: true,
-                        size: size
-                    }),
-                    item
-                ]
-            });
-            */
             compareSVG(done, item, svg, message, options);
         },
         onError: function(error) {
-            // TODO: Implement in SvgImport first!
-            pushFailure('Loading SVG from a valid URL should not give an error.');
+            var ok = !!(options && options.expectError);
+            QUnit.push(ok, false, !ok, ok && message
+                || 'Loading SVG from a valid URL should not give an error.');
             done();
         }
     });
@@ -163,5 +150,11 @@ if (!isNode) {
         test('Import ' + name, function(assert) {
             importSVG(assert, 'assets/' + name);
         });
+    });
+
+    test('Import inexistent file', function(assert) {
+        importSVG(assert, 'assets/inexistent.svg',
+            'Load an inexistent SVG file should trigger an error',
+            { expectError: true });
     });
 }

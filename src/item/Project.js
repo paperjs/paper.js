@@ -775,10 +775,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
-     * @option options.onLoad(item, svg) {Function} the callback function to
-     *     call once the SVG content is loaded from the given URL receiving two
-     *     arguments: the converted `item` and the original `svg` data as a
-     *     string. Only required when loading from external files.
+     * @option options.onLoad {Function} the callback function to call once the
+     *     SVG content is loaded from the given URL receiving two arguments: the
+     *     converted `item` and the original `svg` data as a string. Only
+     *     required when loading from external resources.
+     * @option options.onError {Function} the callback function to call if an
+     *     error occurs during loading. Only required when loading from external
+     *     resources.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether imported items should have their transformation
      *     matrices applied to their contents or not

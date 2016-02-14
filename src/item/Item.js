@@ -2223,7 +2223,10 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.onLoad {Function} the callback function to call once the
      *     SVG content is loaded from the given URL receiving two arguments: the
      *     converted `item` and the original `svg` data as a string. Only
-     *     required when loading from external files.
+     *     required when loading from external resources.
+     * @option options.onError {Function} the callback function to call if an
+     *     error occurs during loading. Only required when loading from external
+     *     resources.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether imported items should have their transformation
      *     matrices applied to their contents or not

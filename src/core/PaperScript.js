@@ -525,10 +525,13 @@ Base.exports.PaperScript = (function() {
                 // same order the script tags appear.
                 // If the async attribute is specified on the script element,
                 // request the source asynchronously and execute as soon as
-                // it is retreived.
-                Http.request('get', src, function(code) {
-                    execute(code, scope, src);
-                }, async);
+                // it is retrieved.
+                Http.request({
+                    url: src, async: async,
+                    onLoad: function(code) {
+                        execute(code, scope, src);
+                    }
+                });
             } else {
                 // We can simply get the code form the script tag.
                 execute(script.innerHTML, scope, script.baseURI);

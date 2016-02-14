@@ -635,7 +635,7 @@ new function() {
         return item;
     }
 
-    function importSVG(source, options, isRoot) {
+    function importSVG(source, options) {
         if (!source)
             return null;
         options = typeof options === 'function' ? { onLoad: options }
@@ -644,51 +644,65 @@ new function() {
             // Remember current scope so we can restore it in onLoad.
             scope = paper;
 
-        function onLoadCallback(svg) {
+        function onLoad(svg) {
             paper = scope;
-            var item = importSVG(svg, options, isRoot),
+            var item = importSVG(svg, options, true),
                 onLoad = options.onLoad;
             if (onLoad)
                 onLoad.call(this, item, svg);
         }
 
-        if (isRoot) {
-            // Have the group not pass on all transformations to its children,
-            // as this is how SVG works too.
-            // See if it's a string but handle markup separately
-            if (typeof source === 'string' && !/^.*</.test(source)) {
-                // First see if we're meant to import an element with the given
-                // id.
-                node = document.getElementById(source);
-                // Check if the string does not represent SVG data, in which
-                // case it must be the URL of a SVG to be loaded.
-                if (node) {
-                    source = null;
-                } else {
-                    return Http.request('get', source, onLoadCallback);
-                }
-            } else if (typeof File !== 'undefined' && source instanceof File) {
-                // Load local file through FileReader
-                var reader = new FileReader();
-                reader.onload = function() {
-                    onLoadCallback(reader.result);
-                };
-                return reader.readAsText(source);
+        function onError(message, status) {
+            var onError = options.onError;
+            if (onError) {
+                onError.call(this, message, status);
+            } else {
+                throw new Error(message);
             }
         }
+
+        // Have the group not pass on all transformations to its children,
+        // as this is how SVG works too.
+        // See if it's a string but handle markup separately
+        if (typeof source === 'string' && !/^.*</.test(source)) {
+            // First see if we're meant to import an element with the given
+            // id.
+            node = document.getElementById(source);
+            // Check if the string does not represent SVG data, in which
+            // case it must be the URL of a SVG to be loaded.
+            if (node) {
+                source = null;
+            } else {
+                Http.request({
+                    url: source, async: true,
+                    onLoad: onLoad, onError: onError
+                });
+            }
+        } else if (typeof File !== 'undefined' && source instanceof File) {
+            // Load local file through FileReader
+            var reader = new FileReader();
+            reader.onload = function() {
+                onLoad(reader.result);
+            };
+            reader.onerror = function() {
+                onError(reader.error);
+            };
+            return reader.readAsText(source);
+        }
+
         if (typeof source === 'string') {
             node = new window.DOMParser().parseFromString(source,
                     'image/svg+xml');
         }
         if (!node.nodeName)
             throw new Error('Unsupported SVG source: ' + source);
-        return importNode(node, options, isRoot);
+        return importNode(node, options, true);
     }
 
     // NOTE: Documentation is in Item#importSVG()
     Item.inject({
         importSVG: function(node, options) {
-            return this.addChild(importSVG(node, options, true));
+            return this.addChild(importSVG(node, options));
         }
     });
 
@@ -696,7 +710,7 @@ new function() {
     Project.inject({
         importSVG: function(node, options) {
             this.activate();
-            return importSVG(node, options, true);
+            return importSVG(node, options);
         }
     });
 };
