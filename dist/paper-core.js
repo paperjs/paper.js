@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 14:52:37 2016 +0100
+ * Date: Sun Feb 14 15:12:52 2016 +0100
  *
  ***
  *
@@ -13894,34 +13894,45 @@ new function() {
 			return null;
 		options = typeof options === 'function' ? { onLoad: options }
 				: options || {};
-		var node = source,
-			scope = paper;
+		var scope = paper,
+			item = null;
 
 		function onLoad(svg) {
-			paper = scope;
-			var item = importSVG(svg, options, true),
-				onLoad = options.onLoad;
-			if (onLoad)
-				onLoad.call(this, item, svg);
+			try {
+				var node = typeof svg === 'object' ? svg : new window.DOMParser()
+						.parseFromString(svg, 'image/svg+xml');
+				if (!node.nodeName) {
+					node = null;
+					throw new Error('Unsupported SVG source: ' + source);
+				}
+				paper = scope;
+				item = importNode(node, options, true);
+				var onLoad = options.onLoad;
+				if (onLoad)
+					onLoad(item, svg);
+			} catch (e) {
+				onError(e);
+			}
 		}
 
 		function onError(message, status) {
 			var onError = options.onError;
 			if (onError) {
-				onError.call(this, message, status);
+				onError(message, status);
 			} else {
 				throw new Error(message);
 			}
 		}
 
 		if (typeof source === 'string' && !/^.*</.test(source)) {
-			node = document.getElementById(source);
+			var node = document.getElementById(source);
 			if (node) {
-				source = null;
+				onLoad(node);
 			} else {
 				Http.request({
 					url: source, async: true,
-					onLoad: onLoad, onError: onError
+					onLoad: onLoad,
+					onError: onError
 				});
 			}
 		} else if (typeof File !== 'undefined' && source instanceof File) {
@@ -13933,15 +13944,11 @@ new function() {
 				onError(reader.error);
 			};
 			return reader.readAsText(source);
+		} else {
+			onLoad(source);
 		}
 
-		if (typeof source === 'string') {
-			node = new window.DOMParser().parseFromString(source,
-					'image/svg+xml');
-		}
-		if (!node.nodeName)
-			throw new Error('Unsupported SVG source: ' + source);
-		return importNode(node, options, true);
+		return item;
 	}
 
 	Item.inject({
