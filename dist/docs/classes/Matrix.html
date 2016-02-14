@@ -16,11 +16,12 @@
 <h1>Matrix</h1>
 
 <p>An affine transform performs a linear mapping from 2D coordinates to other 2D coordinates that preserves the &ldquo;straightness&rdquo; and &ldquo;parallelness&rdquo; of lines.</p>
-<p>Such a coordinate transformation can be represented by a 3 row by 3 column matrix with an implied last row of [ 0 0 1 ]. This matrix transforms source coordinates (x,y) into destination coordinates (x&rsquo;,y&rsquo;) by considering them to be a column vector and multiplying the coordinate vector by the matrix according to the following process:</p>
-<pre><code>[ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
-[ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
+<p>Such a coordinate transformation can be represented by a 3 row by 3 column matrix with an implied last row of <code>[ 0 0 1 ]</code>. This matrix transforms source coordinates <code>(x, y)</code> into destination coordinates <code>(x&#39;,y&#39;)</code> by considering them to be a column vector and multiplying the coordinate vector by the matrix according to the following process:</p>
+<pre><code>[ x ]   [ a  c  tx ] [ x ]   [ a * x + c * y + tx ]
+[ y ] = [ b  d  ty ] [ y ] = [ b * x + d * y + ty ]
 [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
 </code></pre>
+<p>Note the locations of b and c.</p>
 <p>This class is optimized for speed and minimizes calculations based on its knowledge of the underlying matrix (as opposed to say simply performing matrix multiplication).</p>
 
 </div>
@@ -169,9 +170,9 @@
 </div>
 		
 			
-<div id="c" class="member">
+<div id="b" class="member">
 <div class="member-link">
-<a name="c" href="#c"><tt><b>c</b></tt></a>
+<a name="b" href="#b"><tt><b>b</b></tt></a>
 </div>
 <div class="member-description hidden">
 
@@ -195,9 +196,9 @@
 </div>
 		
 			
-<div id="b" class="member">
+<div id="c" class="member">
 <div class="member-link">
-<a name="b" href="#b"><tt><b>b</b></tt></a>
+<a name="c" href="#c"><tt><b>c</b></tt></a>
 </div>
 <div class="member-description hidden">
 
@@ -306,7 +307,7 @@
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The transform values as an array, in the same sequence as they are passed to <a href="../classes/Matrix.html#initialize-a-c-b-d-tx-ty"><tt>initialize(a, c, b, d, tx, ty)</tt></a>.</p>
+	<p>The transform values as an array, in the same sequence as they are passed to <a href="../classes/Matrix.html#initialize-a-b-c-d-tx-ty"><tt>initialize(a, b, c, d, tx, ty)</tt></a>.</p>
 	
 		<p>Read only.</p>
 	
@@ -435,9 +436,9 @@
 		<h2>Methods</h2>
 		
 	
-<div id="set-a-c-b-d-tx-ty" class="member">
+<div id="set-a-b-c-d-tx-ty" class="member">
 <div class="member-link">
-<a name="set-a-c-b-d-tx-ty" href="#set-a-c-b-d-tx-ty"><tt><b>set</b>(a, c, b, d, tx, ty)</tt></a>
+<a name="set-a-b-c-d-tx-ty" href="#set-a-b-c-d-tx-ty"><tt><b>set</b>(a, b, c, d, tx, ty)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -455,16 +456,16 @@
 </li>
 	
 	<li>
-<tt>c:</tt> 
+<tt>b:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;the c property of the transform
+&mdash;&nbsp;the b property of the transform
 
 </li>
 	
 	<li>
-<tt>b:</tt> 
+<tt>c:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;the b property of the transform
+&mdash;&nbsp;the c property of the transform
 
 </li>
 	

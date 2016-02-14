@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 10:44:41 2016 +0100
+ * Date: Sun Feb 14 10:59:57 2016 +0100
  *
  ***
  *
@@ -2021,7 +2021,7 @@ var Matrix = Base.extend({
 			this.set.apply(this, arguments);
 		} else if (count === 1) {
 			if (arg instanceof Matrix) {
-				this.set(arg._a, arg._c, arg._b, arg._d, arg._tx, arg._ty);
+				this.set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
 			} else if (Array.isArray(arg)) {
 				this.set.apply(this, arg);
 			} else {
@@ -2036,10 +2036,10 @@ var Matrix = Base.extend({
 			throw new Error('Unsupported matrix parameters');
 	},
 
-	set: function(a, c, b, d, tx, ty, _dontNotify) {
+	set: function(a, b, c, d, tx, ty, _dontNotify) {
 		this._a = a;
-		this._c = c;
 		this._b = b;
+		this._c = c;
 		this._d = d;
 		this._tx = tx;
 		this._ty = ty;
@@ -2064,7 +2064,7 @@ var Matrix = Base.extend({
 	},
 
 	clone: function() {
-		return new Matrix(this._a, this._c, this._b, this._d,
+		return new Matrix(this._a, this._b, this._c, this._d,
 				this._tx, this._ty);
 	},
 
@@ -2077,15 +2077,15 @@ var Matrix = Base.extend({
 
 	toString: function() {
 		var f = Formatter.instance;
-		return '[[' + [f.number(this._a), f.number(this._b),
+		return '[[' + [f.number(this._a), f.number(this._c),
 					f.number(this._tx)].join(', ') + '], ['
-				+ [f.number(this._c), f.number(this._d),
+				+ [f.number(this._b), f.number(this._d),
 					f.number(this._ty)].join(', ') + ']]';
 	},
 
 	reset: function(_dontNotify) {
 		this._a = this._d = 1;
-		this._c = this._b = this._tx = this._ty = 0;
+		this._b = this._c = this._tx = this._ty = 0;
 		if (!_dontNotify)
 			this._changed();
 		return this;
@@ -2105,8 +2105,8 @@ var Matrix = Base.extend({
 		var point = Point.read(arguments),
 			x = point.x,
 			y = point.y;
-		this._tx += x * this._a + y * this._b;
-		this._ty += x * this._c + y * this._d;
+		this._tx += x * this._a + y * this._c;
+		this._ty += x * this._b + y * this._d;
 		this._changed();
 		return this;
 	},
@@ -2117,8 +2117,8 @@ var Matrix = Base.extend({
 		if (center)
 			this.translate(center);
 		this._a *= scale.x;
-		this._c *= scale.x;
-		this._b *= scale.y;
+		this._b *= scale.x;
+		this._c *= scale.y;
 		this._d *= scale.y;
 		if (center)
 			this.translate(center.negate());
@@ -2139,12 +2139,12 @@ var Matrix = Base.extend({
 			b = this._b,
 			c = this._c,
 			d = this._d;
-		this._a = cos * a + sin * b;
-		this._b = -sin * a + cos * b;
-		this._c = cos * c + sin * d;
-		this._d = -sin * c + cos * d;
-		this._tx += tx * a + ty * b;
-		this._ty += tx * c + ty * d;
+		this._a = cos * a + sin * c;
+		this._b = cos * b + sin * d;
+		this._c = -sin * a + cos * c;
+		this._d = -sin * b + cos * d;
+		this._tx += tx * a + ty * c;
+		this._ty += tx * b + ty * d;
 		this._changed();
 		return this;
 	},
@@ -2155,11 +2155,11 @@ var Matrix = Base.extend({
 		if (center)
 			this.translate(center);
 		var a = this._a,
-			c = this._c;
-		this._a += shear.y * this._b;
-		this._c += shear.y * this._d;
-		this._b += shear.x * a;
-		this._d += shear.x * c;
+			b = this._b;
+		this._a += shear.y * this._c;
+		this._b += shear.y * this._d;
+		this._c += shear.x * a;
+		this._d += shear.x * b;
 		if (center)
 			this.translate(center.negate());
 		this._changed();
@@ -2181,17 +2181,17 @@ var Matrix = Base.extend({
 			c1 = this._c,
 			d1 = this._d,
 			a2 = mx._a,
-			b2 = mx._b,
-			c2 = mx._c,
+			b2 = mx._c,
+			c2 = mx._b,
 			d2 = mx._d,
 			tx2 = mx._tx,
 			ty2 = mx._ty;
-		this._a = a2 * a1 + c2 * b1;
-		this._b = b2 * a1 + d2 * b1;
-		this._c = a2 * c1 + c2 * d1;
-		this._d = b2 * c1 + d2 * d1;
-		this._tx += tx2 * a1 + ty2 * b1;
-		this._ty += tx2 * c1 + ty2 * d1;
+		this._a = a2 * a1 + c2 * c1;
+		this._c = b2 * a1 + d2 * c1;
+		this._b = a2 * b1 + c2 * d1;
+		this._d = b2 * b1 + d2 * d1;
+		this._tx += tx2 * a1 + ty2 * c1;
+		this._ty += tx2 * b1 + ty2 * d1;
 		this._changed();
 		return this;
 	},
@@ -2208,15 +2208,15 @@ var Matrix = Base.extend({
 			tx1 = this._tx,
 			ty1 = this._ty,
 			a2 = mx._a,
-			b2 = mx._b,
-			c2 = mx._c,
+			b2 = mx._c,
+			c2 = mx._b,
 			d2 = mx._d,
 			tx2 = mx._tx,
 			ty2 = mx._ty;
-		this._a = a2 * a1 + b2 * c1;
-		this._b = a2 * b1 + b2 * d1;
-		this._c = c2 * a1 + d2 * c1;
-		this._d = c2 * b1 + d2 * d1;
+		this._a = a2 * a1 + b2 * b1;
+		this._c = a2 * c1 + b2 * d1;
+		this._b = c2 * a1 + d2 * b1;
+		this._d = c2 * c1 + d2 * d1;
 		this._tx = a2 * tx1 + b2 * ty1 + tx2;
 		this._ty = c2 * tx1 + d2 * ty1 + ty2;
 		this._changed();
@@ -2241,8 +2241,8 @@ var Matrix = Base.extend({
 			this._b = -b / det;
 			this._c = -c / det;
 			this._d = a / det;
-			this._tx = (b * ty - d * tx) / det;
-			this._ty = (c * tx - a * ty) / det;
+			this._tx = (c * ty - d * tx) / det;
+			this._ty = (b * tx - a * ty) / det;
 			res = this;
 		}
 		return res;
@@ -2257,7 +2257,7 @@ var Matrix = Base.extend({
 	chain: '#appended',
 
 	_shiftless: function() {
-		return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
+		return new Matrix(this._a, this._b, this._c, this._d, 0, 0);
 	},
 
 	_orNullIfIdentity: function() {
@@ -2265,12 +2265,12 @@ var Matrix = Base.extend({
 	},
 
 	isIdentity: function() {
-		return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
+		return this._a === 1 && this._b === 0 && this._c === 0 && this._d === 1
 				&& this._tx === 0 && this._ty === 0;
 	},
 
 	isInvertible: function() {
-		var det = this._a * this._d - this._b * this._c;
+		var det = this._a * this._d - this._c * this._b;
 		return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
 	},
 
@@ -2290,8 +2290,8 @@ var Matrix = Base.extend({
 		if (!dest)
 			dest = new Point();
 		return dest.set(
-				x * this._a + y * this._b + this._tx,
-				x * this._c + y * this._d + this._ty,
+				x * this._a + y * this._c + this._tx,
+				x * this._b + y * this._d + this._ty,
 				_dontNotify);
 	},
 
@@ -2299,8 +2299,8 @@ var Matrix = Base.extend({
 		for (var i = 0, max = 2 * count; i < max; i += 2) {
 			var x = src[i],
 				y = src[i + 1];
-			dst[i] = x * this._a + y * this._b + this._tx;
-			dst[i + 1] = x * this._c + y * this._d + this._ty;
+			dst[i] = x * this._a + y * this._c + this._tx;
+			dst[i + 1] = x * this._b + y * this._d + this._ty;
 		}
 		return dst;
 	},
@@ -2352,47 +2352,49 @@ var Matrix = Base.extend({
 			if (!dest)
 				dest = new Point();
 			res = dest.set(
-					(x * d - y * b) / det,
-					(y * a - x * c) / det,
+					(x * d - y * c) / det,
+					(y * a - x * b) / det,
 					_dontNotify);
 		}
 		return res;
 	},
 
 	decompose: function() {
-		var a = this._a, b = this._b, c = this._c, d = this._d;
-		if (Numerical.isZero(a * d - b * c))
-			return null;
-
-		var scaleX = Math.sqrt(a * a + b * b);
-		a /= scaleX;
-		b /= scaleX;
-
-		var shear = a * c + b * d;
-		c -= a * shear;
-		d -= b * shear;
-
-		var scaleY = Math.sqrt(c * c + d * d);
-		c /= scaleY;
-		d /= scaleY;
-		shear /= scaleY;
-
-		if (a * d < b * c) {
-			a = -a;
-			b = -b;
-			shear = -shear;
-			scaleX = -scaleX;
+		var a = this._a,
+			b = this._b,
+			c = this._c,
+			d = this._d,
+			det = a * d - b * c,
+			sqrt = Math.sqrt,
+			atan2 = Math.atan2,
+			degrees = 180 / Math.PI,
+			rotate,
+			scale,
+			skew;
+		if (a !== 0 || b !== 0) {
+			var r = sqrt(a * a + b * b);
+			rotate = Math.acos(a / r) * (b > 0 ? 1 : -1);
+			scale = [r, det / r];
+			skew = [atan2(a * c + b * d, r * r), 0];
+		} else if (c !== 0 || d !== 0) {
+			var s = sqrt(c * c + d * d);
+			rotate = Math.asin(c / s)  * (d > 0 ? 1 : -1);
+			scale = [det / s, s];
+			skew = [0, atan2(a * c + b * d, s * s)];
+		} else {
+			rotate = 0;
+			skew = scale = [0, 0];
 		}
-
 		return {
-			scaling: new Point(scaleX, scaleY),
-			rotation: -Math.atan2(b, a) * 180 / Math.PI,
-			shearing: shear
+			translation: this.getTranslation(),
+			rotation: rotate * degrees,
+			scaling: new Point(scale),
+			skewing: new Point(skew[0] * degrees, skew[1] * degrees)
 		};
 	},
 
 	getValues: function() {
-		return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+		return [ this._a, this._b, this._c, this._d, this._tx, this._ty ];
 	},
 
 	getTranslation: function() {
@@ -2409,11 +2411,11 @@ var Matrix = Base.extend({
 
 	applyToContext: function(ctx) {
 		if (!this.isIdentity()) {
-			ctx.transform(this._a, this._c, this._b, this._d,
+			ctx.transform(this._a, this._b, this._c, this._d,
 					this._tx, this._ty);
 		}
 	}
-}, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(key) {
+}, Base.each(['a', 'b', 'c', 'd', 'tx', 'ty'], function(key) {
 	var part = Base.capitalize(key),
 		prop = '_' + key;
 	this['get' + part] = function() {
@@ -3255,11 +3257,11 @@ new function() {
 	beans: true,
 
 	_decompose: function() {
-		return this._decomposed = this._matrix.decompose();
+		return this._decomposed || (this._decomposed = this._matrix.decompose());
 	},
 
 	getRotation: function() {
-		var decomposed = this._decomposed || this._decompose();
+		var decomposed = this._decompose();
 		return decomposed && decomposed.rotation;
 	},
 
@@ -3274,7 +3276,7 @@ new function() {
 	},
 
 	getScaling: function(_dontLink) {
-		var decomposed = this._decomposed || this._decompose(),
+		var decomposed = this._decompose(),
 			scaling = decomposed && decomposed.scaling,
 			ctor = _dontLink ? Point : LinkedPoint;
 		return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
@@ -13022,17 +13024,22 @@ new function() {
 		}
 		if (!matrix.isIdentity()) {
 			var decomposed = matrix.decompose();
-			if (decomposed && !decomposed.shearing) {
+			if (decomposed) {
 				var parts = [],
 					angle = decomposed.rotation,
-					scale = decomposed.scaling;
+					scale = decomposed.scaling,
+					skew = decomposed.skewing;
 				if (trans && !trans.isZero())
 					parts.push('translate(' + formatter.point(trans) + ')');
+				if (angle)
+					parts.push('rotate(' + formatter.number(angle) + ')');
 				if (!Numerical.isZero(scale.x - 1)
 						|| !Numerical.isZero(scale.y - 1))
 					parts.push('scale(' + formatter.point(scale) +')');
-				if (angle)
-					parts.push('rotate(' + formatter.number(angle) + ')');
+				if (skew && skew.x)
+					parts.push('skewX(' + formatter.number(skew.x) + ')');
+				if (skew && skew.y)
+					parts.push('skewY(' + formatter.number(skew.y) + ')');
 				attrs.transform = parts.join(' ');
 			} else {
 				attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';
