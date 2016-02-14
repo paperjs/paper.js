@@ -341,7 +341,8 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
             }
         },
 
-        _hitTestSelf: function _hitTestSelf(point, options, strokeMatrix) {
+        _hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
+                strokeMatrix) {
             var hit = false,
                 style = this._style;
             if (options.stroke && style.hasStroke()) {

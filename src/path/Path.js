@@ -1548,7 +1548,7 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
-    _hitTestSelf: function(point, options, strokeMatrix) {
+    _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
         var that = this,
             style = this.getStyle(),
             segments = this._segments,

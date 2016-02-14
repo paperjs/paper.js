@@ -176,10 +176,12 @@ var Group = Item.extend(/** @lends Group# */{
             : _getBounds.base.call(this, matrix, options);
     },
 
-    _hitTestChildren: function _hitTestChildren(point, options) {
+    _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
         var clipItem = this._getClipItem();
         return (!clipItem || clipItem.contains(point))
-                && _hitTestChildren.base.call(this, point, options, clipItem);
+                && _hitTestChildren.base.call(this, point, options, viewMatrix,
+                    // Pass clipItem for hidden _exclude parameter
+                    clipItem);
     },
 
     _draw: function(ctx, param) {

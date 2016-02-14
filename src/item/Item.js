@@ -1736,14 +1736,15 @@ new function() { // Injection scope for hit-test functions shared with project
         return results;
     }
 
-    function hitTestChildren(point, options, _exclude) {
+    function hitTestChildren(point, options, viewMatrix, _exclude) {
         // NOTE: _exclude is only used in Group#_hitTestChildren()
         var children = this._children;
         if (children) {
             // Loop backwards, so items that get drawn last are tested first.
             for (var i = children.length - 1; i >= 0; i--) {
                 var child = children[i];
-                var res = child !== _exclude && child._hitTest(point, options);
+                var res = child !== _exclude && child._hitTest(point, options,
+                        viewMatrix);
                 if (res)
                     return res;
             }
@@ -1829,7 +1830,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @see #hitTest(point[, options]);
      */
 
-    _hitTest: function(point, options) {
+    _hitTest: function(point, options, parentViewMatrix) {
         if (this._locked || !this._visible || this._guide && !options.guides
                 || this.isEmpty()) {
             return null;
@@ -1839,7 +1840,6 @@ new function() { // Injection scope for hit-test functions shared with project
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
-            parentViewMatrix = options._viewMatrix,
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
             viewMatrix = parentViewMatrix
@@ -1911,16 +1911,13 @@ new function() { // Injection scope for hit-test functions shared with project
         }
 
         if (!res) {
-            options._viewMatrix = viewMatrix;
-            res = this._hitTestChildren(point, options)
+            res = this._hitTestChildren(point, options, viewMatrix)
                 // NOTE: We don't call callback on _hitTestChildren()
                 // because that's already called internally.
                 || checkSelf
-                    && match(this._hitTestSelf(point, options, strokeMatrix))
+                    && match(this._hitTestSelf(point, options, viewMatrix,
+                        strokeMatrix))
                 || null;
-            // Restore viewMatrix for next child, so appended matrix chains are
-            // calculated correctly.
-            options._viewMatrix = parentViewMatrix;
         }
         // Transform the point back to the outer coordinate system.
         if (res && res.point) {

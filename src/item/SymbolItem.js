@@ -121,8 +121,8 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
                 options);
     },
 
-    _hitTestSelf: function(point, options, strokeMatrix) {
-        var res = this._definition._item._hitTest(point, options, strokeMatrix);
+    _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+        var res = this._definition._item._hitTest(point, options, viewMatrix);
         // TODO: When the symbol's definition is a path, should hitResult
         // contain information like HitResult#curve?
         if (res)

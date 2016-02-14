@@ -93,6 +93,5 @@ var Layer = Group.extend(/** @lends Layer# */{
     },
 
     _hitTestSelf: function() {
-        return null;
     }
 });
