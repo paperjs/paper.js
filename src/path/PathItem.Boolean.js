@@ -427,14 +427,14 @@ PathItem.inject(new function() {
                 }
             }
             // Use the on-curve windings if no other intersections were
-            // found or if they canceled each other.
+            // found or if they canceled each other. On single paths
+            // this ensures that the overally winding is 1 if the
+            // point was on a monotonic curve.
             if (windLeft === 0 && windRight === 0) {
                 windLeft = windLeftOnCurve;
                 windRight = windRightOnCurve;
             }
         }
-        // If the point was on a monotonic curve, we are on the path by
-        // definition. In this case ensure that the winding is at least 1.
         return Math.max(abs(windLeft), abs(windRight));
     }
 
