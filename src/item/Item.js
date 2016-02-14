@@ -2329,11 +2329,11 @@ new function() { // Injection scope for hit-test functions shared with project
                 } else {
                     // If the item is removed and inserted it again further
                     /// above, the index needs to be adjusted accordingly.
-                    var parent = item._parent,
-                        shift = parent === this && item._index < index;
+                    var owner = item._getOwner(),
+                        shift = owner === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
-                    // as we're doing so when adding it to the new parent below.
-                    if (parent && item._remove(false, true) && shift)
+                    // as we're doing so when adding it to the new owner below.
+                    if (owner && item._remove(false, true) && shift)
                         index--;
                 }
             }
