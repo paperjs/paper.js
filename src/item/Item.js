@@ -1032,7 +1032,7 @@ new function() { // // Scope to inject various item event handlers
     beans: true,
 
     _decompose: function() {
-        return this._decomposed = this._matrix.decompose();
+        return this._decomposed || (this._decomposed = this._matrix.decompose());
     },
 
     /**
@@ -1043,7 +1043,7 @@ new function() { // // Scope to inject various item event handlers
      * @type Number
      */
     getRotation: function() {
-        var decomposed = this._decomposed || this._decompose();
+        var decomposed = this._decompose();
         return decomposed && decomposed.rotation;
     },
 
@@ -1067,7 +1067,7 @@ new function() { // // Scope to inject various item event handlers
      * @type Point
      */
     getScaling: function(_dontLink) {
-        var decomposed = this._decomposed || this._decompose(),
+        var decomposed = this._decompose(),
             scaling = decomposed && decomposed.scaling,
             ctor = _dontLink ? Point : LinkedPoint;
         return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');

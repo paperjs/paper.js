@@ -39,17 +39,22 @@ new function() {
             // See if we can decompose the matrix and can formulate it as a
             // simple translate/scale/rotate command sequence.
             var decomposed = matrix.decompose();
-            if (decomposed && !decomposed.shearing) {
+            if (decomposed) {
                 var parts = [],
                     angle = decomposed.rotation,
-                    scale = decomposed.scaling;
+                    scale = decomposed.scaling,
+                    skew = decomposed.skewing;
                 if (trans && !trans.isZero())
                     parts.push('translate(' + formatter.point(trans) + ')');
+                if (angle)
+                    parts.push('rotate(' + formatter.number(angle) + ')');
                 if (!Numerical.isZero(scale.x - 1)
                         || !Numerical.isZero(scale.y - 1))
                     parts.push('scale(' + formatter.point(scale) +')');
-                if (angle)
-                    parts.push('rotate(' + formatter.number(angle) + ')');
+                if (skew && skew.x)
+                    parts.push('skewX(' + formatter.number(skew.x) + ')');
+                if (skew && skew.y)
+                    parts.push('skewY(' + formatter.number(skew.y) + ')');
                 attrs.transform = parts.join(' ');
             } else {
                 attrs.transform = 'matrix(' + matrix.getValues().join(',') + ')';

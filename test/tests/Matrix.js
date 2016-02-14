@@ -48,19 +48,19 @@ test('Decomposition: scale()', function() {
     }
 
     testScale(1, 1);
-    testScale(1, -1, -1, 1, -180); // Decomposing results in correct flipping
-    testScale(-1, 1);
-    testScale(-1, -1, 1, 1, 180); // Decomposing results in correct flipping
+    testScale(1, -1);
+    testScale(-1, 1, 1, -1, -180); // Decomposing results in correct flipping
+    testScale(-1, -1, 1, 1, -180); // Decomposing results in correct flipping
     testScale(2, 4);
-    testScale(2, -4, -2, 4, -180); // Decomposing results in correct flipping
+    testScale(2, -4);
     testScale(4, 2);
-    testScale(-4, 2);
-    testScale(-4, -4, 4, 4, 180); // Decomposing results in correct flipping
+    testScale(-4, 2, 4, -2, -180); // Decomposing results in correct flipping
+    testScale(-4, -4, 4, 4, -180); // Decomposing results in correct flipping
 });
 
-test('Decomposition: rotate() & scale()', function() {
+test('Decomposition: scale() & rotate()', function() {
     function testAngleAndScale(sx, sy, a, ex, ey, ea) {
-        var m = new Matrix().scale(sx, sy).rotate(a),
+        var m = new Matrix().rotate(a).scale(sx, sy),
             s = 'new Matrix().scale(' + sx + ', ' + sy + ').rotate(' + a + ')';
         equals(m.getRotation(), ea || a,
                 s + '.getRotation()');
@@ -69,7 +69,7 @@ test('Decomposition: rotate() & scale()', function() {
     }
 
     testAngleAndScale(2, 4, 45);
-    testAngleAndScale(2, -4, 45, -2, 4, -135);
-    testAngleAndScale(-2, 4, 45);
+    testAngleAndScale(2, -4, 45);
+    testAngleAndScale(-2, 4, 45, 2, -4, -135);
     testAngleAndScale(-2, -4, 45, 2, 4, -135);
 });

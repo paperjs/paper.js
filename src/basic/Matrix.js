@@ -652,40 +652,39 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      */
     decompose: function() {
         // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
-        // http://stackoverflow.com/questions/4361242/
+        // http://www.maths-informatique-jeux.com/blog/frederic/?post/2013/12/01/Decomposition-of-2D-transform-matrices
         // https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
-        var a = this._a, b = this._c, c = this._b, d = this._d;
-        if (Numerical.isZero(a * d - b * c))
-            return null;
-
-        var scaleX = Math.sqrt(a * a + b * b);
-        a /= scaleX;
-        b /= scaleX;
-
-        var shear = a * c + b * d;
-        c -= a * shear;
-        d -= b * shear;
-
-        var scaleY = Math.sqrt(c * c + d * d);
-        c /= scaleY;
-        d /= scaleY;
-        shear /= scaleY;
-
-        // a * d - b * c should now be 1 or -1
-        if (a * d < b * c) {
-            a = -a;
-            b = -b;
-            // We don't need c & d anymore, but if we did, we'd have to do this:
-            // c = -c;
-            // d = -d;
-            shear = -shear;
-            scaleX = -scaleX;
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            det = a * d - b * c,
+            sqrt = Math.sqrt,
+            atan2 = Math.atan2,
+            degrees = 180 / Math.PI,
+            rotate,
+            scale,
+            skew;
+        if (a !== 0 || b !== 0) {
+            var r = sqrt(a * a + b * b);
+            rotate = Math.acos(a / r) * (b > 0 ? 1 : -1);
+            scale = [r, det / r];
+            skew = [atan2(a * c + b * d, r * r), 0];
+        } else if (c !== 0 || d !== 0) {
+            var s = sqrt(c * c + d * d);
+            // rotate = Math.PI/2 - (d > 0 ? Math.acos(-c/s) : -Math.acos(c/s));
+            rotate = Math.asin(c / s)  * (d > 0 ? 1 : -1);
+            scale = [det / s, s];
+            skew = [0, atan2(a * c + b * d, s * s)];
+        } else { // a = b = c = d = 0
+            rotate = 0;
+            skew = scale = [0, 0];
         }
-
         return {
-            scaling: new Point(scaleX, scaleY),
-            rotation: -Math.atan2(b, a) * 180 / Math.PI,
-            shearing: shear
+            translation: this.getTranslation(),
+            rotation: rotate * degrees,
+            scaling: new Point(scale),
+            skewing: new Point(skew[0] * degrees, skew[1] * degrees)
         };
     },
 
