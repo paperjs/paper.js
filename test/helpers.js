@@ -462,19 +462,13 @@ var compareBoolean = function(actual, expected, message, options) {
 };
 
 var createSVG = function(str, attrs) {
-    if (attrs) {
-        // Similar to SvgElement.create():
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        // Paper.js paths do not have a fill by default, SVG does.
-        node.setAttribute('fill', 'none');
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
-    }
+    // Similar to SvgElement.create():
+    var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+    for (var key in attrs)
+        node.setAttribute(key, attrs[key]);
+    // Paper.js paths do not have a fill by default, SVG does.
+    node.setAttribute('fill', 'none');
+    return node;
 };
 
 var compareSVG = function(done, actual, expected, message, options) {
