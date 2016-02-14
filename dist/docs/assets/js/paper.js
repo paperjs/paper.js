@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 22:15:55 2016 +0100
+ * Date: Sun Feb 14 22:51:50 2016 +0100
  *
  ***
  *
@@ -7227,7 +7227,7 @@ var PathItem = Item.extend({
 
 	setPathData: function(data) {
 
-		var parts = data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
+		var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
 			coords,
 			relative = false,
 			previous,
@@ -13554,7 +13554,7 @@ new function() {
 	function importPath(node) {
 		var data = node.getAttribute('d'),
 			param = { pathData: data };
-		return (data.match(/m/gi) || []).length > 1 || /z\S+/i.test(data)
+		return (data && data.match(/m/gi) || []).length > 1 || /z\b/i.test(data)
 				? new CompoundPath(param)
 				: new Path(param);
 	}
@@ -13592,7 +13592,7 @@ new function() {
 			destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
 		}
 		var color = applyAttributes(
-			new Color(gradient, origin, destination, highlight), node);
+				new Color(gradient, origin, destination, highlight), node);
 		color._scaleToBounds = scaleToBounds;
 		return null;
 	}
@@ -13873,10 +13873,13 @@ new function() {
 			body.appendChild(container);
 		}
 		var settings = paper.settings,
-			applyMatrix = settings.applyMatrix;
+			applyMatrix = settings.applyMatrix,
+			insertItems = settings.insertItems;
 		settings.applyMatrix = false;
+		settings.insertItems = false;
 		var importer = importers[type],
 			item = importer && importer(node, type, options, isRoot) || null;
+		settings.insertItems = insertItems;
 		settings.applyMatrix = applyMatrix;
 		if (item) {
 			if (isElement && !(item instanceof Group))
@@ -13974,14 +13977,21 @@ new function() {
 
 	Item.inject({
 		importSVG: function(node, options) {
-			return this.addChild(importSVG(node, options));
+			var res = importSVG(node, options);
+			if (!options || options.insert !== false)
+				this.addChild(res);
+			return res;
 		}
 	});
 
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();
-			return importSVG(node, options);
+			var res = importSVG(node, options);
+			if (!options || options.insert !== false) {
+				this.getActiveLayer().addChild(res);
+			}
+			return res;
 		}
 	});
 };
