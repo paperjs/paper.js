@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 14 22:04:40 2016 +0100
+ * Date: Sun Feb 14 22:06:55 2016 +0100
  *
  ***
  *
@@ -9475,7 +9475,6 @@ PathItem.inject(new function() {
 			py = point.y,
 			windLeft = 0,
 			windRight = 0,
-			isOnCurve = false,
 			length = curves.length,
 			roots = [],
 			abs = Math.abs;
@@ -9506,7 +9505,11 @@ PathItem.inject(new function() {
 			var xBefore = px - epsilon,
 				xAfter = px + epsilon,
 				prevWinding,
-				prevXEnd;
+				prevXEnd,
+				windLeftOnCurve = 0,
+				windRightOnCurve = 0,
+				isOnCurve = false,
+				leftIntersVal;
 			for (var i = 0; i < length; i++) {
 				var curve = curves[i],
 					winding = curve.winding,
@@ -9516,6 +9519,8 @@ PathItem.inject(new function() {
 				if (curve.last) {
 					prevWinding = curve.last.winding;
 					prevXEnd = curve.last.values[6];
+					isOnCurve = false;
+					leftIntersVal = null;
 				}
 				if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
 					if (winding) {
@@ -9544,9 +9549,24 @@ PathItem.inject(new function() {
 						isOnCurve = true;
 					}
 				}
+				if (i == length - 1 || curves[i + 1].last) {
+					if (isOnCurve) {
+						if (leftIntersVal && leftIntersVal[1] < 0) {
+							windLeftOnCurve -= 1;
+							windRightOnCurve += 1;
+						} else {
+							windLeftOnCurve += 1;
+							windRightOnCurve -= 1;
+						}
+					}
+				}
+			}
+			if (windLeft === 0 && windRight === 0) {
+				windLeft = windLeftOnCurve;
+				windRight = windRightOnCurve;
 			}
 		}
-		return Math.max(abs(windLeft), abs(windRight), isOnCurve ? 1 : 0);
+		return Math.max(abs(windLeft), abs(windRight));
 	}
 
 	function propagateWinding(segment, path1, path2, monoCurves, operator) {
