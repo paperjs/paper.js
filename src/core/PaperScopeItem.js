@@ -58,5 +58,9 @@ var PaperScopeItem = Base.extend(Emitter, /** @lends PaperScopeItem# */{
             this._scope[this._reference] = null;
         this._scope = null;
         return true;
+    },
+
+    getView: function() {
+        return this._scope.getView();
     }
 });

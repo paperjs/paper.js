@@ -1,0 +1,10 @@
+<svg width="300" height="200"
+        viewBox="100 100 1500 1000" preserveAspectRatio="none"
+        xmlns="http://www.w3.org/2000/svg" version="1.1" id="svg">
+    <rect x="0" y="0" width="1500" height="1000"
+        fill="yellow" stroke="blue" stroke-width="12"  />
+    <path fill="red" d="M 750,100 L 250,900 L 1250,900 z"/>
+    <text x="100" y="600" font-size="200" font-family="Arial" >
+        Stretch to fit
+    </text>
+</svg>

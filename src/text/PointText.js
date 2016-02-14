@@ -76,25 +76,25 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         this.translate(point.subtract(this._matrix.getTranslation()));
     },
 
-    _draw: function(ctx) {
+    _draw: function(ctx, param, viewMatrix) {
         if (!this._content)
             return;
-        this._setStyles(ctx);
+        this._setStyles(ctx, param, viewMatrix);
         var lines = this._lines,
             style = this._style,
             hasFill = style.hasFill(),
             hasStroke = style.hasStroke(),
             leading = style.getLeading(),
-            shadowBlur = ctx.shadowBlur;
+            shadowColor = ctx.shadowColor;
         ctx.font = style.getFontStyle();
         ctx.textAlign = style.getJustification();
         for (var i = 0, l = lines.length; i < l; i++) {
-            // See Path._draw() for explanation about ctx.shadowBlur
-            ctx.shadowBlur = shadowBlur;
+            // See Path._draw() for explanation about ctx.shadowColor
+            ctx.shadowColor = shadowColor;
             var line = lines[i];
             if (hasFill) {
                 ctx.fillText(line, 0, 0);
-                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'rgba(0,0,0,0)';
             }
             if (hasStroke)
                 ctx.strokeText(line, 0, 0);
@@ -102,7 +102,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         }
     },
 
-    _getBounds: function(getter, matrix) {
+    _getBounds: function(matrix, options) {
         var style = this._style,
             lines = this._lines,
             numLines = lines.length,

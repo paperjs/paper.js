@@ -62,59 +62,16 @@ var Layer = Group.extend(/** @lends Layer# */{
      *     position: view.center
      * });
      */
-    initialize: function Layer(arg) {
-        var props = Base.isPlainObject(arg)
-                ? new Base(arg) // clone so we can add insert = false
-                : { children: Array.isArray(arg) ? arg : arguments },
-            insert = props.insert;
-        // Call the group constructor but don't insert yet!
-        props.insert = false;
-        Group.call(this, props);
-        if (insert === undefined || insert) {
-            this._project.addChild(this);
-            // When inserted, also activate the layer by default.
-            this.activate();
-        }
+    initialize: function Layer() {
+        Group.apply(this, arguments);
     },
 
     /**
-     * Removes the layer from its project's layers list
-     * or its parent's children list.
+     * Private helper to return the owner, either the parent, or the project
+     * for top-level layers, if they are inserted in it.
      */
-    _remove: function _remove(notifySelf, notifyParent) {
-        if (this._parent)
-            return _remove.base.call(this, notifySelf, notifyParent);
-        if (this._index != null) {
-            var project = this._project;
-            if (project._activeLayer === this)
-                project._activeLayer = this.getNextSibling()
-                        || this.getPreviousSibling();
-            Base.splice(project.layers, null, this._index, 1);
-            this._installEvents(false);
-            // Notify self of the insertion change. We only need this
-            // notification if we're tracking changes for now.
-            if (notifySelf && project._changes)
-                this._changed(/*#=*/Change.INSERTION);
-            // Notify parent of changed children
-            if (notifyParent) {
-                // TODO: project._changed(/*#=*/Change.LAYERS);
-                // Tell project we need a redraw. This is similar to _changed()
-                // mechanism.
-                project._needsUpdate = true;
-            }
-            return true;
-        }
-        return false;
-    },
-
-    getNextSibling: function getNextSibling() {
-        return this._parent ? getNextSibling.base.call(this)
-                : this._project.layers[this._index + 1] || null;
-    },
-
-    getPreviousSibling: function getPreviousSibling() {
-        return this._parent ? getPreviousSibling.base.call(this)
-                : this._project.layers[this._index - 1] || null;
+    _getOwner: function() {
+        return this._parent || this._index != null && this._project;
     },
 
     isInserted: function isInserted() {
@@ -135,12 +92,6 @@ var Layer = Group.extend(/** @lends Layer# */{
         this._project._activeLayer = this;
     },
 
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function _insertSibling(index, item, _preserve) {
-        // If the item is a layer and contained within Project#layers, use
-        // our own version of move().
-        return !this._parent
-                ? this._project.insertChild(index, item, _preserve)
-                : _insertSibling.base.call(this, index, item, _preserve);
+    _hitTestSelf: function() {
     }
 });

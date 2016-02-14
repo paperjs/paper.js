@@ -1,19 +1,20 @@
-var paper = require('paper'),
-    path = require('path'),
-    fs = require('fs');
+// Please note: When loading paper as a normal module installed in node_modules,
+// you would use this instead:
+// var paper = require('paper');
+var paper = require('../../dist/paper-full.js');
+var path = require('path');
+var fs = require('fs');
 
-var canvas = new paper.Canvas(612, 792, 'pdf');
+var canvas = paper.createCanvas(612, 792, 'pdf');
 paper.setup(canvas);
-with (paper) {
-    fs.readFile('./in.json', { encoding: 'utf8' }, function (err, data) {
+fs.readFile('./in.json', { encoding: 'utf8' }, function (err, data) {
+    if (err)
+        throw err;
+    paper.project.importJSON(data);
+    paper.view.update();
+    fs.writeFile(path.resolve(__dirname, 'out.pdf'), canvas.toBuffer(), function (err) {
         if (err)
-            throw err; 
-        project.importJSON(data);
-        view.update();
-        fs.writeFile(path.resolve(__dirname, 'out.pdf'), canvas.toBuffer(), function (err) {
-            if (err)
-                throw err;
-            console.log('Saved!');
-        });
+            throw err;
+        console.log('Saved!');
     });
-}
+});

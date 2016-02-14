@@ -11,7 +11,9 @@
         svg.visible = true; // Turn off display: none;
 
         // Resize the tiger to fit within the window:
-        svg.fitBounds(view.bounds);
+        view.on('resize', function() {
+            svg.fitBounds(this.bounds);
+        });
 
         var items = project.activeLayer.firstChild.children;
         var mouseIsDown = false;

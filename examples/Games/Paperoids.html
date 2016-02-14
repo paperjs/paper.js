@@ -103,7 +103,7 @@
             var explosionPath = new Path.Circle(new Point(), 1);
             explosionPath.fillColor = 'white';
             explosionPath.strokeColor = null;
-            return new Symbol(explosionPath);
+            return new SymbolDefinition(explosionPath);
         }
     };
 
@@ -322,7 +322,7 @@
 
         var rockSymbols = [];
         for (var i = 0; i < shapes.length; i++) {
-            rockSymbols[i] = new Symbol(shapes[i]);
+            rockSymbols[i] = new SymbolDefinition(shapes[i]);
         }
 
         var explosions = new Group();

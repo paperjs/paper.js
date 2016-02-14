@@ -30,8 +30,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
          */
         extend: function extend(src) {
             if (src._serializeFields)
-                src._serializeFields = new Base(
-                        this.prototype._serializeFields, src._serializeFields);
+                src._serializeFields = Base.set({},
+                    this.prototype._serializeFields, src._serializeFields);
             return extend.base.apply(this, arguments);
         },
 
@@ -45,10 +45,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     _class: 'Item',
+    _name: null,
     // All items apply their matrix by default.
-    // Exceptions are Raster, PlacedSymbol, Clip and Shape.
+    // Exceptions are Raster, SymbolItem, Clip and Shape.
     _applyMatrix: true,
     _canApplyMatrix: true,
+    _canScaleStroke: false,
     _boundsSelected: false,
     _selectChildren: false,
     // Provide information about fields to be serialized, with their defaults
@@ -66,8 +68,44 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         selected: false,
         clipMask: false,
         data: {}
-    },
+    }
+},
+new function() { // Injection scope for various item event handlers
+    var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
+            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'];
+    return Base.each(handlers,
+        function(name) {
+            this._events[name] = {
+                install: function(type) {
+                    this.getView()._countItemEvent(type, 1);
+                },
 
+                uninstall: function(type) {
+                    this.getView()._countItemEvent(type, -1);
+                }
+            };
+        }, {
+            _events: {
+                onFrame: {
+                    install: function() {
+                        this.getView()._animateItem(this, true);
+                    },
+
+                    uninstall: function() {
+                        this.getView()._animateItem(this, false);
+                    }
+                },
+
+                // Only for external sources, e.g. Raster
+                onLoad: {},
+                onError: {}
+            },
+            statics: {
+                _itemHandlers: handlers
+            }
+        }
+    );
+}, /** @lends Item# */{
     initialize: function Item() {
         // Do nothing, but declare it for named constructors.
     },
@@ -90,8 +128,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = this._matrix = new Matrix(),
             // Allow setting another project than the currently active one.
             project = hasProps && props.project || paper.project;
-        if (!internal)
-            this._id = UID.get();
+        this._id = internal ? null : UID.get();
+        this._parent = this._index = null;
         // Inherit the applyMatrix setting from paper.settings.applyMatrix
         this._applyMatrix = this._canApplyMatrix && paper.settings.applyMatrix;
         // Handle matrix before everything else, to avoid issues with
@@ -100,58 +138,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix.translate(point);
         matrix._owner = this;
         this._style = new Style(project._currentStyle, this, project);
-        // If _project is already set, the item was already moved into the scene
-        // graph. Used by Layer, where it's added to project.layers instead
-        if (!this._project) {
-            // Do not insert into DOM if it's an internal path, if props.insert
-            // is false, or if the props are setting a different parent anyway.
-            if (internal || hasProps && props.insert === false) {
-                this._setProject(project);
-            } else if (hasProps && props.parent) {
-                this.setParent(props.parent);
-            } else {
-                // Create a new layer if there is no active one. This will
-                // automatically make it the new activeLayer.
-                (project._activeLayer || new Layer()).addChild(this);
-            }
+        // Do not add to the project if it's an internal path, if props.insert
+        // is false, or if the props are setting a different parent anyway.
+        if (internal || hasProps && props.insert === false) {
+            this._setProject(project);
+        } else {
+            (hasProps && props.parent || project)
+                    ._insertItem(undefined, this, true, true);
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
-        if (hasProps && props !== Item.NO_INSERT)
-            // Filter out insert, parent and project properties as these were
-            // handled above.
-            this._set(props, { insert: true, project: true, parent: true },
-                    // Don't check for plain object as that's done by hasProps.
-                    true);
+        if (hasProps && props !== Item.NO_INSERT) {
+            // Filter out internal, insert, parent and project properties as
+            // these were handled above.
+            Base.filter(this, props, {
+                internal: true, insert: true, project: true, parent: true
+            });
+        }
         return hasProps;
     },
-
-    _events: Base.each(['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
-            'onDoubleClick', 'onMouseMove', 'onMouseEnter', 'onMouseLeave'],
-        function(name) {
-            this[name] = {
-                install: function(type) {
-                    this.getView()._installEvent(type);
-                },
-
-                uninstall: function(type) {
-                    this.getView()._uninstallEvent(type);
-                }
-            };
-        }, {
-            onFrame: {
-                install: function() {
-                    this.getView()._animateItem(this, true);
-                },
-
-                uninstall: function() {
-                    this.getView()._animateItem(this, false);
-                }
-            },
-
-            // Only for external sources, e.g. Raster
-            onLoad: {}
-        }
-    ),
 
     _serialize: function(options, dictionary) {
         var props = {},
@@ -212,24 +216,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // child triggers this notification on the parent.
             Item._clearBoundsCache(this);
         }
-        if (project) {
-            if (flags & /*#=*/ChangeFlag.APPEARANCE) {
-                project._needsUpdate = true;
-            }
-            // Have project keep track of changed items so they can be iterated.
-            // This can be used for example to update the SVG tree. Needs to be
-            // activated in Project
-            if (project._changes) {
-                var entry = project._changesById[this._id];
-                if (entry) {
-                    entry.flags |= flags;
-                } else {
-                    entry = { item: this, flags: flags };
-                    project._changesById[this._id] = entry;
-                    project._changes.push(entry);
-                }
-            }
-        }
+        if (project)
+            project._changed(flags, this);
         // If this item is a symbol's definition, notify it of the change too
         if (symbol)
             symbol._changed(flags);
@@ -279,7 +267,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @name Item#className
      * @type String
      * @values 'Group', 'Layer', 'Path', 'CompoundPath', 'Shape', 'Raster',
-     *     'PlacedSymbol', 'PointText'
+     *     'SymbolItem', 'PointText'
      */
 
     /**
@@ -323,10 +311,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (name === (+name) + '')
             throw new Error(
                     'Names consisting only of numbers are not supported.');
-        var parent = this._parent;
-        if (name && parent) {
-            var children = parent._children,
-                namedChildren = parent._namedChildren;
+        var owner = this._getOwner();
+        if (name && owner) {
+            var children = owner._children,
+                namedChildren = owner._namedChildren;
             (namedChildren[name] = namedChildren[name] || []).push(this);
             // Only set this item if there isn't one under the same name already
             if (!(name in children))
@@ -586,8 +574,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         }
         if ((selected = !!selected) ^ this._selected) {
             this._selected = selected;
-            this._project._updateSelection(this);
-            this._changed(/*#=*/Change.ATTRIBUTE);
+            var project = this._project;
+            if (project) {
+                project._updateSelection(this);
+                this._changed(/*#=*/Change.ATTRIBUTE);
+            }
         }
     },
 
@@ -788,39 +779,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     _pivot: null,
-}, Base.each(['bounds', 'strokeBounds', 'handleBounds', 'roughBounds',
-        'internalBounds', 'internalHandleBounds', 'internalRoughBounds'],
-    function(key) {
-        // Produce getters for bounds properties. These handle caching, matrices
-        // and redirect the call to the private _getBounds, which can be
-        // overridden by subclasses, see below.
-        // Treat internalBounds and internalRoughBounds untransformed, as
-        // required by the code that uses these methods internally, but make
-        // sure they can be cached like all the others as well.
-        // Pass on the getter that these version actually use, untransformed,
-        // as internalGetter.
-        // NOTE: These need to be versions of other methods, as otherwise the
-        // cache gets messed up.
-        var getter = 'get' + Base.capitalize(key),
-            match = key.match(/^internal(.*)$/),
-            internalGetter = match ? 'get' + match[1] : null;
-        this[getter] = function(_matrix) {
-            var boundsGetter = this._boundsGetter,
-                // Allow subclasses to override _boundsGetter if they use the
-                // same calculations for multiple type of bounds.
-                // The default is getter:
-                name = !internalGetter && (typeof boundsGetter === 'string'
-                        ? boundsGetter : boundsGetter && boundsGetter[getter])
-                        || getter,
-                bounds = this._getCachedBounds(name, _matrix, this,
-                        internalGetter);
-            // If we're returning 'bounds', create a LinkedRectangle that uses
-            // the setBounds() setter to update the Item whenever the bounds are
-            // changed:
-            return key === 'bounds'
-                    ? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
-                            bounds.height, this, 'setBounds')
-                    : bounds;
+}, Base.each({ // Produce getters for bounds properties:
+        getStrokeBounds: { stroke: true },
+        getHandleBounds: { handle: true },
+        getInternalBounds: { internal: true }
+    },
+    function(options, key) {
+        this[key] = function(matrix) {
+            return this.getBounds(matrix, options);
         };
     },
 /** @lends Item# */{
@@ -828,25 +794,53 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     // See _matrix parameter above.
     beans: true,
 
+    getBounds: function(matrix, options) {
+        var hasMatrix = options || matrix instanceof Matrix,
+            opts = Base.set({}, hasMatrix ? options : matrix,
+                    this._boundsOptions);
+        // We can only cache the bounds if the path uses stroke-scaling, or if
+        // no stroke is involved in the calculation of the bounds.
+        // When strokeScaling is false, the bounds are affected by the zoom
+        // level of the view, hence we can't cache.
+        // TODO: Look more into handling of stroke-scaling, e.g. on groups with
+        // some children that have strokeScaling, as well as SymbolItem with
+        // SymbolDefinition that have strokeScaling!
+        // TODO: Once that is resolved, we should be able to turn off
+        // opts.stroke if a resolved item definition does not have a stroke,
+        // allowing the code to share caches between #strokeBounds and #bounds.
+        if (!opts.stroke || this.getStrokeScaling())
+            opts.cacheItem = this;
+        // If we're caching bounds, pass on this item as cacheItem, so
+        // the children can setup _boundsCache structures for it.
+        var bounds = this._getCachedBounds(hasMatrix && matrix, opts);
+        // If we're returning '#bounds', create a LinkedRectangle that uses
+        // the setBounds() setter to update the Item whenever the bounds are
+        // changed:
+        return arguments.length === 0
+                ? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
+                        bounds.height, this, 'setBounds')
+                : bounds;
+    },
+
     /**
      * Protected method used in all the bounds getters. It loops through all the
      * children, gets their bounds and finds the bounds around all of them.
      * Subclasses override it to define calculations for the various required
      * bounding types.
      */
-    _getBounds: function(getter, matrix, cacheItem) {
+    _getBounds: function(matrix, options) {
         // NOTE: We cannot cache these results here, since we do not get
         // _changed() notifications here for changing geometry in children.
-        // But cacheName is used in sub-classes such as PlacedSymbol and Raster.
+        // But cacheName is used in sub-classes such as SymbolItem and Raster.
         var children = this._children;
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
         if (!children || children.length === 0)
             return new Rectangle();
-        // Call _updateBoundsCache() even when the group is currently empty
-        // (or only holds empty / invisible items), so future changes in these
-        // items will cause right handling of _boundsCache.
-        Item._updateBoundsCache(this, cacheItem);
+        // Call _updateBoundsCache() even when the group only holds empty /
+        // invisible items), so future changes in these items will cause right
+        // handling of _boundsCache.
+        Item._updateBoundsCache(this, options.cacheItem);
         var x1 = Infinity,
             x2 = -x1,
             y1 = x1,
@@ -854,8 +848,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
             if (child._visible && !child.isEmpty()) {
-                var rect = child._getCachedBounds(getter,
-                        matrix && matrix.chain(child._matrix), cacheItem);
+                var rect = child._getCachedBounds(
+                    matrix && matrix.appended(child._matrix), options);
                 x1 = Math.min(rect.x, x1);
                 y1 = Math.min(rect.y, y1);
                 x2 = Math.max(rect.x + rect.width, x2);
@@ -870,6 +864,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     setBounds: function(/* rect */) {
         var rect = Rectangle.read(arguments),
             bounds = this.getBounds(),
+            _matrix = this._matrix,
             matrix = new Matrix(),
             center = rect.getCenter();
         // Read this from bottom to top:
@@ -877,9 +872,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         matrix.translate(center);
         // Scale to new Size, if size changes and avoid divisions by 0:
         if (rect.width != bounds.width || rect.height != bounds.height) {
+            // If a previous transformation resulted in a non-invertible matrix,
+            // Restore to the last revertible matrix stored in _backup, and get
+            // the bounds again. That way, we can prevent collapsing to 0-size.
+            if (!_matrix.isInvertible()) {
+                _matrix.initialize(_matrix._backup
+                        || new Matrix().translate(_matrix.getTranslation()));
+                bounds = this.getBounds();
+            }
             matrix.scale(
-                    bounds.width !== 0 ? rect.width / bounds.width : 1,
-                    bounds.height !== 0 ? rect.height / bounds.height : 1);
+                    bounds.width !== 0 ? rect.width / bounds.width : 0,
+                    bounds.height !== 0 ? rect.height / bounds.height : 0);
         }
         // Translate to bounds center:
         center = bounds.getCenter();
@@ -892,36 +895,50 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Private method that deals with the calling of _getBounds, recursive
      * matrix concatenation and handles all the complicated caching mechanisms.
      */
-    _getCachedBounds: function(getter, matrix, cacheItem, internalGetter) {
+    _getCachedBounds: function(matrix, options) {
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix.orNullIfIdentity();
-        // Do not transform by the internal matrix if there is a internalGetter.
-        var _matrix = internalGetter ? null : this._matrix.orNullIfIdentity(),
-            cache = (!matrix || matrix.equals(_matrix)) && getter;
+        matrix = matrix && matrix._orNullIfIdentity();
+        // Do not transform by the internal matrix for internal, untransformed
+        // bounds.
+        var internal = options.internal,
+            cacheItem = options.cacheItem,
+            _matrix = internal ? null : this._matrix._orNullIfIdentity(),
+            // Create a key for caching, reflecting all bounds options.
+            cacheKey = cacheItem && (!matrix || matrix.equals(_matrix)) && [
+                options.stroke ? 1 : 0,
+                options.handle ? 1 : 0,
+                internal ? 1 : 0
+            ].join('');
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
-        if (cache && this._bounds && this._bounds[cache])
-            return this._bounds[cache].clone();
-        // If we're caching bounds on this item, pass it on as cacheItem, so the
-        // children can setup the _boundsCache structures for it.
-        // getInternalBounds is getBounds untransformed. Do not replace earlier,
-        // so we can cache both separately, since they're not in the same
-        // transformation space!
-        var bounds = this._getBounds(internalGetter || getter,
-                matrix || _matrix, cacheItem);
+        if (cacheKey && this._bounds && cacheKey in this._bounds)
+            return this._bounds[cacheKey].rect.clone();
+        var bounds = this._getBounds(matrix || _matrix, options);
         // If we can cache the result, update the _bounds cache structure
         // before returning
-        if (cache) {
+        if (cacheKey) {
             if (!this._bounds)
                 this._bounds = {};
-            var cached = this._bounds[cache] = bounds.clone();
-            // Mark as internal, so Item#transform() won't transform it!
-            cached._internal = !!internalGetter;
+            var cached = this._bounds[cacheKey] = {
+                rect: bounds.clone(),
+                // Mark as internal, so Item#transform() won't transform it
+                internal: options.internal
+            };
         }
         return bounds;
+    },
+
+    /**
+     * Returns to correct matrix to use to transform stroke related geometries
+     * when calculating bounds: the item's matrix if {@link #strokeScaling} is
+     * `true`, otherwise the shiftless, inverted view matrix.
+     */
+    _getStrokeMatrix: function(matrix, options) {
+        return this.getStrokeScaling() ? matrix : (options && options.internal
+                ? this : this._parent).getViewMatrix().invert()._shiftless();
     },
 
     statics: {
@@ -936,7 +953,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
          * times the same structure.
          */
         _updateBoundsCache: function(parent, item) {
-            if (parent) {
+            if (parent && item) {
                 // Set-up the parent's boundsCache structure if it does not
                 // exist yet and add the item to it.
                 var id = item._id,
@@ -1015,7 +1032,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     beans: true,
 
     _decompose: function() {
-        return this._decomposed = this._matrix.decompose();
+        return this._decomposed || (this._decomposed = this._matrix.decompose());
     },
 
     /**
@@ -1026,7 +1043,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @type Number
      */
     getRotation: function() {
-        var decomposed = this._decomposed || this._decompose();
+        var decomposed = this._decompose();
         return decomposed && decomposed.rotation;
     },
 
@@ -1050,7 +1067,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @type Point
      */
     getScaling: function(_dontLink) {
-        var decomposed = this._decomposed || this._decompose(),
+        var decomposed = this._decompose(),
             scaling = decomposed && decomposed.scaling,
             ctor = _dontLink ? Point : LinkedPoint;
         return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
@@ -1082,15 +1099,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
     setMatrix: function() {
         // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
         matrix.initialize.apply(matrix, arguments);
-        if (this._applyMatrix) {
-            // Directly apply the internal matrix. This will also call
-            // _changed() for us.
-            this.transform(null, true);
-        } else {
-            this._changed(/*#=*/Change.GEOMETRY);
-        }
     },
 
     /**
@@ -1111,10 +1123,22 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             matrix = this._globalMatrix = this._matrix.clone();
             var parent = this._parent;
             if (parent)
-                matrix.preConcatenate(parent.getGlobalMatrix(true));
+                matrix.prepend(parent.getGlobalMatrix(true));
             matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
+    },
+
+    /**
+     * The item's global matrix in relation to the view coordinate space. This
+     * means that the view's transformations resulting from zooming and panning
+     * are factored in.
+     *
+     * @bean
+     * @type Matrix
+     */
+    getViewMatrix: function() {
+        return this.getGlobalMatrix().prepend(this.getView()._matrix);
     },
 
     /**
@@ -1183,7 +1207,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getView: function() {
-        return this._project.getView();
+        return this._project._view;
     },
 
     /**
@@ -1265,6 +1289,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     setParent: function(item) {
         return item.addChild(this);
     },
+
+    /**
+     * Private helper to return the owner, either the parent, or the project
+     * for top-level layers. See Layer#_getOwner()
+     */
+    _getOwner: '#getParent',
 
     /**
      * The children items contained within this item. Items that define a
@@ -1361,7 +1391,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getNextSibling: function() {
-        return this._parent && this._parent._children[this._index + 1] || null;
+        var owner = this._getOwner();
+        return owner && owner._children[this._index + 1] || null;
     },
 
     /**
@@ -1371,7 +1402,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @bean
      */
     getPreviousSibling: function() {
-        return this._parent && this._parent._children[this._index - 1] || null;
+        var owner = this._getOwner();
+        return owner && owner._children[this._index - 1] || null;
     },
 
     /**
@@ -1413,9 +1445,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Clones the item within the same project and places the copy above the
      * item.
      *
-     * @param {Boolean} [insert=true] specifies whether the copy should be
+     * @option [insert=true] specifies whether the copy should be
      *     inserted into the scene graph. When set to `true`, it is inserted
      *     above the original
+     * @option [deep=true] specifies whether the item's children should also be
+     *     cloned
+     *
+     * @param {Object} [options={ insert: true, deep: true }]
+     *
      * @return {Item} the newly cloned item
      *
      * @example {@paperscript}
@@ -1434,9 +1471,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     copy.position.x += i * copy.bounds.width;
      * }
      */
-    clone: function(insert) {
+    clone: function(options) {
         var copy = new this.constructor(Item.NO_INSERT),
-            children = this._children;
+            children = this._children,
+            // Both `insert` and `deep` are true by default:
+            insert = Base.pick(options ? options.insert : undefined,
+                    // Also support boolean parameter for insert, default: true.
+                    options === undefined || options === true),
+            deep = Base.pick(options ? options.deep : undefined, true);
         // On items with children, for performance reasons due to the way that
         // styles are currently "flattened" into existing children, we need to
         // clone attributes first, then content.
@@ -1444,11 +1486,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // attributes might have an impact on their content.
         if (children)
             copy.copyAttributes(this);
-        copy.copyContent(this);
+        // Only copy content if we don't have children or if we're ask to create
+        // a deep clone, which is the default.
+        if (!children || deep)
+            copy.copyContent(this);
         if (!children)
             copy.copyAttributes(this);
-        // Insert is true by default.
-        if (insert === undefined || insert)
+        if (insert)
             copy.insertAbove(this);
         // Make sure we're not overriding the original name in the same parent
         var name = this._name,
@@ -1523,20 +1567,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * When passed a project, copies the item to the project,
-     * or duplicates it within the same project. When passed an item,
-     * copies the item into the specified item.
-     *
-     * @param {Project|Layer|Group|CompoundPath} item the item or project to
-     * copy the item to
-     * @return {Item} the new copy of the item
-     */
-    copyTo: function(itemOrProject) {
-        // Pass false fo insert, since we're inserting at a specific location.
-        return itemOrProject.addChild(this.clone(false));
-    },
-
-    /**
      * Rasterizes the item into a newly created Raster object. The item itself
      * is not removed after rasterization.
      *
@@ -1598,6 +1628,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
+     * {@grouptitle Geometric Tests}
+     *
      * Checks whether the item's geometry contains the given point.
      *
      * @example {@paperscript} // Click within and outside the star below
@@ -1622,7 +1654,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     }
      * }
      *
-     * @param {Point} point The point to check for
+     * @param {Point} point the point to check for
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -1680,29 +1712,89 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // found, because all we care for here is there are some or none:
         return this._asPathItem().getIntersections(item._asPathItem(), null,
                 _matrix, true).length > 0;
-    },
+    }
+},
+new function() { // Injection scope for hit-test functions shared with project
+    function hitTest(/* point, options */) {
+        return this._hitTest(
+                Point.read(arguments),
+                HitResult.getOptions(arguments));
+    }
 
+    function hitTestAll(/* point, options */) {
+        var point = Point.read(arguments),
+            options = HitResult.getOptions(arguments),
+            callback = options.match,
+            results = [];
+        options = Base.set({}, options, {
+            match: function(hit) {
+                if (!callback || callback(hit))
+                    results.push(hit);
+            }
+        });
+        this._hitTest(point, options);
+        return results;
+    }
+
+    function hitTestChildren(point, options, viewMatrix, _exclude) {
+        // NOTE: _exclude is only used in Group#_hitTestChildren()
+        var children = this._children;
+        if (children) {
+            // Loop backwards, so items that get drawn last are tested first.
+            for (var i = children.length - 1; i >= 0; i--) {
+                var child = children[i];
+                var res = child !== _exclude && child._hitTest(point, options,
+                        viewMatrix);
+                if (res)
+                    return res;
+            }
+        }
+        return null;
+    }
+
+    Project.inject({
+        hitTest: hitTest,
+        hitTestAll: hitTestAll,
+        _hitTest: hitTestChildren
+    });
+
+    return {
+        // NOTE: Documentation is in the scope that follows.
+        hitTest: hitTest,
+        hitTestAll: hitTestAll,
+        _hitTestChildren: hitTestChildren,
+    };
+}, /** @lends Item# */{
     /**
-     * Perform a hit-test on the item (and its children, if it is a {@link
-     * Group} or {@link Layer}) at the location of the specified point.
+     * {@grouptitle Hit-testing, Fetching and Matching Items}
      *
-     * The options object allows you to control the specifics of the hit-test
-     * and may contain a combination of the following values:
+     * Performs a hit-test on the item and its children (if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point,
+     * returning the first found hit.
+     *
+     * The options object allows you to control the specifics of the hit-
+     * test and may contain a combination of the following values:
+     *
+     * @name Item#hitTest
+     * @function
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item class
-     *     and its sub-classes: {@values Group, Layer, Path, CompoundPath,
-     *     Shape, Raster, PlacedSymbol, PointText, ...}
-     * @option options.fill {Boolean} hit-test the fill of items
-     * @option options.stroke {Boolean} hit-test the stroke of path items,
-     *     taking into account the setting of stroke color and width
-     * @option options.segments {Boolean} hit-test for {@link Segment#point} of
-     *     {@link Path} items
+     * @option options.class {Function} only hit-test again a certain item
+     *     class and its sub-classes: {@values Group, Layer, Path,
+     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.match {Function} a match function to be called for each
+     *     found hit result: Return `true` to return the result, `false` to keep
+     *     searching
+     * @option [options.fill=true] {Boolean} hit-test the fill of items
+     * @option [options.stroke=true] {Boolean} hit-test the stroke of path
+     *     items, taking into account the setting of stroke color and width
+     * @option [options.segments=true] {Boolean} hit-test for {@link
+     *     Segment#point} of {@link Path} items
      * @option options.curves {Boolean} hit-test the curves of path items,
      *     without taking the stroke color or width into account
      * @option options.handles {Boolean} hit-test for the handles ({@link
-     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments
+     *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
      *     segment points of open path items
      * @option options.bounds {Boolean} hit-test the corners and side-centers of
@@ -1713,67 +1805,88 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     Item#guide} set to `true`
      * @option options.selected {Boolean} only hit selected items
      *
-     * @param {Point} point The point where the hit-test should be performed
+     * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
-     *     tolerance: 2 }]
-     * @return {HitResult} a hit result object that contains more information
-     *     about what exactly was hit or `null` if nothing was hit
+     *     tolerance: settings.hitTolerance }]
+     * @return {HitResult} a hit result object describing what exactly was hit
+     *     or `null` if nothing was hit
      */
-    hitTest: function(/* point, options */) {
-        return this._hitTest(
-                Point.read(arguments),
-                HitResult.getOptions(Base.read(arguments)));
-    },
 
-    _hitTest: function(point, options) {
+    /**
+     * Performs a hit-test on the item and its children (if it is a {@link
+     * Group} or {@link Layer}) at the location of the specified point,
+     * returning all found hits.
+     *
+     * The options object allows you to control the specifics of the hit-
+     * test. See {@link #hitTest(point[, options])} for a list of all options.
+     *
+     * @name Item#hitTestAll
+     * @function
+     * @param {Point} point the point where the hit-test should be performed
+     * @param {Object} [options={ fill: true, stroke: true, segments: true,
+     *     tolerance: settings.hitTolerance }]
+     * @return {HitResult[]} hit result objects for all hits, describing what
+     *     exactly was hit or `null` if nothing was hit
+     * @see #hitTest(point[, options]);
+     */
+
+    _hitTest: function(point, options, parentViewMatrix) {
         if (this._locked || !this._visible || this._guide && !options.guides
-                || this.isEmpty())
+                || this.isEmpty()) {
             return null;
+        }
 
         // Check if the point is withing roughBounds + tolerance, but only if
         // this item does not have children, since we'd have to travel up the
         // chain already to determine the rough bounds.
         var matrix = this._matrix,
-            parentTotalMatrix = options._totalMatrix,
-            view = this.getView(),
             // Keep the accumulated matrices up to this item in options, so we
             // can keep calculating the correct _tolerancePadding values.
-            totalMatrix = options._totalMatrix = parentTotalMatrix
-                    ? parentTotalMatrix.chain(matrix)
+            viewMatrix = parentViewMatrix
+                    ? parentViewMatrix.appended(matrix)
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
-                    : this.getGlobalMatrix().preConcatenate(view._matrix),
+                    : this.getGlobalMatrix().prepend(this.getView()._matrix),
+            strokeMatrix = viewMatrix.inverted(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
+            tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
             tolerancePadding = options._tolerancePadding = new Size(
-                        Path._getPenPadding(1, totalMatrix.inverted())
-                    ).multiply(
-                        Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE)
-                    );
+                    Path._getStrokePadding(tolerance, strokeMatrix));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
-        if (!point || !this._children && !this.getInternalRoughBounds()
-                .expand(tolerancePadding.multiply(2))._containsPoint(point))
+        if (!point || !this._children &&
+            !this.getBounds({ internal: true, stroke: true, handle: true })
+                .expand(tolerancePadding.multiply(2))._containsPoint(point)) {
             return null;
-        // Filter for type, guides and selected items if that's required.
+        }
+
+        // See if we should check self (own content), by filtering for type,
+        // guides and selected items if that's required.
         var checkSelf = !(options.guides && !this._guide
                 || options.selected && !this._selected
                 // Support legacy Item#type property to match hyphenated
                 // class-names.
                 || options.type && options.type !== Base.hyphenate(this._class)
                 || options.class && !(this instanceof options.class)),
+            callback = options.match,
             that = this,
             res;
+
+        function match(hit) {
+            return !callback || hit && callback(hit) ? hit : null;
+        }
 
         function checkBounds(type, part) {
             var pt = bounds['get' + part]();
             // Since there are transformations, we cannot simply use a numerical
             // tolerance value. Instead, we divide by a padding size, see above.
-            if (point.subtract(pt).divide(tolerancePadding).length <= 1)
+            if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
                 return new HitResult(type, that,
                         { name: Base.hyphenate(part), point: pt });
+            }
         }
 
         // Ignore top level layers by checking for _parent:
@@ -1781,39 +1894,36 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Don't get the transformed bounds, check against transformed
             // points instead
             var bounds = this.getInternalBounds();
-            if (options.center)
+            if (options.center) {
                 res = checkBounds('center', 'Center');
+            }
             if (!res && options.bounds) {
                 // TODO: Move these into a private scope
                 var points = [
                     'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
                     'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
                 ];
-                for (var i = 0; i < 8 && !res; i++)
+                for (var i = 0; i < 8 && !res; i++) {
                     res = checkBounds('bounds', points[i]);
+                }
             }
+            res = match(res);
         }
 
-        var children = !res && this._children;
-        if (children) {
-            var opts = this._getChildHitTestOptions(options);
-            // Loop backwards, so items that get drawn last are tested first
-            for (var i = children.length - 1; i >= 0 && !res; i--)
-                res = children[i]._hitTest(point, opts);
+        if (!res) {
+            res = this._hitTestChildren(point, options, viewMatrix)
+                // NOTE: We don't call callback on _hitTestChildren()
+                // because that's already called internally.
+                || checkSelf
+                    && match(this._hitTestSelf(point, options, viewMatrix,
+                        strokeMatrix))
+                || null;
         }
-        if (!res && checkSelf)
-            res = this._hitTestSelf(point, options);
         // Transform the point back to the outer coordinate system.
-        if (res && res.point)
+        if (res && res.point) {
             res.point = matrix.transform(res.point);
-        // Restore totalMatrix for next child.
-        options._totalMatrix = parentTotalMatrix;
+        }
         return res;
-    },
-
-    _getChildHitTestOptions: function(options) {
-        // This is overridden in CompoundPath, for treatment of type === 'path'.
-        return options;
     },
 
     _hitTestSelf: function(point, options) {
@@ -1823,21 +1933,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * {@grouptitle Fetching and matching items}
-     *
      * Checks whether the item matches the criteria described by the given
      * object, by iterating over all of its properties and matching against
      * their values through {@link #matches(name, compare)}.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
      * @name Item#matches
      * @function
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Boolean} {@true if the item matches all the criteria}
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     /**
      * Checks whether the item matches the given criteria. Extended matching is
@@ -1847,7 +1955,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * points with that x-value). Partial matching does work for
      * {@link Item#data}.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
      * @name Item#matches
@@ -1857,7 +1965,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Object} compare the value, function or regular expression to
      * compare against
      * @return {Boolean} {@true if the item matches the state}
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     matches: function(name, compare) {
         // matchObject() is used to match against objects in a nested manner.
@@ -1906,12 +2014,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 // Compare further with the _class property value instead.
                 value = this._class;
             }
-            if (compare instanceof RegExp) {
-                return compare.test(value);
-            } else if (typeof compare === 'function') {
+            if (typeof compare === 'function') {
                 return !!compare(value);
-            } else if (Base.isPlainObject(compare)) {
-                return matchObject(compare, value);
+            } else if (compare) {
+                if (compare.test) { // RegExp-ish
+                    return compare.test(value);
+                } else if (Base.isPlainObject(compare)) {
+                    return matchObject(compare, value);
+                }
             }
             return Base.equals(value, compare);
         }
@@ -1926,31 +2036,31 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * that x-value). Partial matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either `match.inside` or `match.overlapping` to a rectangle describing
+     * either `options.inside` or `options.overlapping` to a rectangle describing
      * the area in which the items either have to be fully or partly contained.
      *
-     * See {@link Project#getItems(match)} for a selection of illustrated
+     * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
      *
-     * @option [match.recursive=true] {Boolean} whether to loop recursively
+     * @option [options.recursive=true] {Boolean} whether to loop recursively
      *     through all children, or stop at the current level
-     * @option match.match {Function} a match function to be called for each
+     * @option options.match {Function} a match function to be called for each
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
-     *     this function can also be passed instead of the `match` object
-     * @option match.class {Function} the constructor function of the item type
+     *     this function can also be passed instead of the `options` object
+     * @option options.class {Function} the constructor function of the item type
      *     to match against
-     * @option match.inside {Rectangle} the rectangle in which the items need to
+     * @option options.inside {Rectangle} the rectangle in which the items need to
      *     be fully contained
-     * @option match.overlapping {Rectangle} the rectangle with which the items
+     * @option options.overlapping {Rectangle} the rectangle with which the items
      *     need to at least partly overlap
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Item[]} the list of matching descendant items
-     * @see #matches(match)
+     * @see #matches(options)
      */
-    getItems: function(match) {
-        return Item._getItems(this._children, match, this._matrix);
+    getItems: function(options) {
+        return Item._getItems(this, options, this._matrix);
     },
 
     /**
@@ -1968,21 +2078,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the first descendant item matching the given criteria
      * @see #getItems(match)
      */
-    getItem: function(match) {
-        return Item._getItems(this._children, match, this._matrix, null, true)
-                [0] || null;
+    getItem: function(options) {
+        return Item._getItems(this, options, this._matrix, null, true)[0]
+                || null;
     },
 
     statics: {
         // NOTE: We pass children instead of item as first argument so the
         // method can be used for Project#layers as well in Project.
-        _getItems: function _getItems(children, match, matrix, param,
-                firstOnly) {
+        _getItems: function _getItems(item, options, matrix, param, firstOnly) {
             if (!param) {
                 // Set up a couple of "side-car" values for the recursive calls
                 // of _getItems below, mainly related to the handling of
                 // inside / overlapping:
-                var obj = typeof match === 'object' && match,
+                var obj = typeof options === 'object' && options,
                     overlapping = obj && obj.overlapping,
                     inside = obj && obj.inside,
                     // If overlapping is set, we also perform the inside check:
@@ -2000,19 +2109,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     })
                 };
                 if (obj) {
-                    // Create a copy of the match object that doesn't contain
+                    // Create a copy of the options object that doesn't contain
                     // these special properties:
-                    match = Base.set({}, match, {
+                    options = Base.filter({}, options, {
                         recursive: true, inside: true, overlapping: true
                     });
                 }
             }
-            var items = param.items,
+            var children = item._children,
+                items = param.items,
                 rect = param.rect;
             matrix = rect && (matrix || new Matrix());
             for (var i = 0, l = children && children.length; i < l; i++) {
                 var child = children[i],
-                    childMatrix = matrix && matrix.chain(child._matrix),
+                    childMatrix = matrix && matrix.appended(child._matrix),
                     add = true;
                 if (rect) {
                     var bounds = child.getBounds(childMatrix);
@@ -2029,15 +2139,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                                 || param.path.intersects(child, childMatrix))))
                         add = false;
                 }
-                if (add && child.matches(match)) {
+                if (add && child.matches(options)) {
                     items.push(child);
                     if (firstOnly)
                         break;
                 }
                 if (param.recursive !== false) {
-                    _getItems(child._children, match,
-                            childMatrix, param,
-                            firstOnly);
+                    _getItems(child, options, childMatrix, param, firstOnly);
                 }
                 if (firstOnly && items.length > 0)
                     break;
@@ -2078,9 +2186,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // it as a child (this won't be successful on some classes, returning
         // null).
         var res = Base.importJSON(json, this);
-        return res !== this
-                ? this.addChild(res)
-                : res;
+        return res !== this ? this.addChild(res) : res;
     },
 
     /**
@@ -2114,9 +2220,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @option [options.expandShapes=false] {Boolean} whether imported shape
      *     items should be expanded to path items
-     * @option [options.onLoad] {Function} the callback function to call once
-     *     the SVG content is loaded from the given URL. Only required when
-     *     loading from external files.
+     * @option options.onLoad {Function} the callback function to call once the
+     *     SVG content is loaded from the given URL receiving two arguments: the
+     *     converted `item` and the original `svg` data as a string. Only
+     *     required when loading from external resources.
+     * @option options.onError {Function} the callback function to call if an
+     *     error occurs during loading. Only required when loading from external
+     *     resources.
      * @option [options.applyMatrix={@link PaperScope#settings}.applyMatrix]
      *     {Boolean} whether imported items should have their transformation
      *     matrices applied to their contents or not
@@ -2138,15 +2248,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *
      * @param {SVGElement|String} svg the URL of the SVG file to fetch.
      * @param {Function} onLoad the callback function to call once the SVG
-     *     content is loaded from the given URL.
+     *     content is loaded from the given URL receiving two arguments: the
+     *     converted `item` and the original `svg` data as a string. Only
+     *     required when loading from external files.
      * @return {Item} the newly created Paper.js item containing the converted
      *     SVG content
      */
 
     /**
-     * {@grouptitle Hierarchy Operations} Adds the specified item as a child of
-     * this item at the end of the its children list. You can use this function
-     * for groups, compound paths and layers.
+     * {@grouptitle Hierarchy Operations}
+     *
+     * Adds the specified item as a child of this item at the end of the its
+     * {@link #children}  list. You can use this function for groups, compound
+     * paths and layers.
      *
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
@@ -2160,7 +2274,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * in its {@link #children} list. You can use this function for groups,
      * compound paths and layers.
      *
-     * @param {Number} index
+     * @param {Number} index the index at which to insert the item
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
@@ -2174,7 +2288,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * children list. You can use this function for groups, compound paths and
      * layers.
      *
-     * @param {Item[]} items The items to be added as children
+     * @param {Item[]} items the items to be added as children
      * @return {Item[]} the added items, or `null` if adding was not possible
      */
     addChildren: function(items, _preserve) {
@@ -2187,7 +2301,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * groups, compound paths and layers.
      *
      * @param {Number} index
-     * @param {Item[]} items The items to be appended as children
+     * @param {Item[]} items the items to be appended as children
      * @return {Item[]} the inserted items, or `null` if inserted was not
      *     possible
      */
@@ -2242,12 +2356,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         return items;
     },
 
-    // Private helper for #insertAbove() / #insertBelow()
-    _insertSibling: function(index, item, _preserve) {
-        return this._parent
-                ? this._parent.insertChild(index, item, _preserve)
-                : null;
-    },
+    // Internal alias, so both Project and Item can be used in #copyTo(), and
+    // through _getOwner() in the various Item#insert*() methods.
+    _insertItem: '#insertChild',
 
     /**
      * Inserts this item above the specified item.
@@ -2256,7 +2367,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        return item.isInserted() ? item._insertSibling(item._index + 1, this, _preserve) : this;
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index + 1, this, _preserve)
+                : null;
     },
 
     /**
@@ -2266,27 +2379,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        return item.isInserted() ? item._insertSibling(item._index, this, _preserve) : this;
+        var owner = item && item._getOwner();
+        return owner ? owner._insertItem(item._index, this, _preserve) : null;
     },
 
     /**
      * Sends this item to the back of all other items within the same parent.
      */
     sendToBack: function() {
-        // If there is no parent and the item is a layer, delegate to project
-        // instead.
-        return (this._parent || this instanceof Layer && this._project)
-                .insertChild(0, this);
+        var owner = this._getOwner();
+        return owner ? owner._insertItem(0, this) : null;
     },
 
     /**
      * Brings this item to the front of all other items within the same parent.
      */
     bringToFront: function() {
-        // If there is no parent and the item is a layer, delegate to project
-        // instead.
-        return (this._parent || this instanceof Layer && this._project)
-                .addChild(this);
+        var owner = this._getOwner();
+        return owner ? owner._insertItem(undefined, this) : null;
     },
 
     /**
@@ -2295,7 +2405,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * use this function for groups, compound paths and layers.
      *
      * @function
-     * @param {Item} item The item to be appended as a child
+     * @param {Item} item the item to be appended as a child
      * @deprecated use {@link #addChild(item)} instead.
      */
     appendTop: '#addChild',
@@ -2305,7 +2415,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * the list of children and moving it below all other children. You can
      * use this function for groups, compound paths and layers.
      *
-     * @param {Item} item The item to be appended as a child
+     * @param {Item} item the item to be appended as a child
      * @deprecated use {@link #insertChild(index, item)} instead.
      */
     appendBottom: function(item) {
@@ -2316,7 +2426,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Moves this item above the specified item.
      *
      * @function
-     * @param {Item} item The item above which it should be moved
+     * @param {Item} item the item above which it should be moved
      * @return {Boolean} {@true if it was moved}
      * @deprecated use {@link #insertAbove(item)} instead.
      */
@@ -2331,6 +2441,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @deprecated use {@link #insertBelow(item)} instead.
      */
     moveBelow: '#insertBelow',
+
+    /**
+     * When passed a project, copies the item to the project,
+     * or duplicates it within the same project. When passed an item,
+     * copies the item into the specified item.
+     *
+     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
+     * copy the item to
+     * @return {Item} the new copy of the item
+     */
+    copyTo: function(owner) {
+        // Pass false for insert, since we're inserting at a specific location.
+        return owner._insertItem(undefined, this.clone(false));
+    },
 
     /**
      * If this is a group, layer or compound-path with only one child-item,
@@ -2350,7 +2474,6 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             } else {
                 child.remove();
             }
-            child.copyAttributes(this);
             return child;
         }
         return this;
@@ -2360,10 +2483,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Removes the item from its parent's named children list.
      */
     _removeNamed: function() {
-        var parent = this._parent;
-        if (parent) {
-            var children = parent._children,
-                namedChildren = parent._namedChildren,
+        var owner = this._getOwner();
+        if (owner) {
+            var children = owner._children,
+                namedChildren = owner._namedChildren,
                 name = this._name,
                 namedArray = namedChildren[name],
                 index = namedArray ? namedArray.indexOf(this) : -1;
@@ -2373,10 +2496,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     delete children[name];
                 // Remove this entry
                 namedArray.splice(index, 1);
-                // If there are any items left in the named array, set
-                // the last of them to be this.parent.children[this.name]
+                // If there are any items left in the named array, set the first
+                // of them to be children[this.name]
                 if (namedArray.length) {
-                    children[name] = namedArray[namedArray.length - 1];
+                    children[name] = namedArray[0];
                 } else {
                     // Otherwise delete the empty array
                     delete namedChildren[name];
@@ -2389,23 +2512,25 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Removes the item from its parent's children list.
      */
     _remove: function(notifySelf, notifyParent) {
-        var parent = this._parent;
-        if (parent) {
+        var owner = this._getOwner(),
+            project = this._project,
+            index = this._index;
+        if (owner && index != null) {
+            // Only required for layers, but not enough to merit an override.
+            if (project._activeLayer === this)
+                project._activeLayer = this.getNextSibling()
+                        || this.getPreviousSibling();
             if (this._name)
                 this._removeNamed();
-            if (this._index != null)
-                Base.splice(parent._children, null, this._index, 1);
+            Base.splice(owner._children, null, index, 1);
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
-            if (notifySelf) {
-                var project = this._project;
-                if (project && project._changes)
-                    this._changed(/*#=*/Change.INSERTION);
-            }
-            // Notify parent of changed children
+            if (notifySelf && project._changes)
+                this._changed(/*#=*/Change.INSERTION);
+            // Notify owner of changed children (this can be the project too).
             if (notifyParent)
-                parent._changed(/*#=*/Change.CHILDREN);
+                owner._changed(/*#=*/Change.CHILDREN, this);
             this._parent = null;
             return true;
         }
@@ -2445,24 +2570,24 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @return {Item[]} an array containing the removed items
      */
     /**
-     * Removes the children from the specified `from` index to the `to` index
-     * from the parent's {@link #children} array.
+     * Removes the children from the specified `start` index to and excluding
+     * the `end` index from the parent's {@link #children} array.
      *
      * @name Item#removeChildren
      * @function
-     * @param {Number} from the beginning index, inclusive
-     * @param {Number} [to=children.length] the ending index, exclusive
+     * @param {Number} start the beginning index, inclusive
+     * @param {Number} [end=children.length] the ending index, exclusive
      * @return {Item[]} an array containing the removed items
      */
-    removeChildren: function(from, to) {
+    removeChildren: function(start, end) {
         if (!this._children)
             return null;
-        from = from || 0;
-        to = Base.pick(to, this._children.length);
+        start = start || 0;
+        end = Base.pick(end, this._children.length);
         // Use Base.splice(), which adjusts #_index for the items above, and
         // deletes it for the removed items. Calling #_remove() afterwards is
         // fine, since it only calls Base.splice() if #_index is set.
-        var removed = Base.splice(this._children, null, from, to - from);
+        var removed = Base.splice(this._children, null, start, end - start);
         for (var i = removed.length - 1; i >= 0; i--) {
             // Don't notify parent each time, notify it separately after.
             removed[i]._remove(true, false);
@@ -2607,7 +2732,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks if this item is above the specified item in the stacking order
      * of the project.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
      */
     isAbove: function(item) {
@@ -2618,7 +2743,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Checks if the item is below the specified item in the stacking order of
      * the project.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
      */
     isBelow: function(item) {
@@ -2628,7 +2753,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks whether the specified item is the parent of the item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is the parent of the item}
      */
     isParent: function(item) {
@@ -2638,7 +2763,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks whether the specified item is a child of the item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true it is a child of the item}
      */
     isChild: function(item) {
@@ -2648,13 +2773,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     /**
      * Checks if the item is contained within the specified item.
      *
-     * @param {Item} item The item to check against
+     * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is inside the specified item}
      */
     isDescendant: function(item) {
         var parent = this;
         while (parent = parent._parent) {
-            if (parent == item)
+            if (parent === item)
                 return true;
         }
         return false;
@@ -2955,11 +3080,19 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @property
      * @type Color
      */
-
+}, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
+    var rotate = key === 'rotate';
+    this[key] = function(/* value, center */) {
+        var value = (rotate ? Base : Point).read(arguments),
+            center = Point.read(arguments, 0, { readNull: true });
+        return this.transform(new Matrix()[key](value,
+                center || this.getPosition(true)));
+    };
+}, /** @lends Item# */{
     /**
      * {@grouptitle Transform Functions}
      *
-     * Translates (moves) the item by the given offset point.
+     * Translates (moves) the item by the given offset views.
      *
      * @param {Point} delta the offset to translate the item by
      */
@@ -2969,13 +3102,15 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     },
 
     /**
-     * Rotates the item by a given angle around the given point.
+     * Rotates the item by a given angle around the given center point.
      *
      * Angles are oriented clockwise and measured in degrees.
      *
+     * @name Item#rotate
+     * @function
      * @param {Number} angle the rotation angle
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#rotate
+     * @see Matrix#rotate(angle[, center])
      *
      * @example {@paperscript}
      * // Rotating an item:
@@ -3012,20 +3147,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     path.rotate(3, view.center);
      * }
      */
-    rotate: function(angle /*, center */) {
-        return this.transform(new Matrix().rotate(angle,
-                Point.read(arguments, 1, { readNull: true })
-                    || this.getPosition(true)));
-    }
-}, Base.each(['scale', 'shear', 'skew'], function(name) {
-    this[name] = function() {
-        // See Matrix#scale for explanation of this:
-        var point = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
-        return this.transform(new Matrix()[name](point,
-                center || this.getPosition(true)));
-    };
-}, /** @lends Item# */{
+
     /**
      * Scales the item by the given value from its center point, or optionally
      * from a supplied point.
@@ -3097,7 +3219,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} shear the horziontal and vertical shear factors as a point
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(shear[, center])
      */
     /**
      * Shears the item by the given values from its center point, or optionally
@@ -3108,7 +3230,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal shear factor
      * @param {Number} ver the vertical shear factor
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
 
     /**
@@ -3119,7 +3241,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @function
      * @param {Point} skew the horziontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(skew[, center])
      */
     /**
      * Skews the item by the given angles from its center point, or optionally
@@ -3130,16 +3252,16 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @param {Number} hor the horizontal skew angle in degrees
      * @param {Number} ver the vertical sskew angle in degrees
      * @param {Point} [center={@link Item#position}]
-     * @see Matrix#shear
+     * @see Matrix#shear(hor, ver[, center])
      */
-}), /** @lends Item# */{
+
     /**
      * Transform the item.
      *
      * @param {Matrix} matrix the matrix by which the item shall be transformed
      */
     // TODO: Implement flags:
-    // @param {String[]} flags Array of any of the following: 'objects',
+    // @param {String[]} flags array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
     transform: function(matrix, _applyMatrix, _applyRecursively,
@@ -3159,12 +3281,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         // Bail out if there is nothing to do.
         if (!matrix && !applyMatrix)
             return this;
-        // Simply preconcatenate the internal matrix with the passed one:
-        if (matrix)
-            _matrix.preConcatenate(matrix);
+        // Simply prepend the internal matrix with the passed one:
+        if (matrix) {
+            // Keep a backup of the last valid state before the matrix becomes
+            // non-invertible. This is then used again in setBounds to restore.
+            if (!matrix.isInvertible() && _matrix.isInvertible())
+                _matrix._backup = _matrix.getValues();
+            _matrix.prepend(matrix);
+        }
         // Call #_transformContent() now, if we need to directly apply the
         // internal _matrix transformations to the item's content.
-        // Application is not possible on Raster, PointText, PlacedSymbol, since
+        // Application is not possible on Raster, PointText, SymbolItem, since
         // the matrix is where the actual transformation state is stored.
         if (applyMatrix = applyMatrix && this._transformContent(_matrix,
                     _applyRecursively, _setApplyMatrix)) {
@@ -3204,11 +3331,13 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             // Transform the old bound by looping through all the cached bounds
             // in _bounds and transform each.
             for (var key in bounds) {
-                var rect = bounds[key];
+                var cache = bounds[key];
                 // If these are internal bounds, only transform them if this
                 // item applied its matrix.
-                if (applyMatrix || !rect._internal)
+                if (applyMatrix || !cache.internal) {
+                    var rect = cache.rect;
                     matrix._transformBounds(rect, rect);
+                }
             }
             // If we have cached bounds, update _position again as its
             // center. We need to take into account _boundsGetter here too, in
@@ -3350,7 +3479,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
     fitBounds: function(rectangle, fill) {
         // TODO: Think about passing options with various ways of defining
-        // fitting.
+        // fitting. Compare with InDesign fitting to see possible options.
         rectangle = Rectangle.read(arguments);
         var bounds = this.getBounds(),
             itemRatio = bounds.height / bounds.width,
@@ -3362,8 +3491,8 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                     new Size(bounds.width * scale, bounds.height * scale));
         newBounds.setCenter(rectangle.getCenter());
         this.setBounds(newBounds);
-    },
-
+    }
+}), /** @lends Item# */{
     /**
      * {@grouptitle Event Handlers}
      *
@@ -3378,7 +3507,11 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * @option event.delta {Number} the time passed in seconds since the last
      *     frame event
      *
+     * @name Item#onFrame
+     * @property
+     * @type Function
      * @see View#onFrame
+     *
      * @example {@paperscript}
      * // Creating an animation:
      *
@@ -3391,20 +3524,20 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      *     // Every frame, rotate the path by 3 degrees:
      *     this.rotate(3);
      * }
-     *
-     * @name Item#onFrame
-     * @property
-     * @type Function
      */
 
     /**
      * The function to be called when the mouse button is pushed down on the
      * item. The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDown
      * @property
      * @type Function
+     * @see View#onMouseDown
      *
      * @example {@paperscript}
      * // Press the mouse button down on the circle shaped path, to make it red:
@@ -3447,10 +3580,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse position changes while the mouse
      * is being dragged over the item. The function receives a {@link
      * MouseEvent} object which contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseDrag
      * @property
      * @type Function
+     * @see View#onMouseDrag
      *
      * @example {@paperscript height=240}
      * // Press and drag the mouse on the blue circle to move it:
@@ -3472,10 +3609,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse button is released over the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseUp
      * @property
      * @type Function
+     * @see View#onMouseUp
      *
      * @example {@paperscript}
      * // Release the mouse button over the circle shaped path, to make it red:
@@ -3498,10 +3639,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse clicks on the item. The function
      * receives a {@link MouseEvent} object which contains information about the
      * mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onClick
      * @property
      * @type Function
+     * @see View#onClick
      *
      * @example {@paperscript}
      * // Click on the circle shaped path, to make it red:
@@ -3544,10 +3689,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse double clicks on the item. The
      * function receives a {@link MouseEvent} object which contains information
      * about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onDoubleClick
      * @property
      * @type Function
+     * @see View#onDoubleClick
      *
      * @example {@paperscript}
      * // Double click on the circle shaped path, to make it red:
@@ -3587,13 +3736,17 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      */
 
     /**
-     * The function to be called repeatedly when the mouse moves on top of the
-     * item. The function receives a {@link MouseEvent} object which contains
+     * The function to be called repeatedly while the mouse moves over the item.
+     * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseMove
      * @property
      * @type Function
+     * @see View#onMouseMove
      *
      * @example {@paperscript}
      * // Move over the circle shaped path, to change its opacity:
@@ -3617,10 +3770,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * function will only be called again, once the mouse moved outside of the
      * item first. The function receives a {@link MouseEvent} object which
      * contains information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseEnter
      * @property
      * @type Function
+     * @see View#onMouseEnter
      *
      * @example {@paperscript}
      * // When you move the mouse over the item, its fill color is set to red.
@@ -3675,10 +3832,14 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * The function to be called when the mouse moves out of the item.
      * The function receives a {@link MouseEvent} object which contains
      * information about the mouse event.
+     * Note that such mouse events bubble up the scene graph hierarchy and will
+     * reach the view, unless they are stopped with {@link
+     * Event#stopPropagation()} or by returning `false` from the handler.
      *
      * @name Item#onMouseLeave
      * @property
      * @type Function
+     * @see View#onMouseLeave
      *
      * @example {@paperscript}
      * // Move the mouse over the circle shaped path and then move it out
@@ -3843,53 +4004,54 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
      * Not defined in Path as it is required by other classes too,
      * e.g. PointText.
      */
-    _setStyles: function(ctx) {
+    _setStyles: function(ctx, param, viewMatrix) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
-        var style = this._style,
-            fillColor = style.getFillColor(),
-            strokeColor = style.getStrokeColor(),
-            shadowColor = style.getShadowColor();
-        if (fillColor)
-            ctx.fillStyle = fillColor.toCanvasStyle(ctx);
-        if (strokeColor) {
-            var strokeWidth = style.getStrokeWidth();
-            if (strokeWidth > 0) {
-                ctx.strokeStyle = strokeColor.toCanvasStyle(ctx);
-                ctx.lineWidth = strokeWidth;
-                var strokeJoin = style.getStrokeJoin(),
-                    strokeCap = style.getStrokeCap(),
-                    miterLimit = style.getMiterLimit();
-                if (strokeJoin)
-                    ctx.lineJoin = strokeJoin;
-                if (strokeCap)
-                    ctx.lineCap = strokeCap;
-                if (miterLimit)
-                    ctx.miterLimit = miterLimit;
-                if (paper.support.nativeDash) {
-                    var dashArray = style.getDashArray(),
-                        dashOffset = style.getDashOffset();
-                    if (dashArray && dashArray.length) {
-                        if ('setLineDash' in ctx) {
-                            ctx.setLineDash(dashArray);
-                            ctx.lineDashOffset = dashOffset;
-                        } else {
-                            ctx.mozDash = dashArray;
-                            ctx.mozDashOffset = dashOffset;
-                        }
+        var style = this._style;
+        if (style.hasFill()) {
+            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+        }
+        if (style.hasStroke()) {
+            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
+            ctx.lineWidth = style.getStrokeWidth();
+            var strokeJoin = style.getStrokeJoin(),
+                strokeCap = style.getStrokeCap(),
+                miterLimit = style.getMiterLimit();
+            if (strokeJoin)
+                ctx.lineJoin = strokeJoin;
+            if (strokeCap)
+                ctx.lineCap = strokeCap;
+            if (miterLimit)
+                ctx.miterLimit = miterLimit;
+            if (paper.support.nativeDash) {
+                var dashArray = style.getDashArray(),
+                    dashOffset = style.getDashOffset();
+                if (dashArray && dashArray.length) {
+                    if ('setLineDash' in ctx) {
+                        ctx.setLineDash(dashArray);
+                        ctx.lineDashOffset = dashOffset;
+                    } else {
+                        ctx.mozDash = dashArray;
+                        ctx.mozDashOffset = dashOffset;
                     }
                 }
             }
         }
-        if (shadowColor) {
-            var shadowBlur = style.getShadowBlur();
-            if (shadowBlur > 0) {
-                ctx.shadowColor = shadowColor.toCanvasStyle(ctx);
-                ctx.shadowBlur = shadowBlur;
-                var offset = this.getShadowOffset();
-                ctx.shadowOffsetX = offset.x;
-                ctx.shadowOffsetY = offset.y;
-            }
+        if (style.hasShadow()) {
+            // In Canvas, shadows unfortunately ignore all transformations
+            // completely. As almost no browser supports ctx.currentTransform,
+            // we need to calculate our own here, and then use it to transform
+            // the shadow-blur and offset accordingly.
+            var pixelRatio = param.pixelRatio || 1,
+                mx = viewMatrix._shiftless().prepend(
+                    new Matrix().scale(pixelRatio, pixelRatio)),
+                // Transform the blur value as a vector and use its new length:
+                blur = mx.transform(new Point(style.getShadowBlur(), 0)),
+                offset = mx.transform(this.getShadowOffset());
+            ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
+            ctx.shadowBlur = blur.getLength();
+            ctx.shadowOffsetX = offset.x;
+            ctx.shadowOffsetY = offset.y;
         }
     },
 
@@ -3906,7 +4068,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         var matrices = param.matrices,
             viewMatrix = param.viewMatrix,
             matrix = this._matrix,
-            globalMatrix = matrices[matrices.length - 1].chain(matrix);
+            globalMatrix = matrices[matrices.length - 1].appended(matrix);
         // If this item is not invertible, do not draw it. It appears to be a
         // good idea generally to not draw in such circumstances, e.g. SVG
         // handles it the same way.
@@ -3915,11 +4077,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
 
         // Since globalMatrix does not take the view's matrix into account (we
         // could have multiple views with different zooms), we may have to
-        // pre-concatenate the view's matrix.
-        // Note that it's only provided if it isn't the identity matrix.
-        function getViewMatrix(matrix) {
-            return viewMatrix ? viewMatrix.chain(matrix) : matrix;
-        }
+        // prepend the view's matrix.
+        // NOTE: viewMatrix is only provided if it isn't the identity matrix.
+        viewMatrix = viewMatrix ? viewMatrix.appended(globalMatrix)
+                : globalMatrix;
 
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
@@ -3954,7 +4115,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
-            var bounds = this.getStrokeBounds(getViewMatrix(globalMatrix));
+            var bounds = this.getStrokeBounds(viewMatrix);
             if (!bounds.width || !bounds.height)
                 return;
             // Store previous offset and save the main context, so we can
@@ -3974,9 +4135,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         ctx.save();
         // Get the transformation matrix for non-scaling strokes.
         var strokeMatrix = parentStrokeMatrix
-                ? parentStrokeMatrix.chain(matrix)
+                ? parentStrokeMatrix.appended(matrix)
                 // pass `true` for dontMerge
-                : !this.getStrokeScaling(true) && getViewMatrix(globalMatrix),
+                : this._canScaleStroke && !this.getStrokeScaling(true)
+                    && viewMatrix,
             // If we're drawing into a separate canvas and a clipItem is defined
             // for the current rendering loop, we need to draw the clip item
             // again.
@@ -3997,10 +4159,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
         // Apply globalMatrix when drawing into temporary canvas.
-        if (transform)
-            (direct ? matrix : getViewMatrix(globalMatrix)).applyToContext(ctx);
-        if (clip)
+        if (transform) {
+            (direct ? matrix : viewMatrix).applyToContext(ctx);
+        }
+        if (clip) {
             param.clipItem.draw(ctx, param.extend({ clip: true }));
+        }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.
             ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
@@ -4011,7 +4175,7 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
             if (offset)
                 ctx.translate(-offset.x, -offset.y);
         }
-        this._draw(ctx, param, strokeMatrix);
+        this._draw(ctx, param, viewMatrix, strokeMatrix);
         ctx.restore();
         matrices.pop();
         if (param.clip && !param.dontFinish)
@@ -4060,16 +4224,18 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
                 && this._isUpdated(updateVersion)) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
-            var color = this.getSelectedColor(true)
-                    || this.getLayer().getSelectedColor(true),
-                mx = matrix.chain(this.getGlobalMatrix(true));
+            var layer,
+                color = this.getSelectedColor(true)
+                    || (layer = this.getLayer()) && layer.getSelectedColor(true),
+                mx = matrix.appended(this.getGlobalMatrix(true));
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
             if (this._drawSelected)
                 this._drawSelected(ctx, mx, selectedItems);
             if (this._boundsSelected) {
                 var half = size / 2,
-                    coords = mx._transformCorners(this.getInternalBounds());
+                    coords = mx._transformCorners(
+                            this.getInternalBounds());
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.
                 ctx.beginPath();
@@ -4087,10 +4253,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _canComposite: function() {
         return false;
     }
-}, Base.each(['down', 'drag', 'up', 'move'], function(name) {
-    this['removeOn' + Base.capitalize(name)] = function() {
+}, Base.each(['down', 'drag', 'up', 'move'], function(key) {
+    this['removeOn' + Base.capitalize(key)] = function() {
         var hash = {};
-        hash[name] = true;
+        hash[key] = true;
         return this.removeOn(hash);
     };
 }, /** @lends Item# */{

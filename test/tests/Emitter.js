@@ -10,21 +10,27 @@
  * All rights reserved.
  */
 
-module('Emitter');
+QUnit.module('Emitter');
 
 test('on()', function() {
-    var emitter = new Base(Emitter),
+    var emitter = new Item(),
         installed;
     // fake event type registration
-    emitter._eventTypes = {mousemove: {install: function(){ installed = true;} } };
+    emitter._eventTypes = {
+        mousemove: {
+            install: function() {
+                installed = true;
+            }
+        }
+    };
     equals(function() {
         return !emitter.responds('mousemove');
     }, true);
+
     emitter.on('mousemove', function() {});
-    equals(function() {
-        return emitter.responds('mousemove')
-    }, true);
+    equals(function() { return emitter.responds('mousemove'); }, true);
     equals(function() { return installed; }, true);
+
     // one time installation only
     installed = false;
     emitter.on('mousemove', function() {});
@@ -32,16 +38,27 @@ test('on()', function() {
 
     emitter.on('customUnregistered', function() {});
     equals(function() {
-        return emitter.responds('customUnregistered')
+        return emitter.responds('customUnregistered');
     }, true);
 });
 
 test('off()', function() {
-    var emitter = new Base(Emitter),
-        uninstalled, called = 0,
-        handler = function () {called++},
-        handler2 = function () {};
-    emitter._eventTypes = {mousemove: {uninstall: function(){ uninstalled = true;} } };
+    var emitter = new Item(),
+        uninstalled,
+        called = 0,
+        handler = function () {
+            called++;
+        },
+        handler2 = function () {
+        };
+
+    emitter._eventTypes = {
+        mousemove: {
+            uninstall: function() {
+                uninstalled = true;
+            }
+        }
+    };
 
     emitter.on('mousemove', handler);
     emitter.on('mousemove', handler2);
@@ -52,12 +69,12 @@ test('off()', function() {
     emitter.off('mousemove', handler2);
     emitter.emit('mousemove');
     equals(function() { return called == 2; }, true);
-    equals(function() { return !uninstalled }, true);
+    equals(function() { return !uninstalled; }, true);
 
     emitter.off('mousemove', handler);
     emitter.emit('mousemove');
     equals(function() { return called == 2; }, true);
-    equals(function() { return uninstalled }, true);
+    equals(function() { return uninstalled; }, true);
 
     called = 0;
     emitter.emit('custom');
@@ -68,11 +85,15 @@ test('off()', function() {
 });
 
 test('emit()', function() {
-    var emitter = new Base(Emitter),
+    var emitter = new Item(),
         called,
-        handler = function (e) {called = e};
+        handler = function (e) {
+            called = e;
+        };
     // fake event type registration
-    emitter._eventTypes = {mousemove: {} };
+    emitter._eventTypes = {
+        mousemove: {}
+    };
     emitter.on('mousemove', handler);
     emitter.on('custom', handler);
 

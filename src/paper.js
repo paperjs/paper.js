@@ -1,5 +1,5 @@
 /*!
- * Paper.js v*#=* __options.version - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v*#=*__options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,13 +9,13 @@
  *
  * All rights reserved.
  *
- * Date: *#=* __options.date
+ * Date: *#=*__options.date
  *
  ***
  *
  * Straps.js - Class inheritance library with support for bean-style accessors
  *
- * Copyright (c) 2006 - 2013 Juerg Lehni
+ * Copyright (c) 2006 - 2016 Juerg Lehni
  * http://scratchdisk.com/
  *
  * Distributed under the MIT license.
@@ -32,17 +32,10 @@
 
 // Allow the minification of the undefined variable by defining it as a local
 // parameter inside the paper scope.
-var paper = new function(undefined) {
+var paper = function(self, undefined) {
+/*#*/ include('init.js');
 // Inline Straps.js core (the Base class) inside the paper scope first:
-/*#*/ include('../bower_components/straps/straps.js', { exports: false });
-
-/*#*/ if (__options.version == 'dev' && __options.environment == 'browser') {
-/*#*/     include('../bower_components/stats.js/build/stats.min.js');
-/*#*/ }
-
-/*#*/ if (__options.version == 'dev') {
-/*#*/     include('constants.js');
-/*#*/ }
+/*#*/ include('../node_modules/straps/straps.js');
 
 /*#*/ include('core/Base.js');
 /*#*/ include('core/Emitter.js');
@@ -63,15 +56,14 @@ var paper = new function(undefined) {
 /*#*/ include('basic/Matrix.js');
 /*#*/ include('basic/Line.js');
 
-/*#*/ include('project/Project.js');
-/*#*/ include('project/Symbol.js');
-
+/*#*/ include('item/Project.js');
 /*#*/ include('item/Item.js');
 /*#*/ include('item/Group.js');
 /*#*/ include('item/Layer.js');
 /*#*/ include('item/Shape.js');
 /*#*/ include('item/Raster.js');
-/*#*/ include('item/PlacedSymbol.js');
+/*#*/ include('item/SymbolItem.js');
+/*#*/ include('item/SymbolDefinition.js');
 /*#*/ include('item/HitResult.js');
 
 /*#*/ include('path/Segment.js');
@@ -96,41 +88,33 @@ var paper = new function(undefined) {
 /*#*/ include('style/GradientStop.js');
 /*#*/ include('style/Style.js');
 
-/*#*/ if (__options.environment == 'node') {
-/*#*/     include('dom/node.js');
-/*#*/ }
 /*#*/ include('dom/DomElement.js');
-/*#*/ if (__options.environment == 'browser') {
-// DomEvent doesn't make sense outside of the browser (yet)
-/*#*/     include('dom/DomEvent.js');
-/*#*/ }
+/*#*/ include('dom/DomEvent.js');
 
 /*#*/ include('view/View.js');
 /*#*/ include('view/CanvasView.js');
 
-/*#*/ if (__options.environment == 'browser') {
-/*#*/     include('event/Event.js');
-/*#*/     include('event/KeyEvent.js');
-/*#*/     include('event/Key.js');
-/*#*/     include('event/MouseEvent.js');
+/*#*/ include('event/Event.js');
+/*#*/ include('event/KeyEvent.js');
+/*#*/ include('event/Key.js');
+/*#*/ include('event/MouseEvent.js');
 
-/*#*/     include('tool/ToolEvent.js');
-/*#*/     include('tool/Tool.js');
+/*#*/ include('tool/ToolEvent.js');
+/*#*/ include('tool/Tool.js');
 
-/*#*/     include('net/Http.js');
-/*#*/ }
+/*#*/ include('net/Http.js');
 
 /*#*/ include('canvas/CanvasProvider.js');
 /*#*/ include('canvas/BlendMode.js');
-/*#*/ if (__options.version == 'dev') {
+/*#*/ if (__options.load) {
 /*#*/     include('canvas/ProxyContext.js');
 /*#*/ }
 
 /*#*/ if (__options.svg) {
-/*#*/     include('svg/SVGStyles.js');
-/*#*/     include('svg/SVGNamespaces.js');
-/*#*/     include('svg/SVGExport.js');
-/*#*/     include('svg/SVGImport.js');
+/*#*/     include('svg/SvgElement.js');
+/*#*/     include('svg/SvgStyles.js');
+/*#*/     include('svg/SvgExport.js');
+/*#*/     include('svg/SvgImport.js');
 /*#*/ }
 
 /*#*/ if (__options.paperScript) {
@@ -139,4 +123,4 @@ var paper = new function(undefined) {
 
 /*#*/ include('export.js');
 return paper;
-};
+}(this.self);

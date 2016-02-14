@@ -31,7 +31,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     },
     // TextItem doesn't make the distinction between the different bounds,
     // so use the same name for all of them
-    _boundsGetter: 'getBounds',
+    _boundsOptions: { stroke: false, handle: false },
 
     initialize: function TextItem(arg) {
         this._content = '';
@@ -159,7 +159,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @bean
      * @private
-     * @deprecated use {@link #style} instead.
+     * @deprecated use {@link #getStyle()} instead.
      */
     getCharacterStyle: '#getStyle',
     setCharacterStyle: '#setStyle',
@@ -167,7 +167,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @bean
      * @private
-     * @deprecated use {@link #style} instead.
+     * @deprecated use {@link #getStyle()} instead.
      */
     getParagraphStyle: '#getStyle',
     setParagraphStyle: '#setStyle'

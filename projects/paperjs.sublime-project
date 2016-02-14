@@ -11,14 +11,24 @@
       "path": "../examples"
     },
     {
-      "path": "../build",
-      // jsdoc-toolkit will have its own project file
-      "folder_exclude_patterns": ["jsdoc-toolkit"]
+      "path": "../gulp",
+      "folder_exclude_patterns": ["jsdoc"]
+    },
+    {
+      "path": "../travis",
     },
     {
       "path": "..",
       "name": "root",
       "folder_exclude_patterns": ["*"]
     }
-  ]
+  ],
+  "SublimeLinter":
+  {
+    "linters": {
+      "jshint": {
+        "@disable": false
+      }
+    }
+  }
 }

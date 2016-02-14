@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-module('Size');
+QUnit.module('Size');
+
 test('new Size(10, 20)', function() {
     var size = new Size(10, 20);
     equals(size.toString(), '{ width: 10, height: 20 }');

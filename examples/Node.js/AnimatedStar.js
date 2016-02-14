@@ -1,5 +1,8 @@
-var paper = require('paper');
-paper.setup(new paper.Canvas(1024, 768));
+// Please note: When loading paper as a normal module installed in node_modules,
+// you would use this instead:
+// var paper = require('paper');
+var paper = require('../../dist/paper-full.js');
+paper.setup(new paper.Size(1024, 768));
 
 var layer = paper.project.activeLayer;
 
@@ -46,4 +49,4 @@ paper.view.onFrame = function(event) {
         var angle = (values.count - i) * Math.sin(event.count / 128) / 10;
         item.rotate(angle);
     }
-}
+};

@@ -76,24 +76,9 @@ Base.inject(/** @lends Base# */{
      * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
      */
-    _set: function(props, exclude, dontCheck) {
-        if (props && (dontCheck || Base.isPlainObject(props))) {
-            // If props is a filtering object, we need to execute hasOwnProperty
-            // on the original object (it's parent / prototype). See _filtered
-            // inheritance trick in the argument reading code.
-            var keys = Object.keys(props._filtering || props);
-            for (var i = 0, l = keys.length; i < l; i++) {
-                var key = keys[i];
-                if (!(exclude && exclude[key])) {
-                    // Due to the _filtered inheritance trick, undefined is used
-                    // to mask already consumed named arguments.
-                    var value = props[key];
-                    if (value !== undefined)
-                        this[key] = value;
-                }
-            }
-            return true;
-        }
+    _set: function(props) {
+        if (props && Base.isPlainObject(props))
+            return Base.filter(this, props);
     },
 
     statics: /** @lends Base */{
@@ -309,6 +294,29 @@ Base.inject(/** @lends Base# */{
         },
 
         /**
+         * Copies all properties from `source` over to `dest`, supporting
+         * _filtered handling as required by Base.readNamed() mechanism, as well
+         * as an optional exclude` object that lists properties to exclude.
+         */
+        filter: function(dest, source, exclude) {
+            // If source is a filtering object, we need to get the keys from the
+            // the original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            var keys = Object.keys(source._filtering || source);
+            for (var i = 0, l = keys.length; i < l; i++) {
+                var key = keys[i];
+                if (!(exclude && exclude[key])) {
+                    // Due to the _filtered inheritance trick, undefined is used
+                    // to mask already consumed named arguments.
+                    var value = source[key];
+                    if (value !== undefined)
+                        dest[key] = value;
+                }
+            }
+            return dest;
+        },
+
+        /**
          * Returns true if obj is either a plain object or an array, as used by
          * many argument reading methods.
          */
@@ -444,7 +452,7 @@ Base.inject(/** @lends Base# */{
                     // creation. This is used in #importJSON() to pass
                     // on insert = false to all items except layers.
                     if (create) {
-                        res = create(type, args);
+                        res = create(type, args, isRoot);
                     } else {
                         res = Base.create(type.prototype);
                         type.apply(res, args);
@@ -476,26 +484,30 @@ Base.inject(/** @lends Base# */{
                     typeof json === 'string' ? JSON.parse(json) : json,
                     // Provide our own create function to handle target and
                     // insertion.
-                    function(type, args) {
-                        // If a target is provided and its of the right type,
-                        // import right into it.
-                        var obj = target && target.constructor === type
-                                ? target
-                                : Base.create(type.prototype),
-                            isTarget = obj === target;
+                    function(ctor, args, isRoot) {
+                        // If a target is provided and its of the right type
+                        // for the root item, import right into it.
+                        var useTarget = isRoot && target
+                                && target.constructor === ctor,
+                            obj = useTarget ? target
+                                : Base.create(ctor.prototype),
+                            // When reusing an object, try to initialize it
+                            // through _initialize (Item), fall-back to _set.
+                            init = useTarget ? obj._initialize || obj._set
+                                : ctor;
                         // NOTE: We don't set insert false for layers since we
                         // want these to be created on the fly in the active
                         // project into which we're importing (except for if
                         // it's a preexisting target layer).
                         if (args.length === 1 && obj instanceof Item
-                                && (isTarget || !(obj instanceof Layer))) {
+                                && (useTarget || !(obj instanceof Layer))) {
                             var arg = args[0];
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        type.apply(obj, args);
+                        init.apply(obj, args);
                         // Clear target to only use it once.
-                        if (isTarget)
+                        if (useTarget)
                             target = null;
                         return obj;
                     });

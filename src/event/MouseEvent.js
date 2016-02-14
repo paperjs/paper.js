@@ -27,8 +27,8 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     _class: 'MouseEvent',
 
     initialize: function MouseEvent(type, event, point, target, delta) {
-        Event.call(this, event);
         this.type = type;
+        this.event = event;
         this.point = point;
         this.target = target;
         this.delta = delta;

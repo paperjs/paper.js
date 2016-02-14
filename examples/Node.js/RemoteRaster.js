@@ -1,7 +1,10 @@
-var paper = require('paper');
+// Please note: When loading paper as a normal module installed in node_modules,
+// you would use this instead:
+// var paper = require('paper');
+var paper = require('../../dist/paper-full.js');
 var fs = require('fs');
 
-var canvas = new paper.Canvas(800, 600);
+var canvas = paper.createCanvas(800, 600);
 paper.setup(canvas);
 
 var url = 'http://assets.paperjs.org/images/marilyn.jpg';
@@ -13,7 +16,7 @@ raster.onLoad = function() {
 
     // Saving the canvas to a file.
     out = fs.createWriteStream(__dirname + '/canvas.png');
-    stream = canvas.pngStream();
+    stream = canvas.createPNGStream();
 
     stream.on('data', function(chunk) {
         out.write(chunk);

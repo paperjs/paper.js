@@ -1,0 +1,30 @@
+{
+  "folders":
+  [
+    {
+      "path": "../gulp/jsdoc/app"
+    },
+    {
+      "path": "../gulp/jsdoc/templates"
+    },
+    {
+      "path": "../gulp/jsdoc/conf"
+    },
+    {
+      "path": "../gulp/jsdoc",
+      "name": "root",
+      "folder_exclude_patterns": ["*"],
+      "file_exclude_patterns": [ "*.jar" ]
+    }
+  ],
+  "SublimeLinter":
+  {
+    "linters": {
+      "jshint": {
+        "@disable": true,
+        "args": [],
+        "excludes": []
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('JSON');
+QUnit.module('JSON');
 
 function testExportImportJSON(project) {
     // Use higher precision than in comparissons, for bounds
@@ -86,7 +86,7 @@ test('Rectangle testing', function() {
     path1.fillColor = 'red';
     path1.name = 'square1';
     path1.strokeCap = 'square';
-    path1.opacity = .1;
+    path1.opacity = 0.1;
     path1.dashArray = [5, 2];
     path1.dashOffset = 0;
 
@@ -121,10 +121,10 @@ test('Symbols', function() {
         to: [200, 100],
         fillColor: 'red'
     });
-    var symbol = new Symbol(ellipse);
-    var p1 = symbol.place([100, 100]);
+    var definition = new SymbolDefinition(ellipse);
+    var p1 = definition.place([100, 100]);
     p1.rotate(45);
-    var p2 = symbol.place([300, 200]);
+    var p2 = definition.place([300, 200]);
     p2.rotate(-30);
 
     testExportImportJSON(paper.project);
@@ -157,7 +157,7 @@ test('transform test 1', function() {
     for(var i = 0; i < clones; i++) {
         var clonedPath = circlePath.clone();
         clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
-    };
+    }
     testExportImportJSON(paper.project);
 });
 

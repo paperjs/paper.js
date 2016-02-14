@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('PathItem Contains');
+QUnit.module('PathItem Contains');
 
 function testPoint(item, point, inside, message) {
     equals(item.contains(point), inside, message || ('The point ' + point
@@ -168,8 +168,8 @@ test('Path#contains() (Rectangle Contours)', function() {
         curves = path.getCurves();
 
     for (var i = 0; i < curves.length; i++) {
-        testPoint(path, curves[i].getPointAt(0, true), true);
-        testPoint(path, curves[i].getPointAt(0.5, true), true);
+        testPoint(path, curves[i].getPointAtTime(0), true);
+        testPoint(path, curves[i].getPointAtTime(0.5), true);
     }
 });
 
@@ -181,8 +181,8 @@ test('Path#contains() (Rotated Rectangle Contours)', function() {
     path.rotate(45);
 
     for (var i = 0; i < curves.length; i++) {
-        testPoint(path, curves[i].getPointAt(0, true), true);
-        testPoint(path, curves[i].getPointAt(0.5, true), true);
+        testPoint(path, curves[i].getPointAtTime(0), true);
+        testPoint(path, curves[i].getPointAtTime(0.5), true);
     }
 });
 
@@ -216,67 +216,81 @@ test('Path#contains() (complex shape)', function() {
 
 
 test('Path#contains() (straight curves with zero-winding)', function() {
-    var pathPoints = [
-        [140, 100],
-        [140, 10],
-        [100, 10],
-        [100, 20],
-        [120, 20],
-        [120, 40],
-        [100, 40],
-        [100, 60],
-        [200, 60],
-        [120, 60],
-        [120, 100],
-        [300, 100],
-        [50, 100]
+    var pointData = [
+        [[250, 230], true, true, false, true],
+        [[200, 230], true, true, true, true],
+        [[200, 280], false, true, false, true],
+        [[190, 280], true, false, false, true],
+        [[175, 270], true, true, false, true],
+        [[175, 220], true, true, true, true],
+        [[175, 270], true, true, false, true],
+        [[160, 280], false, true, false, true],
+        [[150, 280], true, false, false, true],
+        [[150, 220], true, false, true, true],
+        [[150, 200], true, true, true, true],
+        [[100, 200], true, false, false, true],
+        [[100, 190], true, true, true, true],
+        [[50, 190], true, false, false, false],
+        [[100, 190], true, true, true, true],
+        [[100, 180], true, false, true, false],
+        [[150, 180], true, true, true, true],
+        [[150, 160], true, false, true, true],
+        [[150, 100], true, false, true, false],
+        [[160, 100], false, true, true, false],
+        [[175, 110], true, true, true, false],
+        [[175, 160], true, true, true, true],
+        [[175, 110], true, true, true, false],
+        [[190, 100], true, false, true, false],
+        [[200, 100], false, true, true, false],
+        [[200, 150], true, true, true, true],
+        [[250, 150], true, true, true, false],
+        [[270, 120], false, false, true, true],
+        [[270, 90], false, false, true, false],
+        [[270, 120], false, false, true, true],
+        [[290, 150], false, true, true, false],
+        [[290, 180], true, true, true, true],
+        [[340, 180], false, true, true, false],
+        [[340, 190], true, true, true, true],
+        [[390, 190], false, true, false, false],
+        [[340, 190], true, true, true, true],
+        [[340, 200], false, true, false, true],
+        [[290, 200], true, true, true, true],
+        [[290, 230], false, true, false, true],
+        [[270, 260], false, false, true, true],
+        [[270, 290], false, false, false, true],
+        [[270, 260], false, false, true, true],
+        [[250, 230], true, true, false, true]
     ];
 
-    var path1 = new Path({
-        segments: pathPoints,
-        closed: true,
-        fillRule: 'evenodd'
+    var points = [];
+    for (var i = 0; i < pointData.length; i++) {
+        points.push(pointData[i][0]);
+    }
+    var path = new Path({
+        segments: points,
+        fillRule: 'evenodd',
+        closed: true
     });
 
-    var hitPoints = [
-        [[30,10], false],
-        [[110,10], true],
-        [[30,20], false],
-        [[110,20], true],
-        [[130,20], true],
-        [[170,20], false],
-        [[110,50], true],
-        [[30,60], false],
-        [[110,60], true],
-        [[130,60], true],
-        [[150,60], false],
-        [[230,60], false],
-        [[10,100], false],
-        [[60,100], false],
-        [[130,100], true],
-        [[170,100], false],
-        [[370,100], false]
-    ];
-
-    for (var i = 0; i < hitPoints.length; i++) {
-        var entry = hitPoints[i];
-        testPoint(path1, new Point(entry[0]), entry[1]);
+    for (var i = 0; i < pointData.length; i++) {
+        var p = new Point(points[i]);
+        testPoint(path, p, true); // point is a segment of the path, must be inside
+        testPoint(path, p.add(10, 0), pointData[i][1]);
+        testPoint(path, p.add(-10, 0), pointData[i][2]);
+        testPoint(path, p.add(0, 10), pointData[i][3]);
+        testPoint(path, p.add(0, -10), pointData[i][4]);
     }
+});
 
-    // Now test the x-y-reversed shape
-
-    for (var i = 0; i < pathPoints.length; i++) {
-        pathPoints[i].reverse();
-    }
-
-    var path1 = new Path({
-        segments: pathPoints,
-        closed: true,
-        fillRule: 'evenodd'
+test('CompoundPath#contains() (nested touching circles)', function() {
+    var c1 = new Path.Circle({
+        center: [200, 200],
+        radius: 100
     });
-
-    for (var i = 0; i < hitPoints.length; i++) {
-        var entry = hitPoints[i];
-        testPoint(path1, new Point(entry[0].reverse()), entry[1]);
-    }
-})
+    var c2 = new Path.Circle({
+        center: [150, 200],
+        radius: 50
+    });
+    var cp = new CompoundPath([c1, c2]);
+    testPoint(cp, new Point(100, 200), true);
+});

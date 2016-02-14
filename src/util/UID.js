@@ -22,7 +22,7 @@ var UID = {
     /**
      * Returns the next unique id.
      * @method get
-     * @return {Number} The next unique id
+     * @return {Number} the next unique id
      * @static
      **/
     get: function(ctor) {

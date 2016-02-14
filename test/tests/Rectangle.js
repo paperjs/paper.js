@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Rectangle');
+QUnit.module('Rectangle');
 
 test('new Rectangle(new Point(10, 20), new Size(30, 40));', function() {
     var rect = new Rectangle(new Point(10, 20), new Size(30, 40));

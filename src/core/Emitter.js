@@ -74,8 +74,9 @@ var Emitter = {
         });
     },
 
+
     emit: function(type, event) {
-        // Returns true if fired, false otherwise
+        // Returns true if any events were emitted, false otherwise.
         var handlers = this._callbacks && this._callbacks[type];
         if (!handlers)
             return false;
@@ -84,13 +85,14 @@ var Emitter = {
         // won't throw us off track here:
         handlers = handlers.slice();
         for (var i = 0, l = handlers.length; i < l; i++) {
-            // When the handler function returns false, prevent the default
-            // behavior and stop propagation of the event by calling stop()
             if (handlers[i].apply(this, args) === false) {
+                // If the handler returns false, prevent the default behavior
+                // and stop propagation of the event by calling stop()
                 if (event && event.stop)
                     event.stop();
+                // Stop propagation right now!
                 break;
-            }
+           }
         }
         return true;
     },
@@ -105,16 +107,18 @@ var Emitter = {
     fire: '#emit',
 
     _installEvents: function(install) {
-        var handlers = this._callbacks,
+        var types = this._eventTypes,
+            handlers = this._callbacks,
             key = install ? 'install' : 'uninstall';
-        for (var type in handlers) {
-            if (handlers[type].length > 0) {
-                var types = this._eventTypes,
-                    entry = types && types[type],
-                    func = entry && entry[key];
-                if (func)
-                    func.call(this, type);
-            }
+        if (types) {
+            for (var type in handlers) {
+                if (handlers[type].length > 0) {
+                    var entry = types[type],
+                        func = entry && entry[key];
+                    if (func)
+                        func.call(this, type);
+                }
+        }
         }
     },
 

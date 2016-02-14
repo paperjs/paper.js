@@ -19,26 +19,34 @@ var PathIterator = Base.extend({
     _class: 'PathIterator',
 
     /**
-     * Creates a path iterator for the given path.
+     * Creates a path iterator for the given path. The iterator converts curves
+     * into a sequence of straight lines by the use of curve-subdivision with an
+     * allowed maximum error to create a lookup table that maps curve-time to
+     * path offsets, and can be used for efficient iteration over the full
+     * length of the path, and getting points / tangents / normals and curvature
+     * in path offset space.
      *
-     * @param {Path} path the path to iterate over
+     * @param {Path} path the path to create the iterator for
+     * @param {Number} [flatness=0.25] the maximum error allowed for the
+     *     straight lines to deviate from the original curves
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
-     * curve subdivision when mapping offsets to curve parameters
-     * @param {Number} [tolerance=0.25] the error tolerance at which the
-     * recursion is interrupted before the maximum number of iterations is
-     * reached
+     *     curve subdivision when mapping offsets to curve parameters
+     * @param {Boolean} [ignoreStraight=false] if only interested in the result
+     *     of the sub-division (e.g. for path flattening), passing `true` will
+     *     protect straight curves from being subdivided for curve-time
+     *     translation
      * @param {Matrix} [matrix] the matrix by which to transform the path's
-     * coordinates without modifying the actual path.
+     *     coordinates without modifying the actual path.
      * @return {PathIterator} the newly created path iterator
      */
-    initialize: function(path, maxRecursion, tolerance, matrix) {
+    initialize: function(path, flatness, maxRecursion, ignoreStraight, matrix) {
         // Instead of relying on path.curves, we only use segments here and
         // get the curve values from them.
         var curves = [], // The curve values as returned by getValues()
             parts = [], // The calculated, subdivided parts of the path
             length = 0, // The total length of the path
             // By default, we're not subdividing more than 32 times.
-            minDifference = 1 / (maxRecursion || 32),
+            minSpan = 1 / (maxRecursion || 32),
             segments = path._segments,
             segment1 = segments[0],
             segment2;
@@ -51,29 +59,31 @@ var PathIterator = Base.extend({
             computeParts(curve, segment1._index, 0, 1);
         }
 
-        function computeParts(curve, index, minT, maxT) {
+        function computeParts(curve, index, t1, t2) {
             // Check if the t-span is big enough for subdivision.
-            if ((maxT - minT) > minDifference
-                    // After quite a bit of testing, a default tolerance of 0.25
+            if ((t2 - t1) > minSpan
+                    && !(ignoreStraight && Curve.isStraight(curve))
+                    // After quite a bit of testing, a default flatness of 0.25
                     // appears to offer a good trade-off between speed and
                     // precision for display purposes.
-                    && !Curve.isFlatEnough(curve, tolerance || 0.25)) {
-                var split = Curve.subdivide(curve, 0.5),
-                    halfT = (minT + maxT) / 2;
+                    && !Curve.isFlatEnough(curve, flatness || 0.25)) {
+                var halves = Curve.subdivide(curve, 0.5),
+                    tMid = (t1 + t2) / 2;
                 // Recursively subdivide and compute parts again.
-                computeParts(split[0], index, minT, halfT);
-                computeParts(split[1], index, halfT, maxT);
+                computeParts(halves[0], index, t1, tMid);
+                computeParts(halves[1], index, tMid, t2);
             } else {
-                // Calculate distance between p1 and p2
-                var x = curve[6] - curve[0],
-                    y = curve[7] - curve[1],
-                    dist = Math.sqrt(x * x + y * y);
-                if (dist > /*#=*/Numerical.TOLERANCE) {
+                // Calculate the length of the curve interpreted as a line.
+                var dx = curve[6] - curve[0],
+                    dy = curve[7] - curve[1],
+                    dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > 0) {
                     length += dist;
                     parts.push({
                         offset: length,
-                        value: maxT,
-                        index: index
+                        curve: curve,
+                        index: index,
+                        time: t2,
                     });
                 }
             }
@@ -86,16 +96,15 @@ var PathIterator = Base.extend({
         }
         if (path._closed)
             addCurve(segment2, segments[0]);
-
         this.curves = curves;
         this.parts = parts;
         this.length = length;
         // Keep a current index from the part where we last where in
-        // getParameterAt(), to optimise for iterator-like usage of iterator.
+        // _get(), to optimise for iterator-like usage of iterator.
         this.index = 0;
     },
 
-    getParameterAt: function(offset) {
+    _get: function(offset) {
         // Make sure we're not beyond the requested offset already. Search the
         // start position backwards from where to then process the loop below.
         var i, j = this.index;
@@ -116,41 +125,41 @@ var PathIterator = Base.extend({
                 var prev = this.parts[i - 1];
                 // Make sure we only use the previous parameter value if its
                 // for the same curve, by checking index. Use 0 otherwise.
-                var prevVal = prev && prev.index == part.index ? prev.value : 0,
-                    prevLen = prev ? prev.offset : 0;
+                var prevTime = prev && prev.index === part.index ? prev.time : 0,
+                    prevOffset = prev ? prev.offset : 0;
                 return {
+                    index: part.index,
                     // Interpolate
-                    value: prevVal + (part.value - prevVal)
-                        * (offset - prevLen) / (part.offset - prevLen),
-                    index: part.index
+                    time: prevTime + (part.time - prevTime)
+                        * (offset - prevOffset) / (part.offset - prevOffset)
                 };
             }
         }
-        // Return last one
+        // If we're still here, return last one
         var part = this.parts[this.parts.length - 1];
         return {
-            value: 1,
-            index: part.index
+            index: part.index,
+            time: 1
         };
     },
 
     drawPart: function(ctx, from, to) {
-        from = this.getParameterAt(from);
-        to = this.getParameterAt(to);
-        for (var i = from.index; i <= to.index; i++) {
+        var start = this._get(from),
+            end = this._get(to);
+        for (var i = start.index, l = end.index; i <= l; i++) {
             var curve = Curve.getPart(this.curves[i],
-                    i == from.index ? from.value : 0,
-                    i == to.index ? to.value : 1);
-            if (i == from.index)
+                    i === start.index ? start.time : 0,
+                    i === end.index ? end.time : 1);
+            if (i === start.index)
                 ctx.moveTo(curve[0], curve[1]);
             ctx.bezierCurveTo.apply(ctx, curve.slice(2));
         }
     }
-}, Base.each(Curve.evaluateMethods,
+}, Base.each(Curve._evaluateMethods,
     function(name) {
-        this[name + 'At'] = function(offset, weighted) {
-            var param = this.getParameterAt(offset);
-            return Curve[name](this.curves[param.index], param.value, weighted);
+        this[name + 'At'] = function(offset) {
+            var param = this._get(offset);
+            return Curve[name](this.curves[param.index], param.time);
         };
     }, {})
 );

@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-module('Segment');
+QUnit.module('Segment');
+
 test('new Segment(point)', function() {
     var segment = new Segment(new Point(10, 10));
     equals(segment.toString(), '{ point: { x: 10, y: 10 } }');
