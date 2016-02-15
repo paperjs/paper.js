@@ -110,7 +110,7 @@ new function() {
         var segments = item._segments,
             type,
             attrs = getTransform(item._matrix);
-        if (segments.length === 0)
+        if (segments.length === 0 && !item.isClipMask())
             return null;
         if (matchShapes && !item.hasHandles()) {
             if (segments.length >= 3) {
