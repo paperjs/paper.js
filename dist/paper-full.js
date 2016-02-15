@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 16 00:06:26 2016 +0100
+ * Date: Tue Feb 16 00:28:04 2016 +0100
  *
  ***
  *
@@ -4731,13 +4731,15 @@ new function() {
 		_hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
 				strokeMatrix) {
 			var hit = false,
-				style = this._style;
-			if (options.stroke && style.hasStroke()) {
+				style = this._style,
+				hitStroke = options.stroke && style.hasStroke(),
+				hitFill = options.fill && style.hasFill();
+			if (hitStroke || hitFill) {
 				var type = this._type,
 					radius = this._radius,
-					strokeWidth = style.getStrokeWidth(),
+					strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0;
 					strokePadding = options._tolerancePadding.add(
-						Path._getStrokePadding(strokeWidth / 2,
+						Path._getStrokePadding(strokeRadius,
 							!style.getStrokeScaling() && strokeMatrix));
 				if (type === 'rectangle') {
 					var padding = strokePadding.multiply(2),
@@ -4756,7 +4758,7 @@ new function() {
 					hit = isOnEllipseStroke(point, radius, strokePadding);
 				}
 			}
-			return hit ? new HitResult('stroke', this)
+			return hit ? new HitResult(hitStroke ? 'stroke' : 'fill', this)
 					: _hitTestSelf.base.apply(this, arguments);
 		}
 	};
@@ -8228,7 +8230,7 @@ var Path = PathItem.extend({
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
 				miterLimit = strokeRadius * style.getMiterLimit();
-				strokePadding = tolerancePadding.add(
+				strokePadding = strokePadding.add(
 					Path._getStrokePadding(strokeRadius,
 						!style.getStrokeScaling() && strokeMatrix));
 			} else {
