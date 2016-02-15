@@ -1,12 +1,12 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
 // var paper = require('paper');
-var paper = require('../../dist/paper-full.js');
+var paper = require('../../dist/paper-core.js');
 var path = require('path');
 var fs = require('fs');
 
 paper.setup(new paper.Size(300, 600));
-paper.project.importSVG(/*'in.svg'*/'file://' + path.resolve(__dirname, 'in.svg'), {
+paper.project.importSVG(/*'in.svg'*/'file://' + path.resolve('./in.svg'), {
     onLoad: function(item) {
         paper.view.exportFrames({
             amount: 1,

@@ -12,46 +12,47 @@
 
 var fs = require('fs'),
     path = require('path');
-    Canvas = require('canvas');
 
 module.exports = function(paper) {
-    var sourceMaps = {},
-        sourceMapSupprt = 'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n';
+    if (paper.PaperScript) {
+        var sourceMapSupprt = 'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n',
+            sourceMaps = {};
 
-    paper.PaperScript.sourceMapSupport = {
-        retrieveSourceMap: function(source) {
-            var map = sourceMaps[source];
-            return map ? { url: source, map: map } : null;
-        }
-    };
-
-    // Register the .pjs extension for automatic compilation as PaperScript
-    require.extensions['.pjs'] = function(module, filename) {
-        // Requiring a PaperScript on Node.js returns an initialize method which
-        // needs to receive a Canvas object when called and returns the
-        // PaperScope.
-        module.exports = function(canvas) {
-            var source = fs.readFileSync(filename, 'utf8'),
-                code = sourceMapSupprt + source,
-                compiled = paper.PaperScript.compile(code, {
-                    url: filename,
-                    source: source,
-                    sourceMaps: true,
-                    offset: -1 // remove sourceMapSupprt...
-                }),
-                scope = new paper.PaperScope();
-            // Keep track of sourceMaps so retrieveSourceMap() can link them up
-            scope.setup(canvas);
-            scope.__filename = filename;
-            scope.__dirname = path.dirname(filename);
-            // Expose core methods and values
-            scope.require = require;
-            scope.console = console;
-            sourceMaps[filename] = compiled.map;
-            paper.PaperScript.execute(compiled, scope);
-            return scope;
+        paper.PaperScript.sourceMapSupport = {
+            retrieveSourceMap: function(source) {
+                var map = sourceMaps[source];
+                return map ? { url: source, map: map } : null;
+            }
         };
-    };
+
+        // Register the .pjs extension for automatic compilation as PaperScript
+        require.extensions['.pjs'] = function(module, filename) {
+            // Requiring a PaperScript on Node.js returns an initialize method which
+            // needs to receive a Canvas object when called and returns the
+            // PaperScope.
+            module.exports = function(canvas) {
+                var source = fs.readFileSync(filename, 'utf8'),
+                    code = sourceMapSupprt + source,
+                    compiled = paper.PaperScript.compile(code, {
+                        url: filename,
+                        source: source,
+                        sourceMaps: true,
+                        offset: -1 // remove sourceMapSupprt...
+                    }),
+                    scope = new paper.PaperScope();
+                // Keep track of sourceMaps so retrieveSourceMap() can link them up
+                scope.setup(canvas);
+                scope.__filename = filename;
+                scope.__dirname = path.dirname(filename);
+                // Expose core methods and values
+                scope.require = require;
+                scope.console = console;
+                sourceMaps[filename] = compiled.map;
+                paper.PaperScript.execute(compiled, scope);
+                return scope;
+            };
+        };
+    }
 
     paper.PaperScope.inject({
         createCanvas: function(width, height, type) {

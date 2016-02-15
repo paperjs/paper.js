@@ -1,7 +1,7 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
 // var paper = require('paper');
-var paper = require('../../dist/paper-full.js');
+var paper = require('../../dist/paper-core.js');
 paper.setup(new paper.Size(1024, 768));
 
 var layer = paper.project.activeLayer;
