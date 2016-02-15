@@ -108,26 +108,25 @@ new function() {
                 return exportShape(shape, options);
         }
         var segments = item._segments,
+            length = segments.length,
             type,
             attrs = getTransform(item._matrix);
-        if (segments.length === 0 && !item.isClipMask())
-            return null;
-        if (matchShapes && !item.hasHandles()) {
-            if (segments.length >= 3) {
+        if (matchShapes && length >= 2 && !item.hasHandles()) {
+            if (length > 2) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];
-                for(var i = 0, l = segments.length; i < l; i++)
+                for(var i = 0; i < length; i++)
                     parts.push(formatter.point(segments[i]._point));
                 attrs.points = parts.join(' ');
             } else {
                 type = 'line';
-                var first = segments[0]._point,
-                    last = segments[segments.length - 1]._point;
+                var start = segments[0]._point,
+                    end = segments[1]._point;
                 attrs.set({
-                    x1: first.x,
-                    y1: first.y,
-                    x2: last.x,
-                    y2: last.y
+                    x1: start.x,
+                    y1: start.y,
+                    x2: end.x,
+                    y2: end.y
                 });
             }
         } else {
