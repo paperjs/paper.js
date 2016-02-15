@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 15 09:21:11 2016 +0100
+ * Date: Mon Feb 15 23:58:40 2016 +0100
  *
  ***
  *
@@ -13933,7 +13933,7 @@ new function() {
 		return item;
 	}
 
-	function importSVG(source, options) {
+	function importSVG(source, options, owner) {
 		if (!source)
 			return null;
 		options = typeof options === 'function' ? { onLoad: options }
@@ -13951,6 +13951,9 @@ new function() {
 				}
 				paper = scope;
 				item = importNode(node, options, true);
+				if (!options || options.insert !== false) {
+					owner._insertItem(undefined, item);
+				}
 				var onLoad = options.onLoad;
 				if (onLoad)
 					onLoad(item, svg);
@@ -13997,21 +14000,14 @@ new function() {
 
 	Item.inject({
 		importSVG: function(node, options) {
-			var res = importSVG(node, options);
-			if (!options || options.insert !== false)
-				this.addChild(res);
-			return res;
+			return importSVG(node, options, this);
 		}
 	});
 
 	Project.inject({
 		importSVG: function(node, options) {
 			this.activate();
-			var res = importSVG(node, options);
-			if (!options || options.insert !== false) {
-				this.getActiveLayer().addChild(res);
-			}
-			return res;
+			return importSVG(node, options, this);
 		}
 	});
 };
