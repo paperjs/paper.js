@@ -75,7 +75,7 @@ new function() {
                     var clip = SvgElement.create('clipPath');
                     clip.appendChild(childNode);
                     setDefinition(child, clip, 'clip');
-                     SvgElement.set(node, {
+                    SvgElement.set(node, {
                         'clip-path': 'url(#' + clip.id + ')'
                     });
                 } else {
@@ -317,7 +317,7 @@ new function() {
         if (!item._visible)
             attrs.visibility = 'hidden';
 
-        return  SvgElement.set(node, attrs, formatter);
+        return SvgElement.set(node, attrs, formatter);
     }
 
     var definitions;
@@ -404,25 +404,37 @@ new function() {
             options = setOptions(options);
             var children = this._children,
                 view = this.getView(),
-                size = view.getViewSize(),
-                node = SvgElement.create('svg', {
-                    x: 0,
-                    y: 0,
-                    width: size.width,
-                    height: size.height,
+                bounds = Base.pick(options.bounds, 'view'),
+                matrix = Matrix.read(
+                        [options.matrix || bounds === 'view' && view._matrix],
+                        0, { readNull: true }),
+                rect = bounds === 'view'
+                    ? new Rectangle([0, 0], view.getViewSize())
+                    : bounds === 'content'
+                        ? Item._getBounds(children, matrix, { stroke: true })
+                        : Rectangle.read([bounds], 0, { readNull: true });
+                attrs = {
                     version: '1.1',
-                    xmlns:  SvgElement.svg,
-                    'xmlns:xlink':  SvgElement.xlink
-                }, formatter),
-                parent = node,
-                matrix = view._matrix;
+                    xmlns: SvgElement.svg,
+                    'xmlns:xlink': SvgElement.xlink,
+                };
+            if (rect) {
+                attrs.width = rect.width;
+                attrs.height = rect.height;
+                if (rect.x || rect.y)
+                    attrs.viewBox = formatter.rectangle(rect);
+            }
+            var node = SvgElement.create('svg', attrs, formatter),
+                parent = node;
             // If the view has a transformation, wrap all layers in a group with
             // that transformation applied to.
-            if (!matrix.isIdentity())
+            if (matrix && !matrix.isIdentity()) {
                 parent = node.appendChild(SvgElement.create('g',
                         getTransform(matrix), formatter));
-            for (var i = 0, l = children.length; i < l; i++)
+            }
+            for (var i = 0, l = children.length; i < l; i++) {
                 parent.appendChild(exportSVG(children[i], options, true));
+            }
             return exportDefinitions(node, options);
         }
     });

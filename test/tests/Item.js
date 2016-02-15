@@ -693,6 +693,98 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow:');
 });
 
+test('Item#applyMatrix', function() {
+    equals(function() {
+        return new Path({ applyMatrix: true }).applyMatrix;
+    }, true);
+    equals(function() {
+        return new Path({ applyMatrix: false }).applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster({ applyMatrix: false }).applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster({ applyMatrix: true }).applyMatrix;
+    }, false);
+
+    var applyMatrix = paper.settings.applyMatrix;
+    paper.settings.applyMatrix = true;
+    equals(function() {
+        return new Path().applyMatrix;
+    }, true);
+    equals(function() {
+        return new Raster().applyMatrix;
+    }, false);
+    paper.settings.applyMatrix = false;
+    equals(function() {
+        return new Path().applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster().applyMatrix;
+    }, false);
+    paper.settings.applyMatrix = applyMatrix;
+
+    var path = new Path.Rectangle({
+        size: [100, 100],
+        position: [0, 0],
+        applyMatrix: false
+    });
+
+    equals(path.matrix, new Matrix(),
+            'path.matrix before scaling');
+    equals(path.bounds, new Rectangle(-50, -50, 100, 100),
+            'path.bounds before scaling');
+    equals(path.segments[0].point, new Point(-50, 50),
+            'path.segments[0].point before scaling');
+
+    path.scale(1, 2);
+
+    equals(path.matrix, new Matrix().scale(1, 2),
+            'path.matrix after scaling');
+    equals(path.bounds, new Rectangle(-50, -100, 100, 200),
+            'path.bounds after scaling');
+    equals(path.segments[0].point, new Point(-50, 50),
+            'path.segments[0].point after scaling');
+
+    path.applyMatrix = true;
+
+    equals(path.matrix, new Matrix(),
+            'path.matrix after setting path.applyMatrix = true;');
+    equals(path.bounds, new Rectangle(-50, -100, 100, 200),
+            'path.bounds after setting path.applyMatrix = true;');
+    equals(path.segments[0].point, new Point(-50, 100),
+            'path.segments[0].point after setting path.applyMatrix = true;');
+});
+
+test('PaperScope#settings.insertItems', function() {
+    var insertItems = paper.settings.insertItems;
+    paper.settings.insertItems = true;
+
+    var path1, path2;
+
+    equals(function() {
+        path1 = new Path();
+        return path1.parent === project.activeLayer;
+    }, true);
+    paper.settings.insertItems = false;
+
+    equals(function() {
+        path2 = new Path();
+        return path2.parent === null;
+    }, true);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 1);
+
+    project.activeLayer.addChild(path2);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 2);
+
+    paper.settings.insertItems = insertItems;
+});
 
 test('Item#pivot', function() {
     var path1 = new Path.Rectangle({
@@ -713,11 +805,12 @@ test('Item#pivot', function() {
 
     path1.pivot = pivot;
     path1.position = [200, 200];
-    equals(path1.pivot, pivot, 'Changing position of an item with applyMatrix = false should not change pivot');
+    equals(path1.pivot, pivot,
+            'Changing position of an item with applyMatrix = false should not change pivot');
 
     var difference = new Point(100, 100);
     path2.pivot = pivot;
     path2.position = path2.position.add(difference);
-    equals(path2.pivot, pivot.add(difference), 'Changing position of an item with applyMatrix = true should change pivot');
-
+    equals(path2.pivot, pivot.add(difference),
+            'Changing position of an item with applyMatrix = true should change pivot');
 });

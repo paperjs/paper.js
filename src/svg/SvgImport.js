@@ -135,15 +135,7 @@ new function() {
     }
 
     function importPath(node) {
-        // Get the path data, and determine whether it is a compound path or a
-        // normal path based on the amount of moveTo commands inside it.
-        var data = node.getAttribute('d'),
-            param = { pathData: data };
-        // If there are multiple moveTo commands or a closePath command followed
-        // by other commands, we have a CompoundPath:
-        return (data.match(/m/gi) || []).length > 1 || /z\S+/i.test(data)
-                ? new CompoundPath(param)
-                : new Path(param);
+        return PathItem.create(node.getAttribute('d'));
     }
 
     function importGradient(node, type) {
@@ -184,7 +176,7 @@ new function() {
             destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
         }
         var color = applyAttributes(
-            new Color(gradient, origin, destination, highlight), node);
+                new Color(gradient, origin, destination, highlight), node);
         // TODO: Consider adding support for _scaleToBounds to Color instead?
         color._scaleToBounds = scaleToBounds;
         // We don't return the gradient, since we only need a reference to it in
@@ -588,12 +580,16 @@ new function() {
         }
         // Have items imported from SVG not bake in all transformations to their
         // content and children, as this is how SVG works too, but preserve the
-        // current setting so we can restore it after.
+        // current setting so we can restore it after. Also don't insert them
+        // into the scene graph automatically, as we do so by hand.
         var settings = paper.settings,
-            applyMatrix = settings.applyMatrix;
+            applyMatrix = settings.applyMatrix,
+            insertItems = settings.insertItems;
         settings.applyMatrix = false;
+        settings.insertItems = false;
         var importer = importers[type],
             item = importer && importer(node, type, options, isRoot) || null;
+        settings.insertItems = insertItems;
         settings.applyMatrix = applyMatrix;
         if (item) {
             // Do not apply attributes if this is a #document node.
@@ -709,7 +705,10 @@ new function() {
     // NOTE: Documentation is in Item#importSVG()
     Item.inject({
         importSVG: function(node, options) {
-            return this.addChild(importSVG(node, options));
+            var res = importSVG(node, options);
+            if (!options || options.insert !== false)
+                this.addChild(res);
+            return res;
         }
     });
 
@@ -717,7 +716,12 @@ new function() {
     Project.inject({
         importSVG: function(node, options) {
             this.activate();
-            return importSVG(node, options);
+            var res = importSVG(node, options);
+            if (!options || options.insert !== false) {
+                // TODO: Implement support for Layer parsing / insertion.
+                this.getActiveLayer().addChild(res);
+            }
+            return res;
         }
     });
 };
