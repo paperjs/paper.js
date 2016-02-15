@@ -631,7 +631,7 @@ new function() {
         return item;
     }
 
-    function importSVG(source, options) {
+    function importSVG(source, options, owner) {
         if (!source)
             return null;
         options = typeof options === 'function' ? { onLoad: options }
@@ -650,6 +650,10 @@ new function() {
                 }
                 paper = scope;
                 item = importNode(node, options, true);
+                if (!options || options.insert !== false) {
+                    // TODO: Implement support for multiple Layers on Project.
+                    owner._insertItem(undefined, item);
+                }
                 var onLoad = options.onLoad;
                 if (onLoad)
                     onLoad(item, svg);
@@ -705,10 +709,7 @@ new function() {
     // NOTE: Documentation is in Item#importSVG()
     Item.inject({
         importSVG: function(node, options) {
-            var res = importSVG(node, options);
-            if (!options || options.insert !== false)
-                this.addChild(res);
-            return res;
+            return importSVG(node, options, this);
         }
     });
 
@@ -716,12 +717,7 @@ new function() {
     Project.inject({
         importSVG: function(node, options) {
             this.activate();
-            var res = importSVG(node, options);
-            if (!options || options.insert !== false) {
-                // TODO: Implement support for Layer parsing / insertion.
-                this.getActiveLayer().addChild(res);
-            }
-            return res;
+            return importSVG(node, options, this);
         }
     });
 };
