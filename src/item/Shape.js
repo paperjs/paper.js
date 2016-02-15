@@ -344,13 +344,17 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         _hitTestSelf: function _hitTestSelf(point, options, viewMatrix,
                 strokeMatrix) {
             var hit = false,
-                style = this._style;
-            if (options.stroke && style.hasStroke()) {
+                style = this._style,
+                hitStroke = options.stroke && style.hasStroke(),
+                hitFill = options.fill && style.hasFill();
+            // Just like in Path, use stroke-hit-tests also for hitting fill
+            // with tolerance:
+            if (hitStroke || hitFill) {
                 var type = this._type,
                     radius = this._radius,
-                    strokeWidth = style.getStrokeWidth(),
+                    strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0;
                     strokePadding = options._tolerancePadding.add(
-                        Path._getStrokePadding(strokeWidth / 2,
+                        Path._getStrokePadding(strokeRadius,
                             !style.getStrokeScaling() && strokeMatrix));
                 if (type === 'rectangle') {
                     var padding = strokePadding.multiply(2),
@@ -370,7 +374,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                     hit = isOnEllipseStroke(point, radius, strokePadding);
                 }
             }
-            return hit ? new HitResult('stroke', this)
+            return hit ? new HitResult(hitStroke ? 'stroke' : 'fill', this)
                     : _hitTestSelf.base.apply(this, arguments);
         }
     };
