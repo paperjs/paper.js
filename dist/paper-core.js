@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 15 00:13:38 2016 +0100
+ * Date: Mon Feb 15 08:42:59 2016 +0100
  *
  ***
  *
@@ -2038,8 +2038,9 @@ var Matrix = Base.extend({
 		} else {
 			ok = false;
 		}
-		if (!ok)
+		if (!ok) {
 			throw new Error('Unsupported matrix parameters');
+		}
 	},
 
 	set: function(a, b, c, d, tx, ty, _dontNotify) {
@@ -2077,8 +2078,7 @@ var Matrix = Base.extend({
 	equals: function(mx) {
 		return mx === this || mx && this._a === mx._a && this._b === mx._b
 				&& this._c === mx._c && this._d === mx._d
-				&& this._tx === mx._tx && this._ty === mx._ty
-				|| false;
+				&& this._tx === mx._tx && this._ty === mx._ty;
 	},
 
 	toString: function() {
@@ -13448,9 +13448,8 @@ new function() {
 			var children = this._children,
 				view = this.getView(),
 				bounds = Base.pick(options.bounds, 'view'),
-				matrix = Matrix.read(
-						[options.matrix || bounds === 'view' && view._matrix],
-						0, { readNull: true }),
+				mx = options.matrix || bounds === 'view' && view._matrix,
+				matrix = mx && Matrix.read([mx]),
 				rect = bounds === 'view'
 					? new Rectangle([0, 0], view.getViewSize())
 					: bounds === 'content'
