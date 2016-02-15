@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 15 23:59:31 2016 +0100
+ * Date: Tue Feb 16 00:01:36 2016 +0100
  *
  ***
  *
@@ -13179,7 +13179,7 @@ new function() {
 		var segments = item._segments,
 			type,
 			attrs = getTransform(item._matrix);
-		if (segments.length === 0)
+		if (segments.length === 0 && !item.isClipMask())
 			return null;
 		if (matchShapes && !item.hasHandles()) {
 			if (segments.length >= 3) {
