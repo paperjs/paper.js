@@ -405,9 +405,8 @@ new function() {
             var children = this._children,
                 view = this.getView(),
                 bounds = Base.pick(options.bounds, 'view'),
-                matrix = Matrix.read(
-                        [options.matrix || bounds === 'view' && view._matrix],
-                        0, { readNull: true }),
+                mx = options.matrix || bounds === 'view' && view._matrix,
+                matrix = mx && Matrix.read([mx]),
                 rect = bounds === 'view'
                     ? new Rectangle([0, 0], view.getViewSize())
                     : bounds === 'content'

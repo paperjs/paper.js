@@ -471,7 +471,10 @@ var compareSVG = function(done, actual, expected, message, options) {
         return item instanceof Item
             ? item
             : typeof item === 'string'
-            ? new Raster('data:image/svg+xml;base64,' + btoa(item))
+            ? new Raster({
+                source: 'data:image/svg+xml;base64,' + btoa(item),
+                insert: false
+            })
             : null;
     }
 

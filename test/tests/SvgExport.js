@@ -143,7 +143,6 @@ test('Export transformed shapes', function(assert) {
         fillColor: 'yellow'
     });
     rect.rotate(-20);
-    var svg = project.exportSVG({ asString: true, bounds: 'content' });
-    console.log(svg);
+    var svg = project.exportSVG({ bounds: 'content', asString: true });
     compareSVG(assert.async(), svg, project.activeLayer);
 });
