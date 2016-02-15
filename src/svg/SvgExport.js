@@ -411,7 +411,7 @@ new function() {
                     ? new Rectangle([0, 0], view.getViewSize())
                     : bounds === 'content'
                         ? Item._getBounds(children, matrix, { stroke: true })
-                        : Rectangle.read([bounds], 0, { readNull: true });
+                        : Rectangle.read([bounds], 0, { readNull: true }),
                 attrs = {
                     version: '1.1',
                     xmlns: SvgElement.svg,

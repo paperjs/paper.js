@@ -113,36 +113,39 @@ test('Export SVG path at precision 0', function() {
     equals(path.exportSVG({ precision: 0 }).getAttribute('d'), 'M0,2l1,1');
 });
 
-test('Export transformed shapes', function(assert) {
-    var rect = new Shape.Rectangle({
-        point: [200, 100],
-        size: [200, 300],
-        fillColor: 'red'
-    });
-    rect.rotate(40);
+if (!isNode) {
+    // JSDom does not have SVG rendering, so we can't test there.
+    test('Export transformed shapes', function(assert) {
+        var rect = new Shape.Rectangle({
+            point: [200, 100],
+            size: [200, 300],
+            fillColor: 'red'
+        });
+        rect.rotate(40);
 
-    var circle = new Shape.Circle({
-        center: [200, 300],
-        radius: 100,
-        fillColor: 'green'
-    });
-    circle.scale(0.5, 1);
-    circle.rotate(40);
+        var circle = new Shape.Circle({
+            center: [200, 300],
+            radius: 100,
+            fillColor: 'green'
+        });
+        circle.scale(0.5, 1);
+        circle.rotate(40);
 
-    var ellipse = new Shape.Ellipse({
-        point: [300, 300],
-        size: [100, 200],
-        fillColor: 'blue'
-    });
-    ellipse.rotate(-40);
+        var ellipse = new Shape.Ellipse({
+            point: [300, 300],
+            size: [100, 200],
+            fillColor: 'blue'
+        });
+        ellipse.rotate(-40);
 
-    var rect = new Shape.Rectangle({
-        point: [250, 20],
-        size: [200, 300],
-        radius: [40, 20],
-        fillColor: 'yellow'
+        var rect = new Shape.Rectangle({
+            point: [250, 20],
+            size: [200, 300],
+            radius: [40, 20],
+            fillColor: 'yellow'
+        });
+        rect.rotate(-20);
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer);
     });
-    rect.rotate(-20);
-    var svg = project.exportSVG({ bounds: 'content', asString: true });
-    compareSVG(assert.async(), svg, project.activeLayer);
-});
+}
