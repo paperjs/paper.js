@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 16 00:28:04 2016 +0100
+ * Date: Tue Feb 16 20:52:07 2016 +0100
  *
  ***
  *
@@ -4737,7 +4737,7 @@ new function() {
 			if (hitStroke || hitFill) {
 				var type = this._type,
 					radius = this._radius,
-					strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0;
+					strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
 					strokePadding = options._tolerancePadding.add(
 						Path._getStrokePadding(strokeRadius,
 							!style.getStrokeScaling() && strokeMatrix));
