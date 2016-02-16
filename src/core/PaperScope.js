@@ -50,6 +50,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         // Default configurable settings.
         this.settings = new Base({
             applyMatrix: true,
+            insertItems: true,
             handleSize: 4,
             hitTolerance: 0
         });
@@ -115,16 +116,22 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      */
     version: /*#=*/__options.version,
 
-    // DOCS: PaperScope#settings
     /**
      * Gives access to paper's configurable settings.
      *
      * @name PaperScope#settings
      * @type Object
      *
-     * @option [settings.applyMatrix=true] {Boolean}
-     * @option [settings.handleSize=4] {Number}
-     * @option [settings.hitTolerance=0] {Number}
+     * @option [settings.insertItems=true] {Boolean} controls whether newly
+     *     created items are automatically inserted into the scene graph, by
+     *     adding them to {@link Project#getActiveLayer()}
+     * @option [settings.applyMatrix=true] {Boolean} controls what value newly
+     *     created items have their {@link Item#getApplyMatrix()} property set
+     *     to (Note that not all items can set this to `false`)
+     * @option [settings.handleSize=4] {Number} the size of the curve handles
+     *     when drawing selections
+     * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
+     *     tests, when no value is specified
      */
 
     /**

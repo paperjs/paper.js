@@ -32,23 +32,23 @@ test('previousSibling / nextSibling', function() {
         return secondLayer.children.length;
     }, 2);
     equals(function() {
-        return thirdLayer.nextSibling == path;
+        return thirdLayer.nextSibling === path;
     }, true);
     secondLayer.addChild(thirdLayer);
     equals(function() {
-        return thirdLayer.nextSibling == null;
+        return thirdLayer.nextSibling;
+    }, null);
+    equals(function() {
+        return thirdLayer.previousSibling === path;
     }, true);
     equals(function() {
-        return thirdLayer.previousSibling == path;
-    }, true);
-    equals(function() {
-        return project.layers.length == 2;
-    }, true);
+        return project.layers.length;
+    }, 2);
 
     firstLayer.addChild(secondLayer);
     equals(function() {
-        return project.layers.length == 1;
-    }, true);
+        return project.layers.length;
+    }, 1);
 });
 
 test('insertAbove / insertBelow', function() {

@@ -305,7 +305,6 @@ PathItem.inject(new function() {
             py = point.y,
             windLeft = 0,
             windRight = 0,
-            isOnCurve = false,
             length = curves.length,
             roots = [],
             abs = Math.abs;
@@ -341,7 +340,11 @@ PathItem.inject(new function() {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon,
                 prevWinding,
-                prevXEnd;
+                prevXEnd,
+                // Separately count the windings for points on curves.
+                windLeftOnCurve = 0,
+                windRightOnCurve = 0,
+                isOnCurve = false;
             for (var i = 0; i < length; i++) {
                 var curve = curves[i],
                     winding = curve.winding,
@@ -356,6 +359,8 @@ PathItem.inject(new function() {
                     // non-horizontal curve for the first curve in the loop.
                     prevWinding = curve.last.winding;
                     prevXEnd = curve.last.values[6];
+                    // Reset the on curve flag for each loop.
+                    isOnCurve = false;
                 }
                 // Since the curves are monotonic in y direction, we can just
                 // compare the endpoints of the curve to determine if the ray
@@ -396,16 +401,28 @@ PathItem.inject(new function() {
                         // the ray intersects a non-horizontal curve.
                         prevWinding = winding;
                         prevXEnd = values[6];
-                    // Test if the point is on the horizontal curve
+                    // Test if the point is on the horizontal curve.
                     } else if ((px - values[0]) * (px - values[6]) <= 0) {
                         isOnCurve = true;
                     }
                 }
+                // If we are at the end of a loop and the point was on a curve
+                // of the loop, we increment / decrement the on-curve winding
+                // numbers as if the point was inside the path.
+                if (isOnCurve && (i >= length - 1 || curves[i + 1].last)) {
+                    windLeftOnCurve += 1;
+                    windRightOnCurve -= 1;
+                }
+            }
+            // Use the on-curve windings if no other intersections were found or
+            // if they canceled each other. On single paths this ensures that
+            // the overall winding is 1 if the point was on a monotonic curve.
+            if (windLeft === 0 && windRight === 0) {
+                windLeft = windLeftOnCurve;
+                windRight = windRightOnCurve;
             }
         }
-        // If the point was on a monotonic curve, we are on the path by
-        // definition. In this case ensure that the winding is at least 1.
-        return Math.max(abs(windLeft), abs(windRight), isOnCurve ? 1 : 0);
+        return Math.max(abs(windLeft), abs(windRight));
     }
 
     function propagateWinding(segment, path1, path2, monoCurves, operator) {

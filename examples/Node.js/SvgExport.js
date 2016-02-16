@@ -1,7 +1,7 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
 // var paper = require('paper');
-var paper = require('../../dist/paper-full.js');
+var paper = require('../../dist/paper-core.js');
 var path = require('path');
 var fs = require('fs');
 
@@ -45,7 +45,7 @@ with (paper) {
     var svg = project.exportSVG({ asString: true });
     console.log(svg);
 
-    fs.writeFile(path.resolve(__dirname, 'out.svg'),svg, function (err) {
+    fs.writeFile(path.resolve('./out.svg'),svg, function (err) {
         if (err) throw err;
         console.log('Saved!');
     });
