@@ -564,7 +564,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @function
      * @operator
      * @param {Number} number the number to multiply by
-     * @return {Point} the multiplication of the point and the value as a new point
+     * @return {Point} the multiplication of the point and the value as a new
+     *     point
      *
      * @example
      * var point = new Point(10, 20);

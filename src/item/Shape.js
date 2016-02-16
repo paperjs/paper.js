@@ -352,7 +352,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
             if (hitStroke || hitFill) {
                 var type = this._type,
                     radius = this._radius,
-                    strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0;
+                    strokeRadius = hitStroke ? style.getStrokeWidth() / 2 : 0,
                     strokePadding = options._tolerancePadding.add(
                         Path._getStrokePadding(strokeRadius,
                             !style.getStrokeScaling() && strokeMatrix));
@@ -374,6 +374,9 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                     hit = isOnEllipseStroke(point, radius, strokePadding);
                 }
             }
+            // NOTE: The above test is only for stroke, and the added tolerance
+            // when testing for fill. The actual fill test happens in
+            // Item#_hitTestSelf(), through its call of #_contains().
             return hit ? new HitResult(hitStroke ? 'stroke' : 'fill', this)
                     : _hitTestSelf.base.apply(this, arguments);
         }
