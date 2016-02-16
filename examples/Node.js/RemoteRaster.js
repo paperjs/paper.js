@@ -1,7 +1,7 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
 // var paper = require('paper');
-var paper = require('../../dist/paper-full.js');
+var paper = require('../../dist/paper-core.js');
 var fs = require('fs');
 
 var canvas = paper.createCanvas(800, 600);
@@ -12,6 +12,7 @@ var raster = new paper.Raster(url);
 raster.position = paper.view.center;
 
 raster.onLoad = function() {
+    paper.view.update();
     console.log('The image has loaded:' + raster.bounds);
 
     // Saving the canvas to a file.

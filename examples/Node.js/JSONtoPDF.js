@@ -1,7 +1,7 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
 // var paper = require('paper');
-var paper = require('../../dist/paper-full.js');
+var paper = require('../../dist/paper-core.js');
 var path = require('path');
 var fs = require('fs');
 
@@ -12,7 +12,7 @@ fs.readFile('./in.json', { encoding: 'utf8' }, function (err, data) {
         throw err;
     paper.project.importJSON(data);
     paper.view.update();
-    fs.writeFile(path.resolve(__dirname, 'out.pdf'), canvas.toBuffer(), function (err) {
+    fs.writeFile(path.resolve('./out.pdf'), canvas.toBuffer(), function (err) {
         if (err)
             throw err;
         console.log('Saved!');

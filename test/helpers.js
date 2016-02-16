@@ -440,14 +440,9 @@ var getFunctionMessage = function(func) {
     return message;
 };
 
-var createPath = function(str) {
-    var ctor = (str.match(/z/gi) || []).length > 1 ? CompoundPath : Path;
-    return new ctor(str);
-};
-
 var compareBoolean = function(actual, expected, message, options) {
     expected = typeof expected === 'string'
-            ? createPath(expected)
+            ? PathItem.create(expected)
             : expected;
     if (typeof actual === 'function') {
         if (!message)
@@ -462,19 +457,13 @@ var compareBoolean = function(actual, expected, message, options) {
 };
 
 var createSVG = function(str, attrs) {
-    if (attrs) {
-        // Similar to SvgElement.create():
-        var node = document.createElementNS('http://www.w3.org/2000/svg', str);
-        for (var key in attrs)
-            node.setAttribute(key, attrs[key]);
-        // Paper.js paths do not have a fill by default, SVG does.
-        node.setAttribute('fill', 'none');
-        return node;
-    } else {
-        return new window.DOMParser().parseFromString(
-            '<svg xmlns="http://www.w3.org/2000/svg">' + str + '</svg>',
-            'text/xml');
-    }
+    // Similar to SvgElement.create():
+    var node = document.createElementNS('http://www.w3.org/2000/svg', str);
+    for (var key in attrs)
+        node.setAttribute(key, attrs[key]);
+    // Paper.js paths do not have a fill by default, SVG does.
+    node.setAttribute('fill', 'none');
+    return node;
 };
 
 var compareSVG = function(done, actual, expected, message, options) {
@@ -482,7 +471,10 @@ var compareSVG = function(done, actual, expected, message, options) {
         return item instanceof Item
             ? item
             : typeof item === 'string'
-            ? new Raster('data:image/svg+xml;base64,' + btoa(item))
+            ? new Raster({
+                source: 'data:image/svg+xml;base64,' + window.btoa(item),
+                insert: false
+            })
             : null;
     }
 
@@ -496,11 +488,19 @@ var compareSVG = function(done, actual, expected, message, options) {
         actual = actual();
     }
 
-    expected.onLoad = function() {
+    function compare() {
         comparePixels(actual, expected, message, Base.set({
             tolerance: 1e-2,
             resolution: 72
         }, options));
         done();
-    };
+    }
+
+    if (expected instanceof Raster) {
+        expected.onLoad = compare;
+    } else if (actual instanceof Raster) {
+        actual.onLoad = compare;
+    } else {
+        compare();
+    }
 };

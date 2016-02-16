@@ -1577,7 +1577,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 miterLimit = strokeRadius * style.getMiterLimit();
                 // Add the stroke radius to tolerance padding, taking
                 // #strokeScaling into account through _getStrokeMatrix().
-                strokePadding = tolerancePadding.add(
+                strokePadding = strokePadding.add(
                     Path._getStrokePadding(strokeRadius,
                         !style.getStrokeScaling() && strokeMatrix));
             } else {

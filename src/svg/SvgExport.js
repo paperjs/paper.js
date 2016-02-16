@@ -75,7 +75,7 @@ new function() {
                     var clip = SvgElement.create('clipPath');
                     clip.appendChild(childNode);
                     setDefinition(child, clip, 'clip');
-                     SvgElement.set(node, {
+                    SvgElement.set(node, {
                         'clip-path': 'url(#' + clip.id + ')'
                     });
                 } else {
@@ -108,26 +108,25 @@ new function() {
                 return exportShape(shape, options);
         }
         var segments = item._segments,
+            length = segments.length,
             type,
             attrs = getTransform(item._matrix);
-        if (segments.length === 0)
-            return null;
-        if (matchShapes && !item.hasHandles()) {
-            if (segments.length >= 3) {
+        if (matchShapes && length >= 2 && !item.hasHandles()) {
+            if (length > 2) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];
-                for(var i = 0, l = segments.length; i < l; i++)
+                for(var i = 0; i < length; i++)
                     parts.push(formatter.point(segments[i]._point));
                 attrs.points = parts.join(' ');
             } else {
                 type = 'line';
-                var first = segments[0]._point,
-                    last = segments[segments.length - 1]._point;
+                var start = segments[0]._point,
+                    end = segments[1]._point;
                 attrs.set({
-                    x1: first.x,
-                    y1: first.y,
-                    x2: last.x,
-                    y2: last.y
+                    x1: start.x,
+                    y1: start.y,
+                    x2: end.x,
+                    y2: end.y
                 });
             }
         } else {
@@ -317,7 +316,7 @@ new function() {
         if (!item._visible)
             attrs.visibility = 'hidden';
 
-        return  SvgElement.set(node, attrs, formatter);
+        return SvgElement.set(node, attrs, formatter);
     }
 
     var definitions;
@@ -404,25 +403,36 @@ new function() {
             options = setOptions(options);
             var children = this._children,
                 view = this.getView(),
-                size = view.getViewSize(),
-                node = SvgElement.create('svg', {
-                    x: 0,
-                    y: 0,
-                    width: size.width,
-                    height: size.height,
+                bounds = Base.pick(options.bounds, 'view'),
+                mx = options.matrix || bounds === 'view' && view._matrix,
+                matrix = mx && Matrix.read([mx]),
+                rect = bounds === 'view'
+                    ? new Rectangle([0, 0], view.getViewSize())
+                    : bounds === 'content'
+                        ? Item._getBounds(children, matrix, { stroke: true })
+                        : Rectangle.read([bounds], 0, { readNull: true }),
+                attrs = {
                     version: '1.1',
-                    xmlns:  SvgElement.svg,
-                    'xmlns:xlink':  SvgElement.xlink
-                }, formatter),
-                parent = node,
-                matrix = view._matrix;
+                    xmlns: SvgElement.svg,
+                    'xmlns:xlink': SvgElement.xlink,
+                };
+            if (rect) {
+                attrs.width = rect.width;
+                attrs.height = rect.height;
+                if (rect.x || rect.y)
+                    attrs.viewBox = formatter.rectangle(rect);
+            }
+            var node = SvgElement.create('svg', attrs, formatter),
+                parent = node;
             // If the view has a transformation, wrap all layers in a group with
             // that transformation applied to.
-            if (!matrix.isIdentity())
+            if (matrix && !matrix.isIdentity()) {
                 parent = node.appendChild(SvgElement.create('g',
                         getTransform(matrix), formatter));
-            for (var i = 0, l = children.length; i < l; i++)
+            }
+            for (var i = 0, l = children.length; i < l; i++) {
                 parent.appendChild(exportSVG(children[i], options, true));
+            }
             return exportDefinitions(node, options);
         }
     });

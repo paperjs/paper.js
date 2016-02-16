@@ -859,7 +859,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#on
      * @function
      * @param {String} type the type of event: {@values 'frame', 'resize',
-     *     mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
      *     'mousemove', 'mouseenter', 'mouseleave'}
      * @param {Function} function the function to be called when the event
      *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
@@ -909,7 +909,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#off
      * @function
-     * @param {String} type the event type: {@values 'frame', 'resize'}
+     * @param {String} type the event type: {@values 'frame', 'resize',
+     *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', 'mouseleave'}
      * @param {Function} function the function to be detached
      * @return {View} this view itself, so calls can be chained
      *
@@ -949,7 +951,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#emit
      * @function
-     * @param {String} type the event type: {@values 'frame', 'resize'}
+     * @param {String} type the event type: {@values 'frame', 'resize',
+     *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', 'mouseleave'}
      * @param {Object} event an object literal containing properties describing
      * the event
      * @return {Boolean} {@true if the event had listeners}
@@ -960,7 +964,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#responds
      * @function
-     * @param {String} type the event type: {@values 'frame', 'resize'}
+     * @param {String} type the event type: {@values 'frame', 'resize',
+     *     'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', 'mouseleave'}
      * @return {Boolean} {@true if the view has one or more event handlers of
      * the specified type}
      */
