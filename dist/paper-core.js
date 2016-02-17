@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 16 20:52:07 2016 +0100
+ * Date: Wed Feb 17 19:06:29 2016 +0100
  *
  ***
  *
@@ -14036,4 +14036,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-}(this.self);
+}(typeof self === 'object' ? self : null);
