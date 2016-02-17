@@ -18,12 +18,14 @@ module.exports = function(paper) {
         var sourceMapSupprt = 'require("source-map-support").install(paper.PaperScript.sourceMapSupport);\n',
             sourceMaps = {};
 
-        paper.PaperScript.sourceMapSupport = {
-            retrieveSourceMap: function(source) {
-                var map = sourceMaps[source];
-                return map ? { url: source, map: map } : null;
-            }
-        };
+        if ( paper.PaperScript ) {
+            paper.PaperScript.sourceMapSupport = {
+                retrieveSourceMap: function(source) {
+                    var map = sourceMaps[source];
+                    return map ? { url: source, map: map } : null;
+                }
+            };
+        }
 
         // Register the .pjs extension for automatic compilation as PaperScript
         require.extensions['.pjs'] = function(module, filename) {
