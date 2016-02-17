@@ -1349,7 +1349,7 @@ new function() { // Injection scope for event handling on the browser
                     // Only start dragging if the mousedown event has not
                     // prevented the default.
                     dragItem = !prevented && item;
-                    downPoint = lastPoint = point;
+                    downPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on item, not view
                     if (!prevented && item === downItem) {
