@@ -17,10 +17,10 @@
 // their shared scope.
 
 /* global document:true, window:true */
-// Use typeof self to detect both browsers and web-workers.
-// In workers, window will then be null, so we can use the validity of the
-// window object to decide if we're in a worker-like context in the rest of
-// the library.
+// Create a window variable valid in the paper.js scope, that points to the
+// native window in browsers and the emulated JSDom one in node.js
+// In workers, window is null (but self is defined), so we can use the validity
+// of the local window object to detect a worker-like context in the library.
 var window = self ? self.window : require('./node/window'),
     document = window && window.document;
 // Make sure 'self' always points to a window object, also on Node.js.
