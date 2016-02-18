@@ -23,7 +23,9 @@ var SvgElement = new function() {
         // Mapping of attribute names to required namespaces:
         attributeNamespace = {
             href: xlink,
-            xlink: xmlns
+            xlink: xmlns,
+            xmlns: xmlns,
+            'xmlns:xlink': xmlns
         };
 
     function create(tag, attributes, formatter) {
