@@ -18,8 +18,8 @@
 var SvgElement = new function() {
     // SVG related namespaces
     var svg = 'http://www.w3.org/2000/svg',
-        xmlns = 'http://www.w3.org/2000/xmlns',
-        xlink = 'http://www.w3.org/1999/xlink',
+        xmlns = 'http://www.w3.org/2000/xmlns/',
+        xlink = 'http://www.w3.org/1999/xlink/',
         // Mapping of attribute names to required namespaces:
         attributeNamespace = {
             href: xlink,
