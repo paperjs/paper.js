@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 17 20:53:51 2016 +0100
+ * Date: Fri Feb 19 23:30:54 2016 +0100
  *
  ***
  *
@@ -12998,8 +12998,8 @@ var BlendMode = new function() {
 
 var SvgElement = new function() {
 	var svg = 'http://www.w3.org/2000/svg',
-		xmlns = 'http://www.w3.org/2000/xmlns/',
-		xlink = 'http://www.w3.org/1999/xlink/',
+		xmlns = 'http://www.w3.org/2000/xmlns',
+		xlink = 'http://www.w3.org/1999/xlink',
 		attributeNamespace = {
 			href: xlink,
 			xlink: xmlns,
@@ -13026,7 +13026,7 @@ var SvgElement = new function() {
 			if (typeof value === 'number' && formatter)
 				value = formatter.number(value);
 			if (namespace) {
-				node.setAttributeNS(namespace, name, value);
+				node.setAttributeNS(namespace + '/', name, value);
 			} else {
 				node.setAttribute(name, value);
 			}
