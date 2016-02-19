@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 19 13:44:09 2016 +0100
+ * Date: Wed Feb 17 20:53:51 2016 +0100
  *
  ***
  *
@@ -12095,7 +12095,7 @@ new function() {
 						&& (Date.now() - clickTime < 300);
 					downItem = clickItem = item;
 					dragItem = !prevented && item;
-					downPoint = lastPoint = point;
+					downPoint = point;
 				} else if (mouse.up) {
 					if (!prevented && item === downItem) {
 						clickTime = Date.now();
@@ -12518,9 +12518,8 @@ var ToolEvent = Event.extend({
 	},
 
 	getCount: function() {
-		return /^mouse(down|up)$/.test(this.type)
-				? this.tool._downCount
-				: this.tool._count;
+		return this.tool[/^mouse(down|up)$/.test(this.type)
+				? '_downCount' : '_moveCount'];
 	},
 
 	setCount: function(count) {
@@ -12567,8 +12566,7 @@ var Tool = PaperScopeItem.extend({
 
 	initialize: function Tool(props) {
 		PaperScopeItem.call(this);
-		this._firstMove = true;
-		this._count = 0;
+		this._moveCount = -1;
 		this._downCount = -1;
 		this._set(props);
 	},
@@ -12608,22 +12606,21 @@ var Tool = PaperScopeItem.extend({
 
 	_handleMouseEvent: function(type, event, point, mouse) {
 		paper = this._scope;
-		var move = mouse.move || mouse.drag && !this.responds(type);
-		if (move)
+		if (mouse.drag && !this.responds(type))
 			type = 'mousemove';
-		var responds = this.responds(type),
+		var move = mouse.move || mouse.drag,
+			responds = this.responds(type),
 			minDistance = this.minDistance,
 			maxDistance = this.maxDistance,
 			called = false,
 			tool = this;
-		function update(start, minDistance, maxDistance) {
-			var toolPoint = tool._point,
-				pt = point;
-			if (start) {
-				tool._count = 0;
-			} else {
-				if (pt.equals(toolPoint))
+		function update(minDistance, maxDistance) {
+			var pt = point,
+				toolPoint = move ? tool._point : tool._downPoint || pt;
+			if (move) {
+				if (tool._moveCount && pt.equals(toolPoint)) {
 					return false;
+				}
 				if (minDistance != null || maxDistance != null) {
 					var vector = pt.subtract(toolPoint),
 						distance = vector.getLength();
@@ -12634,38 +12631,34 @@ var Tool = PaperScopeItem.extend({
 								Math.min(distance, maxDistance)));
 					}
 				}
-				tool._count++;
+				tool._moveCount++;
 			}
-			if (responds) {
-				tool._point = pt;
-				tool._lastPoint = move || mouse.drag
-					? start && move ? pt : toolPoint
-					: tool._downPoint || pt;
-			}
+			tool._point = pt;
+			tool._lastPoint = toolPoint;
 			if (mouse.down) {
+				tool._moveCount = -1;
 				tool._downPoint = pt;
 				tool._downCount++;
 			}
 			return true;
 		}
 
-		function emit(firstMove) {
+		function emit() {
 			if (responds) {
 				called = tool.emit(type, new ToolEvent(tool, type, event))
 						|| called;
-				tool._firstMove = firstMove;
 			}
 		}
 
 		if (mouse.down) {
-			update(responds);
-			emit(false);
+			update();
+			emit();
 		} else if (mouse.up) {
-			update(false, null, maxDistance);
-			emit(true);
+			update(null, maxDistance);
+			emit();
 		} else if (responds) {
-			while (update(this._firstMove, minDistance, maxDistance))
-				emit(false);
+			while (update(minDistance, maxDistance))
+				emit();
 		}
 		return called;
 	}
