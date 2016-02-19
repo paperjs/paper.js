@@ -145,7 +145,8 @@ function importSVG(assert, url, message, options) {
         onError: function(error) {
             var ok = !!(options && options.expectError);
             QUnit.push(ok, false, !ok, ok && message
-                || 'Loading SVG from a valid URL should not give an error.');
+                || 'Loading SVG from a valid URL should not give an error: ' +
+                    error);
             done();
         }
     });

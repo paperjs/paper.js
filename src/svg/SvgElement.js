@@ -25,6 +25,7 @@ var SvgElement = new function() {
             href: xlink,
             xlink: xmlns,
             xmlns: xmlns,
+            // IE needs the xmlns namespace when setting 'xmlns:xlink'. See #984
             'xmlns:xlink': xmlns
         };
 
@@ -47,6 +48,7 @@ var SvgElement = new function() {
             if (typeof value === 'number' && formatter)
                 value = formatter.number(value);
             if (namespace) {
+                // IE needs trailing slashes, but only when setting. See #984
                 node.setAttributeNS(namespace + '/', name, value);
             } else {
                 node.setAttribute(name, value);
