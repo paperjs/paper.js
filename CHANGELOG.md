@@ -42,7 +42,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Move `PaperScript#execute` URL argument into `options.url` (#902).
 - Rename `Matrix#concatenate()` to `#append()` and `preConcatenate()` to `#prepend()`.
 - Make `Matrix#_shiftless` and `#orNullIfIdentity` internal functions.
-- Queue internal `View#update()` calls to minimize the number of times a canvas is redrawn (#830) (#925).
+- Queue internal `View#update()` calls to minimize the number of times a canvas is redrawn (#830, #925).
 - `Symbol` now clashes with ES6 definition of Symbol and has been changed (#770).
     - `Symbol` -> `SymbolDefinition`
     - `PlacedSymbol` -> `SymbolItem`
@@ -62,6 +62,10 @@ All notable changes to Paper.js shall be documented in this file, following comm
     - `Curve#getCurvatureAt(time, true)` -> `#getCurvatureAtTime(time)`
     - `CurveLocation#parameter` -> `#time`
     - `Path#split(offset/location)` -> `#splitAt(offset/location)`
+- Changed argument `parameter` to `time` for Postscript-style drawing commands.
+- `Item#clone()`'s optional argument is now an options object with defaults `{insert: true, deep: true}`. `insert` controls whether the clone is inserted into the project and `deep` controls whether the item's children are cloned. The previous boolean optional argument is still interpreted as the `insert` option (#941).
+- `PathItem#flatten()`'s argument has been changed from `tolerance` (maximum allowed distance between points) to `flatness` (maximum allowed error) (#618).
+- `Matrix` properties `#b` and `#c` have been reversed to match common standard.
 
 
 ### Added
@@ -103,8 +107,16 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Allow running without a canvas for Web Workers, nodejs (#561, #582, #634).
 - Unify node and browser versions and enable npm install (#739).
 - Set 1px default `strokeWidth` for SVG imports to fix IE/Edge default (#467).
-- `ImportSVG` passes imported SVG data as second parameter to `onLoad` callback.
+- `ImportSVG()` passes imported SVG data to `onLoad` callback as second parameter.
 - Add `#interpolate` for `Segment`, `Path`, and `CompoundPath` (#624).
+- Implement `CompoundPath#flatten()`, `#simplify()`, `#smooth()` (#727).
+- Implement clip-mask support in hit-testing (#671).
+- Implement `#hitTestAll()` to return all items that were hit (#536).
+- `ImportSVG()` implements option.onError callback (#969).
+- `PaperScope#settings.insertItems` controls whether newly created items are inserted or not (default: true).
+- Add `#importSVG()` `option.insert` (default: true) to control insertion (#763).
+- Add `CompoundPath` detection on SVG import.
+- Add new options to `#exportSVG()` to control bounds and transformations (#972).
 
 
 ### Deprecated
@@ -123,8 +135,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - `ctx.currentPath` caching optimization
 - Undocumented function `Project#addChild()` that added a layer to a project.
   It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
-- Canvas attributes "resize" and "data-paper-resize" no longer will cause paper to resize the canvas when the viewport size changes; CSS is required since 0.9.22.
-
+- Canvas attributes "resize" and "data-paper-resize" no longer cause paper to resize the canvas when the viewport size changes; CSS is required since 0.9.22.
 
 ### Fixed
 - Improve hit-testing and `#contains()` checks on path with horizontal lines (#819).
@@ -153,4 +164,18 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Don't modify an array of child items passed to `CompoundPath#insertChildren()` when it is a child items array of a `CompoundPath`.
 - Fix incorrect handling of `strokeScaling` for `Shape` and mouse detection (#697).
 - `#importJSON` no longer generates "callstack exceeded" (#764).
-- Fix incorrect `hitResult` and `#contains` cases (#819, #884)
+- Fix incorrect `hitResult` and `#contains` cases (#819, #884).
+- Update documentation to note appropriate use for `#simplify()` (#920).
+- `#importSVG()` now supports percentage dimensions and `gradientUnits="objectBoundingBox"`. (#954, #650).
+- `Groups` with clip-masks now calculate correct bounding boxes (#956).
+- Calling `event.stopPropagation()` in mousedown handler no longer prevents mousedrag events (#952).
+- Draw `Item` shadows when shadowBlur is zero (#955).
+- Fixes for Web site examples (#967).
+- Fixed `Item` dimension cannot be changed after being set to zero (#558).
+- Scaling shadows now works correctly with browser- and view-zoom (#831).
+- `Path#arcTo()` correctly handles zero sizes.
+- `ImportSVG()` handles onLoad and onError callbacks for string inputs that load external resources (#827).
+- `#importJSON()` and `#exportJSON()` now handle non-`Item` objects correctly (#392).
+- `#exportSVG()` now exports empty paths if used as a clip-mask.
+- Correct problem using paper-core in node.js (#975).
+- Fix `event.delta` on mousedrag events (#981).
