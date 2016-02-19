@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 17 19:06:29 2016 +0100
+ * Date: Fri Feb 19 13:44:09 2016 +0100
  *
  ***
  *
@@ -13005,11 +13005,13 @@ var BlendMode = new function() {
 
 var SvgElement = new function() {
 	var svg = 'http://www.w3.org/2000/svg',
-		xmlns = 'http://www.w3.org/2000/xmlns',
-		xlink = 'http://www.w3.org/1999/xlink',
+		xmlns = 'http://www.w3.org/2000/xmlns/',
+		xlink = 'http://www.w3.org/1999/xlink/',
 		attributeNamespace = {
 			href: xlink,
-			xlink: xmlns
+			xlink: xmlns,
+			xmlns: xmlns,
+			'xmlns:xlink': xmlns
 		};
 
 	function create(tag, attributes, formatter) {
