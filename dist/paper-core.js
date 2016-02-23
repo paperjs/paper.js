@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 23 11:55:03 2016 +0100
+ * Date: Tue Feb 23 11:59:59 2016 +0100
  *
  ***
  *
@@ -2782,8 +2782,9 @@ var Project = PaperScopeItem.extend({
 				matrices: [new Matrix()],
 				updateMatrix: true
 			});
-		for (var i = 0, l = children.length; i < l; i++)
+		for (var i = 0, l = children.length; i < l; i++) {
 			children[i].draw(ctx, param);
+		}
 		ctx.restore();
 
 		if (this._selectedItemCount > 0) {
@@ -2792,8 +2793,9 @@ var Project = PaperScopeItem.extend({
 			var items = this._selectedItems,
 				size = this._scope.settings.handleSize,
 				version = this._updateVersion;
-			for (var id in items)
+			for (var id in items) {
 				items[id]._drawSelection(ctx, matrix, size, items, version);
+			}
 			ctx.restore();
 		}
 	}
@@ -3922,13 +3924,15 @@ new function() {
 		var owner = this._getOwner(),
 			project = this._project,
 			index = this._index;
-		if (owner && index != null) {
-			if (project._activeLayer === this)
-				project._activeLayer = this.getNextSibling()
-						|| this.getPreviousSibling();
+		if (owner) {
+			if (index != null) {
+				if (project._activeLayer === this)
+					project._activeLayer = this.getNextSibling()
+							|| this.getPreviousSibling();
+				Base.splice(owner._children, null, index, 1);
+			}
 			if (this._name)
 				this._removeNamed();
-			Base.splice(owner._children, null, index, 1);
 			this._installEvents(false);
 			if (notifySelf && project._changes)
 				this._changed(5);
