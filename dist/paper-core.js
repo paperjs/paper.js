@@ -30,7 +30,6 @@
  *
  */
 
-console.log("Benne vagyok a paperben.")
 var paper = new function(undefined) {
 
 var Base = new function() {
@@ -407,7 +406,6 @@ Base.inject({
 
 		serialize: function(obj, options, compact, dictionary) {
 			options = options || {};
-
 			var root = !dictionary,
 				res;
 			if (root) {
@@ -500,7 +498,20 @@ Base.inject({
 		},
 
 		exportJSON: function(obj, options) {
+			var _ref, _b;
+			if ((typeof obj !== "undefined" && obj !== null ? (_ref = obj.data) != null ? _ref.timeID : void 0 : void 0) != null) {
+			  _b = true
+				timeID = obj.data.timeID + 0
+			} else {
+				_b = false
+			}
 			var json = Base.serialize(obj, options);
+			if(_b){
+				if(json[1].data.timeID !== timeID){
+					//console.log('exportJSON bug detected and fixed.')
+				}
+				json[1].data.timeID = timeID
+			}
 			return options && options.asString === false
 					? json
 					: JSON.stringify(json);
@@ -13374,3 +13385,4 @@ if (typeof define === 'function' && define.amd) {
 
 return paper;
 };
+ 
