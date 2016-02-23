@@ -67,6 +67,13 @@
     "stats.js": "0.0.14-master",
     "straps": "^1.9.0"
   },
+  "browser": {
+    "canvas": false,
+    "jsdom": false,
+    "source-map-support": false,
+    "./dist/node/window.js": false,
+    "./dist/node/extend.js": false
+  },
   "keywords": [
     "vector",
     "graphic",
