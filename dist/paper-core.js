@@ -13385,4 +13385,3 @@ if (typeof define === 'function' && define.amd) {
 
 return paper;
 };
- 
