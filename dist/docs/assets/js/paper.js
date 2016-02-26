@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 26 12:58:50 2016 +0100
+ * Date: Fri Feb 26 15:13:49 2016 +0100
  *
  ***
  *
@@ -11962,6 +11962,7 @@ new function() {
 	});
 
 	var called = false,
+		prevented = false,
 		fallbacks = {
 			doubleclick: 'click',
 			mousedrag: 'mousemove'
@@ -11969,7 +11970,7 @@ new function() {
 
 	function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
 		var target = obj,
-			prevented = false,
+			stopped = false,
 			mouseEvent;
 
 		function emit(obj, type) {
@@ -11983,7 +11984,7 @@ new function() {
 					if (mouseEvent.prevented)
 						prevented = true;
 					if (mouseEvent.stopped)
-						return true;
+						return stopped = true;
 				}
 			} else {
 				var fallback = fallbacks[type];
@@ -11997,12 +11998,12 @@ new function() {
 				break;
 			obj = obj._parent;
 		}
-		return prevented;
+		return stopped;
 	}
 
 	function emitMouseEvents(view, item, type, event, point, prevPoint) {
 		view._project.removeOn(type);
-		called = false;
+		prevented = called = false;
 		return (dragItem && emitMouseEvent(dragItem, type, event, point,
 					prevPoint)
 			|| item && item !== dragItem && !item.isDescendant(dragItem)
@@ -12093,8 +12094,7 @@ new function() {
 			}
 			wasInView = inView;
 			if (mouse.down && inView || mouse.up && downPoint) {
-				var prevented = emitMouseEvents(this, item, type, event, point,
-						downPoint);
+				emitMouseEvents(this, item, type, event, point, downPoint);
 				if (mouse.down) {
 					dblClick = item === clickItem
 						&& (Date.now() - clickTime < 300);
