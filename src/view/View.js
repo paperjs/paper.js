@@ -1146,6 +1146,7 @@ new function() { // Injection scope for event handling on the browser
      */
 
     var called = false,
+        prevented = false,
         // Event fallbacks for "virutal" events, e.g. if an item doesn't respond
         // to doubleclick, fall back to click:
         fallbacks = {
@@ -1156,7 +1157,7 @@ new function() { // Injection scope for event handling on the browser
     // Returns true if event was prevented, false otherwise.
     function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
         var target = obj,
-            prevented = false,
+            stopped = false,
             mouseEvent;
 
         // Returns true if the event was stopped, false otherwise.
@@ -1175,7 +1176,7 @@ new function() { // Injection scope for event handling on the browser
                         prevented = true;
                     // Bail out if propagation is stopped
                     if (mouseEvent.stopped)
-                        return true;
+                        return stopped = true;
                 }
             } else {
                 var fallback = fallbacks[type];
@@ -1190,19 +1191,20 @@ new function() { // Injection scope for event handling on the browser
                 break;
             obj = obj._parent;
         }
-        return prevented;
+        return stopped;
     }
 
-    // Returns true if event was prevented, false otherwise.
+    // Returns true if event was stopped, false otherwise.
     function emitMouseEvents(view, item, type, event, point, prevPoint) {
         // Before handling events, process removeOn() calls for cleanup.
         // NOTE: As soon as there is one event handler receiving mousedrag
         // events, non of the removeOnMove() items will be removed while the
         // user is dragging.
         view._project.removeOn(type);
-        // Set called to false, so it will reflect if the following calls to
-        // emitMouseEvent() have called a handler.
-        called = false;
+        // Set called and prevented to false, so they will reflect if the
+        // following calls to emitMouseEvent() have called a handler, and if
+        // and of the handlers called event.preventDefault()
+        prevented = called = false;
         // First handle the drag-item and its parents, through bubbling.
         return (dragItem && emitMouseEvent(dragItem, type, event, point,
                     prevPoint)
@@ -1213,7 +1215,7 @@ new function() { // Injection scope for event handling on the browser
             || item && item !== dragItem && !item.isDescendant(dragItem)
                 && emitMouseEvent(item, fallbacks[type] || type, event, point,
                     prevPoint, dragItem)
-            // Lastly handle the move / drag on the view, if we're still here.
+            // Lastly handle the mouse events on the view, if we're still here.
             || emitMouseEvent(view, type, event, point, prevPoint));
     }
 
@@ -1337,8 +1339,7 @@ new function() { // Injection scope for event handling on the browser
             // We emit mousedown only when in the view, and mouseup regardless,
             // as long as the mousedown event was inside.
             if (mouse.down && inView || mouse.up && downPoint) {
-                var prevented = emitMouseEvents(this, item, type, event, point,
-                        downPoint);
+                emitMouseEvents(this, item, type, event, point, downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
