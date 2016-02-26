@@ -10,10 +10,10 @@
  * All rights reserved.
  */
 
- // Path#_selectedSegmentState is the addition of all segment's states, and is
- // compared with SelectionState.SEGMENT, the combination of all SelectionStates
- // to see if all segments are fully selected.
-var SelectionState = {
+// Path#_segmentSelection is the addition of all segment's states, and is
+// compared with SegmentSelection.SEGMENT, the combination of all
+// SegmentSelection values to see if all segments are fully selected.
+var SegmentSelection = {
     HANDLE_IN: 1,
     HANDLE_OUT: 2,
     POINT: 4,

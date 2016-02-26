@@ -298,9 +298,12 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i],
                 mx = child._matrix;
-            if (!selectedItems[child._id])
+            // Do not draw this child now if it's separately marked as selected,
+            // as it would be drawn twice otherwise.
+            if (!selectedItems[child._id]) {
                 child._drawSelected(ctx, mx.isIdentity() ? matrix
                         : matrix.appended(mx));
+            }
         }
     }
 },
