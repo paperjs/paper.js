@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 26 15:13:49 2016 +0100
+ * Date: Fri Feb 26 16:31:50 2016 +0100
  *
  ***
  *
@@ -2010,7 +2010,7 @@ new function() {
 				var owner = this._owner;
 				if (owner.setSelected) {
 					owner._boundsSelected = selected;
-					owner.setSelected(selected || owner._selectedSegmentState > 0);
+					owner.setSelected(selected || owner._segmentSelection > 0);
 				}
 			}
 		})
@@ -5338,6 +5338,7 @@ var HitResult = Base.extend({
 var Segment = Base.extend({
 	_class: 'Segment',
 	beans: true,
+	_selection: 0,
 
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
@@ -5429,35 +5430,32 @@ var Segment = Base.extend({
 		this._handleOut.set(0, 0);
 	},
 
-	_selectionState: 0,
+	_getSelectionFlag: function(point) {
+		return !point ? 7
+				: point === this._point ? 4
+				: point === this._handleIn ? 1
+				: point === this._handleOut ? 2
+				: 0;
+	},
 
 	isSelected: function(_point) {
-		var state = this._selectionState;
-		return !_point ? !!(state & 7)
-			: _point === this._point ? !!(state & 4)
-			: _point === this._handleIn ? !!(state & 1)
-			: _point === this._handleOut ? !!(state & 2)
-			: false;
+		return !!(this._selection & this._getSelectionFlag(_point));
 	},
 
 	setSelected: function(selected, _point) {
 		var path = this._path,
 			selected = !!selected,
-			state = this._selectionState,
-			oldState = state,
-			flag = !_point ? 7
-					: _point === this._point ? 4
-					: _point === this._handleIn ? 1
-					: _point === this._handleOut ? 2
-					: 0;
+			selection = this._selection,
+			oldSelection = selection,
+			flag = this._getSelectionFlag(_point);
 		if (selected) {
-			state |= flag;
+			selection |= flag;
 		} else {
-			state &= ~flag;
+			selection &= ~flag;
 		}
-		this._selectionState = state;
-		if (path && state !== oldState) {
-			path._updateSelection(this, oldState, state);
+		this._selection = selection;
+		if (path && selection !== oldSelection) {
+			path._updateSelection(this, oldSelection, selection);
 			path._changed(129);
 		}
 	},
@@ -7496,7 +7494,7 @@ var Path = PathItem.extend({
 			this.setSegments(segments);
 		} else {
 			this._curves = undefined;
-			this._selectedSegmentState = 0;
+			this._segmentSelection = 0;
 			if (!segments && typeof arg === 'string') {
 				this.setPathData(arg);
 				arg = null;
@@ -7546,7 +7544,7 @@ var Path = PathItem.extend({
 	setSegments: function(segments) {
 		var fullySelected = this.isFullySelected();
 		this._segments.length = 0;
-		this._selectedSegmentState = 0;
+		this._segmentSelection = 0;
 		this._curves = undefined;
 		if (segments && segments.length > 0)
 			this._add(Segment.readAll(segments));
@@ -7678,8 +7676,8 @@ var Path = PathItem.extend({
 				segment = segs[i] = segment.clone();
 			segment._path = this;
 			segment._index = index + i;
-			if (segment._selectionState)
-				this._updateSelection(segment, 0, segment._selectionState);
+			if (segment._selection)
+				this._updateSelection(segment, 0, segment._selection);
 		}
 		if (append) {
 			segments.push.apply(segments, segs);
@@ -7777,8 +7775,8 @@ var Path = PathItem.extend({
 			return removed;
 		for (var i = 0; i < amount; i++) {
 			var segment = removed[i];
-			if (segment._selectionState)
-				this._updateSelection(segment, segment._selectionState, 0);
+			if (segment._selection)
+				this._updateSelection(segment, segment._selection, 0);
 			segment._index = segment._path = null;
 		}
 		for (var i = start, l = segments.length; i < l; i++)
@@ -7855,7 +7853,7 @@ var Path = PathItem.extend({
 
 	isFullySelected: function() {
 		var length = this._segments.length;
-		return this._selected && length > 0 && this._selectedSegmentState
+		return this._selected && length > 0 && this._segmentSelection
 				=== length * 7;
 	},
 
@@ -7873,17 +7871,18 @@ var Path = PathItem.extend({
 
 	_selectSegments: function(selected) {
 		var length = this._segments.length;
-		this._selectedSegmentState = selected
+		this._segmentSelection = selected
 				? length * 7 : 0;
-		for (var i = 0; i < length; i++)
-			this._segments[i]._selectionState = selected
+		for (var i = 0; i < length; i++) {
+			this._segments[i]._selection = selected
 					? 7 : 0;
+		}
 	},
 
-	_updateSelection: function(segment, oldState, newState) {
-		segment._selectionState = newState;
-		var total = this._selectedSegmentState += newState - oldState;
-		if (total > 0)
+	_updateSelection: function(segment, oldSelection, newSelection) {
+		segment._selection = newSelection;
+		var selection = this._segmentSelection += newSelection - oldSelection;
+		if (selection > 0)
 			this.setSelected(true);
 	},
 
@@ -8404,15 +8403,15 @@ new function() {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords);
-			var state = segment._selectionState,
+			var selection = segment._selection,
 				pX = coords[0],
 				pY = coords[1];
-			if (state & 1)
+			if (selection & 1)
 				drawHandle(2);
-			if (state & 2)
+			if (selection & 2)
 				drawHandle(4);
 			ctx.fillRect(pX - half, pY - half, size, size);
-			if (!(state & 4)) {
+			if (!(selection & 4)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
 				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
@@ -9258,9 +9257,10 @@ var CompoundPath = PathItem.extend({
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i],
 				mx = child._matrix;
-			if (!selectedItems[child._id])
+			if (!selectedItems[child._id]) {
 				child._drawSelected(ctx, mx.isIdentity() ? matrix
 						: matrix.appended(mx));
+			}
 		}
 	}
 },
