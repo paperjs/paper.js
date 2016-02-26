@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 23 13:54:46 2016 +0100
+ * Date: Fri Feb 26 12:58:50 2016 +0100
  *
  ***
  *
@@ -6167,14 +6167,15 @@ statics: {
 
 	getArea: function(v) {
 		var p1x = v[0], p1y = v[1],
-			p2x = v[6], p2y = v[7],
-			h1x = (v[2] + p1x) / 2,
-			h1y = (v[3] + p1y) / 2,
-			h2x = (v[4] + v[6]) / 2,
-			h2y = (v[5] + v[7]) / 2;
-		return 6 * ((p1x - h1x) * (h1y + p1y)
-				  + (h1x - h2x) * (h2y + h1y)
-				  + (h2x - p2x) * (p2y + h2y)) / 10;
+			c1x = v[2], c1y = v[3],
+			c2x = v[4], c2y = v[5],
+			p2x = v[6], p2y = v[7];
+		return (3.0 * c1y * p1x - 1.5 * c1y * c2x
+			  - 1.5 * c1y * p2x - 3.0 * p1y * c1x
+			  - 1.5 * p1y * c2x - 0.5 * p1y * p2x
+			  + 1.5 * c2y * p1x + 1.5 * c2y * c1x
+			  - 3.0 * c2y * p2x + 0.5 * p2y * p1x
+			  + 1.5 * p2y * c1x + 3.0 * p2y * c2x) / 10;
 	},
 
 	getBounds: function(v) {
