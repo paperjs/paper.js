@@ -689,6 +689,11 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to unite with
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .unite(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         unite: function(path) {
             return computeBoolean(this, path, 'unite');
@@ -700,6 +705,11 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to intersect with
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .intersect(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         intersect: function(path) {
             return computeBoolean(this, path, 'intersect');
@@ -711,6 +721,11 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to subtract
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .subtract(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         subtract: function(path) {
             return computeBoolean(this, path, 'subtract');
@@ -722,6 +737,11 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to exclude the intersection of
          * @return {PathItem} the resulting group item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .exclude(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         exclude: function(path) {
             return computeBoolean(this, path, 'exclude');
@@ -735,6 +755,12 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to divide by
          * @return {Group} the resulting group item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .divide(new Path.Circle([50, 50], 25));
+         * result.children[0].fillColor = 'red';
+         * result.children[1].fillColor = 'blue';
          */
         divide: function(path) {
             return createResult(Group, [this.subtract(path),
