@@ -70,6 +70,7 @@
   `getItems()` ordering, `Rectangle#selected` and `Tool#onMouseMove` work, and
   the `resize` canvas attribute (#2078, #2092, #2030, #1928, #1947, #1907,
   #1900, #2115, #1645, #1697, #1747, #1507, #604, #1330, #662).
+- Docs: Add examples to the boolean path operations (#1007).
 
 ### Removed
 
