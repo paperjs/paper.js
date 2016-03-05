@@ -52,7 +52,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
 function DOMParser() {
 }
 
-DOMParser.prototype.parseFromString = function(string, contenType) {
+DOMParser.prototype.parseFromString = function(string, contentType) {
     // Create a new document, since we're supposed to always return one.
     var doc = document.implementation.createHTMLDocument(''),
         body = doc.body,
