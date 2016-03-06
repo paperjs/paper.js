@@ -138,21 +138,8 @@
    },
 
    _getBounds: function(matrix, options) {
-       var style = this._style,
-           lines = this._lines,
-           numLines = lines.length,
-           justification = style.getJustification(),
-           leading = style.getLeading(),
-           width = this.getView().getTextWidth(style.getFontStyle(), lines),
-           x = 0;
-       // Adjust for different justifications.
-       if (justification !== 'left')
-           x -= width / (justification === 'center' ? 2: 1);
-       // Until we don't have baseline measuring, assume 1 / 4 leading as a
-       // rough guess:
-       var bounds = new Rectangle(x,
-                   numLines ? - 0.75 * leading : 0,
-                   width, numLines * leading);
+
+       var bounds = this.rectangle;
        return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
    }
  });
