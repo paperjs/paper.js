@@ -139,7 +139,10 @@
 
    _getBounds: function(matrix, options) {
 
-       var bounds = this.rectangle;
+       var bounds = new Rectangle(
+         0, 0,
+         this.rectangle.width, this.rectangle.height
+       );
        return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
    }
  });
