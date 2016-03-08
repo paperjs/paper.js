@@ -641,20 +641,46 @@ test('hit-testing guides.', function() {
     }, true);
 });
 
-test('hit-testing fill with tolerance', function() {
+test('hit-testing fills with tolerance', function() {
     var path = new Path.Rectangle({
         from: [50, 50],
         to: [200, 200],
         fillColor: 'red'
     });
 
+    var tolerance = 10;
+    var point = path.bounds.bottomRight.add(tolerance / Math.sqrt(2));
+
     equals(function() {
-        var tolerance = 10;
-        var result = paper.project.hitTest(path.bounds.bottomRight.add(tolerance / Math.sqrt(2)), {
+        var result = paper.project.hitTest(point, {
             tolerance: tolerance,
             fill: true
         });
         return result && result.item === path;
+    }, true);
+
+    var point = new Point(20, 20);
+    var size = new Size(40, 40);
+    var hitPoint = new Point(10, 10);
+    var options = {
+        fill: true,
+        tolerance: 20
+    };
+
+    var shapeRect = new Shape.Rectangle(point, size);
+    shapeRect.fillColor = 'black';
+
+    var pathRect = new Path.Rectangle(point, size);
+    pathRect.fillColor = 'black';
+
+    equals(function() {
+        var hit = shapeRect.hitTest(hitPoint, options);
+        return hit && hit.type === 'fill';
+    }, true);
+
+    equals(function() {
+        var hit = pathRect.hitTest(hitPoint, options);
+        return hit && hit.type === 'fill';
     }, true);
 });
 
@@ -833,5 +859,6 @@ test('hit-testing for all items', function() {
         return result.length === 0;
     }, true);
 });
+
 // TODO: project.hitTest(point, {type: AnItemType});
 

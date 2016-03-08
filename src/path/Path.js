@@ -111,11 +111,11 @@ var Path = PathItem.extend(/** @lends Path# */{
                 : null;
         // Always call setSegments() to initialize a few related variables.
         if (segments && segments.length > 0) {
-            // This sets _curves and _selectedSegmentState too!
+            // This sets _curves and _segmentSelection too!
             this.setSegments(segments);
         } else {
             this._curves = undefined; // For hidden class optimization
-            this._selectedSegmentState = 0;
+            this._segmentSelection = 0;
             if (!segments && typeof arg === 'string') {
                 this.setPathData(arg);
                 // Erase for _initialize() call below.
@@ -180,7 +180,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     setSegments: function(segments) {
         var fullySelected = this.isFullySelected();
         this._segments.length = 0;
-        this._selectedSegmentState = 0;
+        this._segmentSelection = 0;
         // Calculate new curves next time we call getCurves()
         this._curves = undefined;
         if (segments && segments.length > 0)
@@ -391,9 +391,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             segment._path = this;
             segment._index = index + i;
             // If parts of this segment are selected, adjust the internal
-            // _selectedSegmentState now
-            if (segment._selectionState)
-                this._updateSelection(segment, 0, segment._selectionState);
+            // _segmentSelection now
+            if (segment._selection)
+                this._updateSelection(segment, 0, segment._selection);
         }
         if (append) {
             // Append them all at the end by using push
@@ -732,8 +732,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         // Update selection state accordingly
         for (var i = 0; i < amount; i++) {
             var segment = removed[i];
-            if (segment._selectionState)
-                this._updateSelection(segment, segment._selectionState, 0);
+            if (segment._selection)
+                this._updateSelection(segment, segment._selection, 0);
             // Clear the indices and path references of the removed segments
             segment._index = segment._path = null;
         }
@@ -935,8 +935,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     isFullySelected: function() {
         var length = this._segments.length;
-        return this._selected && length > 0 && this._selectedSegmentState
-                === length * /*#=*/SelectionState.SEGMENT;
+        return this._selected && length > 0 && this._segmentSelection
+                === length * /*#=*/SegmentSelection.SEGMENT;
     },
 
     setFullySelected: function(selected) {
@@ -957,20 +957,21 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     _selectSegments: function(selected) {
         var length = this._segments.length;
-        this._selectedSegmentState = selected
-                ? length * /*#=*/SelectionState.SEGMENT : 0;
-        for (var i = 0; i < length; i++)
-            this._segments[i]._selectionState = selected
-                    ? /*#=*/SelectionState.SEGMENT : 0;
+        this._segmentSelection = selected
+                ? length * /*#=*/SegmentSelection.SEGMENT : 0;
+        for (var i = 0; i < length; i++) {
+            this._segments[i]._selection = selected
+                    ? /*#=*/SegmentSelection.SEGMENT : 0;
+        }
     },
 
-    _updateSelection: function(segment, oldState, newState) {
-        segment._selectionState = newState;
-        var total = this._selectedSegmentState += newState - oldState;
+    _updateSelection: function(segment, oldSelection, newSelection) {
+        segment._selection = newSelection;
+        var selection = this._segmentSelection += newSelection - oldSelection;
         // Set this path as selected in case we have selected segments. Do not
         // unselect if we're down to 0, as the path itself can still remain
         // selected even when empty.
-        if (total > 0)
+        if (selection > 0)
             this.setSelected(true);
     },
 
@@ -2051,18 +2052,18 @@ new function() { // Scope for drawing
         for (var i = 0, l = segments.length; i < l; i++) {
             var segment = segments[i];
             segment._transformCoordinates(matrix, coords);
-            var state = segment._selectionState,
+            var selection = segment._selection,
                 pX = coords[0],
                 pY = coords[1];
-            if (state & /*#=*/SelectionState.HANDLE_IN)
+            if (selection & /*#=*/SegmentSelection.HANDLE_IN)
                 drawHandle(2);
-            if (state & /*#=*/SelectionState.HANDLE_OUT)
+            if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
                 drawHandle(4);
             // Draw a rectangle at segment.point:
             ctx.fillRect(pX - half, pY - half, size, size);
             // If the point is not selected, draw a white square that is 1 px
             // smaller on all sides:
-            if (!(state & /*#=*/SelectionState.POINT)) {
+            if (!(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);

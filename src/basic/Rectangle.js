@@ -913,9 +913,9 @@ new function() {
                     owner._boundsSelected = selected;
                     // Update the owner's selected state too, so the bounds
                     // actually get drawn. When deselecting, take a path's
-                    // _selectedSegmentState into account too, since it will
+                    // _segmentSelection into account too, since it will
                     // have to remain selected even when bounds are deselected
-                    owner.setSelected(selected || owner._selectedSegmentState > 0);
+                    owner.setSelected(selected || owner._segmentSelection > 0);
                 }
             }
         })

@@ -855,8 +855,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
                 // should not set this.
                 updateMatrix: true
             });
-        for (var i = 0, l = children.length; i < l; i++)
+        for (var i = 0, l = children.length; i < l; i++) {
             children[i].draw(ctx, param);
+        }
         ctx.restore();
 
         // Draw the selection of the selected items in the project:
@@ -866,8 +867,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             var items = this._selectedItems,
                 size = this._scope.settings.handleSize,
                 version = this._updateVersion;
-            for (var id in items)
+            for (var id in items) {
                 items[id]._drawSelection(ctx, matrix, size, items, version);
+            }
             ctx.restore();
         }
     }

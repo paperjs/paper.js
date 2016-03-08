@@ -41,7 +41,7 @@
         var connections = new Group();
         function generateConnections(paths) {
             // Remove the last connection paths:
-            connections.children = [];
+            connections.removeChildren();
 
             for (var i = 0, l = paths.length; i < l; i++) {
                 for (var j = i - 1; j >= 0; j--) {

@@ -25,6 +25,8 @@
 var Segment = Base.extend(/** @lends Segment# */{
     _class: 'Segment',
     beans: true,
+    // The selection state, a combination of SegmentSelection
+    _selection: 0,
 
     /**
      * Creates a new Segment object.
@@ -251,7 +253,13 @@ var Segment = Base.extend(/** @lends Segment# */{
         this._handleOut.set(0, 0);
     },
 
-    _selectionState: 0,
+    _getSelectionFlag: function(point) {
+        return !point ? /*#=*/SegmentSelection.SEGMENT
+                : point === this._point ? /*#=*/SegmentSelection.POINT
+                : point === this._handleIn ? /*#=*/SegmentSelection.HANDLE_IN
+                : point === this._handleOut ? /*#=*/SegmentSelection.HANDLE_OUT
+                : 0;
+    },
 
     /**
      * Specifies whether the {@link #point} of the segment is selected.
@@ -269,38 +277,29 @@ var Segment = Base.extend(/** @lends Segment# */{
      * path.segments[2].selected = true;
      */
     isSelected: function(_point) {
-        var state = this._selectionState;
-        return !_point ? !!(state & /*#=*/SelectionState.SEGMENT)
-            : _point === this._point ? !!(state & /*#=*/SelectionState.POINT)
-            : _point === this._handleIn ? !!(state & /*#=*/SelectionState.HANDLE_IN)
-            : _point === this._handleOut ? !!(state & /*#=*/SelectionState.HANDLE_OUT)
-            : false;
+        return !!(this._selection & this._getSelectionFlag(_point));
     },
 
     setSelected: function(selected, _point) {
         var path = this._path,
             selected = !!selected, // convert to boolean
-            state = this._selectionState,
-            oldState = state,
-            flag = !_point ? /*#=*/SelectionState.SEGMENT
-                    : _point === this._point ? /*#=*/SelectionState.POINT
-                    : _point === this._handleIn ? /*#=*/SelectionState.HANDLE_IN
-                    : _point === this._handleOut ? /*#=*/SelectionState.HANDLE_OUT
-                    : 0;
+            selection = this._selection,
+            oldSelection = selection,
+            flag = this._getSelectionFlag(_point);
         if (selected) {
-            state |= flag;
+            selection |= flag;
         } else {
-            state &= ~flag;
+            selection &= ~flag;
         }
         // Set the selection state even if path is not defined yet, to allow
         // selected segments to be inserted into paths and make JSON
         // deserialization work.
-        this._selectionState = state;
+        this._selection = selection;
         // If the selection state of the segment has changed, we need to let
         // it's path know and possibly add or remove it from
         // project._selectedItems
-        if (path && state !== oldState) {
-            path._updateSelection(this, oldState, state);
+        if (path && selection !== oldSelection) {
+            path._updateSelection(this, oldSelection, selection);
             // Let path know that we changed something and the view should be
             // redrawn
             path._changed(/*#=*/Change.ATTRIBUTE);

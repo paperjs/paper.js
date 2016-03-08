@@ -756,26 +756,14 @@ statics: /** @lends Curve */{
     },
 
     getArea: function(v) {
-        // This is a combination of the methods to decide if a path is clockwise
-        // and to calculate the area, as described here:
         // http://objectmix.com/graphics/133553-area-closed-bezier-curve.html
-        // http://stackoverflow.com/questions/1165647
-        // We treat the curve points and handles as the outline of a polygon of
-        // which we determine the orientation using the method of calculating
-        // the sum over the edges. This will work even with non-convex polygons,
-        // telling you whether it's mostly clockwise.
-        // With bezier curves, the trick appears to be to calculate edge sum
-        // with half the handles' lengths, and then:
-        // area = 6 * edge-sum / 10
         var p1x = v[0], p1y = v[1],
-            p2x = v[6], p2y = v[7],
-            h1x = (v[2] + p1x) / 2,
-            h1y = (v[3] + p1y) / 2,
-            h2x = (v[4] + v[6]) / 2,
-            h2y = (v[5] + v[7]) / 2;
-        return 6 * ((p1x - h1x) * (h1y + p1y)
-                  + (h1x - h2x) * (h2y + h1y)
-                  + (h2x - p2x) * (p2y + h2y)) / 10;
+            c1x = v[2], c1y = v[3],
+            c2x = v[4], c2y = v[5],
+            p2x = v[6], p2y = v[7];
+        return (6 * (p1x*c1y-p1y*c1x+c2x*p2y-p2x*c2y) +
+                3 * (c1x*p2y-c1y*p2x+p1x*c2y-c2x*p1y+c1x*c2y-c1y*c2x) +
+                1 * (p1x*p2y-p1y*p2x)) / 20;
     },
 
     getBounds: function(v) {

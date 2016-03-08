@@ -158,9 +158,8 @@ var ToolEvent = Event.extend(/** @lends ToolEvent# */{
     getCount: function() {
         // Return downCount for both mouse down and up, since
         // the count is the same.
-        return /^mouse(down|up)$/.test(this.type)
-                ? this.tool._downCount
-                : this.tool._count;
+        return this.tool[/^mouse(down|up)$/.test(this.type)
+                ? '_downCount' : '_moveCount'];
     },
 
     setCount: function(count) {

@@ -31,7 +31,7 @@
         }
 
         function renderDiagram() {
-            project.activeLayer.children = [];
+            project.activeLayer.removeChildren();
             var diagram = voronoi.compute(sites, bbox);
             if (diagram) {
                 for (var i = 0, l = sites.length; i < l; i++) {

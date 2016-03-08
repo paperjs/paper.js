@@ -154,6 +154,40 @@ test('item.remove()', function() {
     }, 0);
 });
 
+
+test('item.addChildren() / item.removeChildren()', function() {
+    var project = paper.project,
+        layer = project.activeLayer,
+        path1 = new Path({ insert: false }),
+        path2 = new Path({ insert: false, name: 'path2' });
+
+    layer.addChildren([path1, path2]);
+    equals(function() { return path1.index; }, 0);
+    equals(function() { return path2.index; }, 1);
+    equals(function() { return path1.parent === layer; }, true);
+    equals(function() { return path2.parent === layer; }, true);
+    equals(function() { return layer.children['path2'] === path2; }, true);
+    layer.removeChildren();
+    equals(function() { return path1.index; }, undefined);
+    equals(function() { return path2.index; }, undefined);
+    equals(function() { return path1.parent; }, null);
+    equals(function() { return path2.parent; }, null);
+    equals(function() { return layer.children['path2'] === undefined; }, true);
+
+    layer.children = [path1, path2];
+    equals(function() { return path1.index; }, 0);
+    equals(function() { return path2.index; }, 1);
+    equals(function() { return path1.parent === layer; }, true);
+    equals(function() { return path2.parent === layer; }, true);
+    equals(function() { return layer.children['path2'] === path2; }, true);
+    layer.children = [];
+    equals(function() { return path1.index; }, undefined);
+    equals(function() { return path2.index; }, undefined);
+    equals(function() { return path1.parent; }, null);
+    equals(function() { return path2.parent; }, null);
+    equals(function() { return layer.children['path2'] === undefined; }, true);
+});
+
 test('item.lastChild / item.firstChild', function() {
     var project = paper.project;
     var path = new Path();

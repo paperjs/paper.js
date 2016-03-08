@@ -23,7 +23,10 @@ var SvgElement = new function() {
         // Mapping of attribute names to required namespaces:
         attributeNamespace = {
             href: xlink,
-            xlink: xmlns
+            xlink: xmlns,
+            xmlns: xmlns,
+            // IE needs the xmlns namespace when setting 'xmlns:xlink'. See #984
+            'xmlns:xlink': xmlns
         };
 
     function create(tag, attributes, formatter) {
@@ -45,7 +48,8 @@ var SvgElement = new function() {
             if (typeof value === 'number' && formatter)
                 value = formatter.number(value);
             if (namespace) {
-                node.setAttributeNS(namespace, name, value);
+                // IE needs trailing slashes, but only when setting. See #984
+                node.setAttributeNS(namespace + '/', name, value);
             } else {
                 node.setAttribute(name, value);
             }

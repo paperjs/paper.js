@@ -14,15 +14,37 @@ QUnit.module('Path');
 
 test('path.length', function() {
     var path = new Path([
-        new Segment(new Point(121, 334), new Point(-19, 38), new Point(30.7666015625, -61.53369140625)),
-        new Segment(new Point(248, 320), new Point(-42, -74), new Point(42, 74))
+        new Segment([121, 334], [-19, 38], [30.7666015625, -61.53369140625]),
+        new Segment([248, 320], [-42, -74], [42, 74])
     ]);
 
-    var length = path.length;
-    equals(length, 172.10112809179614, 'path.length');
+    equals(function() {
+        return path.length;
+    }, 172.10112809179614);
 
-    var t = path.curves[0].getTimeAt(length / 4);
-    equals(t, 0.2255849553116685, 'path.curves[0].getTimeAt(length / 4)');
+    equals(function() {
+        return path.curves[0].getTimeAt(path.length / 4);
+    }, 0.2255849553116685);
+});
+
+test('path.area', function() {
+    var rect = new Path.Rectangle({
+        point: [0, 0],
+        size: [10, 10]
+    });
+
+    equals(function() {
+        return rect.area;
+    }, 100);
+
+    var circle = new Path.Circle({
+        center: [0, 0],
+        radius: 10
+    });
+
+    equals(function() {
+        return circle.area;
+    }, Math.PI * 100, null, { tolerance: 0.1 });
 });
 
 test('curve.getTimeAt() with straight curve', function() {
