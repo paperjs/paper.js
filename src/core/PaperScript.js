@@ -527,7 +527,9 @@ Base.exports.PaperScript = (function() {
                 // request the source asynchronously and execute as soon as
                 // it is retrieved.
                 Http.request({
-                    url: src, async: async,
+                    url: src,
+                    async: async,
+                    mimeType: 'text/plain',
                     onLoad: function(code) {
                         execute(code, scope, src);
                     }

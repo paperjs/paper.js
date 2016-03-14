@@ -684,7 +684,8 @@ new function() {
                 onLoad(node);
             } else {
                 Http.request({
-                    url: source, async: true,
+                    url: source,
+                    async: true,
                     onLoad: onLoad,
                     onError: onError
                 });
