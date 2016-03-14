@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 14 18:47:05 2016 +0100
+ * Date: Mon Mar 14 18:59:09 2016 +0100
  *
  ***
  *
@@ -7884,8 +7884,10 @@ var Path = PathItem.extend({
 	},
 
 	splitAt: function(location) {
-		var index = location && location.index,
-			time = location && location.time,
+		var loc = typeof location === 'number'
+				? this.getLocationAt(location) : location,
+			index = loc && loc.index,
+			time = loc && loc.time,
 			tMin = 4e-7,
 			tMax = 1 - tMin;
 		if (time >= tMax) {
@@ -7919,7 +7921,7 @@ var Path = PathItem.extend({
 			location = time === undefined ? index
 				: (curve = this.getCurves()[index])
 					&& curve.getLocationAtTime(time);
-		return location ? this.splitAt(location) : null;
+		return location != null ? this.splitAt(location) : null;
 	},
 
 	join: function(path) {
