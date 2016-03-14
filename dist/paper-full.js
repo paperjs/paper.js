@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Feb 26 17:49:44 2016 +0100
+ * Date: Mon Mar 14 18:31:45 2016 +0100
  *
  ***
  *
@@ -13005,8 +13005,8 @@ var SvgElement = new function() {
 		attributeNamespace = {
 			href: xlink,
 			xlink: xmlns,
-			xmlns: xmlns,
-			'xmlns:xlink': xmlns
+			xmlns: xmlns + '/',
+			'xmlns:xlink': xmlns + '/'
 		};
 
 	function create(tag, attributes, formatter) {
@@ -13028,7 +13028,7 @@ var SvgElement = new function() {
 			if (typeof value === 'number' && formatter)
 				value = formatter.number(value);
 			if (namespace) {
-				node.setAttributeNS(namespace + '/', name, value);
+				node.setAttributeNS(namespace, name, value);
 			} else {
 				node.setAttribute(name, value);
 			}
