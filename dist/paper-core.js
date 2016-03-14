@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 14 18:59:09 2016 +0100
+ * Date: Mon Mar 14 19:40:46 2016 +0100
  *
  ***
  *
@@ -12671,12 +12671,11 @@ var Tool = PaperScopeItem.extend({
 
 var Http = {
 	request: function(options) {
-		var ctor = window.ActiveXObject || window.XMLHttpRequest,
-			xhr = new ctor('Microsoft.XMLHTTP');
+		var xhr = new window.XMLHttpRequest();
 		xhr.open((options.method || 'get').toUpperCase(), options.url,
 				Base.pick(options.async, true));
-		if ('overrideMimeType' in xhr)
-			xhr.overrideMimeType('text/plain');
+		if (options.mimeType)
+			xhr.overrideMimeType(options.mimeType);
 		xhr.onload = function() {
 			var status = xhr.status;
 			if (status === 0 || status === 200) {
@@ -13977,7 +13976,8 @@ new function() {
 				onLoad(node);
 			} else {
 				Http.request({
-					url: source, async: true,
+					url: source,
+					async: true,
 					onLoad: onLoad,
 					onError: onError
 				});
