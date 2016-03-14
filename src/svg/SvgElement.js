@@ -24,9 +24,10 @@ var SvgElement = new function() {
         attributeNamespace = {
             href: xlink,
             xlink: xmlns,
-            xmlns: xmlns,
+            // Only the xmlns attribute needs the trailing slash. See #984
+            xmlns: xmlns + '/',
             // IE needs the xmlns namespace when setting 'xmlns:xlink'. See #984
-            'xmlns:xlink': xmlns
+            'xmlns:xlink': xmlns + '/'
         };
 
     function create(tag, attributes, formatter) {
@@ -48,8 +49,7 @@ var SvgElement = new function() {
             if (typeof value === 'number' && formatter)
                 value = formatter.number(value);
             if (namespace) {
-                // IE needs trailing slashes, but only when setting. See #984
-                node.setAttributeNS(namespace + '/', name, value);
+                node.setAttributeNS(namespace, name, value);
             } else {
                 node.setAttribute(name, value);
             }
