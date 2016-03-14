@@ -494,7 +494,7 @@ test('Curve list after removing a segment - 2', function() {
 
 test('Splitting a straight path should produce segments without handles', function() {
     var path1 = new Path.Line([0, 0], [50, 50]);
-    var path2 = path1.split(0, 0.5);
+    var path2 = path1.splitAt(path1.length / 2);
     equals(function() {
         return !path1.lastSegment.hasHandles() && !path2.firstSegment.hasHandles();
     }, true);
@@ -502,7 +502,8 @@ test('Splitting a straight path should produce segments without handles', functi
 
 test('Splitting a path with one curve in the middle result in two paths of the same length with one curve each', function() {
     var path1 = new Path.Line([0, 0], [100, 100]);
-    var path2 = path1.split(path1.getLocationAt(path1.length / 2));
+    var loc = path1.getLocationAt(path1.length / 2);
+    var path2 = path1.splitAt(loc);
     equals(function() {
         return path1.curves.length;
     }, 1);

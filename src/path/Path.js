@@ -1032,8 +1032,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.firstSegment.selected = true;
      */
     splitAt: function(location) {
-        var index = location && location.index,
-            time = location && location.time,
+        var loc = typeof location === 'number'
+                ? this.getLocationAt(location) : location,
+            index = loc && loc.index,
+            time = loc && loc.time,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         if (time >= tMax) {
@@ -1087,7 +1089,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             location = time === undefined ? index
                 : (curve = this.getCurves()[index])
                     && curve.getLocationAtTime(time);
-        return location ? this.splitAt(location) : null;
+        return location != null ? this.splitAt(location) : null;
     },
 
     // DOCS: document Path#join(path) in more detail.
