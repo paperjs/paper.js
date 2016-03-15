@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Mar 15 18:52:38 2016 +0100
+ * Date: Tue Mar 15 19:00:35 2016 +0100
  *
  ***
  *
@@ -13817,16 +13817,16 @@ new function() {
 				matrix;
 			if (item instanceof Group) {
 				var scale = size ? size.divide(rect.getSize()) : 1,
-				matrix = new Matrix().scale(scale).translate(rect.getPoint().negate());
+				matrix = new Matrix().scale(scale)
+						.translate(rect.getPoint().negate());
 				group = item;
 			} else if (item instanceof SymbolDefinition) {
 				if (size)
 					rect.setSize(size);
 				group = item._item;
 			}
-			var clip = getAttribute(node, 'overflow', styles) != 'visible';
-			if (clip && !rect.contains(group.getBounds())) {
-				clip = new Shape.Rectangle(rect).transform(group._matrix);
+			if (getAttribute(node, 'overflow', styles) !== 'visible') {
+				var clip = new Shape.Rectangle(rect);
 				clip.setClipMask(true);
 				group.addChild(clip);
 			}
