@@ -490,7 +490,7 @@ var compareSVG = function(done, actual, expected, message, options) {
 
     function compare() {
         comparePixels(actual, expected, message, Base.set({
-            tolerance: 1e-3,
+            tolerance: 1e-2,
             resolution: 72
         }, options));
         done();

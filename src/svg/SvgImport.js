@@ -464,7 +464,8 @@ new function() {
                 // This is either a top-level svg node, or the container for a
                 // symbol.
                 var scale = size ? size.divide(rect.getSize()) : 1,
-                matrix = new Matrix().scale(scale).translate(rect.getPoint().negate());
+                matrix = new Matrix().scale(scale)
+                        .translate(rect.getPoint().negate());
                 group = item;
             } else if (item instanceof SymbolDefinition) {
                 // The symbol is wrapping a group. Note that viewBox was already
@@ -477,10 +478,9 @@ new function() {
                     rect.setSize(size);
                 group = item._item;
             }
-            var clip = getAttribute(node, 'overflow', styles) != 'visible';
-            if (clip && !rect.contains(group.getBounds())) {
+            if (getAttribute(node, 'overflow', styles) !== 'visible') {
                 // Add a clip path at the top of this symbol's group
-                clip = new Shape.Rectangle(rect).transform(group._matrix);
+                var clip = new Shape.Rectangle(rect);
                 clip.setClipMask(true);
                 group.addChild(clip);
             }
