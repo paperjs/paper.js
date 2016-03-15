@@ -135,6 +135,8 @@ test('Import SVG without insertion', function() {
 function importSVG(assert, url, message, options) {
     var done = assert.async();
     project.importSVG(url, {
+        applyMatrix: false,
+
         onLoad: function(item, svg) {
             if (!message) {
                 message = 'The imported SVG "' + url + '" should visually be '
@@ -142,6 +144,7 @@ function importSVG(assert, url, message, options) {
             }
             compareSVG(done, item, svg, message, options);
         },
+
         onError: function(error) {
             var ok = !!(options && options.expectError);
             QUnit.push(ok, false, !ok, ok && message
@@ -154,7 +157,7 @@ function importSVG(assert, url, message, options) {
 
 if (!isNode) {
     // JSDom does not have SVG rendering, so we can't test there.
-    var svgFiles = ['viewbox', 'clipping', 'gradients-1'];
+    var svgFiles = ['viewbox', 'clipping', 'symbol', 'symbols', 'blendModes', 'gradients-1'];
     // TODO: Investigate why Phantom struggles with this file:
     if (!isPhantom)
         svgFiles.push('gradients-2');

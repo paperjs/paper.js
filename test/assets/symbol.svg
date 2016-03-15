@@ -1,0 +1,8 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="150" height="150">
+    <defs>
+        <symbol viewBox="-75,-75,150,150" id="symbol-1">
+            <path d="M-75,75l0,-150l150,0l0,150z" fill="red"></path>
+        </symbol>
+    </defs>
+    <use x="0" y="0" xlink:href="#symbol-1" width="150" height="150" overflow="visible"></use>
+</svg>
