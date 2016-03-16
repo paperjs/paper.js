@@ -2352,13 +2352,14 @@ new function() { // Injection scope for hit-test functions shared with project
                 // See #_remove() for an explanation of this:
                 notifySelf = project && project._changes;
             for (var i = 0, l = items.length; i < l; i++) {
-                var item = items[i];
+                var item = items[i],
+                    name = item._name;
                 item._parent = this;
                 item._setProject(this._project, true);
-                // Setting the name again makes sure all name lookup structures
+                // Set the name again to make sure all name lookup structures
                 // are kept in sync.
-                if (item._name)
-                    item.setName(item._name);
+                if (name)
+                    item.setName(name);
                 if (notifySelf)
                     this._changed(/*#=*/Change.INSERTION);
             }

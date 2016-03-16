@@ -355,6 +355,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             layer._remove(false, true);
             Base.splice(this._children, [layer], index, 0);
             layer._setProject(this, true);
+            // Set the name again to make sure all name lookup structures
+            // are kept in sync.
+            var name = layer._name;
+            if (name)
+                layer.setName(name);
             // See Item#_remove() for an explanation of this:
             if (this._changes)
                 layer._changed(/*#=*/Change.INSERTION);
