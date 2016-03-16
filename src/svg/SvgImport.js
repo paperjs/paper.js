@@ -99,7 +99,7 @@ new function() {
             var childNode = nodes[i],
                 child;
             if (childNode.nodeType === 1
-                    && childNode.nodeName.toLowerCase() !== 'defs'
+                    && !/^defs$/i.test(childNode.nodeName)
                     && (child = importNode(childNode, options, false))
                     && !(child instanceof SymbolDefinition))
                 children.push(child);
@@ -313,51 +313,54 @@ new function() {
     // so we can omit the less likely parameters from right to left.
 
     function applyTransform(item, value, name, node) {
-        // http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
-        // Parse SVG transform string. First we split at /)\s*/, to separate
-        // commands
-        var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
-            matrix = new Matrix();
-        for (var i = 0, l = transforms.length; i < l; i++) {
-            var transform = transforms[i];
-            if (!transform)
-                break;
-            // Command come before the '(', values after
-            var parts = transform.split(/\(\s*/),
-                command = parts[0],
-                v = parts[1].split(/[\s,]+/g);
-            // Convert values to floats
-            for (var j = 0, m = v.length; j < m; j++)
-                v[j] = parseFloat(v[j]);
-            switch (command) {
-            case 'matrix':
-                matrix.append(new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
-                break;
-            case 'rotate':
-                matrix.rotate(v[0], v[1], v[2]);
-                break;
-            case 'translate':
-                matrix.translate(v[0], v[1]);
-                break;
-            case 'scale':
-                matrix.scale(v);
-                break;
-            case 'skewX':
-                matrix.skew(v[0], 0);
-                break;
-            case 'skewY':
-                matrix.skew(0, v[0]);
-                break;
+        if (item.transform) {
+            // http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
+            // Parse SVG transform string. First we split at /)\s*/, to separate
+            // commands
+            var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
+                matrix = new Matrix();
+            for (var i = 0, l = transforms.length; i < l; i++) {
+                var transform = transforms[i];
+                if (!transform)
+                    break;
+                // Command come before the '(', values after
+                var parts = transform.split(/\(\s*/),
+                    command = parts[0],
+                    v = parts[1].split(/[\s,]+/g);
+                // Convert values to floats
+                for (var j = 0, m = v.length; j < m; j++)
+                    v[j] = parseFloat(v[j]);
+                switch (command) {
+                case 'matrix':
+                    matrix.append(
+                            new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
+                    break;
+                case 'rotate':
+                    matrix.rotate(v[0], v[1], v[2]);
+                    break;
+                case 'translate':
+                    matrix.translate(v[0], v[1]);
+                    break;
+                case 'scale':
+                    matrix.scale(v);
+                    break;
+                case 'skewX':
+                    matrix.skew(v[0], 0);
+                    break;
+                case 'skewY':
+                    matrix.skew(0, v[0]);
+                    break;
+                }
             }
+            item.transform(matrix);
         }
-        item.transform(matrix);
     }
 
     function applyOpacity(item, value, name) {
         // http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
         // http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
-        var color = item[name === 'fill-opacity' ? 'getFillColor'
-                : 'getStrokeColor']();
+        var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
+            color = item[key] && item[key]();
         if (color)
             color.setAlpha(parseFloat(value));
     }
@@ -371,25 +374,27 @@ new function() {
     // 'stroke-opacity'). See issue #694.
     var attributes = Base.set(Base.each(SvgStyles, function(entry) {
         this[entry.attribute] = function(item, value) {
-            item[entry.set](convertValue(value, entry.type, entry.fromSVG));
-            if (entry.type === 'color') {
-                // Do not use result of convertValue() above, since calling
-                // the setter will convert a color and clone it if necessary.
-                var color = item[entry.get]();
-                if (color) {
-                    // Emulate SVG's gradientUnits="objectBoundingBox"
-                    if (color._scaleToBounds) {
-                        var bounds = item.getBounds();
-                        color.transform(new Matrix()
-                            .translate(bounds.getPoint())
-                            .scale(bounds.getSize()));
-                    }
-                    if (item instanceof Shape) {
-                        // When applying gradient colors to shapes, we need to
-                        // offset the shape's initial position to get the same
-                        // results as SVG.
-                        color.transform(new Matrix()
-                                .translate(item.getPosition(true).negate()));
+            if (item[entry.set]) {
+                item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+                if (entry.type === 'color') {
+                    // Do not use result of convertValue() above, since calling
+                    // the setter will convert a color and clone it if necessary
+                    var color = item[entry.get]();
+                    if (color) {
+                        // Emulate SVG's gradientUnits="objectBoundingBox"
+                        if (color._scaleToBounds) {
+                            var bounds = item.getBounds();
+                            color.transform(new Matrix()
+                                .translate(bounds.getPoint())
+                                .scale(bounds.getSize()));
+                        }
+                        if (item instanceof Shape) {
+                            // When applying gradient colors to shapes, we need
+                            // to offset the shape's initial position to get the
+                            // same results as SVG.
+                            color.transform(new Matrix().translate(
+                                item.getPosition(true).negate()));
+                        }
                     }
                 }
             }
@@ -423,12 +428,14 @@ new function() {
         'stroke-opacity': applyOpacity,
 
         visibility: function(item, value) {
-            item.setVisible(value === 'visible');
+            if (item.setVisible)
+                item.setVisible(value === 'visible');
         },
 
         display: function(item, value) {
             // NOTE: 'none' gets translated to null in getAttribute()
-            item.setVisible(value !== null);
+            if (item.setVisible)
+                item.setVisible(value !== null);
         },
 
         'stop-color': function(item, value) {
@@ -446,9 +453,11 @@ new function() {
 
         offset: function(item, value) {
             // http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
-            var percentage = value.match(/(.*)%$/);
-            item.setRampPoint(percentage ? percentage[1] / 100
-                    : parseFloat(value));
+            if (item.setRampPoint) {
+                var percentage = value.match(/(.*)%$/);
+                item.setRampPoint(percentage ? percentage[1] / 100
+                        : parseFloat(value));
+            }
         },
 
         viewBox: function(item, value, name, node, styles) {
@@ -478,14 +487,16 @@ new function() {
                     rect.setSize(size);
                 group = item._item;
             }
-            if (getAttribute(node, 'overflow', styles) !== 'visible') {
-                // Add a clip path at the top of this symbol's group
-                var clip = new Shape.Rectangle(rect);
-                clip.setClipMask(true);
-                group.addChild(clip);
+            if (group)  {
+                if (getAttribute(node, 'overflow', styles) !== 'visible') {
+                    // Add a clip path at the top of this symbol's group
+                    var clip = new Shape.Rectangle(rect);
+                    clip.setClipMask(true);
+                    group.addChild(clip);
+                }
+                if (matrix)
+                    group.transform(matrix);
             }
-            if (matrix)
-                group.transform(matrix);
         }
     });
 
@@ -519,16 +530,20 @@ new function() {
     function applyAttributes(item, node, isRoot) {
         // SVG attributes can be set both as styles and direct node attributes,
         // so we need to handle both.
-        var styles = {
-            node: DomElement.getStyles(node) || {},
-            // Do not check for inheritance if this is the root, since we want
-            // the default SVG settings to stick.
-            parent: !isRoot && DomElement.getStyles(node.parentNode) || {}
-        };
+        var parent = node.parentNode,
+            styles = {
+                node: DomElement.getStyles(node) || {},
+                // Do not check for inheritance if this is root, since we want
+                // the default SVG settings to stick. Also detect defs parents,
+                // of which children need to explicitly inherit their styles.
+                parent: !isRoot && !/^defs$/i.test(parent.tagName)
+                        && DomElement.getStyles(parent) || {}
+            };
         Base.each(attributes, function(apply, name) {
             var value = getAttribute(node, name, styles);
-            if (value !== undefined)
-                item = Base.pick(apply(item, value, name, node, styles), item);
+            // 'clip-path' attribute returns a new item, support it here:
+            item = value !== undefined && apply(item, value, name, node, styles)
+                    || item;
         });
         return item;
     }

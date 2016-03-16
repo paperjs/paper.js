@@ -68,9 +68,8 @@
  *
  */
 var Style = Base.extend(new function() {
-    // fillRule / resolution / fillOverprint / strokeOverprint are currently
-    // not supported.
-    var defaults = {
+    // Defaults for items without text-styles (PathItem, Shape, Raster, ...):
+    var itemDefaults = {
         // Paths
         fillColor: null,
         fillRule: 'nonzero',
@@ -89,9 +88,9 @@ var Style = Base.extend(new function() {
         // Selection
         selectedColor: null
     },
-    // For TextItem, override default fillColor and add text-specific properties
-    textDefaults = Base.set({}, defaults, {
-        fillColor: new Color(), // black
+    // Defaults for Group, Layer and Project (anything item that allows nesting
+    // needs to be able to pass down text styles as well):
+    groupDefaults = Base.set({}, itemDefaults, {
         // Characters
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
@@ -99,6 +98,10 @@ var Style = Base.extend(new function() {
         leading: null,
         // Paragraphs
         justification: 'left'
+    }),
+    // Defaults for TextItem (override default fillColor to black):
+    textDefaults = Base.set({}, groupDefaults, {
+        fillColor: new Color() // black
     }),
     flags = {
         strokeWidth: /*#=*/Change.STROKE,
@@ -121,25 +124,25 @@ var Style = Base.extend(new function() {
     },
     fields = /** @lends Style# */{
         _class: 'Style',
+        beans: true,
 
         initialize: function Style(style, owner, project) {
             // We keep values in a separate object that we can iterate over.
             this._values = {};
             this._owner = owner;
             this._project = owner && owner._project || project || paper.project;
-            if (owner instanceof TextItem)
-                this._defaults = textDefaults;
+            // Use different defaults based on the owner
+            this._defaults = !owner || owner instanceof Group ? groupDefaults
+                    : owner instanceof TextItem ? textDefaults
+                    : itemDefaults;
             if (style)
                 this.set(style);
-        },
-
-        _defaults: defaults,
-        beans: true
+        }
     };
 
-    // Iterate over textDefaults to inject getters / setters, to cover all
+    // Iterate over groupDefaults to inject getters / setters, to cover all
     // properties
-    Base.each(textDefaults, function(value, key) {
+    Base.each(groupDefaults, function(value, key) {
         var isColor = /Color$/.test(key),
             isPoint = key === 'shadowOffset',
             part = Base.capitalize(key),
