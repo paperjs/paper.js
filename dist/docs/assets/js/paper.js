@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Mar 15 19:13:16 2016 +0100
+ * Date: Wed Mar 16 09:56:10 2016 +0100
  *
  ***
  *
@@ -2715,6 +2715,9 @@ var Project = PaperScopeItem.extend({
 			layer._remove(false, true);
 			Base.splice(this._children, [layer], index, 0);
 			layer._setProject(this, true);
+			var name = layer._name;
+			if (name)
+				layer.setName(name);
 			if (this._changes)
 				layer._changed(5);
 			if (!this._activeLayer)
@@ -3832,11 +3835,12 @@ new function() {
 			var project = this._project,
 				notifySelf = project && project._changes;
 			for (var i = 0, l = items.length; i < l; i++) {
-				var item = items[i];
+				var item = items[i],
+					name = item._name;
 				item._parent = this;
 				item._setProject(this._project, true);
-				if (item._name)
-					item.setName(item._name);
+				if (name)
+					item.setName(name);
 				if (notifySelf)
 					this._changed(5);
 			}
