@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 16 09:56:10 2016 +0100
+ * Date: Wed Mar 16 20:47:57 2016 +0100
  *
  ***
  *
@@ -11100,7 +11100,7 @@ var GradientStop = Base.extend({
 });
 
 var Style = Base.extend(new function() {
-	var defaults = {
+	var itemDefaults = {
 		fillColor: null,
 		fillRule: 'nonzero',
 		strokeColor: null,
@@ -11116,13 +11116,15 @@ var Style = Base.extend(new function() {
 		shadowOffset: new Point(),
 		selectedColor: null
 	},
-	textDefaults = Base.set({}, defaults, {
-		fillColor: new Color(),
+	groupDefaults = Base.set({}, itemDefaults, {
 		fontFamily: 'sans-serif',
 		fontWeight: 'normal',
 		fontSize: 12,
 		leading: null,
 		justification: 'left'
+	}),
+	textDefaults = Base.set({}, groupDefaults, {
+		fillColor: new Color()
 	}),
 	flags = {
 		strokeWidth: 97,
@@ -11142,22 +11144,21 @@ var Style = Base.extend(new function() {
 	},
 	fields = {
 		_class: 'Style',
+		beans: true,
 
 		initialize: function Style(style, owner, project) {
 			this._values = {};
 			this._owner = owner;
 			this._project = owner && owner._project || project || paper.project;
-			if (owner instanceof TextItem)
-				this._defaults = textDefaults;
+			this._defaults = !owner || owner instanceof Group ? groupDefaults
+					: owner instanceof TextItem ? textDefaults
+					: itemDefaults;
 			if (style)
 				this.set(style);
-		},
-
-		_defaults: defaults,
-		beans: true
+		}
 	};
 
-	Base.each(textDefaults, function(value, key) {
+	Base.each(groupDefaults, function(value, key) {
 		var isColor = /Color$/.test(key),
 			isPoint = key === 'shadowOffset',
 			part = Base.capitalize(key),
@@ -13548,7 +13549,7 @@ new function() {
 			var childNode = nodes[i],
 				child;
 			if (childNode.nodeType === 1
-					&& childNode.nodeName.toLowerCase() !== 'defs'
+					&& !/^defs$/i.test(childNode.nodeName)
 					&& (child = importNode(childNode, options, false))
 					&& !(child instanceof SymbolDefinition))
 				children.push(child);
@@ -13703,63 +13704,68 @@ new function() {
 	};
 
 	function applyTransform(item, value, name, node) {
-		var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
-			matrix = new Matrix();
-		for (var i = 0, l = transforms.length; i < l; i++) {
-			var transform = transforms[i];
-			if (!transform)
-				break;
-			var parts = transform.split(/\(\s*/),
-				command = parts[0],
-				v = parts[1].split(/[\s,]+/g);
-			for (var j = 0, m = v.length; j < m; j++)
-				v[j] = parseFloat(v[j]);
-			switch (command) {
-			case 'matrix':
-				matrix.append(new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
-				break;
-			case 'rotate':
-				matrix.rotate(v[0], v[1], v[2]);
-				break;
-			case 'translate':
-				matrix.translate(v[0], v[1]);
-				break;
-			case 'scale':
-				matrix.scale(v);
-				break;
-			case 'skewX':
-				matrix.skew(v[0], 0);
-				break;
-			case 'skewY':
-				matrix.skew(0, v[0]);
-				break;
+		if (item.transform) {
+			var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
+				matrix = new Matrix();
+			for (var i = 0, l = transforms.length; i < l; i++) {
+				var transform = transforms[i];
+				if (!transform)
+					break;
+				var parts = transform.split(/\(\s*/),
+					command = parts[0],
+					v = parts[1].split(/[\s,]+/g);
+				for (var j = 0, m = v.length; j < m; j++)
+					v[j] = parseFloat(v[j]);
+				switch (command) {
+				case 'matrix':
+					matrix.append(
+							new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
+					break;
+				case 'rotate':
+					matrix.rotate(v[0], v[1], v[2]);
+					break;
+				case 'translate':
+					matrix.translate(v[0], v[1]);
+					break;
+				case 'scale':
+					matrix.scale(v);
+					break;
+				case 'skewX':
+					matrix.skew(v[0], 0);
+					break;
+				case 'skewY':
+					matrix.skew(0, v[0]);
+					break;
+				}
 			}
+			item.transform(matrix);
 		}
-		item.transform(matrix);
 	}
 
 	function applyOpacity(item, value, name) {
-		var color = item[name === 'fill-opacity' ? 'getFillColor'
-				: 'getStrokeColor']();
+		var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
+			color = item[key] && item[key]();
 		if (color)
 			color.setAlpha(parseFloat(value));
 	}
 
 	var attributes = Base.set(Base.each(SvgStyles, function(entry) {
 		this[entry.attribute] = function(item, value) {
-			item[entry.set](convertValue(value, entry.type, entry.fromSVG));
-			if (entry.type === 'color') {
-				var color = item[entry.get]();
-				if (color) {
-					if (color._scaleToBounds) {
-						var bounds = item.getBounds();
-						color.transform(new Matrix()
-							.translate(bounds.getPoint())
-							.scale(bounds.getSize()));
-					}
-					if (item instanceof Shape) {
-						color.transform(new Matrix()
-								.translate(item.getPosition(true).negate()));
+			if (item[entry.set]) {
+				item[entry.set](convertValue(value, entry.type, entry.fromSVG));
+				if (entry.type === 'color') {
+					var color = item[entry.get]();
+					if (color) {
+						if (color._scaleToBounds) {
+							var bounds = item.getBounds();
+							color.transform(new Matrix()
+								.translate(bounds.getPoint())
+								.scale(bounds.getSize()));
+						}
+						if (item instanceof Shape) {
+							color.transform(new Matrix().translate(
+								item.getPosition(true).negate()));
+						}
 					}
 				}
 			}
@@ -13791,11 +13797,13 @@ new function() {
 		'stroke-opacity': applyOpacity,
 
 		visibility: function(item, value) {
-			item.setVisible(value === 'visible');
+			if (item.setVisible)
+				item.setVisible(value === 'visible');
 		},
 
 		display: function(item, value) {
-			item.setVisible(value !== null);
+			if (item.setVisible)
+				item.setVisible(value !== null);
 		},
 
 		'stop-color': function(item, value) {
@@ -13809,9 +13817,11 @@ new function() {
 		},
 
 		offset: function(item, value) {
-			var percentage = value.match(/(.*)%$/);
-			item.setRampPoint(percentage ? percentage[1] / 100
-					: parseFloat(value));
+			if (item.setRampPoint) {
+				var percentage = value.match(/(.*)%$/);
+				item.setRampPoint(percentage ? percentage[1] / 100
+						: parseFloat(value));
+			}
 		},
 
 		viewBox: function(item, value, name, node, styles) {
@@ -13829,13 +13839,15 @@ new function() {
 					rect.setSize(size);
 				group = item._item;
 			}
-			if (getAttribute(node, 'overflow', styles) !== 'visible') {
-				var clip = new Shape.Rectangle(rect);
-				clip.setClipMask(true);
-				group.addChild(clip);
+			if (group)  {
+				if (getAttribute(node, 'overflow', styles) !== 'visible') {
+					var clip = new Shape.Rectangle(rect);
+					clip.setClipMask(true);
+					group.addChild(clip);
+				}
+				if (matrix)
+					group.transform(matrix);
 			}
-			if (matrix)
-				group.transform(matrix);
 		}
 	});
 
@@ -13854,14 +13866,16 @@ new function() {
 	}
 
 	function applyAttributes(item, node, isRoot) {
-		var styles = {
-			node: DomElement.getStyles(node) || {},
-			parent: !isRoot && DomElement.getStyles(node.parentNode) || {}
-		};
+		var parent = node.parentNode,
+			styles = {
+				node: DomElement.getStyles(node) || {},
+				parent: !isRoot && !/^defs$/i.test(parent.tagName)
+						&& DomElement.getStyles(parent) || {}
+			};
 		Base.each(attributes, function(apply, name) {
 			var value = getAttribute(node, name, styles);
-			if (value !== undefined)
-				item = Base.pick(apply(item, value, name, node, styles), item);
+			item = value !== undefined && apply(item, value, name, node, styles)
+					|| item;
 		});
 		return item;
 	}
