@@ -607,7 +607,7 @@ var Color = Base.extend(new function() {
             // Default fallbacks: rgb, black
             this._type = type || 'rgb';
             // Define this Color's unique id in its own private id pool.
-            // NOTE: This is required by SVG Export code!
+            // NOTE: This is only required by SVG Export code!
             this._id = UID.get(Color);
             if (!components) {
                 // Produce a components array now, and parse values. Even if no
@@ -856,7 +856,11 @@ var Color = Base.extend(new function() {
             }
             for (var i = 0, l = stops.length; i < l; i++) {
                 var stop = stops[i];
-                canvasGradient.addColorStop(stop._rampPoint,
+                // Use the defined offset, and fall back to automatic linear
+                // calculation.
+                // NOTE: that if _rampPoint is 0 for the first entry, the fall
+                // back will be so too.
+                canvasGradient.addColorStop(stop._rampPoint || i / (l - 1),
                         stop._color.toCanvasStyle());
             }
             return this._canvasStyle = canvasGradient;

@@ -72,10 +72,11 @@ var Gradient = Base.extend(/** @lends Gradient# */{
             stops = radial = null;
         if (!this._stops)
             this.setStops(stops || ['white', 'black']);
-        if (this._radial == null)
+        if (this._radial == null) {
             // Support old string type argument and new radial boolean.
             this.setRadial(typeof radial === 'string' && radial === 'radial'
                     || radial || false);
+        }
     },
 
     _serialize: function(options, dictionary) {
@@ -91,8 +92,9 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     _changed: function() {
         // Loop through the gradient-colors that use this gradient and notify
         // them, so they can notify the items they belong to.
-        for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+        for (var i = 0, l = this._owners && this._owners.length; i < l; i++) {
             this._owners[i]._changed();
+        }
     },
 
     /**
@@ -122,8 +124,9 @@ var Gradient = Base.extend(/** @lends Gradient# */{
      */
     clone: function() {
         var stops = [];
-        for (var i = 0, l = this._stops.length; i < l; i++)
+        for (var i = 0, l = this._stops.length; i < l; i++) {
             stops[i] = this._stops[i].clone();
+        }
         return new Gradient(stops, this._radial);
     },
 
@@ -138,23 +141,20 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     },
 
     setStops: function(stops) {
-        // If this gradient already contains stops, first remove
-        // this gradient as their owner.
-        if (this.stops) {
-            for (var i = 0, l = this._stops.length; i < l; i++)
-                this._stops[i]._owner = undefined;
-        }
-        if (stops.length < 2)
+        if (stops.length < 2) {
             throw new Error(
                     'Gradient stop list needs to contain at least two stops.');
-        this._stops = GradientStop.readAll(stops, 0, { clone: true });
-        // Now reassign ramp points if they were not specified.
-        for (var i = 0, l = this._stops.length; i < l; i++) {
-            var stop = this._stops[i];
-            stop._owner = this;
-            if (stop._defaultRamp)
-                stop.setRampPoint(i / (l - 1));
         }
+        // If this gradient already contains stops, first remove their owner.
+        var _stops = this._stops;
+        if (_stops) {
+            for (var i = 0, l = _stops.length; i < l; i++)
+                _stops[i]._owner = undefined;
+        }
+        _stops = this._stops = GradientStop.readAll(stops, 0, { clone: true });
+        // Now assign this gradient as the new gradients' owner.
+        for (var i = 0, l = _stops.length; i < l; i++)
+            _stops[i]._owner = this;
         this._changed();
     },
 
@@ -182,13 +182,17 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     equals: function(gradient) {
         if (gradient === this)
             return true;
-        if (gradient && this._class === gradient._class
-                && this._stops.length === gradient._stops.length) {
-            for (var i = 0, l = this._stops.length; i < l; i++) {
-                if (!this._stops[i].equals(gradient._stops[i]))
-                    return false;
+        if (gradient && this._class === gradient._class) {
+            var stops1 = this._stops,
+                stops2 = gradient._stops,
+                length = stops1.length;
+            if (length === stops2.length) {
+                for (var i = 0; i < length; i++) {
+                    if (!stops1[i].equals(stops2[i]))
+                        return false;
+                }
+                return true;
             }
-            return true;
         }
         return false;
     }
