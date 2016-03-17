@@ -1392,19 +1392,29 @@ new function() { // Scope for methods that require private functions
 
     return { statics: {
 
-        getLength: function(v, a, b) {
+        getLength: function(v, a, b, ds) {
             if (a === undefined)
                 a = 0;
             if (b === undefined)
                 b = 1;
-            if (a === 0 && b === 1 && Curve.isStraight(v)) {
+            if (Curve.isStraight(v)) {
+                // Sub-divide the linear curve at a and b, so we can simply
+                // calculate the Pythagorean Theorem to get the range's length.
+                var c = v;
+                if (b < 1) {
+                    c = Curve.subdivide(c, b)[0]; // left
+                    a /= b; // Scale parameter to new sub-curve.
+                }
+                if (a > 0) {
+                    c = Curve.subdivide(c, a)[1]; // right
+                }
                 // The length of straight curves can be calculated more easily.
-                var dx = v[6] - v[0], // p2x - p1x
-                    dy = v[7] - v[1]; // p2y - p1y
+                var dx = c[6] - c[0], // p2x - p1x
+                    dy = c[7] - c[1]; // p2y - p1y
                 return Math.sqrt(dx * dx + dy * dy);
             }
-            var ds = getLengthIntegrand(v);
-            return Numerical.integrate(ds, a, b, getIterations(a, b));
+            return Numerical.integrate(ds || getLengthIntegrand(v), a, b,
+                    getIterations(a, b));
         },
 
         getTimeAt: function(v, offset, start) {
@@ -1415,6 +1425,7 @@ new function() { // Scope for methods that require private functions
             // See if we're going forward or backward, and handle cases
             // differently
             var abs = Math.abs,
+                epsilon = /*#=*/Numerical.EPSILON,
                 forward = offset > 0,
                 a = forward ? start : 0,
                 b = forward ? 1 : start,
@@ -1422,12 +1433,12 @@ new function() { // Scope for methods that require private functions
                 // lengths in f(t) below.
                 ds = getLengthIntegrand(v),
                 // Get length of total range
-                rangeLength = Numerical.integrate(ds, a, b,
-                        getIterations(a, b));
-            if (abs(offset - rangeLength) < /*#=*/Numerical.EPSILON) {
+                rangeLength = Curve.getLength(v, a, b, ds),
+                diff = abs(offset) - rangeLength;
+            if (abs(diff) < epsilon) {
                 // Matched the end:
                 return forward ? b : a;
-            } else if (abs(offset) > rangeLength) {
+            } else if (diff > epsilon) {
                 // We're out of bounds.
                 return null;
             }
@@ -1447,7 +1458,7 @@ new function() { // Scope for methods that require private functions
                 return length - offset;
             }
             // Start with out initial guess for x.
-            // NOTE: guess is a negative value when not looking forward.
+            // NOTE: guess is a negative value when looking backwards.
             return Numerical.findRoot(f, ds, start + guess, a, b, 32,
                     /*#=*/Numerical.EPSILON);
         },

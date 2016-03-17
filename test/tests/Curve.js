@@ -257,3 +257,25 @@ test('Curve#getTimeOf()', function() {
                 + point1 + ')).point;');
     }
 });
+
+test('Curve#getTimeAt() with straight curve', function() {
+    // #1000:
+    var curve = new Curve([
+        1584.4999999999998, 1053.2499999999995,
+        1584.4999999999998,1053.2499999999995,
+        1520.5,1053.2499999999995,
+        1520.5,1053.2499999999995
+    ]);
+    var offset = 63.999999999999716;
+    equals(function() { return offset < curve.length; }, true);
+    equals(function() { return curve.getTimeAt(offset); }, 1);
+});
+
+test('Curve#getPartLength() with straight curve', function() {
+    var curve = new Curve([0, 0, 0, 0, 64, 0, 64, 0]);
+    equals(function() { return curve.getPartLength(0.0, 0.25); }, 10);
+    equals(function() { return curve.getPartLength(0.25, 0.5); }, 22);
+    equals(function() { return curve.getPartLength(0.25, 0.75); }, 44);
+    equals(function() { return curve.getPartLength(0.5, 0.75); }, 22);
+    equals(function() { return curve.getPartLength(0.75, 1); }, 10);
+});
