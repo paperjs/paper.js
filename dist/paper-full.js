@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 13:02:26 2016 +0100
+ * Date: Thu Mar 17 13:09:02 2016 +0100
  *
  ***
  *
@@ -2828,7 +2828,7 @@ var Item = Base.extend(Emitter, {
 	_guide: false,
 	_clipMask: false,
 	_selection: 0,
-	_boundsSelected: false,
+	_selectBounds: true,
 	_selectChildren: false,
 	_serializeFields: {
 		name: null,
@@ -4340,7 +4340,7 @@ new function() {
 		var selection = this._selection,
 			itemSelected = selection & 1,
 			boundsSelected = selection & 2
-					|| itemSelected && this._boundsSelected;
+					|| itemSelected && this._selectBounds;
 		if (!this._drawSelected)
 			itemSelected = false;
 		if ((itemSelected || boundsSelected) && this._isUpdated(updateVersion)) {
@@ -4356,13 +4356,15 @@ new function() {
 				var half = size / 2,
 					coords = mx._transformCorners(this.getInternalBounds());
 				ctx.beginPath();
-				for (var i = 0; i < 8; i++)
+				for (var i = 0; i < 8; i++) {
 					ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+				}
 				ctx.closePath();
 				ctx.stroke();
-				for (var i = 0; i < 8; i++)
+				for (var i = 0; i < 8; i++) {
 					ctx.fillRect(coords[i] - half, coords[++i] - half,
 							size, size);
+				}
 			}
 		}
 	},
@@ -4394,6 +4396,7 @@ new function() {
 
 var Group = Item.extend({
 	_class: 'Group',
+	_selectBounds: false,
 	_selectChildren: true,
 	_serializeFields: {
 		children: []
@@ -4502,7 +4505,6 @@ var Shape = Item.extend({
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_canScaleStroke: true,
-	_boundsSelected: true,
 	_serializeFields: {
 		type: null,
 		size: null,
@@ -4834,7 +4836,6 @@ var Raster = Item.extend({
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_boundsOptions: { stroke: false, handle: false },
-	_boundsSelected: true,
 	_serializeFields: {
 		crossOrigin: null,
 		source: null
@@ -5201,7 +5202,6 @@ var SymbolItem = Item.extend({
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_boundsOptions: { stroke: true },
-	_boundsSelected: true,
 	_serializeFields: {
 		symbol: null
 	},
@@ -7246,6 +7246,7 @@ new function() {
 
 var PathItem = Item.extend({
 	_class: 'PathItem',
+	_selectBounds: false,
 	_canScaleStroke: true,
 
 	initialize: function PathItem() {
@@ -10333,7 +10334,6 @@ var PathFitter = Base.extend({
 
 var TextItem = Item.extend({
 	_class: 'TextItem',
-	_boundsSelected: true,
 	_applyMatrix: false,
 	_canApplyMatrix: false,
 	_serializeFields: {
