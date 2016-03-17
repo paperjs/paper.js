@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 09:48:43 2016 +0100
+ * Date: Thu Mar 17 11:24:20 2016 +0100
  *
  ***
  *
@@ -6449,18 +6449,26 @@ new function() {
 
 	return { statics: {
 
-		getLength: function(v, a, b) {
+		getLength: function(v, a, b, ds) {
 			if (a === undefined)
 				a = 0;
 			if (b === undefined)
 				b = 1;
-			if (a === 0 && b === 1 && Curve.isStraight(v)) {
-				var dx = v[6] - v[0],
-					dy = v[7] - v[1];
+			if (Curve.isStraight(v)) {
+				var c = v;
+				if (b < 1) {
+					c = Curve.subdivide(c, b)[0];
+					a /= b;
+				}
+				if (a > 0) {
+					c = Curve.subdivide(c, a)[1];
+				}
+				var dx = c[6] - c[0],
+					dy = c[7] - c[1];
 				return Math.sqrt(dx * dx + dy * dy);
 			}
-			var ds = getLengthIntegrand(v);
-			return Numerical.integrate(ds, a, b, getIterations(a, b));
+			return Numerical.integrate(ds || getLengthIntegrand(v), a, b,
+					getIterations(a, b));
 		},
 
 		getTimeAt: function(v, offset, start) {
@@ -6469,15 +6477,16 @@ new function() {
 			if (offset === 0)
 				return start;
 			var abs = Math.abs,
+				epsilon = 1e-12,
 				forward = offset > 0,
 				a = forward ? start : 0,
 				b = forward ? 1 : start,
 				ds = getLengthIntegrand(v),
-				rangeLength = Numerical.integrate(ds, a, b,
-						getIterations(a, b));
-			if (abs(offset - rangeLength) < 1e-12) {
+				rangeLength = Curve.getLength(v, a, b, ds),
+				diff = abs(offset) - rangeLength;
+			if (abs(diff) < epsilon) {
 				return forward ? b : a;
-			} else if (abs(offset) > rangeLength) {
+			} else if (diff > epsilon) {
 				return null;
 			}
 			var guess = offset / rangeLength,
