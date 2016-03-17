@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 13:36:02 2016 +0100
+ * Date: Thu Mar 17 14:15:28 2016 +0100
  *
  ***
  *
@@ -1463,6 +1463,18 @@ var LinkedPoint = Point.extend({
 	setY: function(y) {
 		this._y = y;
 		this._owner[this._setter](this);
+	},
+
+	isSelected: function() {
+		return !!(this._owner._selection & this._getSelection());
+	},
+
+	setSelected: function(selected) {
+		this._owner.changeSelection(this._getSelection(), selected);
+	},
+
+	_getSelection: function() {
+		return this._setter === 'setPosition' ? 4 : 0;
 	}
 });
 
@@ -4340,21 +4352,42 @@ new function() {
 		var selection = this._selection,
 			itemSelected = selection & 1,
 			boundsSelected = selection & 2
-					|| itemSelected && this._selectBounds;
+					|| itemSelected && this._selectBounds,
+			positionSelected = selection & 4;
 		if (!this._drawSelected)
 			itemSelected = false;
-		if ((itemSelected || boundsSelected) && this._isUpdated(updateVersion)) {
+		if ((itemSelected || boundsSelected || positionSelected)
+				&& this._isUpdated(updateVersion)) {
 			var layer,
 				color = this.getSelectedColor(true) || (layer = this.getLayer())
 					&& layer.getSelectedColor(true),
-				mx = matrix.appended(this.getGlobalMatrix(true));
+				mx = matrix.appended(this.getGlobalMatrix(true)),
+				half = size / 2;
 			ctx.strokeStyle = ctx.fillStyle = color
 					? color.toCanvasStyle(ctx) : '#009dec';
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
+			if (positionSelected) {
+				var point = this.getPosition(true),
+					x = point.x,
+					y = point.y;
+				ctx.beginPath();
+				ctx.arc(x, y, half, 0, Math.PI * 2, true);
+				ctx.stroke();
+				var deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]],
+					start = half,
+					end = size + 1;
+				for (var i = 0; i < 4; i++) {
+					var delta = deltas[i],
+						dx = delta[0],
+						dy = delta[1];
+					ctx.moveTo(x + dx * start, y + dy * start);
+					ctx.lineTo(x + dx * end, y + dy * end);
+					ctx.stroke();
+				}
+			}
 			if (boundsSelected) {
-				var half = size / 2,
-					coords = mx._transformCorners(this.getInternalBounds());
+				var coords = mx._transformCorners(this.getInternalBounds());
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++) {
 					ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);

@@ -913,6 +913,53 @@ console.log(point.quadrant); // 4</code></pre>
 </div>
 <div class="member-description hidden">
 
+<div class="member-text">
+	<p>This property is only valid if the point is an anchor or handle point of a <a href="../classes/Segment.html"><tt>Segment</tt></a> or a <a href="../classes/Curve.html"><tt>Curve</tt></a>, or the position of an <a href="../classes/Item.html"><tt>Item</tt></a>, as returned by <a href="../classes/Item.html#position"><tt>item.position</tt></a>, <a href="../classes/Segment.html#point"><tt>segment.point</tt></a>, <a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a>, <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>, <a href="../classes/Curve.html#point1"><tt>curve.point1</tt></a>, <a href="../classes/Curve.html#point2"><tt>curve.point2</tt></a>, <a href="../classes/Curve.html#handle1"><tt>curve.handle1</tt></a>, <a href="../classes/Curve.html#handle2"><tt>curve.handle2</tt></a>.</p>
+<p>In those cases, it returns <tt>true</tt> if it the point is selected, <tt>false</tt> otherwise.</p>
+<p>Paper.js renders selected points on top of your project. This is very useful when debugging.</p>
+	
+	
+	
+		<ul class="member-list">
+			<h4>Default:</h4>
+			<li><tt>false</tt></li>
+		</ul>
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var path = new Path.Circle({
+    center: [80, 50],
+    radius: 40
+});
+
+// Select the third segment point:
+path.segments[2].point.selected = true;
+
+// Select the item's position, which is the pivot point
+// around which it is trasnformed:
+path.position.selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
 </div>
 </div>
 		
