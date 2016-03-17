@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 16 20:47:57 2016 +0100
+ * Date: Thu Mar 17 09:38:42 2016 +0100
  *
  ***
  *
@@ -10877,7 +10877,7 @@ var Color = Base.extend(new function() {
 			}
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i];
-				canvasGradient.addColorStop(stop._rampPoint,
+				canvasGradient.addColorStop(stop._rampPoint || i / (l - 1),
 						stop._color.toCanvasStyle());
 			}
 			return this._canvasStyle = canvasGradient;
@@ -10949,9 +10949,10 @@ var Gradient = Base.extend({
 			stops = radial = null;
 		if (!this._stops)
 			this.setStops(stops || ['white', 'black']);
-		if (this._radial == null)
+		if (this._radial == null) {
 			this.setRadial(typeof radial === 'string' && radial === 'radial'
 					|| radial || false);
+		}
 	},
 
 	_serialize: function(options, dictionary) {
@@ -10962,8 +10963,9 @@ var Gradient = Base.extend({
 	},
 
 	_changed: function() {
-		for (var i = 0, l = this._owners && this._owners.length; i < l; i++)
+		for (var i = 0, l = this._owners && this._owners.length; i < l; i++) {
 			this._owners[i]._changed();
+		}
 	},
 
 	_addOwner: function(color) {
@@ -10983,8 +10985,9 @@ var Gradient = Base.extend({
 
 	clone: function() {
 		var stops = [];
-		for (var i = 0, l = this._stops.length; i < l; i++)
+		for (var i = 0, l = this._stops.length; i < l; i++) {
 			stops[i] = this._stops[i].clone();
+		}
 		return new Gradient(stops, this._radial);
 	},
 
@@ -10993,20 +10996,18 @@ var Gradient = Base.extend({
 	},
 
 	setStops: function(stops) {
-		if (this.stops) {
-			for (var i = 0, l = this._stops.length; i < l; i++)
-				this._stops[i]._owner = undefined;
-		}
-		if (stops.length < 2)
+		if (stops.length < 2) {
 			throw new Error(
 					'Gradient stop list needs to contain at least two stops.');
-		this._stops = GradientStop.readAll(stops, 0, { clone: true });
-		for (var i = 0, l = this._stops.length; i < l; i++) {
-			var stop = this._stops[i];
-			stop._owner = this;
-			if (stop._defaultRamp)
-				stop.setRampPoint(i / (l - 1));
 		}
+		var _stops = this._stops;
+		if (_stops) {
+			for (var i = 0, l = _stops.length; i < l; i++)
+				_stops[i]._owner = undefined;
+		}
+		_stops = this._stops = GradientStop.readAll(stops, 0, { clone: true });
+		for (var i = 0, l = _stops.length; i < l; i++)
+			_stops[i]._owner = this;
 		this._changed();
 	},
 
@@ -11022,13 +11023,17 @@ var Gradient = Base.extend({
 	equals: function(gradient) {
 		if (gradient === this)
 			return true;
-		if (gradient && this._class === gradient._class
-				&& this._stops.length === gradient._stops.length) {
-			for (var i = 0, l = this._stops.length; i < l; i++) {
-				if (!this._stops[i].equals(gradient._stops[i]))
-					return false;
+		if (gradient && this._class === gradient._class) {
+			var stops1 = this._stops,
+				stops2 = gradient._stops,
+				length = stops1.length;
+			if (length === stops2.length) {
+				for (var i = 0; i < length; i++) {
+					if (!stops1[i].equals(stops2[i]))
+						return false;
+				}
+				return true;
 			}
-			return true;
 		}
 		return false;
 	}
@@ -11038,21 +11043,19 @@ var GradientStop = Base.extend({
 	_class: 'GradientStop',
 
 	initialize: function GradientStop(arg0, arg1) {
-		if (arg0) {
-			var color, rampPoint;
-			if (arg1 === undefined && Array.isArray(arg0)) {
+		var color = arg0,
+			rampPoint = arg1;
+		if (typeof arg0 === 'object' && arg1 === undefined) {
+			if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
 				color = arg0[0];
 				rampPoint = arg0[1];
-			} else if (arg0.color) {
+			} else if ('color' in arg0 || 'rampPoint' in arg0) {
 				color = arg0.color;
 				rampPoint = arg0.rampPoint;
-			} else {
-				color = arg0;
-				rampPoint = arg1;
 			}
-			this.setColor(color);
-			this.setRampPoint(rampPoint);
 		}
+		this.setColor(color);
+		this.setRampPoint(rampPoint);
 	},
 
 	clone: function() {
@@ -11060,8 +11063,10 @@ var GradientStop = Base.extend({
 	},
 
 	_serialize: function(options, dictionary) {
-		return Base.serialize([this._color, this._rampPoint], options, true,
-				dictionary);
+		var color = this._color,
+			rampPoint = this._rampPoint;
+		return Base.serialize(rampPoint == null ? [color] : [color, rampPoint],
+				options, true, dictionary);
 	},
 
 	_changed: function() {
@@ -11074,8 +11079,7 @@ var GradientStop = Base.extend({
 	},
 
 	setRampPoint: function(rampPoint) {
-		this._defaultRamp = rampPoint == null;
-		this._rampPoint = rampPoint || 0;
+		this._rampPoint = rampPoint;
 		this._changed();
 	},
 
@@ -11083,11 +11087,11 @@ var GradientStop = Base.extend({
 		return this._color;
 	},
 
-	setColor: function(color) {
-		this._color = Color.read(arguments);
-		if (this._color === color)
-			this._color = color.clone();
-		this._color._owner = this;
+	setColor: function() {
+		var color = Color.read(arguments, 0, { clone: true });
+		if (color)
+			color._owner = this;
+		this._color = color;
 		this._changed();
 	},
 
@@ -13300,12 +13304,14 @@ new function() {
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
+					offset = stop._rampPoint,
 					stopColor = stop._color,
 					alpha = stopColor.getAlpha();
-				attrs = {
-					offset: stop._rampPoint,
-					'stop-color': stopColor.toCSS(true)
-				};
+				attrs = {};
+				if (offset != null)
+					attrs.offset = offset;
+				if (stopColor)
+					attrs['stop-color'] = stopColor.toCSS(true);
 				if (alpha < 1)
 					attrs['stop-opacity'] = alpha;
 				gradientNode.appendChild(
