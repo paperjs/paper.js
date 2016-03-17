@@ -784,11 +784,19 @@ var Point = Base.extend(/** @lends Point# */{
     /**
      * This property is only present if the point is an anchor or control point
      * of a {@link Segment} or a {@link Curve}. In this case, it returns
-     * {@true it is selected}
+     * {@true if it is selected}
      *
      * @name Point#selected
      * @property
-     * @return {Boolean} {@true if the point is selected}
+     *
+     * @example {@paperscript}
+     * var path = new Path.Circle({
+     *     center: [80, 50],
+     *     radius: 40
+     * });
+     *
+     * // Select the third segment point:
+     * path.segments[2].point.selected = true;
      */
 
     /**

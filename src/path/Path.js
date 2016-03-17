@@ -935,7 +935,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     isFullySelected: function() {
         var length = this._segments.length;
-        return this.isSelected(true) && length > 0 && this._segmentSelection
+        return this.isSelected() && length > 0 && this._segmentSelection
                 === length * /*#=*/SegmentSelection.ALL;
     },
 

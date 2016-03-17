@@ -282,16 +282,13 @@ var Segment = Base.extend(/** @lends Segment# */{
         }
     },
 
-    _getSelection: function(point) {
-        return !point ? /*#=*/SegmentSelection.ALL
-                : point === this._point ? /*#=*/SegmentSelection.POINT
-                : point === this._handleIn ? /*#=*/SegmentSelection.HANDLE_IN
-                : point === this._handleOut ? /*#=*/SegmentSelection.HANDLE_OUT
-                : 0;
+    changeSelection: function(flag, selected) {
+        var selection = this._selection;
+        this.setSelection(selected ? selection | flag : selection & ~flag);
     },
 
     /**
-     * Specifies whether the {@link #point} of the segment is selected.
+     * Specifies whether the segment is selected.
      *
      * @bean
      * @type Boolean
@@ -305,14 +302,12 @@ var Segment = Base.extend(/** @lends Segment# */{
      * // Select the third segment point:
      * path.segments[2].selected = true;
      */
-    isSelected: function(_point) {
-        return !!(this._selection & this._getSelection(_point));
+    isSelected: function() {
+        return !!(this._selection & /*#=*/SegmentSelection.ALL);
     },
 
-    setSelected: function(selected, _point) {
-        var selection = this._selection,
-            flag = this._getSelection(_point);
-        this.setSelection(selected ? selection | flag : selection & ~flag);
+    setSelected: function(selected) {
+        this.changeSelection(/*#=*/SegmentSelection.ALL, selected);
     },
 
     /**
