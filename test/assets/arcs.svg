@@ -10,7 +10,7 @@
              a25,75 -30 0,1 50,-25 l 50,-25
              a25,100 -30 0,1 50,-25 l 50,-25"
           fill="none" stroke="red" stroke-width="5"  />
-    <g font-family="Verdana" transform="translate(0,400)">
+    <g font-family="Arial" transform="translate(0,400)">
       <defs>
         <g id="baseEllipses" font-size="20" >
           <ellipse cx="125" cy="125" rx="100" ry="50"
