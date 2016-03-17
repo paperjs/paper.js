@@ -554,7 +554,10 @@ new function() {
         // WebKit. We also get variations of quotes or no quotes, single or
         // double, so handle it all with one regular expression:
         var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-            res = match && definitions[match[1]];
+            res = match && definitions[match[1]
+                // This is required by Firefox, which can produce absolute urls
+                // for local gradients, see #1001:
+                .replace(window.location.href.split('#')[0] + '#', '')];
         // Patch in support for SVG's gradientUnits="objectBoundingBox" through
         // Color#_scaleToBounds
         if (res && res._scaleToBounds) {
