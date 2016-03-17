@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 13:09:02 2016 +0100
+ * Date: Thu Mar 17 13:36:02 2016 +0100
  *
  ***
  *
@@ -3631,7 +3631,7 @@ new function() {
 		}
 
 		var checkSelf = !(options.guides && !this._guide
-				|| options.selected && !this.isSelected(true)
+				|| options.selected && !this.isSelected()
 				|| options.type && options.type !== Base.hyphenate(this._class)
 				|| options.class && !(this instanceof options.class)),
 			callback = options.match,
@@ -5464,22 +5464,17 @@ var Segment = Base.extend({
 		}
 	},
 
-	_getSelection: function(point) {
-		return !point ? 7
-				: point === this._point ? 1
-				: point === this._handleIn ? 2
-				: point === this._handleOut ? 4
-				: 0;
-	},
-
-	isSelected: function(_point) {
-		return !!(this._selection & this._getSelection(_point));
-	},
-
-	setSelected: function(selected, _point) {
-		var selection = this._selection,
-			flag = this._getSelection(_point);
+	changeSelection: function(flag, selected) {
+		var selection = this._selection;
 		this.setSelection(selected ? selection | flag : selection & ~flag);
+	},
+
+	isSelected: function() {
+		return !!(this._selection & 7);
+	},
+
+	setSelected: function(selected) {
+		this.changeSelection(7, selected);
 	},
 
 	getIndex: function() {
@@ -5748,12 +5743,20 @@ var SegmentPoint = Point.extend({
 		return Numerical.isZero(this._x) && Numerical.isZero(this._y);
 	},
 
-	setSelected: function(selected) {
-		this._owner.setSelected(selected, this);
+	isSelected: function() {
+		return !!(this._owner._selection & this._getSelection());
 	},
 
-	isSelected: function() {
-		return this._owner.isSelected(this);
+	setSelected: function(selected) {
+		this._owner.changeSelection(this._getSelection(), selected);
+	},
+
+	_getSelection: function() {
+		var owner = this._owner;
+		return this === owner._point ? 1
+			: this === owner._handleIn ? 2
+			: this === owner._handleOut ? 4
+			: 0;
 	}
 });
 
@@ -7874,7 +7877,7 @@ var Path = PathItem.extend({
 
 	isFullySelected: function() {
 		var length = this._segments.length;
-		return this.isSelected(true) && length > 0 && this._segmentSelection
+		return this.isSelected() && length > 0 && this._segmentSelection
 				=== length * 7;
 	},
 
