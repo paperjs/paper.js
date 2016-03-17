@@ -18,13 +18,14 @@
  */
 var SegmentPoint = Point.extend({
     initialize: function SegmentPoint(point, owner, key) {
-        var x, y, selected;
+        var x, y,
+            selected;
         if (!point) {
             x = y = 0;
         } else if ((x = point[0]) !== undefined) { // Array-like
             y = point[1];
         } else {
-            // So we don't have to modify the point argument which causes
+            // So we don't have to modify the point argument which would cause
             // deoptimization:
             var pt = point;
             // If not Point-like already, read Point from arguments
@@ -38,9 +39,9 @@ var SegmentPoint = Point.extend({
         this._x = x;
         this._y = y;
         this._owner = owner;
-        // We have to set the owner's property that points to this point already
-        // now, so #setSelected(true) can work.
         owner[key] = this;
+        // We need to call #setSelected(true) after setting property on the
+        // owner that references this point.
         if (selected)
             this.setSelected(true);
     },
@@ -50,15 +51,6 @@ var SegmentPoint = Point.extend({
         this._y = y;
         this._owner._changed(this);
         return this;
-    },
-
-    _serialize: function(options) {
-        var f = options.formatter,
-            x = f.number(this._x),
-            y = f.number(this._y);
-        return this.isSelected()
-                ? { x: x, y: y, selected: true }
-                : [x, y];
     },
 
     getX: function() {
