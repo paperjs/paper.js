@@ -13,5 +13,5 @@
 var ItemSelection = {
     ITEM: 1,
     BOUNDS: 2,
-    PIVOT: 4
+    POSITION: 4
 };

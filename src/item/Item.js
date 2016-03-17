@@ -4255,23 +4255,44 @@ new function() { // Injection scope for hit-test functions shared with project
         var selection = this._selection,
             itemSelected = selection & /*#=*/ItemSelection.ITEM,
             boundsSelected = selection & /*#=*/ItemSelection.BOUNDS
-                    || itemSelected && this._selectBounds;
+                    || itemSelected && this._selectBounds,
+            positionSelected = selection & /*#=*/ItemSelection.POSITION;
         if (!this._drawSelected)
             itemSelected = false;
-        if ((itemSelected || boundsSelected) && this._isUpdated(updateVersion)) {
+        if ((itemSelected || boundsSelected || positionSelected)
+                && this._isUpdated(updateVersion)) {
             // Allow definition of selected color on a per item and per
             // layer level, with a fallback to #009dec
             var layer,
                 color = this.getSelectedColor(true) || (layer = this.getLayer())
                     && layer.getSelectedColor(true),
-                mx = matrix.appended(this.getGlobalMatrix(true));
+                mx = matrix.appended(this.getGlobalMatrix(true)),
+                half = size / 2;
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
+            if (positionSelected) {
+                var point = this.getPosition(true),
+                    x = point.x,
+                    y = point.y;
+                ctx.beginPath();
+                ctx.arc(x, y, half, 0, Math.PI * 2, true);
+                ctx.stroke();
+                var deltas = [[0, -1], [1, 0], [0, 1], [-1, 0]],
+                    start = half,
+                    end = size + 1;
+                for (var i = 0; i < 4; i++) {
+                    var delta = deltas[i],
+                        dx = delta[0],
+                        dy = delta[1];
+                    ctx.moveTo(x + dx * start, y + dy * start);
+                    ctx.lineTo(x + dx * end, y + dy * end);
+                    ctx.stroke();
+                }
+            }
             if (boundsSelected) {
-                var half = size / 2,
-                    coords = mx._transformCorners(this.getInternalBounds());
+                var coords = mx._transformCorners(this.getInternalBounds());
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.
                 ctx.beginPath();

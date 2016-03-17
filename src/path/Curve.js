@@ -868,7 +868,7 @@ statics: /** @lends Curve */{
      */
 
     /**
-     * The rough bounding rectangle of the curve that is shure to include all of
+     * The rough bounding rectangle of the curve that is sure to include all of
      * the drawing, including stroke width.
      *
      * @name Curve#roughBounds
