@@ -157,12 +157,20 @@ function importSVG(assert, url, message, options) {
 
 if (!isNode) {
     // JSDom does not have SVG rendering, so we can't test there.
-    var svgFiles = ['butterfly', 'viewbox', 'clipping', 'arcs', 'symbol',
-            'symbols', 'blendModes', 'gradients-1'];
+    var svgFiles = {
+        'butterfly': { tolerance: 1e-2 },
+        'viewbox': {},
+        'clipping': {},
+        'arcs': {},
+        'symbol': {},
+        'symbols': {},
+        'blendModes': {},
+        'gradients-1': {}
+    };
     // TODO: Investigate why Phantom struggles with this file:
     if (!isPhantom)
-        svgFiles.push('gradients-2');
-    svgFiles.forEach(function(name) {
+        svgFiles['gradients-2'] = {};
+    Base.each(svgFiles, function(options, name) {
         name += '.svg';
         test('Import ' + name, function(assert) {
             importSVG(assert, 'assets/' + name, null, options);
