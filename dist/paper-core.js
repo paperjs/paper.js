@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 11:59:41 2016 +0100
+ * Date: Thu Mar 17 13:02:26 2016 +0100
  *
  ***
  *
@@ -2003,14 +2003,13 @@ new function() {
 			};
 		}, {
 			isSelected: function() {
-				return this._owner._boundsSelected;
+				return !!(this._owner._selection & 2);
 			},
 
 			setSelected: function(selected) {
 				var owner = this._owner;
-				if (owner.setSelected) {
-					owner._boundsSelected = selected;
-					owner.setSelected(selected || owner._segmentSelection > 0);
+				if (owner.changeSelection) {
+					owner.changeSelection(2, selected);
 				}
 			}
 		})
@@ -2568,8 +2567,8 @@ var Project = PaperScopeItem.extend({
 		this._currentStyle = new Style(null, null, this);
 		this._view = View.create(this,
 				element || CanvasProvider.getCanvas(1, 1));
-		this._selectedItems = {};
-		this._selectedItemCount = 0;
+		this._selectionItems = {};
+		this._selectionCount = 0;
 		this._updateVersion = 0;
 	},
 
@@ -2666,15 +2665,15 @@ var Project = PaperScopeItem.extend({
 	getSymbols: 'getSymbolDefinitions',
 
 	getSelectedItems: function() {
-		var selectedItems = this._selectedItems,
+		var selectionItems = this._selectionItems,
 			items = [];
-		for (var id in selectedItems) {
-			var item = selectedItems[id];
-			if (item.isInserted()) {
+		for (var id in selectionItems) {
+			var item = selectionItems[id],
+				selection = item._selection;
+			if (selection & 1 && item.isInserted()) {
 				items.push(item);
-			} else {
-				this._selectedItemCount--;
-				delete selectedItems[id];
+			} else if (!selection) {
+				this._updateSelection(item);
 			}
 		}
 		return items;
@@ -2682,15 +2681,15 @@ var Project = PaperScopeItem.extend({
 
 	_updateSelection: function(item) {
 		var id = item._id,
-			selectedItems = this._selectedItems;
-		if (item._selected) {
-			if (selectedItems[id] !== item) {
-				this._selectedItemCount++;
-				selectedItems[id] = item;
+			selectionItems = this._selectionItems;
+		if (item._selection) {
+			if (selectionItems[id] !== item) {
+				this._selectionCount++;
+				selectionItems[id] = item;
 			}
-		} else if (selectedItems[id] === item) {
-			this._selectedItemCount--;
-			delete selectedItems[id];
+		} else if (selectionItems[id] === item) {
+			this._selectionCount--;
+			delete selectionItems[id];
 		}
 	},
 
@@ -2701,9 +2700,9 @@ var Project = PaperScopeItem.extend({
 	},
 
 	deselectAll: function() {
-		var selectedItems = this._selectedItems;
-		for (var i in selectedItems)
-			selectedItems[i].setFullySelected(false);
+		var selectionItems = this._selectionItems;
+		for (var i in selectionItems)
+			selectionItems[i].setFullySelected(false);
 	},
 
 	addLayer: function(layer) {
@@ -2790,10 +2789,10 @@ var Project = PaperScopeItem.extend({
 		}
 		ctx.restore();
 
-		if (this._selectedItemCount > 0) {
+		if (this._selectionCount > 0) {
 			ctx.save();
 			ctx.strokeWidth = 1;
-			var items = this._selectedItems,
+			var items = this._selectionItems,
 				size = this._scope.settings.handleSize,
 				version = this._updateVersion;
 			for (var id in items) {
@@ -2821,6 +2820,14 @@ var Item = Base.extend(Emitter, {
 	_applyMatrix: true,
 	_canApplyMatrix: true,
 	_canScaleStroke: false,
+	_pivot: null,
+	_visible: true,
+	_blendMode: 'normal',
+	_opacity: 1,
+	_locked: false,
+	_guide: false,
+	_clipMask: false,
+	_selection: 0,
 	_boundsSelected: false,
 	_selectChildren: false,
 	_serializeFields: {
@@ -2828,13 +2835,13 @@ var Item = Base.extend(Emitter, {
 		applyMatrix: null,
 		matrix: new Matrix(),
 		pivot: null,
-		locked: false,
 		visible: true,
 		blendMode: 'normal',
 		opacity: 1,
+		locked: false,
 		guide: false,
-		selected: false,
 		clipMask: false,
+		selected: false,
 		data: {}
 	}
 },
@@ -3004,34 +3011,13 @@ new function() {
 {}), {
 	beans: true,
 
-	_locked: false,
-
-	_visible: true,
-
-	_blendMode: 'normal',
-
-	_opacity: 1,
-
-	_guide: false,
-
-	isSelected: function() {
-		if (this._selectChildren) {
-			var children = this._children;
-			for (var i = 0, l = children.length; i < l; i++)
-				if (children[i].isSelected())
-					return true;
-		}
-		return this._selected;
+	getSelection: function() {
+		return this._selection;
 	},
 
-	setSelected: function(selected, noChildren) {
-		if (!noChildren && this._selectChildren) {
-			var children = this._children;
-			for (var i = 0, l = children.length; i < l; i++)
-				children[i].setSelected(selected);
-		}
-		if ((selected = !!selected) ^ this._selected) {
-			this._selected = selected;
+	setSelection: function(selection) {
+		if (selection !== this._selection) {
+			this._selection = selection;
 			var project = this._project;
 			if (project) {
 				project._updateSelection(this);
@@ -3040,17 +3026,40 @@ new function() {
 		}
 	},
 
-	_selected: false,
+	changeSelection: function(flag, selected) {
+		var selection = this._selection;
+		this.setSelection(selected ? selection | flag : selection & ~flag);
+	},
+
+	isSelected: function() {
+		if (this._selectChildren) {
+			var children = this._children;
+			for (var i = 0, l = children.length; i < l; i++)
+				if (children[i].isSelected())
+					return true;
+		}
+		return !!(this._selection & 1);
+	},
+
+	setSelected: function(selected) {
+		if (this._selectChildren) {
+			var children = this._children;
+			for (var i = 0, l = children.length; i < l; i++)
+				children[i].setSelected(selected);
+		}
+		this.changeSelection(1, selected);
+	},
 
 	isFullySelected: function() {
-		var children = this._children;
-		if (children && this._selected) {
+		var children = this._children,
+			selected = !!(this._selection & 1);
+		if (children && selected) {
 			for (var i = 0, l = children.length; i < l; i++)
 				if (!children[i].isFullySelected())
 					return false;
 			return true;
 		}
-		return this._selected;
+		return selected;
 	},
 
 	setFullySelected: function(selected) {
@@ -3059,7 +3068,7 @@ new function() {
 			for (var i = 0, l = children.length; i < l; i++)
 				children[i].setFullySelected(selected);
 		}
-		this.setSelected(selected, true);
+		this.changeSelection(1, selected);
 	},
 
 	isClipMask: function() {
@@ -3078,8 +3087,6 @@ new function() {
 				this._parent._changed(1024);
 		}
 	},
-
-	_clipMask: false,
 
 	getData: function() {
 		if (!this._data)
@@ -3119,9 +3126,7 @@ new function() {
 	setPivot: function() {
 		this._pivot = Point.read(arguments, 0, { clone: true, readNull: true });
 		this._position = undefined;
-	},
-
-	_pivot: null,
+	}
 }, Base.each({
 		getStrokeBounds: { stroke: true },
 		getHandleBounds: { handle: true },
@@ -3487,7 +3492,7 @@ new function() {
 			this._matrix.initialize(source._matrix);
 		this.setApplyMatrix(source._applyMatrix);
 		this.setPivot(source._pivot);
-		this.setSelected(source._selected);
+		this.setSelection(source._selection);
 		var data = source._data,
 			name = source._name;
 		this._data = data ? Base.clone(data) : null;
@@ -3626,7 +3631,7 @@ new function() {
 		}
 
 		var checkSelf = !(options.guides && !this._guide
-				|| options.selected && !this._selected
+				|| options.selected && !this.isSelected(true)
 				|| options.type && options.type !== Base.hyphenate(this._class)
 				|| options.class && !(this instanceof options.class)),
 			callback = options.match,
@@ -4331,21 +4336,25 @@ new function() {
 		return updated;
 	},
 
-	_drawSelection: function(ctx, matrix, size, selectedItems, updateVersion) {
-		if ((this._drawSelected || this._boundsSelected)
-				&& this._isUpdated(updateVersion)) {
+	_drawSelection: function(ctx, matrix, size, selectionItems, updateVersion) {
+		var selection = this._selection,
+			itemSelected = selection & 1,
+			boundsSelected = selection & 2
+					|| itemSelected && this._boundsSelected;
+		if (!this._drawSelected)
+			itemSelected = false;
+		if ((itemSelected || boundsSelected) && this._isUpdated(updateVersion)) {
 			var layer,
-				color = this.getSelectedColor(true)
-					|| (layer = this.getLayer()) && layer.getSelectedColor(true),
+				color = this.getSelectedColor(true) || (layer = this.getLayer())
+					&& layer.getSelectedColor(true),
 				mx = matrix.appended(this.getGlobalMatrix(true));
 			ctx.strokeStyle = ctx.fillStyle = color
 					? color.toCanvasStyle(ctx) : '#009dec';
-			if (this._drawSelected)
-				this._drawSelected(ctx, mx, selectedItems);
-			if (this._boundsSelected) {
+			if (itemSelected)
+				this._drawSelected(ctx, mx, selectionItems);
+			if (boundsSelected) {
 				var half = size / 2,
-					coords = mx._transformCorners(
-							this.getInternalBounds());
+					coords = mx._transformCorners(this.getInternalBounds());
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++)
 					ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
@@ -5346,22 +5355,23 @@ var Segment = Base.extend({
 
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
-			point, handleIn, handleOut;
+			point, handleIn, handleOut,
+			selection;
 		if (count === 0) {
 		} else if (count === 1) {
 			if (arg0 && 'point' in arg0) {
 				point = arg0.point;
 				handleIn = arg0.handleIn;
 				handleOut = arg0.handleOut;
+				selection = arg0.selection;
 			} else {
 				point = arg0;
 			}
-		} else if (count === 2 && typeof arg0 === 'number') {
-			point = arguments;
-		} else if (count <= 3) {
+		} else if (typeof arg0 === 'object') {
 			point = arg0;
 			handleIn = arg1;
 			handleOut = arg2;
+			selection = arg3;
 		} else {
 			point = arg0 !== undefined ? [ arg0, arg1 ] : null;
 			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
@@ -5370,13 +5380,19 @@ var Segment = Base.extend({
 		new SegmentPoint(point, this, '_point');
 		new SegmentPoint(handleIn, this, '_handleIn');
 		new SegmentPoint(handleOut, this, '_handleOut');
+		if (selection)
+			this.setSelection(selection);
 	},
 
 	_serialize: function(options) {
-		return Base.serialize(this.hasHandles()
-				? [this._point, this._handleIn, this._handleOut]
-				: this._point,
-				options, true);
+		var point = this._point,
+			selection = this._selection,
+			obj = selection || this.hasHandles()
+					? [point, this._handleIn, this._handleOut]
+					: point;
+		if (selection)
+			obj.push(selection);
+		return Base.serialize(obj, options, true);
 	},
 
 	_changed: function(point) {
@@ -5434,34 +5450,36 @@ var Segment = Base.extend({
 		this._handleOut.set(0, 0);
 	},
 
-	_getSelectionFlag: function(point) {
-		return !point ? 7
-				: point === this._point ? 4
-				: point === this._handleIn ? 1
-				: point === this._handleOut ? 2
-				: 0;
+	getSelection: function() {
+		return this._selection;
 	},
 
-	isSelected: function(_point) {
-		return !!(this._selection & this._getSelectionFlag(_point));
-	},
-
-	setSelected: function(selected, _point) {
-		var path = this._path,
-			selected = !!selected,
-			selection = this._selection,
-			oldSelection = selection,
-			flag = this._getSelectionFlag(_point);
-		if (selected) {
-			selection |= flag;
-		} else {
-			selection &= ~flag;
-		}
-		this._selection = selection;
+	setSelection: function(selection) {
+		var oldSelection = this._selection,
+			path = this._path;
+		this._selection = selection = selection || 0;
 		if (path && selection !== oldSelection) {
 			path._updateSelection(this, oldSelection, selection);
 			path._changed(129);
 		}
+	},
+
+	_getSelection: function(point) {
+		return !point ? 7
+				: point === this._point ? 1
+				: point === this._handleIn ? 2
+				: point === this._handleOut ? 4
+				: 0;
+	},
+
+	isSelected: function(_point) {
+		return !!(this._selection & this._getSelection(_point));
+	},
+
+	setSelected: function(selected, _point) {
+		var selection = this._selection,
+			flag = this._getSelection(_point);
+		this.setSelection(selected ? selection | flag : selection & ~flag);
 	},
 
 	getIndex: function() {
@@ -5678,7 +5696,8 @@ var Segment = Base.extend({
 
 var SegmentPoint = Point.extend({
 	initialize: function SegmentPoint(point, owner, key) {
-		var x, y, selected;
+		var x, y,
+			selected;
 		if (!point) {
 			x = y = 0;
 		} else if ((x = point[0]) !== undefined) {
@@ -5705,15 +5724,6 @@ var SegmentPoint = Point.extend({
 		this._y = y;
 		this._owner._changed(this);
 		return this;
-	},
-
-	_serialize: function(options) {
-		var f = options.formatter,
-			x = f.number(this._x),
-			y = f.number(this._y);
-		return this.isSelected()
-				? { x: x, y: y, selected: true }
-				: [x, y];
 	},
 
 	getX: function() {
@@ -7863,7 +7873,7 @@ var Path = PathItem.extend({
 
 	isFullySelected: function() {
 		var length = this._segments.length;
-		return this._selected && length > 0 && this._segmentSelection
+		return this.isSelected(true) && length > 0 && this._segmentSelection
 				=== length * 7;
 	},
 
@@ -7873,20 +7883,19 @@ var Path = PathItem.extend({
 		this.setSelected(selected);
 	},
 
-	setSelected: function setSelected(selected) {
-		if (!selected)
+	setSelection: function setSelection(selection) {
+		if (!(selection & 1))
 			this._selectSegments(false);
-		setSelected.base.call(this, selected);
+		setSelection.base.call(this, selection);
 	},
 
 	_selectSegments: function(selected) {
-		var length = this._segments.length;
-		this._segmentSelection = selected
-				? length * 7 : 0;
-		for (var i = 0; i < length; i++) {
-			this._segments[i]._selection = selected
-					? 7 : 0;
-		}
+		var segments = this._segments,
+			length = segments.length,
+			selection = selected ? 7 : 0;
+		this._segmentSelection = selection * length;
+		for (var i = 0; i < length; i++)
+			segments[i]._selection = selection;
 	},
 
 	_updateSelection: function(segment, oldSelection, newSelection) {
@@ -8418,12 +8427,12 @@ new function() {
 			var selection = segment._selection,
 				pX = coords[0],
 				pY = coords[1];
-			if (selection & 1)
-				drawHandle(2);
 			if (selection & 2)
+				drawHandle(2);
+			if (selection & 4)
 				drawHandle(4);
 			ctx.fillRect(pX - half, pY - half, size, size);
-			if (!(selection & 4)) {
+			if (!(selection & 1)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
 				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
@@ -9264,12 +9273,12 @@ var CompoundPath = PathItem.extend({
 		}
 	},
 
-	_drawSelected: function(ctx, matrix, selectedItems) {
+	_drawSelected: function(ctx, matrix, selectionItems) {
 		var children = this._children;
 		for (var i = 0, l = children.length; i < l; i++) {
 			var child = children[i],
 				mx = child._matrix;
-			if (!selectedItems[child._id]) {
+			if (!selectionItems[child._id]) {
 				child._drawSelected(ctx, mx.isIdentity() ? matrix
 						: matrix.appended(mx));
 			}
