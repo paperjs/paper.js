@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 09:38:42 2016 +0100
+ * Date: Thu Mar 17 09:48:43 2016 +0100
  *
  ***
  *
@@ -13889,7 +13889,8 @@ new function() {
 	var definitions = {};
 	function getDefinition(value) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-			res = match && definitions[match[1]];
+			res = match && definitions[match[1]
+				.replace(window.location.href.split('#')[0] + '#', '')];
 		if (res && res._scaleToBounds) {
 			res = res.clone();
 			res._scaleToBounds = true;
