@@ -59,7 +59,10 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
     _guide: false,
     _clipMask: false,
     _selection: 0,
-    _boundsSelected: false,
+    // Controls whether bounds should appear selected when the item is selected.
+    // This is only turned off for Group, Layer and PathItem, where it can be
+    // selected separately by setting item.bounds.selected = true;
+    _selectBounds: true,
     _selectChildren: false,
     // Provide information about fields to be serialized, with their defaults
     // that can be omitted.
@@ -4252,7 +4255,7 @@ new function() { // Injection scope for hit-test functions shared with project
         var selection = this._selection,
             itemSelected = selection & /*#=*/ItemSelection.ITEM,
             boundsSelected = selection & /*#=*/ItemSelection.BOUNDS
-                    || itemSelected && this._boundsSelected;
+                    || itemSelected && this._selectBounds;
         if (!this._drawSelected)
             itemSelected = false;
         if ((itemSelected || boundsSelected) && this._isUpdated(updateVersion)) {
@@ -4272,13 +4275,15 @@ new function() { // Injection scope for hit-test functions shared with project
                 // Now draw a rectangle that connects the transformed
                 // bounds corners, and draw the corners.
                 ctx.beginPath();
-                for (var i = 0; i < 8; i++)
+                for (var i = 0; i < 8; i++) {
                     ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+                }
                 ctx.closePath();
                 ctx.stroke();
-                for (var i = 0; i < 8; i++)
+                for (var i = 0; i < 8; i++) {
                     ctx.fillRect(coords[i] - half, coords[++i] - half,
                             size, size);
+                }
             }
         }
     },

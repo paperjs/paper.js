@@ -22,7 +22,6 @@ var Shape = Item.extend(/** @lends Shape# */{
     _applyMatrix: false,
     _canApplyMatrix: false,
     _canScaleStroke: true,
-    _boundsSelected: true,
     _serializeFields: {
         type: null,
         size: null,
