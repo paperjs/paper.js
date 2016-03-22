@@ -66,6 +66,7 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - `Item#clone()`'s optional argument is now an options object with defaults `{insert: true, deep: true}`. `insert` controls whether the clone is inserted into the project and `deep` controls whether the item's children are cloned. The previous boolean optional argument is still interpreted as the `insert` option (#941).
 - `PathItem#flatten()`'s argument has been changed from `tolerance` (maximum allowed distance between points) to `flatness` (maximum allowed error) (#618).
 - `Matrix` properties `#b` and `#c` have been reversed to match common standard.
+- SVG Import - improved handling of style inheritance for nested <defs>.
 
 
 ### Added
@@ -117,14 +118,29 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - Add `#importSVG()` `option.insert` (default: true) to control insertion (#763).
 - Add `CompoundPath` detection on SVG import.
 - Add new options to `#exportSVG()` to control bounds and transformations (#972).
+- Implement `Path#splitAt()`
+- Allow `Item#position` to be selected via `Item#position.selected` (#980).
 
 
 ### Deprecated
 - Deprecate `#windingRule` on `Item` and `Style` in favor of `#fillRule`.
-- `Matrix#concatenante` in favor of `#append`.
-- `Matrix#preConcatenate` in favor of `#prepend`.
-- `Matrix#chain` in favor of `#appended`.
-- `Project#symbols`in favor of `Project#getSymbolDefinitions()`
+- `Matrix#concatenante` -> `#append`.
+- `Matrix#preConcatenate` -> `#prepend`.
+- `Matrix#chain` -> `#appended`.
+- `Project#symbols` -> `Project#getSymbolDefinitions()`
+- `Path#split()` -> `Path#splitAt()`
+All methods that previously took an optional boolean second argument that specified how the first argument was interpreted are now deprecated in favor explicitly named methods. `parameter` is now named as the more descriptive `time`.
+- `Curve#getNormalAt(time, true)` -> `#getNormalAtTime(true)`
+- `Curve#divide()` -> `#divideAt(offset)` / `#divideAtTime(time)`
+- `Curve#split()` -> `#splitAt(offset)` / `#splitAtTime(time)`
+- `Curve#getParameterAt(offset)` -> `#getTimeAt(offset)`
+- `Curve#getParameterOf(point)` -> `getTimeOf(point)`
+- `Curve#getPointAt(time, true)` -> `#getPointAtTime(time)`
+- `Curve#getTangentAt(time, true)` -> `#getTangenttTime(time)`
+- `Curve#getNormalAt(time, true)` -> `#getNormalAtTime(time)`
+- `Curve#getCurvatureAt(time, true)` -> `#getCurvatureAtTime(time)`
+- `CurveLocation#parameter` -> `#time`
+- `Path#split(offset/location)` -> `#splitAt(offset/location)`
 
 
 ### Removed
@@ -179,3 +195,12 @@ All notable changes to Paper.js shall be documented in this file, following comm
 - `#exportSVG()` now exports empty paths if used as a clip-mask.
 - Correct problem using paper-core in node.js (#975).
 - Fix `event.delta` on mousedrag events (#981).
+- Add trailing '/' in XML attribute namespaces for IE's XMLSerializer() (#984).
+- Make sure `Item#removeChildren()` fully removes children (#991).
+- Make new node/browser unified codebase work with module bundlers like webpack (#986).
+- Improve handling of `event#stopPropagation()` on View and Item (#995).
+- SVG Import: Fix issues with viewBox.(?) 84d2a2f
+- Make sure all name lookup structures are kept in sync (#1009).
+- Convert absolute local gradient URLs back to relative ones (#1001).
+- Fix TypeError in `Path#unite()` (#1000).
+- Allow selection of bounding box without selecting path (#769).
