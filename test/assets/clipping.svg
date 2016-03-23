@@ -1,6 +1,6 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
 width="275" height="1041" viewBox="81 55 275 1041" xml:space="preserve">
-    <text transform="matrix(1 0 0 1 83.5002 68.5)" font-family="Helvetica" font-size="12">Clipping a path with a path:</text>
+    <text transform="matrix(1 0 0 1 83.5002 68.5)" font-family="Arial" font-size="12">Clipping a path with a path:</text>
     <g>
         <g>
             <path fill="none" stroke="#CECECE" stroke-miterlimit="10" d="M353,198c0,56.885-46.114,103-103,103c-56.885,0-103-46.115-103-103 S193.115,95,250,95C306.886,95,353,141.115,353,198z"
@@ -19,7 +19,7 @@ width="275" height="1041" viewBox="81 55 275 1041" xml:space="preserve">
             stroke-miterlimit="10" cx="250" cy="198" r="103" />
         </g>
     </g>
-    <text transform="matrix(1 0 0 1 83.5002 355.5)" font-family="Helvetica" font-size="12">Clipping a compound path with a path:</text>
+    <text transform="matrix(1 0 0 1 83.5002 355.5)" font-family="Arial" font-size="12">Clipping a compound path with a path:</text>
     <g>
         <g>
             <path fill="none" stroke="#CECECE" stroke-miterlimit="10" d="M353,491.911c0,56.885-46.114,103-103,103 c-56.885,0-103-46.115-103-103s46.115-103,103-103C306.886,388.911,353,435.026,353,491.911z M250,409.512 c-45.508,0-82.4,36.892-82.4,82.399s36.893,82.4,82.4,82.4c45.509,0,82.399-36.894,82.399-82.4 C332.4,446.403,295.509,409.512,250,409.512z"
@@ -39,7 +39,7 @@ width="275" height="1041" viewBox="81 55 275 1041" xml:space="preserve">
             />
         </g>
     </g>
-    <text transform="matrix(1 0 0 1 83.5002 650.5)" font-family="Helvetica" font-size="12">Clipping a path with a compound path:</text>
+    <text transform="matrix(1 0 0 1 83.5002 650.5)" font-family="Arial" font-size="12">Clipping a path with a compound path:</text>
     <g>
         <g>
             <path fill="none" stroke="#CECECE" stroke-miterlimit="10" d="M353,785.823c0,56.885-46.114,103-103,103 c-56.885,0-103-46.115-103-103c0-56.886,46.115-103,103-103C306.886,682.823,353,728.938,353,785.823z M250,703.423 c-45.508,0-82.4,36.892-82.4,82.4c0,45.508,36.893,82.399,82.4,82.399c45.509,0,82.399-36.893,82.399-82.399 C332.4,740.314,295.509,703.423,250,703.423z"
@@ -59,7 +59,7 @@ width="275" height="1041" viewBox="81 55 275 1041" xml:space="preserve">
             stroke-width="10" stroke-miterlimit="10" width="113" height="113" />
         </g>
     </g>
-    <text transform="matrix(1 0 0 1 83.5002 941.5)" font-family="Helvetica" font-size="12">Clipping a group with a path:</text>
+    <text transform="matrix(1 0 0 1 83.5002 941.5)" font-family="Arial" font-size="12">Clipping a group with a path:</text>
     <g>
         <defs>
             <rect id="SVGID_7_" x="153" y="970" width="113" height="113" />

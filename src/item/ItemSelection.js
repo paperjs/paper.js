@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-/*#*/ include('util/Numerical.js');
-/*#*/ include('item/ChangeFlag.js');
-/*#*/ include('item/ItemSelection.js');
-/*#*/ include('path/SegmentSelection.js');
+var ItemSelection = {
+    ITEM: 1,
+    BOUNDS: 2,
+    POSITION: 4
+};

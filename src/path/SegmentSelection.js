@@ -11,11 +11,11 @@
  */
 
 // Path#_segmentSelection is the addition of all segment's states, and is
-// compared with SegmentSelection.SEGMENT, the combination of all
+// compared with SegmentSelection.ALL, the combination of all
 // SegmentSelection values to see if all segments are fully selected.
 var SegmentSelection = {
-    HANDLE_IN: 1,
-    HANDLE_OUT: 2,
-    POINT: 4,
-    SEGMENT: 7 // HANDLE_IN | HANDLE_OUT | POINT
+    POINT: 1,
+    HANDLE_IN: 2,
+    HANDLE_OUT: 4,
+    ALL: 1 | 2 | 4 // POINT | HANDLE_IN | HANDLE_OUT
 };

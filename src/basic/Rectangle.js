@@ -893,29 +893,32 @@ new function() {
             /**
              * {@grouptitle Item Bounds}
              *
-             * Specifies whether an item's bounds are selected and will also
-             * mark the item as selected.
+             * Specifies whether an item's bounds are to appear as selected.
              *
-             * Paper.js draws the visual bounds of selected items on top of your
-             * project. This can be useful for debugging.
+             * Paper.js draws the bounds of items with selected bounds on top of
+             * your project. This is very useful when debugging.
              *
              * @bean
              * @type Boolean
              * @default false
+             *
+             * @example {@paperscript}
+             * var path = new Path.Circle({
+             *     center: [80, 50],
+             *     radius: 40,
+             *     selected: true
+             * });
+             *
+             * path.bounds.selected = true;
              */
             isSelected: function() {
-                return this._owner._boundsSelected;
+                return !!(this._owner._selection & /*#=*/ItemSelection.BOUNDS);
             },
 
             setSelected: function(selected) {
                 var owner = this._owner;
-                if (owner.setSelected) {
-                    owner._boundsSelected = selected;
-                    // Update the owner's selected state too, so the bounds
-                    // actually get drawn. When deselecting, take a path's
-                    // _segmentSelection into account too, since it will
-                    // have to remain selected even when bounds are deselected
-                    owner.setSelected(selected || owner._segmentSelection > 0);
+                if (owner.changeSelection) {
+                    owner.changeSelection(/*#=*/ItemSelection.BOUNDS, selected);
                 }
             }
         })

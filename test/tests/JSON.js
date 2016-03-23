@@ -219,7 +219,11 @@ test('Color#importJSON()', function() {
         // that runs between the two points we defined earlier:
         fillColor: {
             gradient: {
-                stops: ['yellow', 'red', 'blue']
+                stops: [
+                    ['yellow', 0],
+                    ['red', 0.5],
+                    ['blue', 1]
+                ]
             },
             origin: topLeft,
             destination: bottomRight

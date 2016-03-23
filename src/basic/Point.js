@@ -782,13 +782,35 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
-     * This property is only present if the point is an anchor or control point
-     * of a {@link Segment} or a {@link Curve}. In this case, it returns
-     * {@true it is selected}
+     * This property is only valid if the point is an anchor or handle point
+     * of a {@link Segment} or a {@link Curve}, or the position of an
+     * {@link Item}, as returned by {@link Item#position},
+     * {@link Segment#point}, {@link Segment#handleIn},
+     * {@link Segment#handleOut}, {@link Curve#point1}, {@link Curve#point2},
+     * {@link Curve#handle1}, {@link Curve#handle2}.
+     *
+     * In those cases, it returns {@true if it the point is selected}.
+     *
+     * Paper.js renders selected points on top of your project. This is very
+     * useful when debugging.
      *
      * @name Point#selected
      * @property
-     * @return {Boolean} {@true if the point is selected}
+     * @type Boolean
+     * @default false
+     *
+     * @example {@paperscript}
+     * var path = new Path.Circle({
+     *     center: [80, 50],
+     *     radius: 40
+     * });
+     *
+     * // Select the third segment point:
+     * path.segments[2].point.selected = true;
+     *
+     * // Select the item's position, which is the pivot point
+     * // around which it is trasnformed:
+     * path.position.selected = true;
      */
 
     /**
@@ -963,7 +985,7 @@ var Point = Base.extend(/** @lends Point# */{
  * through setting itself again on the setter that corresponds to the getter
  * that produced this LinkedPoint.
  *
- * @ignore
+ * @private
  */
 var LinkedPoint = Point.extend({
     // Have LinkedPoint appear as a normal Point in debugging
@@ -998,5 +1020,17 @@ var LinkedPoint = Point.extend({
     setY: function(y) {
         this._y = y;
         this._owner[this._setter](this);
+    },
+
+    isSelected: function() {
+        return !!(this._owner._selection & this._getSelection());
+    },
+
+    setSelected: function(selected) {
+        this._owner.changeSelection(this._getSelection(), selected);
+    },
+
+    _getSelection: function() {
+        return this._setter === 'setPosition' ? /*#=*/ItemSelection.POSITION : 0;
     }
 });

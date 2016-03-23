@@ -24,7 +24,6 @@ var Raster = Item.extend(/** @lends Raster# */{
     // Raster doesn't make the distinction between the different bounds,
     // so use the same name for all of them
     _boundsOptions: { stroke: false, handle: false },
-    _boundsSelected: true,
     _serializeFields: {
         crossOrigin: null, // NOTE: Needs to be set before source to work!
         source: null

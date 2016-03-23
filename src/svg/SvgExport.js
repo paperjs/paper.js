@@ -231,12 +231,14 @@ new function() {
             var stops = gradient._stops;
             for (var i = 0, l = stops.length; i < l; i++) {
                 var stop = stops[i],
+                    offset = stop._rampPoint,
                     stopColor = stop._color,
                     alpha = stopColor.getAlpha();
-                attrs = {
-                    offset: stop._rampPoint,
-                    'stop-color': stopColor.toCSS(true)
-                };
+                attrs = {};
+                if (offset != null)
+                    attrs.offset = offset;
+                if (stopColor)
+                    attrs['stop-color'] = stopColor.toCSS(true);
                 // See applyStyle for an explanation of why there are separated
                 // opacity / color attributes.
                 if (alpha < 1)

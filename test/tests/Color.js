@@ -222,3 +222,16 @@ test('Color#divide', function() {
     var color = new Color(1, 1, 1);
     equals(color.divide(4), new Color([0.25, 0.25, 0.25]));
 });
+
+test('Gradient', function() {
+    var stop1 = new GradientStop({ rampPoint: 0 });
+    var stop2 = new GradientStop('red', 0.75);
+    var stop3 = new GradientStop(['white', 1]);
+    var gradient = new Gradient([stop1, stop2, stop3], true);
+    equals(function() { return stop1.color; }, new Color(0, 0, 0));
+    equals(function() { return stop2.color; }, new Color(1, 0, 0));
+    equals(function() { return stop3.color; }, new Color(1, 1, 1));
+    equals(function() { return stop1.rampPoint; }, 0);
+    equals(function() { return stop2.rampPoint; }, 0.75);
+    equals(function() { return stop3.rampPoint; }, 1);
+});

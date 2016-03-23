@@ -13,12 +13,11 @@
 var Http = {
     request: function(options) {
         // Code borrowed from Coffee Script and extended:
-        var ctor = window.ActiveXObject || window.XMLHttpRequest,
-            xhr = new ctor('Microsoft.XMLHTTP');
+        var xhr = new window.XMLHttpRequest();
         xhr.open((options.method || 'get').toUpperCase(), options.url,
                 Base.pick(options.async, true));
-        if ('overrideMimeType' in xhr)
-            xhr.overrideMimeType('text/plain');
+        if (options.mimeType)
+            xhr.overrideMimeType(options.mimeType);
         xhr.onload = function() {
             var status = xhr.status;
             if (status === 0 || status === 200) {

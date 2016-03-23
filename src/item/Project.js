@@ -62,8 +62,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // (e.g. PointText#_getBounds)
         this._view = View.create(this,
                 element || CanvasProvider.getCanvas(1, 1));
-        this._selectedItems = {};
-        this._selectedItemCount = 0;
+        this._selectionItems = {};
+        this._selectionCount = 0;
         // See Item#draw() for an explanation of _updateVersion
         this._updateVersion = 0;
         // Change tracking, not in use for now. Activate once required:
@@ -282,15 +282,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // TODO: Return groups if their children are all selected, and filter
         // out their children from the list.
         // TODO: The order of these items should be that of their drawing order.
-        var selectedItems = this._selectedItems,
+        var selectionItems = this._selectionItems,
             items = [];
-        for (var id in selectedItems) {
-            var item = selectedItems[id];
-            if (item.isInserted()) {
+        for (var id in selectionItems) {
+            var item = selectionItems[id],
+                selection = item._selection;
+            if (selection & /*#=*/ItemSelection.ITEM && item.isInserted()) {
                 items.push(item);
-            } else {
-                this._selectedItemCount--;
-                delete selectedItems[id];
+            } else if (!selection) {
+                this._updateSelection(item);
             }
         }
         return items;
@@ -299,15 +299,15 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     _updateSelection: function(item) {
         var id = item._id,
-            selectedItems = this._selectedItems;
-        if (item._selected) {
-            if (selectedItems[id] !== item) {
-                this._selectedItemCount++;
-                selectedItems[id] = item;
+            selectionItems = this._selectionItems;
+        if (item._selection) {
+            if (selectionItems[id] !== item) {
+                this._selectionCount++;
+                selectionItems[id] = item;
             }
-        } else if (selectedItems[id] === item) {
-            this._selectedItemCount--;
-            delete selectedItems[id];
+        } else if (selectionItems[id] === item) {
+            this._selectionCount--;
+            delete selectionItems[id];
         }
     },
 
@@ -324,9 +324,9 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Deselects all selected items in the project.
      */
     deselectAll: function() {
-        var selectedItems = this._selectedItems;
-        for (var i in selectedItems)
-            selectedItems[i].setFullySelected(false);
+        var selectionItems = this._selectionItems;
+        for (var i in selectionItems)
+            selectionItems[i].setFullySelected(false);
     },
 
     /**
@@ -355,6 +355,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             layer._remove(false, true);
             Base.splice(this._children, [layer], index, 0);
             layer._setProject(this, true);
+            // Set the name again to make sure all name lookup structures
+            // are kept in sync.
+            var name = layer._name;
+            if (name)
+                layer.setName(name);
             // See Item#_remove() for an explanation of this:
             if (this._changes)
                 layer._changed(/*#=*/Change.INSERTION);
@@ -861,10 +866,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         ctx.restore();
 
         // Draw the selection of the selected items in the project:
-        if (this._selectedItemCount > 0) {
+        if (this._selectionCount > 0) {
             ctx.save();
             ctx.strokeWidth = 1;
-            var items = this._selectedItems,
+            var items = this._selectionItems,
                 size = this._scope.settings.handleSize,
                 version = this._updateVersion;
             for (var id in items) {
