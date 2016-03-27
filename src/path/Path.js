@@ -2573,7 +2573,7 @@ statics: {
      * @private
      */
     getStrokeBounds: function(segments, closed, path, matrix, options) {
-        var style = path._style,
+        var style = path.getStyle(),
             stroke = style.hasStroke(),
             strokeWidth = style.getStrokeWidth(),
             strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
@@ -2749,7 +2749,7 @@ statics: {
      * @private
      */
     getHandleBounds: function(segments, closed, path, matrix, options) {
-        var style = path._style,
+        var style = path.getStyle(),
             stroke = options.stroke && style.hasStroke(),
             strokePadding,
             joinPadding;
