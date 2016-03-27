@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 17 14:15:28 2016 +0100
+ * Date: Sun Mar 27 13:39:30 2016 -0700
  *
  ***
  *
@@ -8868,7 +8868,7 @@ statics: {
 	},
 
 	getStrokeBounds: function(segments, closed, path, matrix, options) {
-		var style = path._style,
+		var style = path.getStyle(),
 			stroke = style.hasStroke(),
 			strokeWidth = style.getStrokeWidth(),
 			strokeMatrix = stroke && path._getStrokeMatrix(matrix, options),
@@ -8992,7 +8992,7 @@ statics: {
 	},
 
 	getHandleBounds: function(segments, closed, path, matrix, options) {
-		var style = path._style,
+		var style = path.getStyle(),
 			stroke = options.stroke && style.hasStroke(),
 			strokePadding,
 			joinPadding;
