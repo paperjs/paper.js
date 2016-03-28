@@ -19,7 +19,7 @@ var jsdom = require('jsdom');
 /* global document:true, window:true */
 var document = jsdom.jsdom('<html><body></body></html>', {
         features: {
-            FetchExternalResources : ['img', 'script']
+            FetchExternalResources: ['img', 'script']
         }
     }),
     window = document.defaultView;

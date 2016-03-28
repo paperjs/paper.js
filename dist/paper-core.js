@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Mar 27 13:45:55 2016 -0700
+ * Date: Sun Mar 27 21:41:22 2016 -0700
  *
  ***
  *
@@ -12683,7 +12683,7 @@ var Tool = PaperScopeItem.extend({
 			tool = this;
 		function update(minDistance, maxDistance) {
 			var pt = point,
-				toolPoint = move ? tool._point : tool._downPoint || pt;
+				toolPoint = (move ? tool._point : tool._downPoint) || pt;
 			if (move) {
 				if (tool._moveCount && pt.equals(toolPoint)) {
 					return false;
