@@ -809,7 +809,7 @@ var Point = Base.extend(/** @lends Point# */{
      * path.segments[2].point.selected = true;
      *
      * // Select the item's position, which is the pivot point
-     * // around which it is trasnformed:
+     * // around which it is transformed:
      * path.position.selected = true;
      */
 

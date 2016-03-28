@@ -176,6 +176,8 @@ new function() { // Injection scope for various item event handlers
 
         function serialize(fields) {
             for (var key in fields) {
+                // value is the default value, only serialize if the current
+                // value is different from it.
                 var value = that[key];
                 // Style#leading is a special case, as its default value is
                 // dependent on the fontSize. Handle this here separately.
@@ -2349,7 +2351,7 @@ new function() { // Injection scope for hit-test functions shared with project
                     items.splice(i, 1);
                 } else {
                     // If the item is removed and inserted it again further
-                    /// above, the index needs to be adjusted accordingly.
+                    // above, the index needs to be adjusted accordingly.
                     var owner = item._getOwner(),
                         shift = owner === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
@@ -2361,12 +2363,12 @@ new function() { // Injection scope for hit-test functions shared with project
             Base.splice(children, items, index, 0);
             var project = this._project,
                 // See #_remove() for an explanation of this:
-                notifySelf = project && project._changes;
+                notifySelf = project._changes;
             for (var i = 0, l = items.length; i < l; i++) {
                 var item = items[i],
                     name = item._name;
                 item._parent = this;
-                item._setProject(this._project, true);
+                item._setProject(project, true);
                 // Set the name again to make sure all name lookup structures
                 // are kept in sync.
                 if (name)
