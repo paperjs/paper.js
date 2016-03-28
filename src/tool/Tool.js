@@ -307,7 +307,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 // clicks, so mouseup has a delta spanning over the full drag.
                 // Use the current point if this is the first mousedown, so
                 // there's always a delta.
-                toolPoint = move ? tool._point : tool._downPoint || pt;
+                toolPoint = (move ? tool._point : tool._downPoint) || pt;
             if (move) {
                 if (tool._moveCount && pt.equals(toolPoint)) {
                     return false;
