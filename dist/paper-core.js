@@ -12872,7 +12872,7 @@ new function() {
 				var v = item[get]()
 				parentValues[get] = v
 			})
-			console.log(parentValues)
+			//console.log(parentValues)
 			Base.parentValues = parentValues
 		}
 		var exporter = exporters[item._class],
