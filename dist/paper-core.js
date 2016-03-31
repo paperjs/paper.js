@@ -12565,6 +12565,7 @@ new function() {
 	}
 
 	function exportGroup(item, options) {
+                //xxx333
 		var attrs = getTransform(item._matrix),
 			children = item._children;
 		var node = createElement('g', attrs);
@@ -12761,6 +12762,7 @@ new function() {
 	};
 
 	function applyStyle(item, node, isRoot) {
+		//xxx444
 		var attrs = {},
 			parent = !isRoot && item.getParent();
 
@@ -12771,9 +12773,28 @@ new function() {
 			var get = entry.get,
 				type = entry.type,
 				value = item[get]();
+        		var found = false
+			var v
+			if(!parent){
+				found = true
+			} else {
+
+				if(parent.className == 'Layer'){
+
+					v = Base.parentValues[get]
+
+				} else {
+					v = parent[get]()
+
+				}
+
+				if(!Base.equals(v, value)){
+					found = true
+				}
+			}
 			if (entry.exportFilter
 					? entry.exportFilter(item, value)
-					: !parent || !Base.equals(parent[get](), value)) {
+					: found) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -12843,6 +12864,17 @@ new function() {
 	}
 
 	function exportSVG(item, options, isRoot) {
+                //xxx222
+		if(item.className == 'Layer'){
+			var parentValues = {}
+			Base.each(SVGStyles, function(entry) {
+				var get = entry.get
+				var v = item[get]()
+				parentValues[get] = v
+			})
+			console.log(parentValues)
+			Base.parentValues = parentValues
+		}
 		var exporter = exporters[item._class],
 			node = exporter && exporter(item, options);
 		if (node) {
@@ -12865,6 +12897,7 @@ new function() {
 
 	Item.inject({
 		exportSVG: function(options) {
+                        //xxx111
 			options = setOptions(options);
 			return exportDefinitions(exportSVG(this, options, true), options);
 		}
@@ -13384,4 +13417,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-};
+}; 
