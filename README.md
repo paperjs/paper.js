@@ -16,7 +16,7 @@ and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist) br
 The recommended way to install and maintain Paper.js as a dependency in your
 project is through NPM or Bower for browsers, and through NPM for Node.js.
 
-If NPM or Bower is already installed installed, simply type one of these
+If NPM or Bower is already installed, simply type one of these
 commands in your project folder:
 
     npm install paper
