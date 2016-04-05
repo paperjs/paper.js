@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Apr 4 17:55:43 2016 -0700
+ * Date: Mon Apr 4 23:26:43 2016 -0700
  *
  ***
  *
@@ -827,6 +827,11 @@ var PaperScope = Base.extend({
 	remove: function() {
 		this.clear();
 		delete PaperScope._scopes[this._id];
+	},
+
+	resolvePath: function(url) {
+		return this.agent.node && !/^(?:[a-z]+:)?\/\//i.test(url)
+				? 'file://' + require('path').resolve(url) : url;
 	},
 
 	statics: new function() {
@@ -4877,10 +4882,12 @@ var Raster = Item.extend({
 	initialize: function Raster(object, position) {
 		if (!this._initialize(object,
 				position !== undefined && Point.read(arguments, 1))) {
-			if (typeof object === 'string') {
-				this.setSource(object);
+			var image = typeof object === 'string'
+					? document.getElementById(object) : object;
+			if (image) {
+				this.setImage(image);
 			} else {
-				this.setImage(object);
+				this.setSource(object);
 			}
 		}
 		if (!this._size) {
@@ -5048,23 +5055,24 @@ var Raster = Item.extend({
 	},
 
 	setSource: function(src) {
-		var crossOrigin = this._crossOrigin,
-			image = document.getElementById(src) || new window.Image();
+		image = new window.Image();
+		image.src = paper.resolvePath(src);
+		var crossOrigin = this._crossOrigin;
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
-		if (!image.src)
-			image.src = src;
 		this.setImage(image);
 	},
 
 	getCrossOrigin: function() {
-		return this._image && this._image.crossOrigin || this._crossOrigin || '';
+		var image = this._image;
+		return image && image.crossOrigin || this._crossOrigin || '';
 	},
 
 	setCrossOrigin: function(crossOrigin) {
 		this._crossOrigin = crossOrigin;
-		if (this._image)
-			this._image.crossOrigin = crossOrigin;
+		var image = this._image;
+		if (image)
+			image.crossOrigin = crossOrigin;
 	},
 
 	getElement: function() {
@@ -12735,7 +12743,8 @@ var Tool = PaperScopeItem.extend({
 var Http = {
 	request: function(options) {
 		var xhr = new window.XMLHttpRequest();
-		xhr.open((options.method || 'get').toUpperCase(), options.url,
+		xhr.open((options.method || 'get').toUpperCase(),
+				paper.resolvePath(options.url),
 				Base.pick(options.async, true));
 		if (options.mimeType)
 			xhr.overrideMimeType(options.mimeType);
