@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Apr 5 12:11:54 2016 -0700
+ * Date: Tue Apr 5 12:25:24 2016 -0700
  *
  ***
  *
@@ -5052,9 +5052,9 @@ var Raster = Item.extend({
 	setSource: function(src) {
 		var image = new window.Image(),
 			crossOrigin = this._crossOrigin;
-		image.src = src;
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
+		image.src = src;
 		this.setImage(image);
 	},
 
