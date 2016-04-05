@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Apr 4 23:38:37 2016 -0700
+ * Date: Tue Apr 5 12:11:54 2016 -0700
  *
  ***
  *
@@ -827,11 +827,6 @@ var PaperScope = Base.extend({
 	remove: function() {
 		this.clear();
 		delete PaperScope._scopes[this._id];
-	},
-
-	resolvePath: function(url) {
-		return url && this.agent.node && !/^[a-z]+:/i.test(url)
-				? 'file://' + require('path').resolve(url) : url;
 	},
 
 	statics: new function() {
@@ -5057,7 +5052,7 @@ var Raster = Item.extend({
 	setSource: function(src) {
 		var image = new window.Image(),
 			crossOrigin = this._crossOrigin;
-		image.src = paper.resolvePath(src);
+		image.src = src;
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
 		this.setImage(image);
@@ -12743,8 +12738,7 @@ var Tool = PaperScopeItem.extend({
 var Http = {
 	request: function(options) {
 		var xhr = new window.XMLHttpRequest();
-		xhr.open((options.method || 'get').toUpperCase(),
-				paper.resolvePath(options.url),
+		xhr.open((options.method || 'get').toUpperCase(), options.url,
 				Base.pick(options.async, true));
 		if (options.mimeType)
 			xhr.overrideMimeType(options.mimeType);

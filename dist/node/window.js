@@ -18,10 +18,9 @@ var jsdom = require('jsdom');
 // Create our document and window objects through jsdom.
 /* global document:true, window:true */
 var document = jsdom.jsdom('<html><body></body></html>', {
-        // Give the resulting document the same origins as the XMLHttpRequest
-        // objects for local files, so files can be loaded locally without CORS.
-        // TODO: Find a proper solution instead of this hack.
-        url: 'file://',
+        // Use the current working directory as the document's origin, so
+        // requests to local files work correctly with CORS.
+        url: 'file://' + process.cwd() + '/',
         features: {
             FetchExternalResources: ['img', 'script']
         }
