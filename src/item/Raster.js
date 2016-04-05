@@ -369,9 +369,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setSource: function(src) {
-        image = new window.Image();
+        var image = new window.Image(),
+            crossOrigin = this._crossOrigin;
         image.src = paper.resolvePath(src);
-        var crossOrigin = this._crossOrigin;
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
         this.setImage(image);
