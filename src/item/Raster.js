@@ -82,12 +82,14 @@ var Raster = Item.extend(/** @lends Raster# */{
         // Otherwise we need to check the type of object:
         if (!this._initialize(object,
                 position !== undefined && Point.read(arguments, 1))) {
-            if (typeof object === 'string') {
-                // Both data-urls and normal urls are supported here!
-                this.setSource(object);
-            } else {
+            // object can be an image, canvas, URL or DOM-ID:
+            var image = typeof object === 'string'
+                    ? document.getElementById(object) : object;
+            if (image) {
                 // #setImage() handles both canvas and image types.
-                this.setImage(object);
+                this.setImage(image);
+            } else {
+                this.setSource(object);
             }
         }
         if (!this._size) {
@@ -367,14 +369,11 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setSource: function(src) {
-        var crossOrigin = this._crossOrigin,
-            // src can be an URL or a DOM ID to load the image from:
-            image = document.getElementById(src) || new window.Image();
+        image = new window.Image();
+        image.src = paper.resolvePath(src);
+        var crossOrigin = this._crossOrigin;
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        // A new image created above? Set the source now.
-        if (!image.src)
-            image.src = src;
         this.setImage(image);
     },
 
@@ -397,13 +396,15 @@ var Raster = Item.extend(/** @lends Raster# */{
      * console.log(view.element.toDataURL('image/png').substring(0, 32));
      */
     getCrossOrigin: function() {
-        return this._image && this._image.crossOrigin || this._crossOrigin || '';
+        var image = this._image;
+        return image && image.crossOrigin || this._crossOrigin || '';
     },
 
     setCrossOrigin: function(crossOrigin) {
         this._crossOrigin = crossOrigin;
-        if (this._image)
-            this._image.crossOrigin = crossOrigin;
+        var image = this._image;
+        if (image)
+            image.crossOrigin = crossOrigin;
     },
 
     // DOCS: document Raster#getElement

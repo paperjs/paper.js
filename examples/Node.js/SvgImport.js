@@ -6,7 +6,7 @@ var path = require('path');
 var fs = require('fs');
 
 paper.setup(new paper.Size(300, 600));
-paper.project.importSVG('file://' + path.resolve('./in.svg'), {
+paper.project.importSVG('in.svg', {
     onLoad: function(item) {
         paper.view.exportFrames({
             amount: 1,
