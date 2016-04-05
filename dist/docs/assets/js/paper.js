@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Apr 4 23:26:43 2016 -0700
+ * Date: Mon Apr 4 23:30:53 2016 -0700
  *
  ***
  *
@@ -830,7 +830,7 @@ var PaperScope = Base.extend({
 	},
 
 	resolvePath: function(url) {
-		return this.agent.node && !/^(?:[a-z]+:)?\/\//i.test(url)
+		return url && this.agent.node && !/^[a-z]+:/i.test(url)
 				? 'file://' + require('path').resolve(url) : url;
 	},
 
