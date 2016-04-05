@@ -292,12 +292,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         delete PaperScope._scopes[this._id];
     },
 
-    resolvePath: function(url) {
-        // On Node.js, resolve relative URLs to local files:
-        return url && this.agent.node && !/^[a-z]+:/i.test(url)
-                ? 'file://' + require('path').resolve(url) : url;
-    },
-
     statics: new function() {
         // Produces helpers to e.g. check for both 'canvas' and
         // 'data-paper-canvas' attributes:
