@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Apr 6 20:17:13 2016 -0700
+ * Date: Wed Apr 6 20:24:55 2016 -0700
  *
  ***
  *
@@ -6040,6 +6040,7 @@ var Curve = Base.extend({
 				res = this.getNext();
 			} else {
 				this._segment2 = segment;
+				this._changed();
 				res = new Curve(segment, segment2);
 			}
 		}
