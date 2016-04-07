@@ -506,6 +506,7 @@ var Curve = Base.extend(/** @lends Curve# */{
             } else {
                 // otherwise create it from the result of split
                 this._segment2 = segment;
+                this._changed();
                 res = new Curve(segment, segment2);
             }
         }

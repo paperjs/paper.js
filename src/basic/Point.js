@@ -46,7 +46,7 @@ var Point = Base.extend(/** @lends Point# */{
      * coordinates.
      *
      * @name Point#initialize
-     * @param {array} array
+     * @param {Array} array
      *
      * @example
      * // Creating a point at x: 10, y: 5 using an array of numbers:
