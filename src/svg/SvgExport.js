@@ -231,12 +231,11 @@ new function() {
             var stops = gradient._stops;
             for (var i = 0, l = stops.length; i < l; i++) {
                 var stop = stops[i],
-                    offset = stop._rampPoint,
                     stopColor = stop._color,
                     alpha = stopColor.getAlpha();
-                attrs = {};
-                if (offset != null)
-                    attrs.offset = offset;
+                attrs = {
+                    offset: stop._rampPoint || i / (l - 1)
+                };
                 if (stopColor)
                     attrs['stop-color'] = stopColor.toCSS(true);
                 // See applyStyle for an explanation of why there are separated
