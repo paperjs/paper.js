@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Apr 6 20:05:32 2016 -0700
+ * Date: Wed Apr 6 20:17:13 2016 -0700
  *
  ***
  *
@@ -13361,12 +13361,11 @@ new function() {
 			var stops = gradient._stops;
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i],
-					offset = stop._rampPoint,
 					stopColor = stop._color,
 					alpha = stopColor.getAlpha();
-				attrs = {};
-				if (offset != null)
-					attrs.offset = offset;
+				attrs = {
+					offset: stop._rampPoint || i / (l - 1)
+				};
 				if (stopColor)
 					attrs['stop-color'] = stopColor.toCSS(true);
 				if (alpha < 1)
