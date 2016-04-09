@@ -36,7 +36,7 @@ contribute to the code.
 ### Changed
 - Significant overhaul and improvements of boolean path operations
   `PathItem#unite()`, `#subtract()`, `#intersect()`, `#exclude()`, `#divide()`
-  [#936]:
+  (#936):
     - Improve handling of self-intersecting paths and non-zero fill-rules.
     - Handle operations on identical paths.
     - Improve handling of near-collinear lines.
