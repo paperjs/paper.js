@@ -236,6 +236,7 @@ contribute to the code.
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to
   resize the canvas when the viewport size changes; Additional CSS styles are
   required since `0.9.22`, e.g.:
+
   ```css
   /* Scale canvas with resize attribute to full size */
   canvas[resize] {
