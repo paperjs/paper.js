@@ -188,7 +188,7 @@ if (!isNode) {
 
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer, null, {
-            tolerance: 1e-1
+            tolerance: 1e-2
         });
     });
 }
