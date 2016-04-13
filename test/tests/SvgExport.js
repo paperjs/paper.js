@@ -187,6 +187,8 @@ if (!isNode) {
         rect.rotate(45).scale(0.7);
 
         var svg = project.exportSVG({ bounds: 'content', asString: true });
-        compareSVG(assert.async(), svg, project.activeLayer);
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-1
+        });
     });
 }
