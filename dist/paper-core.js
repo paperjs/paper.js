@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Apr 8 18:37:20 2016 -0700
+ * Date: Wed Apr 13 13:36:26 2016 -0700
  *
  ***
  *
@@ -3842,10 +3842,7 @@ new function() {
 				if (_proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
-					var owner = item._getOwner(),
-						shift = owner === this && item._index < index;
-					if (owner && item._remove(false, true) && shift)
-						index--;
+					item._remove(false, true);
 				}
 			}
 			Base.splice(children, items, index, 0);
@@ -3870,15 +3867,26 @@ new function() {
 
 	_insertItem: '#insertChild',
 
+	_insertAt: function(item, offset, _preserve) {
+		var res = this;
+		if (res !== item) {
+			var owner = item && item._getOwner();
+			if (owner) {
+				res._remove(false, true);
+				owner._insertItem(item._index + offset, res, _preserve);
+			} else {
+				res = null;
+			}
+		}
+		return res;
+	},
+
 	insertAbove: function(item, _preserve) {
-		var owner = item && item._getOwner();
-		return owner ? owner._insertItem(item._index + 1, this, _preserve)
-				: null;
+		return this._insertAt(item, 1, _preserve);
 	},
 
 	insertBelow: function(item, _preserve) {
-		var owner = item && item._getOwner();
-		return owner ? owner._insertItem(item._index, this, _preserve) : null;
+		return this._insertAt(item, 0, _preserve);
 	},
 
 	sendToBack: function() {
