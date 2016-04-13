@@ -2350,14 +2350,9 @@ new function() { // Injection scope for hit-test functions shared with project
                 if (_proto && !(item instanceof _proto)) {
                     items.splice(i, 1);
                 } else {
-                    // If the item is removed and inserted it again further
-                    // above, the index needs to be adjusted accordingly.
-                    var owner = item._getOwner(),
-                        shift = owner === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
                     // as we're doing so when adding it to the new owner below.
-                    if (owner && item._remove(false, true) && shift)
-                        index--;
+                    item._remove(false, true);
                 }
             }
             Base.splice(children, items, index, 0);
@@ -2388,15 +2383,39 @@ new function() { // Injection scope for hit-test functions shared with project
     _insertItem: '#insertChild',
 
     /**
+     * Private helper method used by {@link #insertAbove(item)} and
+     * {@link #insertBelow(item)}, to insert this item in relation to a
+     * specified other item.
+     *
+     * @param {Item} item the item in relation to which which it should be
+     *     inserted
+     * @param {Number} offset the offset at which the item should be inserted
+     * @return {Item} the inserted item, or `null` if inserting was not possible
+     */
+    _insertAt: function(item, offset, _preserve) {
+        var res = this;
+        if (res !== item) {
+            var owner = item && item._getOwner();
+            if (owner) {
+                // Notify parent of change. Don't notify item itself yet,
+                // as we're doing so when adding it to the new owner below.
+                res._remove(false, true);
+                owner._insertItem(item._index + offset, res, _preserve);
+            } else {
+                res = null;
+            }
+        }
+        return res;
+    },
+
+    /**
      * Inserts this item above the specified item.
      *
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        var owner = item && item._getOwner();
-        return owner ? owner._insertItem(item._index + 1, this, _preserve)
-                : null;
+        return this._insertAt(item, 1, _preserve);
     },
 
     /**
@@ -2406,8 +2425,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        var owner = item && item._getOwner();
-        return owner ? owner._insertItem(item._index, this, _preserve) : null;
+        return this._insertAt(item, 0, _preserve);
     },
 
     /**
