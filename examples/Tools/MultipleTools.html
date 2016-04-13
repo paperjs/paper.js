@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mulitple Tools</title>
+<link rel="stylesheet" href="../css/style.css">
+<script type="text/javascript" src="../../dist/paper-full.js"></script>
+<script type="text/paperscript" canvas="canvas">
+    // Create two drawing tools.
+    // tool1 will draw straight lines, tool2 will draw clouds.
+
+    // Both share the mouseDown event:
+    var path;
+    function onMouseDown(event) {
+        path = new Path();
+        path.strokeColor = 'black';
+        path.add(event.point);
+    }
+
+    window.app = {
+        tool1: new Tool({
+            onMouseDown: onMouseDown,
+            onMouseDrag: function(event) {
+                path.add(event.point);
+            }
+        }),
+
+        tool2: new Tool({
+            minDistance: 20,
+            onMouseDown: onMouseDown,
+            onMouseDrag: function(event) {
+                // Use the arcTo command to draw cloudy lines
+                path.arcTo(event.point);
+            }
+        })
+    };
+</script>
+</head>
+<body>
+    <a href="#" onclick="app.tool1.activate(); return false;">Lines</a>
+    <a href="#" onclick="app.tool2.activate(); return false;">Clouds</a>
+    <canvas id="canvas" resize></canvas>
+</body>
+</html>
