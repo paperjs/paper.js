@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Apr 13 15:21:35 2016 -0700
+ * Date: Wed Apr 13 15:52:59 2016 -0700
  *
  ***
  *
@@ -12695,12 +12695,12 @@ var Tool = PaperScopeItem.extend({
 			tool = this;
 		function update(minDistance, maxDistance) {
 			var pt = point,
-				toolPoint = (move ? tool._point : tool._downPoint) || pt;
+				toolPoint = move ? tool._point : (tool._downPoint || pt);
 			if (move) {
 				if (tool._moveCount && pt.equals(toolPoint)) {
 					return false;
 				}
-				if (minDistance != null || maxDistance != null) {
+				if (toolPoint && (minDistance != null || maxDistance != null)) {
 					var vector = pt.subtract(toolPoint),
 						distance = vector.getLength();
 					if (distance < (minDistance || 0))
@@ -12713,7 +12713,7 @@ var Tool = PaperScopeItem.extend({
 				tool._moveCount++;
 			}
 			tool._point = pt;
-			tool._lastPoint = toolPoint;
+			tool._lastPoint = toolPoint || pt;
 			if (mouse.down) {
 				tool._moveCount = -1;
 				tool._downPoint = pt;
