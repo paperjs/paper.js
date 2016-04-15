@@ -186,8 +186,8 @@ test('path.strokeBounds with corners and miter limit', function() {
     var path = new Path({
         pathData: 'M47,385c120,-100 120,-100 400,-40c-280,140 -280,140 -400,40z',
         strokeWidth: 5,
-        strokeJoin: "miter",
-        strokeColor: "black"
+        strokeJoin: 'miter',
+        strokeColor: 'black'
     });
     equals(path.strokeBounds, new Rectangle(43.09488, 301.5525, 411.3977, 156.57543));
 });
@@ -447,8 +447,8 @@ test('path.strokeBounds with corners and miter limit', function() {
     var path = new Path({
         pathData: 'M47,385c120,-100 120,-100 400,-40c-280,140 -280,140 -400,40z',
         strokeWidth: 5,
-        strokeJoin: "miter",
-        strokeColor: "black"
+        strokeJoin: 'miter',
+        strokeColor: 'black'
     });
     equals(path.strokeBounds, new Rectangle(43.09488, 301.5525, 411.3977, 156.57543));
 });
@@ -666,4 +666,22 @@ test('path.internalBounds', function() {
 
     equals(path.internalBounds, new Rectangle(-100, -100, 200, 200),
             'path.internalBounds');
+});
+
+test('compoundPath.strokeBounds', function() {
+    // #1021:
+    var data = {
+        pathData: 'M150 0 L75 200 L225 200 Z',
+        fillColor: 'blue',
+        strokeColor: 'red',
+        strokeWidth: 20
+    };
+    var path = new Path(data);
+    var compoundPath = new CompoundPath(data);
+    var bounds = new Rectangle(75, 0, 150, 200);
+    var strokeBounds = new Rectangle(60.57, -28.48001, 178.86001, 238.48001);
+    equals(function() { return compoundPath.bounds; }, bounds);
+    equals(function() { return compoundPath.strokeBounds; }, strokeBounds);
+    equals(function() { return path.bounds; }, bounds);
+    equals(function() { return path.strokeBounds; }, strokeBounds);
 });

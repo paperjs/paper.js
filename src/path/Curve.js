@@ -506,6 +506,7 @@ var Curve = Base.extend(/** @lends Curve# */{
             } else {
                 // otherwise create it from the result of split
                 this._segment2 = segment;
+                this._changed();
                 res = new Curve(segment, segment2);
             }
         }
@@ -761,9 +762,9 @@ statics: /** @lends Curve */{
             c1x = v[2], c1y = v[3],
             c2x = v[4], c2y = v[5],
             p2x = v[6], p2y = v[7];
-        return (6 * (p1x*c1y-p1y*c1x+c2x*p2y-p2x*c2y) +
-                3 * (c1x*p2y-c1y*p2x+p1x*c2y-c2x*p1y+c1x*c2y-c1y*c2x) +
-                1 * (p1x*p2y-p1y*p2x)) / 20;
+        return 3 * ((p2y - p1y) * (c1x + c2x) - (p2x - p1x) * (c1y + c2y)
+                + c1y * (p1x - c2x) - c1x * (p1y - c2y)
+                + p2y * (c2x + p1x / 3) - p2x * (c2y + p1y / 3)) / 20;
     },
 
     getBounds: function(v) {

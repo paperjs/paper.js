@@ -352,6 +352,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      */
     insertLayer: function(index, layer) {
         if (layer instanceof Layer) {
+            // Notify parent of change. Don't notify item itself yet,
+            // as we're doing so when adding it to the new owner below.
             layer._remove(false, true);
             Base.splice(this._children, [layer], index, 0);
             layer._setProject(this, true);

@@ -176,6 +176,8 @@ new function() { // Injection scope for various item event handlers
 
         function serialize(fields) {
             for (var key in fields) {
+                // value is the default value, only serialize if the current
+                // value is different from it.
                 var value = that[key];
                 // Style#leading is a special case, as its default value is
                 // dependent on the fontSize. Handle this here separately.
@@ -2348,25 +2350,20 @@ new function() { // Injection scope for hit-test functions shared with project
                 if (_proto && !(item instanceof _proto)) {
                     items.splice(i, 1);
                 } else {
-                    // If the item is removed and inserted it again further
-                    /// above, the index needs to be adjusted accordingly.
-                    var owner = item._getOwner(),
-                        shift = owner === this && item._index < index;
                     // Notify parent of change. Don't notify item itself yet,
                     // as we're doing so when adding it to the new owner below.
-                    if (owner && item._remove(false, true) && shift)
-                        index--;
+                    item._remove(false, true);
                 }
             }
             Base.splice(children, items, index, 0);
             var project = this._project,
                 // See #_remove() for an explanation of this:
-                notifySelf = project && project._changes;
+                notifySelf = project._changes;
             for (var i = 0, l = items.length; i < l; i++) {
                 var item = items[i],
                     name = item._name;
                 item._parent = this;
-                item._setProject(this._project, true);
+                item._setProject(project, true);
                 // Set the name again to make sure all name lookup structures
                 // are kept in sync.
                 if (name)
@@ -2386,15 +2383,39 @@ new function() { // Injection scope for hit-test functions shared with project
     _insertItem: '#insertChild',
 
     /**
+     * Private helper method used by {@link #insertAbove(item)} and
+     * {@link #insertBelow(item)}, to insert this item in relation to a
+     * specified other item.
+     *
+     * @param {Item} item the item in relation to which which it should be
+     *     inserted
+     * @param {Number} offset the offset at which the item should be inserted
+     * @return {Item} the inserted item, or `null` if inserting was not possible
+     */
+    _insertAt: function(item, offset, _preserve) {
+        var res = this;
+        if (res !== item) {
+            var owner = item && item._getOwner();
+            if (owner) {
+                // Notify parent of change. Don't notify item itself yet,
+                // as we're doing so when adding it to the new owner below.
+                res._remove(false, true);
+                owner._insertItem(item._index + offset, res, _preserve);
+            } else {
+                res = null;
+            }
+        }
+        return res;
+    },
+
+    /**
      * Inserts this item above the specified item.
      *
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertAbove: function(item, _preserve) {
-        var owner = item && item._getOwner();
-        return owner ? owner._insertItem(item._index + 1, this, _preserve)
-                : null;
+        return this._insertAt(item, 1, _preserve);
     },
 
     /**
@@ -2404,8 +2425,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     insertBelow: function(item, _preserve) {
-        var owner = item && item._getOwner();
-        return owner ? owner._insertItem(item._index, this, _preserve) : null;
+        return this._insertAt(item, 0, _preserve);
     },
 
     /**

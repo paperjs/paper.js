@@ -148,4 +148,47 @@ if (!isNode) {
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer);
     });
+
+    test('Export gradients', function(assert) {
+        var bounds = new Rectangle(new Size(300, 600));
+        var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
+
+        var radius = bounds.width * 0.4,
+            from = new Point(bounds.center.x),
+            to = from + [radius, 0];
+
+        var circle = new Path.Circle({
+            center: from,
+            radius: radius,
+            fillColor: {
+                stops: stops,
+                radial: true,
+                origin: from,
+                destination: to
+            },
+            strokeColor: 'black'
+        });
+
+        var from = bounds.leftCenter,
+            to = bounds.bottomRight;
+
+        var rect = new Path.Rectangle({
+            from: from,
+            to: to,
+            fillColor: {
+                stops: stops,
+                radial: false,
+                origin: from,
+                destination: to
+            },
+            strokeColor: 'black'
+        });
+
+        rect.rotate(45).scale(0.7);
+
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
 }

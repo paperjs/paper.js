@@ -18,8 +18,11 @@ var jsdom = require('jsdom');
 // Create our document and window objects through jsdom.
 /* global document:true, window:true */
 var document = jsdom.jsdom('<html><body></body></html>', {
+        // Use the current working directory as the document's origin, so
+        // requests to local files work correctly with CORS.
+        url: 'file://' + process.cwd() + '/',
         features: {
-            FetchExternalResources : ['img', 'script']
+            FetchExternalResources: ['img', 'script']
         }
     }),
     window = document.defaultView;
@@ -52,7 +55,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
 function DOMParser() {
 }
 
-DOMParser.prototype.parseFromString = function(string, contenType) {
+DOMParser.prototype.parseFromString = function(string, contentType) {
     // Create a new document, since we're supposed to always return one.
     var doc = document.implementation.createHTMLDocument(''),
         body = doc.body,

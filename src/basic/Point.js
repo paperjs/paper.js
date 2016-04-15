@@ -46,7 +46,7 @@ var Point = Base.extend(/** @lends Point# */{
      * coordinates.
      *
      * @name Point#initialize
-     * @param {array} array
+     * @param {Array} array
      *
      * @example
      * // Creating a point at x: 10, y: 5 using an array of numbers:
@@ -809,7 +809,7 @@ var Point = Base.extend(/** @lends Point# */{
      * path.segments[2].point.selected = true;
      *
      * // Select the item's position, which is the pivot point
-     * // around which it is trasnformed:
+     * // around which it is transformed:
      * path.position.selected = true;
      */
 

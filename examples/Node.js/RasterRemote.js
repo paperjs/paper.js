@@ -27,3 +27,7 @@ raster.onLoad = function() {
         console.log('saved png');
     });
 };
+
+raster.onError = function(message) {
+    console.error(message);
+};

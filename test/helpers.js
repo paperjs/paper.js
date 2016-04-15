@@ -204,7 +204,7 @@ var comparePixels = function(actual, expected, message, options) {
             .onComplete(function(data) { result = data; });
          // Compare with tolerance in percentage...
         var tolerance = (options.tolerance || 1e-4) * 100,
-            fixed = ((1 / tolerance) + '').length - 1,
+            fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
             identical = result ? 100 - result.misMatchPercentage : 0,
             reached = identical.toFixed(fixed),
             hundred = (100).toFixed(fixed),

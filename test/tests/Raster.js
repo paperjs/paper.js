@@ -60,6 +60,10 @@ test('Create a raster from a dom image', function(assert) {
             equals(raster.size, new Size(146, 146), true);
             document.body.removeChild(img);
             done();
+        },
+        error: function() {
+            pushFailure('Loading from a valid data URL should not give an error.');
+            done();
         }
     });
 });
@@ -81,6 +85,10 @@ test('Create a raster from a dom id', function(assert) {
             var raster = new Raster('testimage');
             equals(raster.size, new Size(146, 146), true);
             document.body.removeChild(img);
+            done();
+        },
+        error: function() {
+            pushFailure('Loading from a valid data URL should not give an error.');
             done();
         }
     });
