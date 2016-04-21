@@ -253,7 +253,18 @@ new function() {
     function exportText(item) {
         var node = SvgElement.create('text', getTransform(item._matrix, true),
                 formatter);
-        node.textContent = item._content;
+
+        item._lines.forEach(function(val, i){
+            var line = SvgElement.create('tspan');
+
+            line.setAttribute('dy', i && item.style.leading);
+            line.setAttribute('x', getTransform(item._matrix, true).x);
+
+            line.textContent = val;
+
+            node.appendChild(line);
+        });
+
         return node;
     }
 
