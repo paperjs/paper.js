@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Apr 13 15:52:59 2016 -0700
+ * Date: Wed May 4 18:06:18 2016 -0700
  *
  ***
  *
@@ -2066,8 +2066,8 @@ var Matrix = Base.extend({
 		return this;
 	},
 
-	_serialize: function(options) {
-		return Base.serialize(this.getValues(), options);
+	_serialize: function(options, dictionary) {
+		return Base.serialize(this.getValues(), options, true, dictionary);
 	},
 
 	_changed: function() {
@@ -5428,7 +5428,7 @@ var Segment = Base.extend({
 			this.setSelection(selection);
 	},
 
-	_serialize: function(options) {
+	_serialize: function(options, dictionary) {
 		var point = this._point,
 			selection = this._selection,
 			obj = selection || this.hasHandles()
@@ -5436,7 +5436,7 @@ var Segment = Base.extend({
 					: point;
 		if (selection)
 			obj.push(selection);
-		return Base.serialize(obj, options, true);
+		return Base.serialize(obj, options, true, dictionary);
 	},
 
 	_changed: function(point) {
@@ -5852,12 +5852,12 @@ var Curve = Base.extend({
 		this._segment2 = seg2 || new Segment(point2, handle2, null);
 	},
 
-	_serialize: function(options) {
+	_serialize: function(options, dictionary) {
 		return Base.serialize(this.hasHandles()
 				? [this.getPoint1(), this.getHandle1(), this.getHandle2(),
 					this.getPoint2()]
 				: [this.getPoint1(), this.getPoint2()],
-				options, true);
+				options, true, dictionary);
 	},
 
 	_changed: function() {
