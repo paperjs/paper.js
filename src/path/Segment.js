@@ -149,7 +149,7 @@ var Segment = Base.extend(/** @lends Segment# */{
             this.setSelection(selection);
     },
 
-    _serialize: function(options) {
+    _serialize: function(options, dictionary) {
         // If it is has no handles, only serialize point, otherwise handles too.
         var point = this._point,
             selection = this._selection,
@@ -158,7 +158,7 @@ var Segment = Base.extend(/** @lends Segment# */{
                     : point;
         if (selection)
             obj.push(selection);
-        return Base.serialize(obj, options, true);
+        return Base.serialize(obj, options, true, dictionary);
     },
 
     _changed: function(point) {

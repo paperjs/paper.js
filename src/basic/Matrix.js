@@ -97,8 +97,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this;
     },
 
-    _serialize: function(options) {
-        return Base.serialize(this.getValues(), options);
+    _serialize: function(options, dictionary) {
+        return Base.serialize(this.getValues(), options, true, dictionary);
     },
 
     _changed: function() {

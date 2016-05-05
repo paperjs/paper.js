@@ -118,13 +118,13 @@ var Curve = Base.extend(/** @lends Curve# */{
         this._segment2 = seg2 || new Segment(point2, handle2, null);
     },
 
-    _serialize: function(options) {
+    _serialize: function(options, dictionary) {
         // If it has no handles, only serialize points, otherwise handles too.
         return Base.serialize(this.hasHandles()
                 ? [this.getPoint1(), this.getHandle1(), this.getHandle2(),
                     this.getPoint2()]
                 : [this.getPoint1(), this.getPoint2()],
-                options, true);
+                options, true, dictionary);
     },
 
     _changed: function() {
