@@ -27,7 +27,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=4.0.0 <6.0.0"
+    "node": ">=4.0.0 <7.0.0"
   },
   "dependencies": {
     "jsdom": "^8.3.0",
