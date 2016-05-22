@@ -932,11 +932,14 @@ new function() { // Injection scope for various item event handlers
     /**
      * Returns to correct matrix to use to transform stroke related geometries
      * when calculating bounds: the item's matrix if {@link #strokeScaling} is
-     * `true`, otherwise the shiftless, inverted view matrix.
+     * `true`, otherwise the parent's inverted view matrix. The returned matrix
+     * is always shiftless, meaning its translation vector is reset to zero.
      */
     _getStrokeMatrix: function(matrix, options) {
-        return this.getStrokeScaling() ? matrix : (options && options.internal
-                ? this : this._parent).getViewMatrix().invert()._shiftless();
+        var mx = this.getStrokeScaling() ? matrix : (options && options.internal
+                ? this : this._parent || this._parentSymbol._item)
+                    .getViewMatrix().invert();
+        return mx && mx._shiftless();
     },
 
     statics: /** @lends Item */{
@@ -1870,7 +1873,9 @@ new function() { // Injection scope for hit-test functions shared with project
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
                     : this.getGlobalMatrix().prepend(this.getView()._matrix),
-            strokeMatrix = viewMatrix.inverted(),
+            strokeMatrix = this.getStrokeScaling()
+                    ? null
+                    : viewMatrix.inverted()._shiftless(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.

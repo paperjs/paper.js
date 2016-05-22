@@ -1584,8 +1584,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // Add the stroke radius to tolerance padding, taking
                 // #strokeScaling into account through _getStrokeMatrix().
                 strokePadding = strokePadding.add(
-                    Path._getStrokePadding(strokeRadius,
-                        !style.getStrokeScaling() && strokeMatrix));
+                    Path._getStrokePadding(strokeRadius, strokeMatrix));
             } else {
                 join = cap = 'round';
             }
@@ -1643,11 +1642,11 @@ var Path = PathItem.extend(/** @lends Path# */{
                             || segment._handleOut.isZero()))
                         // _addBevelJoin() handles both 'bevel' and 'miter'!
                         Path._addBevelJoin(segment, join, strokeRadius,
-                               miterLimit, addToArea, true);
+                               miterLimit, null, strokeMatrix, addToArea, true);
                 } else if (cap !== 'round') {
                     // It's a cap
-                    Path._addSquareCap(segment, cap, strokeRadius, addToArea,
-                          true);
+                    Path._addSquareCap(segment, cap, strokeRadius, null,
+                            strokeMatrix, addToArea, true);
                 }
                 // See if the above produced an area to check for
                 if (!area.isEmpty()) {
@@ -2599,16 +2598,14 @@ statics: {
             joinBounds = new Rectangle(new Size(strokePadding));
 
         // helper function that is passed to _addBevelJoin() and _addSquareCap()
-        // to handle the point transformations. Use strokeMatrix here!
-        function add(point) {
-            bounds = bounds.include(strokeMatrix
-                ? strokeMatrix._transformPoint(point, point) : point);
+        // to handle the point transformations.
+        function addPoint(point) {
+            bounds = bounds.include(point);
         }
 
         function addRound(segment) {
-            var point = segment._point;
-            bounds = bounds.unite(joinBounds.setCenter(matrix
-                    ? matrix._transformPoint(point) : point));
+            bounds = bounds.unite(
+                    joinBounds.setCenter(segment._point.transform(matrix)));
         }
 
         function addJoin(segment, join) {
@@ -2620,7 +2617,8 @@ statics: {
                     && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
-                Path._addBevelJoin(segment, join, strokeRadius, miterLimit, add);
+                Path._addBevelJoin(segment, join, strokeRadius, miterLimit,
+                        matrix, strokeMatrix, addPoint);
             }
         }
 
@@ -2628,7 +2626,8 @@ statics: {
             if (cap === 'round') {
                 addRound(segment);
             } else {
-                Path._addSquareCap(segment, cap, strokeRadius, add);
+                Path._addSquareCap(segment, cap, strokeRadius, matrix,
+                        strokeMatrix, addPoint);
             }
         }
 
@@ -2658,9 +2657,8 @@ statics: {
         // and calculate the bounding box of the resulting rotated elipse:
         // Get rotated hor and ver vectors, and determine rotation angle
         // and elipse values from them:
-        var mx = matrix._shiftless(),
-            hor = mx.transform(new Point(radius, 0)),
-            ver = mx.transform(new Point(0, radius)),
+        var hor = new Point(radius, 0).transform(matrix),
+            ver = new Point(0, radius).transform(matrix),
             phi = hor.getAngleInRadians(),
             a = hor.getLength(),
             b = ver.getLength();
@@ -2689,7 +2687,8 @@ statics: {
                 Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
     },
 
-    _addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
+    _addBevelJoin: function(segment, join, radius, miterLimit, matrix,
+            strokeMatrix, addPoint, isArea) {
         // Handles both 'bevel' and 'miter' joins, as they share a lot of code.
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
@@ -2699,40 +2698,53 @@ statics: {
             step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
         normal1.setLength(step);
         normal2.setLength(step);
-        if (area) {
+        // use different matrices to transform segment points and stroke vectors
+        // to support Style#strokeScaling.
+        if (matrix)
+            matrix._transformPoint(point, point);
+        if (strokeMatrix) {
+            strokeMatrix._transformPoint(normal1, normal1);
+            strokeMatrix._transformPoint(normal2, normal2);
+        }
+        if (isArea) {
             addPoint(point);
             addPoint(point.add(normal1));
         }
         if (join === 'miter') {
             // Intersect the two lines
-            var corner = new Line(
-                    point.add(normal1),
+            var corner = new Line(point.add(normal1),
                     new Point(-normal1.y, normal1.x), true
-                ).intersect(new Line(
-                    point.add(normal2),
+                ).intersect(new Line(point.add(normal2),
                     new Point(-normal2.y, normal2.x), true
                 ), true);
             // See if we actually get a bevel point and if its distance is below
             // the miterLimit. If not, make a normal bevel.
             if (corner && point.getDistance(corner) <= miterLimit) {
                 addPoint(corner);
-                if (!area)
+                if (!isArea)
                     return;
             }
         }
         // Produce a normal bevel
-        if (!area)
+        if (!isArea)
             addPoint(point.add(normal1));
         addPoint(point.add(normal2));
     },
 
-    _addSquareCap: function(segment, cap, radius, addPoint, area) {
+    _addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
+            addPoint, isArea) {
         // Handles both 'square' and 'butt' caps, as they share a lot of code.
         // Calculate the corner points of butt and square caps
         var point = segment._point,
             loc = segment.getLocation(),
             normal = loc.getNormal().multiply(radius); // normal is normalized
-        if (area) {
+        // use different matrices to transform segment points and stroke vectors
+        // to support Style#strokeScaling.
+        if (matrix)
+            matrix._transformPoint(point, point);
+        if (strokeMatrix)
+            strokeMatrix._transformPoint(normal, normal);
+        if (isArea) {
             addPoint(point.subtract(normal));
             addPoint(point.add(normal));
         }
@@ -2741,9 +2753,10 @@ statics: {
         // Checking loc.getTime() for 0 is to see whether this is the first
         // or the last segment of the open path, in order to determine in which
         // direction to move the point.
-        if (cap === 'square')
+        if (cap === 'square') {
             point = point.add(normal.rotate(
                     loc.getTime() === 0 ? -90 : 90));
+        }
         addPoint(point.add(normal));
         addPoint(point.subtract(normal));
     },

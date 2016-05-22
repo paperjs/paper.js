@@ -77,7 +77,7 @@ test('path.bounds when contained in a transformed group', function() {
     equals(path.bounds, new Rectangle(110, 110, 50, 50), 'path.bounds after group translation');
 });
 
-test('shape.strokeBounds when scaled with strokeScaling set to false', function(){
+test('shape.strokeBounds when scaled without strokeScaling', function(){
     var shape = new Shape.Rectangle({
         point: [5, 5],
         size: [20, 20],
@@ -88,6 +88,8 @@ test('shape.strokeBounds when scaled with strokeScaling set to false', function(
     equals(shape.strokeBounds, new Rectangle(0, 0, 30, 30), 'shape.strokeBounds before scaling');
     shape.scale(2, 2, [5, 5]);
     equals(shape.strokeBounds, new Rectangle(0, 0, 50, 50), 'shape.strokeBounds after scaling');
+    shape.strokeScaling = true;
+    equals(shape.strokeBounds, new Rectangle(-5, -5, 60, 60), 'shape.strokeBounds after enabling strokeScaling');
 });
 
 test('text.bounds', function() {
@@ -100,8 +102,6 @@ test('text.bounds', function() {
     });
     equals(text.bounds, new Rectangle(50, 87.4, 76.25, 16.8), 'text.bounds', { tolerance: 1.0 });
 });
-
-QUnit.module('Path Bounds');
 
 test('path.bounds', function() {
     var path = new Path([
@@ -685,3 +685,53 @@ test('compoundPath.strokeBounds', function() {
     equals(function() { return path.bounds; }, bounds);
     equals(function() { return path.strokeBounds; }, strokeBounds);
 });
+
+test('path.strokeBounds with applyMatrix disabled', function() {
+    var path = new Path.Rectangle({
+        applyMatrix: true,
+        point: [10, 10],
+        size: [20, 20],
+        strokeScaling: true,
+        strokeColor: 'red',
+        strokeWidth: 10
+    });
+    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30), 'path.strokeBounds, applyMatrix enabled');
+    path.applyMatrix = false;
+    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30), 'path.strokeBounds, applyMatrix disabled');
+    path.scale([4, 2], [0, 0]);
+    var expected = new Rectangle(20, 10, 120, 60);
+    equals(path.strokeBounds, expected, 'path.strokeBounds after scaling, applyMatrix disabled');
+    function testHitResult() {
+        // Hit-testing needs to handle applyMatrix disabled with stroke scaling,
+        // even when hit-testing on "distorted" stroke joins:
+        var hitResult = path.hitTest(expected.topLeft);
+        equals(function() { return hitResult && hitResult.type == 'stroke'; }, true);
+        equals(function() { return hitResult && hitResult.item == path; }, true);
+        // Test a little bit outside the bounds, and the stroke hit-test on the
+        // join should return null:
+        var hitResult = path.hitTest(expected.topLeft.subtract(1e-3));
+        equals(function() { return hitResult == null; }, true);
+    }
+    testHitResult();
+    path.applyMatrix = true;
+    expected = new Rectangle(35, 15, 90, 50);
+    equals(path.strokeBounds, expected, 'path.strokeBounds after scaling, applyMatrix enabled');
+    testHitResult();
+});
+
+test('symbolItem.bounds with strokeScaling disabled', function() {
+    var path = new Path.Rectangle({
+        size: [20, 20],
+        strokeWidth: 10,
+        strokeColor: 'red',
+        strokeScaling: false
+    });
+    var symbol = new SymbolDefinition(path);
+    var placed = symbol.place([100, 100]);
+    equals(placed.bounds, new Rectangle(85, 85, 30, 30), 'placed.bounds');
+    placed.scale(4, 2);
+    equals(placed.bounds, new Rectangle(55, 75, 90, 50), 'placed.bounds after scaling');
+    path.strokeScaling = true;
+    equals(placed.bounds, new Rectangle(40, 70, 120, 60), 'placed.bounds after scaling, strokeScaling enabled');
+});
+

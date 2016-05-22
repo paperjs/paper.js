@@ -169,6 +169,10 @@ contribute to the code.
 - Allow `Item#position` to be selected via `Item#position.selected` (#980).
 
 ### Fixed
+- Fix calculations of `Item#strokeBounds` for all possible combinations of
+  `Item#strokeScaling` and `Item#applyMatrix` for `Path`, `Shape` and
+  `SymbolItem`, along with correct handling of such strokes in Item#hitTest()
+  (#697, #856, #1014). 
 - Make new code-base unified for Node.js/browser work with module bundlers like
   Webpack (#986).
 - Improve hit-testing and `#contains()` checks on path with horizontal lines
@@ -184,9 +188,6 @@ contribute to the code.
 - Do not rasterize items if the resulting raster will be empty (#828).
 - Fix SVG serialization in JSDOM `7.0.0` and newer (#821).
 - Correctly handle gradients in SVG import on Firefox (#666).
-- Fix `Shape#strokeBounds` when `#strokeScaling` is false (#856).
-- Correctly handle `#strokeScaling` when calculating `Path` and `Shape` bounds
-  (#697).
 - Consistently interpret curves as straight or not-straight (#838).
 - Switch blendMode to 'lighter' in Candy Crash example for better performance
   (#453).

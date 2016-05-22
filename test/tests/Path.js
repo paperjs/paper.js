@@ -339,7 +339,8 @@ test('Path#interpolate', function() {
     equals(path, halfway);
 });
 
-QUnit.module('Path Curves');
+////////////////////////////////////////////////////////////////////////////////
+// Path Curves
 
 test('path.curves synchronisation', function() {
     var path = new Path();
@@ -515,7 +516,8 @@ test('Splitting a path with one curve in the middle result in two paths of the s
     }, true);
 });
 
-QUnit.module('Path Drawing Commands');
+////////////////////////////////////////////////////////////////////////////////
+// Path Drawing Commands
 
 test('path.lineTo(point);', function() {
     var path = new Path();
