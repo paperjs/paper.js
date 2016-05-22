@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun May 22 16:00:27 2016 +0200
+ * Date: Sun May 22 17:24:12 2016 +0200
  *
  ***
  *
@@ -8065,12 +8065,13 @@ var Path = PathItem.extend({
 	flatten: function(flatness) {
 		var iterator = new PathIterator(this, flatness || 0.25, 256, true),
 			parts = iterator.parts,
+			length = parts.length,
 			segments = [];
-		for (var i = 0, l = parts.length; i < l; i++) {
+		for (var i = 0; i < length; i++) {
 			segments.push(new Segment(parts[i].curve.slice(0, 2)));
 		}
-		if (!this._closed && l) {
-			segments.push(new Segment(parts[l - 1].curve.slice(6)));
+		if (!this._closed && length > 0) {
+			segments.push(new Segment(parts[length - 1].curve.slice(6)));
 		}
 		this.setSegments(segments);
 	},
