@@ -509,7 +509,7 @@ PathItem.inject(new function() {
             while (inter) {
                 var seg = inter._segment,
                     nextSeg = seg.getNext(),
-                    nextInter = nextSeg._intersection;
+                    nextInter = nextSeg && nextSeg._intersection;
                 // See if this segment and the next are both not visited yet, or
                 // are bringing us back to the beginning, and are both part of
                 // the boolean result.
@@ -522,7 +522,7 @@ PathItem.inject(new function() {
                 // used, in which invalid current segments are tolerated, and
                 // overlaps for the next segment are allowed.
                 if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
-                    || !seg._visited && !nextSeg._visited
+                    || !seg._visited && !(nextSeg && nextSeg._visited)
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
                         || (!strict || isValid(seg))
