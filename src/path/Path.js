@@ -1255,6 +1255,9 @@ var Path = PathItem.extend(/** @lends Path# */{
         for (var i = 0, l = parts.length; i < l; i++) {
             segments.push(new Segment(parts[i].curve.slice(0, 2)));
         }
+        if (!this._closed && l) {
+            segments.push(new Segment(parts[l - 1].curve.slice(6)));
+        }
         this.setSegments(segments);
     },
 
