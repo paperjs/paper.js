@@ -12,14 +12,14 @@
 
 var isNode = typeof global === 'object',
     isPhantom = typeof window === 'object' && !!window.callPhantom,
-    root;
+    scope;
 
 if (isNode) {
-    root = global;
+    scope = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
 } else {
-    root = window;
+    scope = window;
     // This is only required when running in the browser:
     // Until window.history.pushState() works when running locally, we need to
     // trick qunit into thinking that the feature is not present. This appears
@@ -35,13 +35,16 @@ if (isNode) {
 }
 
 // The unit-tests expect the paper classes to be global.
-paper.install(root);
+paper.install(scope);
 
 // Override console.error, so that we can catch errors that are only logged to
 // the console.
 var errorHandler = console.error;
 console.error = function() {
-    QUnit.pushFailure([].join.call(arguments, ' '), QUnit.config.current.stack);
+    var current = QUnit.config.current;
+    if (current) {
+        QUnit.pushFailure([].join.call(arguments, ' '), current.stack);
+    }
     errorHandler.apply(this, arguments);
 };
 
