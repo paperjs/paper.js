@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun May 22 17:24:12 2016 +0200
+ * Date: Sun May 22 21:17:24 2016 +0200
  *
  ***
  *
@@ -3221,8 +3221,10 @@ new function() {
 	},
 
 	_getStrokeMatrix: function(matrix, options) {
-		return this.getStrokeScaling() ? matrix : (options && options.internal
-				? this : this._parent).getViewMatrix().invert()._shiftless();
+		var mx = this.getStrokeScaling() ? matrix : (options && options.internal
+				? this : this._parent || this._parentSymbol._item)
+					.getViewMatrix().invert();
+		return mx && mx._shiftless();
 	},
 
 	statics: {
@@ -3631,7 +3633,9 @@ new function() {
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
 					: this.getGlobalMatrix().prepend(this.getView()._matrix),
-			strokeMatrix = viewMatrix.inverted(),
+			strokeMatrix = this.getStrokeScaling()
+					? null
+					: viewMatrix.inverted()._shiftless(),
 			tolerance = Math.max(options.tolerance, 1e-6),
 			tolerancePadding = options._tolerancePadding = new Size(
 					Path._getStrokePadding(tolerance, strokeMatrix));
@@ -8309,8 +8313,7 @@ var Path = PathItem.extend({
 				cap = style.getStrokeCap();
 				miterLimit = strokeRadius * style.getMiterLimit();
 				strokePadding = strokePadding.add(
-					Path._getStrokePadding(strokeRadius,
-						!style.getStrokeScaling() && strokeMatrix));
+					Path._getStrokePadding(strokeRadius, strokeMatrix));
 			} else {
 				join = cap = 'round';
 			}
@@ -8354,10 +8357,10 @@ var Path = PathItem.extend({
 					if (join !== 'round' && (segment._handleIn.isZero()
 							|| segment._handleOut.isZero()))
 						Path._addBevelJoin(segment, join, strokeRadius,
-							   miterLimit, addToArea, true);
+							   miterLimit, null, strokeMatrix, addToArea, true);
 				} else if (cap !== 'round') {
-					Path._addSquareCap(segment, cap, strokeRadius, addToArea,
-						  true);
+					Path._addSquareCap(segment, cap, strokeRadius, null,
+							strokeMatrix, addToArea, true);
 				}
 				if (!area.isEmpty()) {
 					var loc;
@@ -8900,15 +8903,13 @@ statics: {
 			miterLimit = strokeRadius * style.getMiterLimit(),
 			joinBounds = new Rectangle(new Size(strokePadding));
 
-		function add(point) {
-			bounds = bounds.include(strokeMatrix
-				? strokeMatrix._transformPoint(point, point) : point);
+		function addPoint(point) {
+			bounds = bounds.include(point);
 		}
 
 		function addRound(segment) {
-			var point = segment._point;
-			bounds = bounds.unite(joinBounds.setCenter(matrix
-					? matrix._transformPoint(point) : point));
+			bounds = bounds.unite(
+					joinBounds.setCenter(segment._point.transform(matrix)));
 		}
 
 		function addJoin(segment, join) {
@@ -8918,7 +8919,8 @@ statics: {
 					&& handleIn.isCollinear(handleOut)) {
 				addRound(segment);
 			} else {
-				Path._addBevelJoin(segment, join, strokeRadius, miterLimit, add);
+				Path._addBevelJoin(segment, join, strokeRadius, miterLimit,
+						matrix, strokeMatrix, addPoint);
 			}
 		}
 
@@ -8926,7 +8928,8 @@ statics: {
 			if (cap === 'round') {
 				addRound(segment);
 			} else {
-				Path._addSquareCap(segment, cap, strokeRadius, add);
+				Path._addSquareCap(segment, cap, strokeRadius, matrix,
+						strokeMatrix, addPoint);
 			}
 		}
 
@@ -8945,9 +8948,8 @@ statics: {
 	_getStrokePadding: function(radius, matrix) {
 		if (!matrix)
 			return [radius, radius];
-		var mx = matrix._shiftless(),
-			hor = mx.transform(new Point(radius, 0)),
-			ver = mx.transform(new Point(0, radius)),
+		var hor = new Point(radius, 0).transform(matrix),
+			ver = new Point(0, radius).transform(matrix),
 			phi = hor.getAngleInRadians(),
 			a = hor.getLength(),
 			b = ver.getLength();
@@ -8960,7 +8962,8 @@ statics: {
 				Math.abs(b * Math.sin(ty) * cos + a * Math.cos(ty) * sin)];
 	},
 
-	_addBevelJoin: function(segment, join, radius, miterLimit, addPoint, area) {
+	_addBevelJoin: function(segment, join, radius, miterLimit, matrix,
+			strokeMatrix, addPoint, isArea) {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
 			point = curve2.getPointAtTime(0),
@@ -8969,40 +8972,50 @@ statics: {
 			step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
 		normal1.setLength(step);
 		normal2.setLength(step);
-		if (area) {
+		if (matrix)
+			matrix._transformPoint(point, point);
+		if (strokeMatrix) {
+			strokeMatrix._transformPoint(normal1, normal1);
+			strokeMatrix._transformPoint(normal2, normal2);
+		}
+		if (isArea) {
 			addPoint(point);
 			addPoint(point.add(normal1));
 		}
 		if (join === 'miter') {
-			var corner = new Line(
-					point.add(normal1),
+			var corner = new Line(point.add(normal1),
 					new Point(-normal1.y, normal1.x), true
-				).intersect(new Line(
-					point.add(normal2),
+				).intersect(new Line(point.add(normal2),
 					new Point(-normal2.y, normal2.x), true
 				), true);
 			if (corner && point.getDistance(corner) <= miterLimit) {
 				addPoint(corner);
-				if (!area)
+				if (!isArea)
 					return;
 			}
 		}
-		if (!area)
+		if (!isArea)
 			addPoint(point.add(normal1));
 		addPoint(point.add(normal2));
 	},
 
-	_addSquareCap: function(segment, cap, radius, addPoint, area) {
+	_addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
+			addPoint, isArea) {
 		var point = segment._point,
 			loc = segment.getLocation(),
 			normal = loc.getNormal().multiply(radius);
-		if (area) {
+		if (matrix)
+			matrix._transformPoint(point, point);
+		if (strokeMatrix)
+			strokeMatrix._transformPoint(normal, normal);
+		if (isArea) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
 		}
-		if (cap === 'square')
+		if (cap === 'square') {
 			point = point.add(normal.rotate(
 					loc.getTime() === 0 ? -90 : 90));
+		}
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
 	},
