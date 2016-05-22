@@ -61,6 +61,8 @@ contribute to the code.
 - `PathItem#smooth()` now accepts an `options.type` string  specifying which
   smoothing algorithm to use: `'asymmetric'` (default), `'continuous'`,
   `'catmull-rom'`, and `'geometric'` (#338).
+- `PathItem#flatten()`: argument has been changed from `tolerance` (maximum
+  allowed distance between points) to `flatness` (maximum allowed error) (#618).
 - Update internal Acorn JavaScript parser to `0.5.0`, the last small version.
 - Transition to Gulp based build process.
 - Update QUnit to `1.20.0`.
@@ -75,6 +77,8 @@ contribute to the code.
 - `event.preventDefault()` is called by default after any handled mouse mouse
   events, except `'mousemove'`, and only on a `'mousedown'` event if the view
   or tool respond to `'mouseup'`.
+- Switch to the new HTML5 Page Visibility API when detecting invisible documents
+  and canvases.
 - Rename `#windingRule` to `#fillRule` on `Item` and `Style`.
 - Do not replace existing named child reference on `Item#children` with new one
   when the name is identical.
@@ -100,8 +104,6 @@ contribute to the code.
   into the project and `deep` controls whether the item's children are cloned.
   The previous boolean optional argument is still interpreted as the `insert`
   option (#941).
-- `PathItem#flatten()`: argument has been changed from `tolerance` (maximum
-  allowed distance between points) to `flatness` (maximum allowed error) (#618).
 - `Matrix` properties `#b` and `#c` have been reversed to match common standard.
 - `#importSVG()`: improve handling of style inheritance for nested `<defs>`.
 - Move `PaperScript#execute()` URL argument into `options.url` (#902).
@@ -224,13 +226,15 @@ contribute to the code.
 - Fix `event.delta` on mousedrag events (#981).
 - Improve handling of XML attribute namespaces for IE's XMLSerializer() (#984).
 - Make sure `Item#removeChildren()` fully removes children (#991).
-- Improve handling of `event#stopPropagation()` on `View` and `Item` (#995).
+- Improve handling of event propagation on `View` and `Item` (#995).
 - `#importSVG()`: Improve handling of viewBox.
 - Make sure all named item lookup structures are kept in sync (#1009).
 - Convert absolute local gradient URLs to relative ones (#1001).
 - Fix TypeError in `Path#unite()` (#1000).
 - Allow the selection of a `Path` item's bounds without selecting the segments
   (#769).
+- Fix wrong indices in `Item#insertChildren()`, when inserting children that
+  were previously inserted in the same parent (#1015).
 
 ### Removed
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to
