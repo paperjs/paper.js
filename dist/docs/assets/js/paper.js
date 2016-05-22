@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed May 4 18:06:18 2016 -0700
+ * Date: Sun May 22 15:41:03 2016 +0200
  *
  ***
  *
@@ -8068,6 +8068,9 @@ var Path = PathItem.extend({
 			segments = [];
 		for (var i = 0, l = parts.length; i < l; i++) {
 			segments.push(new Segment(parts[i].curve.slice(0, 2)));
+		}
+		if (!this._closed && l) {
+			segments.push(new Segment(parts[l - 1].curve.slice(6)));
 		}
 		this.setSegments(segments);
 	},
