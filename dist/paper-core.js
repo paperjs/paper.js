@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun May 22 21:17:24 2016 +0200
+ * Date: Sun May 22 21:23:46 2016 +0200
  *
  ***
  *
@@ -2945,7 +2945,7 @@ new function() {
 	},
 
 	_changed: function(flags) {
-		var symbol = this._parentSymbol,
+		var symbol = this._symbol,
 			cacheParent = this._parent || symbol,
 			project = this._project;
 		if (flags & 8) {
@@ -3205,7 +3205,7 @@ new function() {
 				options.handle ? 1 : 0,
 				internal ? 1 : 0
 			].join('');
-		Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
+		Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
 		if (cacheKey && this._bounds && cacheKey in this._bounds)
 			return this._bounds[cacheKey].rect.clone();
 		var bounds = this._getBounds(matrix || _matrix, options);
@@ -3221,9 +3221,10 @@ new function() {
 	},
 
 	_getStrokeMatrix: function(matrix, options) {
-		var mx = this.getStrokeScaling() ? matrix : (options && options.internal
-				? this : this._parent || this._parentSymbol._item)
-					.getViewMatrix().invert();
+		var parent = this.getStrokeScaling() ? null
+				: options && options.internal ? this
+					: this._parent || this._symbol && this._symbol._item,
+			mx = parent ? parent.getViewMatrix().invert() : matrix;
 		return mx && mx._shiftless();
 	},
 
@@ -5333,16 +5334,16 @@ var SymbolDefinition = Base.extend({
 	},
 
 	setItem: function(item, _dontCenter) {
-		if (item._parentSymbol)
+		if (item._symbol)
 			item = item.clone();
 		if (this._item)
-			this._item._parentSymbol = null;
+			this._item._symbol = null;
 		this._item = item;
 		item.remove();
 		item.setSelected(false);
 		if (!_dontCenter)
 			item.setPosition(new Point());
-		item._parentSymbol = this;
+		item._symbol = this;
 		this._changed(9);
 	},
 
