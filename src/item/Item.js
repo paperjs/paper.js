@@ -209,7 +209,7 @@ new function() { // Injection scope for various item event handlers
      * @param {ChangeFlag} flags describes what exactly has changed
      */
     _changed: function(flags) {
-        var symbol = this._parentSymbol,
+        var symbol = this._symbol,
             cacheParent = this._parent || symbol,
             project = this._project;
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
@@ -911,7 +911,7 @@ new function() { // Injection scope for various item event handlers
             ].join('');
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
-        Item._updateBoundsCache(this._parent || this._parentSymbol, cacheItem);
+        Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
         if (cacheKey && this._bounds && cacheKey in this._bounds)
             return this._bounds[cacheKey].rect.clone();
         var bounds = this._getBounds(matrix || _matrix, options);
@@ -936,9 +936,10 @@ new function() { // Injection scope for various item event handlers
      * is always shiftless, meaning its translation vector is reset to zero.
      */
     _getStrokeMatrix: function(matrix, options) {
-        var mx = this.getStrokeScaling() ? matrix : (options && options.internal
-                ? this : this._parent || this._parentSymbol._item)
-                    .getViewMatrix().invert();
+        var parent = this.getStrokeScaling() ? null
+                : options && options.internal ? this
+                    : this._parent || this._symbol && this._symbol._item,
+            mx = parent ? parent.getViewMatrix().invert() : matrix;
         return mx && mx._shiftless();
     },
 
