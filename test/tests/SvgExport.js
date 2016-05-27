@@ -155,7 +155,7 @@ if (!isNode) {
 
         var radius = bounds.width * 0.4,
             from = new Point(bounds.center.x),
-            to = from + [radius, 0];
+            to = from.add(radius, 0);
 
         var circle = new Path.Circle({
             center: from,
