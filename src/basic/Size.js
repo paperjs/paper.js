@@ -105,15 +105,16 @@ var Size = Base.extend(/** @lends Size# */{
             if (this.__read)
                 this.__read = arg0 === null ? 1 : 0;
         } else {
-            if (Array.isArray(arg0)) {
-                this.width = arg0[0];
-                this.height = arg0.length > 1 ? arg0[1] : arg0[0];
-            } else if (arg0.width != null) {
-                this.width = arg0.width;
-                this.height = arg0.height;
-            } else if (arg0.x != null) {
-                this.width = arg0.x;
-                this.height = arg0.y;
+            var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+            if (Array.isArray(obj)) {
+                this.width = obj[0];
+                this.height = obj.length > 1 ? obj[1] : obj[0];
+            } else if ('width' in obj) {
+                this.width = obj.width;
+                this.height = obj.height;
+            } else if ('x' in obj) {
+                this.width = obj.x;
+                this.height = obj.y;
             } else {
                 this.width = this.height = 0;
                 if (this.__read)

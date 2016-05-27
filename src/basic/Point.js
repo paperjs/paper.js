@@ -142,19 +142,20 @@ var Point = Base.extend(/** @lends Point# */{
             if (this.__read)
                 this.__read = arg0 === null ? 1 : 0;
         } else {
-            if (Array.isArray(arg0)) {
-                this.x = arg0[0];
-                this.y = arg0.length > 1 ? arg0[1] : arg0[0];
-            } else if (arg0.x != null) {
-                this.x = arg0.x;
-                this.y = arg0.y;
-            } else if (arg0.width != null) {
-                this.x = arg0.width;
-                this.y = arg0.height;
-            } else if (arg0.angle != null) {
-                this.x = arg0.length;
+            var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+            if (Array.isArray(obj)) {
+                this.x = obj[0];
+                this.y = obj.length > 1 ? obj[1] : obj[0];
+            } else if ('x' in obj) {
+                this.x = obj.x;
+                this.y = obj.y;
+            } else if ('width' in obj) {
+                this.x = obj.width;
+                this.y = obj.height;
+            } else if ('angle' in obj) {
+                this.x = obj.length;
                 this.y = 0;
-                this.setAngle(arg0.angle);
+                this.setAngle(obj.angle);
             } else {
                 this.x = this.y = 0;
                 if (this.__read)

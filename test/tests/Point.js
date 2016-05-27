@@ -31,18 +31,21 @@ test('new Point({x: 10, y: 20})', function() {
 });
 
 test('new Point(new Size(10, 20))', function() {
-    var point = new Point(new Size(10, 20));
-    equals(point, new Point(10, 20));
+    equals(new Point(new Size(10, 20)), new Point(10, 20));
 });
 
 test('new Point({ width: 10, height: 20})', function() {
-    var point = new Point({width: 10, height: 20});
-    equals(point, new Point(10, 20));
+    equals(new Point({width: 10, height: 20}), new Point(10, 20));
 });
 
 test('new Point({ angle: 45, length: 20})', function() {
-    var point = new Point({ angle: 40, length: 20 });
-    equals(point, new Point(15.32089, 12.85575));
+    equals(new Point({ angle: 40, length: 20 }), new Point(15.32089, 12.85575));
+});
+
+test('new Point("10, 20")', function() {
+    equals(new Point('10, 20'), new Point(10, 20));
+    equals(new Point('10,20'), new Point(10, 20));
+    equals(new Point('10 20'), new Point(10, 20));
 });
 
 test('normalize(length)', function() {
