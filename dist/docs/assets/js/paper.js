@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri May 27 11:37:59 2016 +0200
+ * Date: Fri May 27 11:42:08 2016 +0200
  *
  ***
  *
@@ -5130,11 +5130,15 @@ var Raster = Item.extend({
 		} else if (object instanceof PathItem) {
 			path = object;
 			bounds = object.getBounds();
-		} else if (object.width) {
-			bounds = new Rectangle(object);
-		} else if (object.x) {
-			bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
+		} else if (typeof object === 'object') {
+			if ('width' in object) {
+				bounds = new Rectangle(object);
+			} else if ('x' in object) {
+				bounds = new Rectangle(object.x - 0.5, object.y - 0.5, 1, 1);
+			}
 		}
+		if (!bounds)
+			return null;
 		var sampleSize = 32,
 			width = Math.min(bounds.width, sampleSize),
 			height = Math.min(bounds.height, sampleSize);
