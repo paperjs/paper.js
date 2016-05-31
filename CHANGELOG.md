@@ -256,7 +256,7 @@ contribute to the code.
   It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
 
 ### Deprecated
-- `#windingRule` on `Item` and `Style` → `#fillRule`.
+- `#windingRule` on `Item` and `Style` → `#fillRule`
 - `Curve#getNormalAt(time, true)` → `#getNormalAtTime(true)`
 - `Curve#divide()` → `#divideAt(offset)` / `#divideAtTime(time)`
 - `Curve#split()` → `#splitAt(offset)` / `#splitAtTime(time)`
@@ -273,6 +273,7 @@ contribute to the code.
 - `Symbol#definition` → `SymbolDefinition#item`
 - `PlacedSymbol#symbol` → `SymbolItem#definition`
 - `Project#symbols` → `#symbolDefinitions`
-- `Matrix#concatenante` → `#append`.
-- `Matrix#preConcatenate` → `#prepend`.
-- `Matrix#chain` → `#appended`.
+- `Matrix#concatenate` → `#append`
+- `Matrix#preConcatenate` → `#prepend`
+- `Matrix#chain` → `#appended`
+- `GradientStop#rampPoint` → `#offset`

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri May 27 11:42:08 2016 +0200
+ * Date: Tue May 31 12:35:44 2016 +0200
  *
  ***
  *
@@ -10967,7 +10967,7 @@ var Color = Base.extend(new function() {
 			}
 			for (var i = 0, l = stops.length; i < l; i++) {
 				var stop = stops[i];
-				canvasGradient.addColorStop(stop._rampPoint || i / (l - 1),
+				canvasGradient.addColorStop(stop._offset || i / (l - 1),
 						stop._color.toCanvasStyle());
 			}
 			return this._canvasStyle = canvasGradient;
@@ -11134,28 +11134,29 @@ var GradientStop = Base.extend({
 
 	initialize: function GradientStop(arg0, arg1) {
 		var color = arg0,
-			rampPoint = arg1;
+			offset = arg1;
 		if (typeof arg0 === 'object' && arg1 === undefined) {
 			if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
 				color = arg0[0];
-				rampPoint = arg0[1];
-			} else if ('color' in arg0 || 'rampPoint' in arg0) {
+				offset = arg0[1];
+			} else if ('color' in arg0 || 'offset' in arg0
+					|| 'rampPoint' in arg0) {
 				color = arg0.color;
-				rampPoint = arg0.rampPoint;
+				offset = arg0.offset || arg0.rampPoint || 0;
 			}
 		}
 		this.setColor(color);
-		this.setRampPoint(rampPoint);
+		this.setOffset(offset);
 	},
 
 	clone: function() {
-		return new GradientStop(this._color.clone(), this._rampPoint);
+		return new GradientStop(this._color.clone(), this._offset);
 	},
 
 	_serialize: function(options, dictionary) {
 		var color = this._color,
-			rampPoint = this._rampPoint;
-		return Base.serialize(rampPoint == null ? [color] : [color, rampPoint],
+			offset = this._offset;
+		return Base.serialize(offset == null ? [color] : [color, offset],
 				options, true, dictionary);
 	},
 
@@ -11164,14 +11165,17 @@ var GradientStop = Base.extend({
 			this._owner._changed(65);
 	},
 
-	getRampPoint: function() {
-		return this._rampPoint;
+	getOffset: function() {
+		return this._offset;
 	},
 
-	setRampPoint: function(rampPoint) {
-		this._rampPoint = rampPoint;
+	setOffset: function(offset) {
+		this._offset = offset;
 		this._changed();
 	},
+
+	getRampPoint: '#getOffset',
+	setRampPoint: '#setOffset',
 
 	getColor: function() {
 		return this._color;
@@ -11188,7 +11192,7 @@ var GradientStop = Base.extend({
 	equals: function(stop) {
 		return stop === this || stop && this._class === stop._class
 				&& this._color.equals(stop._color)
-				&& this._rampPoint == stop._rampPoint
+				&& this._offset == stop._offset
 				|| false;
 	}
 });
@@ -13397,7 +13401,7 @@ new function() {
 					stopColor = stop._color,
 					alpha = stopColor.getAlpha();
 				attrs = {
-					offset: stop._rampPoint || i / (l - 1)
+					offset: stop._offset || i / (l - 1)
 				};
 				if (stopColor)
 					attrs['stop-color'] = stopColor.toCSS(true);
@@ -13912,10 +13916,9 @@ new function() {
 		},
 
 		offset: function(item, value) {
-			if (item.setRampPoint) {
-				var percentage = value.match(/(.*)%$/);
-				item.setRampPoint(percentage ? percentage[1] / 100
-						: parseFloat(value));
+			if (item.setOffset) {
+				var percent = value.match(/(.*)%$/);
+				item.setOffset(percent ? percent[1] / 100 : parseFloat(value));
 			}
 		},
 
