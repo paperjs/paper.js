@@ -234,7 +234,7 @@ new function() {
                     stopColor = stop._color,
                     alpha = stopColor.getAlpha();
                 attrs = {
-                    offset: stop._rampPoint || i / (l - 1)
+                    offset: stop._offset || i / (l - 1)
                 };
                 if (stopColor)
                     attrs['stop-color'] = stopColor.toCSS(true);

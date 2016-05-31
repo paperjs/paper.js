@@ -858,9 +858,9 @@ var Color = Base.extend(new function() {
                 var stop = stops[i];
                 // Use the defined offset, and fall back to automatic linear
                 // calculation.
-                // NOTE: that if _rampPoint is 0 for the first entry, the fall
-                // back will be so too.
-                canvasGradient.addColorStop(stop._rampPoint || i / (l - 1),
+                // NOTE: that if _offset is 0 for the first entry, the fall-back
+                // will be so too.
+                canvasGradient.addColorStop(stop._offset || i / (l - 1),
                         stop._color.toCanvasStyle());
             }
             return this._canvasStyle = canvasGradient;

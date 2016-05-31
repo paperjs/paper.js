@@ -224,14 +224,17 @@ test('Color#divide', function() {
 });
 
 test('Gradient', function() {
-    var stop1 = new GradientStop({ rampPoint: 0 });
+    var stop1 = new GradientStop({ offset: 0.5 });
     var stop2 = new GradientStop('red', 0.75);
     var stop3 = new GradientStop(['white', 1]);
+    var stop4 = new GradientStop({ rampPoint: 0.5 }); // deprecated
     var gradient = new Gradient([stop1, stop2, stop3], true);
     equals(function() { return stop1.color; }, new Color(0, 0, 0));
     equals(function() { return stop2.color; }, new Color(1, 0, 0));
     equals(function() { return stop3.color; }, new Color(1, 1, 1));
-    equals(function() { return stop1.rampPoint; }, 0);
-    equals(function() { return stop2.rampPoint; }, 0.75);
-    equals(function() { return stop3.rampPoint; }, 1);
+    equals(function() { return stop4.color; }, new Color(0, 0, 0));
+    equals(function() { return stop1.offset; }, 0.5);
+    equals(function() { return stop2.offset; }, 0.75);
+    equals(function() { return stop3.offset; }, 1);
+    equals(function() { return stop4.offset; }, 0.5);
 });

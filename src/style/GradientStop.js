@@ -23,30 +23,31 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * Creates a GradientStop object.
      *
      * @param {Color} [color=new Color(0, 0, 0)] the color of the stop
-     * @param {Number} [rampPoint=null] the position of the stop on the gradient
+     * @param {Number} [offset=null] the position of the stop on the gradient
      * ramp as a value between `0` and `1`; `null` or `undefined` for automatic
      * assignment.
      */
     initialize: function GradientStop(arg0, arg1) {
-        // (color, rampPoint)
+        // (color, offset)
         var color = arg0,
-            rampPoint = arg1;
+            offset = arg1;
         if (typeof arg0 === 'object' && arg1 === undefined) {
             // Make sure the first entry in the array is not a number, in which
             // case the whole array would be a color, and the assignments would
             // already have occurred correctly above.
             if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
-                // ([color, rampPoint])
+                // ([color, offset])
                 color = arg0[0];
-                rampPoint = arg0[1];
-            } else if ('color' in arg0 || 'rampPoint' in arg0) {
+                offset = arg0[1];
+            } else if ('color' in arg0 || 'offset' in arg0
+                    || 'rampPoint' in arg0) {
                 // (stop)
                 color = arg0.color;
-                rampPoint = arg0.rampPoint;
+                offset = arg0.offset || arg0.rampPoint || 0;
             }
         }
         this.setColor(color);
-        this.setRampPoint(rampPoint);
+        this.setOffset(offset);
     },
 
     // TODO: Do we really need to also clone the color here?
@@ -54,13 +55,13 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * @return {GradientStop} a copy of the gradient-stop
      */
     clone: function() {
-        return new GradientStop(this._color.clone(), this._rampPoint);
+        return new GradientStop(this._color.clone(), this._offset);
     },
 
     _serialize: function(options, dictionary) {
         var color = this._color,
-            rampPoint = this._rampPoint;
-        return Base.serialize(rampPoint == null ? [color] : [color, rampPoint],
+            offset = this._offset;
+        return Base.serialize(offset == null ? [color] : [color, offset],
                 options, true, dictionary);
     },
 
@@ -106,22 +107,30 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * // This function is called each frame of the animation:
      * function onFrame(event) {
      *     var blackStop = gradient.stops[2];
-     *     // Animate the rampPoint between 0.7 and 0.9:
-     *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+     *     // Animate the offset between 0.7 and 0.9:
+     *     blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
      *
-     *     // Animate the rampPoint between 0.2 and 0.4
+     *     // Animate the offset between 0.2 and 0.4
      *     var redStop = gradient.stops[1];
-     *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+     *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
-    getRampPoint: function() {
-        return this._rampPoint;
+    getOffset: function() {
+        return this._offset;
     },
 
-    setRampPoint: function(rampPoint) {
-        this._rampPoint = rampPoint;
+    setOffset: function(offset) {
+        this._offset = offset;
         this._changed();
     },
+
+    /**
+     * @private
+     * @bean
+     * @deprecated use {@link #getOffset()} instead.
+     */
+    getRampPoint: '#getOffset',
+    setRampPoint: '#setOffset',
 
     /**
      * The color of the gradient stop.
@@ -154,11 +163,11 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      *
      * // This function is called each frame of the animation:
      * function onFrame(event) {
-     *     // Animate the rampPoint between 0.7 and 0.9:
-     *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+     *     // Animate the offset between 0.7 and 0.9:
+     *     blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
      *
-     *     // Animate the rampPoint between 0.2 and 0.4
-     *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+     *     // Animate the offset between 0.2 and 0.4
+     *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
     getColor: function() {
@@ -178,7 +187,7 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     equals: function(stop) {
         return stop === this || stop && this._class === stop._class
                 && this._color.equals(stop._color)
-                && this._rampPoint == stop._rampPoint
+                && this._offset == stop._offset
                 || false;
     }
 });
