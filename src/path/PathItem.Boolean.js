@@ -1044,7 +1044,7 @@ Path.inject(/** @lends Path# */{
                     }
                 }
             }
-            intercepts.sort();
+            intercepts.sort(function(a, b) {return a - b});
             point.x = (intercepts[0] + intercepts[1]) / 2;
         }
         return point;
