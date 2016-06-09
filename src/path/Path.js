@@ -294,7 +294,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     // Enforce bean creation for getPathData(), as it has hidden parameters.
     beans: true,
 
-    getPathData: function(_matrix, _precision) {
+    getPathData: function(_matrix, _precision, _absolute) {
         // NOTE: #setPathData() is defined in PathItem.
         var segments = this._segments,
             length = segments.length,
@@ -302,10 +302,12 @@ var Path = PathItem.extend(/** @lends Path# */{
             coords = new Array(6),
             first = true,
             curX, curY,
-            prevX, prevY,
+            prevX = 0, prevY = 0,
             inX, inY,
             outX, outY,
-            parts = [];
+            parts = [],
+            lineTo = _absolute ? 'L' : 'l',
+            curveTo = _absolute ? 'C' : 'c';
 
         function addSegment(segment, skipLine) {
             segment._transformCoordinates(_matrix, coords);
@@ -321,18 +323,21 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // appropriate and resulting in shorter strings.
                 if (inX === curX && inY === curY
                         && outX === prevX && outY === prevY) {
-                    // l = relative lineto:
+                    // l = relative lineto, L = absolute lineto:
                     if (!skipLine)
-                        parts.push('l' + f.pair(curX - prevX, curY - prevY));
+                        parts.push(lineTo + f.pair(curX - prevX, curY - prevY));
                 } else {
-                    // c = relative curveto:
-                    parts.push('c' + f.pair(outX - prevX, outY - prevY)
+                    // c = relative curveto, C = absolute curveto:
+                    parts.push(curveTo + f.pair(outX - prevX, outY - prevY)
                             + ' ' + f.pair(inX - prevX, inY - prevY)
                             + ' ' + f.pair(curX - prevX, curY - prevY));
                 }
             }
-            prevX = curX;
-            prevY = curY;
+            // When using absolute coordinates the previous x and y stay at zero
+            if (!_absolute) {
+                prevX = curX;
+                prevY = curY;
+            }
             outX = coords[4];
             outY = coords[5];
         }
