@@ -177,6 +177,7 @@ contribute to the code.
   Webpack (#986).
 - Improve hit-testing and `#contains()` checks on path with horizontal lines
   (#819).
+- Improve reliability of `Path#getInteriorPoint()` in rare edge-cases.
 - Handle non-reversible matrices in `Item#hitTest()` (#617).
 - Fix various issues with adding and removing of segments in paths (#815).
 - Support bubbling up of `doubleclick` events on `Group` (#834).

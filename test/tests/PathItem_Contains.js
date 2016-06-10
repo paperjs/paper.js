@@ -294,3 +294,21 @@ test('CompoundPath#contains() (nested touching circles)', function() {
     var cp = new CompoundPath([c1, c2]);
     testPoint(cp, new Point(100, 200), true);
 });
+
+test('Path#contains() with Path#interiorPoint', function() {
+    var path = new paper.Path({
+        segments: [
+            [100, 100],
+            [150, 100],
+            [150, 180],
+            [200, 180],
+            [200, 100],
+            [250, 100],
+            [250, 200],
+            [100, 200]
+        ],
+        closed: true
+    });
+    testPoint(path, path.interiorPoint, true,
+            'The path\'s interior point should actually be inside the path');
+});
