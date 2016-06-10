@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 17:22:11 2016 +0200
+ * Date: Fri Jun 10 17:28:46 2016 +0200
  *
  ***
  *
@@ -10074,7 +10074,7 @@ Path.inject({
 					}
 				}
 			}
-			intercepts.sort(function(a, b) {return a - b});
+			intercepts.sort(function(a, b) { return a - b; });
 			point.x = (intercepts[0] + intercepts[1]) / 2;
 		}
 		return point;
