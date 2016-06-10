@@ -1549,13 +1549,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-            uMin, uMax, reverse, recursion) {
-        // Avoid deeper recursion.
-        // NOTE: @iconexperience determined that more than 20 recursions are
-        // needed sometimes, depending on the tDiff threshold values further
-        // below when determining which curve converges the least: #565, #899
-        if (++recursion >= 26)
-            return;
+            uMin, uMax, reverse, calls) {
+        // Avoid deeper recursion, but instead of counting recursion, we count
+        // the total amount of calls, to avoid massive call-trees as suggested
+        // by @iconexperience in #904#issuecomment-225283430. See also #565 #899
+        if (++calls > 4000)
+            return calls;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             getSignedDistance = Line.getSignedDistance,
@@ -1612,27 +1611,28 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 if (tMaxNew - tMinNew > uMax - uMin) {
                     var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
-                    addCurveIntersections(
+                    calls = addCurveIntersections(
                             v2, parts[0], c2, c1, locations, param,
-                            uMin, uMax, tMinNew, t, !reverse, recursion);
-                    addCurveIntersections(
+                            uMin, uMax, tMinNew, t, !reverse, calls);
+                    calls = addCurveIntersections(
                             v2, parts[1], c2, c1, locations, param,
-                            uMin, uMax, t, tMaxNew, !reverse, recursion);
+                            uMin, uMax, t, tMaxNew, !reverse, calls);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
-                    addCurveIntersections(
+                    calls = addCurveIntersections(
                             parts[0], v1, c2, c1, locations, param,
-                            uMin, u, tMinNew, tMaxNew, !reverse, recursion);
-                    addCurveIntersections(
+                            uMin, u, tMinNew, tMaxNew, !reverse, calls);
+                    calls = addCurveIntersections(
                             parts[1], v1, c2, c1, locations, param,
-                            u, uMax, tMinNew, tMaxNew, !reverse, recursion);
+                            u, uMax, tMinNew, tMaxNew, !reverse, calls);
                 }
             } else { // Iterate
-                addCurveIntersections(v2, v1, c2, c1, locations, param,
-                        uMin, uMax, tMinNew, tMaxNew, !reverse, recursion);
+                calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
+                        uMin, uMax, tMinNew, tMaxNew, !reverse, calls);
             }
         }
+        return calls;
     }
 
     /**
