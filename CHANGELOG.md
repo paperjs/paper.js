@@ -107,6 +107,8 @@ contribute to the code.
 - `Matrix` properties `#b` and `#c` have been reversed to match common standard.
 - `#importSVG()`: improve handling of style inheritance for nested `<defs>`.
 - Move `PaperScript#execute()` URL argument into `options.url` (#902).
+- PaperScript: Only translate `==` to `equals() calls for `Point`, `Size` and
+  `Color` (#1043).
 
 ### Added
 - Use unified code-base for browsers, Node.js, Electron, and anything

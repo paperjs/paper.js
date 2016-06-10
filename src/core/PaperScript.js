@@ -31,9 +31,8 @@ Base.exports.PaperScript = (function() {
         '*': '__multiply',
         '/': '__divide',
         '%': '__modulo',
-        // Use the real equals.
-        '==': 'equals',
-        '!=': 'equals'
+        '==': '__equals',
+        '!=': '__equals'
     };
 
     var unaryOperators = {
@@ -43,7 +42,7 @@ Base.exports.PaperScript = (function() {
 
     // Inject underscored math methods as aliases to Point, Size and Color.
     var fields = Base.each(
-        ['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
+        ['add', 'subtract', 'multiply', 'divide', 'modulo', 'equals', 'negate'],
         function(name) {
             // Create an alias for each math method to be injected into the
             // classes using Straps.js' #inject()
