@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 21:32:22 2016 +0200
+ * Date: Fri Jun 10 23:51:56 2016 +0200
  *
  ***
  *
@@ -6639,9 +6639,9 @@ new function() {
 	}
 
 	function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-			uMin, uMax, reverse, recursion) {
-		if (++recursion >= 26)
-			return;
+			uMin, uMax, reverse, calls) {
+		if (++calls > 4000)
+			return calls;
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
@@ -6681,27 +6681,28 @@ new function() {
 				if (tMaxNew - tMinNew > uMax - uMin) {
 					var parts = Curve.subdivide(v1, 0.5),
 						t = (tMinNew + tMaxNew) / 2;
-					addCurveIntersections(
+					calls = addCurveIntersections(
 							v2, parts[0], c2, c1, locations, param,
-							uMin, uMax, tMinNew, t, !reverse, recursion);
-					addCurveIntersections(
+							uMin, uMax, tMinNew, t, !reverse, calls);
+					calls = addCurveIntersections(
 							v2, parts[1], c2, c1, locations, param,
-							uMin, uMax, t, tMaxNew, !reverse, recursion);
+							uMin, uMax, t, tMaxNew, !reverse, calls);
 				} else {
 					var parts = Curve.subdivide(v2, 0.5),
 						u = (uMin + uMax) / 2;
-					addCurveIntersections(
+					calls = addCurveIntersections(
 							parts[0], v1, c2, c1, locations, param,
-							uMin, u, tMinNew, tMaxNew, !reverse, recursion);
-					addCurveIntersections(
+							uMin, u, tMinNew, tMaxNew, !reverse, calls);
+					calls = addCurveIntersections(
 							parts[1], v1, c2, c1, locations, param,
-							u, uMax, tMinNew, tMaxNew, !reverse, recursion);
+							u, uMax, tMinNew, tMaxNew, !reverse, calls);
 				}
 			} else {
-				addCurveIntersections(v2, v1, c2, c1, locations, param,
-						uMin, uMax, tMinNew, tMaxNew, !reverse, recursion);
+				calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
+						uMin, uMax, tMinNew, tMaxNew, !reverse, calls);
 			}
 		}
+		return calls;
 	}
 
 	function getConvexHull(dq0, dq1, dq2, dq3) {
