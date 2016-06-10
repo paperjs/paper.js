@@ -881,22 +881,29 @@ statics: /** @lends Curve */{
         if (h1.isZero() && h2.isZero()) {
             // No handles.
             return true;
-        } else if (l.isZero()) {
-            // Zero-length line, with some handles defined.
-            return false;
-        } else if (h1.isCollinear(l) && h2.isCollinear(l)) {
-            // Collinear handles. Project them onto line to see if they are
-            // within the line's range:
-            var div = l.dot(l),
-                p1 = l.dot(h1) / div,
-                p2 = l.dot(h2) / div;
-            return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+        } else {
+            var v = l.getVector(),
+                epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+            if (v.isZero()) {
+                // Zero-length line, with some handles defined.
+                return false;
+            } else if (l.getDistance(h1) < epsilon
+                    && l.getDistance(h2) < epsilon) {
+                // Collinear handles: Instead of v.isCollinear(h1) checks, we
+                // need to measure the distance to the line, in order to be able
+                // to use the same epsilon as in Curve#getTimeOf(), see #1066.
+                // Project them onto line to see if they are within its range:
+                var div = v.dot(v),
+                    p1 = v.dot(h1) / div,
+                    p2 = v.dot(h2) / div;
+                return p1 >= 0 && p1 <= 1 && p2 <= 0 && p2 >= -1;
+            }
         }
         return false;
     },
 
     isLinear: function(l, h1, h2) {
-        var third = l.divide(3);
+        var third = l.getVector().divide(3);
         return h1.equals(third) && h2.negate().equals(third);
     }
 }, function(test, name) {
@@ -904,7 +911,7 @@ statics: /** @lends Curve */{
     this[name] = function() {
         var seg1 = this._segment1,
             seg2 = this._segment2;
-        return test(seg2._point.subtract(seg1._point),
+        return test(new Line(seg1._point, seg2._point),
                 seg1._handleOut, seg2._handleIn);
     };
 
@@ -912,7 +919,7 @@ statics: /** @lends Curve */{
     this.statics[name] = function(v) {
         var p1x = v[0], p1y = v[1],
             p2x = v[6], p2y = v[7];
-        return test(new Point(p2x - p1x, p2y - p1y),
+        return test(new Line(p1x, p1y, p2x, p2y),
                 new Point(v[2] - p1x, v[3] - p1y),
                 new Point(v[4] - p2x, v[5] - p2y));
     };
