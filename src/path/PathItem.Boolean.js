@@ -245,9 +245,9 @@ PathItem.inject(new function() {
             if (curve !== prevCurve) {
                 // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
-            } else if (prevTime > 0) {
+            } else if (prevTime >= tMin && prevTime <= tMax ) {
                 // Scale parameter when we are splitting same curve multiple
-                // times, but avoid dividing by zero.
+                // times, but only if splitting was done previously.
                 time /= prevTime;
             }
             if (time < tMin) {
