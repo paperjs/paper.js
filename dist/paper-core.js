@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 12:33:44 2016 +0200
+ * Date: Fri Jun 10 13:04:57 2016 +0200
  *
  ***
  *
@@ -9588,7 +9588,7 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curves, horizontal) {
+	function getWinding(point, curves, operator, horizontal) {
 		var epsilon = 2e-7,
 			px = point.x,
 			py = point.y,
@@ -9617,9 +9617,9 @@ PathItem.inject(new function() {
 			yTop = (yTop + py) / 2;
 			yBottom = (yBottom + py) / 2;
 			if (yTop > -Infinity)
-				windLeft = getWinding(new Point(px, yTop), curves);
+				windLeft = getWinding(new Point(px, yTop), curves, operator);
 			if (yBottom < Infinity)
-				windRight = getWinding(new Point(px, yBottom), curves);
+				windRight = getWinding(new Point(px, yBottom), curves, operator);
 		} else {
 			var xBefore = px - epsilon,
 				xAfter = px + epsilon,
@@ -9676,7 +9676,8 @@ PathItem.inject(new function() {
 				windRight = windRightOnCurve;
 			}
 		}
-		return Math.max(abs(windLeft), abs(windRight));
+		return operator && operator.unite && !windLeft ^ !windRight ? 1
+				: Math.max(abs(windLeft), abs(windRight));
 	}
 
 	function propagateWinding(segment, path1, path2, monoCurves, operator) {
@@ -9707,9 +9708,12 @@ PathItem.inject(new function() {
 					if (parent instanceof CompoundPath)
 						path = parent;
 					if (!(operator.subtract && path2
-							&& (path === path1 && path2._getWinding(pt, hor)
-							|| path === path2 && !path1._getWinding(pt, hor))))
-						windingSum += getWinding(pt, monoCurves, hor);
+							&& (path === path1
+								&& path2._getWinding(pt, operator, hor)
+							|| path === path2
+								&& !path1._getWinding(pt, operator, hor)))) {
+						windingSum += getWinding(pt, monoCurves, operator, hor);
+					}
 					break;
 				}
 				length -= curveLength;
@@ -9839,8 +9843,9 @@ PathItem.inject(new function() {
 	}
 
 	return {
-		_getWinding: function(point, horizontal) {
-			return getWinding(point, this._getMonoCurves(), horizontal);
+		_getWinding: function(point, operator, horizontal) {
+			return getWinding(point, this._getMonoCurves(), operator,
+					horizontal);
 		},
 
 		unite: function(path) {
