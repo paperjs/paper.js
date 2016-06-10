@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 12:04:08 2016 +0200
+ * Date: Fri Jun 10 12:06:08 2016 +0200
  *
  ***
  *
@@ -9409,7 +9409,7 @@ new function() {
 
 PathItem.inject(new function() {
 	var operators = {
-		unite:     { 0: true, 1: true },
+		unite:     { 1: true },
 		intersect: { 2: true },
 		subtract:  { 1: true },
 		exclude:   { 1: true }
