@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 13:04:57 2016 +0200
+ * Date: Fri Jun 10 13:41:36 2016 +0200
  *
  ***
  *
@@ -14149,8 +14149,8 @@ Base.exports.PaperScript = (function() {
 		'*': '__multiply',
 		'/': '__divide',
 		'%': '__modulo',
-		'==': 'equals',
-		'!=': 'equals'
+		'==': '__equals',
+		'!=': '__equals'
 	};
 
 	var unaryOperators = {
@@ -14159,7 +14159,7 @@ Base.exports.PaperScript = (function() {
 	};
 
 	var fields = Base.each(
-		['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
+		['add', 'subtract', 'multiply', 'divide', 'modulo', 'equals', 'negate'],
 		function(name) {
 			this['__' + name] = '#' + name;
 		},
