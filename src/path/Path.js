@@ -876,7 +876,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @example {@paperscript}
      * // Selecting an item:
      * var path = new Path.Circle({
-     *     center: new Size(80, 50),
+     *     center: [80, 50],
      *     radius: 35
      * });
      * path.selected = true; // Select the path
@@ -884,7 +884,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @example {@paperscript}
      * // A path is selected, if one or more of its segments is selected:
      * var path = new Path.Circle({
-     *     center: new Size(80, 50),
+     *     center: [80, 50],
      *     radius: 35
      * });
      *
@@ -907,13 +907,13 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @example {@paperscript}
      * // A path is fully selected, if all of its segments are selected:
      * var path = new Path.Circle({
-     *     center: new Size(80, 50),
+     *     center: [80, 50],
      *     radius: 35
      * });
      * path.fullySelected = true;
      *
      * var path2 = new Path.Circle({
-     *     center: new Size(180, 50),
+     *     center: [180, 50],
      *     radius: 35
      * });
      *
@@ -1209,8 +1209,9 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     reduce: function(options) {
         var curves = this.getCurves(),
+            // TODO: Find a better name, to not confuse with PathItem#simplify()
             simplify = options && options.simplify,
-            // When not simplifying, only remove curves if their length is
+            // When not simplifying, only remove curves if their lengths are
             // absolutely 0.
             tolerance = simplify ? /*#=*/Numerical.GEOMETRIC_EPSILON : 0;
         for (var i = curves.length - 1; i >= 0; i--) {

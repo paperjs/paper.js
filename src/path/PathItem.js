@@ -415,8 +415,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @name PathItem#flatten
      * @function
      *
-     * @param {Number} flatness the maximum error between the flattened lines
-     *     and the original curves
+     * @param {Number} [flatness=0.25] the maximum error between the flattened
+     *     lines and the original curves
      *
      * @example {@paperscript}
      * // Flattening a circle shaped path:
@@ -424,19 +424,19 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * // Create a circle shaped path at { x: 80, y: 50 }
      * // with a radius of 35:
      * var path = new Path.Circle({
-     *     center: new Size(80, 50),
+     *     center: [80, 50],
      *     radius: 35
      * });
      *
      * // Select the path, so we can inspect its segments:
      * path.selected = true;
      *
-     * // Create a copy of the path and move it 150 points to the right:
+     * // Create a copy of the path and move it by 150 points:
      * var copy = path.clone();
      * copy.position.x += 150;
      *
-     * // Convert its curves to points, with a maximum error of 10:
-     * copy.flatten(10);
+     * // Flatten the copied path, with a maximum error of 4 points:
+     * copy.flatten(4);
      */
 
     // TODO: Write about negative indices, and add an example for ranges.
