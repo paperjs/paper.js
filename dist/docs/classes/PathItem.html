@@ -512,9 +512,9 @@ function onMouseMove(event) {
 </div>
 
 	
-<div id="flatten-flatness" class="member">
+<div id="flatten" class="member">
 <div class="member-link">
-<a name="flatten-flatness" href="#flatten-flatness"><tt><b>flatten</b>(flatness)</tt></a>
+<a name="flatten" href="#flatten"><tt><b>flatten</b>([flatness])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -527,8 +527,8 @@ function onMouseMove(event) {
 	<li>
 <tt>flatness:</tt> 
 <tt>Number</tt>
-&mdash;&nbsp;the maximum error between the flattened lines  and the original curves
-
+&mdash;&nbsp;the maximum error between the flattened  lines and the original curves
+&mdash;&nbsp;optional, default: <tt>0.25</tt>
 </li>
 	
 </ul>
@@ -547,19 +547,19 @@ function onMouseMove(event) {
 // Create a circle shaped path at { x: 80, y: 50 }
 // with a radius of 35:
 var path = new Path.Circle({
-    center: new Size(80, 50),
+    center: [80, 50],
     radius: 35
 });
 
 // Select the path, so we can inspect its segments:
 path.selected = true;
 
-// Create a copy of the path and move it 150 points to the right:
+// Create a copy of the path and move it by 150 points:
 var copy = path.clone();
 copy.position.x += 150;
 
-// Convert its curves to points, with a maximum error of 10:
-copy.flatten(10);
+// Flatten the copied path, with a maximum error of 4 points:
+copy.flatten(4);
 </script>
 <div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
 </div>
