@@ -324,7 +324,10 @@ new function() {
     function getDefinition(item, type) {
         if (!definitions)
             definitions = { ids: {}, svgs: {} };
-        return item && definitions.svgs[type + '-' + item._id];
+        // Use #__id for items that don't have internal #_id properties (Color),
+        // and give them ids from their own private id pool named 'svg'.
+        var id = item._id || item.__id || (item.__id = UID.get('svg'));
+        return item && definitions.svgs[type + '-' + id];
     }
 
     function setDefinition(item, node, type) {
@@ -333,10 +336,11 @@ new function() {
         if (!definitions)
             getDefinition();
         // Have different id ranges per type
-        var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+        var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
         // Give the svg node an id, and link to it from the item id.
-        node.id = type + '-' + id;
-        definitions.svgs[type + '-' + item._id] = node;
+        node.id = type + '-' + typeId;
+        // See getDefinition() for an explanation of #__id:
+        definitions.svgs[type + '-' + (item._id || item.__id)] = node;
     }
 
     function exportDefinitions(node, options) {
