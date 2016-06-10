@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 17:45:02 2016 +0200
+ * Date: Fri Jun 10 21:32:22 2016 +0200
  *
  ***
  *
@@ -2191,51 +2191,55 @@ var Matrix = Base.extend({
 	},
 
 	append: function(mx) {
-		var a1 = this._a,
-			b1 = this._b,
-			c1 = this._c,
-			d1 = this._d,
-			a2 = mx._a,
-			b2 = mx._c,
-			c2 = mx._b,
-			d2 = mx._d,
-			tx2 = mx._tx,
-			ty2 = mx._ty;
-		this._a = a2 * a1 + c2 * c1;
-		this._c = b2 * a1 + d2 * c1;
-		this._b = a2 * b1 + c2 * d1;
-		this._d = b2 * b1 + d2 * d1;
-		this._tx += tx2 * a1 + ty2 * c1;
-		this._ty += tx2 * b1 + ty2 * d1;
-		this._changed();
+		if (mx) {
+			var a1 = this._a,
+				b1 = this._b,
+				c1 = this._c,
+				d1 = this._d,
+				a2 = mx._a,
+				b2 = mx._c,
+				c2 = mx._b,
+				d2 = mx._d,
+				tx2 = mx._tx,
+				ty2 = mx._ty;
+			this._a = a2 * a1 + c2 * c1;
+			this._c = b2 * a1 + d2 * c1;
+			this._b = a2 * b1 + c2 * d1;
+			this._d = b2 * b1 + d2 * d1;
+			this._tx += tx2 * a1 + ty2 * c1;
+			this._ty += tx2 * b1 + ty2 * d1;
+			this._changed();
+		}
+		return this;
+	},
+
+	prepend: function(mx) {
+		if (mx) {
+			var a1 = this._a,
+				b1 = this._b,
+				c1 = this._c,
+				d1 = this._d,
+				tx1 = this._tx,
+				ty1 = this._ty,
+				a2 = mx._a,
+				b2 = mx._c,
+				c2 = mx._b,
+				d2 = mx._d,
+				tx2 = mx._tx,
+				ty2 = mx._ty;
+			this._a = a2 * a1 + b2 * b1;
+			this._c = a2 * c1 + b2 * d1;
+			this._b = c2 * a1 + d2 * b1;
+			this._d = c2 * c1 + d2 * d1;
+			this._tx = a2 * tx1 + b2 * ty1 + tx2;
+			this._ty = c2 * tx1 + d2 * ty1 + ty2;
+			this._changed();
+		}
 		return this;
 	},
 
 	appended: function(mx) {
 		return this.clone().append(mx);
-	},
-
-	prepend: function(mx) {
-		var a1 = this._a,
-			b1 = this._b,
-			c1 = this._c,
-			d1 = this._d,
-			tx1 = this._tx,
-			ty1 = this._ty,
-			a2 = mx._a,
-			b2 = mx._c,
-			c2 = mx._b,
-			d2 = mx._d,
-			tx2 = mx._tx,
-			ty2 = mx._ty;
-		this._a = a2 * a1 + b2 * b1;
-		this._c = a2 * c1 + b2 * d1;
-		this._b = c2 * a1 + d2 * b1;
-		this._d = c2 * c1 + d2 * d1;
-		this._tx = a2 * tx1 + b2 * ty1 + tx2;
-		this._ty = c2 * tx1 + d2 * ty1 + ty2;
-		this._changed();
-		return this;
 	},
 
 	prepended: function(mx) {
@@ -5290,8 +5294,7 @@ var SymbolItem = Item.extend({
 
 	_getBounds: function(matrix, options) {
 		var item = this._definition._item;
-		return item._getCachedBounds(matrix && matrix.appended(item._matrix),
-				options);
+		return item._getCachedBounds(item._matrix.prepended(matrix), options);
 	},
 
 	_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
