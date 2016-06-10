@@ -35,7 +35,7 @@ PathItem.inject(new function() {
     // contribution contributes to the final result or not. They are applied to
     // for each segment after the paths are split at crossings.
     var operators = {
-        unite:     { 0: true, 1: true },
+        unite:     { 1: true },
         intersect: { 2: true },
         subtract:  { 1: true },
         exclude:   { 1: true }
