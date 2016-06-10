@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue May 31 12:35:44 2016 +0200
+ * Date: Fri Jun 10 10:24:19 2016 +0200
  *
  ***
  *
@@ -10057,16 +10057,15 @@ Path.inject({
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var values = curves[i].values;
 				if ((curves[i].winding === 1
-						&& y >= values[1] && y <= values[7]
-						|| y >= values[7] && y <= values[1])) {
+						&& y > values[1] && y <= values[7]
+						|| y >= values[7] && y < values[1])) {
 					var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
 					for (var j = count - 1; j >= 0; j--) {
 						intercepts.push(Curve.getPoint(values, roots[j]).x);
 					}
 				}
-				if (intercepts.length > 1)
-					break;
 			}
+			intercepts.sort(function(a, b) {return a - b});
 			point.x = (intercepts[0] + intercepts[1]) / 2;
 		}
 		return point;
