@@ -112,12 +112,10 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
         return this._definition._item.isEmpty();
     },
 
-
     _getBounds: function(matrix, options) {
         var item = this._definition._item;
         // Redirect the call to the definition item to calculate the bounds.
-        return item._getCachedBounds(matrix && matrix.appended(item._matrix),
-                options);
+        return item._getCachedBounds(item._matrix.prepended(matrix), options);
     },
 
     _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {

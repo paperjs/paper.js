@@ -92,7 +92,7 @@ test('Changing the definition of a symbol should change the bounds of all instan
         'Bounds after modifying symbol definition');
 });
 
-test('Symbol definition selection', function() {
+test('SymbolDefinition item selection', function() {
     var path = new Path.Circle([50, 50], 50);
     path.selected = true;
     var definition = new SymbolDefinition(path);
@@ -104,28 +104,42 @@ test('Symbol definition selection', function() {
     }, true);
 });
 
-test('Symbol#place()', function() {
+test('SymbolDefinition#place()', function() {
     var path = new Path.Circle([50, 50], 50);
-    var definition = new SymbolDefinition(path);
-    var placedSymbol = definition.place();
+    var symbol = new SymbolDefinition(path);
+    var placed = symbol.place();
     equals(function() {
-        return placedSymbol.parent == paper.project.activeLayer;
+        return placed.parent == paper.project.activeLayer;
     }, true);
 
     equals(function() {
-        return placedSymbol.definition == definition;
+        return placed.definition == symbol;
     }, true);
 
     equals(function() {
-        return placedSymbol.position.toString();
+        return placed.position.toString();
     }, '{ x: 0, y: 0 }');
 });
 
-test('Symbol#place(position)', function() {
+test('SymbolDefinition#place(position)', function() {
     var path = new Path.Circle([50, 50], 50);
-    var definition = new SymbolDefinition(path);
-    var placedSymbol = definition.place(new Point(100, 100));
+    var symbol = new SymbolDefinition(path);
+    var placed = symbol.place(new Point(100, 100));
     equals(function() {
-        return placedSymbol.position.toString();
+        return placed.position.toString();
     }, '{ x: 100, y: 100 }');
+});
+
+test('SymbolItem#bounds with #applyMatrix = false', function() {
+    var path = new Path.Rectangle({
+        point: [100, 100],
+        size: [50, 50],
+        strokeColor: 'red',
+        applyMatrix: false,
+        strokeWidth: 50
+    });
+    var symbol = new SymbolDefinition(path);
+    var placed = symbol.place([200, 200]);
+    equals(function() { return placed.bounds; },
+        { x: 150, y: 150, width: 100, height: 100 });
 });
