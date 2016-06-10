@@ -35,12 +35,11 @@ contribute to the code.
 
 ### Changed
 - Significant overhaul and improvements of boolean path operations
-  `PathItem#unite()`, `#subtract()`, `#intersect()`, `#exclude()`, `#divide()`
-  (#936):
+  `PathItem#unite()`, `#subtract()`, `#intersect()`, `#exclude()`, `#divide()`:
     - Improve handling of self-intersecting paths and non-zero fill-rules.
     - Handle operations on identical paths.
     - Improve handling of near-collinear lines.
-    - Better handle self-intersecting paths that merely "touch" themselves.
+    - Handle self-intersecting paths that merely "touch" themselves.
     - Handle situations where all encountered intersections are part of overlaps.
 - Methods that accepted a `time` parameter or boolean second parameter causing
   the argument to be interpreted as curve-time instead of offset are now
@@ -196,8 +195,6 @@ contribute to the code.
   (#453).
 - Don't block touch actions when using paper in JavaScript mode (#686).
 - Convert touch event coordinates to project coordinates (#633).
-- Fix problems with group selection structures after `group#importJSON()`
-  (#785).
 - Fix exceptions when a top-level layer is selected.
 - Don't allow layers to turn up in hit-tests (#608).
 - Maintain `Raster#source` correctly on Node.js (#914).
@@ -207,7 +204,6 @@ contribute to the code.
   when it is a child items array of a `CompoundPath`.
 - Correctly handle `#strokeScaling` in `Shape` hit-tests (#697).
 - Support clip-masks in hit-testing (#671).
-- `#importJSON()` no longer generates callstack exceeded exceptions (#764).
 - Fix incorrect `#hitTest()` and `#contains()` cases (#819, #884).
 - Update documentation to note appropriate use for `#simplify()` (#920).
 - `#importSVG()` now supports percentage dimensions and
@@ -226,6 +222,11 @@ contribute to the code.
 - `#importJSON()` and `#exportJSON()` now handle non-`Item` objects correctly
   (#392).
 - `#exportSVG()` now exports empty paths if used as a clip-mask.
+- `#importJSON()` no longer generates callstack exceeded exceptions (#764).
+- Fix problems with group selection structures after `Group#importJSON()`
+  (#785).
+- Fix an issue in `Item#importJSON()` where `#parent` is `null` when calling it
+  on existing, already inserted items (#1041).
 - Correct issue when using paper-core in Node.js (#975).
 - Fix `event.delta` on mousedrag events (#981).
 - Improve handling of XML attribute namespaces for IE's XMLSerializer() (#984).

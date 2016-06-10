@@ -502,13 +502,7 @@ Base.inject(/** @lends Base# */{
                         var useTarget = isRoot && target
                                 && target.constructor === ctor,
                             obj = useTarget ? target
-                                : Base.create(ctor.prototype),
-                            // When reusing an object, try to (re)initialize it
-                            // through _initialize (Item), fall-back to
-                            // initialize (Color & co), then _set.
-                            init = useTarget
-                                ? obj._initialize || obj.initialize || obj._set
-                                : ctor;
+                                : Base.create(ctor.prototype);
                         // NOTE: We don't set insert false for layers since we
                         // want these to be created on the fly in the active
                         // project into which we're importing (except for if
@@ -519,7 +513,9 @@ Base.inject(/** @lends Base# */{
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        init.apply(obj, args);
+                        // When reusing an object, initialize it through #_set()
+                        // instead of the constructor function:
+                        (useTarget ? obj._set : ctor).apply(obj, args);
                         // Clear target to only use it once.
                         if (useTarget)
                             target = null;

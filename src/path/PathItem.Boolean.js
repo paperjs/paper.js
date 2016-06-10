@@ -1044,9 +1044,9 @@ Path.inject(/** @lends Path# */{
                 intercepts = [];
             for (var i = 0, l = curves.length; i < l; i++) {
                 var values = curves[i].values;
-                if ((curves[i].winding === 1
+                if (curves[i].winding === 1
                         && y > values[1] && y <= values[7]
-                        || y >= values[7] && y < values[1])) {
+                        || y >= values[7] && y < values[1]) {
                     var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
                     for (var j = count - 1; j >= 0; j--) {
                         intercepts.push(Curve.getPoint(values, roots[j]).x);

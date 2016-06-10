@@ -485,6 +485,7 @@ var Color = Base.extend(new function() {
             // We are storing color internally as an array of components
             var slice = Array.prototype.slice,
                 args = arguments,
+                reading = this.__read,
                 read = 0,
                 type,
                 components,
@@ -508,7 +509,7 @@ var Color = Base.extend(new function() {
                     alpha = args[2];
                 } else {
                     // For deserialization, shift out and process normally.
-                    if (this.__read)
+                    if (reading)
                         read = 1; // Will be increased below
                     // Shift type out of the arguments, and process normally.
                     args = slice.call(args, 1);
@@ -536,10 +537,11 @@ var Color = Base.extend(new function() {
                                 : 'gray';
                     var length = types[type].length;
                     alpha = values[length];
-                    if (this.__read)
+                    if (reading) {
                         read += values === arguments
                             ? length + (alpha != null ? 1 : 0)
                             : 1;
+                    }
                     if (values.length > length)
                         values = slice.call(values, 0, length);
                 } else if (argType === 'string') {
@@ -601,7 +603,7 @@ var Color = Base.extend(new function() {
                         alpha = arg.alpha;
                     }
                 }
-                if (this.__read && type)
+                if (reading && type)
                     read = 1;
             }
             // Default fallbacks: rgb, black
@@ -621,9 +623,12 @@ var Color = Base.extend(new function() {
             this._components = components;
             this._properties = types[this._type];
             this._alpha = alpha;
-            if (this.__read)
+            if (reading)
                 this.__read = read;
         },
+
+        // Have #_set point to #initialize, as used by Base.importJSON()
+        _set: '#initialize',
 
         _serialize: function(options, dictionary) {
             var components = this.getComponents();
