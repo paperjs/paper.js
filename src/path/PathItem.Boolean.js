@@ -1028,7 +1028,7 @@ Path.inject(/** @lends Path# */{
             // Since there is no guarantee that a poly-bezier path contains
             // the center of its bounding rectangle, we shoot a ray in
             // +x direction from the center and select a point between
-            // consecutive intersections of the ray
+            // consecutive intersections of the ray.
             var curves = this._getMonoCurves(),
                 roots = [],
                 y = point.y,
@@ -1036,16 +1036,15 @@ Path.inject(/** @lends Path# */{
             for (var i = 0, l = curves.length; i < l; i++) {
                 var values = curves[i].values;
                 if ((curves[i].winding === 1
-                        && y >= values[1] && y <= values[7]
-                        || y >= values[7] && y <= values[1])) {
+                        && y > values[1] && y <= values[7]
+                        || y >= values[7] && y < values[1])) {
                     var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
                     for (var j = count - 1; j >= 0; j--) {
                         intercepts.push(Curve.getPoint(values, roots[j]).x);
                     }
                 }
-                if (intercepts.length > 1)
-                    break;
             }
+            intercepts.sort(function(a, b) {return a - b});
             point.x = (intercepts[0] + intercepts[1]) / 2;
         }
         return point;
