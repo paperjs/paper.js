@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 10:29:38 2016 +0200
+ * Date: Fri Jun 10 12:00:23 2016 +0200
  *
  ***
  *
@@ -9548,7 +9548,7 @@ PathItem.inject(new function() {
 				segment;
 			if (curve !== prevCurve) {
 				noHandles = !curve.hasHandles();
-			} else if (prevTime > 0) {
+			} else if (prevTime >= tMin && prevTime <= tMax ) {
 				time /= prevTime;
 			}
 			if (time < tMin) {
