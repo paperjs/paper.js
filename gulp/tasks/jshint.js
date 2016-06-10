@@ -18,5 +18,6 @@ gulp.task('jshint', function () {
     return gulp.src('src/**/*.js')
         .pipe(cache('jshint', { optimizeMemory: true }))
         .pipe(jshint())
-        .pipe(jshint.reporter('jshint-summary'));
+        .pipe(jshint.reporter('jshint-summary'))
+        .pipe(jshint.reporter('fail'));
 });
