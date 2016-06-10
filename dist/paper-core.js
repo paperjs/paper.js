@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 17:28:46 2016 +0200
+ * Date: Fri Jun 10 17:45:02 2016 +0200
  *
  ***
  *
@@ -532,17 +532,14 @@ Base.inject({
 						var useTarget = isRoot && target
 								&& target.constructor === ctor,
 							obj = useTarget ? target
-								: Base.create(ctor.prototype),
-							init = useTarget
-								? obj._initialize || obj.initialize || obj._set
-								: ctor;
+								: Base.create(ctor.prototype);
 						if (args.length === 1 && obj instanceof Item
 								&& (useTarget || !(obj instanceof Layer))) {
 							var arg = args[0];
 							if (Base.isPlainObject(arg))
 								arg.insert = false;
 						}
-						init.apply(obj, args);
+						(useTarget ? obj._set : ctor).apply(obj, args);
 						if (useTarget)
 							target = null;
 						return obj;
@@ -10065,9 +10062,9 @@ Path.inject({
 				intercepts = [];
 			for (var i = 0, l = curves.length; i < l; i++) {
 				var values = curves[i].values;
-				if ((curves[i].winding === 1
+				if (curves[i].winding === 1
 						&& y > values[1] && y <= values[7]
-						|| y >= values[7] && y < values[1])) {
+						|| y >= values[7] && y < values[1]) {
 					var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
 					for (var j = count - 1; j >= 0; j--) {
 						intercepts.push(Curve.getPoint(values, roots[j]).x);
@@ -10724,6 +10721,7 @@ var Color = Base.extend(new function() {
 		initialize: function Color(arg) {
 			var slice = Array.prototype.slice,
 				args = arguments,
+				reading = this.__read,
 				read = 0,
 				type,
 				components,
@@ -10741,7 +10739,7 @@ var Color = Base.extend(new function() {
 					components = arg;
 					alpha = args[2];
 				} else {
-					if (this.__read)
+					if (reading)
 						read = 1;
 					args = slice.call(args, 1);
 					argType = typeof arg;
@@ -10760,10 +10758,11 @@ var Color = Base.extend(new function() {
 								: 'gray';
 					var length = types[type].length;
 					alpha = values[length];
-					if (this.__read)
+					if (reading) {
 						read += values === arguments
 							? length + (alpha != null ? 1 : 0)
 							: 1;
+					}
 					if (values.length > length)
 						values = slice.call(values, 0, length);
 				} else if (argType === 'string') {
@@ -10818,7 +10817,7 @@ var Color = Base.extend(new function() {
 						alpha = arg.alpha;
 					}
 				}
-				if (this.__read && type)
+				if (reading && type)
 					read = 1;
 			}
 			this._type = type || 'rgb';
@@ -10834,9 +10833,11 @@ var Color = Base.extend(new function() {
 			this._components = components;
 			this._properties = types[this._type];
 			this._alpha = alpha;
-			if (this.__read)
+			if (reading)
 				this.__read = read;
 		},
+
+		_set: '#initialize',
 
 		_serialize: function(options, dictionary) {
 			var components = this.getComponents();
