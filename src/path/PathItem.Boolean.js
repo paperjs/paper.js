@@ -299,7 +299,7 @@ PathItem.inject(new function() {
      * Private method that returns the winding contribution of the given point
      * with respect to a given set of monotonic curves.
      */
-    function getWinding(point, curves, horizontal) {
+    function getWinding(point, curves, operator, horizontal) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             px = point.x,
             py = point.y,
@@ -333,9 +333,9 @@ PathItem.inject(new function() {
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
             if (yTop > -Infinity)
-                windLeft = getWinding(new Point(px, yTop), curves);
+                windLeft = getWinding(new Point(px, yTop), curves, operator);
             if (yBottom < Infinity)
-                windRight = getWinding(new Point(px, yBottom), curves);
+                windRight = getWinding(new Point(px, yBottom), curves, operator);
         } else {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon,
@@ -422,7 +422,12 @@ PathItem.inject(new function() {
                 windRight = windRightOnCurve;
             }
         }
-        return Math.max(abs(windLeft), abs(windRight));
+        // We need to handle the winding contribution differently when dealing
+        // with unite operations, so that it will be 1 for any point on the
+        // outside path, since we are not considering a contribution of 2 a part
+        // of the result, but would have to for outside points. See #1054
+        return operator && operator.unite && !windLeft ^ !windRight ? 1
+                : Math.max(abs(windLeft), abs(windRight));
     }
 
     function propagateWinding(segment, path1, path2, monoCurves, operator) {
@@ -463,9 +468,12 @@ PathItem.inject(new function() {
                     // contributing to the second operand and is outside the
                     // first operand.
                     if (!(operator.subtract && path2
-                            && (path === path1 && path2._getWinding(pt, hor)
-                            || path === path2 && !path1._getWinding(pt, hor))))
-                        windingSum += getWinding(pt, monoCurves, hor);
+                            && (path === path1
+                                && path2._getWinding(pt, operator, hor)
+                            || path === path2
+                                && !path1._getWinding(pt, operator, hor)))) {
+                        windingSum += getWinding(pt, monoCurves, operator, hor);
+                    }
                     break;
                 }
                 length -= curveLength;
@@ -677,8 +685,9 @@ PathItem.inject(new function() {
          * part of a horizontal curve
          * @return {Number} the winding number
          */
-        _getWinding: function(point, horizontal) {
-            return getWinding(point, this._getMonoCurves(), horizontal);
+        _getWinding: function(point, operator, horizontal) {
+            return getWinding(point, this._getMonoCurves(), operator,
+                    horizontal);
         },
 
         /**
