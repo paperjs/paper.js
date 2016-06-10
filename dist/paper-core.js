@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 14:53:52 2016 +0200
+ * Date: Fri Jun 10 16:19:59 2016 +0200
  *
  ***
  *
@@ -1121,10 +1121,9 @@ var UID = {
 	_id: 1,
 	_pools: {},
 
-	get: function(ctor) {
-		if (ctor) {
-			var name = ctor._class,
-				pool = this._pools[name];
+	get: function(name) {
+		if (name) {
+			var pool = this._pools[name];
 			if (!pool)
 				pool = this._pools[name] = { _id: 1 };
 			return pool._id++;
@@ -10823,7 +10822,6 @@ var Color = Base.extend(new function() {
 					read = 1;
 			}
 			this._type = type || 'rgb';
-			this._id = UID.get(Color);
 			if (!components) {
 				this._components = components = [];
 				var parsers = componentParsers[this._type];
@@ -13492,15 +13490,16 @@ new function() {
 	function getDefinition(item, type) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		return item && definitions.svgs[type + '-' + item._id];
+		var id = item._id || item.__id || (item.__id = UID.get('svg'));
+		return item && definitions.svgs[type + '-' + id];
 	}
 
 	function setDefinition(item, node, type) {
 		if (!definitions)
 			getDefinition();
-		var id = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
-		node.id = type + '-' + id;
-		definitions.svgs[type + '-' + item._id] = node;
+		var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+		node.id = type + '-' + typeId;
+		definitions.svgs[type + '-' + (item._id || item.__id)] = node;
 	}
 
 	function exportDefinitions(node, options) {
