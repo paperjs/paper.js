@@ -243,6 +243,8 @@ contribute to the code.
   were previously inserted in the same parent (#1015).
 - Add capability to `PathItem#closePath()` to handle imprecise SVG data due to
   rounding (#1045).
+- Improve reliability of fat-line clipping for curves that are very similar
+  (#904).
 
 ### Removed
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to

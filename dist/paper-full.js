@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 11 12:43:37 2016 +0200
+ * Date: Sat Jun 11 13:13:08 2016 +0200
  *
  ***
  *
@@ -6639,8 +6639,8 @@ new function() {
 	}
 
 	function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-			uMin, uMax, reverse, calls) {
-		if (++calls > 4000)
+			uMin, uMax, flip, calls) {
+		if (++calls > 4096)
 			return calls;
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
@@ -6663,7 +6663,7 @@ new function() {
 			|| (tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null
 			|| (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
 				dMin, dMax)) == null)
-			return;
+			return calls;
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
 		if (Math.max(uMax - uMin, tMaxNew - tMinNew)
@@ -6673,8 +6673,8 @@ new function() {
 			v1 = c1.getValues();
 			v2 = c2.getValues();
 			addLocation(locations, param,
-				reverse ? v2 : v1, reverse ? c2 : c1, reverse ? u : t, null,
-				reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t : u, null);
+					flip ? v2 : v1, flip ? c2 : c1, flip ? u : t, null,
+					flip ? v1 : v2, flip ? c1 : c2, flip ? t : u, null);
 		} else {
 			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
 			if (tMaxClip - tMinClip > 0.8) {
@@ -6683,23 +6683,24 @@ new function() {
 						t = (tMinNew + tMaxNew) / 2;
 					calls = addCurveIntersections(
 							v2, parts[0], c2, c1, locations, param,
-							uMin, uMax, tMinNew, t, !reverse, calls);
+							uMin, uMax, tMinNew, t, !flip, calls);
 					calls = addCurveIntersections(
 							v2, parts[1], c2, c1, locations, param,
-							uMin, uMax, t, tMaxNew, !reverse, calls);
+							uMin, uMax, t, tMaxNew, !flip, calls);
 				} else {
 					var parts = Curve.subdivide(v2, 0.5),
 						u = (uMin + uMax) / 2;
 					calls = addCurveIntersections(
 							parts[0], v1, c2, c1, locations, param,
-							uMin, u, tMinNew, tMaxNew, !reverse, calls);
+							uMin, u, tMinNew, tMaxNew, !flip, calls);
 					calls = addCurveIntersections(
 							parts[1], v1, c2, c1, locations, param,
-							u, uMax, tMinNew, tMaxNew, !reverse, calls);
+							u, uMax, tMinNew, tMaxNew, !flip, calls);
 				}
 			} else {
-				calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
-						uMin, uMax, tMinNew, tMaxNew, !reverse, calls);
+				calls = addCurveIntersections(
+						v2, v1, c2, c1, locations, param,
+						uMin, uMax, tMinNew, tMaxNew, !flip, calls);
 			}
 		}
 		return calls;
