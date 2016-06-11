@@ -241,6 +241,8 @@ contribute to the code.
   (#769).
 - Fix wrong indices in `Item#insertChildren()`, when inserting children that
   were previously inserted in the same parent (#1015).
+- Add capability to `PathItem#closePath()` to handle imprecise SVG data due to
+  rounding (#1045).
 
 ### Removed
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to

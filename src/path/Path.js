@@ -2511,10 +2511,9 @@ new function() { // PostScript-style drawing commands
             }
         },
 
-        closePath: function(join) {
+        closePath: function(tolerance) {
             this.setClosed(true);
-            if (join)
-                this.join();
+            this.join(this, tolerance);
         }
     };
 }, { // A dedicated scope for the tricky bounds calculations

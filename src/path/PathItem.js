@@ -167,7 +167,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 }
                 break;
             case 'z':
-                this.closePath(true);
+                // Merge first and last segment with Numerical.EPSILON tolerance
+                // to address imprecisions in relative SVG data.
+                this.closePath(/*#=*/Numerical.EPSILON);
                 break;
             }
             previous = lower;
@@ -893,13 +895,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
     /**
      * Closes the path. When closed, Paper.js connects the first and last
-     * segment of the path with an additional curve.
+     * segment of the path with an additional curve. The difference to setting
+     * {@link Path#closed} to `true` is that this will also merge the first
+     * segment with the last if they lie in the same location.
      *
      * @name PathItem#closePath
      * @function
      *
-     * @param {Boolean} join controls whether the method should attempt to merge
-     *     the first segment with the last if they lie in the same location
      * @see Path#closed
      */
 

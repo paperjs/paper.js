@@ -349,8 +349,8 @@ new function() { // Injection scope for PostScript-like drawing functions
                 this.moveTo(last ? point.add(last._point) : point);
             },
 
-            closePath: function(join) {
-                getCurrentPath(this, true).closePath(join);
+            closePath: function(tolerance) {
+                getCurrentPath(this, true).closePath(tolerance);
             }
         }
     );
