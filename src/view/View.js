@@ -1292,12 +1292,14 @@ new function() { // Injection scope for event handling on the browser
             // Run the hit-test on items first, but only if we're required to do
             // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hit = inView && hitItems && this._project.hitTest(point, {
+                hit = hitItems && inView && this._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
                     stroke: true
                 }),
-                item = hit && hit.item || undefined,
+                // If the event doesn't require hit-testing, use the last
+                // overItem as its current item, for mouseenter / mouseleave.
+                item = (hitItems ? hit && hit.item : overItem) || undefined,
                 // Keep track if view event should be handled, so we can use it
                 // to decide if tool._handleMouseEvent() shall be called after.
                 handle = false,
