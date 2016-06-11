@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 10 23:51:56 2016 +0200
+ * Date: Sat Jun 11 11:14:19 2016 +0200
  *
  ***
  *
@@ -12178,12 +12178,12 @@ new function() {
 				point = this.getEventPoint(event);
 
 			var inView = this.getBounds().contains(point),
-				hit = inView && hitItems && this._project.hitTest(point, {
+				hit = hitItems && inView && this._project.hitTest(point, {
 					tolerance: 0,
 					fill: true,
 					stroke: true
 				}),
-				item = hit && hit.item || undefined,
+				item = (hitItems ? hit && hit.item : overItem) || undefined,
 				handle = false,
 				mouse = {};
 			mouse[type.substr(5)] = true;
