@@ -1090,15 +1090,19 @@ var Path = PathItem.extend(/** @lends Path# */{
         return location != null ? this.splitAt(location) : null;
     },
 
-    // DOCS: document Path#join(path) in more detail.
-    // DOCS: document Path#join() (joining with itself)
-    // TODO: Consider adding a distance / tolerance parameter for merging.
     /**
-     * Joins the path with the specified path, which will be removed in the
-     * process.
+     * Joins the path with the other specified path, which will be removed in
+     * the process. They can be joined if the first or last segments of either
+     * path lie in the same location. Locations are optionally compare with a
+     * provide `tolerance` value.
      *
-     * @param {Path} path the path to join this path with
-     * @return {Path} the joined path
+     * If `null` or `this` is passed as the other path, the path will be joined
+     * with itself if the first and last segment are in the same location.
+     *
+     * @param {Path} path the path to join this path with; `null` or `this` to
+     *     join the path with itself
+     * @param {Number} [tolerance=0] the tolerance with which to decide if two
+     *     segments are to be considered the same location when joining
      *
      * @example {@paperscript}
      * // Joining two paths:
@@ -1159,25 +1163,26 @@ var Path = PathItem.extend(/** @lends Path# */{
      * // Select the path to show that they have joined:
      * path.selected = true;
      */
-    join: function(path) {
-        if (path) {
+    join: function(path, tolerance) {
+        var epsilon = tolerance || 0;
+        if (path && path !== this) {
             var segments = path._segments,
                 last1 = this.getLastSegment(),
                 last2 = path.getLastSegment();
             if (!last2) // an empty path?
                 return this;
-            if (last1 && last1._point.equals(last2._point))
+            if (last1 && last1._point.isClose(last2._point, epsilon))
                 path.reverse();
             var first2 = path.getFirstSegment();
-            if (last1 && last1._point.equals(first2._point)) {
+            if (last1 && last1._point.isClose(first2._point, epsilon)) {
                 last1.setHandleOut(first2._handleOut);
                 this._add(segments.slice(1));
             } else {
                 var first1 = this.getFirstSegment();
-                if (first1 && first1._point.equals(first2._point))
+                if (first1 && first1._point.isClose(first2._point, epsilon))
                     path.reverse();
                 last2 = path.getLastSegment();
-                if (first1 && first1._point.equals(last2._point)) {
+                if (first1 && first1._point.isClose(last2._point, epsilon)) {
                     first1.setHandleIn(last2._handleIn);
                     // Prepend all segments from path except the last one.
                     this._add(segments.slice(0, segments.length - 1), 0);
@@ -1195,7 +1200,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         // only if its ends touch.
         var first = this.getFirstSegment(),
             last = this.getLastSegment();
-        if (first !== last && first._point.equals(last._point)) {
+        if (first !== last && first._point.isClose(last._point, epsilon)) {
             first.setHandleIn(last._handleIn);
             last.remove();
             this.setClosed(true);

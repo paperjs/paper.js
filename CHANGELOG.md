@@ -168,6 +168,7 @@ contribute to the code.
 - Add new options to `#exportSVG()` to control output bounds and transformation
   matrix (#972).
 - Allow `Item#position` to be selected via `Item#position.selected` (#980).
+- Add `tolerance` argument to `Path#join(path, tolerance)`.
 
 ### Fixed
 - Fix calculations of `Item#strokeBounds` for all possible combinations of

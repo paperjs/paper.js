@@ -694,7 +694,7 @@ var Point = Base.extend(/** @lends Point# */{
     isClose: function(/* point, tolerance */) {
         var point = Point.read(arguments),
             tolerance = Base.read(arguments);
-        return this.getDistance(point) < tolerance;
+        return this.getDistance(point) <= tolerance;
     },
 
     /**
