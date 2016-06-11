@@ -104,6 +104,26 @@ test('circle and square (existing segments overlaps on curves)', function() {
     ]);
 });
 
+test('#904', function() {
+    var path1 = new paper.Path({
+        segments: [
+            [347.65684372173973, 270.4315945523045, 0, 0, 22.844385382059784, -25.115215946843847],
+            [383.0588370772214, 178.9392357483178, -0.025514950166041217, 33.94338870431889, 0, 0],
+        ]
+    });
+    var path2 = new paper.Path({
+        segments: [
+            [347.65684372173973, 270.4315945523045, 0, 0, 22.869900332225882, -25.136478405315614],
+            [383.0588370772214, 178.84568093104204, 0, 33.97740863787374, 0, -33.93913621262462],
+        ]
+    });
+
+    testIntersection(path1.getIntersections(path2), [
+        { point: { x: 347.65684, y: 270.43159 }, index: 0, time: 0, crossing: false },
+        { point: { x: 383.05787, y: 179.36393 }, index: 0, time: 0.99583, crossing: true }
+    ]);
+})
+
 test('#1066', function() {
     var path1 = new paper.Path({
         segments: [

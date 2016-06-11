@@ -1549,11 +1549,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-            uMin, uMax, reverse, calls) {
+            uMin, uMax, flip, calls) {
         // Avoid deeper recursion, but instead of counting recursion, we count
         // the total amount of calls, to avoid massive call-trees as suggested
         // by @iconexperience in #904#issuecomment-225283430. See also #565 #899
-        if (++calls > 4000)
+        if (++calls > 4096)
             return calls;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
@@ -1565,9 +1565,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
             factor = d1 * d2 > 0 ? 3 / 4 : 4 / 9,
             dMin = factor * Math.min(0, d1, d2),
             dMax = factor * Math.max(0, d1, d2),
-            // Calculate non-parametric bezier curve D(ti, di(t)) - di(t) is the
-            // distance of P from the baseline l of the fat-line, ti is equally
-            // spaced in [0, 1]
+            // Calculate non-parametric bezier curve D(ti, di(t)):
+            // - di(t) is the distance of P from baseline l of the fat-line
+            // - ti is equally spaced in [0, 1]
             dp0 = getSignedDistance(q0x, q0y, q3x, q3y, v1[0], v1[1]),
             dp1 = getSignedDistance(q0x, q0y, q3x, q3y, v1[2], v1[3]),
             dp2 = getSignedDistance(q0x, q0y, q3x, q3y, v1[4], v1[5]),
@@ -1581,14 +1581,14 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // Stop iteration if all points and control points are collinear.
         if (d1 === 0 && d2 === 0
                 && dp0 === 0 && dp1 === 0 && dp2 === 0 && dp3 === 0
-            // Clip the convex-hull with dMin and dMax, taking into account that
-            // there will be no intersections if one of the tvalues are null.
+            // Clip convex-hull with dMin and dMax, taking into account that
+            // there will be no intersections if one of the results is null.
             || (tMinClip = clipConvexHull(top, bottom, dMin, dMax)) == null
             || (tMaxClip = clipConvexHull(top.reverse(), bottom.reverse(),
                 dMin, dMax)) == null)
-            return;
-        // tMin and tMax are within the range (0, 1). We need to project it
-        // to the original parameter range for v2.
+            return calls;
+        // tMin and tMax are within the range (0, 1). Project it back to the
+        // original parameter range for v2.
         var tMinNew = tMin + (tMax - tMin) * tMinClip,
             tMaxNew = tMin + (tMax - tMin) * tMaxClip;
         if (Math.max(uMax - uMin, tMaxNew - tMinNew)
@@ -1596,13 +1596,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // We have isolated the intersection with sufficient precision
             var t = (tMinNew + tMaxNew) / 2,
                 u = (uMin + uMax) / 2;
-            // As we've been clipping v1 and v2, we need to pass on the original
-            // curves here again to match the parameter space of t1 and t2.
+            // As v1 and v2 were clipped, reset them again to the original
+            // curve values to match the parameter space of t1 and t2:
             v1 = c1.getValues();
             v2 = c2.getValues();
             addLocation(locations, param,
-                reverse ? v2 : v1, reverse ? c2 : c1, reverse ? u : t, null,
-                reverse ? v1 : v2, reverse ? c1 : c2, reverse ? t : u, null);
+                    flip ? v2 : v1, flip ? c2 : c1, flip ? u : t, null,
+                    flip ? v1 : v2, flip ? c1 : c2, flip ? t : u, null);
         } else {
             // Apply the result of the clipping to curve 1:
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
@@ -1613,23 +1613,24 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
                             v2, parts[0], c2, c1, locations, param,
-                            uMin, uMax, tMinNew, t, !reverse, calls);
+                            uMin, uMax, tMinNew, t, !flip, calls);
                     calls = addCurveIntersections(
                             v2, parts[1], c2, c1, locations, param,
-                            uMin, uMax, t, tMaxNew, !reverse, calls);
+                            uMin, uMax, t, tMaxNew, !flip, calls);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     calls = addCurveIntersections(
                             parts[0], v1, c2, c1, locations, param,
-                            uMin, u, tMinNew, tMaxNew, !reverse, calls);
+                            uMin, u, tMinNew, tMaxNew, !flip, calls);
                     calls = addCurveIntersections(
                             parts[1], v1, c2, c1, locations, param,
-                            u, uMax, tMinNew, tMaxNew, !reverse, calls);
+                            u, uMax, tMinNew, tMaxNew, !flip, calls);
                 }
             } else { // Iterate
-                calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
-                        uMin, uMax, tMinNew, tMaxNew, !reverse, calls);
+                calls = addCurveIntersections(
+                        v2, v1, c2, c1, locations, param,
+                        uMin, uMax, tMinNew, tMaxNew, !flip, calls);
             }
         }
         return calls;
