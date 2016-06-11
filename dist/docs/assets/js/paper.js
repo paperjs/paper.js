@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 11 11:14:19 2016 +0200
+ * Date: Sat Jun 11 12:43:37 2016 +0200
  *
  ***
  *
@@ -1344,7 +1344,7 @@ var Point = Base.extend({
 	isClose: function() {
 		var point = Point.read(arguments),
 			tolerance = Base.read(arguments);
-		return this.getDistance(point) < tolerance;
+		return this.getDistance(point) <= tolerance;
 	},
 
 	isCollinear: function() {
@@ -7427,7 +7427,7 @@ var PathItem = Item.extend({
 				}
 				break;
 			case 'z':
-				this.closePath(true);
+				this.closePath(1e-12);
 				break;
 			}
 			previous = lower;
@@ -8011,25 +8011,26 @@ var Path = PathItem.extend({
 		return location != null ? this.splitAt(location) : null;
 	},
 
-	join: function(path) {
-		if (path) {
+	join: function(path, tolerance) {
+		var epsilon = tolerance || 0;
+		if (path && path !== this) {
 			var segments = path._segments,
 				last1 = this.getLastSegment(),
 				last2 = path.getLastSegment();
 			if (!last2)
 				return this;
-			if (last1 && last1._point.equals(last2._point))
+			if (last1 && last1._point.isClose(last2._point, epsilon))
 				path.reverse();
 			var first2 = path.getFirstSegment();
-			if (last1 && last1._point.equals(first2._point)) {
+			if (last1 && last1._point.isClose(first2._point, epsilon)) {
 				last1.setHandleOut(first2._handleOut);
 				this._add(segments.slice(1));
 			} else {
 				var first1 = this.getFirstSegment();
-				if (first1 && first1._point.equals(first2._point))
+				if (first1 && first1._point.isClose(first2._point, epsilon))
 					path.reverse();
 				last2 = path.getLastSegment();
-				if (first1 && first1._point.equals(last2._point)) {
+				if (first1 && first1._point.isClose(last2._point, epsilon)) {
 					first1.setHandleIn(last2._handleIn);
 					this._add(segments.slice(0, segments.length - 1), 0);
 				} else {
@@ -8042,7 +8043,7 @@ var Path = PathItem.extend({
 		}
 		var first = this.getFirstSegment(),
 			last = this.getLastSegment();
-		if (first !== last && first._point.equals(last._point)) {
+		if (first !== last && first._point.isClose(last._point, epsilon)) {
 			first.setHandleIn(last._handleIn);
 			last.remove();
 			this.setClosed(true);
@@ -8848,10 +8849,9 @@ new function() {
 			}
 		},
 
-		closePath: function(join) {
+		closePath: function(tolerance) {
 			this.setClosed(true);
-			if (join)
-				this.join();
+			this.join(this, tolerance);
 		}
 	};
 }, {
@@ -9396,8 +9396,8 @@ new function() {
 				this.moveTo(last ? point.add(last._point) : point);
 			},
 
-			closePath: function(join) {
-				getCurrentPath(this, true).closePath(join);
+			closePath: function(tolerance) {
+				getCurrentPath(this, true).closePath(tolerance);
 			}
 		}
 	);

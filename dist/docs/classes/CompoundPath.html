@@ -7613,27 +7613,15 @@ function onMouseMove(event) {
 </div>
 
 	
-<div id="closepath-join" class="member">
+<div id="closepath" class="member">
 <div class="member-link">
-<a name="closepath-join" href="#closepath-join"><tt><b>closePath</b>(join)</tt></a>
+<a name="closepath" href="#closepath"><tt><b>closePath</b>()</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Closes the path. When closed, Paper.js connects the first and last segment of the path with an additional curve.</p>
+	<p>Closes the path. When closed, Paper.js connects the first and last segment of the path with an additional curve. The difference to setting <a href="../classes/Path.html#closed"><tt>path.closed</tt></a> to <code>true</code> is that this will also merge the first segment with the last if they lie in the same location.</p>
     
 	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>join:</tt> 
-<tt>Boolean</tt>
-&mdash;&nbsp;controls whether the method should attempt to merge  the first segment with the last if they lie in the same location
-
-</li>
-	
-</ul>
-
 	
 	
 	<ul class="member-list">
