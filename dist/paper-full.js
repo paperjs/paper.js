@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 11 13:13:08 2016 +0200
+ * Date: Sun Jun 12 17:07:43 2016 +0200
  *
  ***
  *
@@ -6639,8 +6639,8 @@ new function() {
 	}
 
 	function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-			uMin, uMax, flip, calls) {
-		if (++calls > 4096)
+			uMin, uMax, flip, recursion, calls) {
+		if (++recursion >= 48 || ++calls > 4096)
 			return calls;
 		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
@@ -6683,24 +6683,24 @@ new function() {
 						t = (tMinNew + tMaxNew) / 2;
 					calls = addCurveIntersections(
 							v2, parts[0], c2, c1, locations, param,
-							uMin, uMax, tMinNew, t, !flip, calls);
+							uMin, uMax, tMinNew, t, !flip, recursion, calls);
 					calls = addCurveIntersections(
 							v2, parts[1], c2, c1, locations, param,
-							uMin, uMax, t, tMaxNew, !flip, calls);
+							uMin, uMax, t, tMaxNew, !flip, recursion, calls);
 				} else {
 					var parts = Curve.subdivide(v2, 0.5),
 						u = (uMin + uMax) / 2;
 					calls = addCurveIntersections(
 							parts[0], v1, c2, c1, locations, param,
-							uMin, u, tMinNew, tMaxNew, !flip, calls);
+							uMin, u, tMinNew, tMaxNew, !flip, recursion, calls);
 					calls = addCurveIntersections(
 							parts[1], v1, c2, c1, locations, param,
-							u, uMax, tMinNew, tMaxNew, !flip, calls);
+							u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				}
 			} else {
 				calls = addCurveIntersections(
 						v2, v1, c2, c1, locations, param,
-						uMin, uMax, tMinNew, tMaxNew, !flip, calls);
+						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 			}
 		}
 		return calls;
@@ -6851,7 +6851,7 @@ new function() {
 					? addCurveLineIntersections
 					: addCurveIntersections)(
 						v1, v2, c1, c2, locations, param,
-						0, 1, 0, 1, 0, 0);
+						0, 1, 0, 1, 0, 0, 0);
 			if (straight && locations.length > before)
 				return locations;
 			var c1p1 = new Point(c1p1x, c1p1y),
