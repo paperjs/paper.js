@@ -1051,6 +1051,17 @@ statics: /** @lends Curve */{
     getParameterAt: '#getTimeAt',
 
     /**
+     * Calculates the curve offset at the specified curve-time parameter on
+     * the curve.
+     *
+     * @param {Number} time the curve-time parameter on the curve
+     * @return {Number} the curve offset at the specified the location
+     */
+    getOffsetAtTime: function(t) {
+        return this.getPartLength(0, t);
+    },
+
+    /**
      * Returns the curve location of the specified point if it lies on the
      * curve, `null` otherwise.
      *

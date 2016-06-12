@@ -160,19 +160,22 @@ test('Curve#getTimeAt()', function() {
     ]).firstCurve;
 
     for (var f = 0; f <= 1; f += 0.1) {
-        var o1 = curve.length * f;
-        var o2 = -curve.length * (1 - f);
+        var o1 = curve.length * f,
+            o2 = -curve.length * (1 - f),
+            t1 = curve.getTimeAt(o1),
+            t2 = curve.getTimeAt(o2);
         var message = 'Curve-time parameter at offset ' + o1
                 + ' should be the same value as at offset ' + o2;
-        equals(curve.getTimeAt(o1), curve.getTimeAt(o2), message,
-                Numerical.CURVETIME_EPSILON);
+        equals(t1, t2, message, Numerical.CURVETIME_EPSILON);
+        equals(function() { return curve.getOffsetAtTime(t1); }, o1);
+        equals(function() { return curve.getOffsetAtTime(t2); }, curve.length + o2);
         // Legacy version:
         equals(curve.getParameterAt(o1), curve.getParameterAt(o2),
                 'Legacy: ' + message, Numerical.CURVETIME_EPSILON);
+        // Test other methods with negatives offsets
         equals(curve.getTangentAt(o1), curve.getTangentAt(o2),
                 'Tangent at offset ' + o1
-                + ' should be the same value as at offset ' + o2,
-                Numerical.CURVETIME_EPSILON);
+                + ' should be the same value as at offset ' + o2);
     }
 
     equals(curve.getTimeAt(curve.length + 1), null,
