@@ -448,22 +448,27 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     : angle > min || angle < max;
         }
 
-        // Calculate angles for all four tangents at the intersection point,
-        // using values for getTangentAt() that are almost 0 and 1.
-        // NOTE: Even though getTangentAt() has code to support 0 and 1 instead
-        // of tMin and tMax, we still need to use tMin / tMaxx instead, as other
-        // issues emerge from switching to 0 and 1 in edge cases.
-        // NOTE: VectorBoolean has code that slowly shifts these points inwards
+        // Calculate angles for all four tangents at the intersection point.
+        // If the intersection is on an actual segment, step away from it at
+        // equal offsets on each curve, to calculate tangential angles that are
+        // unambiguous. The offset is determined by taking 1/64th of the length
+        // of the shortest of all involved curves. This appears to work well.
+        // NOTE: VectorBoolean has code that slowly shifts these offsets inwards
         // until the resulting tangents are not ambiguous. Do we need this too?
-        // NOTE: We handle t*Inside here simply by picking t1 / t2 instead of
-        // tMin / tMax. E.g. if t1Inside is true, c1 will be the same as c2,
-        // and the code will doe the right thing.
+        // NOTE: We handle t1 / t2Inside here by getting the tangent at t1 / t2
+        // instead of at this calculated offset.
         // The incomings tangents v1 & v3 are inverted, so that all angles
         // are pointing outwards in the right direction from the intersection.
-        var v2 = c2.getTangentAtTime(t1Inside ? t1 : tMin),
-            v1 = (t1Inside ? v2 : c1.getTangentAtTime(tMax)).negate(),
-            v4 = c4.getTangentAtTime(t2Inside ? t2 : tMin),
-            v3 = (t2Inside ? v4 : c3.getTangentAtTime(tMax)).negate(),
+        var lenghts = [];
+        if (!t1Inside)
+            lenghts.push(c1.getLength(), c2.getLength());
+        if (!t2Inside)
+            lenghts.push(c3.getLength(), c4.getLength());
+        var offset = Math.min.apply(null, lenghts) / 64;
+        var v2 = t1Inside ? c2.getTangentAtTime(t1) : c2.getTangentAt(offset),
+            v1 = (t1Inside ? v2 : c1.getTangentAt(-offset)).negate(),
+            v4 = t2Inside ? c4.getTangentAtTime(t2) : c4.getTangentAt(offset),
+            v3 = (t2Inside ? v4 : c3.getTangentAt(-offset)).negate(),
             // NOTE: For shorter API calls we work with angles in degrees here:
             a1 = v1.getAngle(),
             a2 = v2.getAngle(),
