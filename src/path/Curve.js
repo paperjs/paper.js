@@ -1549,11 +1549,12 @@ new function() { // Scope for intersection using bezier fat-line clipping
     }
 
     function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-            uMin, uMax, flip, calls) {
-        // Avoid deeper recursion, but instead of counting recursion, we count
-        // the total amount of calls, to avoid massive call-trees as suggested
-        // by @iconexperience in #904#issuecomment-225283430. See also #565 #899
-        if (++calls > 4096)
+            uMin, uMax, flip, recursion, calls) {
+        // Avoid deeper recursion, by counting the total amount of recursions,
+        // as well as the total amount of calls, to avoid massive call-trees as
+        // suggested by @iconexperience in #904#issuecomment-225283430.
+        // See also: #565 #899 #1074
+        if (++recursion >= 48 || ++calls > 4096)
             return calls;
         // Let P be the first curve and Q be the second
         var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
@@ -1613,24 +1614,24 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
                             v2, parts[0], c2, c1, locations, param,
-                            uMin, uMax, tMinNew, t, !flip, calls);
+                            uMin, uMax, tMinNew, t, !flip, recursion, calls);
                     calls = addCurveIntersections(
                             v2, parts[1], c2, c1, locations, param,
-                            uMin, uMax, t, tMaxNew, !flip, calls);
+                            uMin, uMax, t, tMaxNew, !flip, recursion, calls);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     calls = addCurveIntersections(
                             parts[0], v1, c2, c1, locations, param,
-                            uMin, u, tMinNew, tMaxNew, !flip, calls);
+                            uMin, u, tMinNew, tMaxNew, !flip, recursion, calls);
                     calls = addCurveIntersections(
                             parts[1], v1, c2, c1, locations, param,
-                            u, uMax, tMinNew, tMaxNew, !flip, calls);
+                            u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
                 }
             } else { // Iterate
                 calls = addCurveIntersections(
                         v2, v1, c2, c1, locations, param,
-                        uMin, uMax, tMinNew, tMaxNew, !flip, calls);
+                        uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
             }
         }
         return calls;
@@ -1851,8 +1852,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         v1, v2, c1, c2, locations, param,
                         // Define the defaults for these parameters of
                         // addCurveIntersections():
-                        // tMin, tMax, uMin, uMax, reverse, recursion
-                        0, 1, 0, 1, 0, 0);
+                        // tMin, tMax, uMin, uMax, flip, recursion, calls
+                        0, 1, 0, 1, 0, 0, 0);
             // We're done if we handle lines and found one intersection already:
             // #805#issuecomment-148503018
             if (straight && locations.length > before)
