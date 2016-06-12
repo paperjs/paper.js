@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 12 17:07:43 2016 +0200
+ * Date: Sun Jun 12 18:32:05 2016 +0200
  *
  ***
  *
@@ -6380,6 +6380,10 @@ statics: {
 
 	getParameterAt: '#getTimeAt',
 
+	getOffsetAtTime: function(t) {
+		return this.getPartLength(0, t);
+	},
+
 	getLocationOf: function() {
 		return this.getLocationAtTime(this.getTimeOf(Point.read(arguments)));
 	},
@@ -6417,7 +6421,7 @@ new function() {
 			this[name + 'At'] = function(location, _isTime) {
 				var values = this.getValues();
 				return Curve[name](values, _isTime ? location
-						: Curve.getTimeAt(values, location, 0));
+						: Curve.getTimeAt(values, location));
 			};
 
 			this[name + 'AtTime'] = function(time) {
@@ -7218,8 +7222,8 @@ var CurveLocation = Base.extend({
 
 		function isInRange(angle, min, max) {
 			return min < max
-				? angle > min && angle < max
-				: angle > min && angle <= 180 || angle >= -180 && angle < max;
+					? angle > min && angle < max
+					: angle > min || angle < max;
 		}
 
 		var v2 = c2.getTangentAtTime(t1Inside ? t1 : tMin),

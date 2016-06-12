@@ -169,6 +169,8 @@ contribute to the code.
   matrix (#972).
 - Allow `Item#position` to be selected via `Item#position.selected` (#980).
 - Add `tolerance` argument to `Path#join(path, tolerance)`.
+- Add `Curve#getOffsetAtTime(time)`, as the reverse of
+  `Curve#getTimeAt(offset)`.
 
 ### Fixed
 - Fix calculations of `Item#strokeBounds` for all possible combinations of
