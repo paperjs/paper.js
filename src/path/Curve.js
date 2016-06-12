@@ -1261,7 +1261,7 @@ new function() { // Injection scope for various curve evaluation methods
             this[name + 'At'] = function(location, _isTime) {
                 var values = this.getValues();
                 return Curve[name](values, _isTime ? location
-                        : Curve.getTimeAt(values, location, 0));
+                        : Curve.getTimeAt(values, location));
             };
 
             this[name + 'AtTime'] = function(time) {
