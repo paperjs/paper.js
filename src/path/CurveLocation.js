@@ -443,9 +443,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
         function isInRange(angle, min, max) {
             return min < max
-                ? angle > min && angle < max
-                // The range wraps around -180 / 180 degrees:
-                : angle > min && angle <= 180 || angle >= -180 && angle < max;
+                    ? angle > min && angle < max
+                    // min > max: the range wraps around -180 / 180 degrees
+                    : angle > min || angle < max;
         }
 
         // Calculate angles for all four tangents at the intersection point,
@@ -469,9 +469,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             a2 = v2.getAngle(),
             a3 = v3.getAngle(),
             a4 = v4.getAngle();
-        // Count how many times curve2 angles appear between the curve1 angles
+        // Count how many times curve2 angles appear between the curve1 angles.
         // If each pair of angles split the other two, then the edges cross.
-        // Use t*Inside to decide which angle pair to check against.
+        // Use t1Inside to decide which angle pair to check against.
         // If t1 is inside the curve, check against a3 & a4, othrwise a1 & a2.
         return !!(t1Inside
                 ? (isInRange(a1, a3, a4) ^ isInRange(a2, a3, a4)) &&
