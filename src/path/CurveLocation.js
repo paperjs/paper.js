@@ -449,7 +449,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         }
 
         // Calculate unambiguous angles for all 4 tangents at the intersection:
-        // - If the intersection is inside a curve (t1 / t2Inside), the  tangent
+        // - If the intersection is inside a curve (t1 / t2Inside), the tangent
         //   at t1 / t2 is unambiguous, because the curve is continuous.
         // - If the intersection is on a segment, step away at equal offsets on
         //   each curve, to calculate unambiguous angles. The vector from the
@@ -464,7 +464,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         if (!t2Inside)
             lenghts.push(c3.getLength(), c4.getLength());
         var pt = this.getPoint(),
-            offset = Math.min.apply(null, lenghts) / 64,
+            offset = Math.min.apply(Math, lenghts) / 64,
             v2 = t1Inside ? c2.getTangentAtTime(t1)
                     : c2.getPointAt(offset).subtract(pt),
             v1 = t1Inside ? v2.negate()
