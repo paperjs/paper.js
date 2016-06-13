@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 11:58:18 2016 +0200
+ * Date: Mon Jun 13 12:08:04 2016 +0200
  *
  ***
  *
@@ -7750,8 +7750,7 @@ var Path = PathItem.extend({
 			parts.push('z');
 		}
 		return parts.join('');
-	}
-}, {
+	},
 
 	isEmpty: function() {
 		return this._segments.length === 0;
@@ -7925,19 +7924,23 @@ var Path = PathItem.extend({
 		return this._length;
 	},
 
-	getArea: function() {
-		if (this._area == null) {
+	getArea: function(_closed) {
+		var cached = _closed === undefined,
+			area = this._area;
+		if (!cached || area == null) {
 			var segments = this._segments,
 				count = segments.length,
-				last = count - 1,
-				area = 0;
-			for (var i = 0, l = this._closed ? count : last; i < l; i++) {
+				closed = cached ? this._closed : _closed;
+				last = count - 1;
+			area = 0;
+			for (var i = 0, l = closed ? count : last; i < l; i++) {
 				area += Curve.getArea(Curve.getValues(
 						segments[i], segments[i < last ? i + 1 : 0]));
 			}
-			this._area = area;
+			if (cached)
+				this._area = area;
 		}
-		return this._area;
+		return area;
 	},
 
 	isClockwise: function() {
@@ -9842,11 +9845,12 @@ PathItem.inject(new function() {
 				path.firstSegment.setHandleIn(handleIn);
 				path.setClosed(true);
 			} else if (path) {
-				var length = path.getLength();
-				if (length >= 2e-7) {
+				var area = path.getArea(true);
+				if (Math.abs(area) >= 2e-7) {
 					console.error('Boolean operation resulted in open path',
 							'segments =', path._segments.length,
-							'length =', length);
+							'length =', path.getLength(),
+							'area=', area);
 				}
 				path = null;
 			}
