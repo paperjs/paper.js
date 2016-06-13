@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 08:56:45 2016 +0200
+ * Date: Mon Jun 13 09:00:29 2016 +0200
  *
  ***
  *
@@ -7232,7 +7232,7 @@ var CurveLocation = Base.extend({
 		if (!t2Inside)
 			lenghts.push(c3.getLength(), c4.getLength());
 		var pt = this.getPoint(),
-			offset = Math.min.apply(null, lenghts) / 64,
+			offset = Math.min.apply(Math, lenghts) / 64,
 			v2 = t1Inside ? c2.getTangentAtTime(t1)
 					: c2.getPointAt(offset).subtract(pt),
 			v1 = t1Inside ? v2.negate()
