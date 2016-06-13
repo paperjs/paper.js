@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 12:08:04 2016 +0200
+ * Date: Mon Jun 13 12:09:17 2016 +0200
  *
  ***
  *
@@ -9767,7 +9767,7 @@ PathItem.inject(new function() {
 				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
 					|| !seg._visited && !nextSeg._visited
 					&& (!operator
-						|| (!strict || isValid(seg))
+						|| isValid(seg)
 						&& (!(strict && nextInter && nextInter._overlap)
 							&& isValid(nextSeg)
 							|| !strict && nextInter
@@ -9815,7 +9815,7 @@ PathItem.inject(new function() {
 						finished = true;
 						seg = other;
 					} else if (isValid(other, isValid(seg, true))) {
-						if (operator && inter._overlap
+						if (operator
 								&& (operator.intersect || operator.subtract)) {
 							seg._visited = true;
 						}
