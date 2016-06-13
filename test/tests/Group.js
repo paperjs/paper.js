@@ -108,3 +108,21 @@ test('group.insertChildren(0, otherGroup.children)', function() {
         return group.children.length;
     }, 0);
 });
+
+test('group.addChildren()', function() {
+    var group = new Group();
+    var children = [new Path(), new Path()];
+    group.addChildren(children);
+    equals(group.children.length, 2,
+            'group.children.length after adding 2 children');
+    group.removeChildren();
+    equals(group.children.length, 0,
+            'group.children.length after removing all children');
+    children.splice(1, 0, null);
+    equals(children.length, 3,
+            'children array length after inserting null at index 1');
+    group.addChildren(children);
+    equals(group.children.length, 2,
+            'calling group.addChildren() with an array with 3 entries, ' +
+            'of which 2 are valid, group.children.length should be 2');
+});

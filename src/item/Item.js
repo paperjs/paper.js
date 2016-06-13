@@ -2353,7 +2353,7 @@ new function() { // Injection scope for hit-test functions shared with project
             // Use the loop also to filter out wrong _type.
             for (var i = items.length - 1; i >= 0; i--) {
                 var item = items[i];
-                if (_proto && !(item instanceof _proto)) {
+                if (!item || _proto && !(item instanceof _proto)) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
