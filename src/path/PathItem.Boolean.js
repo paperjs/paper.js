@@ -299,7 +299,7 @@ PathItem.inject(new function() {
      * Private method that returns the winding contribution of the given point
      * with respect to a given set of monotonic curves.
      */
-    function getWinding(point, curves, operator, horizontal) {
+    function getWinding(point, curves, horizontal) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             px = point.x,
             py = point.y,
@@ -333,9 +333,9 @@ PathItem.inject(new function() {
             yTop = (yTop + py) / 2;
             yBottom = (yBottom + py) / 2;
             if (yTop > -Infinity)
-                windLeft = getWinding(new Point(px, yTop), curves, operator);
+                windLeft = getWinding(new Point(px, yTop), curves).winding;
             if (yBottom < Infinity)
-                windRight = getWinding(new Point(px, yBottom), curves, operator);
+                windRight = getWinding(new Point(px, yBottom), curves).winding;
         } else {
             var xBefore = px - epsilon,
                 xAfter = px + epsilon,
@@ -422,12 +422,14 @@ PathItem.inject(new function() {
                 windRight = windRightOnCurve;
             }
         }
-        // We need to handle the winding contribution differently when dealing
-        // with unite operations, so that it will be 1 for any point on the
-        // outside path, since we are not considering a contribution of 2 a part
-        // of the result, but would have to for outside points. See #1054
-        return operator && operator.unite && !windLeft ^ !windRight ? 1
-                : Math.max(abs(windLeft), abs(windRight));
+        // Return both the calculated winding contribution, and also detect if
+        // we are on the contour of the area by comparing windLeft & windRight.
+        // This is required when handling unite operations, where a winding
+        // contribution of 2 is not part of the result unless it's the contour:
+        return {
+            winding: Math.max(abs(windLeft), abs(windRight)),
+            contour: !windLeft ^ !windRight
+        };
     }
 
     function propagateWinding(segment, path1, path2, monoCurves, operator) {
@@ -438,7 +440,7 @@ PathItem.inject(new function() {
         var chain = [],
             start = segment,
             totalLength = 0,
-            winding = 0;
+            winding;
         do {
             var curve = segment.getCurve(),
                 length = curve.getLength();
@@ -465,17 +467,19 @@ PathItem.inject(new function() {
                 // contributing to the second operand and is outside the
                 // first operand.
                 winding = !(operator.subtract && path2 && (
-                        path === path1 &&  path2._getWinding(pt, operator, hor) ||
-                        path === path2 && !path1._getWinding(pt, operator, hor)))
-                            ? getWinding(pt, monoCurves, operator, hor)
-                            : 0;
+                        path === path1 &&  path2._getWinding(pt, hor) ||
+                        path === path2 && !path1._getWinding(pt, hor)))
+                            ? getWinding(pt, monoCurves, hor)
+                            : { winding: 0 };
                  break;
             }
             length -= curveLength;
         }
         // Now assign the winding to the entire curve chain.
         for (var j = chain.length - 1; j >= 0; j--) {
-            chain[j].segment._winding = winding;
+            var seg = chain[j].segment;
+            seg._winding = winding.winding;
+            seg._contour = winding.contour;
         }
     }
 
@@ -494,8 +498,14 @@ PathItem.inject(new function() {
             start,
             otherStart;
 
-        function isValid(seg) {
-            return !!(!seg._visited && (!operator || operator[seg._winding]));
+        function isValid(seg, excludeContour) {
+            // Unite operations need special handling of segments with a winding
+            // contribution of two (part of both involved areas) but which are
+            // also part of the contour of the result. Such segments are not
+            // chosen as the start of new paths and are not always counted as a
+            // valid next step, as controlled by the excludeContour parameter.
+            return !!(!seg._visited && (!operator || operator[seg._winding]
+                    || !excludeContour && operator.unite && seg._contour));
         }
 
         function isStart(seg) {
@@ -572,12 +582,15 @@ PathItem.inject(new function() {
                     }
                 }
             }
-            // Do not start paths with invalid segments (segments that were
-            // already visited, or that are not going to be part of the result).
-            // Also don't start in overlaps, unless all segments are part of
-            // overlaps, in which case we have no other choice.
-            if (!isValid(seg) || !seg._path._validOverlapsOnly
-                    && inter && seg._winding && inter._overlap)
+            // Exclude three cases of invalid starting segments:
+            // - Do not start with invalid segments (segments that were already
+            //   visited, or that are not going to be part of the result).
+            // - Do not start in segments that have an invalid winding
+            //   contribution but are part of the contour (excludeContour=true).
+            // - Do not start in overlaps, unless all segments are part of
+            //   overlaps, in which case we have no other choice.
+            if (!isValid(seg, true)
+                    || !seg._path._validOverlapsOnly && inter && inter._overlap)
                 continue;
             start = otherStart = null;
             while (true) {
@@ -594,7 +607,10 @@ PathItem.inject(new function() {
                         finished = true;
                         // Switch the segment, but do not update handleIn
                         seg = other;
-                    } else if (isValid(other)) {
+                    } else if (isValid(other, isValid(seg, true))) {
+                        // Note that we pass `true` for excludeContour here if
+                        // the current segment is valid and not a contour
+                        // segment. See isValid()/getWinding() for explanations.
                         // We are at a crossing and the other segment is part of
                         // the boolean result, switch over.
                         // We need to mark overlap segments as visited when
@@ -615,7 +631,8 @@ PathItem.inject(new function() {
                 }
                 // If there are only valid overlaps and we encounter and invalid
                 // segment, bail out immediately. Otherwise we need to be more
-                // tolerant due to complex situations of crossing.
+                // tolerant due to complex situations of crossing,
+                // see findBestIntersection()
                 if (seg._path._validOverlapsOnly && !isValid(seg))
                     break;
                 if (!path) {
@@ -679,9 +696,8 @@ PathItem.inject(new function() {
          * part of a horizontal curve
          * @return {Number} the winding number
          */
-        _getWinding: function(point, operator, horizontal) {
-            return getWinding(point, this._getMonoCurves(), operator,
-                    horizontal);
+        _getWinding: function(point, horizontal) {
+            return getWinding(point, this._getMonoCurves(), horizontal).winding;
         },
 
         /**
