@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 12 18:53:14 2016 +0200
+ * Date: Mon Jun 13 08:56:45 2016 +0200
  *
  ***
  *
@@ -7231,11 +7231,16 @@ var CurveLocation = Base.extend({
 			lenghts.push(c1.getLength(), c2.getLength());
 		if (!t2Inside)
 			lenghts.push(c3.getLength(), c4.getLength());
-		var offset = Math.min.apply(null, lenghts) / 64;
-		var v2 = t1Inside ? c2.getTangentAtTime(t1) : c2.getTangentAt(offset),
-			v1 = (t1Inside ? v2 : c1.getTangentAt(-offset)).negate(),
-			v4 = t2Inside ? c4.getTangentAtTime(t2) : c4.getTangentAt(offset),
-			v3 = (t2Inside ? v4 : c3.getTangentAt(-offset)).negate(),
+		var pt = this.getPoint(),
+			offset = Math.min.apply(null, lenghts) / 64,
+			v2 = t1Inside ? c2.getTangentAtTime(t1)
+					: c2.getPointAt(offset).subtract(pt),
+			v1 = t1Inside ? v2.negate()
+					: c1.getPointAt(-offset).subtract(pt),
+			v4 = t2Inside ? c4.getTangentAtTime(t2)
+					: c4.getPointAt(offset).subtract(pt),
+			v3 = t2Inside ? v4.negate()
+					: c3.getPointAt(-offset).subtract(pt),
 			a1 = v1.getAngle(),
 			a2 = v2.getAngle(),
 			a3 = v3.getAngle(),
