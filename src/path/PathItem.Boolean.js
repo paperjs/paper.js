@@ -515,7 +515,7 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the one that's
         // either connecting back to start or is not visited yet, and will be
         // part of the boolean result:
-        function findBestIntersection(inter, exclude, strict) {
+        function findBestIntersection(inter, exclude) {
             if (!inter._next)
                 return inter;
             while (inter) {
@@ -525,26 +525,14 @@ PathItem.inject(new function() {
                 // See if this segment and the next are both not visited yet, or
                 // are bringing us back to the beginning, and are both valid,
                 // meaning they are part of the boolean result.
-                // Handling overlaps correctly requires two passes, first with
-                // strict set to true, then false:
-                // In strict mode, the next segment is not allowed to be an
-                // overlap. In non-strict mode, the next segment may be invalid
-                // if it offers a switch to a valid segment.
                 if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
-                    && (!operator
-                        || isValid(seg)
-                        // Do not consider nextSeg in strict mode if it is part
-                        // of an overlap, in order to give non-overlapping
-                        // options that might follow the priority over overlaps.
-                        && (!(strict && nextInter && nextInter._overlap)
-                            && isValid(nextSeg)
-                            // If the next segment isn't valid, its intersection
-                            // to which we may switch might be, so check that.
-                            || !strict && nextInter
-                            && isValid(nextInter._segment))
-                    )))
+                    && (!operator || isValid(seg) && (isValid(nextSeg)
+                        // If the next segment isn't valid, its intersection
+                        // to which we may switch might be, so check that.
+                        || nextInter && isValid(nextInter._segment)))
+                    ))
                     return inter;
                 // If it's no match, continue with the next linked intersection.
                 inter = inter._next;
@@ -593,8 +581,7 @@ PathItem.inject(new function() {
             while (true) {
                 // For each segment we encounter, see if there are multiple
                 // intersections, and if so, pick the best one:
-                inter = inter && (findBestIntersection(inter, seg, true)
-                        || findBestIntersection(inter, seg, false)) || inter;
+                inter = inter && findBestIntersection(inter, seg) || inter;
                 // Get the reference to the other segment on the intersection.
                 var other = inter && inter._segment;
                 if (isStart(seg)) {
