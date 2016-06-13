@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 12:49:57 2016 +0200
+ * Date: Mon Jun 13 14:17:47 2016 +0200
  *
  ***
  *
@@ -3846,7 +3846,7 @@ new function() {
 			items = Array.prototype.slice.apply(items);
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i];
-				if (_proto && !(item instanceof _proto)) {
+				if (!item || _proto && !(item instanceof _proto)) {
 					items.splice(i, 1);
 				} else {
 					item._remove(false, true);
@@ -9749,7 +9749,8 @@ PathItem.inject(new function() {
 			otherStart;
 
 		function isValid(seg, excludeContour) {
-			return !!(!seg._visited && (!operator || operator[seg._winding]
+			return !!(seg && !seg._visited && (!operator
+					|| operator[seg._winding]
 					|| !excludeContour && operator.unite && seg._contour));
 		}
 
@@ -9763,7 +9764,7 @@ PathItem.inject(new function() {
 			while (inter) {
 				var seg = inter._segment,
 					nextSeg = seg.getNext(),
-					nextInter = nextSeg._intersection;
+					nextInter = nextSeg && nextSeg._intersection;
 				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
 					|| !seg._visited && !nextSeg._visited
 					&& (!operator || isValid(seg) && (isValid(nextSeg)
