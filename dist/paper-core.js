@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 12:09:17 2016 +0200
+ * Date: Mon Jun 13 12:13:42 2016 +0200
  *
  ***
  *
@@ -7930,7 +7930,7 @@ var Path = PathItem.extend({
 		if (!cached || area == null) {
 			var segments = this._segments,
 				count = segments.length,
-				closed = cached ? this._closed : _closed;
+				closed = cached ? this._closed : _closed,
 				last = count - 1;
 			area = 0;
 			for (var i = 0, l = closed ? count : last; i < l; i++) {
