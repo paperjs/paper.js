@@ -504,7 +504,8 @@ PathItem.inject(new function() {
             // also part of the contour of the result. Such segments are not
             // chosen as the start of new paths and are not always counted as a
             // valid next step, as controlled by the excludeContour parameter.
-            return !!(!seg._visited && (!operator || operator[seg._winding]
+            return !!(seg && !seg._visited && (!operator
+                    || operator[seg._winding]
                     || !excludeContour && operator.unite && seg._contour));
         }
 
@@ -521,7 +522,7 @@ PathItem.inject(new function() {
             while (inter) {
                 var seg = inter._segment,
                     nextSeg = seg.getNext(),
-                    nextInter = nextSeg._intersection;
+                    nextInter = nextSeg && nextSeg._intersection;
                 // See if this segment and the next are both not visited yet, or
                 // are bringing us back to the beginning, and are both valid,
                 // meaning they are part of the boolean result.
@@ -646,11 +647,11 @@ PathItem.inject(new function() {
                 path.setClosed(true);
             } else if (path) {
                 // Only complain about open paths if they would actually contain
-                // an area when closed. Such open paths can occur due to
-                // epsilons, e.g. when two segments are so close to each other
-                // that they are considered the same, but the winding
-                // calculation still produces a valid winding due to their
-                // slight differences.
+                // an area when closed. Open paths that can silently discarded
+                // can occur due to epsilons, e.g. when two segments are so
+                // close to each other that they are considered the same
+                // location, but the winding calculation still produces a valid
+                // number due to their slight differences producing a tiny area.
                 var area = path.getArea(true);
                 if (Math.abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
                     // This path wasn't finished and is hence invalid.
