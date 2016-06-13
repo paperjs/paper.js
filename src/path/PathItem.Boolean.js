@@ -438,7 +438,7 @@ PathItem.inject(new function() {
         var chain = [],
             start = segment,
             totalLength = 0,
-            windingSum = 0;
+            winding = 0;
         do {
             var curve = segment.getCurve(),
                 length = curve.getLength();
@@ -446,43 +446,37 @@ PathItem.inject(new function() {
             totalLength += length;
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
-        // Calculate the average winding among three evenly distributed points
-        // along this curve chain as a representative winding number.
-        for (var i = 0; i < 3; i++) {
-            // Sample the points at 3 equal intervals along the total length:
-            var length = totalLength * (i + 1) / 4;
-            for (var j = 0, l = chain.length; j < l; j++) {
-                var entry = chain[j],
-                    curveLength = entry.length;
-                if (length <= curveLength) {
-                    var curve = entry.curve,
-                        path = curve._path,
-                        parent = path._parent,
-                        t = curve.getTimeAt(length),
-                        pt = curve.getPointAtTime(t),
-                        hor = Math.abs(curve.getTangentAtTime(t).y)
-                                < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
-                    if (parent instanceof CompoundPath)
-                        path = parent;
-                    // While subtracting, we need to omit this curve if it is
-                    // contributing to the second operand and is outside the
-                    // first operand.
-                    if (!(operator.subtract && path2
-                            && (path === path1
-                                && path2._getWinding(pt, operator, hor)
-                            || path === path2
-                                && !path1._getWinding(pt, operator, hor)))) {
-                        windingSum += getWinding(pt, monoCurves, operator, hor);
-                    }
-                    break;
-                }
-                length -= curveLength;
+        // Sample the point at a middle of the chain to get its winding:
+        var length = totalLength / 2;
+        for (var j = 0, l = chain.length; j < l; j++) {
+            var entry = chain[j],
+                curveLength = entry.length;
+            if (length <= curveLength) {
+                var curve = entry.curve,
+                    path = curve._path,
+                    parent = path._parent,
+                    t = curve.getTimeAt(length),
+                    pt = curve.getPointAtTime(t),
+                    hor = Math.abs(curve.getTangentAtTime(t).y)
+                            < /*#=*/Numerical.TRIGONOMETRIC_EPSILON;
+                if (parent instanceof CompoundPath)
+                    path = parent;
+                // While subtracting, we need to omit this curve if it is
+                // contributing to the second operand and is outside the
+                // first operand.
+                winding = !(operator.subtract && path2 && (
+                        path === path1 &&  path2._getWinding(pt, operator, hor) ||
+                        path === path2 && !path1._getWinding(pt, operator, hor)))
+                            ? getWinding(pt, monoCurves, operator, hor)
+                            : 0;
+                 break;
             }
+            length -= curveLength;
         }
-        // Assign the average winding to the entire curve chain.
-        var winding = Math.round(windingSum / 3);
-        for (var j = chain.length - 1; j >= 0; j--)
+        // Now assign the winding to the entire curve chain.
+        for (var j = chain.length - 1; j >= 0; j--) {
             chain[j].segment._winding = winding;
+        }
     }
 
     /**
