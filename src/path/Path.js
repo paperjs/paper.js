@@ -828,7 +828,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (!cached || area == null) {
             var segments = this._segments,
                 count = segments.length,
-                closed = cached ? this._closed : _closed;
+                closed = cached ? this._closed : _closed,
                 last = count - 1;
             area = 0;
             for (var i = 0, l = closed ? count : last; i < l; i++) {
