@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 12:13:42 2016 +0200
+ * Date: Mon Jun 13 12:49:57 2016 +0200
  *
  ***
  *
@@ -9757,7 +9757,7 @@ PathItem.inject(new function() {
 			return seg === start || seg === otherStart;
 		}
 
-		function findBestIntersection(inter, exclude, strict) {
+		function findBestIntersection(inter, exclude) {
 			if (!inter._next)
 				return inter;
 			while (inter) {
@@ -9766,13 +9766,9 @@ PathItem.inject(new function() {
 					nextInter = nextSeg._intersection;
 				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
 					|| !seg._visited && !nextSeg._visited
-					&& (!operator
-						|| isValid(seg)
-						&& (!(strict && nextInter && nextInter._overlap)
-							&& isValid(nextSeg)
-							|| !strict && nextInter
-							&& isValid(nextInter._segment))
-					)))
+					&& (!operator || isValid(seg) && (isValid(nextSeg)
+						|| nextInter && isValid(nextInter._segment)))
+					))
 					return inter;
 				inter = inter._next;
 			}
@@ -9805,8 +9801,7 @@ PathItem.inject(new function() {
 				continue;
 			start = otherStart = null;
 			while (true) {
-				inter = inter && (findBestIntersection(inter, seg, true)
-						|| findBestIntersection(inter, seg, false)) || inter;
+				inter = inter && findBestIntersection(inter, seg) || inter;
 				var other = inter && inter._segment;
 				if (isStart(seg)) {
 					finished = true;
