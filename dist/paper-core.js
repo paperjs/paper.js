@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 09:00:29 2016 +0200
+ * Date: Mon Jun 13 11:58:18 2016 +0200
  *
  ***
  *
@@ -9604,7 +9604,7 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curves, operator, horizontal) {
+	function getWinding(point, curves, horizontal) {
 		var epsilon = 2e-7,
 			px = point.x,
 			py = point.y,
@@ -9633,9 +9633,9 @@ PathItem.inject(new function() {
 			yTop = (yTop + py) / 2;
 			yBottom = (yBottom + py) / 2;
 			if (yTop > -Infinity)
-				windLeft = getWinding(new Point(px, yTop), curves, operator);
+				windLeft = getWinding(new Point(px, yTop), curves).winding;
 			if (yBottom < Infinity)
-				windRight = getWinding(new Point(px, yBottom), curves, operator);
+				windRight = getWinding(new Point(px, yBottom), curves).winding;
 		} else {
 			var xBefore = px - epsilon,
 				xAfter = px + epsilon,
@@ -9692,15 +9692,17 @@ PathItem.inject(new function() {
 				windRight = windRightOnCurve;
 			}
 		}
-		return operator && operator.unite && !windLeft ^ !windRight ? 1
-				: Math.max(abs(windLeft), abs(windRight));
+		return {
+			winding: Math.max(abs(windLeft), abs(windRight)),
+			contour: !windLeft ^ !windRight
+		};
 	}
 
 	function propagateWinding(segment, path1, path2, monoCurves, operator) {
 		var chain = [],
 			start = segment,
 			totalLength = 0,
-			windingSum = 0;
+			winding;
 		do {
 			var curve = segment.getCurve(),
 				length = curve.getLength();
@@ -9708,36 +9710,34 @@ PathItem.inject(new function() {
 			totalLength += length;
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
-		for (var i = 0; i < 3; i++) {
-			var length = totalLength * (i + 1) / 4;
-			for (var j = 0, l = chain.length; j < l; j++) {
-				var entry = chain[j],
-					curveLength = entry.length;
-				if (length <= curveLength) {
-					var curve = entry.curve,
-						path = curve._path,
-						parent = path._parent,
-						t = curve.getTimeAt(length),
-						pt = curve.getPointAtTime(t),
-						hor = Math.abs(curve.getTangentAtTime(t).y)
-								< 1e-7;
-					if (parent instanceof CompoundPath)
-						path = parent;
-					if (!(operator.subtract && path2
-							&& (path === path1
-								&& path2._getWinding(pt, operator, hor)
-							|| path === path2
-								&& !path1._getWinding(pt, operator, hor)))) {
-						windingSum += getWinding(pt, monoCurves, operator, hor);
-					}
-					break;
-				}
-				length -= curveLength;
+		var length = totalLength / 2;
+		for (var j = 0, l = chain.length; j < l; j++) {
+			var entry = chain[j],
+				curveLength = entry.length;
+			if (length <= curveLength) {
+				var curve = entry.curve,
+					path = curve._path,
+					parent = path._parent,
+					t = curve.getTimeAt(length),
+					pt = curve.getPointAtTime(t),
+					hor = Math.abs(curve.getTangentAtTime(t).y)
+							< 1e-7;
+				if (parent instanceof CompoundPath)
+					path = parent;
+				winding = !(operator.subtract && path2 && (
+						path === path1 &&  path2._getWinding(pt, hor) ||
+						path === path2 && !path1._getWinding(pt, hor)))
+							? getWinding(pt, monoCurves, hor)
+							: { winding: 0 };
+				 break;
 			}
+			length -= curveLength;
 		}
-		var winding = Math.round(windingSum / 3);
-		for (var j = chain.length - 1; j >= 0; j--)
-			chain[j].segment._winding = winding;
+		for (var j = chain.length - 1; j >= 0; j--) {
+			var seg = chain[j].segment;
+			seg._winding = winding.winding;
+			seg._contour = winding.contour;
+		}
 	}
 
 	function tracePaths(segments, operator) {
@@ -9745,8 +9745,9 @@ PathItem.inject(new function() {
 			start,
 			otherStart;
 
-		function isValid(seg) {
-			return !!(!seg._visited && (!operator || operator[seg._winding]));
+		function isValid(seg, excludeContour) {
+			return !!(!seg._visited && (!operator || operator[seg._winding]
+					|| !excludeContour && operator.unite && seg._contour));
 		}
 
 		function isStart(seg) {
@@ -9796,8 +9797,8 @@ PathItem.inject(new function() {
 					}
 				}
 			}
-			if (!isValid(seg) || !seg._path._validOverlapsOnly
-					&& inter && seg._winding && inter._overlap)
+			if (!isValid(seg, true)
+					|| !seg._path._validOverlapsOnly && inter && inter._overlap)
 				continue;
 			start = otherStart = null;
 			while (true) {
@@ -9810,7 +9811,7 @@ PathItem.inject(new function() {
 					if (isStart(other)) {
 						finished = true;
 						seg = other;
-					} else if (isValid(other)) {
+					} else if (isValid(other, isValid(seg, true))) {
 						if (operator && inter._overlap
 								&& (operator.intersect || operator.subtract)) {
 							seg._visited = true;
@@ -9859,9 +9860,8 @@ PathItem.inject(new function() {
 	}
 
 	return {
-		_getWinding: function(point, operator, horizontal) {
-			return getWinding(point, this._getMonoCurves(), operator,
-					horizontal);
+		_getWinding: function(point, horizontal) {
+			return getWinding(point, this._getMonoCurves(), horizontal).winding;
 		},
 
 		unite: function(path) {
