@@ -523,21 +523,18 @@ PathItem.inject(new function() {
                     nextSeg = seg.getNext(),
                     nextInter = nextSeg._intersection;
                 // See if this segment and the next are both not visited yet, or
-                // are bringing us back to the beginning, and are both part of
-                // the boolean result.
-                // Handling overlaps correctly here is tricky, requiring two
-                // passes, first with strict = true, then false:
-                // In strict mode, the current and the next segment are both
-                // checked for validity, and only the current one is allowed to
-                // be an overlap.
-                // If this pass does not yield a result, the non-strict mode is
-                // used, in which invalid current segments are tolerated, and
-                // overlaps for the next segment are allowed.
+                // are bringing us back to the beginning, and are both valid,
+                // meaning they are part of the boolean result.
+                // Handling overlaps correctly requires two passes, first with
+                // strict set to true, then false:
+                // In strict mode, the next segment is not allowed to be an
+                // overlap. In non-strict mode, the next segment may be invalid
+                // if it offers a switch to a valid segment.
                 if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
                     || !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator
-                        || (!strict || isValid(seg))
+                        || isValid(seg)
                         // Do not consider nextSeg in strict mode if it is part
                         // of an overlap, in order to give non-overlapping
                         // options that might follow the priority over overlaps.
