@@ -661,14 +661,20 @@ PathItem.inject(new function() {
                 path.firstSegment.setHandleIn(handleIn);
                 path.setClosed(true);
             } else if (path) {
-                var length = path.getLength();
-                // Only complain about open paths if they are long enough.
-                if (length >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
+                // Only complain about open paths if they would actually contain
+                // an area when closed. Such open paths can occur due to
+                // epsilons, e.g. when two segments are so close to each other
+                // that they are considered the same, but the winding
+                // calculation still produces a valid winding due to their
+                // slight differences.
+                var area = path.getArea(true);
+                if (Math.abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
                     // This path wasn't finished and is hence invalid.
                     // Report the error to the console for the time being.
                     console.error('Boolean operation resulted in open path',
                             'segments =', path._segments.length,
-                            'length =', length);
+                            'length =', path.getLength(),
+                            'area=', area);
                 }
                 path = null;
             }

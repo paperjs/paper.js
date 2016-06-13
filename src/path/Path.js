@@ -291,7 +291,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
     }
 }, /** @lends Path# */{
-    // Enforce bean creation for getPathData(), as it has hidden parameters.
+    // Enforce bean creation for getPathData() and getArea(), as they have
+    // hidden parameters.
     beans: true,
 
     getPathData: function(_matrix, _precision) {
@@ -348,8 +349,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             parts.push('z');
         }
         return parts.join('');
-    }
-}, /** @lends Path# */{
+    },
 
     // TODO: Consider adding getSubPath(a, b), returning a part of the current
     // path, with the added benefit that b can be < a, and closed looping is
@@ -820,19 +820,25 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @bean
      * @type Number
      */
-    getArea: function() {
-        if (this._area == null) {
+    getArea: function(_closed) {
+        // If the call overrides the 'closed' state, do not cache the result.
+        // This is used in tracePaths().
+        var cached = _closed === undefined,
+            area = this._area;
+        if (!cached || area == null) {
             var segments = this._segments,
                 count = segments.length,
-                last = count - 1,
-                area = 0;
-            for (var i = 0, l = this._closed ? count : last; i < l; i++) {
+                closed = cached ? this._closed : _closed;
+                last = count - 1;
+            area = 0;
+            for (var i = 0, l = closed ? count : last; i < l; i++) {
                 area += Curve.getArea(Curve.getValues(
                         segments[i], segments[i < last ? i + 1 : 0]));
             }
-            this._area = area;
+            if (cached)
+                this._area = area;
         }
-        return this._area;
+        return area;
     },
 
     /**
