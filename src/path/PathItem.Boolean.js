@@ -610,9 +610,9 @@ PathItem.inject(new function() {
                         // segment. See isValid()/getWinding() for explanations.
                         // We are at a crossing and the other segment is part of
                         // the boolean result, switch over.
-                        // We need to mark overlap segments as visited when
-                        // processing intersection and subtraction.
-                        if (operator && inter._overlap
+                        // We need to mark segments as visited when processing
+                        // intersection and subtraction.
+                        if (operator
                                 && (operator.intersect || operator.subtract)) {
                             seg._visited = true;
                         }
