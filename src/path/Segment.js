@@ -655,7 +655,7 @@ var Segment = Base.extend(/** @lends Segment# */{
                 // If change is true, we need to set the new values back
                 point._x = x;
                 point._y = y;
-                i  = 2;
+                i = 2;
                 if (handleIn) {
                     handleIn._x = coords[i++] - x;
                     handleIn._y = coords[i++] - y;

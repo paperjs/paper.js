@@ -148,8 +148,8 @@ var PathFitter = Base.extend({
             alpha1, alpha2;
         if (abs(detC0C1) > epsilon) {
             // Kramer's rule
-            var detC0X  = C[0][0] * X[1]    - C[1][0] * X[0],
-                detXC1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+            var detC0X = C[0][0] * X[1]    - C[1][0] * X[0],
+                detXC1 = X[0]    * C[1][1] - X[1]    * C[0][1];
             // Derive alpha values
             alpha1 = detXC1 / detC0C1;
             alpha2 = detC0X / detC0C1;
