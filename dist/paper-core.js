@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 15:26:08 2016 +0200
+ * Date: Tue Jun 14 16:15:50 2016 +0200
  *
  ***
  *
@@ -12174,6 +12174,7 @@ new function() {
 		_handleMouseEvent: function(type, event, point) {
 			var itemEvents = this._itemEvents,
 				hitItems = itemEvents.native[type],
+				nativeMove = type === 'mousemove',
 				tool = this._scope.tool,
 				view = this;
 
@@ -12182,7 +12183,7 @@ new function() {
 						|| tool && tool.responds(type);
 			}
 
-			if (type === 'mousemove' && dragging && responds('mousedrag'))
+			if (nativeMove && dragging && responds('mousedrag'))
 				type = 'mousedrag';
 			if (!point)
 				point = this.getEventPoint(event);
@@ -12193,19 +12194,20 @@ new function() {
 					fill: true,
 					stroke: true
 				}),
-				item = (hitItems ? hit && hit.item : overItem) || undefined,
+				item = hit && hit.item || null,
 				handle = false,
 				mouse = {};
 			mouse[type.substr(5)] = true;
 
-			var moveType = mouse.move || mouse.drag ? type : 'mousemove';
-			if (item !== overItem) {
-				if (overItem)
+			if (hitItems && item !== overItem) {
+				if (overItem) {
 					emitMouseEvent(overItem, 'mouseleave', event, point);
-				if (item)
+				}
+				if (item) {
 					emitMouseEvent(item, 'mouseenter', event, point);
+				}
+				overItem = item;
 			}
-			overItem = item;
 			if (wasInView ^ inView) {
 				emitMouseEvent(this, inView ? 'mouseenter' : 'mouseleave',
 						event, point);
@@ -12213,7 +12215,8 @@ new function() {
 				handle = true;
 			}
 			if ((inView || mouse.drag) && !point.equals(lastPoint)) {
-				emitMouseEvents(this, item, moveType, event, point, lastPoint);
+				emitMouseEvents(this, item, nativeMove ? type : 'mousemove',
+						event, point, lastPoint);
 				handle = true;
 			}
 			wasInView = inView;
