@@ -318,7 +318,7 @@ Base.exports.PaperScript = (function() {
                     agent.firefox && version >= 40 ||
                     agent.node);
             var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A'];
-                // Create empty entries by the amount of lines + 1, so join can be
+            // Create empty entries by the amount of lines + 1, so join can be
             // used below to produce the actual instructions that many times.
             mappings.length = (code.match(lineBreaks) || []).length + 1
                     + (offsetCode ? offset : 0);

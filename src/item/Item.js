@@ -4106,7 +4106,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // Transform the blur value as a vector and use its new length:
                 blur = mx.transform(new Point(style.getShadowBlur(), 0)),
                 offset = mx.transform(this.getShadowOffset());
-            ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
+            ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
             ctx.shadowBlur = blur.getLength();
             ctx.shadowOffsetX = offset.x;
             ctx.shadowOffsetY = offset.y;
