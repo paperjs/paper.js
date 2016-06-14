@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 16:54:16 2016 +0200
+ * Date: Tue Jun 14 17:02:05 2016 +0200
  *
  ***
  *
@@ -12193,7 +12193,7 @@ new function() {
 				point = this.getEventPoint(event);
 
 			var inView = this.getBounds().contains(point),
-				hitItem = undefined,
+				hitItem,
 				handle = false,
 				mouse = {};
 			mouse[type.substr(5)] = true;
