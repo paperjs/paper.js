@@ -26,7 +26,7 @@
                 var vector = offset.normalize(l * (j % 2 ? 0.1 : -0.1));
                 path.add(offset + vector);
             }
-            path.smooth( { type: 'continuous' });
+            path.smooth({ type: 'continuous' });
             layer.insertChild(0, new Group({
                 children: [path],
                 applyMatrix: false

@@ -13,7 +13,8 @@
             amount: 30
         };
 
-        var raster, group;
+        var raster,
+            group;
         var piece = createPiece();
         var count = 0;
 
@@ -62,26 +63,31 @@
             if (group)
                 group.remove();
 
+            // As the web is asynchronous, we need to wait for the raster to
+            // load before we can perform any operation on its pixels.
             raster = new Raster(image);
-            raster.remove();
-
-            // Transform the raster, so it fills the view:
-            raster.fitBounds(view.bounds, true);
-            group = new Group();
-            for (var y = 0; y < values.amount; y++) {
-                for (var x = 0; x < values.amount; x++) {
-                    var copy = piece.clone();
-                    copy.position += size * [x + (y % 2 ? 0.5 : 0), y * 0.75];
-                    group.addChild(copy);
+            raster.visible = false;
+            raster.on('load', function() {
+                // Transform the raster, so it fills the view:
+                raster.fitBounds(view.bounds, true);
+                group = new Group();
+                for (var y = 0; y < values.amount; y++) {
+                    for (var x = 0; x < values.amount; x++) {
+                        var copy = piece.clone();
+                        copy.position += size * [x + (y % 2 ? 0.5 : 0), y * 0.75];
+                        group.addChild(copy);
+                    }
                 }
-            }
 
-            // Transform the group so it covers the view:
-            group.fitBounds(view.bounds, true);
-            group.scale(1.1);
+                // Transform the group so it covers the view:
+                group.fitBounds(view.bounds, true);
+                group.scale(1.1);
+            })
         }
 
         function onFrame(event) {
+            if (!group)
+                return;
             // Loop through the uncolored hexagons in the group and fill them
             // with the average color:
             var length = Math.min(count + values.amount, group.children.length);
@@ -91,7 +97,6 @@
                 var color = raster.getAverageColor(hexagon);
                 if (color) {
                     hexagon.fillColor = color;
-                    // hexagon.strokeColor = color;
                     var top = piece.children[1];
                     top.fillColor = color.clone();
                     top.fillColor.brightness *= 1.5;
@@ -118,10 +123,11 @@
             var file = event.dataTransfer.files[0];
             var reader = new FileReader();
 
-            reader.onload = function ( event ) {
+            reader.onload = function(event) {
                 var image = document.createElement('img');
                 image.onload = function () {
                     handleImage(image);
+                    view.draw();
                 };
                 image.src = event.target.result;
             };

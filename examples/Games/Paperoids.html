@@ -438,7 +438,7 @@
                 currentLives--;
                 this.display();
                 Ship.destroy();
-                setTimeout( function() {
+                setTimeout(function() {
                     if (currentLives == 0) {
                         Game.over();
                     } else {
@@ -448,7 +448,7 @@
             },
             display: function() {
                 group.removeChildren();
-                for (var i=0;i<currentLives-1;i++) {
+                for (var i = 0;i < currentLives - 1; i++) {
                     var copy = shipPath.clone();
                     copy.rotate(-90);
                     copy.visible = true;
