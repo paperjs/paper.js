@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 12:42:55 2016 +0200
+ * Date: Tue Jun 14 15:16:45 2016 +0200
  *
  ***
  *
@@ -3298,10 +3298,7 @@ new function() {
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
-			var decomposed = this._decomposed;
 			this.rotate(rotation - current);
-			decomposed.rotation = rotation;
-			this._decomposed = decomposed;
 		}
 	},
 
@@ -3313,13 +3310,10 @@ new function() {
 	},
 
 	setScaling: function() {
-		var current = this.getScaling();
-		if (current) {
-			var scaling = Point.read(arguments, 0, { clone: true }),
-				decomposed = this._decomposed;
+		var current = this.getScaling(),
+			scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+		if (current && scaling) {
 			this.scale(scaling.x / current.x, scaling.y / current.y);
-			decomposed.scaling = scaling;
-			this._decomposed = decomposed;
 		}
 	},
 
