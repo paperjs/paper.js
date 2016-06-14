@@ -30,7 +30,7 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
         this.type = type;
         this.event = event;
         this.point = point;
-        this.target = target;
+        this._target = target;
         this.delta = delta;
     },
 
@@ -56,6 +56,12 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * @name MouseEvent#target
      * @type Item
      */
+    getTarget: function() {
+        var target = this._target;
+        if (typeof target === 'function')
+            target = this._target = target();
+        return target;
+    },
 
     // DOCS: document MouseEvent#delta
     /**
@@ -69,7 +75,7 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     toString: function() {
         return "{ type: '" + this.type
                 + "', point: " + this.point
-                + ', target: ' + this.target
+                + ', target: ' + this.getTarget()
                 + (this.delta ? ', delta: ' + this.delta : '')
                 + ', modifiers: ' + this.getModifiers()
                 + ' }';

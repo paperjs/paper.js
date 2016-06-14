@@ -1155,9 +1155,9 @@ new function() { // Injection scope for event handling on the browser
         };
 
     // Returns true if event was prevented, false otherwise.
-    function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
-        var target = obj,
-            stopped = false,
+    function emitMouseEvent(obj, target, type, event, point, prevPoint,
+            stopItem) {
+        var stopped = false,
             mouseEvent;
 
         // Returns true if the event was stopped, false otherwise.
@@ -1166,7 +1166,8 @@ new function() { // Injection scope for event handling on the browser
                 // Only produce the event object if we really need it, and then
                 // reuse it if we're bubbling.
                 if (!mouseEvent) {
-                    mouseEvent = new MouseEvent(type, event, point, target,
+                    mouseEvent = new MouseEvent(type, event, point,
+                            target || obj,
                             // Calculate delta if prevPoint was passed
                             prevPoint ? point.subtract(prevPoint) : null);
                 }
@@ -1195,7 +1196,8 @@ new function() { // Injection scope for event handling on the browser
     }
 
     // Returns true if event was stopped, false otherwise.
-    function emitMouseEvents(view, item, type, event, point, prevPoint) {
+    function emitMouseEvents(view, hitItem, hitTest, type, event, point,
+            prevPoint) {
         // Before handling events, process removeOn() calls for cleanup.
         // NOTE: As soon as there is one event handler receiving mousedrag
         // events, non of the removeOnMove() items will be removed while the
@@ -1206,17 +1208,21 @@ new function() { // Injection scope for event handling on the browser
         // and of the handlers called event.preventDefault()
         prevented = called = false;
         // First handle the drag-item and its parents, through bubbling.
-        return (dragItem && emitMouseEvent(dragItem, type, event, point,
-                    prevPoint)
-            // Next handle the hit-test item, if it's different from the drag
-            // item and not a descendant of it (in which case it would already
-            // have received an event in the call above). Use fallbacks to
-            // translate mousedrag to mousemove, since drag is handled above.
-            || item && item !== dragItem && !item.isDescendant(dragItem)
-                && emitMouseEvent(item, fallbacks[type] || type, event, point,
-                    prevPoint, dragItem)
+        return (dragItem && emitMouseEvent(dragItem, null, type, event,
+                    point, prevPoint)
+            // Next handle the hit-item, if it's different from the drag-item
+            // and not a descendant of it (in which case it would already have
+            // received an event in the call above). Use fallbacks to translate
+            // mousedrag to mousemove, since drag is handled above.
+            || hitItem && hitItem !== dragItem
+                && !hitItem.isDescendant(dragItem)
+                && emitMouseEvent(hitItem, null, fallbacks[type] || type, event,
+                    point, prevPoint, dragItem)
             // Lastly handle the mouse events on the view, if we're still here.
-            || emitMouseEvent(view, type, event, point, prevPoint));
+            // Choose from the potential targets in the right sequence, with the
+            // hitTest() function as the fall-back getter for MouseEvent#target.
+            || emitMouseEvent(view, dragItem || hitItem || hitTest, type, event,
+                    point, prevPoint));
     }
 
     /**
@@ -1293,12 +1299,7 @@ new function() { // Injection scope for event handling on the browser
             // Run the hit-test on items first, but only if we're required to do
             // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hit = hitItems && inView && this._project.hitTest(point, {
-                    tolerance: 0,
-                    fill: true,
-                    stroke: true
-                }),
-                item = hit && hit.item || null,
+                hitItem = undefined,
                 // Keep track if view event should be handled, so we can use it
                 // to decide if tool._handleMouseEvent() shall be called after.
                 handle = false,
@@ -1307,34 +1308,56 @@ new function() { // Injection scope for event handling on the browser
             // mouse event types.
             mouse[type.substr(5)] = true;
 
-            // Always first call the view's mouse handlers, as required by
-            // CanvasView, and then handle the active tool after, if any.
-            if (hitItems && item !== overItem) {
-                // But first handle mouseenter / leave between items and also on
-                // the view, but only if hitItems is true, see above.
+            // Provide a hit-test function that makes sure to only perform the
+            // hit-test once, and only when it's actually required. This method
+            // is passed to emitMouseEvents() and as target to emitMouseEvent(),
+            // as the fall-back getter for MouseEvent#target.
+            function hitTest() {
+                //
+                if (hitItem === undefined) {
+                    var hit = inView && view._project.hitTest(point, {
+                        tolerance: 0,
+                        fill: true,
+                        stroke: true
+                    });
+                    hitItem = hit && hit.item || null;
+                }
+                // Return the target with view as the fall-back, as expected by
+                // MouseEvent#target.
+                return hitItem || view;
+            }
+
+            // Execute hitTest right away if we have events relying on hitItem.
+            if (hitItems)
+                hitTest();
+            // Handle mouseenter / leave between items and views first.
+            if (hitItems && hitItem !== overItem) {
                 if (overItem) {
-                    emitMouseEvent(overItem, 'mouseleave', event, point);
+                    emitMouseEvent(overItem, null, 'mouseleave', event, point);
                 }
-                if (item) {
-                    emitMouseEvent(item, 'mouseenter', event, point);
+                if (hitItem) {
+                    emitMouseEvent(hitItem, null, 'mouseenter', event, point);
                 }
-                overItem = item;
+                overItem = hitItem;
             }
             // Handle mouseenter / leave on the view.
             if (wasInView ^ inView) {
-                emitMouseEvent(this, inView ? 'mouseenter' : 'mouseleave',
+                emitMouseEvent(this, null, inView ? 'mouseenter' : 'mouseleave',
                         event, point);
                 overView = inView ? this : null;
                 handle = true; // To include the leaving move.
             }
-            // Now finally handle the mousemove / mousedrag event.
+            // Now handle the mousemove / mousedrag event.
+            // Always call the view's mouse handlers first, as required by
+            // CanvasView, and then handle the active tool after, if any.
             // mousedrag is allowed to leave the view and still triggers events,
             // but do not trigger two subsequent even with the same location.
             if ((inView || mouse.drag) && !point.equals(lastPoint)) {
                 // Handle mousemove even if this is not actually a mousemove
                 // event but the mouse has moved since the last event.
-                emitMouseEvents(this, item, nativeMove ? type : 'mousemove',
-                        event, point, lastPoint);
+                emitMouseEvents(this, hitItem, hitTest,
+                        nativeMove ? type : 'mousemove', event,
+                        point, lastPoint);
                 handle = true;
             }
             wasInView = inView;
@@ -1342,25 +1365,27 @@ new function() { // Injection scope for event handling on the browser
             // We emit mousedown only when in the view, and mouseup regardless,
             // as long as the mousedown event was inside.
             if (mouse.down && inView || mouse.up && downPoint) {
-                emitMouseEvents(this, item, type, event, point, downPoint);
+                emitMouseEvents(this, hitItem, hitTest, type, event,
+                        point, downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
                     // difference:
-                    dblClick = item === clickItem
+                    dblClick = hitItem === clickItem
                         && (Date.now() - clickTime < 300);
-                    downItem = clickItem = item;
+                    downItem = clickItem = hitItem;
                     // Only start dragging if the mousedown event has not
                     // prevented the default.
-                    dragItem = !prevented && item;
+                    dragItem = !prevented && hitItem;
                     downPoint = point;
                 } else if (mouse.up) {
-                    // Emulate click / doubleclick, but only on item, not view
-                    if (!prevented && item === downItem) {
+                    // Emulate click / doubleclick, but only on the hit-item,
+                    // not the view.
+                    if (!prevented && hitItem === downItem) {
                         clickTime = Date.now();
-                        emitMouseEvents(this, item,
-                                dblClick ? 'doubleclick' : 'click',
-                                event, point, downPoint);
+                        emitMouseEvents(this, hitItem, hitTest,
+                                dblClick ? 'doubleclick' : 'click', event,
+                                point, downPoint);
                         dblClick = false;
                     }
                     downItem = dragItem = null;
