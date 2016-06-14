@@ -1098,7 +1098,7 @@ new function() { // Injection scope for various item event handlers
     setScaling: function(/* scaling */) {
         var current = this.getScaling(),
             // Clone existing points since we're caching internally.
-            scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+            scaling = Point.read(arguments, 0, { clone: true, readNull: true });
         if (current && scaling) {
             this.scale(scaling.x / current.x, scaling.y / current.y);
         }
