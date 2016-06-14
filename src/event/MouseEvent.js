@@ -57,6 +57,8 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * @type Item
      */
     getTarget: function() {
+        // #_target may be a hitTest() function, in which case we need to
+        // execute and override it the first time #target is requested.
         var target = this._target;
         if (typeof target === 'function')
             target = this._target = target();
