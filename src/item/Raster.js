@@ -181,6 +181,16 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.setSize(this.getWidth(), height);
     },
 
+    /**
+     * The loading state of the raster image.
+     *
+     * @bean
+     * @type Boolean
+     */
+    getLoaded: function() {
+        return this._loaded;
+    },
+
     isEmpty: function() {
         var size = this._size;
         return !size || size.width === 0 && size.height === 0;

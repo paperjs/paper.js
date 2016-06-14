@@ -171,6 +171,7 @@ contribute to the code.
 - Add `tolerance` argument to `Path#join(path, tolerance)`.
 - Add `Curve#getOffsetAtTime(time)`, as the reverse of
   `Curve#getTimeAt(offset)`.
+- Add `Raster#loaded` to reflect the loading state of its image.
 
 ### Fixed
 - Fix calculations of `Item#strokeBounds` for all possible combinations of
