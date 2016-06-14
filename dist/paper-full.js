@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 17:02:05 2016 +0200
+ * Date: Tue Jun 14 17:08:32 2016 +0200
  *
  ***
  *
@@ -4954,6 +4954,10 @@ var Raster = Item.extend({
 
 	setHeight: function(height) {
 		this.setSize(this.getWidth(), height);
+	},
+
+	getLoaded: function() {
+		return this._loaded;
 	},
 
 	isEmpty: function() {
