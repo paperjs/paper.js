@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 15:16:45 2016 +0200
+ * Date: Tue Jun 14 15:26:08 2016 +0200
  *
  ***
  *
@@ -3311,7 +3311,7 @@ new function() {
 
 	setScaling: function() {
 		var current = this.getScaling(),
-			scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+			scaling = Point.read(arguments, 0, { clone: true, readNull: true });
 		if (current && scaling) {
 			this.scale(scaling.x / current.x, scaling.y / current.y);
 		}
