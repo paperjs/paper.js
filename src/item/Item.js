@@ -1077,12 +1077,7 @@ new function() { // Injection scope for various item event handlers
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
-            // Preserve the cached _decomposed values over rotation, and only
-            // update the rotation property on it.
-            var decomposed = this._decomposed;
             this.rotate(rotation - current);
-            decomposed.rotation = rotation;
-            this._decomposed = decomposed;
         }
     },
 
@@ -1101,15 +1096,11 @@ new function() { // Injection scope for various item event handlers
     },
 
     setScaling: function(/* scaling */) {
-        var current = this.getScaling();
-        if (current) {
+        var current = this.getScaling(),
             // Clone existing points since we're caching internally.
-            var scaling = Point.read(arguments, 0, { clone: true }),
-                // See #setRotation() for preservation of _decomposed.
-                decomposed = this._decomposed;
+            scaling = Point.read(arguments, 0, { clone: true, readNull: true })
+        if (current && scaling) {
             this.scale(scaling.x / current.x, scaling.y / current.y);
-            decomposed.scaling = scaling;
-            this._decomposed = decomposed;
         }
     },
 
