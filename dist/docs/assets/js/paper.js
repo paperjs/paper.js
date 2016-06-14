@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 16:15:50 2016 +0200
+ * Date: Tue Jun 14 16:52:31 2016 +0200
  *
  ***
  *
@@ -12092,15 +12092,16 @@ new function() {
 			mousedrag: 'mousemove'
 		};
 
-	function emitMouseEvent(obj, type, event, point, prevPoint, stopItem) {
-		var target = obj,
-			stopped = false,
+	function emitMouseEvent(obj, target, type, event, point, prevPoint,
+			stopItem) {
+		var stopped = false,
 			mouseEvent;
 
 		function emit(obj, type) {
 			if (obj.responds(type)) {
 				if (!mouseEvent) {
-					mouseEvent = new MouseEvent(type, event, point, target,
+					mouseEvent = new MouseEvent(type, event, point,
+							target || obj,
 							prevPoint ? point.subtract(prevPoint) : null);
 				}
 				if (obj.emit(type, mouseEvent)) {
@@ -12125,15 +12126,18 @@ new function() {
 		return stopped;
 	}
 
-	function emitMouseEvents(view, item, type, event, point, prevPoint) {
+	function emitMouseEvents(view, hitItem, hitTest, type, event, point,
+			prevPoint) {
 		view._project.removeOn(type);
 		prevented = called = false;
-		return (dragItem && emitMouseEvent(dragItem, type, event, point,
-					prevPoint)
-			|| item && item !== dragItem && !item.isDescendant(dragItem)
-				&& emitMouseEvent(item, fallbacks[type] || type, event, point,
-					prevPoint, dragItem)
-			|| emitMouseEvent(view, type, event, point, prevPoint));
+		return (dragItem && emitMouseEvent(dragItem, null, type, event,
+					point, prevPoint)
+			|| hitItem && hitItem !== dragItem
+				&& !hitItem.isDescendant(dragItem)
+				&& emitMouseEvent(hitItem, null, fallbacks[type] || type, event,
+					point, prevPoint, dragItem)
+			|| emitMouseEvent(view, dragItem || hitItem || hitTest, type, event,
+					point, prevPoint));
 	}
 
 	var itemEventsMap = {
@@ -12189,51 +12193,62 @@ new function() {
 				point = this.getEventPoint(event);
 
 			var inView = this.getBounds().contains(point),
-				hit = hitItems && inView && this._project.hitTest(point, {
-					tolerance: 0,
-					fill: true,
-					stroke: true
-				}),
-				item = hit && hit.item || null,
+				hitItem = undefined,
 				handle = false,
 				mouse = {};
 			mouse[type.substr(5)] = true;
 
-			if (hitItems && item !== overItem) {
+			function hitTest() {
+				if (hitItem === undefined) {
+					var hit = inView && view._project.hitTest(point, {
+						tolerance: 0,
+						fill: true,
+						stroke: true
+					});
+					hitItem = hit && hit.item || null;
+				}
+				return hitItem || view;
+			}
+
+			if (hitItems)
+				hitTest();
+			if (hitItems && hitItem !== overItem) {
 				if (overItem) {
-					emitMouseEvent(overItem, 'mouseleave', event, point);
+					emitMouseEvent(overItem, null, 'mouseleave', event, point);
 				}
-				if (item) {
-					emitMouseEvent(item, 'mouseenter', event, point);
+				if (hitItem) {
+					emitMouseEvent(hitItem, null, 'mouseenter', event, point);
 				}
-				overItem = item;
+				overItem = hitItem;
 			}
 			if (wasInView ^ inView) {
-				emitMouseEvent(this, inView ? 'mouseenter' : 'mouseleave',
+				emitMouseEvent(this, null, inView ? 'mouseenter' : 'mouseleave',
 						event, point);
 				overView = inView ? this : null;
 				handle = true;
 			}
 			if ((inView || mouse.drag) && !point.equals(lastPoint)) {
-				emitMouseEvents(this, item, nativeMove ? type : 'mousemove',
-						event, point, lastPoint);
+				emitMouseEvents(this, hitItem, hitTest,
+						nativeMove ? type : 'mousemove', event,
+						point, lastPoint);
 				handle = true;
 			}
 			wasInView = inView;
 			if (mouse.down && inView || mouse.up && downPoint) {
-				emitMouseEvents(this, item, type, event, point, downPoint);
+				emitMouseEvents(this, hitItem, hitTest, type, event,
+						point, downPoint);
 				if (mouse.down) {
-					dblClick = item === clickItem
+					dblClick = hitItem === clickItem
 						&& (Date.now() - clickTime < 300);
-					downItem = clickItem = item;
-					dragItem = !prevented && item;
+					downItem = clickItem = hitItem;
+					dragItem = !prevented && hitItem;
 					downPoint = point;
 				} else if (mouse.up) {
-					if (!prevented && item === downItem) {
+					if (!prevented && hitItem === downItem) {
 						clickTime = Date.now();
-						emitMouseEvents(this, item,
-								dblClick ? 'doubleclick' : 'click',
-								event, point, downPoint);
+						emitMouseEvents(this, hitItem, hitTest,
+								dblClick ? 'doubleclick' : 'click', event,
+								point, downPoint);
 						dblClick = false;
 					}
 					downItem = dragItem = null;
@@ -12576,14 +12591,21 @@ var MouseEvent = Event.extend({
 		this.type = type;
 		this.event = event;
 		this.point = point;
-		this.target = target;
+		this._target = target;
 		this.delta = delta;
+	},
+
+	getTarget: function() {
+		var target = this._target;
+		if (typeof target === 'function')
+			target = this._target = target();
+		return target;
 	},
 
 	toString: function() {
 		return "{ type: '" + this.type
 				+ "', point: " + this.point
-				+ ', target: ' + this.target
+				+ ', target: ' + this.getTarget()
 				+ (this.delta ? ', delta: ' + this.delta : '')
 				+ ', modifiers: ' + this.getModifiers()
 				+ ' }';
