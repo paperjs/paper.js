@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 13 14:54:13 2016 +0200
+ * Date: Tue Jun 14 12:42:55 2016 +0200
  *
  ***
  *
@@ -4261,7 +4261,7 @@ new function() {
 					new Matrix().scale(pixelRatio, pixelRatio)),
 				blur = mx.transform(new Point(style.getShadowBlur(), 0)),
 				offset = mx.transform(this.getShadowOffset());
-			ctx.shadowColor =  style.getShadowColor().toCanvasStyle(ctx);
+			ctx.shadowColor = style.getShadowColor().toCanvasStyle(ctx);
 			ctx.shadowBlur = blur.getLength();
 			ctx.shadowOffsetX = offset.x;
 			ctx.shadowOffsetY = offset.y;
@@ -5719,7 +5719,7 @@ var Segment = Base.extend({
 			if (change) {
 				point._x = x;
 				point._y = y;
-				i  = 2;
+				i = 2;
 				if (handleIn) {
 					handleIn._x = coords[i++] - x;
 					handleIn._y = coords[i++] - y;
@@ -10320,8 +10320,8 @@ var PathFitter = Base.extend({
 		var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
 			alpha1, alpha2;
 		if (abs(detC0C1) > epsilon) {
-			var detC0X  = C[0][0] * X[1]    - C[1][0] * X[0],
-				detXC1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+			var detC0X = C[0][0] * X[1]    - C[1][0] * X[0],
+				detXC1 = X[0]    * C[1][1] - X[1]    * C[0][1];
 			alpha1 = detXC1 / detC0C1;
 			alpha2 = detC0X / detC0C1;
 		} else {

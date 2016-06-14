@@ -95,7 +95,7 @@ module.exports = function(paper) {
                 frameDuration = 1 / options.fps,
                 startTime = Date.now(),
                 lastTime = startTime,
-                padding = options.padding || ((options.amount - 1) + '').length;
+                padding = options.padding || ((options.amount - 1) + '').length,
                 paddedStr = Array(padding + 1).join('0');
 
             // Start exporting frames by exporting the first frame:
