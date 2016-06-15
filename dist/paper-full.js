@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 14 17:22:54 2016 +0200
+ * Date: Wed Jun 15 15:17:33 2016 +0200
  *
  ***
  *
@@ -1029,10 +1029,8 @@ var Numerical = new function() {
 			if (D !== 0 && abs(D) < MACHINE_EPSILON) {
 				var gmC = pow(abs(a * b * c), 1 / 3);
 				if (gmC < 1e-8) {
-					var mult = pow(10,
-							abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
-					if (!isFinite(mult))
-						mult = 0;
+					var mult = gmC === 0 ? 0 : pow(10,
+						abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
 					a *= mult;
 					b *= mult;
 					c *= mult;
