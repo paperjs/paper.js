@@ -234,10 +234,8 @@ var Numerical = new function() {
                     // We multiply with a factor to normalize the coefficients.
                     // The factor is just the nearest exponent of 10, big enough
                     // to raise all the coefficients to nearly [-1, +1] range.
-                    var mult = pow(10,
-                            abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
-                    if (!isFinite(mult))
-                        mult = 0;
+                    var mult = gmC === 0 ? 0 : pow(10,
+                        abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
                     a *= mult;
                     b *= mult;
                     c *= mult;
