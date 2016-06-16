@@ -452,7 +452,7 @@ PathItem.inject(new function() {
                     (   v[coord]     > aAfter  && v[2 + coord] > aAfter &&
                         v[4 + coord] > aAfter  && v[6 + coord] > aAfter)
                     ? [v]
-                    : Curve.splitToMonoCurves(v, coord);
+                    : Curve.getMonoCurves(v, coord);
             for (var j = 0, m = monoCurves.length; j < m; j++) {
                 vPrev = addWinding(monoCurves[j], vPrev, point.x, point.y,
                         windings, isOnPath, coord);
@@ -980,44 +980,42 @@ Path.inject(/** @lends Path# */{
         var bounds = this.getBounds(),
             point = bounds.getCenter(true);
         if (!this.contains(point)) {
-            // Since there is no guarantee that a poly-bezier path contains
-            // the center of its bounding rectangle, we shoot a ray in
-            // x direction and select a point between the first consecutive
-            // intersections of the ray on the left.
+            // Since there is no guarantee that a poly-bezier path contains the
+            // center of its bounding rectangle, we shoot a ray in x direction
+            // and select a point between the first consecutive intersections of
+            // the ray on the left.
             var curves = this.getCurves(),
                 y = point.y,
                 intercepts = [],
-                monoCurves = [];
-            // Collect values for all y-monotone curves that intersect the ray at y
+                monoCurves = [],
+                roots = [],
+                windingPrev = 0;
+            // Get values for all y-monotone curves that intersect the ray at y.
             for (var i = 0, l = curves.length; i < l; i++) {
-                var monoVals = Curve.splitToMonoCurves(curves[i].getValues(), 0);
-                for (var j = 0; j < monoVals.length; j++) {
-                    var values = monoVals[j];
-                    if (y >= values[1] && y <= values[7]
-                        || y >= values[7] && y <= values[1]) {
-                        var winding = values[1] > values[7] ? 1 : values[1] < values[7] ? -1 : 0;
+                var monos = Curve.getMonoCurves(curves[i].getValues(), 0);
+                for (var j = 0, m = monos.length; j < m; j++) {
+                    var v = monos[j];
+                    if (y >= v[1] && y <= v[7] || y >= v[7] && y <= v[1]) {
+                        var winding = v[1] > v[7] ? 1 : v[1] < v[7] ? -1 : 0;
                         if (winding) {
-                            monoCurves.push({values: values, winding: winding});
+                            monoCurves.push({ values: v, winding: winding });
                             windingPrev = winding;
                         }
                     }
                 }
             }
-            if (!monoCurves.length) {
-                // fallback in case no non-horizontal curves were found
+            // Fallback in case no non-horizontal curves were found.
+            if (!monoCurves.length)
                 return point;
-            }
-            var windingPrev = monoCurves[monoCurves.length - 1].winding;
             for (var i = 0, l = monoCurves.length; i < l; i++) {
-                var v = monoCurves[i].values;
-                var winding = monoCurves[i].winding;
-                var roots = [];
-                var x = y === v[1] ? v[0]
-                    : y === v[7] ? v[6]
-                    : Curve.solveCubic(v, 1, y, roots, 0, 1) === 1
-                    ? Curve.getPoint(v, roots[0]).x
-                    : (v[0] + v[6]) / 2;
-                //if (y != v[1] || winding != windingPrev)
+                var v = monoCurves[i].values,
+                    winding = monoCurves[i].winding,
+                    x = y === v[1] ? v[0]
+                        : y === v[7] ? v[6]
+                        : Curve.solveCubic(v, 1, y, roots, 0, 1) === 1
+                            ? Curve.getPoint(v, roots[0]).x
+                            : (v[0] + v[6]) / 2;
+                // if (y != v[1] || winding != windingPrev)
                     intercepts.push(x);
                 windingPrev = winding;
             }
