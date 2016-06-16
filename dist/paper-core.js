@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 16 14:00:22 2016 +0200
+ * Date: Thu Jun 16 14:02:48 2016 +0200
  *
  ***
  *
@@ -6130,8 +6130,12 @@ statics: {
 		var p1 = v[coord],
 			c1 = v[coord + 2],
 			c2 = v[coord + 4],
-			p2 = v[coord + 6],
-			c = 3 * (c1 - p1),
+			p2 = v[coord + 6];
+		if (p1 < val && p2 < val && c1 < val && c2 < val
+				|| p1 > val && p2 > val && c1 > val && c2 > val) {
+			return 0;
+		}
+		var c = 3 * (c1 - p1),
 			b = 3 * (c2 - c1) - c,
 			a = p2 - p1 - c - b;
 		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
