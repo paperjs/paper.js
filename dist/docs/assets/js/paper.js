@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 16 14:02:48 2016 +0200
+ * Date: Thu Jun 16 14:16:48 2016 +0200
  *
  ***
  *
@@ -6130,15 +6130,16 @@ statics: {
 		var p1 = v[coord],
 			c1 = v[coord + 2],
 			c2 = v[coord + 4],
-			p2 = v[coord + 6];
-		if (p1 < val && p2 < val && c1 < val && c2 < val
-				|| p1 > val && p2 > val && c1 > val && c2 > val) {
-			return 0;
+			p2 = v[coord + 6],
+			res = 0;
+		if (  !(p1 < val && p2 < val && c1 < val && c2 < val ||
+				p1 > val && p2 > val && c1 > val && c2 > val)) {
+			var c = 3 * (c1 - p1),
+				b = 3 * (c2 - c1) - c,
+				a = p2 - p1 - c - b;
+			res = Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
 		}
-		var c = 3 * (c1 - p1),
-			b = 3 * (c2 - c1) - c,
-			a = p2 - p1 - c - b;
-		return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
+		return res;
 	},
 
 	getTimeOf: function(v, point) {
@@ -6257,19 +6258,20 @@ statics: {
 	},
 
 	_addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
+		function add(value, padding) {
+			var left = value - padding,
+				right = value + padding;
+			if (left < min[coord])
+				min[coord] = left;
+			if (right > max[coord])
+				max[coord] = right;
+		}
+
 		padding /= 2;
 		var minPad = min[coord] - padding,
 			maxPad = max[coord] + padding;
-		if (v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad
-				|| v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
-			function add(value, padding) {
-				var left = value - padding,
-					right = value + padding;
-				if (left < min[coord])
-					min[coord] = left;
-				if (right > max[coord])
-					max[coord] = right;
-			}
+		if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
+				v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
 			if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
 				add(v0, padding);
 				add(v3, padding);
