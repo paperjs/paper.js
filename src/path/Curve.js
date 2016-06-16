@@ -785,42 +785,54 @@ statics: /** @lends Curve */{
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
         padding /= 2; // strokePadding is in width, not radius
-        // Code ported and further optimised from:
-        // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-        function add(value, padding) {
-            var left = value - padding,
-                right = value + padding;
-            if (left < min[coord])
-                min[coord] = left;
-            if (right > max[coord])
-                max[coord] = right;
-        }
-        // Calculate derivative of our bezier polynomial, divided by 3.
-        // Doing so allows for simpler calculations of a, b, c and leads to the
-        // same quadratic roots.
-        var a = 3 * (v1 - v2) - v0 + v3,
-            b = 2 * (v0 + v2) - 4 * v1,
-            c = v1 - v0,
-            count = Numerical.solveQuadratic(a, b, c, roots),
-            // Add some tolerance for good roots, as t = 0, 1 are added
-            // separately anyhow, and we don't want joins to be added with radii
-            // in getStrokeBounds()
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
-            tMax = 1 - tMin;
-        // Only add strokeWidth to bounds for points which lie within 0 < t < 1
-        // The corner cases for cap and join are handled in getStrokeBounds()
-        add(v3, 0);
-        for (var i = 0; i < count; i++) {
-            var t = roots[i],
-                u = 1 - t;
-            // Test for good roots and only add to bounds if good.
-            if (tMin < t && t < tMax)
-                // Calculate bezier polynomial at t.
-                add(u * u * u * v0
-                    + 3 * u * u * t * v1
-                    + 3 * u * t * t * v2
-                    + t * t * t * v3,
-                    padding);
+        var minPad = min[coord] - padding,
+            maxPad = max[coord] + padding;
+        // The curve can only extend the current bounds if at least one value
+        // is outside the min-max range.
+        if (v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad
+                || v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
+            // Code ported and further optimised from:
+            // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+            function add(value, padding) {
+                var left = value - padding,
+                    right = value + padding;
+                if (left < min[coord])
+                    min[coord] = left;
+                if (right > max[coord])
+                    max[coord] = right;
+            }
+            if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
+                // If values are sorted, the curve's extrema are v0 and v3
+                add(v0, padding);
+                add(v3, padding);
+            } else {// Calculate derivative of our bezier polynomial, divided by 3.
+                // Doing so allows for simpler calculations of a, b, c and leads to the
+                // same quadratic roots.
+                var a = 3 * (v1 - v2) - v0 + v3,
+                    b = 2 * (v0 + v2) - 4 * v1,
+                    c = v1 - v0,
+                    count = Numerical.solveQuadratic(a, b, c, roots),
+                // Add some tolerance for good roots, as t = 0, 1 are added
+                // separately anyhow, and we don't want joins to be added with radii
+                // in getStrokeBounds()
+                    tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+                    tMax = 1 - tMin;
+                // Only add strokeWidth to bounds for points which lie within 0 < t < 1
+                // The corner cases for cap and join are handled in getStrokeBounds()
+                add(v3, 0);
+                for (var i = 0; i < count; i++) {
+                    var t = roots[i],
+                        u = 1 - t;
+                    // Test for good roots and only add to bounds if good.
+                    if (tMin < t && t < tMax)
+                    // Calculate bezier polynomial at t.
+                        add(u * u * u * v0
+                            + 3 * u * u * t * v1
+                            + 3 * u * t * t * v2
+                            + t * t * t * v3,
+                            padding);
+                }
+            }
         }
     }
 }}, Base.each(
