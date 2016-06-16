@@ -628,16 +628,17 @@ statics: /** @lends Curve */{
         var p1 = v[coord],
             c1 = v[coord + 2],
             c2 = v[coord + 4],
-            p2 = v[coord + 6];
-        if (p1 < val && p2 < val && c1 < val && c2 < val
-                || p1 > val && p2 > val && c1 > val && c2 > val) {
-            // If val is outside the curve values, no solution is possible.
-            return 0;
+            p2 = v[coord + 6],
+            res = 0;
+        // If val is outside the curve values, no solution is possible.
+        if (  !(p1 < val && p2 < val && c1 < val && c2 < val ||
+                p1 > val && p2 > val && c1 > val && c2 > val)) {
+            var c = 3 * (c1 - p1),
+                b = 3 * (c2 - c1) - c,
+                a = p2 - p1 - c - b;
+            res = Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
         }
-        var c = 3 * (c1 - p1),
-            b = 3 * (c2 - c1) - c,
-            a = p2 - p1 - c - b;
-        return Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
+        return res;
     },
 
     getTimeOf: function(v, point) {
@@ -789,41 +790,45 @@ statics: /** @lends Curve */{
      * NOTE: padding is only used for Path.getBounds().
      */
     _addBounds: function(v0, v1, v2, v3, coord, padding, min, max, roots) {
+        // Code ported and further optimised from:
+        // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+        function add(value, padding) {
+            var left = value - padding,
+                right = value + padding;
+            if (left < min[coord])
+                min[coord] = left;
+            if (right > max[coord])
+                max[coord] = right;
+        }
+
         padding /= 2; // strokePadding is in width, not radius
         var minPad = min[coord] - padding,
             maxPad = max[coord] + padding;
-        // The curve can only extend the current bounds if at least one value
-        // is outside the min-max range.
-        if (v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad
-                || v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
-            // Code ported and further optimised from:
-            // http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-            function add(value, padding) {
-                var left = value - padding,
-                    right = value + padding;
-                if (left < min[coord])
-                    min[coord] = left;
-                if (right > max[coord])
-                    max[coord] = right;
-            }
+        // Perform a rough bounds checking first: The curve can only extend the
+        // current bounds if at least one value is outside the min-max range.
+        if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
+                v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
             if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
-                // If values are sorted, the curve's extrema are v0 and v3
+                // If the values of a curve are sorted, the extrema are simply
+                // the start and end point.
                 add(v0, padding);
                 add(v3, padding);
-            } else {// Calculate derivative of our bezier polynomial, divided by 3.
-                // Doing so allows for simpler calculations of a, b, c and leads to the
-                // same quadratic roots.
+            } else {
+                // Calculate derivative of our bezier polynomial, divided by 3.
+                // Doing so allows for simpler calculations of a, b, c and leads
+                // to the same quadratic roots.
                 var a = 3 * (v1 - v2) - v0 + v3,
                     b = 2 * (v0 + v2) - 4 * v1,
                     c = v1 - v0,
                     count = Numerical.solveQuadratic(a, b, c, roots),
-                // Add some tolerance for good roots, as t = 0, 1 are added
-                // separately anyhow, and we don't want joins to be added with radii
-                // in getStrokeBounds()
+                    // Add some tolerance for good roots, as t = 0, 1 are added
+                    // separately anyhow, and we don't want joins to be added
+                    // with radii in getStrokeBounds()
                     tMin = /*#=*/Numerical.CURVETIME_EPSILON,
                     tMax = 1 - tMin;
-                // Only add strokeWidth to bounds for points which lie within 0 < t < 1
-                // The corner cases for cap and join are handled in getStrokeBounds()
+                // Only add strokeWidth to bounds for points which lie within 0
+                // < t < 1 The corner cases for cap and join are handled in
+                // getStrokeBounds()
                 add(v3, 0);
                 for (var i = 0; i < count; i++) {
                     var t = roots[i],
