@@ -822,6 +822,50 @@ statics: /** @lends Curve */{
                     + t * t * t * v3,
                     padding);
         }
+    },
+
+    /**
+     * Splits the specified curve values into segments of curves that are monotone in the specified
+     * coordinate direction (0: monotone in x-direction, 1: monotone in y-direction. If the curve is
+     * already monotone, an array only containing the original values will be returned.
+     */
+    splitToMonoCurves: function(v, coord) {
+        var vMono = [];
+        // getLength is a rather expensive operation, therefore we test two cheap preconditions first
+        if (v[0] === v[6] && v[1] === v[7] && Curve.getLength(v) === 0)
+            return vMono;
+        var o0 = v[1 - coord],
+            o1 = v[3 - coord],
+            o2 = v[5 - coord],
+            o3 = v[7 - coord];
+        if (o0 >= o1 === o1 >= o2 && o1 >= o2 === o2 >= o3 || Curve.isStraight(v)) {
+            // Straight curves and curves with points and control points ordered
+            // in coordinate direction are guaranteed to be monotone.
+            vMono.push(v);
+        } else {
+            var a = 3 * (o1 - o2) - o0 + o3,
+                b = 2 * (o0 + o2) - 4 * o1,
+                c = o1 - o0,
+                tMin = 4e-7,
+                tMax = 1 - tMin,
+                roots = [],
+                n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
+            if (n === 0) {
+                vMono.push(v);
+            } else {
+                roots.sort();
+                var t = roots[0],
+                    parts = Curve.subdivide(v, t);
+                vMono.push(parts[0]);
+                if (n > 1) {
+                    t = (roots[1] - t) / (1 - t);
+                    parts = Curve.subdivide(parts[1], t);
+                    vMono.push(parts[0]);
+                }
+                vMono.push(parts[1]);
+            }
+        }
+        return vMono;
     }
 }}, Base.each(
     ['getBounds', 'getStrokeBounds', 'getHandleBounds'],
