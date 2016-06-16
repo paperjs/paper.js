@@ -1300,7 +1300,7 @@ new function() { // Injection scope for event handling on the browser
                     tolerance: 0,
                     fill: true,
                     stroke: true
-                });
+                }),
                 hitItem = hit && hit.item || null,
                 // Keep track if view event should be handled, so we can use it
                 // to decide if tool._handleMouseEvent() shall be called after.
