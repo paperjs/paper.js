@@ -979,7 +979,7 @@ Path.inject(/** @lends Path# */{
                     // Keep then range to 0 .. 1 (excluding) in the search for y
                     // extrema.
                     n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
-                if (n === 0) {
+                if (n < 1) {
                     insertCurve(v);
                 } else {
                     roots.sort();
