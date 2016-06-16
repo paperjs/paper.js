@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 17 00:42:40 2016 +0200
+ * Date: Fri Jun 17 00:50:06 2016 +0200
  *
  ***
  *
@@ -12215,7 +12215,7 @@ new function() {
 					tolerance: 0,
 					fill: true,
 					stroke: true
-				});
+				}),
 				hitItem = hit && hit.item || null,
 				handle = false,
 				mouse = {};
