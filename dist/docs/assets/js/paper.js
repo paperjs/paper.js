@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 15 15:17:33 2016 +0200
+ * Date: Thu Jun 16 09:53:54 2016 +0200
  *
  ***
  *
@@ -1104,7 +1104,8 @@ var Numerical = new function() {
 				}
 			}
 			var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
-			if (isFinite(x) && (count === 0 || x !== roots[count - 1])
+			if (isFinite(x) && count >= 0
+					&& (count === 0 || x !== roots[count - 1])
 					&& (min == null || x > min - EPSILON && x < max + EPSILON))
 				roots[count++] = min == null ? x : clamp(x, min, max);
 			return count;
@@ -10031,7 +10032,7 @@ Path.inject({
 					tMax = 1 - tMin,
 					roots = [],
 					n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
-				if (n === 0) {
+				if (n < 1) {
 					insertCurve(v);
 				} else {
 					roots.sort();
