@@ -1196,8 +1196,7 @@ new function() { // Injection scope for event handling on the browser
     }
 
     // Returns true if event was stopped, false otherwise.
-    function emitMouseEvents(view, hitItem, hitTest, type, event, point,
-            prevPoint) {
+    function emitMouseEvents(view, hitItem, type, event, point, prevPoint) {
         // Before handling events, process removeOn() calls for cleanup.
         // NOTE: As soon as there is one event handler receiving mousedrag
         // events, non of the removeOnMove() items will be removed while the
@@ -1219,9 +1218,7 @@ new function() { // Injection scope for event handling on the browser
                 && emitMouseEvent(hitItem, null, fallbacks[type] || type, event,
                     point, prevPoint, dragItem)
             // Lastly handle the mouse events on the view, if we're still here.
-            // Choose from the potential targets in the right sequence, with the
-            // hitTest() function as the fall-back getter for MouseEvent#target.
-            || emitMouseEvent(view, dragItem || hitItem || hitTest, type, event,
+            || emitMouseEvent(view, dragItem || hitItem || view, type, event,
                     point, prevPoint));
     }
 
@@ -1299,7 +1296,12 @@ new function() { // Injection scope for event handling on the browser
             // Run the hit-test on items first, but only if we're required to do
             // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hitItem,
+                hit = inView && view._project.hitTest(point, {
+                    tolerance: 0,
+                    fill: true,
+                    stroke: true
+                });
+                hitItem = hit && hit.item || null,
                 // Keep track if view event should be handled, so we can use it
                 // to decide if tool._handleMouseEvent() shall be called after.
                 handle = false,
@@ -1308,28 +1310,6 @@ new function() { // Injection scope for event handling on the browser
             // mouse event types.
             mouse[type.substr(5)] = true;
 
-            // Provide a hit-test function that makes sure to only perform the
-            // hit-test once, and only when it's actually required. This method
-            // is passed to emitMouseEvents() and as target to emitMouseEvent(),
-            // as the fall-back getter for MouseEvent#target.
-            function hitTest() {
-                //
-                if (hitItem === undefined) {
-                    var hit = inView && view._project.hitTest(point, {
-                        tolerance: 0,
-                        fill: true,
-                        stroke: true
-                    });
-                    hitItem = hit && hit.item || null;
-                }
-                // Return the target with view as the fall-back, as expected by
-                // MouseEvent#target.
-                return hitItem || view;
-            }
-
-            // Execute hitTest right away if we have events relying on hitItem.
-            if (hitItems)
-                hitTest();
             // Handle mouseenter / leave between items and views first.
             if (hitItems && hitItem !== overItem) {
                 if (overItem) {
@@ -1355,9 +1335,8 @@ new function() { // Injection scope for event handling on the browser
             if ((inView || mouse.drag) && !point.equals(lastPoint)) {
                 // Handle mousemove even if this is not actually a mousemove
                 // event but the mouse has moved since the last event.
-                emitMouseEvents(this, hitItem, hitTest,
-                        nativeMove ? type : 'mousemove', event,
-                        point, lastPoint);
+                emitMouseEvents(this, hitItem, nativeMove ? type : 'mousemove',
+                        event, point, lastPoint);
                 handle = true;
             }
             wasInView = inView;
@@ -1365,8 +1344,7 @@ new function() { // Injection scope for event handling on the browser
             // We emit mousedown only when in the view, and mouseup regardless,
             // as long as the mousedown event was inside.
             if (mouse.down && inView || mouse.up && downPoint) {
-                emitMouseEvents(this, hitItem, hitTest, type, event,
-                        point, downPoint);
+                emitMouseEvents(this, hitItem, type, event, point, downPoint);
                 if (mouse.down) {
                     // See if we're clicking again on the same item, within the
                     // double-click time. Firefox uses 300ms as the max time
@@ -1383,9 +1361,8 @@ new function() { // Injection scope for event handling on the browser
                     // not the view.
                     if (!prevented && hitItem === downItem) {
                         clickTime = Date.now();
-                        emitMouseEvents(this, hitItem, hitTest,
-                                dblClick ? 'doubleclick' : 'click', event,
-                                point, downPoint);
+                        emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
+                                : 'click', event, point, downPoint);
                         dblClick = false;
                     }
                     downItem = dragItem = null;
