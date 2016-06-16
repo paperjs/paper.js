@@ -144,8 +144,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
             // Clockwise state becomes undefined as soon as geometry changes.
             // Also clear cached mono curves used for winding calculations.
-            this._length = this._area = this._clockwise = this._monoCurves =
-                    undefined;
+            this._length = this._area = this._clockwise = undefined;
             if (flags & /*#=*/ChangeFlag.SEGMENTS) {
                 this._version++; // See CurveLocation
             } else if (this._curves) {

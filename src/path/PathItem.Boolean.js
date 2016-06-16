@@ -93,14 +93,14 @@ PathItem.inject(new function() {
         var crossings = divideLocations(
                 CurveLocation.expand(_path1.getCrossings(_path2))),
             segments = [],
-            // Aggregate of all curves in both operands, monotonic in y.
-            monoCurves = [];
+            // Aggregate of all curves in both operands.
+            curves = [];
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
-                monoCurves.push.apply(monoCurves, path._getCurves());
+                curves.push.apply(curves, path._getCurves());
                 // Keep track if there are valid intersections other than
                 // overlaps in each path.
                 path._overlapsOnly = path._validOverlapsOnly = true;
@@ -116,7 +116,7 @@ PathItem.inject(new function() {
         // First, propagate winding contributions for curve chains starting in
         // all crossings:
         for (var i = 0, l = crossings.length; i < l; i++) {
-            propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
+            propagateWinding(crossings[i]._segment, _path1, _path2, curves,
                     operator);
         }
         // Now process the segments that are not part of any intersecting chains
@@ -124,7 +124,7 @@ PathItem.inject(new function() {
             var segment = segments[i],
                 inter = segment._intersection;
             if (segment._winding == null) {
-                propagateWinding(segment, _path1, _path2, monoCurves, operator);
+                propagateWinding(segment, _path1, _path2, curves, operator);
             }
             // See if there are any valid segments that aren't part of overlaps.
             // This information is used to determine where to start tracing the
@@ -472,7 +472,7 @@ PathItem.inject(new function() {
 
 
 
-    function propagateWinding(segment, path1, path2, monoCurves, operator) {
+    function propagateWinding(segment, path1, path2, curves, operator) {
         // Here we try to determine the most likely winding number contribution
         // for the curve-chain starting with this segment. Once we have enough
         // confidence in the winding contribution, we can propagate it until the
@@ -508,7 +508,7 @@ PathItem.inject(new function() {
                 winding = !(operator.subtract && path2 && (
                         path === path1 &&  path2._getWinding(pt, hor) ||
                         path === path2 && !path1._getWinding(pt, hor)))
-                            ? getWinding(pt, monoCurves, hor)
+                            ? getWinding(pt, curves, hor)
                             : { winding: 0 };
                 break;
             }
