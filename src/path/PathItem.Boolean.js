@@ -100,7 +100,7 @@ PathItem.inject(new function() {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
-                curves.push.apply(curves, path._getCurves());
+                curves.push.apply(curves, path.getCurves());
                 // Keep track if there are valid intersections other than
                 // overlaps in each path.
                 path._overlapsOnly = path._validOverlapsOnly = true;
@@ -727,7 +727,7 @@ PathItem.inject(new function() {
          * @return {Number} the winding number
          */
         _getWinding: function(point, horizontal) {
-            return getWinding(point, this._getCurves(), horizontal).winding;
+            return getWinding(point, this.getCurves(), horizontal).winding;
         },
 
         /**
@@ -963,15 +963,6 @@ PathItem.inject(new function() {
 
 Path.inject(/** @lends Path# */{
     /**
-     * Private method that returns and caches all the curves in this Path,
-     * which are monotonically decreasing or increasing in the y-direction.
-     * Used by getWinding().
-     */
-    _getCurves: function() {
-        return this.getCurves();
-    },
-
-    /**
      * Returns a point that is guaranteed to be inside the path.
      *
      * @bean
@@ -1028,24 +1019,5 @@ Path.inject(/** @lends Path# */{
             point.x = (intercepts[0] + intercepts[1]) / 2;
         }
         return point;
-    }
-
-
-
-
-});
-
-CompoundPath.inject(/** @lends CompoundPath# */{
-    /**
-     * Private method that returns all the curves in this CompoundPath, which
-     * are monotonically decreasing or increasing in the 'y' direction.
-     * Used by getWinding().
-     */
-    _getCurves: function() {
-        var children = this._children,
-            curves = [];
-        for (var i = 0, l = children.length; i < l; i++)
-            curves.push.apply(curves, children[i]._getCurves());
-        return curves;
     }
 });
