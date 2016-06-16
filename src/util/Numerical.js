@@ -356,7 +356,8 @@ var Numerical = new function() {
             }
             // The cubic has been deflated to a quadratic.
             var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
-            if (isFinite(x) && (count === 0 || x !== roots[count - 1])
+            if (isFinite(x) && count >= 0
+                    && (count === 0 || x !== roots[count - 1])
                     && (min == null || x > min - EPSILON && x < max + EPSILON))
                 roots[count++] = min == null ? x : clamp(x, min, max);
             return count;
