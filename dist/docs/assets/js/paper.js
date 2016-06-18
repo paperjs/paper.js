@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 17 00:50:06 2016 +0200
+ * Date: Sat Jun 18 23:06:17 2016 +0200
  *
  ***
  *
@@ -643,8 +643,12 @@ var Emitter = {
 		var handlers = this._callbacks && this._callbacks[type];
 		if (!handlers)
 			return false;
-		var args = [].slice.call(arguments, 1);
+		var args = [].slice.call(arguments, 1),
+			setTarget = event && 'target' in event &&
+				!('currentTarget' in event);
 		handlers = handlers.slice();
+		if (setTarget)
+			event.currentTarget = this;
 		for (var i = 0, l = handlers.length; i < l; i++) {
 			if (handlers[i].apply(this, args) === false) {
 				if (event && event.stop)
@@ -652,6 +656,8 @@ var Emitter = {
 				break;
 		   }
 		}
+		if (setTarget)
+			delete event.currentTarget;
 		return true;
 	},
 
