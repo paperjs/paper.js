@@ -81,8 +81,9 @@ var Emitter = {
         if (!handlers)
             return false;
         var args = [].slice.call(arguments, 1),
-            setTarget = event && typeof event === 'object' && 'target' in event
-                && !('currentTarget' in event);
+            // Set the current target to `this` if the event object defines
+            // #target but not #currentTarget.
+            setTarget = event && event.target && !event.currentTarget;
         // Create a clone of the handlers list so changes caused by on / off
         // won't throw us off track here:
         handlers = handlers.slice();
