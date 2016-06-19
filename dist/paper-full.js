@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 19 10:55:04 2016 +0200
+ * Date: Sun Jun 19 11:02:54 2016 +0200
  *
  ***
  *
@@ -12216,7 +12216,7 @@ new function() {
 				point = this.getEventPoint(event);
 
 			var inView = this.getBounds().contains(point),
-				hit = inView && view._project.hitTest(point, {
+				hit = hitItems && inView && view._project.hitTest(point, {
 					tolerance: 0,
 					fill: true,
 					stroke: true
