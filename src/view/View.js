@@ -1296,7 +1296,7 @@ new function() { // Injection scope for event handling on the browser
             // Run the hit-test on items first, but only if we're required to do
             // so for this given mouse event, see hitItems, #_countItemEvent():
             var inView = this.getBounds().contains(point),
-                hit = inView && view._project.hitTest(point, {
+                hit = hitItems && inView && view._project.hitTest(point, {
                     tolerance: 0,
                     fill: true,
                     stroke: true
