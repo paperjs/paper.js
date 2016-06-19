@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 18 23:14:48 2016 +0200
+ * Date: Sun Jun 19 10:55:04 2016 +0200
  *
  ***
  *
@@ -644,8 +644,7 @@ var Emitter = {
 		if (!handlers)
 			return false;
 		var args = [].slice.call(arguments, 1),
-			setTarget = event && typeof event === 'object' && 'target' in event
-				&& !('currentTarget' in event);
+			setTarget = event && event.target && !event.currentTarget;
 		handlers = handlers.slice();
 		if (setTarget)
 			event.currentTarget = this;
