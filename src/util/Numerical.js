@@ -238,6 +238,7 @@ var Numerical = new function() {
                         abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
                     a *= mult;
                     b *= mult;
+                    B *= mult;
                     c *= mult;
                     // Recalculate the discriminant
                     D = b * b - a * c;
