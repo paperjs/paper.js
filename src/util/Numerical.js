@@ -255,7 +255,7 @@ var Numerical = new function() {
             if (D !== 0 && abs(D) < MACHINE_EPSILON) {
                 // If the geometric mean of the coefficients is small enough
                 var sc = (abs(a) + abs(b) + abs(c)) || MACHINE_EPSILON;
-                sc = pow(2, -Math.floor(Math.log(sc) / Math.log(2) + 0.5));
+                sc = pow(2, -Math.floor(Math.log(sc) * Math.LOG2E + 0.5));
                 a *= sc;
                 b *= sc;
                 c *= sc;
@@ -333,7 +333,7 @@ var Numerical = new function() {
                 // Scale the coefficients by a multiple of the exponent of
                 // coefficients so that all the bits in the mantissa are
                 // preserved.
-                var p = pow(2, - Math.floor(Math.log(s) / Math.log(2)));
+                var p = pow(2, -Math.floor(Math.log(s) * Math.LOG2E));
                 a *= p;
                 b *= p;
                 c *= p;
