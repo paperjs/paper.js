@@ -341,12 +341,12 @@ var Numerical = new function() {
             }
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
-            if (a === 0) {
+            if (abs(a) < EPSILON) {
                 a = b;
                 b1 = c;
                 c2 = d;
                 x = Infinity;
-            } else if (d === 0) {
+            } else if (abs(d) < EPSILON) {
                 b1 = b;
                 c2 = c;
                 x = 0;
