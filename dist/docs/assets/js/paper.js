@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 19 11:02:54 2016 +0200
+ * Date: Wed Jun 29 10:05:57 2016 +0200
  *
  ***
  *
@@ -12476,7 +12476,7 @@ var Key = new function() {
 		keyMap = {},
 		charMap = {},
 		metaFixMap,
-		downKey;
+		downKey,
 
 		modifiers = new Base({
 			shift: false,
