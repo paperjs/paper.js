@@ -21,24 +21,17 @@ var Canvas = require('canvas'),
 module.exports = function(window) {
     var HTMLCanvasElement = window.HTMLCanvasElement;
 
-    function getImplementation(obj) {
-        // Try implForWrapper() first, fall back on obj. This appears to be
-        // necessary on v7.2.2, but not anymore once we can switch to 8.0.0
-        var impl = idlUtils.implForWrapper(obj);
-        return impl && impl._canvas ? impl : obj;
-    }
-
     // Add fake HTMLCanvasElement#type property:
     Object.defineProperty(HTMLCanvasElement.prototype, 'type', {
         get: function() {
-            var canvas = getImplementation(this)._canvas;
+            var canvas = idlUtils.implForWrapper(this)._canvas;
             return canvas && canvas.type || 'image';
         },
 
         set: function(type) {
             // Allow replacement of internal node-canvas, so we can switch to a
             // PDF canvas.
-            var impl = getImplementation(this),
+            var impl = idlUtils.implForWrapper(this),
                 size = impl._canvas || impl;
             impl._canvas = new Canvas(size.width, size.height, type);
             impl._context = null;
@@ -49,7 +42,7 @@ module.exports = function(window) {
     ['toBuffer', 'pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream']
         .forEach(function(key) {
             HTMLCanvasElement.prototype[key] = function() {
-                var canvas = getImplementation(this)._canvas;
+                var canvas = idlUtils.implForWrapper(this)._canvas;
                 return canvas[key].apply(canvas, arguments);
             };
         });
