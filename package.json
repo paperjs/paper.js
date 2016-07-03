@@ -44,7 +44,7 @@
     "gulp-add-src": "^0.2.0",
     "gulp-bump": "^1.0.0",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^1.0.0",
+    "gulp-git-streamed": "^1.8.0",
     "gulp-jshint": "^2.0.0",
     "gulp-prepro": "^2.4.0",
     "gulp-qunits": "^2.0.1",
