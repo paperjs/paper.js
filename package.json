@@ -47,7 +47,7 @@
     "gulp-git-streamed": "^1.8.0",
     "gulp-jshint": "^2.0.0",
     "gulp-prepro": "^2.4.0",
-    "gulp-qunits": "^2.0.1",
+    "gulp-qunits": "^2.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-shell": "^0.5.2",
     "gulp-symlink": "^2.1.3",
