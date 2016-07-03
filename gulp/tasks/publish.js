@@ -37,9 +37,7 @@ gulp.task('publish:release', function() {
         .pipe(git.tag('v' + options.version, message))
         .pipe(git.checkout('master'))
         .pipe(git.merge('develop', { args: '-X theirs' }))
-        .pipe(git.push('origin', 'master' ))
-        .pipe(git.push('origin', 'develop' ))
-        .pipe(git.push(null, null, { args: '--tags' } ))
+        .pipe(git.push('origin', ['master', 'develop'], { args: '--tags' }))
         .pipe(shell('npm publish'))
         .pipe(git.checkout('develop'));
 });
