@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jul 3 12:17:37 2016 +0200
+ * Date: Sun Jul 3 13:30:56 2016 +0200
  *
  ***
  *
@@ -5423,7 +5423,7 @@ var Segment = Base.extend({
 			} else {
 				point = arg0;
 			}
-		} else if (typeof arg0 === 'object') {
+		} else if (arg0 == null || typeof arg0 === 'object') {
 			point = arg0;
 			handleIn = arg1;
 			handleOut = arg2;
