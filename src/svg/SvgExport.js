@@ -255,14 +255,18 @@ new function() {
                 formatter);
 
         item._lines.forEach(function(val, i){
+
             var line = SvgElement.create('tspan');
 
-            line.setAttribute('dy', i && item.style.leading);
+            line.setAttribute('dy', i && parseInt(item.style.leading));
             line.setAttribute('x', getTransform(item._matrix, true).x);
 
-            line.textContent = val;
+            line.setAttribute('style', 'white-space: pre;');
+
+            line.textContent = val.length ? val : ' ';
 
             node.appendChild(line);
+
         });
 
         return node;
@@ -436,6 +440,8 @@ new function() {
             }
             var node = SvgElement.create('svg', attrs, formatter),
                 parent = node;
+
+            node.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space","preserve");
             // If the view has a transformation, wrap all layers in a group with
             // that transformation applied to.
             if (matrix && !matrix.isIdentity()) {
