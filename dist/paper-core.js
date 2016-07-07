@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jul 3 14:16:17 2016 +0200
+ * Date: Thu Jul 7 06:21:20 2016 +0200
  *
  ***
  *
@@ -11321,7 +11321,7 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old)
+						if (old && old._owner !== undefined)
 							old._owner = undefined;
 						if (value && value.constructor === Color) {
 							if (value._owner)
@@ -14204,4 +14204,4 @@ if (typeof define === 'function' && define.amd) {
 }
 
 return paper;
-}(typeof self === 'object' ? self : null);
+}.call(this, typeof self === 'object' ? self : null);
