@@ -123,4 +123,4 @@ var paper = function(self, undefined) {
 
 /*#*/ include('export.js');
 return paper;
-}(typeof self === 'object' ? self : null);
+}.call(this, typeof self === 'object' ? self : null);

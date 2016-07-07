@@ -14,7 +14,7 @@
  * @name PaperScript
  * @namespace
  */
-Base.exports.PaperScript = (function() {
+Base.exports.PaperScript = function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.
     var exports, define,
@@ -590,4 +590,4 @@ Base.exports.PaperScript = (function() {
     };
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
-}).call(this);
+}.call(this);
