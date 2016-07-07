@@ -67,6 +67,25 @@ var Numerical = new function() {
         return value < min ? min : value > max ? max : value;
     }
 
+    function splitDouble(X) {
+        var bigX = X * 134217729, // X*(2^27 + 1)
+            Y = X - bigX,
+            Xh = Y + bigX; // Don't optimize Y away!
+        return [Xh, X - Xh];
+    }
+
+    function higherPrecisionDiscriminant(a, b, c) {
+        var ad = splitDouble(a),
+            bd = splitDouble(b),
+            cd = splitDouble(c),
+            p = b * b,
+            dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
+            q = a * c,
+            dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
+                    + ad[1] * cd[1];
+        return (p - q) + (dp - dq);
+    }
+
     return /** @lends Numerical */{
         TOLERANCE: 1e-6,
         /**
@@ -202,6 +221,8 @@ var Numerical = new function() {
          *  Kahan W. - "To Solve a Real Cubic Equation"
          *  http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          *  Blinn J. - "How to solve a Quadratic Equation"
+         *  Harikrishnan G.
+         *  https://gist.github.com/hkrish/9e0de1f121971ee0fbab281f5c986de9
          *
          * @param {Number} a the quadratic term
          * @param {Number} b the linear term
@@ -220,27 +241,30 @@ var Numerical = new function() {
                 eMax = max + EPSILON,
                 x1, x2 = Infinity,
                 B = b,
-                D;
+                D, E, pi = 3;
             // a, b, c are expected to be the coefficients of the equation:
             // Ax² - 2Bx + C == 0, so we take b = -B/2:
             b /= -2;
             D = b * b - a * c; // Discriminant
+            E = b * b + a * c;
+            if (pi * abs(D) < E) {
+                D = higherPrecisionDiscriminant(a, b, c);
+            }
             // If the discriminant is very small, we can try to pre-condition
             // the coefficients, so that we may get better accuracy
             if (D !== 0 && abs(D) < MACHINE_EPSILON) {
                 // If the geometric mean of the coefficients is small enough
-                var gmC = pow(abs(a * b * c), 1 / 3);
-                if (gmC < 1e-8) {
-                    // We multiply with a factor to normalize the coefficients.
-                    // The factor is just the nearest exponent of 10, big enough
-                    // to raise all the coefficients to nearly [-1, +1] range.
-                    var mult = gmC === 0 ? 0 : pow(10,
-                        abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
-                    a *= mult;
-                    b *= mult;
-                    c *= mult;
-                    // Recalculate the discriminant
-                    D = b * b - a * c;
+                var sc = (abs(a) + abs(b) + abs(c)) || MACHINE_EPSILON;
+                sc = pow(2, -Math.floor(Math.log(sc) * Math.LOG2E + 0.5));
+                a *= sc;
+                b *= sc;
+                c *= sc;
+                // Recalculate the discriminant
+                D = b * b - a * c;
+                E = b * b + a * c;
+                B = - 2.0 * b;
+                if (pi * abs(D) < E) {
+                    D = higherPrecisionDiscriminant(a, b, c);
                 }
             }
             if (abs(a) < EPSILON) {
@@ -283,6 +307,8 @@ var Numerical = new function() {
          * References:
          *  Kahan W. - "To Solve a Real Cubic Equation"
          *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+         *  Harikrishnan G.
+         *  https://gist.github.com/hkrish/9e0de1f121971ee0fbab281f5c986de9
          *
          * W. Kahan's paper contains inferences on accuracy of cubic
          * zero-finding methods. Also testing methods for robustness.
@@ -300,8 +326,19 @@ var Numerical = new function() {
          * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
-            var count = 0,
-                x, b1, c2;
+            var count = 0, x, b1, c2,
+                s = Math.max(abs(a), abs(b), abs(c), abs(d));
+            // Normalise coefficients a la Jenkins & Traub's RPOLY
+            if ((s < 1e-7 && s > 0) || s > 1e7) {
+                // Scale the coefficients by a multiple of the exponent of
+                // coefficients so that all the bits in the mantissa are
+                // preserved.
+                var p = pow(2, -Math.floor(Math.log(s) * Math.LOG2E));
+                a *= p;
+                b *= p;
+                c *= p;
+                d *= p;
+            }
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
             if (abs(a) < EPSILON) {
@@ -332,7 +369,7 @@ var Numerical = new function() {
                 s = t < 0 ? -1 : 1;
                 t = -qd / a;
                 // See Kahan's notes on why 1.324718*... works.
-                r = t > 0 ? 1.3247179572 * Math.max(r, sqrt(t)) : r;
+                r = t > 0 ? 1.324717957244746 * Math.max(r, sqrt(t)) : r;
                 x0 = x - s * r;
                 if (x0 !== x) {
                     do {
@@ -356,8 +393,8 @@ var Numerical = new function() {
             }
             // The cubic has been deflated to a quadratic.
             var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
-            if (isFinite(x) && count >= 0
-                    && (count === 0 || x !== roots[count - 1])
+            if (isFinite(x) && (count === 0
+                    || count > 0 && x !== roots[0] && x !== roots[1])
                     && (min == null || x > min - EPSILON && x < max + EPSILON))
                 roots[count++] = min == null ? x : clamp(x, min, max);
             return count;
