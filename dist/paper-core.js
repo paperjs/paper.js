@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 8 23:05:50 2016 +0200
+ * Date: Sat Jul 9 01:01:19 2016 +0200
  *
  ***
  *
@@ -972,23 +972,34 @@ var Numerical = new function() {
 		return value < min ? min : value > max ? max : value;
 	}
 
-	function splitDouble(X) {
-		var bigX = X * 134217729,
-			Y = X - bigX,
-			Xh = Y + bigX;
-		return [Xh, X - Xh];
+	function getDiscriminant(a, b, c) {
+		function split(a) {
+			var x = a * 134217729,
+				y = a - x,
+				hi = y + x,
+				lo = a - hi;
+			return [hi, lo];
+		}
+
+		var D = b * b - a * c,
+			E = b * b + a * c;
+		if (abs(D) * 3 < E) {
+			var ad = split(a),
+				bd = split(b),
+				cd = split(c),
+				p = b * b,
+				dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
+				q = a * c,
+				dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
+						+ ad[1] * cd[1];
+			D = (p - q) + (dp - dq);
+		}
+		return D;
 	}
 
-	function higherPrecisionDiscriminant(a, b, c) {
-		var ad = splitDouble(a),
-			bd = splitDouble(b),
-			cd = splitDouble(c),
-			p = b * b,
-			dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
-			q = a * c,
-			dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
-					+ ad[1] * cd[1];
-		return (p - q) + (dp - dq);
+	function getNormalizationFactor(x) {
+		return pow(2,  -Math.floor(
+				Math.log(x || MACHINE_EPSILON) * Math.LOG2E + 0.5));
 	}
 
 	return {
@@ -1047,25 +1058,16 @@ var Numerical = new function() {
 				eMax = max + EPSILON,
 				x1, x2 = Infinity,
 				B = b,
-				D, E, pi = 3;
-			b /= -2;
-			D = b * b - a * c;
-			E = b * b + a * c;
-			if (pi * abs(D) < E) {
-				D = higherPrecisionDiscriminant(a, b, c);
-			}
-			if (D !== 0 && abs(D) < MACHINE_EPSILON) {
-				var sc = (abs(a) + abs(b) + abs(c)) || MACHINE_EPSILON;
-				sc = pow(2, -Math.floor(Math.log(sc) * Math.LOG2E + 0.5));
-				a *= sc;
-				b *= sc;
-				c *= sc;
-				D = b * b - a * c;
-				E = b * b + a * c;
-				B = - 2.0 * b;
-				if (pi * abs(D) < E) {
-					D = higherPrecisionDiscriminant(a, b, c);
-				}
+				D, E;
+			b *= -0.5;
+			D = getDiscriminant(a, b, c);
+			if (D && abs(D) < MACHINE_EPSILON) {
+				var f = getNormalizationFactor(abs(a) + abs(b) + abs(c));
+				a *= f;
+				b *= f;
+				c *= f;
+				B *= f;
+				D = getDiscriminant(a, b, c);
 			}
 			if (abs(a) < EPSILON) {
 				if (abs(B) < EPSILON)
@@ -1091,14 +1093,14 @@ var Numerical = new function() {
 		},
 
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			var count = 0, x, b1, c2,
+			var x, b1, c2,
 				s = Math.max(abs(a), abs(b), abs(c), abs(d));
-			if ((s < 1e-7 && s > 0) || s > 1e7) {
-				var p = pow(2, -Math.floor(Math.log(s) * Math.LOG2E));
-				a *= p;
-				b *= p;
-				c *= p;
-				d *= p;
+			if (s < 1e-8 || s > 1e8) {
+				var f = getNormalizationFactor(s);
+				a *= f;
+				b *= f;
+				c *= f;
+				d *= f;
 			}
 			if (abs(a) < EPSILON) {
 				a = b;
