@@ -60,6 +60,7 @@ var Numerical = new function() {
     var abs = Math.abs,
         sqrt = Math.sqrt,
         pow = Math.pow,
+        // Constants
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
@@ -67,23 +68,37 @@ var Numerical = new function() {
         return value < min ? min : value > max ? max : value;
     }
 
-    function splitDouble(X) {
-        var bigX = X * 134217729, // X*(2^27 + 1)
-            Y = X - bigX,
-            Xh = Y + bigX; // Don't optimize Y away!
-        return [Xh, X - Xh];
+    function getDiscriminant(a, b, c) {
+        // Ported from @hkrish's polysolve.c
+        function split(a) {
+            var x = a * 134217729,
+                y = a - x,
+                hi = y + x, // Don't optimize y away!
+                lo = a - hi;
+            return [hi, lo];
+        }
+
+        var D = b * b - a * c,
+            E = b * b + a * c;
+        if (abs(D) * 3 < E) {
+            var ad = split(a),
+                bd = split(b),
+                cd = split(c),
+                p = b * b,
+                dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
+                q = a * c,
+                dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
+                        + ad[1] * cd[1];
+            D = (p - q) + (dp - dq); // Don’t omit parentheses!
+        }
+        return D;
     }
 
-    function higherPrecisionDiscriminant(a, b, c) {
-        var ad = splitDouble(a),
-            bd = splitDouble(b),
-            cd = splitDouble(c),
-            p = b * b,
-            dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
-            q = a * c,
-            dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
-                    + ad[1] * cd[1];
-        return (p - q) + (dp - dq);
+    function getNormalizationFactor(x) {
+        // Normalization is done by scaling coefficients with a power of 2, so
+        // that all the bits in the mantissa remain unchanged.
+        return pow(2,  -Math.floor(
+                Math.log(x || MACHINE_EPSILON) * Math.LOG2E + 0.5));
     }
 
     return /** @lends Numerical */{
@@ -241,31 +256,21 @@ var Numerical = new function() {
                 eMax = max + EPSILON,
                 x1, x2 = Infinity,
                 B = b,
-                D, E, pi = 3;
+                D, E;
             // a, b, c are expected to be the coefficients of the equation:
             // Ax² - 2Bx + C == 0, so we take b = -B/2:
-            b /= -2;
-            D = b * b - a * c; // Discriminant
-            E = b * b + a * c;
-            if (pi * abs(D) < E) {
-                D = higherPrecisionDiscriminant(a, b, c);
-            }
+            b *= -0.5;
+            D = getDiscriminant(a, b, c);
             // If the discriminant is very small, we can try to pre-condition
             // the coefficients, so that we may get better accuracy
-            if (D !== 0 && abs(D) < MACHINE_EPSILON) {
-                // If the geometric mean of the coefficients is small enough
-                var sc = (abs(a) + abs(b) + abs(c)) || MACHINE_EPSILON;
-                sc = pow(2, -Math.floor(Math.log(sc) * Math.LOG2E + 0.5));
-                a *= sc;
-                b *= sc;
-                c *= sc;
-                // Recalculate the discriminant
-                D = b * b - a * c;
-                E = b * b + a * c;
-                B = - 2.0 * b;
-                if (pi * abs(D) < E) {
-                    D = higherPrecisionDiscriminant(a, b, c);
-                }
+            if (D && abs(D) < MACHINE_EPSILON) {
+                // Normalize coefficients.
+                var f = getNormalizationFactor(abs(a) + abs(b) + abs(c));
+                a *= f;
+                b *= f;
+                c *= f;
+                B *= f;
+                D = getDiscriminant(a, b, c);
             }
             if (abs(a) < EPSILON) {
                 // This could just be a linear equation
@@ -326,18 +331,18 @@ var Numerical = new function() {
          * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
-            var count = 0, x, b1, c2,
+            var x, b1, c2,
                 s = Math.max(abs(a), abs(b), abs(c), abs(d));
-            // Normalise coefficients a la Jenkins & Traub's RPOLY
-            if ((s < 1e-7 && s > 0) || s > 1e7) {
+            // Normalize coefficients à la Jenkins & Traub's RPOLY
+            if (s < 1e-8 || s > 1e8) {
                 // Scale the coefficients by a multiple of the exponent of
                 // coefficients so that all the bits in the mantissa are
                 // preserved.
-                var p = pow(2, -Math.floor(Math.log(s) * Math.LOG2E));
-                a *= p;
-                b *= p;
-                c *= p;
-                d *= p;
+                var f = getNormalizationFactor(s);
+                a *= f;
+                b *= f;
+                c *= f;
+                d *= f;
             }
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
