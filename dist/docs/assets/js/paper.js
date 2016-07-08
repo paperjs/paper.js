@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 01:01:19 2016 +0200
+ * Date: Sat Jul 9 01:10:55 2016 +0200
  *
  ***
  *
@@ -1057,25 +1057,23 @@ var Numerical = new function() {
 				eMin = min - EPSILON,
 				eMax = max + EPSILON,
 				x1, x2 = Infinity,
-				B = b,
-				D, E;
-			b *= -0.5;
-			D = getDiscriminant(a, b, c);
+				B = b * -0.5,
+				D = getDiscriminant(a, B, c);
 			if (D && abs(D) < MACHINE_EPSILON) {
-				var f = getNormalizationFactor(abs(a) + abs(b) + abs(c));
+				var f = getNormalizationFactor(abs(a) + abs(B) + abs(c));
 				a *= f;
 				b *= f;
 				c *= f;
 				B *= f;
-				D = getDiscriminant(a, b, c);
+				D = getDiscriminant(a, B, c);
 			}
 			if (abs(a) < EPSILON) {
-				if (abs(B) < EPSILON)
+				if (abs(b) < EPSILON)
 					return abs(c) < EPSILON ? -1 : 0;
-				x1 = -c / B;
+				x1 = -c / b;
 			} else if (D >= -MACHINE_EPSILON) {
 				var Q = D < 0 ? 0 : sqrt(D),
-					R = b + (b < 0 ? -Q : Q);
+					R = B + (B < 0 ? -Q : Q);
 				if (R === 0) {
 					x1 = c / a;
 					x2 = -x1;
