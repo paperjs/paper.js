@@ -255,31 +255,29 @@ var Numerical = new function() {
                 eMin = min - EPSILON,
                 eMax = max + EPSILON,
                 x1, x2 = Infinity,
-                B = b,
-                D, E;
-            // a, b, c are expected to be the coefficients of the equation:
-            // Ax² - 2Bx + C == 0, so we take b = -B/2:
-            b *= -0.5;
-            D = getDiscriminant(a, b, c);
+                // a, b, c are expected to be the coefficients of the equation:
+                // Ax² - 2Bx + C == 0, so we take B = -b/2:
+                B = b * -0.5,
+                D = getDiscriminant(a, B, c);
             // If the discriminant is very small, we can try to pre-condition
             // the coefficients, so that we may get better accuracy
             if (D && abs(D) < MACHINE_EPSILON) {
                 // Normalize coefficients.
-                var f = getNormalizationFactor(abs(a) + abs(b) + abs(c));
+                var f = getNormalizationFactor(abs(a) + abs(B) + abs(c));
                 a *= f;
                 b *= f;
                 c *= f;
                 B *= f;
-                D = getDiscriminant(a, b, c);
+                D = getDiscriminant(a, B, c);
             }
             if (abs(a) < EPSILON) {
                 // This could just be a linear equation
-                if (abs(B) < EPSILON)
+                if (abs(b) < EPSILON)
                     return abs(c) < EPSILON ? -1 : 0;
-                x1 = -c / B;
+                x1 = -c / b;
             } else if (D >= -MACHINE_EPSILON) { // No real roots if D < 0
                 var Q = D < 0 ? 0 : sqrt(D),
-                    R = b + (b < 0 ? -Q : Q);
+                    R = B + (B < 0 ? -Q : Q);
                 // Try to minimize floating point noise.
                 if (R === 0) {
                     x1 = c / a;
