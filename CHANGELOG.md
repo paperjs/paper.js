@@ -3,7 +3,7 @@ All notable changes to Paper.js shall be documented in this file, following
 common [CHANGELOG](http://keepachangelog.com/) conventions. As of `0.10.0`,
 Paper.js adheres to [Semantic Versioning](http://semver.org/).
 
-## `0.10.0` (Unreleased)
+## `0.10.0`
 
 ### Preamble
 
