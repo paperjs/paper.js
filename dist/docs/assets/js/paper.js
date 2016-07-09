@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 01:10:55 2016 +0200
+ * Date: Sat Jul 9 12:54:17 2016 +0200
  *
  ***
  *
@@ -965,6 +965,9 @@ var Numerical = new function() {
 	var abs = Math.abs,
 		sqrt = Math.sqrt,
 		pow = Math.pow,
+		log2 = Math.log2 || function(x) {
+			return Math.log(x) * Math.LOG2E;
+		},
 		EPSILON = 1e-12,
 		MACHINE_EPSILON = 1.12e-16;
 
@@ -998,8 +1001,7 @@ var Numerical = new function() {
 	}
 
 	function getNormalizationFactor(x) {
-		return pow(2,  -Math.floor(
-				Math.log(x || MACHINE_EPSILON) * Math.LOG2E + 0.5));
+		return pow(2, -Math.round(log2(x || MACHINE_EPSILON)));
 	}
 
 	return {
