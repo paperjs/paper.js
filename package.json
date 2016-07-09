@@ -15,7 +15,7 @@
   ],
   "main": "dist/paper-full.js",
   "scripts": {
-    "prepublish": "gulp minify",
+    "prepublish": "gulp build minify docs",
     "precommit": "gulp jshint",
     "prepush": "gulp test",
     "build": "gulp build",
