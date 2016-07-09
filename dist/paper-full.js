@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 13:54:02 2016 +0200
+ * Date: Sat Jul 9 14:32:01 2016 +0200
  *
  ***
  *
@@ -3692,6 +3692,7 @@ new function() {
 				|| options.class && !(this instanceof options.class)),
 			callback = options.match,
 			that = this,
+			bounds,
 			res;
 
 		function match(hit) {
@@ -3707,7 +3708,7 @@ new function() {
 		}
 
 		if (checkSelf && (options.center || options.bounds) && this._parent) {
-			var bounds = this.getInternalBounds();
+			bounds = this.getInternalBounds();
 			if (options.center) {
 				res = checkBounds('center', 'Center');
 			}
@@ -8177,6 +8178,13 @@ var Path = PathItem.extend({
 	},
 
 	smooth: function(options) {
+		var that = this,
+			opts = options || {},
+			type = opts.type || 'asymmetric',
+			segments = this._segments,
+			length = segments.length,
+			closed = this._closed;
+
 		function getIndex(value, _default) {
 			var index = value && value.index;
 			if (index != null) {
@@ -8194,15 +8202,10 @@ var Path = PathItem.extend({
 					: index < 0 ? index + length : index, length - 1);
 		}
 
-		var that = this,
-			opts = options || {},
-			type = opts.type || 'asymmetric',
-			segments = this._segments,
-			length = segments.length,
-			closed = this._closed,
-			loop = closed && opts.from === undefined && opts.to === undefined,
+		var loop = closed && opts.from === undefined && opts.to === undefined,
 			from = getIndex(opts.from, 0),
 			to = getIndex(opts.to, length - 1);
+
 		if (from > to) {
 			if (closed) {
 				from -= length;
@@ -8549,7 +8552,9 @@ var Path = PathItem.extend({
 new function() {
 
 	function drawHandles(ctx, segments, matrix, size) {
-		var half = size / 2;
+		var half = size / 2,
+			coords = new Array(6),
+			pX, pY;
 
 		function drawHandle(index) {
 			var hX = coords[index],
@@ -8565,13 +8570,12 @@ new function() {
 			}
 		}
 
-		var coords = new Array(6);
 		for (var i = 0, l = segments.length; i < l; i++) {
-			var segment = segments[i];
+			var segment = segments[i],
+				selection = segment._selection;
 			segment._transformCoordinates(matrix, coords);
-			var selection = segment._selection,
-				pX = coords[0],
-				pY = coords[1];
+			pX = coords[0];
+			pY = coords[1];
 			if (selection & 2)
 				drawHandle(2);
 			if (selection & 4)
@@ -12153,7 +12157,17 @@ new function() {
 		fallbacks = {
 			doubleclick: 'click',
 			mousedrag: 'mousemove'
-		};
+		},
+		wasInView = false,
+		overView,
+		downPoint,
+		lastPoint,
+		downItem,
+		overItem,
+		dragItem,
+		clickItem,
+		clickTime,
+		dblClick;
 
 	function emitMouseEvent(obj, target, type, event, point, prevPoint,
 			stopItem) {
@@ -12222,17 +12236,6 @@ new function() {
 			mouseleave: 1
 		}
 	};
-
-	var downPoint,
-		lastPoint,
-		downItem,
-		overItem,
-		dragItem,
-		clickItem,
-		clickTime,
-		dblClick,
-		overView,
-		wasInView = false;
 
 	return {
 		_viewEvents: viewEvents,
@@ -13676,7 +13679,8 @@ new function() {
 
 new function() {
 
-	var rootSize;
+	var definitions = {},
+		rootSize;
 
 	function getValue(node, name, isString, allowNull, allowPercent) {
 		var value = SvgElement.get(node, name),
@@ -14069,7 +14073,6 @@ new function() {
 		return item;
 	}
 
-	var definitions = {};
 	function getDefinition(value) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
 			res = match && definitions[match[1]
