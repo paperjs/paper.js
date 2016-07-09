@@ -17,8 +17,6 @@ var gulp = require('gulp'),
     shell = require('gulp-shell'),
     options = require('../utils/options.js')({ suffix: false });
 
-gulp.task('publish', ['publish:bump', 'publish:release']);
-
 gulp.task('publish:bump', function() {
     return gulp.src([ 'package.json', 'component.json' ])
         .pipe(bump({ version: options.version }))
@@ -27,7 +25,7 @@ gulp.task('publish:bump', function() {
         .pipe(git.add());
 });
 
-gulp.task('publish:release', function() {
+gulp.task('publish', ['publish:bump'], function() {
     if (options.branch !== 'develop') {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
