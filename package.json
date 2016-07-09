@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -15,7 +15,7 @@
   ],
   "main": "dist/paper-full.js",
   "scripts": {
-    "prepublish": "gulp minify",
+    "prepublish": "gulp build minify docs",
     "precommit": "gulp jshint",
     "prepush": "gulp test",
     "build": "gulp build",

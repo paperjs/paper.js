@@ -3,7 +3,13 @@ All notable changes to Paper.js shall be documented in this file, following
 common [CHANGELOG](http://keepachangelog.com/) conventions. As of `0.10.0`,
 Paper.js adheres to [Semantic Versioning](http://semver.org/).
 
-## `0.10.0` (Unreleased)
+## `0.10.1` (Unreleased)
+
+### Fixed
+- Correct a few issues with documentation and NPM publishing that slipped
+  through in the `0.10.0` release.
+
+## `0.10.0`
 
 ### Preamble
 
@@ -221,7 +227,7 @@ contribute to the code.
   invertible transformations (#558).
 - Scaling shadows now works correctly with browser- and view-zoom (#831).
 - `Path#arcTo()` correctly handles zero sizes.
-- `#importSVG()` handles onLoad and onError callbacks for string inputs that
+- `#importSVG()` handles `onLoad` and `onError` callbacks for string inputs that
   load external resources (#827).
 - `#importJSON()` and `#exportJSON()` now handle non-`Item` objects correctly
   (#392).
