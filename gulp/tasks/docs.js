@@ -22,7 +22,7 @@ var docOptions = {
 };
 
 gulp.task('docs', ['docs:local', 'build:full'], function() {
-    gulp.src('dist/paper-full.js')
+    return gulp.src('dist/paper-full.js')
         .pipe(rename({ basename: 'paper' }))
         .pipe(gulp.dest('dist/docs/assets/js/'));
 });
