@@ -99,12 +99,14 @@ var Numerical = new function() {
     }
 
     function getNormalizationFactor() {
-        var max = Math.max.apply(Math, arguments);
         // Normalize coefficients à la Jenkins & Traub's RPOLY.
         // Normalization is done by scaling coefficients with a power of 2, so
         // that all the bits in the mantissa remain unchanged.
-        return max && (max < 1e-8 || max > 1e8)
-                ? pow(2, -Math.round(log2(max)))
+        // Use the infinity norm (max(sum(abs(a)…)) to determine the appropriate
+        // scale factor. See @hkrish in #1087#issuecomment-231526156
+        var norm = Math.max.apply(Math, arguments);
+        return norm && (norm < 1e-8 || norm > 1e8)
+                ? pow(2, -Math.round(log2(norm)))
                 : 0;
     }
 
@@ -340,13 +342,24 @@ var Numerical = new function() {
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
             var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
-                x, b1, c2;
+                x, b1, c2, qd, q;
             if (f) {
                 a *= f;
                 b *= f;
                 c *= f;
                 d *= f;
             }
+
+            function evaluate(x0) {
+                x = x0;
+                // Evaluate q, q', b1 and c2 at x
+                var tmp = a * x;
+                b1 = tmp + b;
+                c2 = b1 * x + c;
+                qd = (tmp + b1) * x + c2;
+                q = c2 * x + d;
+            }
+
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
             if (abs(a) < EPSILON) {
@@ -359,38 +372,24 @@ var Numerical = new function() {
                 c2 = c;
                 x = 0;
             } else {
-                var ec = 1 + MACHINE_EPSILON, // 1.000...002
-                    x0, q, qd, t, r, s, tmp;
                 // Here onwards we iterate for the leftmost root. Proceed to
                 // deflate the cubic into a quadratic (as a side effect to the
                 // iteration) and solve the quadratic.
-                x = -(b / a) / 3;
-                // Evaluate q, q', b1 and c2 at x
-                tmp = a * x;
-                b1 = tmp + b;
-                c2 = b1 * x + c;
-                qd = (tmp + b1) * x + c2;
-                q = c2 * x + d;
+                evaluate(-(b / a) / 3);
                 // Get a good initial approximation.
-                t = q / a;
-                r = pow(abs(t), 1/3);
-                s = t < 0 ? -1 : 1;
-                t = -qd / a;
-                // See Kahan's notes on why 1.324718*... works.
-                r = t > 0 ? 1.324717957244746 * Math.max(r, sqrt(t)) : r;
-                x0 = x - s * r;
+                var t = q / a,
+                    r = pow(abs(t), 1/3),
+                    s = t < 0 ? -1 : 1,
+                    td = -qd / a,
+                    // See Kahan's notes on why 1.324718*... works.
+                    rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r,
+                    x0 = x - s * rd;
                 if (x0 !== x) {
                     do {
-                        x = x0;
-                        // Evaluate q, q', b1 and c2 at x
-                        tmp = a * x;
-                        b1 = tmp + b;
-                        c2 = b1 * x + c;
-                        qd = (tmp + b1) * x + c2;
-                        q = c2 * x + d;
-                        // Newton's. Divide by ec to avoid x0 crossing over a
-                        // root.
-                        x0 = qd === 0 ? x : x - q / qd / ec;
+                        evaluate(x0);
+                        // Newton's. Divide by 1 + MACHINE_EPSILON (1.000...002)
+                        // to avoid x0 crossing over a root.
+                        x0 = qd === 0 ? x : x - q / qd / (1 + MACHINE_EPSILON);
                     } while (s * x0 > s * x);
                     // Adjust the coefficients for the quadratic.
                     if (abs(a) * x * x > abs(d / x)) {
