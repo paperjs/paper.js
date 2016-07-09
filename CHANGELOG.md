@@ -1,9 +1,11 @@
 # Change Log
-All notable changes to Paper.js shall be documented in this file, following
-common [CHANGELOG](http://keepachangelog.com/) conventions. As of `0.10.0`,
-Paper.js adheres to [Semantic Versioning](http://semver.org/).
 
-## `0.10.1` (Unreleased)
+## `0.10.2`
+
+### Fixed
+- Get published version to work correctly in Bower again.
+
+## `0.10.1`
 
 ### Fixed
 - Correct a few issues with documentation and NPM publishing that slipped
@@ -14,9 +16,12 @@ Paper.js adheres to [Semantic Versioning](http://semver.org/).
 ### Preamble
 
 This is a huge release for Paper.js as we aim for a version `1.0.0` release
-later this year. There are many items in the changelog (and many more items not
-in the changelog) so here a high-level overview to frame the long list of
-changes:
+later this year. As of this version, all notable changes are documented in the
+change-log following common [CHANGELOG](http://keepachangelog.com/) conventions.
+Paper.js now also adheres to [Semantic Versioning](http://semver.org/).
+
+There are many items in the changelog (and many more items not in the changelog)
+so here a high-level overview to frame the long list of changes:
 
 - Boolean operations have been improved and overhauled for reliability and
   efficiency. These include the path functions to unite, intersect, subtract,

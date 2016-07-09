@@ -20,19 +20,20 @@ function git(command) {
     return execSync('git ' + command).toString().trim();
 }
 
+options.date = git('log -1 --pretty=format:%ad');
+options.branch = git('rev-parse --abbrev-ref HEAD');
+
 // Get the date of the last commit from this branch for release date:
-var date = git('log -1 --pretty=format:%ad'),
-    branch = git('rev-parse --abbrev-ref HEAD');
+var version = options.version,
+    branch = options.branch;
 
-extend(options, {
-    date: date,
-    branch: branch,
-    // If we're not on the master branch, use the branch name as a suffix:
-    suffix: branch === 'master' ? '' : '-' + branch
-});
+// If we're not on the master branch, use the branch name as a suffix:
+if (branch !== 'master')
+    options.version += '-' + branch;
 
-module.exports = function(opts) {
-    return extend({}, options, opts && opts.suffix && {
-        version: options.version + options.suffix
-    });
-};
+// Allow the removal of the suffix again, as needed by the publish task.
+options.resetVersion = function() {
+    options.version = version;
+}
+
+module.exports = options;
