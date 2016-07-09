@@ -60,6 +60,10 @@ var Numerical = new function() {
     var abs = Math.abs,
         sqrt = Math.sqrt,
         pow = Math.pow,
+        // Fallback to polyfill:
+        log2 = Math.log2 || function(x) {
+            return Math.log(x) * Math.LOG2E;
+        },
         // Constants
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
@@ -97,8 +101,7 @@ var Numerical = new function() {
     function getNormalizationFactor(x) {
         // Normalization is done by scaling coefficients with a power of 2, so
         // that all the bits in the mantissa remain unchanged.
-        return pow(2,  -Math.floor(
-                Math.log(x || MACHINE_EPSILON) * Math.LOG2E + 0.5));
+        return pow(2, -Math.round(log2(x || MACHINE_EPSILON)));
     }
 
     return /** @lends Numerical */{
