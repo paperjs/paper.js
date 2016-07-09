@@ -31,7 +31,7 @@ gulp.task('publish', function() {
 });
 
 gulp.task('publish:version', function() {
-    // reset the version value since we're executing this on the develop branch,
+    // Reset the version value since we're executing this on the develop branch,
     // but we don't wan the published version suffixed with '-develop'.
     options.resetVersion();
     return gulp.src([ 'package.json' ])

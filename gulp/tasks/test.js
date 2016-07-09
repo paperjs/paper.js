@@ -11,8 +11,8 @@
  */
 
 var gulp = require('gulp'),
-    qunits = require('gulp-qunits'),
     gutil = require('gulp-util'),
+    qunits = require('gulp-qunits'),
     webserver = require('gulp-webserver');
 
 gulp.task('test', ['test:phantom', 'test:node']);
