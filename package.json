@@ -28,6 +28,7 @@
   },
   "files": [
     "AUTHORS.md",
+    "CHANGELOG.md",
     "dist/",
     "examples/",
     "LICENSE.txt",
