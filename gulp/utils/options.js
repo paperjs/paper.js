@@ -11,7 +11,6 @@
  */
 
 var execSync = require('child_process').execSync,
-    extend = require('extend'),
     // Require the __options object, so we have access to the version number and
     // make amendments, e.g. the release date.
     options = require('../../src/options.js');
