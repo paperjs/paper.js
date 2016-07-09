@@ -248,6 +248,8 @@ contribute to the code.
   rounding (#1045).
 - Improve reliability of fat-line clipping for curves that are very similar
   (#904).
+- Improve precision of `Numerical.solveQuadratic()` and
+  `Numerical.solveCubic()` for edge-cases (#1085).
 
 ### Removed
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to
