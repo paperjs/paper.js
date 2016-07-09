@@ -1893,6 +1893,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 || options.class && !(this instanceof options.class)),
             callback = options.match,
             that = this,
+            bounds,
             res;
 
         function match(hit) {
@@ -1913,7 +1914,7 @@ new function() { // Injection scope for hit-test functions shared with project
         if (checkSelf && (options.center || options.bounds) && this._parent) {
             // Don't get the transformed bounds, check against transformed
             // points instead
-            var bounds = this.getInternalBounds();
+            bounds = this.getInternalBounds();
             if (options.center) {
                 res = checkBounds('center', 'Center');
             }

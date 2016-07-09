@@ -1285,6 +1285,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // NOTE: Documentation is in PathItem#smooth()
     smooth: function(options) {
+        var that = this,
+            opts = options || {},
+            type = opts.type || 'asymmetric',
+            segments = this._segments,
+            length = segments.length,
+            closed = this._closed;
+
         // Helper method to pick the right from / to indices.
         // Supports numbers and segment objects.
         // For numbers, the `to` index is exclusive, while for segments and
@@ -1313,15 +1320,10 @@ var Path = PathItem.extend(/** @lends Path# */{
                     : index < 0 ? index + length : index, length - 1);
         }
 
-        var that = this,
-            opts = options || {},
-            type = opts.type || 'asymmetric',
-            segments = this._segments,
-            length = segments.length,
-            closed = this._closed,
-            loop = closed && opts.from === undefined && opts.to === undefined,
+        var loop = closed && opts.from === undefined && opts.to === undefined,
             from = getIndex(opts.from, 0),
             to = getIndex(opts.to, length - 1);
+
         if (from > to) {
             if (closed) {
                 from -= length;
@@ -2048,7 +2050,9 @@ new function() { // Scope for drawing
     // performance.
 
     function drawHandles(ctx, segments, matrix, size) {
-        var half = size / 2;
+        var half = size / 2,
+            coords = new Array(6),
+            pX, pY;
 
         function drawHandle(index) {
             var hX = coords[index],
@@ -2064,13 +2068,12 @@ new function() { // Scope for drawing
             }
         }
 
-        var coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++) {
-            var segment = segments[i];
+            var segment = segments[i],
+                selection = segment._selection;
             segment._transformCoordinates(matrix, coords);
-            var selection = segment._selection,
-                pX = coords[0],
-                pY = coords[1];
+            pX = coords[0];
+            pY = coords[1];
             if (selection & /*#=*/SegmentSelection.HANDLE_IN)
                 drawHandle(2);
             if (selection & /*#=*/SegmentSelection.HANDLE_OUT)

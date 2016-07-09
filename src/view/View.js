@@ -1152,7 +1152,18 @@ new function() { // Injection scope for event handling on the browser
         fallbacks = {
             doubleclick: 'click',
             mousedrag: 'mousemove'
-        };
+        },
+        // Various variables required by #_handleMouseEvent()
+        wasInView = false,
+        overView,
+        downPoint,
+        lastPoint,
+        downItem,
+        overItem,
+        dragItem,
+        clickItem,
+        clickTime,
+        dblClick;
 
     // Returns true if event was prevented, false otherwise.
     function emitMouseEvent(obj, target, type, event, point, prevPoint,
@@ -1247,20 +1258,6 @@ new function() { // Injection scope for event handling on the browser
             mouseleave: 1
         }
     };
-
-    /**
-     * Various variables required by #_handleMouseEvent()
-     */
-    var downPoint,
-        lastPoint,
-        downItem,
-        overItem,
-        dragItem,
-        clickItem,
-        clickTime,
-        dblClick,
-        overView,
-        wasInView = false;
 
     return {
         _viewEvents: viewEvents,

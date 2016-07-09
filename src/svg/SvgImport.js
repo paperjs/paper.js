@@ -19,7 +19,8 @@ new function() {
     // objects, dealing with baseVal, and item lists.
     // index is option, and if passed, causes a lookup in a list.
 
-    var rootSize;
+    var definitions = {},
+        rootSize;
 
     function getValue(node, name, isString, allowNull, allowPercent) {
         // Interpret value as number. Never return NaN, but 0 instead.
@@ -547,7 +548,6 @@ new function() {
         return item;
     }
 
-    var definitions = {};
     function getDefinition(value) {
         // When url() comes from a style property, '#'' seems to be missing on
         // WebKit. We also get variations of quotes or no quotes, single or
