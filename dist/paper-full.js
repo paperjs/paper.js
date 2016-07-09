@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 12:54:17 2016 +0200
+ * Date: Sat Jul 9 13:28:50 2016 +0200
  *
  ***
  *
@@ -976,11 +976,11 @@ var Numerical = new function() {
 	}
 
 	function getDiscriminant(a, b, c) {
-		function split(a) {
-			var x = a * 134217729,
-				y = a - x,
+		function split(v) {
+			var x = v * 134217729,
+				y = v - x,
 				hi = y + x,
-				lo = a - hi;
+				lo = v - hi;
 			return [hi, lo];
 		}
 
@@ -1000,8 +1000,11 @@ var Numerical = new function() {
 		return D;
 	}
 
-	function getNormalizationFactor(x) {
-		return pow(2, -Math.round(log2(x || MACHINE_EPSILON)));
+	function getNormalizationFactor() {
+		var max = Math.max.apply(Math, arguments);
+		return max && (max < 1e-8 || max > 1e8)
+				? pow(2, -Math.round(log2(max)))
+				: 0;
 	}
 
 	return {
@@ -1055,48 +1058,51 @@ var Numerical = new function() {
 		},
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
-			var count = 0,
-				eMin = min - EPSILON,
-				eMax = max + EPSILON,
-				x1, x2 = Infinity,
-				B = b * -0.5,
-				D = getDiscriminant(a, B, c);
-			if (D && abs(D) < MACHINE_EPSILON) {
-				var f = getNormalizationFactor(abs(a) + abs(B) + abs(c));
-				a *= f;
-				b *= f;
-				c *= f;
-				B *= f;
-				D = getDiscriminant(a, B, c);
-			}
+			var x1, x2 = Infinity;
 			if (abs(a) < EPSILON) {
 				if (abs(b) < EPSILON)
 					return abs(c) < EPSILON ? -1 : 0;
 				x1 = -c / b;
-			} else if (D >= -MACHINE_EPSILON) {
-				var Q = D < 0 ? 0 : sqrt(D),
-					R = B + (B < 0 ? -Q : Q);
-				if (R === 0) {
-					x1 = c / a;
-					x2 = -x1;
-				} else {
-					x1 = R / a;
-					x2 = c / R;
+			} else {
+				b *= -0.5;
+				var D = getDiscriminant(a, b, c);
+				if (D && abs(D) < MACHINE_EPSILON) {
+					var f = getNormalizationFactor(abs(a), abs(b), abs(c));
+					if (f) {
+						a *= f;
+						b *= f;
+						c *= f;
+						D = getDiscriminant(a, b, c);
+					}
+				}
+				if (D >= -MACHINE_EPSILON) {
+					var Q = D < 0 ? 0 : sqrt(D),
+						R = b + (b < 0 ? -Q : Q);
+					if (R === 0) {
+						x1 = c / a;
+						x2 = -x1;
+					} else {
+						x1 = R / a;
+						x2 = c / R;
+					}
 				}
 			}
-			if (isFinite(x1) && (min == null || x1 > eMin && x1 < eMax))
-				roots[count++] = min == null ? x1 : clamp(x1, min, max);
+			var count = 0,
+				boundless = min == null,
+				minB = min - EPSILON,
+				maxB = max + EPSILON;
+			if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB))
+				roots[count++] = boundless ? x1 : clamp(x1, min, max);
 			if (x2 !== x1
-					&& isFinite(x2) && (min == null || x2 > eMin && x2 < eMax))
-				roots[count++] = min == null ? x2 : clamp(x2, min, max);
+					&& isFinite(x2) && (boundless || x2 > minB && x2 < maxB))
+				roots[count++] = boundless ? x2 : clamp(x2, min, max);
 			return count;
 		},
 
 		solveCubic: function(a, b, c, d, roots, min, max) {
-			var x, b1, c2,
-				s = Math.max(abs(a), abs(b), abs(c), abs(d));
-			if (s < 1e-8 || s > 1e8) {
-				var f = getNormalizationFactor(s);
+			var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
+				x, b1, c2;
+			if (f) {
 				a *= f;
 				b *= f;
 				c *= f;
@@ -1142,11 +1148,12 @@ var Numerical = new function() {
 					}
 				}
 			}
-			var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
+			var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max),
+				boundless = min == null;
 			if (isFinite(x) && (count === 0
 					|| count > 0 && x !== roots[0] && x !== roots[1])
-					&& (min == null || x > min - EPSILON && x < max + EPSILON))
-				roots[count++] = min == null ? x : clamp(x, min, max);
+					&& (boundless || x > min - EPSILON && x < max + EPSILON))
+				roots[count++] = boundless ? x : clamp(x, min, max);
 			return count;
 		}
 	};
