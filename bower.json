@@ -15,13 +15,13 @@
   "main": "dist/paper-full.js",
   "ignore": [
     "build",
-    "components",
-    "dist/paper-node.js",
-    "projects",
+    "gulp",
     "node_modules",
     "package.json",
+    "projects",
     "src",
-    "test"
+    "test",
+    "travis"
   ],
   "keywords": [
     "vector",
