@@ -21,5 +21,5 @@ gulp.task('load', ['clean:load'], function() {
 });
 
 gulp.task('clean:load', function() {
-    return del([ 'dist/paper-full.js', 'dist/paper-core.js', 'dist/node/**' ]);
+    return del([ 'dist/*.js', 'dist/node/**' ]);
 });

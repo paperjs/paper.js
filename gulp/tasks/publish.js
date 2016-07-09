@@ -15,14 +15,14 @@ var gulp = require('gulp'),
     git = require('gulp-git-streamed'),
     run = require('run-sequence'),
     shell = require('gulp-shell'),
-    options = require('../utils/options.js')({ suffix: false });
+    options = require('../utils/options.js');
 
 gulp.task('publish', function() {
     if (options.branch !== 'develop') {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
     return run(
-        'publish:bump',
+        'publish:version',
         'publish:dist',
         'publish:commit',
         'publish:release',
@@ -30,7 +30,10 @@ gulp.task('publish', function() {
     );
 });
 
-gulp.task('publish:bump', function() {
+gulp.task('publish:version', function() {
+    // Since we're executing this on the develop branch but we don't wan the
+    // version suffixed, reset the version value again.
+    options.resetVersion();
     return gulp.src([ 'package.json', 'component.json' ])
         .pipe(bump({ version: options.version }))
         .pipe(gulp.dest('.'));
@@ -58,6 +61,6 @@ gulp.task('publish:release', function() {
 gulp.task('publish:load', ['load'], function() {
     return gulp.src('dist')
         .pipe(git.add())
-        .pipe(git.commit('Switch back to load.js versions for development.'))
+        .pipe(git.commit('Switch back to load.js versions on develop branch.'))
         .pipe(git.push('origin', 'develop'));
 });
