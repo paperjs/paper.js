@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 13:28:50 2016 +0200
+ * Date: Sat Jul 9 13:54:02 2016 +0200
  *
  ***
  *
@@ -1001,9 +1001,9 @@ var Numerical = new function() {
 	}
 
 	function getNormalizationFactor() {
-		var max = Math.max.apply(Math, arguments);
-		return max && (max < 1e-8 || max > 1e8)
-				? pow(2, -Math.round(log2(max)))
+		var norm = Math.max.apply(Math, arguments);
+		return norm && (norm < 1e-8 || norm > 1e8)
+				? pow(2, -Math.round(log2(norm)))
 				: 0;
 	}
 
@@ -1101,13 +1101,23 @@ var Numerical = new function() {
 
 		solveCubic: function(a, b, c, d, roots, min, max) {
 			var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
-				x, b1, c2;
+				x, b1, c2, qd, q;
 			if (f) {
 				a *= f;
 				b *= f;
 				c *= f;
 				d *= f;
 			}
+
+			function evaluate(x0) {
+				x = x0;
+				var tmp = a * x;
+				b1 = tmp + b;
+				c2 = b1 * x + c;
+				qd = (tmp + b1) * x + c2;
+				q = c2 * x + d;
+			}
+
 			if (abs(a) < EPSILON) {
 				a = b;
 				b1 = c;
@@ -1118,29 +1128,17 @@ var Numerical = new function() {
 				c2 = c;
 				x = 0;
 			} else {
-				var ec = 1 + MACHINE_EPSILON,
-					x0, q, qd, t, r, s, tmp;
-				x = -(b / a) / 3;
-				tmp = a * x;
-				b1 = tmp + b;
-				c2 = b1 * x + c;
-				qd = (tmp + b1) * x + c2;
-				q = c2 * x + d;
-				t = q / a;
-				r = pow(abs(t), 1/3);
-				s = t < 0 ? -1 : 1;
-				t = -qd / a;
-				r = t > 0 ? 1.324717957244746 * Math.max(r, sqrt(t)) : r;
-				x0 = x - s * r;
+				evaluate(-(b / a) / 3);
+				var t = q / a,
+					r = pow(abs(t), 1/3),
+					s = t < 0 ? -1 : 1,
+					td = -qd / a,
+					rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r,
+					x0 = x - s * rd;
 				if (x0 !== x) {
 					do {
-						x = x0;
-						tmp = a * x;
-						b1 = tmp + b;
-						c2 = b1 * x + c;
-						qd = (tmp + b1) * x + c2;
-						q = c2 * x + d;
-						x0 = qd === 0 ? x : x - q / qd / ec;
+						evaluate(x0);
+						x0 = qd === 0 ? x : x - q / qd / (1 + MACHINE_EPSILON);
 					} while (s * x0 > s * x);
 					if (abs(a) * x * x > abs(d / x)) {
 						c2 = -d / x;
