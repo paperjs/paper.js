@@ -1,0 +1,9 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="595" height="841" viewBox="0 0 595 841">
+    <symbol id="circle" viewBox="0 0 48 48" overflow="visible">
+        <path fill="#FF0049" d="M24,0c0-13.255-10.745-24-24-24S-24-13.255-24,0s10.745,24,24,24S24,13.255,24,0z"/>
+    </symbol>
+    <use xlink:href="#circle" width="48" height="48" x="-24" y="-24" transform="matrix(1.1667 1.1667 1.1667 -1.1667 177.0005 96)"/>
+    <use xlink:href="#circle" width="48" height="48" x="-24" y="-24" transform="matrix(0.5625 0 0 -0.5625 92 152)"/>
+    <use xlink:href="#circle" width="48" height="48" x="-24" y="-24" transform="matrix(2.2415 -2.0119 -2.0119 -2.2415 176.9971 246.9941)"/>
+    <use xlink:href="#circle" width="48" height="48" x="-24" y="-24" transform="matrix(1 0 0 -1 84 65)"/>
+</svg>

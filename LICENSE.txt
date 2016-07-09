@@ -1,6 +1,8 @@
-Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
 http://scratchdisk.com/ & http://jonathanpuckey.com/
 All rights reserved.
+
+The MIT License (MIT)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

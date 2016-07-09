@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -32,13 +32,10 @@
 /*#*/ include('Segment.js');
 
 /*#*/ include('Path.js');
-/*#*/ include('Path_Shapes.js');
-/*#*/ include('Path_Drawing_Commands.js');
-/*#*/ include('Path_Curves.js');
-/*#*/ include('Path_Bounds.js');
-/*#*/ include('Path_Length.js');
+/*#*/ include('Path_Constructors.js');
 /*#*/ include('Path_Intersections.js');
 /*#*/ include('Path_Boolean.js');
+/*#*/ include('PathItem_Contains.js');
 
 /*#*/ include('Shape.js');
 
@@ -49,9 +46,7 @@
 
 /*#*/ include('CompoundPath.js');
 
-/*#*/ include('PathItem_Contains.js');
-
-/*#*/ include('PlacedSymbol.js');
+/*#*/ include('SymbolItem.js');
 
 /*#*/ include('Raster.js');
 
@@ -61,5 +56,7 @@
 
 /*#*/ include('JSON.js');
 
-/*#*/ include('SVGImport.js');
-/*#*/ include('SVGExport.js');
+/*#*/ include('SvgImport.js');
+/*#*/ include('SvgExport.js');
+
+/*#*/ include('Numerical.js');

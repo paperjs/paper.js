@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,7 +10,8 @@
  * All rights reserved.
  */
 
-module('Size');
+QUnit.module('Size');
+
 test('new Size(10, 20)', function() {
     var size = new Size(10, 20);
     equals(size.toString(), '{ width: 10, height: 20 }');
@@ -34,4 +35,10 @@ test('new Size(new Point(10, 20))', function() {
 test('new Size({ x: 10, y: 20})', function() {
     var size = new Size({x: 10, y: 20});
     equals(size.toString(), '{ width: 10, height: 20 }');
+});
+
+test('new Size("10, 20")', function() {
+    equals(new Size('10, 20'), new Size(10, 20));
+    equals(new Size('10,20'), new Size(10, 20));
+    equals(new Size('10 20'), new Size(10, 20));
 });

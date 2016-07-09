@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -22,14 +22,13 @@ var UID = {
     /**
      * Returns the next unique id.
      * @method get
-     * @return {Number} The next unique id
+     * @return {Number} the next unique id
      * @static
      **/
-    get: function(ctor) {
-        if (ctor) {
+    get: function(name) {
+        if (name) {
             // Use one UID pool per given constructor
-            var name = ctor._class,
-                pool = this._pools[name];
+            var pool = this._pools[name];
             if (!pool)
                 pool = this._pools[name] = { _id: 1 };
             return pool._id++;

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -21,6 +21,7 @@
  */
 var Group = Item.extend(/** @lends Group# */{
     _class: 'Group',
+    _selectBounds: false,
     _selectChildren: true,
     _serializeFields: {
         children: []
@@ -112,10 +113,10 @@ var Group = Item.extend(/** @lends Group# */{
         // looked for yet).
         if (clipItem === undefined) {
             clipItem = null;
-            for (var i = 0, l = this._children.length; i < l; i++) {
-                var child = this._children[i];
-                if (child._clipMask) {
-                    clipItem = child;
+            var children = this._children;
+            for (var i = 0, l = children.length; i < l; i++) {
+                if (children[i]._clipMask) {
+                    clipItem = children[i];
                     break;
                 }
             }
@@ -125,12 +126,12 @@ var Group = Item.extend(/** @lends Group# */{
     },
 
     /**
-     * Specifies whether the group item is to be clipped.
-     * When setting to {@code true}, the first child in the group is
-     * automatically defined as the clipping mask.
+     * Specifies whether the group item is to be clipped. When setting to
+     * `true`, the first child in the group is automatically defined as the
+     * clipping mask.
      *
-     * @type Boolean
      * @bean
+     * @type Boolean
      *
      * @example {@paperscript}
      * var star = new Path.Star({
@@ -167,34 +168,40 @@ var Group = Item.extend(/** @lends Group# */{
             child.setClipMask(clipped);
     },
 
+    _getBounds: function _getBounds(matrix, options) {
+        var clipItem = this._getClipItem();
+        return clipItem
+            ? clipItem._getCachedBounds(
+                matrix && matrix.appended(clipItem._matrix),
+                Base.set({}, options, { stroke: false }))
+            : _getBounds.base.call(this, matrix, options);
+    },
+
+    _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
+        var clipItem = this._getClipItem();
+        return (!clipItem || clipItem.contains(point))
+                && _hitTestChildren.base.call(this, point, options, viewMatrix,
+                    // Pass clipItem for hidden _exclude parameter
+                    clipItem);
+    },
+
     _draw: function(ctx, param) {
         var clip = param.clip,
-            clipItem = !clip && this._getClipItem(),
-            draw = true;
+            clipItem = !clip && this._getClipItem();
         param = param.extend({ clipItem: clipItem, clip: false });
         if (clip) {
             // If told to clip with a group, we start our own path and draw each
-            // child just like in a compound-path. We also cache the resulting
-            // path in _currentPath.
-            if (this._currentPath) {
-                ctx.currentPath = this._currentPath;
-                draw = false;
-            } else {
-                ctx.beginPath();
-                param.dontStart = param.dontFinish = true;
-            }
+            // child just like in a compound-path.
+            ctx.beginPath();
+            param.dontStart = param.dontFinish = true;
         } else if (clipItem) {
             clipItem.draw(ctx, param.extend({ clip: true }));
         }
-        if (draw) {
-            for (var i = 0, l = this._children.length; i < l; i++) {
-                var item = this._children[i];
-                if (item !== clipItem)
-                    item.draw(ctx, param);
-            }
-        }
-        if (clip) {
-            this._currentPath = ctx.currentPath;
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            var item = children[i];
+            if (item !== clipItem)
+                item.draw(ctx, param);
         }
     }
 });

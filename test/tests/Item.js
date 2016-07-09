@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Item');
+QUnit.module('Item');
 
 test('copyTo(project)', function() {
     var project = paper.project;
@@ -130,7 +130,7 @@ test('item.parent / item.isChild / item.isParent / item.layer', function() {
         return project.activeLayer.children.indexOf(path) == -1;
     }, true);
     equals(function() {
-        return secondDoc.activeLayer.children.indexOf(path) == 0;
+        return secondDoc.activeLayer.children.indexOf(path) === 0;
     }, true);
 });
 
@@ -152,6 +152,40 @@ test('item.remove()', function() {
     equals(function() {
         return group.children.length;
     }, 0);
+});
+
+
+test('item.addChildren() / item.removeChildren()', function() {
+    var project = paper.project,
+        layer = project.activeLayer,
+        path1 = new Path({ insert: false }),
+        path2 = new Path({ insert: false, name: 'path2' });
+
+    layer.addChildren([path1, path2]);
+    equals(function() { return path1.index; }, 0);
+    equals(function() { return path2.index; }, 1);
+    equals(function() { return path1.parent === layer; }, true);
+    equals(function() { return path2.parent === layer; }, true);
+    equals(function() { return layer.children['path2'] === path2; }, true);
+    layer.removeChildren();
+    equals(function() { return path1.index; }, undefined);
+    equals(function() { return path2.index; }, undefined);
+    equals(function() { return path1.parent; }, null);
+    equals(function() { return path2.parent; }, null);
+    equals(function() { return layer.children['path2'] === undefined; }, true);
+
+    layer.children = [path1, path2];
+    equals(function() { return path1.index; }, 0);
+    equals(function() { return path2.index; }, 1);
+    equals(function() { return path1.parent === layer; }, true);
+    equals(function() { return path2.parent === layer; }, true);
+    equals(function() { return layer.children['path2'] === path2; }, true);
+    layer.children = [];
+    equals(function() { return path1.index; }, undefined);
+    equals(function() { return path2.index; }, undefined);
+    equals(function() { return path1.parent; }, null);
+    equals(function() { return path2.parent; }, null);
+    equals(function() { return layer.children['path2'] === undefined; }, true);
 });
 
 test('item.lastChild / item.firstChild', function() {
@@ -245,7 +279,7 @@ test('item.sendToBack()', function() {
     var secondPath = new Path();
     secondPath.sendToBack();
     equals(function() {
-        return secondPath.index == 0;
+        return secondPath.index === 0;
     }, true);
 });
 
@@ -428,161 +462,144 @@ test('group.selected', function() {
 });
 
 test('Check parent children object for named item', function() {
-    var path = new Path();
-    path.name = 'test';
+    var path1 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    var path2 = new Path();
-    path2.name = 'test';
+    var path2 = new Path({ name: 'test' });
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
 
     path2.remove();
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    path.remove();
+    path1.remove();
 
     equals(function() {
-        return !paper.project.activeLayer.children['test'];
+        return !layer.children['test'];
     }, true);
 });
 
 test('Named child access 1', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
-
-    path.remove();
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
-    }, true);
-});
-
-test('Named child access 2', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
-
-    path.remove();
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
 
+    path1.remove();
+
     equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length == 1;
+        return layer.children['test'] === path2;
     }, true);
 
     path2.remove();
 
     equals(function() {
-        return !paper.project.activeLayer._namedChildren['test'];
-    }, true);
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 });
 
-test('Named child access 3', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
+test('Named child access 2', function() {
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     var group = new Group();
 
     group.addChild(path2);
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
+        return layer.children['test'] === path1;
     }, true);
 
-    // TODO: Tests should not access internal properties
-    equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length;
-    }, 1);
+    path1.remove();
 
     equals(function() {
-        return group.children['test'] == path2;
+        return layer.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return group._namedChildren['test'].length == 1;
+        return group.children['test'] === path2;
+    }, true);
+
+    path2.remove();
+
+    equals(function() {
+        return group.children['test'] === undefined;
+    }, true);
+
+    group.addChild(path2);
+
+    equals(function() {
+        return group.children['test'] === path2;
+    }, true);
+
+    layer.appendTop(path2);
+
+    equals(function() {
+        return group.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return paper.project.activeLayer._namedChildren['test'][0] == path;
+        return layer.children['test'] === path2;
     }, true);
 
-    paper.project.activeLayer.appendTop(path2);
+    layer.addChild(path1);
 
     equals(function() {
-        return group.children['test'] == null;
+        return layer.children['test'] === path2;
     }, true);
 
-    equals(function() {
-        return group._namedChildren['test'] === undefined;
-    }, true);
+    path2.remove();
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] === path1;
     }, true);
-
-    equals(function() {
-        return paper.project.activeLayer._namedChildren['test'].length;
-    }, 2);
 });
 
 test('Setting name of child back to null', function() {
-    var path = new Path();
-    path.name = 'test';
-
-    var path2 = new Path();
-    path2.name = 'test';
+    var path1 = new Path({ name: 'test' });
+    var path2 = new Path({ name: 'test' });
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path2;
+        return layer.children['test'] == path1;
+    }, true);
+
+    path1.name = null;
+
+    equals(function() {
+        return layer.children['test'] == path2;
     }, true);
 
     path2.name = null;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] == path;
-    }, true);
-
-    path.name = null;
-
-    equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 });
 
 test('Renaming item', function() {
-    var path = new Path();
-    path.name = 'test';
-
+    var path = new Path({ name: 'test' });
     path.name = 'test2';
+    var layer = paper.project.activeLayer;
 
     equals(function() {
-        return paper.project.activeLayer.children['test'] === undefined;
+        return layer.children['test'] === undefined;
     }, true);
 
     equals(function() {
-        return paper.project.activeLayer.children['test2'] == path;
+        return layer.children['test2'] == path;
     }, true);
 });
 
@@ -629,7 +646,8 @@ test('Item#className', function() {
     equals(new Path().className, 'Path');
     equals(new CompoundPath().className, 'CompoundPath');
     equals(new Raster().className, 'Raster');
-    equals(new PlacedSymbol().className, 'PlacedSymbol');
+    equals(new SymbolItem().className, 'SymbolItem');
+    equals(new PlacedSymbol().className, 'SymbolItem'); // deprecated
     equals(new PointText().className, 'PointText');
 });
 
@@ -662,7 +680,7 @@ test('Item#data', function() {
     var item = new Path();
     item.data = {
         testing: true
-    }
+    };
     equals(item.data.testing, true, 'we can set data using an object literal');
 
     var item = new Path({
@@ -709,6 +727,98 @@ test('Item#blendMode in a transformed Group', function() {
             'Middle center pixel should be yellow:');
 });
 
+test('Item#applyMatrix', function() {
+    equals(function() {
+        return new Path({ applyMatrix: true }).applyMatrix;
+    }, true);
+    equals(function() {
+        return new Path({ applyMatrix: false }).applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster({ applyMatrix: false }).applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster({ applyMatrix: true }).applyMatrix;
+    }, false);
+
+    var applyMatrix = paper.settings.applyMatrix;
+    paper.settings.applyMatrix = true;
+    equals(function() {
+        return new Path().applyMatrix;
+    }, true);
+    equals(function() {
+        return new Raster().applyMatrix;
+    }, false);
+    paper.settings.applyMatrix = false;
+    equals(function() {
+        return new Path().applyMatrix;
+    }, false);
+    equals(function() {
+        return new Raster().applyMatrix;
+    }, false);
+    paper.settings.applyMatrix = applyMatrix;
+
+    var path = new Path.Rectangle({
+        size: [100, 100],
+        position: [0, 0],
+        applyMatrix: false
+    });
+
+    equals(path.matrix, new Matrix(),
+            'path.matrix before scaling');
+    equals(path.bounds, new Rectangle(-50, -50, 100, 100),
+            'path.bounds before scaling');
+    equals(path.segments[0].point, new Point(-50, 50),
+            'path.segments[0].point before scaling');
+
+    path.scale(1, 2);
+
+    equals(path.matrix, new Matrix().scale(1, 2),
+            'path.matrix after scaling');
+    equals(path.bounds, new Rectangle(-50, -100, 100, 200),
+            'path.bounds after scaling');
+    equals(path.segments[0].point, new Point(-50, 50),
+            'path.segments[0].point after scaling');
+
+    path.applyMatrix = true;
+
+    equals(path.matrix, new Matrix(),
+            'path.matrix after setting path.applyMatrix = true;');
+    equals(path.bounds, new Rectangle(-50, -100, 100, 200),
+            'path.bounds after setting path.applyMatrix = true;');
+    equals(path.segments[0].point, new Point(-50, 100),
+            'path.segments[0].point after setting path.applyMatrix = true;');
+});
+
+test('PaperScope#settings.insertItems', function() {
+    var insertItems = paper.settings.insertItems;
+    paper.settings.insertItems = true;
+
+    var path1, path2;
+
+    equals(function() {
+        path1 = new Path();
+        return path1.parent === project.activeLayer;
+    }, true);
+    paper.settings.insertItems = false;
+
+    equals(function() {
+        path2 = new Path();
+        return path2.parent === null;
+    }, true);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 1);
+
+    project.activeLayer.addChild(path2);
+
+    equals(function() {
+        return project.activeLayer.children.length;
+    }, 2);
+
+    paper.settings.insertItems = insertItems;
+});
 
 test('Item#pivot', function() {
     var path1 = new Path.Rectangle({
@@ -729,11 +839,12 @@ test('Item#pivot', function() {
 
     path1.pivot = pivot;
     path1.position = [200, 200];
-    equals(path1.pivot, pivot, 'Changing position of an item with applyMatrix = false should not change pivot');
+    equals(path1.pivot, pivot,
+            'Changing position of an item with applyMatrix = false should not change pivot');
 
     var difference = new Point(100, 100);
     path2.pivot = pivot;
     path2.position = path2.position.add(difference);
-    equals(path2.pivot, pivot.add(difference), 'Changing position of an item with applyMatrix = true should change pivot');
-
+    equals(path2.pivot, pivot.add(difference),
+            'Changing position of an item with applyMatrix = true should change pivot');
 });

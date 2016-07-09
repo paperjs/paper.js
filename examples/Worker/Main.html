@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Shapes</title>
+<link rel="stylesheet" href="../css/style.css">
+<script type="text/javascript" src="../../dist/paper-full.js"></script>
+<script type="text/paperscript" canvas="canvas">
+    if (window.Worker) { // Check if Browser supports the Worker API.
+        var worker = new Worker("Worker.js");
+
+        // Create two paths, and send them to the worker to perform a boolean
+        // operation on them.
+
+        var circle = new Path.Circle({
+            center: [200, 200],
+            radius: 100,
+            fillColor: 'red'
+        });
+
+        var rectangle = new Path.Rectangle({
+            point: [200, 200],
+            size: [200, 200],
+            fillColor: 'blue'
+        });
+
+        var data = [
+            circle.exportJSON(),
+            rectangle.exportJSON()
+        ];
+        console.log('Sent', data);
+        worker.postMessage(data);
+
+        // The worker sends the result back in a message, from which we can then
+        // create a new path item and siplay it.
+        worker.onmessage = function(event) {
+            var data = event.data;
+            if (data) {
+                console.log('Received', data);
+                var result = project.activeLayer.importJSON(data);
+                result.fillColor = 'yellow';
+                result.fillColor.alpha = 0.5;
+                result.position += [400, 0];
+                result.fullySelected = true;
+            }
+        };
+    }
+</script>
+</head>
+<body>
+    <canvas id="canvas" resize></canvas>
+</body>
+</html>

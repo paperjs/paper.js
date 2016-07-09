@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -13,7 +13,7 @@
 // An Algorithm for Automatically Fitting Digitized Curves
 // by Philip J. Schneider
 // from "Graphics Gems", Academic Press, 1990
-// Modifications and optimisations of original algorithm by Juerg Lehni.
+// Modifications and optimizations of original algorithm by Juerg Lehni.
 
 /**
  * @name PathFitter
@@ -21,65 +21,65 @@
  * @private
  */
 var PathFitter = Base.extend({
-    initialize: function(path, error) {
+    initialize: function(path) {
         var points = this.points = [],
             segments = path._segments,
-            prev;
+            closed = path._closed;
         // Copy over points from path and filter out adjacent duplicates.
-        for (var i = 0, l = segments.length; i < l; i++) {
-            var point = segments[i].point.clone();
+        for (var i = 0, prev, l = segments.length; i < l; i++) {
+            var point = segments[i].point;
             if (!prev || !prev.equals(point)) {
-                points.push(point);
-                prev = point;
+                points.push(prev = point.clone());
             }
         }
-
         // We need to duplicate the first and last segment when simplifying a
         // closed path.
-        if (path._closed) {
-            this.closed = true;
+        if (closed) {
             points.unshift(points[points.length - 1]);
             points.push(points[1]); // The point previously at index 0 is now 1.
         }
-
-        this.error = error;
+        this.closed = closed;
     },
 
-    fit: function() {
+    fit: function(error) {
         var points = this.points,
             length = points.length,
-            segments = this.segments = length > 0
-                    ? [new Segment(points[0])] : [];
-        if (length > 1)
-            this.fitCubic(0, length - 1,
-                // Left Tangent
-                points[1].subtract(points[0]).normalize(),
-                // Right Tangent
-                points[length - 2].subtract(points[length - 1]).normalize());
-
-        // Remove the duplicated segments for closed paths again.
-        if (this.closed) {
-            segments.shift();
-            segments.pop();
+            segments = null;
+        if (length > 0) {
+            // To support reducing paths with multiple points in the same place
+            // to one segment:
+            segments = [new Segment(points[0])];
+            if (length > 1) {
+                this.fitCubic(segments, error, 0, length - 1,
+                        // Left Tangent
+                        points[1].subtract(points[0]),
+                        // Right Tangent
+                        points[length - 2].subtract(points[length - 1]));
+                // Remove the duplicated segments for closed paths again.
+                if (this.closed) {
+                    segments.shift();
+                    segments.pop();
+                }
+            }
         }
-
         return segments;
     },
 
     // Fit a Bezier curve to a (sub)set of digitized points
-    fitCubic: function(first, last, tan1, tan2) {
+    fitCubic: function(segments, error, first, last, tan1, tan2) {
+        var points = this.points;
         //  Use heuristic if region only has two points in it
-        if (last - first == 1) {
-            var pt1 = this.points[first],
-                pt2 = this.points[last],
+        if (last - first === 1) {
+            var pt1 = points[first],
+                pt2 = points[last],
                 dist = pt1.getDistance(pt2) / 3;
-            this.addCurve([pt1, pt1.add(tan1.normalize(dist)),
+            this.addCurve(segments, [pt1, pt1.add(tan1.normalize(dist)),
                     pt2.add(tan2.normalize(dist)), pt2]);
             return;
         }
         // Parameterize points, and attempt to fit curve
         var uPrime = this.chordLengthParameterize(first, last),
-            maxError = Math.max(this.error, this.error * this.error),
+            maxError = Math.max(error, error * error),
             split,
             parametersInOrder = true;
         // Try 4 iterations
@@ -87,8 +87,8 @@ var PathFitter = Base.extend({
             var curve = this.generateBezier(first, last, uPrime, tan1, tan2);
             //  Find max deviation of points to fitted curve
             var max = this.findMaxError(first, last, curve, uPrime);
-            if (max.error < this.error && parametersInOrder) {
-                this.addCurve(curve);
+            if (max.error < error && parametersInOrder) {
+                this.addCurve(segments, curve);
                 return;
             }
             split = max.index;
@@ -99,25 +99,24 @@ var PathFitter = Base.extend({
             maxError = max.error;
         }
         // Fitting failed -- split at max error point and fit recursively
-        var V1 = this.points[split - 1].subtract(this.points[split]),
-            V2 = this.points[split].subtract(this.points[split + 1]),
-            tanCenter = V1.add(V2).divide(2).normalize();
-        this.fitCubic(first, split, tan1, tanCenter);
-        this.fitCubic(split, last, tanCenter.negate(), tan2);
+        var tanCenter = points[split - 1].subtract(points[split + 1]);
+        this.fitCubic(segments, error, first, split, tan1, tanCenter);
+        this.fitCubic(segments, error, split, last, tanCenter.negate(), tan2);
     },
 
-    addCurve: function(curve) {
-        var prev = this.segments[this.segments.length - 1];
+    addCurve: function(segments, curve) {
+        var prev = segments[segments.length - 1];
         prev.setHandleOut(curve[1].subtract(curve[0]));
-        this.segments.push(
-                new Segment(curve[3], curve[2].subtract(curve[3])));
+        segments.push(new Segment(curve[3], curve[2].subtract(curve[3])));
     },
 
     // Use least-squares method to find Bezier control points for region.
     generateBezier: function(first, last, uPrime, tan1, tan2) {
         var epsilon = /*#=*/Numerical.EPSILON,
-            pt1 = this.points[first],
-            pt2 = this.points[last],
+            abs = Math.abs,
+            points = this.points,
+            pt1 = points[first],
+            pt2 = points[last],
             // Create the C and X matrices
             C = [[0, 0], [0, 0]],
             X = [0, 0];
@@ -132,7 +131,7 @@ var PathFitter = Base.extend({
                 b3 = u * u * u,
                 a1 = tan1.normalize(b1),
                 a2 = tan2.normalize(b2),
-                tmp = this.points[first + i]
+                tmp = points[first + i]
                     .subtract(pt1.multiply(b0 + b1))
                     .subtract(pt2.multiply(b2 + b3));
             C[0][0] += a1.dot(a1);
@@ -147,10 +146,10 @@ var PathFitter = Base.extend({
         // Compute the determinants of C and X
         var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
             alpha1, alpha2;
-        if (Math.abs(detC0C1) > epsilon) {
+        if (abs(detC0C1) > epsilon) {
             // Kramer's rule
-            var detC0X  = C[0][0] * X[1]    - C[1][0] * X[0],
-                detXC1  = X[0]    * C[1][1] - X[1]    * C[0][1];
+            var detC0X = C[0][0] * X[1]    - C[1][0] * X[0],
+                detXC1 = X[0]    * C[1][1] - X[1]    * C[0][1];
             // Derive alpha values
             alpha1 = detXC1 / detC0C1;
             alpha2 = detC0X / detC0C1;
@@ -158,9 +157,9 @@ var PathFitter = Base.extend({
             // Matrix is under-determined, try assuming alpha1 == alpha2
             var c0 = C[0][0] + C[0][1],
                 c1 = C[1][0] + C[1][1];
-            if (Math.abs(c0) > epsilon) {
+            if (abs(c0) > epsilon) {
                 alpha1 = alpha2 = X[0] / c0;
-            } else if (Math.abs(c1) > epsilon) {
+            } else if (abs(c1) > epsilon) {
                 alpha1 = alpha2 = X[1] / c1;
             } else {
                 // Handle below
@@ -196,8 +195,10 @@ var PathFitter = Base.extend({
 
         // First and last control points of the Bezier curve are
         // positioned exactly at the first and last data points
-        return [pt1, pt1.add(handle1 || tan1.normalize(alpha1)),
-                pt2.add(handle2 || tan2.normalize(alpha2)), pt2];
+        return [pt1,
+                pt1.add(handle1 || tan1.normalize(alpha1)),
+                pt2.add(handle2 || tan2.normalize(alpha2)),
+                pt2];
     },
 
     // Given set of points and their parameterization, try to find

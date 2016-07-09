@@ -10,9 +10,13 @@
         // certain browsers when serving this script online:
         var path, position, max;
         var count = 0;
-        var grow = true;
+        var grow = false;
+
+        // As the web is asynchronous, we need to wait for the raster to
+        // load before we can perform any operation on its pixels.
         var raster = new Raster('mona');
-        raster.remove();
+        raster.visible = false;
+        raster.on('load', resetSpiral);
 
         var text = new PointText({
             justification: 'right',
@@ -22,11 +26,9 @@
                 : 'to drag & drop images, please use Webkit, Firefox, Chrome or IE 10'
         });
 
-        resetSpiral();
-
         function onFrame(event) {
             if (grow) {
-                if (raster && (view.center - position).length < max) {
+                if (raster.loaded && (view.center - position).length < max) {
                     for (var i = 0, l = count / 36 + 1; i < l; i++) {
                         growSpiral();
                     }
@@ -73,7 +75,8 @@
         }
 
         function onResize() {
-            resetSpiral();
+            if (raster.loaded)
+                resetSpiral();
             text.point = view.bounds.bottomRight - [30, 30];
         }
 
@@ -93,11 +96,11 @@
             var file = event.dataTransfer.files[0];
             var reader = new FileReader();
 
-            reader.onload = function ( event ) {
+            reader.onload = function (event) {
                 var image = document.createElement('img');
                 image.onload = function () {
                     raster = new Raster(image);
-                    raster.remove();
+                    raster.visible = false;
                     resetSpiral();
                 };
                 image.src = event.target.result;

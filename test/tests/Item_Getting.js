@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Getting and Matching Items');
+QUnit.module('Getting and Matching Items');
 
 test('Item#getItems()', function() {
     var group = new Group([new Path({ selected: true }), new Raster()]);
@@ -46,7 +46,7 @@ test('Project#getItems()', function() {
     var layer = new Layer();
 
     var matches = paper.project.getItems({
-        type: 'layer'
+        class: Layer
     });
     equals(function() {
         return matches.length == 1 && matches[0] == layer;
@@ -61,33 +61,33 @@ test('Project#getItems()', function() {
 
     var path = new Path();
     var matches = paper.project.getItems({
-        type: 'path'
+        class: Path
     });
     equals(function() {
         return matches.length == 1 && matches[0] == path;
     }, true);
 
+    var group = new Group();
     var matches = paper.project.getItems({
-        constructor: Path
+        className: 'Group'
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === path;
+        return matches.length == 1 && matches[0] === group;
     }, true);
 
-    var group = new Group();
     var matches = paper.project.getItems({
         type: 'group'
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === group
+        return matches.length == 1 && matches[0] === group;
     }, true);
 
     var raster = new Raster();
     var matches = paper.project.getItems({
-        type: 'raster'
+        class: Raster
     });
     equals(function() {
-        return matches.length == 1 && matches[0] === raster
+        return matches.length == 1 && matches[0] === raster;
     }, true);
 
     equals(function() {
@@ -107,7 +107,7 @@ test('Project#getItems()', function() {
     equals(function() {
         return paper.project.getItems({
             selected: true,
-            type: 'raster'
+            class: Raster
         }).length;
     }, 1);
 });
@@ -120,7 +120,7 @@ test('Project#getItems() with compare function', function() {
 
     var items = paper.project.getItems({
         opacity: function(value) {
-            return value < 1
+            return value < 1;
         }
     });
     equals(function() {
@@ -162,23 +162,26 @@ test('Project#getItems() with color', function() {
 });
 
 test('Project#getItems() with regex function', function() {
-    var decoyPath = new Path({
+    var layer = paper.project.activeLayer;
+    var stopPath = new Path({
         name: 'stop'
     });
 
-    var decoyPath2 = new Path({
+    var pausePath = new Path({
         name: 'pause'
     });
 
-    var path = new Path({
+    var startPath = new Path({
         name: 'starting'
     });
 
     var items = paper.project.getItems({
         name: /^start/g
     });
+
+    // console.log(paper.project.activeLayer);
     equals(function() {
-        return items.length == 1 && items[0] == path;
+        return items.length == 1 && items[0] == startPath;
     }, true);
 
     equals(function() {
@@ -203,4 +206,60 @@ test('Project#getItems() empty: true', function() {
             empty: true
         }).length;
     }, 2);
+});
+
+test('Project#getItems() overlapping', function() {
+    var path = new Path.Circle({
+        radius: 100,
+        center: [200, 200],
+        fillColor: 'red'
+    });
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: [0, 0, 400, 400]
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: [200, 0, 400, 400]
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            overlapping: [400, 0, 400, 400]
+        });
+        return matches.length == 0;
+    }, true);
+});
+
+test('Project#getItems() inside', function() {
+    var path = new Path.Circle({
+        radius: 100,
+        center: [200, 200],
+        fillColor: 'red'
+    });
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            inside: [0, 0, 400, 400]
+        });
+        return matches.length == 1 && matches[0] == path;
+    }, true);
+
+    equals(function() {
+        var matches = project.getItems({
+            class: Path,
+            inside: [200, 0, 400, 400]
+        });
+        return matches.length == 0;
+    }, true);
 });

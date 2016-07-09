@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -40,19 +40,30 @@ Base.inject(/** @lends Base# */{
      * The class name of the object as a string, if the prototype defines a
      * `_class` value.
      *
-     * @beans
+     * @bean
      */
     getClassName: function() {
         return this._class || '';
     },
 
     /**
+     * Imports (deserializes) the stored JSON data into the object, if the
+     * classes match. If they do not match, a newly created object is returned
+     * instead.
+     *
+     * @param {String} json the JSON data to import from
+     */
+    importJSON: function(json) {
+        return Base.importJSON(json, this);
+    },
+
+    /**
      * Exports (serializes) this object to a JSON data object or string.
      *
      * @option [options.asString=true] {Boolean} whether the JSON is returned as
-     * a {@code Object} or a {@code String}
+     *     a `Object` or a `String`
      * @option [options.precision=5] {Number} the amount of fractional digits in
-     * numbers used in JSON data
+     *     numbers used in JSON data
      *
      * @param {Object} [options] the serialization options
      * @return {String} the exported JSON data
@@ -76,24 +87,9 @@ Base.inject(/** @lends Base# */{
      * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
      */
-    _set: function(props, exclude, dontCheck) {
-        if (props && (dontCheck || Base.isPlainObject(props))) {
-            // If props is a filtering object, we need to execute hasOwnProperty
-            // on the original object (it's parent / prototype). See _filtered
-            // inheritance trick in the argument reading code.
-            var keys = Object.keys(props._filtering || props);
-            for (var i = 0, l = keys.length; i < l; i++) {
-                var key = keys[i];
-                if (!(exclude && exclude[key])) {
-                    // Due to the _filtered inheritance trick, undefined is used
-                    // to mask already consumed named arguments.
-                    var value = props[key];
-                    if (value !== undefined)
-                        this[key] = value;
-                }
-            }
-            return true;
-        }
+    _set: function(props) {
+        if (props && Base.isPlainObject(props))
+            return Base.filter(this, props);
     },
 
     statics: /** @lends Base */{
@@ -169,13 +165,13 @@ Base.inject(/** @lends Base# */{
          * Size, Rectangle) and also higher classes such as Color and Segment.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
+         *     or a normal array
          * @param {Number} start the index at which to start reading in the list
          * @param {Number} length the amount of elements that can be read
-         * @param {Object} options {@code options.readNull} controls whether
-         * null is returned or converted. {@code options.clone} controls whether
-         * passed objects should be cloned if they are already provided in the
-         * required type
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
          */
         read: function(list, start, options, length) {
             // See if it's called directly on Base, and if so, read value and
@@ -234,12 +230,12 @@ Base.inject(/** @lends Base# */{
          * separately.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
+         *     or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {Object} options {@code options.readNull} controls whether
-         * null is returned or converted. {@code options.clone} controls whether
-         * passed objects should be cloned if they are already provided in the
-         * required type
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
          */
         readAll: function(list, start, options) {
             var res = [],
@@ -286,9 +282,9 @@ Base.inject(/** @lends Base# */{
 
         /**
          * @return the named value if the list provides an arguments object,
-         * {@code null} if the named value is {@code null} or {@code undefined},
-         * and {@code undefined} if there is no arguments object
-         * If no name is provided, it returns the whole arguments object
+         *     `null` if the named value is `null` or `undefined`, and
+         *     `undefined` if there is no arguments object If no name is
+         *     provided, it returns the whole arguments object
          */
         getNamed: function(list, name) {
             var arg = list[0];
@@ -301,11 +297,34 @@ Base.inject(/** @lends Base# */{
 
         /**
          * Checks if the argument list has a named argument with the given name.
-         * If name is {@code null}, it returns {@code true} if there are any
-         * named arguments.
+         * If name is `null`, it returns `true` if there are any named
+         * arguments.
          */
         hasNamed: function(list, name) {
             return !!this.getNamed(list, name);
+        },
+
+        /**
+         * Copies all properties from `source` over to `dest`, supporting
+         * _filtered handling as required by Base.readNamed() mechanism, as well
+         * as an optional exclude` object that lists properties to exclude.
+         */
+        filter: function(dest, source, exclude) {
+            // If source is a filtering object, we need to get the keys from the
+            // the original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            var keys = Object.keys(source._filtering || source);
+            for (var i = 0, l = keys.length; i < l; i++) {
+                var key = keys[i];
+                if (!(exclude && exclude[key])) {
+                    // Due to the _filtered inheritance trick, undefined is used
+                    // to mask already consumed named arguments.
+                    var value = source[key];
+                    if (value !== undefined)
+                        dest[key] = value;
+                }
+            }
+            return dest;
         },
 
         /**
@@ -324,9 +343,9 @@ Base.inject(/** @lends Base# */{
         serialize: function(obj, options, compact, dictionary) {
             options = options || {};
 
-            var root = !dictionary,
+            var isRoot = !dictionary,
                 res;
-            if (root) {
+            if (isRoot) {
                 options.formatter = new Formatter(options.precision);
                 // Create a simple dictionary object that handles all the
                 // storing and retrieving of dictionary definitions and
@@ -368,17 +387,17 @@ Base.inject(/** @lends Base# */{
                 // identifier), see if _serialize didn't already add the class,
                 // e.g. for classes that do not support compact form.
                 var name = obj._class;
-                if (name && !compact && !res._compact && res[0] !== name)
+                // Enforce class names on root level, except if the class
+                // explicitly asks to be serialized in compact form (Project).
+                if (name && !obj._compactSerialize && (isRoot || !compact)
+                        && res[0] !== name) {
                     res.unshift(name);
+                }
             } else if (Array.isArray(obj)) {
                 res = [];
                 for (var i = 0, l = obj.length; i < l; i++)
                     res[i] = Base.serialize(obj[i], options, compact,
                             dictionary);
-                // Mark array as compact, so obj._serialize handling above
-                // doesn't add the class name again.
-                if (compact)
-                    res._compact = true;
             } else if (Base.isPlainObject(obj)) {
                 res = {};
                 var keys = Object.keys(obj);
@@ -392,7 +411,7 @@ Base.inject(/** @lends Base# */{
             } else {
                 res = obj;
             }
-            return root && dictionary.length > 0
+            return isRoot && dictionary.length > 0
                     ? [['dictionary', dictionary.definitions], res]
                     : res;
         },
@@ -406,9 +425,11 @@ Base.inject(/** @lends Base# */{
          * The passed json data is recoursively traversed and converted, leaves
          * first
          */
-        deserialize: function(json, create, _data, _isDictionary) {
+        deserialize: function(json, create, _data, _setDictionary, _isRoot) {
             var res = json,
-                isRoot = !_data;
+                isFirst = !_data,
+                hasDictionary = isFirst && json && json.length
+                    && json[0][0] === 'dictionary';
             // A _data side-car to deserialize that can hold any kind of
             // 'global' data across a deserialization. It's currently only used
             // to hold dictionary definitions.
@@ -423,19 +444,18 @@ Base.inject(/** @lends Base# */{
                     isDictionary = type === 'dictionary';
                 // First see if this is perhaps a dictionary reference, and
                 // if so return its definition instead.
-                if (json.length == 1 && /^#/.test(type))
+                if (json.length == 1 && /^#/.test(type)) {
                     return _data.dictionary[type];
+                }
                 type = Base.exports[type];
                 res = [];
-                // We need to set the dictionary object before further
-                // deserialization, because serialized symbols may contain
-                // references to serialized gradients
-                if (_isDictionary)
-                    _data.dictionary = res;
                 // Skip first type entry for arguments
-                for (var i = type ? 1 : 0, l = json.length; i < l; i++)
+                // Pass true for _isRoot in children if we have a dictionary,
+                // in which case we need to shift the root level one down.
+                for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
                     res.push(Base.deserialize(json[i], create, _data,
-                            isDictionary));
+                            isDictionary, hasDictionary));
+                }
                 if (type) {
                     // Create serialized type and pass collected arguments to
                     // constructor().
@@ -444,7 +464,7 @@ Base.inject(/** @lends Base# */{
                     // creation. This is used in #importJSON() to pass
                     // on insert = false to all items except layers.
                     if (create) {
-                        res = create(type, args);
+                        res = create(type, args, isFirst || _isRoot);
                     } else {
                         res = Base.create(type.prototype);
                         type.apply(res, args);
@@ -452,16 +472,16 @@ Base.inject(/** @lends Base# */{
                 }
             } else if (Base.isPlainObject(json)) {
                 res = {};
-                // See above why we have to set this before Base.deserialize()
-                if (_isDictionary)
+                // We need to set the dictionary object before further
+                // deserialization, because serialized symbols may contain
+                // references to serialized gradients
+                if (_setDictionary)
                     _data.dictionary = res;
                 for (var key in json)
                     res[key] = Base.deserialize(json[key], create, _data);
             }
-            // Filter out deserialized dictionary.
-            return isRoot && json && json.length && json[0][0] === 'dictionary'
-                    ? res[1]
-                    : res;
+            // Filter out deserialized dictionary:
+            return hasDictionary ? res[1] : res;
         },
 
         exportJSON: function(obj, options) {
@@ -475,27 +495,29 @@ Base.inject(/** @lends Base# */{
             return Base.deserialize(
                     typeof json === 'string' ? JSON.parse(json) : json,
                     // Provide our own create function to handle target and
-                    // insertion
-                    function(type, args) {
-                        // If a target is provided and its of the right type,
-                        // import right into it.
-                        var obj = target && target.constructor === type
-                                ? target
-                                : Base.create(type.prototype),
-                            isTarget = obj === target;
-                        // Note: We don't set insert false for layers since
-                        // we want these to be created on the fly in the active
+                    // insertion.
+                    function(ctor, args, isRoot) {
+                        // If a target is provided and its of the right type
+                        // for the root item, import right into it.
+                        var useTarget = isRoot && target
+                                && target.constructor === ctor,
+                            obj = useTarget ? target
+                                : Base.create(ctor.prototype);
+                        // NOTE: We don't set insert false for layers since we
+                        // want these to be created on the fly in the active
                         // project into which we're importing (except for if
                         // it's a preexisting target layer).
                         if (args.length === 1 && obj instanceof Item
-                                && (isTarget || !(obj instanceof Layer))) {
+                                && (useTarget || !(obj instanceof Layer))) {
                             var arg = args[0];
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        type.apply(obj, args);
-                        // Clear target to only use it once
-                        if (isTarget)
+                        // When reusing an object, initialize it through #_set()
+                        // instead of the constructor function:
+                        (useTarget ? obj._set : ctor).apply(obj, args);
+                        // Clear target to only use it once.
+                        if (useTarget)
                             target = null;
                         return obj;
                     });

@@ -11,9 +11,11 @@
       "path": "../examples"
     },
     {
-      "path": "../build",
-      // jsdoc-toolkit will have its own project file
-      "folder_exclude_patterns": ["jsdoc-toolkit"]
+      "path": "../gulp",
+      "folder_exclude_patterns": ["jsdoc"]
+    },
+    {
+      "path": "../travis",
     },
     {
       "path": "..",
@@ -21,11 +23,12 @@
       "folder_exclude_patterns": ["*"]
     }
   ],
-  "settings":
+  "SublimeLinter":
   {
-    "tab_size": 4,
-    "translate_tabs_to_spaces": true,
-    "trim_trailing_white_space_on_save": true,
-    "ensure_newline_at_eof_on_save": true
+    "linters": {
+      "jshint": {
+        "@disable": false
+      }
+    }
   }
 }

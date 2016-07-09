@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,57 +10,72 @@
  * All rights reserved.
  */
 
-module('Raster');
+QUnit.module('Raster');
 
 test('Create a raster without a source and check its size', function() {
     var raster = new Raster();
-    equals(raster.size.toString(), new Size(0, 0).toString(), true);
+    equals(raster.size, new Size(0, 0), true);
 });
 
 test('Create a raster without a source and set its size', function() {
     var raster = new Raster();
     raster.size = [640, 480];
-    equals(raster.size.toString(), new Size(640, 480).toString(), true);
+    equals(raster.size, new Size(640, 480), true);
 });
 
-asyncTest('Create a raster from a url', function(callback) {
+test('Create a raster from a URL', function(assert) {
+    var done = assert.async();
     var raster = new Raster('assets/paper-js.gif');
     raster.onLoad = function() {
-        equals(raster.size.toString(), new Size(146, 146).toString(), true);
-        callback();
+        equals(raster.size, new Size(146, 146), true);
+        done();
+    };
+    raster.onError = function(event) {
+        pushFailure('Loading from a valid local URL should not give an error.');
+        done();
     };
 });
 
-asyncTest('Create a raster from a data url', function(callback) {
+test('Create a raster from a data URL', function(assert) {
+    var done = assert.async();
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     raster.onLoad = function() {
-        equals(raster.size.toString(), new Size(2, 2).toString(), true);
-        callback();
+        equals(raster.size, new Size(2, 2), true);
+        done();
+    };
+    raster.onError = function(event) {
+        pushFailure('Loading from a valid data URL should not give an error.');
+        done();
     };
 });
 
-asyncTest('Create a raster from a dom image', function(callback) {
+test('Create a raster from a dom image', function(assert) {
+    var done = assert.async();
     var img = document.createElement('img');
     img.src = 'assets/paper-js.gif';
     document.body.appendChild(img);
     DomEvent.add(img, {
         load: function() {
             var raster = new Raster(img);
-            equals(raster.size.toString(), new Size(146, 146).toString(), true);
+            equals(raster.size, new Size(146, 146), true);
             document.body.removeChild(img);
-            callback();
+            done();
+        },
+        error: function() {
+            pushFailure('Loading from a valid data URL should not give an error.');
+            done();
         }
     });
 });
 
-test('Create a raster from a canvas', function(callback) {
-    var canvas = CanvasProvider.getCanvas(30, 20);
+test('Create a raster from a canvas', function() {
+    var canvas = paper.createCanvas(30, 20);
     var raster = new Raster(canvas);
-    equals(raster.size.toString(), new Size(30, 20).toString(), true);
-    CanvasProvider.release(canvas);
+    equals(raster.size, new Size(30, 20), true);
 });
 
-asyncTest('Create a raster from a dom id', function(callback) {
+test('Create a raster from a dom id', function(assert) {
+    var done = assert.async();
     var img = document.createElement('img');
     img.src = 'assets/paper-js.gif';
     img.id = 'testimage';
@@ -68,14 +83,19 @@ asyncTest('Create a raster from a dom id', function(callback) {
     DomEvent.add(img, {
         load: function() {
             var raster = new Raster('testimage');
-            equals(raster.size.toString(), new Size(146, 146).toString(), true);
+            equals(raster.size, new Size(146, 146), true);
             document.body.removeChild(img);
-            callback();
+            done();
+        },
+        error: function() {
+            pushFailure('Loading from a valid data URL should not give an error.');
+            done();
         }
     });
 });
 
-asyncTest('Raster#getPixel / setPixel', function(callback) {
+test('Raster#getPixel / setPixel', function(assert) {
+    var done = assert.async();
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     raster.onLoad = function() {
         equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1));
@@ -86,12 +106,13 @@ asyncTest('Raster#getPixel / setPixel', function(callback) {
         // Alpha
         var color = new Color(1, 1, 0, 0.50196);
         raster.setPixel([0, 0], color);
-        equals(raster.getPixel([0, 0]), color, 'alpha');
-        callback();
+        equals(raster.getPixel([0, 0]), color, 'alpha', { tolerance: 1e-2 });
+        done();
     };
 });
 
-asyncTest('Raster#getSubCanvas', function(callback) {
+test('Raster#getSubCanvas', function(assert) {
+    var done = assert.async();
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     raster.onLoad = function() {
         var canvas = raster.getSubCanvas(new Rectangle({
@@ -114,7 +135,7 @@ asyncTest('Raster#getSubCanvas', function(callback) {
         equals(function() {
             return Base.equals(Array.prototype.slice.call(ctx.getImageData(0, 0, 1, 2).data), expected);
         }, true);
-        callback();
+        done();
     };
 });
 
@@ -132,7 +153,7 @@ test('Raster#getAverageColor(path)', function() {
     var raster = paper.project.activeLayer.rasterize(72);
     circle.scale(0.8);
     equals(raster.getAverageColor(circle), circle.fillColor, null,
-            { tolerance: 10e-4 });
+            { tolerance: 1e-3 });
 });
 
 test('Raster#getAverageColor(path) with compound path', function() {
@@ -155,5 +176,5 @@ test('Raster#getAverageColor(path) with compound path', function() {
     path.scale(0.8);
     path2.scale(1.2);
     equals(raster.getAverageColor(compoundPath), new Color(1, 0, 0), null,
-            { tolerance: 10e-4 });
+            { tolerance: 1e-3 });
 });

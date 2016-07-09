@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('JSON');
+QUnit.module('JSON');
 
 function testExportImportJSON(project) {
     // Use higher precision than in comparissons, for bounds
@@ -86,7 +86,7 @@ test('Rectangle testing', function() {
     path1.fillColor = 'red';
     path1.name = 'square1';
     path1.strokeCap = 'square';
-    path1.opacity = .1;
+    path1.opacity = 0.1;
     path1.dashArray = [5, 2];
     path1.dashOffset = 0;
 
@@ -121,10 +121,10 @@ test('Symbols', function() {
         to: [200, 100],
         fillColor: 'red'
     });
-    var symbol = new Symbol(ellipse);
-    var p1 = symbol.place([100, 100]);
+    var definition = new SymbolDefinition(ellipse);
+    var p1 = definition.place([100, 100]);
     p1.rotate(45);
-    var p2 = symbol.place([300, 200]);
+    var p2 = definition.place([300, 200]);
     p2.rotate(-30);
 
     testExportImportJSON(paper.project);
@@ -157,7 +157,7 @@ test('transform test 1', function() {
     for(var i = 0; i < clones; i++) {
         var clonedPath = circlePath.clone();
         clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
-    };
+    }
     testExportImportJSON(paper.project);
 });
 
@@ -206,4 +206,53 @@ test('Color', function() {
         fillColor: new Color(1, 1, 0, 0.5)
     });
     testExportImportJSON(paper.project);
+});
+
+test('Color#importJSON()', function() {
+    var topLeft = [100, 100];
+    var bottomRight = [200, 200];
+
+    var path = new Path.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        // Fill the path with a gradient of three color stops
+        // that runs between the two points we defined earlier:
+        fillColor: {
+            gradient: {
+                stops: [
+                    ['yellow', 0],
+                    ['red', 0.5],
+                    ['blue', 1]
+                ]
+            },
+            origin: topLeft,
+            destination: bottomRight
+        }
+    });
+
+    var json = path.fillColor.exportJSON(),
+        id = path.fillColor.gradient._id,
+        color = new Color(),
+        str = '[["dictionary",{"#' + id + '":["Gradient",[[[1,1,0],0],[[1,0,0],0.5],[[0,0,1],1]],false]}],["Color","gradient",["#' + id + '"],[100,100],[200,200]]]';
+
+    equals(json, str);
+
+    equals(function() {
+        return color.importJSON(json) === color;
+    }, true);
+
+    equals(function() {
+        return color.equals(path.fillColor);
+    }, true);
+});
+
+test('Path#importJSON()', function() {
+    var path = new Path();
+    var layer = project.activeLayer;
+    equals(function() { return path.parent === layer; }, true);
+    path.importJSON('["Path",{"segments":[[[50,100],[0,27.61424],[0,-27.61424]],[[100,50],[-27.61424,0],[27.61424,0]],[[150,100],[0,-27.61424],[0,27.61424]],[[100,150],[27.61424,0],[-27.61424,0]]],"closed":true,"fillColor":[1,0,0]}]');
+    equals(function() { return path.bounds; }, { x: 50, y: 50, width: 100, height: 100 });
+    equals(function() { return path.fillColor; }, { red: 1, green: 0, blue: 0 });
+    equals(function() { return layer.firstChild === path; }, true);
+    equals(function() { return path.parent === layer; }, true);
 });

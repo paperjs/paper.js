@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -380,7 +380,7 @@ Path.inject({ statics: new function() {
                 sides = Base.readNamed(arguments, 'sides'),
                 radius = Base.readNamed(arguments, 'radius'),
                 step = 360 / sides,
-                three = !(sides % 3),
+                three = sides % 3 === 0,
                 vector = new Point(0, three ? -radius : radius),
                 offset = three ? -1 : 0.5,
                 segments = new Array(sides);
@@ -393,9 +393,9 @@ Path.inject({ statics: new function() {
         /**
          * Creates a star shaped path item.
          *
-         * The largest of {@code radius1} and {@code radius2} will be the outer
-         * radius of the star. The smallest of radius1 and radius2 will be the
-         * inner radius.
+         * The largest of `radius1` and `radius2` will be the outer radius of
+         * the star. The smallest of radius1 and radius2 will be the inner
+         * radius.
          *
          * @name Path.Star
          * @param {Point} center the center point of the star

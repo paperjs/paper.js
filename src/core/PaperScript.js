@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -14,13 +14,13 @@
  * @name PaperScript
  * @namespace
  */
-Base.exports.PaperScript = (function() {
+Base.exports.PaperScript = function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.
     var exports, define,
         // The scope into which the library is loaded.
         scope = this;
-/*#*/ include('../../bower_components/acorn/acorn.min.js', { exports: false });
+/*#*/ include('../../node_modules/acorn/acorn.min.js', { exports: false });
 
     // Operators to overload
 
@@ -31,9 +31,8 @@ Base.exports.PaperScript = (function() {
         '*': '__multiply',
         '/': '__divide',
         '%': '__modulo',
-        // Use the real equals.
-        '==': 'equals',
-        '!=': 'equals'
+        '==': '__equals',
+        '!=': '__equals'
     };
 
     var unaryOperators = {
@@ -43,7 +42,7 @@ Base.exports.PaperScript = (function() {
 
     // Inject underscored math methods as aliases to Point, Size and Color.
     var fields = Base.each(
-        ['add', 'subtract', 'multiply', 'divide', 'modulo', 'negate'],
+        ['add', 'subtract', 'multiply', 'divide', 'modulo', 'equals', 'negate'],
         function(name) {
             // Create an alias for each math method to be injected into the
             // classes using Straps.js' #inject()
@@ -99,15 +98,21 @@ Base.exports.PaperScript = (function() {
      *
      * @name PaperScript.compile
      * @function
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     generation
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
      * @param {String} code the PaperScript code
-     * @param {String} url the url of the source, for source-map debugging
-     * @return {String} the compiled PaperScript as JavaScript code
+     * @param {Object} [option] the compilation options
+     * @return {Object} an object holding the compiled PaperScript translated
+     *     into JavaScript code along with source-maps and other information.
      */
-    function compile(code, url, options) {
+    function compile(code, options) {
         if (!code)
             return '';
         options = options || {};
-        url = url || '';
         // Use Acorn or Esprima to translate the code into an AST structure
         // which is then walked and parsed for operators to overload. Instead of
         // modifying the AST and translating it back to code, we directly change
@@ -255,19 +260,46 @@ Base.exports.PaperScript = (function() {
                 break;
             }
         }
-/*#*/ if (__options.environment == 'browser') {
+
         // Source-map support:
-        var sourceMap = null,
-            browser = paper.browser,
-            version = browser.versionNumber,
-            lineBreaks = /\r\n|\n|\r/mg;
+        // Encodes a Variable Length Quantity as a Base64 string.
+        // See: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps
+        function encodeVLQ(value) {
+            var res = '',
+                base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+            value = (Math.abs(value) << 1) + (value < 0 ? 1 : 0);
+            while (value || !res) {
+                var next = value & (32 - 1);
+                value >>= 5;
+                if (value)
+                    next |= 32;
+                res += base64[next];
+            }
+            return res;
+        }
+
+        var url = options.url || '',
+            agent = paper.agent,
+            version = agent.versionNumber,
+            offsetCode = false,
+            sourceMaps = options.sourceMaps,
+            // Include the original code in the sourceMap if there is no linked
+            // source file so the debugger can still display it correctly.
+            source = options.source || code,
+            lineBreaks = /\r\n|\n|\r/mg,
+            offset = options.offset || 0,
+            map;
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
-        if (browser.chrome && version >= 30
-                || browser.webkit && version >= 537.76 // >= Safari 7.0.4
-                || browser.firefox && version >= 23) {
-            var offset = 0;
-            if (window.location.href.indexOf(url) === 0) {
+        if (sourceMaps && (agent.chrome && version >= 30
+                || agent.webkit && version >= 537.76 // >= Safari 7.0.4
+                || agent.firefox && version >= 23
+                || agent.node)) {
+            if (agent.node) {
+                // -2 required to remove function header:
+                // https://code.google.com/p/chromium/issues/detail?id=331655
+                offset -= 2;
+            } else if (window && url && !window.location.href.indexOf(url)) {
                 // If the code stems from the actual html page, determine the
                 // offset of inlined code.
                 var html = document.getElementsByTagName('html')[0].innerHTML;
@@ -276,17 +308,21 @@ Base.exports.PaperScript = (function() {
                 offset = html.substr(0, html.indexOf(code) + 1).match(
                         lineBreaks).length + 1;
             }
-            // A hack required by all current browser versions: Instead of
-            // starting the mappings at the given offset, we have to shift the
-            // actual code down to the place in the original file, as source-map
-            // support seems incomplete in these browsers. This has some
-            // advantages too: No code for VLQ encoding is required.
-            // TODO: Report as bugs?
-            var mappings = ['AAAA'];
+            // A hack required by older versions of browsers to align inlined
+            // code: Instead of starting the mappings at the given offset, we
+            // have to shift the actual code down to the place in the original
+            // file, as source-map support seems incomplete in these browsers.
+            offsetCode = offset > 0 && !(
+                    agent.chrome && version >= 36 ||
+                    agent.safari && version >= 600 ||
+                    agent.firefox && version >= 40 ||
+                    agent.node);
+            var mappings = ['AA' + encodeVLQ(offsetCode ? 0 : offset) + 'A'];
             // Create empty entries by the amount of lines + 1, so join can be
             // used below to produce the actual instructions that many times.
-            mappings.length = (code.match(lineBreaks) || []).length + 1 + offset;
-            sourceMap = {
+            mappings.length = (code.match(lineBreaks) || []).length + 1
+                    + (offsetCode ? offset : 0);
+            map = {
                 version: 3,
                 file: url,
                 names:[],
@@ -294,61 +330,73 @@ Base.exports.PaperScript = (function() {
                 // the lines of the original code, all that is required is a
                 // mappings string that increments by one between each line.
                 // AACA is the instruction to increment the line by one.
+                // TODO: Add support for column offsets!
                 mappings: mappings.join(';AACA'),
                 sourceRoot: '',
-                sources: [url]
+                sources: [url],
+                sourcesContent: [source]
             };
-            // Include the original code in the sourceMap if there is no linked
-            // source file so the debugger can still display it correctly.
-            var source = options.source || !url && code;
-            if (source)
-                sourceMap.sourcesContent = [source];
         }
         // Now do the parsing magic
         walkAST(parse(code, { ranges: true }));
-        if (sourceMap) {
-            // Adjust the line offset of the resulting code if required.
-            // This is part of a browser hack, see above.
-            code = new Array(offset + 1).join('\n') + code
-                    + "\n//# sourceMappingURL=data:application/json;base64,"
-                    + (btoa(unescape(encodeURIComponent(
-                        JSON.stringify(sourceMap)))))
-                    + "\n//# sourceURL=" + (url || 'paperscript');
+        if (map) {
+            if (offsetCode) {
+                // Adjust the line offset of the resulting code if required.
+                // This is part of a browser hack, see above.
+                code = new Array(offset + 1).join('\n') + code;
+            }
+            if (/^(inline|both)$/.test(sourceMaps)) {
+                code += "\n//# sourceMappingURL=data:application/json;base64,"
+                        + window.btoa(unescape(encodeURIComponent(
+                            JSON.stringify(map))));
+            }
+            code += "\n//# sourceURL=" + (url || 'paperscript');
         }
-/*#*/ } else { // __options.environment != 'browser'
-        // Now do the parsing magic
-        walkAST(parse(code, { ranges: true }));
-/*#*/ } // __options.environment != 'browser'
-        return code;
+        return {
+            url: url,
+            source: source,
+            code: code,
+            map: map
+        };
     }
 
     /**
-     * Executes the parsed PaperScript code in a compiled function that receives
-     * all properties of the passed {@link PaperScope} as arguments, to emulate
-     * a global scope with unaffected performance. It also installs global view
-     * and tool handlers automatically for you.
+     * Compiles the PaperScript code into a compiled function and executes it.
+     * The compiled function receives all properties of the passed {@link
+     * PaperScope} as arguments, to emulate a global scope with unaffected
+     * performance. It also installs global view and tool handlers automatically
+     * on the respective objects.
      *
      * @name PaperScript.execute
      * @function
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     generation
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
-     * @param {String} url the url of the source, for source-map debugging
+     * @param {Object} [option] the compilation options
+     * @return {Object} an object holding the compiled PaperScript translated
+     *     into JavaScript code along with source-maps and other information.
      */
-    function execute(code, scope, url, options) {
+    function execute(code, scope, options) {
         // Set currently active scope.
         paper = scope;
         var view = scope.getView(),
-            // Only create a tool object if something resembling a tool handler
-            // definition is contained in the code.
-            tool = /\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/.test(code)
-                    ? new Tool()
-                    : null,
+            // Only create a tool if the tool object is accessed or something
+            // resembling a global tool handler is contained in the code, but
+            // no tool objects are actually created.
+            tool = /\btool\.\w+|\s+on(?:Key|Mouse)(?:Up|Down|Move|Drag)\b/
+                    .test(code) && !/\bnew\s+Tool\b/.test(code)
+                        ? new Tool() : null,
             toolHandlers = tool ? tool._events : [],
             // Compile a list of all handlers that can be defined globally
             // inside the PaperScript. These are passed on to the function as
             // undefined arguments, so that their name exists, rather than
-            // injecting a code line that defines them as variables.
-            // They are exported again at the end of the function.
+            // injecting a code line that defines them as variables. They are
+            // exported again at the end of the function.
             handlers = ['onFrame', 'onResize'].concat(toolHandlers),
             // compile a list of parameter names for all variables that need to
             // appear as globals inside the script. At the same time, also
@@ -356,8 +404,9 @@ Base.exports.PaperScript = (function() {
             // function call.
             params = [],
             args = [],
-            func;
-        code = compile(code, url, options);
+            func,
+            compiled = typeof code === 'object' ? code : compile(code, options);
+        code = compiled.code;
         function expose(scope, hidden) {
             // Look through all enumerable properties on the scope and expose
             // these too as pseudo-globals, but only if they seem to be in use.
@@ -390,20 +439,20 @@ Base.exports.PaperScript = (function() {
         // We need an additional line that returns the handlers in one object.
         if (handlers)
             code += '\nreturn { ' + handlers + ' };';
-/*#*/ if (__options.environment == 'browser') {
-        var browser = paper.browser;
-        if (browser.chrome || browser.firefox) {
-            // On Firefox, all error numbers inside dynamically compiled code
-            // are relative to the line where the eval / compilation happened.
-            // To fix this issue, we're temporarily inserting a new script
-            // tag. We also use this on Chrome to fix an issue with compiled
-            // functions:
+        var agent = paper.agent;
+        if (document && (agent.chrome
+                || agent.firefox && agent.versionNumber < 40)) {
+            // On older Firefox, all error numbers inside dynamically compiled
+            // code are relative to the line where the eval / compilation
+            // happened. To fix this issue, we're temporarily inserting a new
+            // script tag.
+            // We also use this on Chrome to fix issues with compiled functions:
             // https://code.google.com/p/chromium/issues/detail?id=331655
             var script = document.createElement('script'),
                 head = document.head || document.getElementsByTagName('head')[0];
             // Add a new-line before the code on Firefox since the error
             // messages appear to be aligned to line number 0...
-            if (browser.firefox)
+            if (agent.firefox)
                 code = '\n' + code;
             script.appendChild(document.createTextNode(
                 'paper._execute = function(' + params + ') {' + code + '\n}'
@@ -415,9 +464,6 @@ Base.exports.PaperScript = (function() {
         } else {
             func = Function(params, code);
         }
-/*#*/ } else { // __options.environment != 'browser'
-        func = Function(params, code);
-/*#*/ } // __options.environment != 'browser'
         var res = func.apply(scope, args) || {};
         // Now install the 'global' tool and view handlers, and we're done!
         Base.each(toolHandlers, function(key) {
@@ -436,12 +482,13 @@ Base.exports.PaperScript = (function() {
             });
             if (res.onFrame)
                 view.setOnFrame(res.onFrame);
-            // Automatically update view at the end.
-            view.update();
+            // Automatically request an update at the end. This is only needed
+            // if the script does not actually produce anything yet, and the
+            // used canvas contains previous content.
+            view.requestUpdate();
         }
+        return compiled;
     }
-
-/*#*/ if (__options.environment == 'browser') {
 
     function loadScript(script) {
         // Only load this script if it not loaded already.
@@ -479,10 +526,15 @@ Base.exports.PaperScript = (function() {
                 // same order the script tags appear.
                 // If the async attribute is specified on the script element,
                 // request the source asynchronously and execute as soon as
-                // it is retreived.
-                Http.request('get', src, function(code) {
-                    execute(code, scope, src);
-                }, async);
+                // it is retrieved.
+                Http.request({
+                    url: src,
+                    async: async,
+                    mimeType: 'text/plain',
+                    onLoad: function(code) {
+                        execute(code, scope, src);
+                    }
+                });
             } else {
                 // We can simply get the code form the script tag.
                 execute(script.innerHTML, scope, script.baseURI);
@@ -494,37 +546,40 @@ Base.exports.PaperScript = (function() {
     }
 
     function loadAll() {
-        Base.each(document.getElementsByTagName('script'), loadScript);
+        Base.each(document && document.getElementsByTagName('script'),
+                loadScript);
     }
 
    /**
-     * Loads, compiles and executes PaperScript code in the HTML document.
-     * Note that this method is executed automatically for all scripts in the
+     * Loads, compiles and executes PaperScript code in the HTML document. Note
+     * that this method is executed automatically for all scripts in the
      * document through a window load event. You can optionally call it earlier
      * (e.g. from a DOM ready event), or you can mark scripts to be ignored by
-     * setting the attribute {@code ignore="true"} or
-     * {@code data-paper-ignore="true"}, and call the
-     * {@code PaperScript.load(script)} method for each script separately when
-     * needed.
+     * setting the attribute `ignore="true"` or `data-paper-ignore="true"`, and
+     * call the `PaperScript.load(script)` method for each script separately
+     * when needed.
      *
      * @name PaperScript.load
      * @function
      * @param {HTMLScriptElement} [script=null] the script to load. If none is
-     * provided, all scripts of the HTML document are iterated over and loaded
-     * @return {PaperScope} the scope produced for the passed {@code script}, or
-     * {@code undefined} of multiple scripts area loaded
+     *     provided, all scripts of the HTML document are iterated over and
+     *     loaded
+     * @return {PaperScope} the scope produced for the passed `script`, or
+     *     `undefined` of multiple scripts area loaded
      */
     function load(script) {
         return script ? loadScript(script) : loadAll();
     }
 
-    // Catch cases where paper.js is loaded after the browser event has already
-    // occurred.
-    if (document.readyState === 'complete') {
-        // Handle it asynchronously
-        setTimeout(loadAll);
-    } else {
-        DomEvent.add(window, { load: loadAll });
+    if (window) {
+        // Catch cases where paper.js is loaded after the browser event has
+        // already occurred.
+        if (document.readyState === 'complete') {
+            // Handle it asynchronously
+            setTimeout(loadAll);
+        } else {
+            DomEvent.add(window, { load: loadAll });
+        }
     }
 
     return {
@@ -533,41 +588,6 @@ Base.exports.PaperScript = (function() {
         load: load,
         parse: parse
     };
-
-/*#*/ } else { // __options.environment != 'browser'
-/*#*/ if (__options.environment == 'node') {
-
-    // Register the .pjs extension for automatic compilation as PaperScript
-    var fs = require('fs'),
-        path = require('path');
-
-    require.extensions['.pjs'] = function(module, uri) {
-        // Requiring a PaperScript on Node.js returns an initialize method which
-        // needs to receive a Canvas object when called and returns the
-        // PaperScope.
-        module.exports = function(canvas) {
-            var source = compile(fs.readFileSync(uri, 'utf8')),
-                scope = new PaperScope();
-            scope.setup(canvas);
-            scope.__filename = uri;
-            scope.__dirname = path.dirname(uri);
-            // Expose core methods and values
-            scope.require = require;
-            scope.console = console;
-            execute(source, scope);
-            return scope;
-        };
-    };
-
-/*#*/ } // __options.environment == 'node'
-
-    return {
-        compile: compile,
-        execute: execute,
-        parse: parse
-    };
-
-/*#*/ } // __options.environment != 'browser'
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
-}).call(this);
+}.call(this);

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -35,22 +35,24 @@ var HitResult = Base.extend(/** @lends HitResult# */{
 
     /**
      * Describes the type of the hit result. For example, if you hit a segment
-     * point, the type would be 'segment'.
+     * point, the type would be `'segment'`.
      *
      * @name HitResult#type
      * @property
-     * @type String('segment', 'handle-in', 'handle-out', 'curve', 'stroke',
-     * 'fill', 'bounds', 'center', 'pixel')
+     * @type String
+     * @values 'segment', 'handle-in', 'handle-out', 'curve', 'stroke', 'fill',
+     *     'bounds', 'center', 'pixel'
      */
 
     /**
-     * If the HitResult has a {@link HitResult#type} of 'bounds', this property
-     * describes which corner of the bounding rectangle was hit.
+     * If the HitResult has a {@link HitResult#type} of `'bounds'`, this
+     * property describes which corner of the bounding rectangle was hit.
      *
      * @name HitResult#name
      * @property
-     * @type String('top-left', 'top-right', 'bottom-left', 'bottom-right',
-     * 'left-center', 'top-center', 'right-center', 'bottom-center')
+     * @type String
+     * @values 'top-left', 'top-right', 'bottom-left', 'bottom-right',
+     *     'left-center', 'top-center', 'right-center', 'bottom- center'
      */
 
     /**
@@ -104,10 +106,11 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          *
          * @private
          */
-        getOptions: function(options) {
-            return new Base({
+        getOptions: function(args) {
+            var options = args && Base.read(args);
+            return Base.set({
                 // Type of item, for instanceof check: Group, Layer, Path,
-                // CompoundPath, Shape, Raster, PlacedSymbol, ...
+                // CompoundPath, Shape, Raster, SymbolItem, ...
                 type: null,
                 // Tolerance
                 tolerance: paper.settings.hitTolerance,

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -23,32 +23,38 @@
 var KeyEvent = Event.extend(/** @lends KeyEvent# */{
     _class: 'KeyEvent',
 
-    initialize: function KeyEvent(down, key, character, event) {
-        Event.call(this, event);
-        this.type = down ? 'keydown' : 'keyup';
+    initialize: function KeyEvent(type, event, key, character) {
+        this.type = type;
+        this.event = event;
         this.key = key;
         this.character = character;
     },
 
     /**
-     * The type of key event.
+     * The type of mouse event.
      *
      * @name KeyEvent#type
-     * @type String('keydown', 'keyup')
+     * @type String
+     * @values 'keydown', 'keyup'
      */
 
     /**
-     * The string character of the key that caused this key event.
+     * The character representation of the key that caused this key event,
+     * taking into account the current key-modifiers (e.g. shift, control,
+     * caps-lock, etc.)
      *
      * @name KeyEvent#character
      * @type String
      */
 
     /**
-     * The key that caused this key event.
+     * The key that caused this key event, either as a lower-case character or
+     * special key descriptor.
      *
      * @name KeyEvent#key
      * @type String
+     * @values 'enter', 'space', 'shift', 'control', 'alt', 'meta', 'caps-lock',
+     *     'left', 'up', 'right', 'down', 'escape', 'delete', ...
      */
 
     /**

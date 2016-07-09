@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -23,28 +23,31 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * Creates a GradientStop object.
      *
      * @param {Color} [color=new Color(0, 0, 0)] the color of the stop
-     * @param {Number} [rampPoint=0] the position of the stop on the gradient
-     * ramp as a value between 0 and 1
+     * @param {Number} [offset=null] the position of the stop on the gradient
+     * ramp as a value between `0` and `1`; `null` or `undefined` for automatic
+     * assignment.
      */
     initialize: function GradientStop(arg0, arg1) {
-        if (arg0) {
-            var color, rampPoint;
-            if (arg1 === undefined && Array.isArray(arg0)) {
-                // [color, rampPoint]
+        // (color, offset)
+        var color = arg0,
+            offset = arg1;
+        if (typeof arg0 === 'object' && arg1 === undefined) {
+            // Make sure the first entry in the array is not a number, in which
+            // case the whole array would be a color, and the assignments would
+            // already have occurred correctly above.
+            if (Array.isArray(arg0) && typeof arg0[0] !== 'number') {
+                // ([color, offset])
                 color = arg0[0];
-                rampPoint = arg0[1];
-            } else if (arg0.color) {
-                // stop
+                offset = arg0[1];
+            } else if ('color' in arg0 || 'offset' in arg0
+                    || 'rampPoint' in arg0) {
+                // (stop)
                 color = arg0.color;
-                rampPoint = arg0.rampPoint;
-            } else {
-                // color, rampPoint
-                color = arg0;
-                rampPoint = arg1;
+                offset = arg0.offset || arg0.rampPoint || 0;
             }
-            this.setColor(color);
-            this.setRampPoint(rampPoint);
         }
+        this.setColor(color);
+        this.setOffset(offset);
     },
 
     // TODO: Do we really need to also clone the color here?
@@ -52,12 +55,14 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * @return {GradientStop} a copy of the gradient-stop
      */
     clone: function() {
-        return new GradientStop(this._color.clone(), this._rampPoint);
+        return new GradientStop(this._color.clone(), this._offset);
     },
 
     _serialize: function(options, dictionary) {
-        return Base.serialize([this._color, this._rampPoint], options, true,
-                dictionary);
+        var color = this._color,
+            offset = this._offset;
+        return Base.serialize(offset == null ? [color] : [color, offset],
+                options, true, dictionary);
     },
 
     /**
@@ -72,11 +77,10 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     },
 
     /**
-     * The ramp-point of the gradient stop as a value between {@code 0} and
-     * {@code 1}.
+     * The ramp-point of the gradient stop as a value between `0` and `1`.
      *
-     * @type Number
      * @bean
+     * @type Number
      *
      * @example {@paperscript height=300}
      * // Animating a gradient's ramp points:
@@ -103,29 +107,36 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * // This function is called each frame of the animation:
      * function onFrame(event) {
      *     var blackStop = gradient.stops[2];
-     *     // Animate the rampPoint between 0.7 and 0.9:
-     *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+     *     // Animate the offset between 0.7 and 0.9:
+     *     blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
      *
-     *     // Animate the rampPoint between 0.2 and 0.4
+     *     // Animate the offset between 0.2 and 0.4
      *     var redStop = gradient.stops[1];
-     *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+     *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
-    getRampPoint: function() {
-        return this._rampPoint;
+    getOffset: function() {
+        return this._offset;
     },
 
-    setRampPoint: function(rampPoint) {
-        this._defaultRamp = rampPoint == null;
-        this._rampPoint = rampPoint || 0;
+    setOffset: function(offset) {
+        this._offset = offset;
         this._changed();
     },
 
     /**
+     * @private
+     * @bean
+     * @deprecated use {@link #getOffset()} instead.
+     */
+    getRampPoint: '#getOffset',
+    setRampPoint: '#setOffset',
+
+    /**
      * The color of the gradient stop.
      *
-     * @type Color
      * @bean
+     * @type Color
      *
      * @example {@paperscript height=300}
      * // Animating a gradient's ramp points:
@@ -152,31 +163,31 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      *
      * // This function is called each frame of the animation:
      * function onFrame(event) {
-     *     // Animate the rampPoint between 0.7 and 0.9:
-     *     blackStop.rampPoint = Math.sin(event.time * 5) * 0.1 + 0.8;
+     *     // Animate the offset between 0.7 and 0.9:
+     *     blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
      *
-     *     // Animate the rampPoint between 0.2 and 0.4
-     *     redStop.rampPoint = Math.sin(event.time * 3) * 0.1 + 0.3;
+     *     // Animate the offset between 0.2 and 0.4
+     *     redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
      * }
      */
     getColor: function() {
         return this._color;
     },
 
-    setColor: function(color) {
+    setColor: function(/* color */) {
         // Make sure newly set colors are cloned, since they can only have
         // one owner.
-        this._color = Color.read(arguments);
-        if (this._color === color)
-            this._color = color.clone();
-        this._color._owner = this;
+        var color = Color.read(arguments, 0, { clone: true });
+        if (color)
+            color._owner = this;
+        this._color = color;
         this._changed();
     },
 
     equals: function(stop) {
         return stop === this || stop && this._class === stop._class
                 && this._color.equals(stop._color)
-                && this._rampPoint == stop._rampPoint
+                && this._offset == stop._offset
                 || false;
     }
 });

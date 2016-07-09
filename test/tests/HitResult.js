@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,9 +10,9 @@
  * All rights reserved.
  */
 
-module('HitResult');
+QUnit.module('HitResult');
 
-test('hit-testing options', function() {
+test('Hit-testing options', function() {
     var defaultOptions = {
         type: null,
         tolerance: paper.settings.hitTolerance,
@@ -296,7 +296,7 @@ test('hit-testing stroke on segment point of a path', function() {
     equals(error == null, true, description);
 });
 
-test('Hit testing a point that is extremely close to a curve', function() {
+test('hit-testing a point that is extremely close to a curve', function() {
     var path = new Path.Rectangle([0, 0], [100, 100]);
     // A point whose x value is extremely close to 0:
     var point = new Point(2.842 / Math.pow(10, 14), 0);
@@ -492,7 +492,7 @@ test('hitting path with a text item in the project', function() {
 
 });
 
-test('Check hit-testing of items that come after a transformed group.', function() {
+test('hit-testing of items that come after a transformed group.', function() {
     paper.project.currentStyle.fillColor = 'black';
     var point1 = new Point(100, 100);
     var point2 = new Point(140, 100);
@@ -521,7 +521,7 @@ test('Check hit-testing of items that come after a transformed group.', function
         return hitResult && hitResult.item;
     }, path2, 'Hit testing project for point2 should give us path2.');
 
-    group.translate(delta)
+    group.translate(delta);
 
     hitResult = paper.project.hitTest(point1);
     equals(function() {
@@ -556,13 +556,13 @@ test('Check hit-testing of items that come after a transformed group.', function
     }, path1, 'After moving group before path1, hit-testing path1 for point1 should give us path1.');
 });
 
-test('Check hit-testing of placed symbols.', function() {
+test('hit-testing of placed symbols.', function() {
     var point = new Point(100, 100);
 
     var path = new Path.Circle([0, 0], 20);
     path.fillColor = 'black';
-    var symbol = new Symbol(path);
-    var placedItem = symbol.place(point);
+    var definition = new SymbolDefinition(path);
+    var placedItem = definition.place(point);
     var hitResult = placedItem.hitTest(point);
     equals(function() {
         return hitResult && hitResult.item == placedItem;
@@ -570,7 +570,7 @@ test('Check hit-testing of placed symbols.', function() {
 
 });
 
-test('Hit testing the corner of a rectangle with miter stroke.', function() {
+test('hit-testing the corner of a rectangle with miter stroke.', function() {
     var rect = new Path.Rectangle({
         rectangle: [100, 100, 300, 200],
         fillColor: '#f00',
@@ -583,7 +583,7 @@ test('Hit testing the corner of a rectangle with miter stroke.', function() {
     }, true);
 });
 
-test('Hit testing invisible items.', function() {
+test('hit-testing invisible items.', function() {
     var point = new Point(0, 0);
     var circle1 = new Path.Circle({
         center: point.subtract([25, 0]),
@@ -607,7 +607,7 @@ test('Hit testing invisible items.', function() {
     }, true);
 });
 
-test('Hit testing guides.', function() {
+test('hit-testing guides.', function() {
     var point = new Point(0, 0);
     var circle1 = new Path.Circle({
         center: point.subtract([25, 0]),
@@ -641,24 +641,50 @@ test('Hit testing guides.', function() {
     }, true);
 });
 
-test('Hit testing fill with tolerance', function() {
+test('hit-testing fills with tolerance', function() {
     var path = new Path.Rectangle({
         from: [50, 50],
         to: [200, 200],
         fillColor: 'red'
     });
 
+    var tolerance = 10;
+    var point = path.bounds.bottomRight.add(tolerance / Math.sqrt(2));
+
     equals(function() {
-        var tolerance = 10;
-        var result = paper.project.hitTest(path.bounds.bottomRight.add(tolerance / Math.sqrt(2)), {
+        var result = paper.project.hitTest(point, {
             tolerance: tolerance,
             fill: true
         });
         return result && result.item === path;
     }, true);
+
+    var point = new Point(20, 20);
+    var size = new Size(40, 40);
+    var hitPoint = new Point(10, 10);
+    var options = {
+        fill: true,
+        tolerance: 20
+    };
+
+    var shapeRect = new Shape.Rectangle(point, size);
+    shapeRect.fillColor = 'black';
+
+    var pathRect = new Path.Rectangle(point, size);
+    pathRect.fillColor = 'black';
+
+    equals(function() {
+        var hit = shapeRect.hitTest(hitPoint, options);
+        return hit && hit.type === 'fill';
+    }, true);
+
+    equals(function() {
+        var hit = pathRect.hitTest(hitPoint, options);
+        return hit && hit.type === 'fill';
+    }, true);
 });
 
-test('Hit testing compound-paths', function() {
+test('hit-testing compound-paths', function() {
     var center = new Point(100, 100);
     var path1 = new Path.Circle({
         center: center,
@@ -672,7 +698,7 @@ test('Hit testing compound-paths', function() {
         children: [path1, path2],
         fillColor: 'blue'
     });
-    // When hit-testing a side, we should  get a result on the torus
+    // When hit-testing a side, we should get a result on the torus
     equals(function() {
         var result = paper.project.hitTest(center.add([75, 0]), {
             fill: true
@@ -684,7 +710,7 @@ test('Hit testing compound-paths', function() {
         var result = paper.project.hitTest(center, {
             fill: true
         });
-        return result === null  ;
+        return result === null;
     }, true);
     // When asking specifically for paths, she should get the top-most path in
     // the center (the one that cuts out the hole)
@@ -694,6 +720,143 @@ test('Hit testing compound-paths', function() {
             fill: true
         });
         return result && result.item === path2;
+    }, true);
+});
+
+test('hit-testing clipped items', function() {
+    var rect = new Path.Rectangle({
+        point: [50, 150],
+        size: [100, 50],
+        fillColor: 'red'
+    });
+    var circle = new Path.Circle({
+        center: [100, 200],
+        radius: 20,
+        fillColor: 'green'
+    });
+    var group = new Group({
+        children: [rect, circle]
+    });
+    group.clipped = true;
+
+    var point1 = new Point(100, 190);
+    var point2 = new Point(100, 210);
+
+    equals(function() {
+        var result = paper.project.hitTest(point1);
+        return result && result.item === circle;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTest(point2);
+        return result === null;
+    }, true);
+});
+
+test('hit-testing with a match function', function() {
+    var point = new Point(100, 100),
+        red = new Color('red'),
+        green = new Color('green'),
+        blue = new Color('blue');
+    var c1 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: red
+    });
+    var c2 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: green
+    });
+    var c3 = new Path.Circle({
+        center: point,
+        radius: 50,
+        fillColor: blue
+    });
+
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == red;
+            }
+        });
+        return result && result.item === c1;
+    }, true);
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == green;
+            }
+        });
+        return result && result.item === c2;
+    }, true);
+    equals(function() {
+        var result = paper.project.hitTest(point, {
+            fill: true,
+            match: function(res) {
+                return res.item.fillColor == blue;
+            }
+        });
+        return result && result.item === c3;
+    }, true);
+});
+
+test('hit-testing for all items', function() {
+    var c1 = new Path.Circle({
+        center: [100, 100],
+        radius: 40,
+        fillColor: 'red'
+    });
+    var c2 = new Path.Circle({
+        center: [120, 120],
+        radius: 40,
+        fillColor: 'green'
+    });
+    var c3 = new Path.Circle({
+        center: [140, 140],
+        radius: 40,
+        fillColor: 'blue'
+    });
+
+    equals(function() {
+        var result = paper.project.hitTestAll([60, 60]);
+        return result.length === 0;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([80, 80]);
+        return result.length === 1 && result[0].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([100, 100]);
+        return result.length === 2 && result[0].item === c2
+                && result[1].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([120, 120]);
+        return result.length === 3 && result[0].item === c3
+                && result[1].item === c2
+                && result[2].item === c1;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([140, 140]);
+        return result.length === 2 && result[0].item === c3
+                && result[1].item === c2;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([160, 160]);
+        return result.length === 1 && result[0].item === c3;
+    }, true);
+
+    equals(function() {
+        var result = paper.project.hitTestAll([180, 180]);
+        return result.length === 0;
     }, true);
 });
 

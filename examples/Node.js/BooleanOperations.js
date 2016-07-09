@@ -1,8 +1,11 @@
+// Please note: When loading paper as a normal module installed in node_modules,
+// you would use this instead:
+// var paper = require('paper');
+var paper = require('../../dist/paper-core.js');
 var http = require('http');
-var paper = require('paper');
 
 http.createServer(function(request, response) {
-    var canvas = new paper.Canvas(800, 800);
+    var canvas = paper.createCanvas(800, 800);
     paper.setup(canvas);
     with(paper) {
         var style = {

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -13,24 +13,24 @@
 /**
  * @name PaperScope
  *
- * @class The {@code PaperScope} class represents the scope associated with a
- * Paper context. When working with PaperScript, these scopes are automatically
- * created for us, and through clever scoping the properties and methods of the
- * active scope seem to become part of the global scope.
+ * @class The `PaperScope` class represents the scope associated with a Paper
+ *     context. When working with PaperScript, these scopes are automatically
+ *     created for us, and through clever scoping the properties and methods of
+ *     the active scope seem to become part of the global scope.
  *
- * When working with normal JavaScript code, {@code PaperScope} objects need to
- * be manually created and handled.
+ * When working with normal JavaScript code, `PaperScope` objects need to be
+ * manually created and handled.
  *
- * Paper classes can only be accessed through {@code PaperScope} objects. Thus
- * in PaperScript they are global, while in JavaScript, they are available on
- * the global {@link paper} object. For JavaScript you can use
- * {@link PaperScope#install(scope) } to install the Paper classes and objects
- * on the global scope. Note that when working with more than one scope, this
- * still works for classes, but not for objects like {@link PaperScope#project},
- * since they are not updated in the injected scope if scopes are switched.
+ * Paper classes can only be accessed through `PaperScope` objects. Thus in
+ * PaperScript they are global, while in JavaScript, they are available on the
+ * global {@link paper} object. For JavaScript you can use {@link
+ * PaperScope#install(scope) } to install the Paper classes and objects on the
+ * global scope. Note that when working with more than one scope, this still
+ * works for classes, but not for objects like {@link PaperScope#project}, since
+ * they are not updated in the injected scope if scopes are switched.
  *
  * The global {@link paper} object is simply a reference to the currently active
- * {@code PaperScope}.
+ * `PaperScope`.
  */
 var PaperScope = Base.extend(/** @lends PaperScope# */{
     _class: 'PaperScope',
@@ -50,6 +50,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         // Default configurable settings.
         this.settings = new Base({
             applyMatrix: true,
+            insertItems: true,
             handleSize: 4,
             hitTolerance: 0
         });
@@ -64,55 +65,48 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         if (!this.support) {
             // Set up paper.support, as an object containing properties that
             // describe the support of various features.
-            var ctx = CanvasProvider.getContext(1, 1);
+            var ctx = CanvasProvider.getContext(1, 1) || {};
             proto.support = {
                 nativeDash: 'setLineDash' in ctx || 'mozDash' in ctx,
                 nativeBlendModes: BlendMode.nativeModes
             };
             CanvasProvider.release(ctx);
         }
-
-/*#*/ if (__options.environment == 'browser') {
-        if (!this.browser) {
-            var agent = navigator.userAgent.toLowerCase(),
+        if (!this.agent) {
+            // Use self.instead of window, to cover handle web-workers too.
+            var user = self.navigator.userAgent.toLowerCase(),
                 // Detect basic platforms, only mac internally required for now.
-                platform = (/(win)/.exec(agent)
-                        || /(mac)/.exec(agent)
-                        || /(linux)/.exec(agent)
-                        || [])[0],
-                browser = proto.browser = { platform: platform };
+                os = (/(darwin|win|mac|linux|freebsd|sunos)/.exec(user)||[])[0],
+                platform = os === 'darwin' ? 'mac' : os,
+                agent = proto.agent = proto.browser = { platform: platform };
             if (platform)
-                browser[platform] = true;
+                agent[platform] = true;
             // Use replace() to get all matches, and deal with Chrome/Webkit
             // overlap:
             // TODO: Do we need Mozilla next to Firefox? Other than the
             // different treatment of the Chrome/Webkit overlap
             // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
-            agent.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:([.\d]+))?/g,
+            user.replace(
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
                 function(all, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
-                    if (!browser.chrome) {
-                        var v = n === 'opera' ? v2 : v1;
-                        if (n === 'trident') {
-                            // Use rv: and rename to msie
-                            v = rv;
-                            n = 'msie';
-                        }
-                        browser.version = v;
-                        browser.versionNumber = parseFloat(v);
-                        browser.name = n;
-                        browser[n] = true;
+                    if (!agent.chrome) {
+                        var v = n === 'opera' ? v2 :
+                                /^(node|trident)$/.test(n) ? rv : v1;
+                        agent.version = v;
+                        agent.versionNumber = parseFloat(v);
+                        n = n === 'trident' ? 'msie' : n;
+                        agent.name = n;
+                        agent[n] = true;
                     }
                 }
             );
-            if (browser.chrome)
-                delete browser.webkit;
-            if (browser.atom)
-                delete browser.chrome;
+            if (agent.chrome)
+                delete agent.webkit;
+            if (agent.atom)
+                delete agent.chrome;
         }
-/*#*/ } // __options.environment == 'browser'
     },
 
     /**
@@ -122,48 +116,62 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      */
     version: /*#=*/__options.version,
 
-    // DOCS: PaperScope#settings
     /**
      * Gives access to paper's configurable settings.
      *
      * @name PaperScope#settings
      * @type Object
      *
-     * @option [settings.applyMatrix=true] {Boolean}
-     * @option [settings.handleSize=4] {Number}
-     * @option [settings.hitTolerance=0] {Number}
+     * @option [settings.insertItems=true] {Boolean} controls whether newly
+     *     created items are automatically inserted into the scene graph, by
+     *     adding them to {@link Project#getActiveLayer()}
+     * @option [settings.applyMatrix=true] {Boolean} controls what value newly
+     *     created items have their {@link Item#getApplyMatrix()} property set
+     *     to (Note that not all items can set this to `false`)
+     * @option [settings.handleSize=4] {Number} the size of the curve handles
+     *     when drawing selections
+     * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
+     *     tests, when no value is specified
      */
 
     /**
      * The currently active project.
+     *
      * @name PaperScope#project
      * @type Project
      */
 
     /**
      * The list of all open projects within the current Paper.js context.
+     *
      * @name PaperScope#projects
      * @type Project[]
      */
 
     /**
      * The reference to the active project's view.
-     * @type View
+     *
      * @bean
+     * @type View
      */
     getView: function() {
-        return this.project && this.project.getView();
+        var project = this.project;
+        return project && project._view;
     },
 
     /**
      * The reference to the active tool.
+     *
      * @name PaperScope#tool
+     * @property
      * @type Tool
      */
 
     /**
      * The list of available tools.
+     *
      * @name PaperScope#tools
+     * @property
      * @type Tool[]
      */
 
@@ -171,16 +179,32 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * A reference to the local scope. This is required, so `paper` will always
      * refer to the local scope, even when calling into it from another scope.
      * `paper.activate();` will have to be called in such a situation.
+     *
+     * @bean
      * @type PaperScript
      * @private
-     * @bean
      */
     getPaper: function() {
         return this;
     },
 
-    execute: function(code, url, options) {
-        paper.PaperScript.execute(code, this, url, options);
+    /**
+     * Compiles the PaperScript code into a compiled function and executes it.
+     * The compiled function receives all properties of this {@link PaperScope}
+     * as arguments, to emulate a global scope with unaffected performance. It
+     * also installs global view and tool handlers automatically on the
+     * respective objects.
+     *
+     * @option options.url {String} the url of the source, for source-map
+     *     debugging
+     * @option options.source {String} the source to be used for the source-
+     *     mapping, in case the code that's passed in has already been mingled.
+     *
+     * @param {String} code the PaperScript code
+     * @param {Object} [option] the compilation options
+     */
+    execute: function(code, options) {
+        paper.PaperScript.execute(code, this, options);
         View.updateFocus();
     },
 
@@ -237,6 +261,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         return this;
     },
 
+    createCanvas: function(width, height) {
+        return CanvasProvider.getCanvas(width, height);
+    },
+
     /**
      * Activates this PaperScope, so all newly created items will be placed
      * in its active project.
@@ -248,12 +276,15 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     clear: function() {
         // Remove all projects, views and tools.
         // This also removes the installed event handlers.
-        for (var i = this.projects.length - 1; i >= 0; i--)
-            this.projects[i].remove();
-        for (var i = this.tools.length - 1; i >= 0; i--)
-            this.tools[i].remove();
-        for (var i = this.palettes.length - 1; i >= 0; i--)
-            this.palettes[i].remove();
+        var projects = this.projects,
+            tools = this.tools,
+            palettes = this.palettes;
+        for (var i = projects.length - 1; i >= 0; i--)
+            projects[i].remove();
+        for (var i = tools.length - 1; i >= 0; i--)
+            tools[i].remove();
+        for (var i = palettes.length - 1; i >= 0; i--)
+            palettes[i].remove();
     },
 
     remove: function() {

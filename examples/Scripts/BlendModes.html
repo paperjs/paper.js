@@ -21,8 +21,8 @@
         var image = new Raster('ducky');
         image.fitBounds(background.bounds);
 
-        background = new Symbol(background);
-        image = new Symbol(image);
+        background = new SymbolDefinition(background);
+        image = new SymbolDefinition(image);
 
         var all = new Group();
         function makeExample(point, blendMode) {

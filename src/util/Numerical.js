@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -60,11 +60,54 @@ var Numerical = new function() {
     var abs = Math.abs,
         sqrt = Math.sqrt,
         pow = Math.pow,
+        // Fallback to polyfill:
+        log2 = Math.log2 || function(x) {
+            return Math.log(x) * Math.LOG2E;
+        },
+        // Constants
         EPSILON = 1e-12,
         MACHINE_EPSILON = 1.12e-16;
 
-    function clip(value, min, max) {
+    function clamp(value, min, max) {
         return value < min ? min : value > max ? max : value;
+    }
+
+    function getDiscriminant(a, b, c) {
+        // Ported from @hkrish's polysolve.c
+        function split(v) {
+            var x = v * 134217729,
+                y = v - x,
+                hi = y + x, // Don't optimize y away!
+                lo = v - hi;
+            return [hi, lo];
+        }
+
+        var D = b * b - a * c,
+            E = b * b + a * c;
+        if (abs(D) * 3 < E) {
+            var ad = split(a),
+                bd = split(b),
+                cd = split(c),
+                p = b * b,
+                dp = (bd[0] * bd[0] - p + 2 * bd[0] * bd[1]) + bd[1] * bd[1],
+                q = a * c,
+                dq = (ad[0] * cd[0] - q + ad[0] * cd[1] + ad[1] * cd[0])
+                        + ad[1] * cd[1];
+            D = (p - q) + (dp - dq); // Don’t omit parentheses!
+        }
+        return D;
+    }
+
+    function getNormalizationFactor() {
+        // Normalize coefficients à la Jenkins & Traub's RPOLY.
+        // Normalization is done by scaling coefficients with a power of 2, so
+        // that all the bits in the mantissa remain unchanged.
+        // Use the infinity norm (max(sum(abs(a)…)) to determine the appropriate
+        // scale factor. See @hkrish in #1087#issuecomment-231526156
+        var norm = Math.max.apply(Math, arguments);
+        return norm && (norm < 1e-8 || norm > 1e8)
+                ? pow(2, -Math.round(log2(norm)))
+                : 0;
     }
 
     return /** @lends Numerical */{
@@ -98,31 +141,31 @@ var Numerical = new function() {
          * cannot be smaller, because errors add up to around 2e-7 in the bezier
          * fat-line clipping code as a result of recursive sub-division.
          */
-        CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases!
+        CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing "geometric" checks, such as
          * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 2e-7,
+        GEOMETRIC_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
-        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases!
+        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity.
          */
         TRIGONOMETRIC_EPSILON: 1e-7,
         /**
-         * The epsilon to be used in the fat-line clipping code.
+         * The epsilon to be used when comparing curve-time parameters in the
+         * fat-line clipping code.
          */
-        CLIPPING_EPSILON: 1e-7,
+        CLIPPING_EPSILON: 1e-9,
         /**
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.
          *
-         * http://whizkidtech.redprince.net/bezier/circle/
-         * http://www.whizkidtech.redprince.net/bezier/circle/kappa/
+         * http://whizkidtech.redprince.net/bezier/circle/kappa/
          */
         KAPPA: 4 * (sqrt(2) - 1) / 3,
 
@@ -133,6 +176,16 @@ var Numerical = new function() {
         isZero: function(val) {
             return val >= -EPSILON && val <= EPSILON;
         },
+
+        /**
+         * Returns a number whose value is clamped by the given range.
+         *
+         * @param {Number} value the value to be clamped
+         * @param {Number} min the lower boundary of the range
+         * @param {Number} max the upper boundary of the range
+         * @return {Number} a number in the range of [min, max]
+         */
+        clamp: clamp,
 
         /**
          * Gauss-Legendre Numerical Integration.
@@ -186,12 +239,14 @@ var Numerical = new function() {
 
         /**
          * Solve a quadratic equation in a numerically robust manner;
-         * given a quadratic equation  ax² + bx + c = 0, find the values of x.
+         * given a quadratic equation ax² + bx + c = 0, find the values of x.
          *
          * References:
          *  Kahan W. - "To Solve a Real Cubic Equation"
          *  http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
          *  Blinn J. - "How to solve a Quadratic Equation"
+         *  Harikrishnan G.
+         *  https://gist.github.com/hkrish/9e0de1f121971ee0fbab281f5c986de9
          *
          * @param {Number} a the quadratic term
          * @param {Number} b the linear term
@@ -199,66 +254,58 @@ var Numerical = new function() {
          * @param {Number[]} roots the array to store the roots in
          * @param {Number} [min] the lower bound of the allowed roots
          * @param {Number} [max] the upper bound of the allowed roots
-         * @return {Number} The number of real roots found, or -1 if there are
+         * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
-         * @author Harikrishnan Gopalakrishnan
+         * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveQuadratic: function(a, b, c, roots, min, max) {
-            var count = 0,
-                eMin = min - EPSILON,
-                eMax = max + EPSILON,
-                x1, x2 = Infinity,
-                B = b,
-                D;
-            // a, b, c are expected to be the coefficients of the equation:
-            // Ax² - 2Bx + C == 0, so we take b = -B/2:
-            b /= -2;
-            D = b * b - a * c; // Discriminant
-            // If the discriminant is very small, we can try to pre-condition
-            // the coefficients, so that we may get better accuracy
-            if (D !== 0 && abs(D) < MACHINE_EPSILON) {
-                // If the geometric mean of the coefficients is small enough
-                var gmC = pow(abs(a * b * c), 1 / 3);
-                if (gmC < 1e-8) {
-                    // We multiply with a factor to normalize the coefficients.
-                    // The factor is just the nearest exponent of 10, big enough
-                    // to raise all the coefficients to nearly [-1, +1] range.
-                    var mult = pow(10,
-                            abs(Math.floor(Math.log(gmC) * Math.LOG10E)));
-                    if (!isFinite(mult))
-                        mult = 0;
-                    a *= mult;
-                    b *= mult;
-                    c *= mult;
-                    // Recalculate the discriminant
-                    D = b * b - a * c;
-                }
-            }
+            var x1, x2 = Infinity;
             if (abs(a) < EPSILON) {
                 // This could just be a linear equation
-                if (abs(B) < EPSILON)
+                if (abs(b) < EPSILON)
                     return abs(c) < EPSILON ? -1 : 0;
-                x1 = -c / B;
-            } else if (D >= -MACHINE_EPSILON) { // No real roots if D < 0
-                var Q = D < 0 ? 0 : sqrt(D),
-                    R = b + (b < 0 ? -Q : Q);
-                // Try to minimize floating point noise.
-                if (R === 0) {
-                    x1 = c / a;
-                    x2 = -x1;
-                } else {
-                    x1 = R / a;
-                    x2 = c / R;
+                x1 = -c / b;
+            } else {
+                // a, b, c are expected to be the coefficients of the equation:
+                // Ax² - 2Bx + C == 0, so we take b = -b/2:
+                b *= -0.5;
+                var D = getDiscriminant(a, b, c);
+                // If the discriminant is very small, we can try to normalize
+                // the coefficients, so that we may get better accuracy.
+                if (D && abs(D) < MACHINE_EPSILON) {
+                    var f = getNormalizationFactor(abs(a), abs(b), abs(c));
+                    if (f) {
+                        a *= f;
+                        b *= f;
+                        c *= f;
+                        D = getDiscriminant(a, b, c);
+                    }
+                }
+                if (D >= -MACHINE_EPSILON) { // No real roots if D < 0
+                    var Q = D < 0 ? 0 : sqrt(D),
+                        R = b + (b < 0 ? -Q : Q);
+                    // Try to minimize floating point noise.
+                    if (R === 0) {
+                        x1 = c / a;
+                        x2 = -x1;
+                    } else {
+                        x1 = R / a;
+                        x2 = c / R;
+                    }
                 }
             }
+            var count = 0,
+                boundless = min == null,
+                minB = min - EPSILON,
+                maxB = max + EPSILON;
             // We need to include EPSILON in the comparisons with min / max,
             // as some solutions are ever so lightly out of bounds.
-            if (isFinite(x1) && (min == null || x1 > eMin && x1 < eMax))
-                roots[count++] = min == null ? x1 : clip(x1, min, max);
+            if (isFinite(x1) && (boundless || x1 > minB && x1 < maxB))
+                roots[count++] = boundless ? x1 : clamp(x1, min, max);
             if (x2 !== x1
-                    && isFinite(x2) && (min == null || x2 > eMin && x2 < eMax))
-                roots[count++] = min == null ? x2 : clip(x2, min, max);
+                    && isFinite(x2) && (boundless || x2 > minB && x2 < maxB))
+                roots[count++] = boundless ? x2 : clamp(x2, min, max);
             return count;
         },
 
@@ -275,6 +322,8 @@ var Numerical = new function() {
          * References:
          *  Kahan W. - "To Solve a Real Cubic Equation"
          *   http://www.cs.berkeley.edu/~wkahan/Math128/Cubic.pdf
+         *  Harikrishnan G.
+         *  https://gist.github.com/hkrish/9e0de1f121971ee0fbab281f5c986de9
          *
          * W. Kahan's paper contains inferences on accuracy of cubic
          * zero-finding methods. Also testing methods for robustness.
@@ -289,11 +338,28 @@ var Numerical = new function() {
          * @return {Number} the number of real roots found, or -1 if there are
          * infinite solutions
          *
-         * @author Harikrishnan Gopalakrishnan
+         * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
          */
         solveCubic: function(a, b, c, d, roots, min, max) {
-            var count = 0,
-                x, b1, c2;
+            var f = getNormalizationFactor(abs(a), abs(b), abs(c), abs(d)),
+                x, b1, c2, qd, q;
+            if (f) {
+                a *= f;
+                b *= f;
+                c *= f;
+                d *= f;
+            }
+
+            function evaluate(x0) {
+                x = x0;
+                // Evaluate q, q', b1 and c2 at x
+                var tmp = a * x;
+                b1 = tmp + b;
+                c2 = b1 * x + c;
+                qd = (tmp + b1) * x + c2;
+                q = c2 * x + d;
+            }
+
             // If a or d is zero, we only need to solve a quadratic, so we set
             // the coefficients appropriately.
             if (abs(a) < EPSILON) {
@@ -306,42 +372,24 @@ var Numerical = new function() {
                 c2 = c;
                 x = 0;
             } else {
-                var ec = 1 + MACHINE_EPSILON, // 1.000...002
-                    x0, q, qd, t, r, s, tmp;
                 // Here onwards we iterate for the leftmost root. Proceed to
                 // deflate the cubic into a quadratic (as a side effect to the
                 // iteration) and solve the quadratic.
-                x = -(b / a) / 3;
-                // Evaluate q, q', b1 and c2 at x
-                tmp = a * x,
-                b1 = tmp + b,
-                c2 = b1 * x + c,
-                qd = (tmp + b1) * x + c2,
-                q = c2 * x + d;
+                evaluate(-(b / a) / 3);
                 // Get a good initial approximation.
-                t = q /a;
-                r = pow(abs(t), 1/3);
-                s = t < 0 ? -1 : 1;
-                t = -qd / a;
-                // See Kahan's notes on why 1.324718*... works.
-                r = t > 0 ? 1.3247179572 * Math.max(r, sqrt(t)) : r;
-                x0 = x - s * r;
+                var t = q / a,
+                    r = pow(abs(t), 1/3),
+                    s = t < 0 ? -1 : 1,
+                    td = -qd / a,
+                    // See Kahan's notes on why 1.324718*... works.
+                    rd = td > 0 ? 1.324717957244746 * Math.max(r, sqrt(td)) : r,
+                    x0 = x - s * rd;
                 if (x0 !== x) {
                     do {
-                        x = x0;
-                        // Evaluate q, q', b1 and c2 at x
-                        tmp = a * x,
-                        b1 = tmp + b,
-                        c2 = b1 * x + c,
-                        qd = (tmp + b1) * x + c2,
-                        q = c2 * x + d;
-                        // Newton's. Divide by ec to avoid x0 crossing over a
-                        // root.
-                        x0 = qd === 0 ? x : x - q / qd / ec;
-                        if (x0 === x) {
-                            x = x0;
-                            break;
-                        }
+                        evaluate(x0);
+                        // Newton's. Divide by 1 + MACHINE_EPSILON (1.000...002)
+                        // to avoid x0 crossing over a root.
+                        x0 = qd === 0 ? x : x - q / qd / (1 + MACHINE_EPSILON);
                     } while (s * x0 > s * x);
                     // Adjust the coefficients for the quadratic.
                     if (abs(a) * x * x > abs(d / x)) {
@@ -351,10 +399,12 @@ var Numerical = new function() {
                 }
             }
             // The cubic has been deflated to a quadratic.
-            var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max);
-            if (isFinite(x) && (count === 0 || x !== roots[count - 1])
-                    && (min == null || x > min - EPSILON && x < max + EPSILON))
-                roots[count++] = min == null ? x : clip(x, min, max);
+            var count = Numerical.solveQuadratic(a, b1, c2, roots, min, max),
+                boundless = min == null;
+            if (isFinite(x) && (count === 0
+                    || count > 0 && x !== roots[0] && x !== roots[1])
+                    && (boundless || x > min - EPSILON && x < max + EPSILON))
+                roots[count++] = boundless ? x : clamp(x, min, max);
             return count;
         }
     };

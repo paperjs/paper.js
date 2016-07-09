@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -20,7 +20,7 @@ var Formatter = Base.extend(/** @lends Formatter# */{
      * @param {Number} [precision=5] the amount of fractional digits
      */
     initialize: function(precision) {
-        this.precision = precision || 5;
+        this.precision = Base.pick(precision, 5);
         this.multiplier = Math.pow(10, this.precision);
     },
 
@@ -32,8 +32,11 @@ var Formatter = Base.extend(/** @lends Formatter# */{
      */
     number: function(val) {
         // It would be nice to use Number#toFixed() instead, but it pads with 0,
-        // unecessarily consuming space.
-        return Math.round(val * this.multiplier) / this.multiplier;
+        // unnecessarily consuming space.
+        // If precision is >= 16, don't do anything at all, since that appears
+        // to be the limit of the precision (it actually varies).
+        return this.precision < 16
+                ? Math.round(val * this.multiplier) / this.multiplier : val;
     },
 
     pair: function(val1, val2, separator) {

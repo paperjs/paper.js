@@ -23,11 +23,6 @@
     "src",
     "test"
   ],
-  "devDependencies": {
-    "straps": "~1.7.2",
-    "acorn": "~0.4.0",
-    "stats.js": "r11"
-  },
   "keywords": [
     "vector",
     "graphic",

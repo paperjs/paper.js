@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -22,12 +22,13 @@
  *
  * @extends Event
  */
+/* global MouseEvent: true */
 var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     _class: 'MouseEvent',
 
     initialize: function MouseEvent(type, event, point, target, delta) {
-        Event.call(this, event);
         this.type = type;
+        this.event = event;
         this.point = point;
         this.target = target;
         this.delta = delta;
@@ -37,8 +38,9 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * The type of mouse event.
      *
      * @name MouseEvent#type
-     * @type String('mousedown', 'mouseup', 'mousedrag', 'click',
-     * 'doubleclick', 'mousemove', 'mouseenter', 'mouseleave')
+     * @type String
+     * @values 'mousedown', 'mouseup', 'mousedrag', 'click', 'doubleclick',
+     *     'mousemove', 'mouseenter', mouseleave'
      */
 
     /**
@@ -49,9 +51,22 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * @type Point
      */
 
-    // DOCS: document MouseEvent#target
     /**
+     * The item that dispatched the event. It is different from
+     * {@link #currentTarget} when the event handler is called during
+     * the bubbling phase of the event.
+     *
      * @name MouseEvent#target
+     * @type Item
+     */
+
+    /**
+     * The current target for the event, as the event traverses the scene graph.
+     * It always refers to the element the event handler has been attached to as
+     * opposed to {@link #target} which identifies the element on
+     * which the event occurred.
+     *
+     * @name MouseEvent#currentTarget
      * @type Item
      */
 

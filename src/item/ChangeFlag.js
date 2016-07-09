@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -16,7 +16,8 @@ var ChangeFlag = {
     APPEARANCE: 0x1,
     // A change in the item's children
     CHILDREN: 0x2,
-    // A change in the item's place in the DOM (removed, inserted, moved).
+    // A change of the item's place in the scene graph (removed, inserted,
+    // moved).
     INSERTION: 0x4,
     // Item geometry (path, bounds)
     GEOMETRY: 0x8,
@@ -34,7 +35,9 @@ var ChangeFlag = {
     // Raster pixels
     PIXELS: 0x200,
     // Clipping in one of the child items
-    CLIPPING: 0x400
+    CLIPPING: 0x400,
+    // The view has been transformed
+    VIEW: 0x800
 };
 
 // Shortcuts to often used ChangeFlag values including APPEARANCE
@@ -50,5 +53,6 @@ var Change = {
     STYLE: ChangeFlag.STYLE | ChangeFlag.APPEARANCE,
     ATTRIBUTE: ChangeFlag.ATTRIBUTE | ChangeFlag.APPEARANCE,
     CONTENT: ChangeFlag.CONTENT | ChangeFlag.GEOMETRY | ChangeFlag.APPEARANCE,
-    PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE
+    PIXELS: ChangeFlag.PIXELS | ChangeFlag.APPEARANCE,
+    VIEW: ChangeFlag.VIEW | ChangeFlag.APPEARANCE
 };

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -105,15 +105,16 @@ var Size = Base.extend(/** @lends Size# */{
             if (this.__read)
                 this.__read = arg0 === null ? 1 : 0;
         } else {
-            if (Array.isArray(arg0)) {
-                this.width = arg0[0];
-                this.height = arg0.length > 1 ? arg0[1] : arg0[0];
-            } else if (arg0.width != null) {
-                this.width = arg0.width;
-                this.height = arg0.height;
-            } else if (arg0.x != null) {
-                this.width = arg0.x;
-                this.height = arg0.y;
+            var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+            if (Array.isArray(obj)) {
+                this.width = obj[0];
+                this.height = obj.length > 1 ? obj[1] : obj[0];
+            } else if ('width' in obj) {
+                this.width = obj.width;
+                this.height = obj.height;
+            } else if ('x' in obj) {
+                this.width = obj.x;
+                this.height = obj.y;
             } else {
                 this.width = this.height = 0;
                 if (this.__read)
@@ -466,6 +467,13 @@ var Size = Base.extend(/** @lends Size# */{
          * var size2 = new Size(200, 5);
          * var minSize = Size.min(size1, size2);
          * console.log(minSize); // {width: 10, height: 5}
+         *
+         * @example
+         * // Find the minimum of multiple sizes:
+         * var size1 = new Size(60, 100);
+         * var size2 = new Size(200, 5);
+         * var size3 = new Size(250, 35);
+         * [size1, size2, size3].reduce(Size.min) // {width: 60, height: 5}
          */
         min: function(size1, size2) {
             return new Size(
@@ -487,6 +495,13 @@ var Size = Base.extend(/** @lends Size# */{
          * var size2 = new Size(200, 5);
          * var maxSize = Size.max(size1, size2);
          * console.log(maxSize); // {width: 200, height: 100}
+         *
+         * @example
+         * // Find the maximum of multiple sizes:
+         * var size1 = new Size(60, 100);
+         * var size2 = new Size(200, 5);
+         * var size3 = new Size(250, 35);
+         * [size1, size2, size3].reduce(Size.max) // {width: 250, height: 100}
          */
         max: function(size1, size2) {
             return new Size(
@@ -496,7 +511,7 @@ var Size = Base.extend(/** @lends Size# */{
 
         /**
          * Returns a size object with random {@link #width} and {@link #height}
-         * values between {@code 0} and {@code 1}.
+         * values between `0` and `1`.
          *
          * @return {Size} the newly created size object
          * @static
@@ -510,10 +525,10 @@ var Size = Base.extend(/** @lends Size# */{
             return new Size(Math.random(), Math.random());
         }
     }
-}, Base.each(['round', 'ceil', 'floor', 'abs'], function(name) {
+}, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
     // Inject round, ceil, floor, abs:
-    var op = Math[name];
-    this[name] = function() {
+    var op = Math[key];
+    this[key] = function() {
         return new Size(op(this.width), op(this.height));
     };
 }, {}));
@@ -524,7 +539,6 @@ var Size = Base.extend(/** @lends Size# */{
  * @class An internal version of Size that notifies its owner of each change
  * through setting itself again on the setter that corresponds to the getter
  * that produced this LinkedSize.
- * Note: This prototype is not exported.
  *
  * @private
  */

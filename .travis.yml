@@ -1,0 +1,43 @@
+language: node_js
+node_js:
+- stable
+- '5'
+- '4'
+sudo: false
+env:
+  matrix:
+  - CXX=g++-4.9
+  global:
+  - secure: QD8wgggmlF0PPOSdQ84JLO9quLMlTDXu3Cg0+UM9yFSyih2ukL/XGn5wxR3B3XmaHfzRqxtrfhjMX6LT7DKFsriolhNVu0kER4zGyrKWK5irxAy2veosyj8qs/R1pXh9qnItlgXrz0fJwpH9o/08q8X+ZjXb0veZ34EMODLbV5zBJXoaHVC6WN62GzInAEEfdB0AEacb44sDIdK++1ujcTFLGnc+LJw8Ck2C/eOWwRhJyiNUrHHTQV3KaM0YtHz+DCz5InC9vWl+BG656AOU5C6PMTvnZ1M3CGfjmXydZoBbDvCQIcB5ylf17tXGoJKevHnmLWm6U3fPVwUwiPiKvisxyNShZw4BEDS7m1b799GnzGOiYsi37aH3G+iAORg1QVqoCAK/yQ77MkkA6a3tlLVHRaInVA6QlFxlbqc8WNlx+fa8lo4L7Y9KPGfr1Bpix/kHQV5JCzKS16Zc7wblTrOvIR/qb8qPfLoxhXi5fUZ3eRuXgR699X1IHJ1LlhkOoBfSiWl88qba01FBLrYSCPeVGb6/N91OFpIlq6eORnzBbc4mtoJSYttvZ45Hu3M5V0KDrGIHr7kNyPThdKr7PVaMXHLCpNrnmBSaxVCU5uhb8Ae3bnLAq/aBxHWZNA8cQ43/s6rS7QqOVJfquXNFYa6V9/QjbU3sJyqIgRzMkAM=
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    - git-core
+    packages:
+    - g++-4.9
+    - git
+    - libcairo2-dev
+    - libpango1.0-dev
+    - libssl-dev
+    - libjpeg62-dev
+    - libgif-dev
+cache:
+  directories:
+  - ~/.assets
+  - ~/.nvm
+  - node_modules
+install:
+- travis/install-assets.sh
+before_script:
+- travis/setup-git.sh
+- npm set progress=false
+- which gulp || npm install -g gulp
+- npm install
+script:
+- gulp jshint
+- gulp minify
+- gulp test
+- gulp dist
+after_script:
+- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh'

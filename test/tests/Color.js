@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-module('Color');
+QUnit.module('Color');
 
 test('Set named color', function() {
     var path = new Path();
@@ -223,5 +223,18 @@ test('Color#divide', function() {
     equals(color.divide(4), new Color([0.25, 0.25, 0.25]));
 });
 
-
-
+test('Gradient', function() {
+    var stop1 = new GradientStop({ offset: 0.5 });
+    var stop2 = new GradientStop('red', 0.75);
+    var stop3 = new GradientStop(['white', 1]);
+    var stop4 = new GradientStop({ rampPoint: 0.5 }); // deprecated
+    var gradient = new Gradient([stop1, stop2, stop3], true);
+    equals(function() { return stop1.color; }, new Color(0, 0, 0));
+    equals(function() { return stop2.color; }, new Color(1, 0, 0));
+    equals(function() { return stop3.color; }, new Color(1, 1, 1));
+    equals(function() { return stop4.color; }, new Color(0, 0, 0));
+    equals(function() { return stop1.offset; }, 0.5);
+    equals(function() { return stop2.offset; }, 0.75);
+    equals(function() { return stop3.offset; }, 1);
+    equals(function() { return stop4.offset; }, 0.5);
+});

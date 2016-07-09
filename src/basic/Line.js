@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -50,8 +50,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The starting point of the line.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         return new Point(this._px, this._py);
@@ -60,8 +60,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The direction of the line as a vector.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getVector: function() {
         return new Point(this._vx, this._vy);
@@ -70,8 +70,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * The length of the line.
      *
-     * @type Number
      * @bean
+     * @type Number
      */
     getLength: function() {
         return this.getVector().getLength();
@@ -80,8 +80,8 @@ var Line = Base.extend(/** @lends Line# */{
     /**
      * @param {Line} line
      * @param {Boolean} [isInfinite=false]
-     * @return {Point} the intersection point of the lines, {@code undefined}
-     * if the two lines are collinear, or {@code null} if they don't intersect.
+     * @return {Point} the intersection point of the lines, `undefined` if the
+     *     two lines are collinear, or `null` if they don't intersect.
      */
     intersect: function(line, isInfinite) {
         return Line.intersect(
@@ -187,8 +187,7 @@ var Line = Base.extend(/** @lends Line# */{
                 vx -= px;
                 vy -= py;
             }
-            // Based on the error analysis by @iconexperience outlined in
-            // https://github.com/paperjs/paper.js/issues/799
+            // Based on the error analysis by @iconexperience outlined in #799
             return vx === 0 ? vy > 0 ? x - px : px - x
                  : vy === 0 ? vx < 0 ? y - py : py - y
                  : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);

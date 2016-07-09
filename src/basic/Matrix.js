@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -23,15 +23,16 @@
  * "parallelness" of lines.
  *
  * Such a coordinate transformation can be represented by a 3 row by 3
- * column matrix with an implied last row of [ 0 0 1 ]. This matrix
- * transforms source coordinates (x,y) into destination coordinates (x',y')
+ * column matrix with an implied last row of `[ 0 0 1 ]`. This matrix
+ * transforms source coordinates `(x, y)` into destination coordinates `(x',y')`
  * by considering them to be a column vector and multiplying the coordinate
  * vector by the matrix according to the following process:
- * <pre>
- *      [ x ]   [ a  b  tx ] [ x ]   [ a * x + b * y + tx ]
- *      [ y ] = [ c  d  ty ] [ y ] = [ c * x + d * y + ty ]
- *      [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
- * </pre>
+ *
+ *     [ x ]   [ a  c  tx ] [ x ]   [ a * x + c * y + tx ]
+ *     [ y ] = [ b  d  ty ] [ y ] = [ b * x + d * y + ty ]
+ *     [ 1 ]   [ 0  0  1  ] [ 1 ]   [         1          ]
+ *
+ * Note the locations of b and c.
  *
  * This class is optimized for speed and minimizes calculations based on its
  * knowledge of the underlying matrix (as opposed to say simply performing
@@ -57,7 +58,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             this.set.apply(this, arguments);
         } else if (count === 1) {
             if (arg instanceof Matrix) {
-                this.set(arg._a, arg._c, arg._b, arg._d, arg._tx, arg._ty);
+                this.set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
             } else if (Array.isArray(arg)) {
                 this.set.apply(this, arg);
             } else {
@@ -68,25 +69,26 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         } else {
             ok = false;
         }
-        if (!ok)
+        if (!ok) {
             throw new Error('Unsupported matrix parameters');
+        }
     },
 
     /**
      * Sets this transform to the matrix specified by the 6 values.
      *
      * @param {Number} a the a property of the transform
-     * @param {Number} c the c property of the transform
      * @param {Number} b the b property of the transform
+     * @param {Number} c the c property of the transform
      * @param {Number} d the d property of the transform
      * @param {Number} tx the tx property of the transform
      * @param {Number} ty the ty property of the transform
      * @return {Matrix} this affine transform
      */
-    set: function(a, c, b, d, tx, ty, _dontNotify) {
+    set: function(a, b, c, d, tx, ty, _dontNotify) {
         this._a = a;
-        this._c = c;
         this._b = b;
+        this._c = c;
         this._d = d;
         this._tx = tx;
         this._ty = ty;
@@ -95,8 +97,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this;
     },
 
-    _serialize: function(options) {
-        return Base.serialize(this.getValues(), options);
+    _serialize: function(options, dictionary) {
+        return Base.serialize(this.getValues(), options, true, dictionary);
     },
 
     _changed: function() {
@@ -115,7 +117,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} a copy of this transform
      */
     clone: function() {
-        return new Matrix(this._a, this._c, this._b, this._d,
+        return new Matrix(this._a, this._b, this._c, this._d,
                 this._tx, this._ty);
     },
 
@@ -128,8 +130,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     equals: function(mx) {
         return mx === this || mx && this._a === mx._a && this._b === mx._b
                 && this._c === mx._c && this._d === mx._d
-                && this._tx === mx._tx && this._ty === mx._ty
-                || false;
+                && this._tx === mx._tx && this._ty === mx._ty;
     },
 
     /**
@@ -137,9 +138,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      */
     toString: function() {
         var f = Formatter.instance;
-        return '[[' + [f.number(this._a), f.number(this._b),
+        return '[[' + [f.number(this._a), f.number(this._c),
                     f.number(this._tx)].join(', ') + '], ['
-                + [f.number(this._c), f.number(this._d),
+                + [f.number(this._b), f.number(this._d),
                     f.number(this._ty)].join(', ') + ']]';
     },
 
@@ -149,7 +150,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      */
     reset: function(_dontNotify) {
         this._a = this._d = 1;
-        this._c = this._b = this._tx = this._ty = 0;
+        this._b = this._c = this._tx = this._ty = 0;
         if (!_dontNotify)
             this._changed();
         return this;
@@ -195,8 +196,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         var point = Point.read(arguments),
             x = point.x,
             y = point.y;
-        this._tx += x * this._a + y * this._b;
-        this._ty += x * this._c + y * this._d;
+        this._tx += x * this._a + y * this._c;
+        this._ty += x * this._b + y * this._d;
         this._changed();
         return this;
     },
@@ -221,15 +222,13 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this affine transform
      */
     scale: function(/* scale, center */) {
-        // Do not modify scale, center, since that would arguments of which
-        // we're reading from!
         var scale = Point.read(arguments),
             center = Point.read(arguments, 0, { readNull: true });
         if (center)
             this.translate(center);
         this._a *= scale.x;
-        this._c *= scale.x;
-        this._b *= scale.y;
+        this._b *= scale.x;
+        this._c *= scale.y;
         this._d *= scale.y;
         if (center)
             this.translate(center.negate());
@@ -272,12 +271,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             b = this._b,
             c = this._c,
             d = this._d;
-        this._a = cos * a + sin * b;
-        this._b = -sin * a + cos * b;
-        this._c = cos * c + sin * d;
-        this._d = -sin * c + cos * d;
-        this._tx += tx * a + ty * b;
-        this._ty += tx * c + ty * d;
+        this._a = cos * a + sin * c;
+        this._b = cos * b + sin * d;
+        this._c = -sin * a + cos * c;
+        this._d = -sin * b + cos * d;
+        this._tx += tx * a + ty * c;
+        this._ty += tx * b + ty * d;
         this._changed();
         return this;
     },
@@ -309,11 +308,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         if (center)
             this.translate(center);
         var a = this._a,
-            c = this._c;
-        this._a += shear.y * this._b;
-        this._c += shear.y * this._d;
-        this._b += shear.x * a;
-        this._d += shear.x * c;
+            b = this._b;
+        this._a += shear.y * this._c;
+        this._b += shear.y * this._d;
+        this._c += shear.x * a;
+        this._d += shear.x * b;
         if (center)
             this.translate(center.negate());
         this._changed();
@@ -349,100 +348,164 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Concatenates the given affine transform to this transform.
+     * Appends the specified matrix to this matrix. This is the equivalent of
+     * multiplying `(this matrix) * (specified matrix)`.
      *
-     * @param {Matrix} mx the transform to concatenate
-     * @return {Matrix} this affine transform
+     * @param {Matrix} matrix the matrix to append
+     * @return {Matrix} this matrix, modified
      */
-    concatenate: function(mx) {
-        var a1 = this._a,
-            b1 = this._b,
-            c1 = this._c,
-            d1 = this._d,
-            a2 = mx._a,
-            b2 = mx._b,
-            c2 = mx._c,
-            d2 = mx._d,
-            tx2 = mx._tx,
-            ty2 = mx._ty;
-        this._a = a2 * a1 + c2 * b1;
-        this._b = b2 * a1 + d2 * b1;
-        this._c = a2 * c1 + c2 * d1;
-        this._d = b2 * c1 + d2 * d1;
-        this._tx += tx2 * a1 + ty2 * b1;
-        this._ty += tx2 * c1 + ty2 * d1;
-        this._changed();
+    append: function(mx) {
+        if (mx) {
+            var a1 = this._a,
+                b1 = this._b,
+                c1 = this._c,
+                d1 = this._d,
+                a2 = mx._a,
+                b2 = mx._c,
+                c2 = mx._b,
+                d2 = mx._d,
+                tx2 = mx._tx,
+                ty2 = mx._ty;
+            this._a = a2 * a1 + c2 * c1;
+            this._c = b2 * a1 + d2 * c1;
+            this._b = a2 * b1 + c2 * d1;
+            this._d = b2 * b1 + d2 * d1;
+            this._tx += tx2 * a1 + ty2 * c1;
+            this._ty += tx2 * b1 + ty2 * d1;
+            this._changed();
+        }
         return this;
     },
 
     /**
-     * Pre-concatenates the given affine transform to this transform.
+     * Prepends the specified matrix to this matrix. This is the equivalent of
+     * multiplying `(specified matrix) * (this matrix)`.
      *
-     * @param {Matrix} mx the transform to preconcatenate
-     * @return {Matrix} this affine transform
+     * @param {Matrix} matrix the matrix to prepend
+     * @return {Matrix} this matrix, modified
      */
-    preConcatenate: function(mx) {
-        var a1 = this._a,
-            b1 = this._b,
-            c1 = this._c,
-            d1 = this._d,
-            tx1 = this._tx,
-            ty1 = this._ty,
-            a2 = mx._a,
-            b2 = mx._b,
-            c2 = mx._c,
-            d2 = mx._d,
-            tx2 = mx._tx,
-            ty2 = mx._ty;
-        this._a = a2 * a1 + b2 * c1;
-        this._b = a2 * b1 + b2 * d1;
-        this._c = c2 * a1 + d2 * c1;
-        this._d = c2 * b1 + d2 * d1;
-        this._tx = a2 * tx1 + b2 * ty1 + tx2;
-        this._ty = c2 * tx1 + d2 * ty1 + ty2;
-        this._changed();
+    prepend: function(mx) {
+        if (mx) {
+            var a1 = this._a,
+                b1 = this._b,
+                c1 = this._c,
+                d1 = this._d,
+                tx1 = this._tx,
+                ty1 = this._ty,
+                a2 = mx._a,
+                b2 = mx._c,
+                c2 = mx._b,
+                d2 = mx._d,
+                tx2 = mx._tx,
+                ty2 = mx._ty;
+            this._a = a2 * a1 + b2 * b1;
+            this._c = a2 * c1 + b2 * d1;
+            this._b = c2 * a1 + d2 * b1;
+            this._d = c2 * c1 + d2 * d1;
+            this._tx = a2 * tx1 + b2 * ty1 + tx2;
+            this._ty = c2 * tx1 + d2 * ty1 + ty2;
+            this._changed();
+        }
         return this;
     },
 
     /**
-     * Returns a new instance of the result of the concatenation of the given
-     * affine transform with this transform.
+     * Returns a new matrix as the result of appending the specified matrix to
+     * this matrix. This is the equivalent of multiplying
+     * `(this matrix) * (specified matrix)`.
      *
-     * @param {Matrix} mx the transform to concatenate
-     * @return {Matrix} the newly created affine transform
+     * @param {Matrix} matrix the matrix to append
+     * @return {Matrix} the newly created matrix
      */
-    chain: function(mx) {
-        var a1 = this._a,
-            b1 = this._b,
-            c1 = this._c,
-            d1 = this._d,
-            tx1 = this._tx,
-            ty1 = this._ty,
-            a2 = mx._a,
-            b2 = mx._b,
-            c2 = mx._c,
-            d2 = mx._d,
-            tx2 = mx._tx,
-            ty2 = mx._ty;
-        return new Matrix(
-                a2 * a1 + c2 * b1,
-                a2 * c1 + c2 * d1,
-                b2 * a1 + d2 * b1,
-                b2 * c1 + d2 * d1,
-                tx1 + tx2 * a1 + ty2 * b1,
-                ty1 + tx2 * c1 + ty2 * d1);
+    appended: function(mx) {
+        return this.clone().append(mx);
+    },
+
+    /**
+     * Returns a new matrix as the result of prepending the specified matrix
+     * to this matrix. This is the equivalent of multiplying
+     * `(specified matrix) s* (this matrix)`.
+     *
+     * @param {Matrix} matrix the matrix to prepend
+     * @return {Matrix} the newly created matrix
+     */
+    prepended: function(mx) {
+        return this.clone().prepend(mx);
+    },
+
+    /**
+     * Inverts the matrix, causing it to perform the opposite transformation.
+     * If the matrix is not invertible (in which case {@link #isSingular()}
+     * returns true), `null` is returned.
+     *
+     * @return {Matrix} this matrix, or `null`, if the matrix is singular.
+     */
+    invert: function() {
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            tx = this._tx,
+            ty = this._ty,
+            det = a * d - b * c,
+            res = null;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            this._a = d / det;
+            this._b = -b / det;
+            this._c = -c / det;
+            this._d = a / det;
+            this._tx = (c * ty - d * tx) / det;
+            this._ty = (b * tx - a * ty) / det;
+            res = this;
+        }
+        return res;
+    },
+
+    /**
+     * Creates a new matrix that is the inversion of this matrix, causing it to
+     * perform the opposite transformation. If the matrix is not invertible (in
+     * which case {@link #isSingular()} returns true), `null` is returned.
+     *
+     * @return {Matrix} this matrix, or `null`, if the matrix is singular.
+     */
+    inverted: function() {
+        return this.clone().invert();
+    },
+
+    /**
+     * @deprecated, use use {@link #append(matrix)} instead.
+     */
+    concatenate: '#append',
+    /**
+     * @deprecated, use use {@link #prepend(matrix)} instead.
+     */
+    preConcatenate: '#prepend',
+    /**
+     * @deprecated, use use {@link #appended(matrix)} instead.
+     */
+    chain: '#appended',
+
+    /**
+     * A private helper function to create a clone of this matrix, without the
+     * translation factored in.
+     *
+     * @return {Matrix} a clone of this matrix, with {@link #tx} and {@link #ty}
+     * set to `0`.
+     */
+    _shiftless: function() {
+        return new Matrix(this._a, this._b, this._c, this._d, 0, 0);
+    },
+
+    _orNullIfIdentity: function() {
+        return this.isIdentity() ? null : this;
     },
 
     /**
      * @return {Boolean} whether this transform is the identity transform
      */
     isIdentity: function() {
-        return this._a === 1 && this._c === 0 && this._b === 0 && this._d === 1
+        return this._a === 1 && this._b === 0 && this._c === 0 && this._d === 1
                 && this._tx === 0 && this._ty === 0;
-    },
-
-    orNullIfIdentity: function() {
-        return this.isIdentity() ? null : this;
     },
 
     /**
@@ -452,7 +515,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the transform is invertible
      */
     isInvertible: function() {
-        return !!this._getDeterminant();
+        var det = this._a * this._d - this._c * this._b;
+        return det && !isNaN(det) && isFinite(this._tx) && isFinite(this._ty);
     },
 
     /**
@@ -462,7 +526,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Boolean} whether the matrix is singular
      */
     isSingular: function() {
-        return !this._getDeterminant();
+        return !this.isInvertible();
     },
 
     /**
@@ -503,21 +567,17 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         if (!dest)
             dest = new Point();
         return dest.set(
-            x * this._a + y * this._b + this._tx,
-            x * this._c + y * this._d + this._ty,
-            _dontNotify
-        );
+                x * this._a + y * this._c + this._tx,
+                x * this._b + y * this._d + this._ty,
+                _dontNotify);
     },
 
     _transformCoordinates: function(src, dst, count) {
-        var i = 0,
-            j = 0,
-            max = 2 * count;
-        while (i < max) {
-            var x = src[i++],
-                y = src[i++];
-            dst[j++] = x * this._a + y * this._b + this._tx;
-            dst[j++] = x * this._c + y * this._d + this._ty;
+        for (var i = 0, max = 2 * count; i < max; i += 2) {
+            var x = src[i],
+                y = src[i + 1];
+            dst[i] = x * this._a + y * this._c + this._tx;
+            dst[i + 1] = x * this._b + y * this._d + this._ty;
         }
         return dst;
     },
@@ -543,10 +603,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         for (var i = 2; i < 8; i++) {
             var val = coords[i],
                 j = i & 1;
-            if (val < min[j])
+            if (val < min[j]) {
                 min[j] = val;
-            else if (val > max[j])
+            } else if (val > max[j]) {
                 max[j] = val;
+            }
         }
         if (!dest)
             dest = new Rectangle();
@@ -563,76 +624,71 @@ var Matrix = Base.extend(/** @lends Matrix# */{
         return this._inverseTransform(Point.read(arguments));
     },
 
-    /**
-     * Returns the determinant of this transform, but only if the matrix is
-     * reversible, null otherwise.
-     */
-    _getDeterminant: function() {
-        var det = this._a * this._d - this._b * this._c;
-        return isFinite(det) && !Numerical.isZero(det)
-                && isFinite(this._tx) && isFinite(this._ty)
-                ? det : null;
-    },
-
     _inverseTransform: function(point, dest, _dontNotify) {
-        var det = this._getDeterminant();
-        if (!det)
-            return null;
-        var x = point.x - this._tx,
-            y = point.y - this._ty;
-        if (!dest)
-            dest = new Point();
-        return dest.set(
-            (x * this._d - y * this._b) / det,
-            (y * this._a - x * this._c) / det,
-            _dontNotify
-        );
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            tx = this._tx,
+            ty = this._ty,
+            det = a * d - b * c,
+            res = null;
+        if (det && !isNaN(det) && isFinite(tx) && isFinite(ty)) {
+            var x = point.x - this._tx,
+                y = point.y - this._ty;
+            if (!dest)
+                dest = new Point();
+            res = dest.set(
+                    (x * d - y * c) / det,
+                    (y * a - x * b) / det,
+                    _dontNotify);
+        }
+        return res;
     },
 
     /**
      * Attempts to decompose the affine transformation described by this matrix
-     * into {@code scaling}, {@code rotation} and {@code shearing}, and returns
-     * an object with these properties if it succeeded, {@code null} otherwise.
+     * into `scaling`, `rotation` and `shearing`, and returns an object with
+     * these properties if it succeeded, `null` otherwise.
      *
-     * @return {Object} the decomposed matrix, or {@code null} if decomposition
-     * is not possible
+     * @return {Object} the decomposed matrix, or `null` if decomposition is not
+     *     possible
      */
     decompose: function() {
         // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
-        // http://stackoverflow.com/questions/4361242/
+        // http://www.maths-informatique-jeux.com/blog/frederic/?post/2013/12/01/Decomposition-of-2D-transform-matrices
         // https://github.com/wisec/DOMinator/blob/master/layout/style/nsStyleAnimation.cpp#L946
-        var a = this._a, b = this._b, c = this._c, d = this._d;
-        if (Numerical.isZero(a * d - b * c))
-            return null;
-
-        var scaleX = Math.sqrt(a * a + b * b);
-        a /= scaleX;
-        b /= scaleX;
-
-        var shear = a * c + b * d;
-        c -= a * shear;
-        d -= b * shear;
-
-        var scaleY = Math.sqrt(c * c + d * d);
-        c /= scaleY;
-        d /= scaleY;
-        shear /= scaleY;
-
-        // a * d - b * c should now be 1 or -1
-        if (a * d < b * c) {
-            a = -a;
-            b = -b;
-            // We don't need c & d anymore, but if we did, we'd have to do this:
-            // c = -c;
-            // d = -d;
-            shear = -shear;
-            scaleX = -scaleX;
+        var a = this._a,
+            b = this._b,
+            c = this._c,
+            d = this._d,
+            det = a * d - b * c,
+            sqrt = Math.sqrt,
+            atan2 = Math.atan2,
+            degrees = 180 / Math.PI,
+            rotate,
+            scale,
+            skew;
+        if (a !== 0 || b !== 0) {
+            var r = sqrt(a * a + b * b);
+            rotate = Math.acos(a / r) * (b > 0 ? 1 : -1);
+            scale = [r, det / r];
+            skew = [atan2(a * c + b * d, r * r), 0];
+        } else if (c !== 0 || d !== 0) {
+            var s = sqrt(c * c + d * d);
+            // rotate = Math.PI/2 - (d > 0 ? Math.acos(-c/s) : -Math.acos(c/s));
+            rotate = Math.asin(c / s)  * (d > 0 ? 1 : -1);
+            scale = [det / s, s];
+            skew = [0, atan2(a * c + b * d, s * s)];
+        } else { // a = b = c = d = 0
+            rotate = 0;
+            skew = scale = [0, 0];
         }
-
         return {
-            scaling: new Point(scaleX, scaleY),
-            rotation: -Math.atan2(b, a) * 180 / Math.PI,
-            shearing: shear
+            translation: this.getTranslation(),
+            rotation: rotate * degrees,
+            scaling: new Point(scale),
+            skewing: new Point(skew[0] * degrees, skew[1] * degrees)
         };
     },
 
@@ -648,7 +704,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * The value that affects the transformation along the y axis when rotating
      * or skewing, positioned at (1, 0) in the transformation matrix.
      *
-     * @name Matrix#c
+     * @name Matrix#b
      * @type Number
      */
 
@@ -656,7 +712,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * The value that affects the transformation along the x axis when rotating
      * or skewing, positioned at (0, 1) in the transformation matrix.
      *
-     * @name Matrix#b
+     * @name Matrix#c
      * @type Number
      */
 
@@ -686,20 +742,20 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     /**
      * The transform values as an array, in the same sequence as they are passed
-     * to {@link #initialize(a, c, b, d, tx, ty)}.
+     * to {@link #initialize(a, b, c, d, tx, ty)}.
      *
-     * @type Number[]
      * @bean
+     * @type Number[]
      */
     getValues: function() {
-        return [ this._a, this._c, this._b, this._d, this._tx, this._ty ];
+        return [ this._a, this._b, this._c, this._d, this._tx, this._ty ];
     },
 
     /**
      * The translation of the matrix as a vector.
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getTranslation: function() {
         // No decomposition is required to extract translation.
@@ -709,8 +765,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * The scaling values of the matrix, if it can be decomposed.
      *
-     * @type Point
      * @bean
+     * @type Point
      * @see #decompose()
      */
     getScaling: function() {
@@ -720,35 +776,12 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     /**
      * The rotation angle of the matrix, if it can be decomposed.
      *
-     * @type Number
      * @bean
+     * @type Number
      * @see #decompose()
      */
     getRotation: function() {
         return (this.decompose() || {}).rotation;
-    },
-
-    /**
-     * Creates the inversion of the transformation of the matrix and returns it
-     * as a new insteance. If the matrix is not invertible (in which case
-     * {@link #isSingular()} returns true), {@code null } is returned.
-     *
-     * @return {Matrix} the inverted matrix, or {@code null }, if the matrix is
-     * singular
-     */
-    inverted: function() {
-        var det = this._getDeterminant();
-        return det && new Matrix(
-                this._d / det,
-                -this._c / det,
-                -this._b / det,
-                this._a / det,
-                (this._b * this._ty - this._d * this._tx) / det,
-                (this._c * this._tx - this._a * this._ty) / det);
-    },
-
-    shiftless: function() {
-        return new Matrix(this._a, this._c, this._b, this._d, 0, 0);
     },
 
     /**
@@ -757,12 +790,15 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {CanvasRenderingContext2D} ctx
      */
     applyToContext: function(ctx) {
-        ctx.transform(this._a, this._c, this._b, this._d, this._tx, this._ty);
+        if (!this.isIdentity()) {
+            ctx.transform(this._a, this._b, this._c, this._d,
+                    this._tx, this._ty);
+        }
     }
-}, Base.each(['a', 'c', 'b', 'd', 'tx', 'ty'], function(name) {
+}, Base.each(['a', 'b', 'c', 'd', 'tx', 'ty'], function(key) {
     // Create getters and setters for all internal attributes.
-    var part = Base.capitalize(name),
-        prop = '_' + name;
+    var part = Base.capitalize(key),
+        prop = '_' + key;
     this['get' + part] = function() {
         return this[prop];
     };

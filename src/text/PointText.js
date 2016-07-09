@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2014, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & http://jonathanpuckey.com/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -58,15 +58,11 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         TextItem.apply(this, arguments);
     },
 
-    clone: function(insert) {
-        return this._clone(new PointText(Item.NO_INSERT), insert);
-    },
-
     /**
      * The PointText's anchor point
      *
-     * @type Point
      * @bean
+     * @type Point
      */
     getPoint: function() {
         // Se Item#getPosition for an explanation why we create new LinkedPoint
@@ -80,12 +76,14 @@ var PointText = TextItem.extend(/** @lends PointText# */{
         this.translate(point.subtract(this._matrix.getTranslation()));
     },
 
-    _draw: function(ctx) {
+    _draw: function(ctx, param, viewMatrix) {
         if (!this._content)
             return;
-        this._setStyles(ctx);
-        var style = this._style,
-            lines = this._lines,
+        this._setStyles(ctx, param, viewMatrix);
+        var lines = this._lines,
+            style = this._style,
+            hasFill = style.hasFill(),
+            hasStroke = style.hasStroke(),
             leading = style.getLeading(),
             shadowColor = ctx.shadowColor;
         ctx.font = style.getFontStyle();
@@ -94,17 +92,17 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             // See Path._draw() for explanation about ctx.shadowColor
             ctx.shadowColor = shadowColor;
             var line = lines[i];
-            if (style.hasFill()) {
+            if (hasFill) {
                 ctx.fillText(line, 0, 0);
                 ctx.shadowColor = 'rgba(0,0,0,0)';
             }
-            if (style.hasStroke())
+            if (hasStroke)
                 ctx.strokeText(line, 0, 0);
             ctx.translate(0, leading);
         }
     },
 
-    _getBounds: function(getter, matrix) {
+    _getBounds: function(matrix, options) {
         var style = this._style,
             lines = this._lines,
             numLines = lines.length,
