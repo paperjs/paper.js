@@ -38,6 +38,6 @@ script:
 - gulp jshint
 - gulp minify
 - gulp test
-- gulp dist
+- gulp zip
 after_script:
 - '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh'
