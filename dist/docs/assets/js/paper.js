@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 9 23:49:11 2016 +0200
+ * Date: Mon Jul 11 19:48:17 2016 +0200
  *
  ***
  *
@@ -7436,7 +7436,7 @@ var PathItem = Item.extend({
 			var length = coords && coords.length;
 			relative = command === lower;
 			if (previous === 'z' && !/[mz]/.test(lower))
-				this.moveTo(current = start);
+				this.moveTo(current);
 			switch (lower) {
 			case 'm':
 			case 'l':
@@ -7502,6 +7502,7 @@ var PathItem = Item.extend({
 				break;
 			case 'z':
 				this.closePath(1e-12);
+				current = start;
 				break;
 			}
 			previous = lower;
