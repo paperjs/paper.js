@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jul 11 19:48:17 2016 +0200
+ * Date: Tue Jul 12 19:11:09 2016 +0200
  *
  ***
  *
@@ -32,10 +32,10 @@
 
 var paper = function(self, undefined) {
 
-var window = self ? self.window : require('./node/window'),
-	document = window && window.document;
+self = self || require('./node/window.js');
 
-self = self || window;
+var window = self.window,
+	document = self.document;
 
 var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
@@ -5107,7 +5107,7 @@ var Raster = Item.extend({
 	},
 
 	setSource: function(src) {
-		var image = new window.Image(),
+		var image = new self.Image(),
 			crossOrigin = this._crossOrigin;
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
@@ -12868,7 +12868,7 @@ var Tool = PaperScopeItem.extend({
 
 var Http = {
 	request: function(options) {
-		var xhr = new window.XMLHttpRequest();
+		var xhr = new self.XMLHttpRequest();
 		xhr.open((options.method || 'get').toUpperCase(), options.url,
 				Base.pick(options.async, true));
 		if (options.mimeType)
@@ -13608,7 +13608,7 @@ new function() {
 			definitions = null;
 		}
 		return options.asString
-				? new window.XMLSerializer().serializeToString(svg)
+				? new self.XMLSerializer().serializeToString(svg)
 				: svg;
 	}
 
@@ -14076,8 +14076,10 @@ new function() {
 
 	function getDefinition(value) {
 		var match = value && value.match(/\((?:["'#]*)([^"')]+)/),
-			res = match && definitions[match[1]
-				.replace(window.location.href.split('#')[0] + '#', '')];
+			name = match && match[1],
+			res = name && definitions[window
+					? name.replace(window.location.href.split('#')[0] + '#', '')
+					: name];
 		if (res && res._scaleToBounds) {
 			res = res.clone();
 			res._scaleToBounds = true;
@@ -14154,7 +14156,7 @@ new function() {
 
 		function onLoad(svg) {
 			try {
-				var node = typeof svg === 'object' ? svg : new window.DOMParser()
+				var node = typeof svg === 'object' ? svg : new self.DOMParser()
 						.parseFromString(svg, 'image/svg+xml');
 				if (!node.nodeName) {
 					node = null;
@@ -14238,7 +14240,7 @@ paper = new (PaperScope.inject(Base.exports, {
 }))();
 
 if (paper.agent.node)
-	require('./node/extend')(paper);
+	require('./node/extend.js')(paper);
 
 if (typeof define === 'function' && define.amd) {
 	define('paper', paper);
