@@ -86,7 +86,7 @@ var equals = function(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof window.Element && 'Element' // handle DOM Elements
+            || expected instanceof self.Element && 'Element' // handle DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];

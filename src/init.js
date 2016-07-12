@@ -19,11 +19,12 @@
 /* global document:true, window:true */
 // Create a window variable valid in the paper.js scope, that points to the
 // native window in browsers and the emulated JSDom one in node.js
-// In workers, window is null (but self is defined), so we can use the validity
-// of the local window object to detect a worker-like context in the library.
-var window = self ? self.window : require('./node/window'),
-    document = window && window.document;
-// Make sure 'self' always points to a window object, also on Node.js.
+// In workers, and on Node.js when no Canvas is present, `window` is null (but
+// `self` is defined), so we can use the validity of the local window object to
+// detect a worker-like context in the library.
+// Make sure `self` always points to a window object, also on Node.js.
+self = self || require('./node/window.js');
 // NOTE: We're not modifying the global `self` here. We receive its value passed
 // to the paper.js function scope, and this is the one that is modified here.
-self = self || window;
+var window = self.window,
+    document = self.document;

@@ -13,7 +13,7 @@
 var Http = {
     request: function(options) {
         // Code borrowed from Coffee Script and extended:
-        var xhr = new window.XMLHttpRequest();
+        var xhr = new self.XMLHttpRequest();
         xhr.open((options.method || 'get').toUpperCase(), options.url,
                 Base.pick(options.async, true));
         if (options.mimeType)

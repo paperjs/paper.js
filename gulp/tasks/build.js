@@ -47,7 +47,7 @@ buildNames.forEach(function(name) {
                 evaluate: ['src/constants.js'],
                 setup: function() {
                     // Return objects to be defined in the preprocess-scope.
-                    // Note that this would be merge in with already existing
+                    // Note that this would be merged in with already existing
                     // objects.
                     return {
                         __options: Object.assign({}, options, buildOptions[name])

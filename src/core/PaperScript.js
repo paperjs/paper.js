@@ -347,7 +347,7 @@ Base.exports.PaperScript = function() {
             }
             if (/^(inline|both)$/.test(sourceMaps)) {
                 code += "\n//# sourceMappingURL=data:application/json;base64,"
-                        + window.btoa(unescape(encodeURIComponent(
+                        + self.btoa(unescape(encodeURIComponent(
                             JSON.stringify(map))));
             }
             code += "\n//# sourceURL=" + (url || 'paperscript');
