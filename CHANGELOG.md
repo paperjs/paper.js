@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.10.3` (Unreleased)
+
+### Changed
+- Loosely couple Node.js / Electron code to Canvas module, and treat its absence
+  like a headless web worker context in the browser (#1103).
+
 ## `0.10.2`
 
 ### Fixed
