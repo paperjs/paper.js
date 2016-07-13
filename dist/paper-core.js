@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 12 19:27:35 2016 +0200
+ * Date: Wed Jul 13 18:43:15 2016 +0200
  *
  ***
  *
@@ -9059,17 +9059,14 @@ statics: {
 			strokeMatrix, addPoint, isArea) {
 		var curve2 = segment.getCurve(),
 			curve1 = curve2.getPrevious(),
-			point = curve2.getPointAtTime(0),
-			normal1 = curve1.getNormalAtTime(1),
-			normal2 = curve2.getNormalAtTime(0),
-			step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
-		normal1.setLength(step);
-		normal2.setLength(step);
-		if (matrix)
-			matrix._transformPoint(point, point);
-		if (strokeMatrix) {
-			strokeMatrix._transformPoint(normal1, normal1);
-			strokeMatrix._transformPoint(normal2, normal2);
+			point = curve2.getPoint1().transform(matrix),
+			normal1 = curve1.getNormalAtTime(1).multiply(radius)
+				.transform(strokeMatrix),
+			normal2 = curve2.getNormalAtTime(0).multiply(radius)
+				.transform(strokeMatrix);
+		if (normal1.getDirectedAngle(normal2) < 0) {
+			normal1 = normal1.negate();
+			normal2 = normal2.negate();
 		}
 		if (isArea) {
 			addPoint(point);
@@ -9094,13 +9091,9 @@ statics: {
 
 	_addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
 			addPoint, isArea) {
-		var point = segment._point,
+		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
-			normal = loc.getNormal().multiply(radius);
-		if (matrix)
-			matrix._transformPoint(point, point);
-		if (strokeMatrix)
-			strokeMatrix._transformPoint(normal, normal);
+			normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
 		if (isArea) {
 			addPoint(point.subtract(normal));
 			addPoint(point.add(normal));
