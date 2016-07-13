@@ -2703,22 +2703,19 @@ statics: {
 
     _addBevelJoin: function(segment, join, radius, miterLimit, matrix,
             strokeMatrix, addPoint, isArea) {
-        // Handles both 'bevel' and 'miter' joins, as they share a lot of code.
+        // Handles both 'bevel' and 'miter' joins, as they share a lot of code,
+        // using different matrices to transform segment points and stroke
+        // vectors to support Style#strokeScaling.
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
-            point = curve2.getPointAtTime(0),
-            normal1 = curve1.getNormalAtTime(1),
-            normal2 = curve2.getNormalAtTime(0),
-            step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
-        normal1.setLength(step);
-        normal2.setLength(step);
-        // use different matrices to transform segment points and stroke vectors
-        // to support Style#strokeScaling.
-        if (matrix)
-            matrix._transformPoint(point, point);
-        if (strokeMatrix) {
-            strokeMatrix._transformPoint(normal1, normal1);
-            strokeMatrix._transformPoint(normal2, normal2);
+            point = curve2.getPoint1().transform(matrix),
+            normal1 = curve1.getNormalAtTime(1).multiply(radius)
+                .transform(strokeMatrix),
+            normal2 = curve2.getNormalAtTime(0).multiply(radius)
+                .transform(strokeMatrix);
+        if (normal1.getDirectedAngle(normal2) < 0) {
+            normal1 = normal1.negate();
+            normal2 = normal2.negate();
         }
         if (isArea) {
             addPoint(point);
@@ -2748,16 +2745,13 @@ statics: {
     _addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
             addPoint, isArea) {
         // Handles both 'square' and 'butt' caps, as they share a lot of code.
-        // Calculate the corner points of butt and square caps
-        var point = segment._point,
+        // Calculate the corner points of butt and square caps, using different
+        // matrices to transform segment points and stroke vectors to support
+        // Style#strokeScaling.
+        var point = segment._point.transform(matrix),
             loc = segment.getLocation(),
-            normal = loc.getNormal().multiply(radius); // normal is normalized
-        // use different matrices to transform segment points and stroke vectors
-        // to support Style#strokeScaling.
-        if (matrix)
-            matrix._transformPoint(point, point);
-        if (strokeMatrix)
-            strokeMatrix._transformPoint(normal, normal);
+            // NOTE: normal is normalized, so multiply instead of normalize.
+            normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
         if (isArea) {
             addPoint(point.subtract(normal));
             addPoint(point.add(normal));
