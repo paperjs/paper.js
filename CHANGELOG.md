@@ -6,6 +6,11 @@
 - Loosely couple Node.js / Electron code to Canvas module, and treat its absence
   like a headless web worker context in the browser (#1103).
 
+### Fixed
+- Prevent `Path#getStrokeBounds(matrix)` from accidentally modifying segments
+  (#1102).
+- Compatibility with JSPM (#1104).
+
 ## `0.10.2`
 
 ### Fixed

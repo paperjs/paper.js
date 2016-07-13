@@ -77,6 +77,7 @@
   "browser": {
     "canvas": false,
     "jsdom": false,
+    "jsdom/lib/jsdom/living/generated/utils": false,
     "source-map-support": false,
     "./dist/node/window.js": false,
     "./dist/node/extend.js": false
