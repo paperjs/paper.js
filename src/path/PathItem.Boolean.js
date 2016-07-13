@@ -404,7 +404,8 @@ PathItem.inject(new function() {
             aAfter = pa + epsilon;
         for (var i = 0, l = curves.length; i < l; i++) {
             var curve = curves[i];
-            if (i === 0 || curves[i - 1].getPath() !== curve.getPath()) {
+            var path = curve.getPath();
+            if (i === 0 || curves[i - 1].getPath() !== path) {
                 // On new path, determine values of last non-horizontal curve.
                 vPrev = null;
                 var curvePrev = curve.getPrevious();
@@ -445,11 +446,14 @@ PathItem.inject(new function() {
                 }
             }
             var nextCurve = curves[i + 1];
-            if (!nextCurve || nextCurve.getPath() != curve.getPath()) {
+            if (!nextCurve || nextCurve.getPath() != path) {
                 if (!pathWindings[0] && !pathWindings[1] && isOnPath[0]) {
                     // Use the on-path windings if no other intersections
                     // were found or if they canceled each other.
-                    onPathWinding += curve.getPath().isClockwise() ? 1 : -1;
+                    var incr = path.isClockwise() ? 1 : -1;
+                    windings[0] += incr;
+                    windings[1] += -incr;
+                    onPathWinding += incr;
                 } else {
                     windings[0] += pathWindings[0];
                     windings[1] += pathWindings[1];
