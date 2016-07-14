@@ -188,7 +188,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
     _contains: function(point) {
         // NOTE: point is reverse transformed by _matrix, so we don't need to
-        // apply here.
+        // apply the matrix here.
 /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
         // To compare with native canvas approach:
         var ctx = CanvasProvider.getContext(1, 1);
