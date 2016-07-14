@@ -328,9 +328,9 @@ PathItem.inject(new function() {
                 // A horizontal curve is not necessarily between two non-
                 // horizontal curves. We have to take cases like these into
                 // account:
-                //           +-----+
-                //       ----+     |
-                //           +-----+
+                //         +-----+
+                //     ----+     |
+                //         +-----+
                 if (va1 <= aAfter && va3 >= aBefore ||
                     va3 <= aAfter && va1 >= aBefore) {
                     isOnPath = true;
@@ -429,7 +429,7 @@ PathItem.inject(new function() {
                 }
             }
             var nextCurve = curves[i + 1];
-            if (!nextCurve || nextCurve.getPath() != path) {
+            if (!nextCurve || nextCurve.getPath() !== path) {
                 if (!pathWindingL && !pathWindingR && isOnPath) {
                     // Use the on-path windings if no other intersections
                     // were found or if they canceled each other.
@@ -445,7 +445,7 @@ PathItem.inject(new function() {
                 isOnPath = false;
             }
         }
-        if (windingL === 0 && windingR === 0) {
+        if (!windingL && !windingR) {
             windingL = windingR = onPathWinding;
         }
         windingL = windingL && (2 - abs(windingL) % 2);
