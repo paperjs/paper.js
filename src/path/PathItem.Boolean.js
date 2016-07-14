@@ -527,7 +527,7 @@ PathItem.inject(new function() {
                 // are bringing us back to the beginning, and are both valid,
                 // meaning they are part of the boolean result.
                 if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
-                    || !seg._visited && !nextSeg._visited
+                    || nextSeg && !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator || isValid(seg) && (isValid(nextSeg)
                         // If the next segment isn't valid, its intersection
