@@ -170,7 +170,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The first Segment contained within the path.
+     * The first Segment contained within the compound-path, a short-cut to
+     * calling {@link Path#getFirstSegment()} on {@link Item#getFirstChild()}.
      *
      * @bean
      * @type Segment
@@ -181,7 +182,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The last Segment contained within the path.
+     * The last Segment contained within the compound-path, a short-cut to
+     * calling {@link Path#getLastSegment()} on {@link Item#getLastChild()}.
      *
      * @bean
      * @type Segment
@@ -207,7 +209,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The first Curve contained within the path.
+     * The first Curve contained within the compound-path, a short-cut to
+     * calling {@link Path#getFirstCurve()} on {@link Item#getFirstChild()}.
      *
      * @bean
      * @type Curve
@@ -218,14 +221,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The last Curve contained within the path.
+     * The last Curve contained within the compound-path, a short-cut to
+     * calling {@link Path#getLastCurve()} on {@link Item#getLastChild()}.
      *
      * @bean
      * @type Curve
      */
     getLastCurve: function() {
         var last = this.getLastChild();
-        return last && last.getFirstCurve();
+        return last && last.getLastCurve();
     },
 
     /**
