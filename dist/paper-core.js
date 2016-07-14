@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 13 21:04:53 2016 +0200
+ * Date: Thu Jul 14 09:14:11 2016 +0200
  *
  ***
  *
@@ -9821,7 +9821,7 @@ PathItem.inject(new function() {
 					nextSeg = seg.getNext(),
 					nextInter = nextSeg && nextSeg._intersection;
 				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
-					|| !seg._visited && !nextSeg._visited
+					|| nextSeg && !seg._visited && !nextSeg._visited
 					&& (!operator || isValid(seg) && (isValid(nextSeg)
 						|| nextInter && isValid(nextInter._segment)))
 					))
