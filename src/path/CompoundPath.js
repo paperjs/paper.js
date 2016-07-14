@@ -170,6 +170,30 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
+     * Specifies whether the compound-path is fully closed, meaning all its
+     * contained sub-paths are closed path.
+     *
+     * @bean
+     * @type Boolean
+     * @see Path#isClosed()
+     */
+    isClosed: function() {
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            if (!children[i]._closed)
+                return false;
+        }
+        return true;
+    },
+
+    setClosed: function(closed) {
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            children[i].setClosed(closed);
+        }
+    },
+
+    /**
      * The first Segment contained within the compound-path, a short-cut to
      * calling {@link Path#getFirstSegment()} on {@link Item#getFirstChild()}.
      *
