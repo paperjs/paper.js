@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 14 09:32:29 2016 +0200
+ * Date: Thu Jul 14 10:49:12 2016 +0200
  *
  ***
  *
@@ -9346,6 +9346,22 @@ var CompoundPath = PathItem.extend({
 			this.reverse();
 	},
 
+	isClosed: function() {
+		var children = this._children;
+		for (var i = 0, l = children.length; i < l; i++) {
+			if (!children[i]._closed)
+				return false;
+		}
+		return true;
+	},
+
+	setClosed: function(closed) {
+		var children = this._children;
+		for (var i = 0, l = children.length; i < l; i++) {
+			children[i].setClosed(closed);
+		}
+	},
+
 	getFirstSegment: function() {
 		var first = this.getFirstChild();
 		return first && first.getFirstSegment();
@@ -9371,7 +9387,7 @@ var CompoundPath = PathItem.extend({
 
 	getLastCurve: function() {
 		var last = this.getLastChild();
-		return last && last.getFirstCurve();
+		return last && last.getLastCurve();
 	},
 
 	getArea: function() {
@@ -9494,10 +9510,12 @@ PathItem.inject(new function() {
 		exclude:   { 1: true }
 	};
 
-	function preparePath(path, resolve) {
+	function preparePath(path, closed) {
 		var res = path.clone(false).reduce({ simplify: true })
 				.transform(null, true, true);
-		return resolve ? res.resolveCrossings() : res;
+		if (closed)
+			res.setClosed(true);
+		return closed ? res.resolveCrossings() : res;
 	}
 
 	function createResult(ctor, paths, reduce, path1, path2) {
@@ -9514,7 +9532,7 @@ PathItem.inject(new function() {
 	function computeBoolean(path1, path2, operation) {
 		var operator = operators[operation];
 		operator[operation] = true;
-		if (!path1._children && !path1._closed)
+		if (!path1.isClosed())
 			return computeOpenBoolean(path1, path2, operator);
 		var _path1 = preparePath(path1, true),
 			_path2 = path2 && path1 !== path2 && preparePath(path2, true);
@@ -9560,9 +9578,10 @@ PathItem.inject(new function() {
 	}
 
 	function computeOpenBoolean(path1, path2, operator) {
-		if (!path2 || !path2._children && !path2._closed
-				|| !operator.subtract && !operator.intersect)
-			return null;
+		if (!path2 || !operator.subtract && !operator.intersect) {
+			throw new Error('Boolean operations on open paths only support ' +
+					'subtraction and intersection with another path.');
+		}
 		var _path1 = preparePath(path1, false),
 			_path2 = preparePath(path2, false),
 			crossings = _path1.getCrossings(_path2),

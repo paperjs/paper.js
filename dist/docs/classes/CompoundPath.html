@@ -182,6 +182,39 @@ path.fillColor = 'black';
 </div>
 		
 			
+<div id="closed" class="member">
+<div class="member-link">
+<a name="closed" href="#closed"><tt><b>closed</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the compound-path is fully closed, meaning all its contained sub-paths are closed path.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><tt>Path#isClosed</tt>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
 <div id="firstsegment" class="member">
 <div class="member-link">
 <a name="firstsegment" href="#firstsegment"><tt><b>firstSegment</b></tt></a>
@@ -189,7 +222,7 @@ path.fillColor = 'black';
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The first Segment contained within the path.</p>
+	<p>The first Segment contained within the compound-path, a short-cut to calling <tt>Path#getFirstSegment</tt>() on <tt>Item#getFirstChild</tt>().</p>
 	
 		<p>Read only.</p>
 	
@@ -217,7 +250,7 @@ path.fillColor = 'black';
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The last Segment contained within the path.</p>
+	<p>The last Segment contained within the compound-path, a short-cut to calling <tt>Path#getLastSegment</tt>() on <tt>Item#getLastChild</tt>().</p>
 	
 		<p>Read only.</p>
 	
@@ -273,7 +306,7 @@ path.fillColor = 'black';
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The first Curve contained within the path.</p>
+	<p>The first Curve contained within the compound-path, a short-cut to calling <tt>Path#getFirstCurve</tt>() on <tt>Item#getFirstChild</tt>().</p>
 	
 		<p>Read only.</p>
 	
@@ -301,7 +334,7 @@ path.fillColor = 'black';
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>The last Curve contained within the path.</p>
+	<p>The last Curve contained within the compound-path, a short-cut to calling <tt>Path#getLastCurve</tt>() on <tt>Item#getLastChild</tt>().</p>
 	
 		<p>Read only.</p>
 	
