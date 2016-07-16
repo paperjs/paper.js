@@ -217,7 +217,11 @@ PathItem.inject(new function() {
      * Divides the path-items at the given locations.
      *
      * @param {CurveLocation[]} locations an array of the locations to split the
-     * path-item at.
+     *     path-item at.
+     * @param {Function} [include] a function that determines if dividing should
+     *     happen at a given location.
+     * @return {CurveLocation[]} the locations at which the involved path-items
+     *     were divided
      * @private
      */
     function divideLocations(locations, include) {
@@ -295,6 +299,21 @@ PathItem.inject(new function() {
         return results || locations;
     }
 
+    /**
+     * Returns the winding contribution number of the given point in respect
+     * to the shapes described by the passed curves.
+     *
+     * @param {Point} point the location for which to determine the winding
+     *     contribution
+     * @param {Curve[]} curves the curves that describe the shape against which
+     *     to check, as returned by {@link Path#getCurves()} or
+     *     {@link CompoundPath#getCurves()}
+     * @param {Number} [dir=0] the direction in which to determine the
+     *     winding contribution, `0`: in x-direction, `1`: in y-direction
+     * @return {Object} an object containing the calculated winding number, as
+     *     well as an indication whether the point was situated on the contour
+     * @private
+     */
     function getWinding(point, curves, dir) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             abs = Math.abs,
@@ -415,7 +434,7 @@ PathItem.inject(new function() {
                                  (  a0 > aAfter && a1 > aAfter &&
                                     a2 > aAfter && a3 > aAfter)
                         ? [v] : Curve.getMonoCurves(v, dir);
-                for (var i = 0; i < monoCurves.length; i++) {
+                for (var i = 0, l = monoCurves.length; i < l; i++) {
                     prevV = addWinding(monoCurves[i]);
                 }
             }
@@ -437,7 +456,7 @@ PathItem.inject(new function() {
                         x1 = p1._x, y1 = p1._y,
                         x2 = p2._x, y2 = p2._y;
                     closeV = [x1, y1, x1, y1, x2, y2, x2, y2];
-                    // The closing curve is a potential candidate for the last
+                    // This closing curve is a potential candidate for the last
                     // non-horizontal curve.
                     if (closeV[io] !== closeV[io + 6]) {
                         prevV = closeV;
@@ -528,9 +547,9 @@ PathItem.inject(new function() {
                     parent = path._parent,
                     t = curve.getTimeAt(length),
                     pt = curve.getPointAtTime(t),
-                    // Determine whether to check winding in horizontal or
-                    // vertical direction from the point based on the curve's
-                    // direction at the given point.
+                    // Determine the direction in which to check the winding
+                    // from the point (horizontal or vertical), based on the
+                    // curve's direction at that point.
                     dir = Math.abs(curve.getTangentAtTime(t).normalize().y)
                             < 0.5 ? 1 : 0;
                 if (parent instanceof CompoundPath)
@@ -750,13 +769,13 @@ PathItem.inject(new function() {
 
     return /** @lends PathItem# */{
         /**
-         * Returns the winding contribution of the given point with respect to
-         * this PathItem.
+         * Returns the winding contribution number of the given point in respect
+         * to this PathItem.
          *
          * @param {Point} point the location for which to determine the winding
-         * direction
-         * @param {Boolean} horizontal whether we need to consider this point as
-         * part of a horizontal curve
+         *     contribution
+         * @param {Number} [dir=0] the direction in which to determine the
+         *     winding contribution, `0`: in x-direction, `1`: in y-direction
          * @return {Number} the winding number
          */
         _getWinding: function(point, dir) {
