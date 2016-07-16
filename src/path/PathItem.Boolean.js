@@ -632,6 +632,17 @@ PathItem.inject(new function() {
             return null;
         }
 
+        // Sort segments to give non-ambiguous segments the preference as
+        // starting points when tracing: prefer segments with no intersections
+        // over intersections, and process intersections with overlaps last:
+        segments.sort(function(a, b) {
+            var i1 = a._intersection,
+                i2 = b._intersection,
+                o1 = !!(i1 && i1._overlap),
+                o2 = !!(i2 && i2._overlap);
+            return !i1 && !i2 ? -1 : o1 ^ o2 ? o1 ? 1 : -1 : 0;
+        });
+
         for (var i = 0, l = segments.length; i < l; i++) {
             var path = null,
                 finished = false,
@@ -666,8 +677,7 @@ PathItem.inject(new function() {
             //   contribution but are part of the contour (excludeContour=true).
             // - Do not start in overlaps, unless all segments are part of
             //   overlaps, in which case we have no other choice.
-            if (!isValid(seg, true)
-                    || !seg._path._validOverlapsOnly && inter && inter._overlap)
+            if (!isValid(seg, true))
                 continue;
             start = otherStart = null;
             while (true) {
