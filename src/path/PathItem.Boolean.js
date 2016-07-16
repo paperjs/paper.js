@@ -295,7 +295,7 @@ PathItem.inject(new function() {
         return results || locations;
     }
 
-    function getWinding(point, curves, horizontal) {
+    function getWinding(point, curves, dir) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             abs = Math.abs,
             windingL = 0,
@@ -305,34 +305,39 @@ PathItem.inject(new function() {
             onPathWinding = 0,
             isOnPath = false,
             prevV,
-            coord = horizontal ? 1 : 0,
-            po = horizontal ? point.x : point.y, // point's abscissa
-            pa = horizontal ? point.y : point.x, // point's ordinate
+            closeV,
+            // Determine the index of the abscissa and ordinate values in the
+            // curve values arrays, based on the direction:
+            ia = dir ? 1 : 0, // the abscissa index
+            io = dir ? 0 : 1, // the ordinate index
+            pv = [point.x, point.y];
+            pa = pv[ia], // the point's abscissa
+            po = pv[io], // the point's ordinate
             aBefore = pa - epsilon,
             aAfter = pa + epsilon;
 
         function addWinding(v) {
-            var vo0 = v[1 - coord],
-                vo3 = v[7 - coord];
-            if (vo0 > po && vo3 > po ||
-                vo0 < po && vo3 < po) {
+            var o0 = v[io],
+                o3 = v[io + 6];
+            if (o0 > po && o3 > po ||
+                o0 < po && o3 < po) {
                 // If curve is outside the ordinates' range, no intersection
                 // with the ray is possible.
                 return v;
             }
-            var va0 = v[coord],
-                va1 = v[2 + coord],
-                va2 = v[4 + coord],
-                va3 = v[6 + coord];
-            if (vo0 === vo3) {
+            var a0 = v[ia],
+                a1 = v[ia + 2],
+                a2 = v[ia + 4],
+                a3 = v[ia + 6];
+            if (o0 === o3) {
                 // A horizontal curve is not necessarily between two non-
                 // horizontal curves. We have to take cases like these into
                 // account:
-                //         +-----+
-                //     ----+     |
-                //         +-----+
-                if (va1 <= aAfter && va3 >= aBefore ||
-                    va3 <= aAfter && va1 >= aBefore) {
+                //          +-----+
+                //     +----+     |
+                //          +-----+
+                if (a1 <= aAfter && a3 >= aBefore ||
+                    a3 <= aAfter && a1 >= aBefore) {
                     isOnPath = true;
                 }
                 // If curve does not change in ordinate direction, windings will
@@ -340,20 +345,20 @@ PathItem.inject(new function() {
                 return prevV;
             }
             var roots = [],
-                a =   po === vo0 ? va0
-                    : po === vo3 ? va3
-                    : ( va0 < aBefore && va1 < aBefore &&
-                        va2 < aBefore && va3 < aBefore) ||
-                      ( va0 > aAfter && va1 > aAfter &&
-                        va2 > aAfter && va3 > aAfter)
-                    ? (va0 + va3) / 2
-                    : Curve.solveCubic(v, coord ? 0 : 1, po, roots, 0, 1) === 1
-                        ? Curve.getPoint(v, roots[0])[coord ? 'y' : 'x']
-                        : (va0 + va3) / 2;
-            var winding = vo0 > vo3 ? 1 : -1,
-                prevWinding = prevV[1 - coord] > prevV[7 - coord] ? 1 : -1,
-                prevAEnd = prevV[6 + coord];
-            if (po !== vo0) {
+                a =   po === o0 ? a0
+                    : po === o3 ? a3
+                    : ( a0 < aBefore && a1 < aBefore &&
+                        a2 < aBefore && a3 < aBefore) ||
+                      ( a0 > aAfter && a1 > aAfter &&
+                        a2 > aAfter && a3 > aAfter)
+                    ? (a0 + a3) / 2
+                    : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
+                        ? Curve.getPoint(v, roots[0])[dir ? 'y' : 'x']
+                        : (a0 + a3) / 2;
+            var winding = o0 > o3 ? 1 : -1,
+                prevWinding = prevV[io] > prevV[io + 6] ? 1 : -1,
+                prevAEnd = prevV[ia + 6];
+            if (po !== o0) {
                 // Standard case, curve is crossed by not at its start point.
                 if (a < aBefore) {
                     pathWindingL += winding;
@@ -379,7 +384,7 @@ PathItem.inject(new function() {
                 // horizontal and the current curve.
                 isOnPath = true;
                 if (prevAEnd < aBefore) {
-                    // left winding was added before, now add right winding
+                    // left winding was added before, now add right winding.
                     pathWindingR += winding;
                 } else if (prevAEnd > aAfter) {
                     // right winding was added before, not add left winding.
@@ -389,47 +394,83 @@ PathItem.inject(new function() {
             return v;
         }
 
+        function handleCurve(v) {
+            // Get the ordinates:
+            var o0 = v[io],
+                o1 = v[io + 2],
+                o2 = v[io + 4],
+                o3 = v[io + 6];
+            // Only handle curves that can cross the point's ordinate.
+            if ((o0 >= po || o1 >= po || o2 >= po || o3 >= po) &&
+                (o0 <= po || o1 <= po || o2 <= po || o3 <= po)) {
+                // Get the abscissas:
+                var a0 = v[ia],
+                    a1 = v[ia + 2],
+                    a2 = v[ia + 4],
+                    a3 = v[ia + 6],
+                    // Get monotone curves. If the curve is outside the point's
+                    // abscissa, it can be treated as a monotone curve:
+                    monoCurves = (  a0 < aBefore && a1 < aBefore &&
+                                    a2 < aBefore && a3 < aBefore) ||
+                                 (  a0 > aAfter && a1 > aAfter &&
+                                    a2 > aAfter && a3 > aAfter)
+                        ? [v] : Curve.getMonoCurves(v, dir);
+                for (var i = 0; i < monoCurves.length; i++) {
+                    prevV = addWinding(monoCurves[i]);
+                }
+            }
+        }
+
         for (var i = 0, l = curves.length; i < l; i++) {
             var curve = curves[i],
-                path = curve.getPath();
-            if (i === 0 || curves[i - 1].getPath() !== path) {
-                // On new path, determine values of last non-horizontal curve.
+                path = curve._path,
+                v = curve.getValues();
+            if (i === 0 || curves[i - 1]._path !== path) {
+                // We're on a new (sub-)path, so we need to determine values of
+                // the last non-horizontal curve on this path.
                 prevV = null;
-                var curvePrev = curve.getPrevious();
-                while (!prevV && curvePrev && curvePrev != curve) {
-                    var v2 = curvePrev.getValues();
-                    if (v2[1 - coord] != v2[7 - coord])
-                        prevV = v2;
-                    curvePrev = curvePrev.getPrevious();
+                // If the path is not closed, connect the end points with a
+                // straight curve, just like how filling open paths works.
+                if (!path._closed) {
+                    var p1 = path.getLastCurve().getPoint2(),
+                        p2 = curve.getPoint1(),
+                        x1 = p1._x, y1 = p1._y,
+                        x2 = p2._x, y2 = p2._y;
+                    closeV = [x1, y1, x1, y1, x2, y2, x2, y2];
+                    // The closing curve is a potential candidate for the last
+                    // non-horizontal curve.
+                    if (closeV[io] !== closeV[io + 6]) {
+                        prevV = closeV;
+                    }
                 }
-                prevV = prevV || curve.getValues();
-            }
-            var v = curve.getValues(),
-                // Get the ordinates:
-                vo0 = v[1 - coord],
-                vo1 = v[3 - coord],
-                vo2 = v[5 - coord],
-                vo3 = v[7 - coord];
-            // Only handle curves that can cross the point's ordinate
-            if ((vo0 >= po || vo1 >= po || vo2 >= po || vo3 >= po) &&
-                (vo0 <= po || vo1 <= po || vo2 <= po || vo3 <= po)) {
-                var va0 = v[coord],
-                    va1 = v[2 + coord],
-                    va2 = v[4 + coord],
-                    va3 = v[6 + coord];
-                // Get monotone curves. If the curve is outside the point's
-                // abscissa, it can be treated as a monotone curve
-                var monoCurves = (  va0 < aBefore && va1 < aBefore &&
-                                    va2 < aBefore && va3 < aBefore) ||
-                                 (  va0 > aAfter && va1 > aAfter &&
-                                    va2 > aAfter && va3 > aAfter)
-                        ? [v] : Curve.getMonoCurves(v, coord);
-                for (var j = 0; j < monoCurves.length; j++) {
-                    prevV = addWinding(monoCurves[j]);
+
+                if (!prevV) {
+                    // Walk backwards through list of the path's curves until we
+                    // find one that is not horizontal.
+                    // Fall-back to the first curve's values if none is found:
+                    prevV = v;
+                    var prev = path.getLastCurve();
+                    while (prev && prev !== curve) {
+                        var v2 = prev.getValues();
+                        if (v2[io] !== v2[io + 6]) {
+                            prevV = v2;
+                            break;
+                        }
+                        prev = prev.getPrevious();
+                    }
                 }
             }
-            var nextCurve = curves[i + 1];
-            if (!nextCurve || nextCurve.getPath() !== path) {
+
+            handleCurve(v);
+
+            if (i + 1 === l || curves[i + 1]._path !== path) {
+                // We're at the last curve of the current (sub-)path. If a
+                // closing curve was calculated at the beginning of it, handle
+                // it now to treat the path as closed:
+                if (closeV) {
+                    handleCurve(closeV);
+                    closeV = null;
+                }
                 if (!pathWindingL && !pathWindingR && isOnPath) {
                     // Use the on-path windings if no other intersections
                     // were found or if they canceled each other.
@@ -487,16 +528,20 @@ PathItem.inject(new function() {
                     parent = path._parent,
                     t = curve.getTimeAt(length),
                     pt = curve.getPointAtTime(t),
-                    hor = Math.abs(curve.getTangentAtTime(t).normalize().y) < 0.5;
+                    // Determine whether to check winding in horizontal or
+                    // vertical direction from the point based on the curve's
+                    // direction at the given point.
+                    dir = Math.abs(curve.getTangentAtTime(t).normalize().y)
+                            < 0.5 ? 1 : 0;
                 if (parent instanceof CompoundPath)
                     path = parent;
                 // While subtracting, we need to omit this curve if it is
                 // contributing to the second operand and is outside the
                 // first operand.
                 winding = !(operator.subtract && path2 && (
-                        path === path1 &&  path2._getWinding(pt, hor) ||
-                        path === path2 && !path1._getWinding(pt, hor)))
-                            ? getWinding(pt, curves, hor)
+                        path === path1 &&  path2._getWinding(pt, dir) ||
+                        path === path2 && !path1._getWinding(pt, dir)))
+                            ? getWinding(pt, curves, dir)
                             : { winding: 0 };
                 break;
             }
@@ -714,8 +759,8 @@ PathItem.inject(new function() {
          * part of a horizontal curve
          * @return {Number} the winding number
          */
-        _getWinding: function(point, horizontal) {
-            return getWinding(point, this.getCurves(), horizontal).winding;
+        _getWinding: function(point, dir) {
+            return getWinding(point, this.getCurves(), dir).winding;
         },
 
         /**
@@ -972,16 +1017,25 @@ Path.inject(/** @lends Path# */{
                 prevWinding = 0;
             // Get values for all y-monotone curves that intersect the ray at y.
             for (var i = 0, l = curves.length; i < l; i++) {
-                var v = curves[i].getValues();
-                if ((v[1] <= y || v[3] <= y || v[5] <= y || v[7] <= y) &&
-                    (v[1] >= y || v[3] >= y || v[5] >= y || v[7] >= y)) {
-                    var monos = Curve.getMonoCurves(curves[i].getValues(), 0);
+                var v = curves[i].getValues(),
+                    o0 = v[1],
+                    o1 = v[3],
+                    o2 = v[5],
+                    o3 = v[7];
+                if ((o0 <= y || o1 <= y || o2 <= y || o3 <= y) &&
+                    (o0 >= y || o1 >= y || o2 >= y || o3 >= y)) {
+                    var monos = Curve.getMonoCurves(v);
                     for (var j = 0, m = monos.length; j < m; j++) {
-                        var v = monos[j];
-                        if (y >= v[1] && y <= v[7] || y >= v[7] && y <= v[1]) {
-                            var winding = v[1] > v[7] ? 1 : v[1] < v[7] ? -1 : 0;
+                        var mono = monos[j],
+                            mo0 = mono[1],
+                            mo3 = mono[7];
+                        if (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0) {
+                            var winding = mo0 > mo3 ? 1 : mo0 < mo3 ? -1 : 0;
                             if (winding) {
-                                monoCurves.push({ values: v, winding: winding });
+                                monoCurves.push({
+                                    values: mono,
+                                    winding: winding
+                                });
                                 prevWinding = winding;
                             }
                         }
@@ -992,8 +1046,9 @@ Path.inject(/** @lends Path# */{
             if (!monoCurves.length)
                 return point;
             for (var i = 0, l = monoCurves.length; i < l; i++) {
-                var v = monoCurves[i].values,
-                    winding = monoCurves[i].winding,
+                var entry = monoCurves[i],
+                    v = entry.values,
+                    winding = entry.winding,
                     x = y === v[1] ? v[0]
                         : y === v[7] ? v[6]
                         : Curve.solveCubic(v, 1, y, roots, 0, 1) === 1
