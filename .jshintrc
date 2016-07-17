@@ -1,16 +1,17 @@
 {
+  "esversion": 5,
   "browser": true,
   "node": true,
   "wsh": true,
   "evil": true,
-  "trailing": false,
-  "smarttabs": false,
-  "sub": true,
   "supernew": true,
   "laxbreak": true,
   "eqeqeq": false,
   "eqnull": true,
   "loopfunc": true,
   "boss": true,
-  "shadow": true
+  "shadow": true,
+  "funcscope": false,
+  "latedef": "nofunc",
+  "freeze": true
 }

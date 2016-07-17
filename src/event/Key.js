@@ -45,7 +45,7 @@ var Key = new function() {
         keyMap = {}, // Map for currently pressed keys
         charMap = {}, // key -> char mappings for pressed keys
         metaFixMap, // Keys that will not receive keyup events due to Mac bug
-        downKey; // The key from the keydown event, if it wasn't handled already
+        downKey, // The key from the keydown event, if it wasn't handled already
 
         // Use new Base() to convert into a Base object, for #toString()
         modifiers = new Base({

@@ -130,7 +130,7 @@ var Segment = Base.extend(/** @lends Segment# */{
             } else {
                 point = arg0;
             }
-        } else if (typeof arg0 === 'object') {
+        } else if (arg0 == null || typeof arg0 === 'object') {
             // It doesn't matter if all of these arguments exist.
             // new SegmentPoint() produces creates points with (0, 0) otherwise.
             point = arg0;

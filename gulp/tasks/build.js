@@ -16,8 +16,7 @@ var gulp = require('gulp'),
     uncomment = require('gulp-uncomment'),
     whitespace = require('gulp-whitespace'),
     del = require('del'),
-    extend = require('extend'),
-    options = require('../utils/options.js')({ suffix: true });
+    options = require('../utils/options.js');
 
 // Options to be used in Prepro.js preprocessing through the global __options
 // object, merged in with the options required above.
@@ -48,10 +47,10 @@ buildNames.forEach(function(name) {
                 evaluate: ['src/constants.js'],
                 setup: function() {
                     // Return objects to be defined in the preprocess-scope.
-                    // Note that this would be merge in with already existing
+                    // Note that this would be merged in with already existing
                     // objects.
                     return {
-                        __options: extend({}, options, buildOptions[name])
+                        __options: Object.assign({}, options, buildOptions[name])
                     };
                 }
             }))

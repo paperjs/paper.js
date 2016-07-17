@@ -369,7 +369,7 @@ new function() {
             definitions = null;
         }
         return options.asString
-                ? new window.XMLSerializer().serializeToString(svg)
+                ? new self.XMLSerializer().serializeToString(svg)
                 : svg;
     }
 

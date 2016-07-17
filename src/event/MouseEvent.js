@@ -30,7 +30,7 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
         this.type = type;
         this.event = event;
         this.point = point;
-        this._target = target;
+        this.target = target;
         this.delta = delta;
     },
 
@@ -51,19 +51,24 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
      * @type Point
      */
 
-    // DOCS: document MouseEvent#target
     /**
+     * The item that dispatched the event. It is different from
+     * {@link #currentTarget} when the event handler is called during
+     * the bubbling phase of the event.
+     *
      * @name MouseEvent#target
      * @type Item
      */
-    getTarget: function() {
-        // #_target may be a hitTest() function, in which case we need to
-        // execute and override it the first time #target is requested.
-        var target = this._target;
-        if (typeof target === 'function')
-            target = this._target = target();
-        return target;
-    },
+
+    /**
+     * The current target for the event, as the event traverses the scene graph.
+     * It always refers to the element the event handler has been attached to as
+     * opposed to {@link #target} which identifies the element on
+     * which the event occurred.
+     *
+     * @name MouseEvent#currentTarget
+     * @type Item
+     */
 
     // DOCS: document MouseEvent#delta
     /**
@@ -77,7 +82,7 @@ var MouseEvent = Event.extend(/** @lends MouseEvent# */{
     toString: function() {
         return "{ type: '" + this.type
                 + "', point: " + this.point
-                + ', target: ' + this.getTarget()
+                + ', target: ' + this.target
                 + (this.delta ? ', delta: ' + this.delta : '')
                 + ', modifiers: ' + this.getModifiers()
                 + ' }';

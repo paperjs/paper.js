@@ -171,7 +171,9 @@ var Style = Base.extend(new function() {
                 var old = this._values[key];
                 if (old !== value) {
                     if (isColor) {
-                        if (old)
+                        // The old value may be a native string or other color
+                        // description that wasn't coerced to a color object yet
+                        if (old && old._owner !== undefined)
                             old._owner = undefined;
                         if (value && value.constructor === Color) {
                             // Clone color if it already has an owner.

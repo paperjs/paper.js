@@ -1,16 +1,38 @@
 # Change Log
-All notable changes to Paper.js shall be documented in this file, following
-common [CHANGELOG](http://keepachangelog.com/) conventions. As of `0.10.0`,
-Paper.js adheres to [Semantic Versioning](http://semver.org/).
 
-## `0.10.0` (Unreleased)
+## `0.10.3` (Unreleased)
+
+### Changed
+- Loosely couple Node.js / Electron code to Canvas module, and treat its absence
+  like a headless web worker context in the browser (#1103).
+
+### Fixed
+- Prevent `Path#getStrokeBounds(matrix)` from accidentally modifying segments
+  (#1102).
+- Compatibility with JSPM (#1104).
+
+## `0.10.2`
+
+### Fixed
+- Get published version to work correctly in Bower again.
+
+## `0.10.1`
+
+### Fixed
+- Correct a few issues with documentation and NPM publishing that slipped
+  through in the `0.10.0` release.
+
+## `0.10.0`
 
 ### Preamble
 
 This is a huge release for Paper.js as we aim for a version `1.0.0` release
-later this year. There are many items in the changelog (and many more items not
-in the changelog) so here a high-level overview to frame the long list of
-changes:
+later this year. As of this version, all notable changes are documented in the
+change-log following common [CHANGELOG](http://keepachangelog.com/) conventions.
+Paper.js now also adheres to [Semantic Versioning](http://semver.org/).
+
+There are many items in the changelog (and many more items not in the changelog)
+so here a high-level overview to frame the long list of changes:
 
 - Boolean operations have been improved and overhauled for reliability and
   efficiency. These include the path functions to unite, intersect, subtract,
@@ -221,7 +243,7 @@ contribute to the code.
   invertible transformations (#558).
 - Scaling shadows now works correctly with browser- and view-zoom (#831).
 - `Path#arcTo()` correctly handles zero sizes.
-- `#importSVG()` handles onLoad and onError callbacks for string inputs that
+- `#importSVG()` handles `onLoad` and `onError` callbacks for string inputs that
   load external resources (#827).
 - `#importJSON()` and `#exportJSON()` now handle non-`Item` objects correctly
   (#392).
@@ -248,6 +270,8 @@ contribute to the code.
   rounding (#1045).
 - Improve reliability of fat-line clipping for curves that are very similar
   (#904).
+- Improve precision of `Numerical.solveQuadratic()` and
+  `Numerical.solveCubic()` for edge-cases (#1085).
 
 ### Removed
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to

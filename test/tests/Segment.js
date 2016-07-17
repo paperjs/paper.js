@@ -12,6 +12,11 @@
 
 QUnit.module('Segment');
 
+test('new Segment()', function() {
+    var segment = new Segment(null, null, null);
+    equals(segment.toString(), '{ point: { x: 0, y: 0 } }');
+});
+
 test('new Segment(point)', function() {
     var segment = new Segment(new Point(10, 10));
     equals(segment.toString(), '{ point: { x: 10, y: 10 } }');
@@ -22,6 +27,11 @@ test('new Segment(x, y)', function() {
     equals(segment.toString(), '{ point: { x: 10, y: 10 } }');
 });
 
+test('new Segment(undefined)', function() {
+    var segment = new Segment(undefined);
+    equals(segment.toString(), '{ point: { x: 0, y: 0 } }');
+});
+
 test('new Segment(object)', function() {
     var segment = new Segment({ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } });
     equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }');
@@ -30,6 +40,16 @@ test('new Segment(object)', function() {
 test('new Segment(point, handleIn, handleOut)', function() {
     var segment = new Segment(new Point(10, 10), new Point(5, 5), new Point(15, 15));
     equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }');
+});
+
+test('new Segment(null, null, null)', function() {
+    var segment = new Segment(null, null, null);
+    equals(segment.toString(), '{ point: { x: 0, y: 0 } }');
+});
+
+test('new Segment(undefined, null, null)', function() {
+    var segment = new Segment(undefined, null, null);
+    equals(segment.toString(), '{ point: { x: 0, y: 0 } }');
 });
 
 test('new Segment(x, y, inX, inY, outX, outY)', function() {

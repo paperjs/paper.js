@@ -99,8 +99,10 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
             var length = coords && coords.length;
             relative = command === lower;
+            // Fix issues with z in the middle of SVG path data, not followed by
+            // a m command, see #413:
             if (previous === 'z' && !/[mz]/.test(lower))
-                this.moveTo(current = start);
+                this.moveTo(current);
             switch (lower) {
             case 'm':
             case 'l':
@@ -170,6 +172,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 // Merge first and last segment with Numerical.EPSILON tolerance
                 // to address imprecisions in relative SVG data.
                 this.closePath(/*#=*/Numerical.EPSILON);
+                // Correctly handle relative m commands, see #1101:
+                current = start;
                 break;
             }
             previous = lower;
@@ -184,7 +188,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
 
     _contains: function(point) {
         // NOTE: point is reverse transformed by _matrix, so we don't need to
-        // apply here.
+        // apply the matrix here.
 /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
         // To compare with native canvas approach:
         var ctx = CanvasProvider.getContext(1, 1);

@@ -14,7 +14,6 @@ var gulp = require('gulp'),
     path = require('path'),
     gutil = require('gulp-util');
 
-
 gulp.task('watch', function () {
     gulp.watch('src/**/*.js', ['jshint'])
         .on('change', function(event) {

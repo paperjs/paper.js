@@ -1284,6 +1284,13 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // NOTE: Documentation is in PathItem#smooth()
     smooth: function(options) {
+        var that = this,
+            opts = options || {},
+            type = opts.type || 'asymmetric',
+            segments = this._segments,
+            length = segments.length,
+            closed = this._closed;
+
         // Helper method to pick the right from / to indices.
         // Supports numbers and segment objects.
         // For numbers, the `to` index is exclusive, while for segments and
@@ -1312,15 +1319,10 @@ var Path = PathItem.extend(/** @lends Path# */{
                     : index < 0 ? index + length : index, length - 1);
         }
 
-        var that = this,
-            opts = options || {},
-            type = opts.type || 'asymmetric',
-            segments = this._segments,
-            length = segments.length,
-            closed = this._closed,
-            loop = closed && opts.from === undefined && opts.to === undefined,
+        var loop = closed && opts.from === undefined && opts.to === undefined,
             from = getIndex(opts.from, 0),
             to = getIndex(opts.to, length - 1);
+
         if (from > to) {
             if (closed) {
                 from -= length;
@@ -2047,7 +2049,9 @@ new function() { // Scope for drawing
     // performance.
 
     function drawHandles(ctx, segments, matrix, size) {
-        var half = size / 2;
+        var half = size / 2,
+            coords = new Array(6),
+            pX, pY;
 
         function drawHandle(index) {
             var hX = coords[index],
@@ -2063,13 +2067,12 @@ new function() { // Scope for drawing
             }
         }
 
-        var coords = new Array(6);
         for (var i = 0, l = segments.length; i < l; i++) {
-            var segment = segments[i];
+            var segment = segments[i],
+                selection = segment._selection;
             segment._transformCoordinates(matrix, coords);
-            var selection = segment._selection,
-                pX = coords[0],
-                pY = coords[1];
+            pX = coords[0];
+            pY = coords[1];
             if (selection & /*#=*/SegmentSelection.HANDLE_IN)
                 drawHandle(2);
             if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
@@ -2699,22 +2702,19 @@ statics: {
 
     _addBevelJoin: function(segment, join, radius, miterLimit, matrix,
             strokeMatrix, addPoint, isArea) {
-        // Handles both 'bevel' and 'miter' joins, as they share a lot of code.
+        // Handles both 'bevel' and 'miter' joins, as they share a lot of code,
+        // using different matrices to transform segment points and stroke
+        // vectors to support Style#strokeScaling.
         var curve2 = segment.getCurve(),
             curve1 = curve2.getPrevious(),
-            point = curve2.getPointAtTime(0),
-            normal1 = curve1.getNormalAtTime(1),
-            normal2 = curve2.getNormalAtTime(0),
-            step = normal1.getDirectedAngle(normal2) < 0 ? -radius : radius;
-        normal1.setLength(step);
-        normal2.setLength(step);
-        // use different matrices to transform segment points and stroke vectors
-        // to support Style#strokeScaling.
-        if (matrix)
-            matrix._transformPoint(point, point);
-        if (strokeMatrix) {
-            strokeMatrix._transformPoint(normal1, normal1);
-            strokeMatrix._transformPoint(normal2, normal2);
+            point = curve2.getPoint1().transform(matrix),
+            normal1 = curve1.getNormalAtTime(1).multiply(radius)
+                .transform(strokeMatrix),
+            normal2 = curve2.getNormalAtTime(0).multiply(radius)
+                .transform(strokeMatrix);
+        if (normal1.getDirectedAngle(normal2) < 0) {
+            normal1 = normal1.negate();
+            normal2 = normal2.negate();
         }
         if (isArea) {
             addPoint(point);
@@ -2744,16 +2744,13 @@ statics: {
     _addSquareCap: function(segment, cap, radius, matrix, strokeMatrix,
             addPoint, isArea) {
         // Handles both 'square' and 'butt' caps, as they share a lot of code.
-        // Calculate the corner points of butt and square caps
-        var point = segment._point,
+        // Calculate the corner points of butt and square caps, using different
+        // matrices to transform segment points and stroke vectors to support
+        // Style#strokeScaling.
+        var point = segment._point.transform(matrix),
             loc = segment.getLocation(),
-            normal = loc.getNormal().multiply(radius); // normal is normalized
-        // use different matrices to transform segment points and stroke vectors
-        // to support Style#strokeScaling.
-        if (matrix)
-            matrix._transformPoint(point, point);
-        if (strokeMatrix)
-            strokeMatrix._transformPoint(normal, normal);
+            // NOTE: normal is normalized, so multiply instead of normalize.
+            normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
         if (isArea) {
             addPoint(point.subtract(normal));
             addPoint(point.add(normal));

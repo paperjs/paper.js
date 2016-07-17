@@ -17,7 +17,7 @@ function testPoint(item, point, inside, message) {
             + ' should be ' + (inside ? 'inside' : 'outside') + '.'));
 }
 
-test('Path#contains() (Regular Polygon)', function() {
+test('Path#contains() (regular polygon: #208)', function() {
     var path = new Path.RegularPolygon([0, 0], 6, 20);
 
     testPoint(path, new Point(0, -20), true);
@@ -39,7 +39,7 @@ test('Path#contains() (Regular Polygon)', function() {
     testPoint(path, new Point(10, 20), false);
 });
 
-test('Path#contains() (Circle Contours)', function() {
+test('Path#contains() (circle contours)', function() {
     var path = new Path.Circle({
         center: [100, 100],
         radius: 50,
@@ -56,7 +56,7 @@ test('Path#contains() (Circle Contours)', function() {
     testPoint(path, path.bounds.bottomRight, false);
 });
 
-test('Path#contains() (Transformed Circle Contours)', function() {
+test('Path#contains() (transformed circle contours)', function() {
     var path = new Path.Circle({
         center: [200, 200],
         radius: 50,
@@ -74,7 +74,7 @@ test('Path#contains() (Transformed Circle Contours)', function() {
     testPoint(path, path.bounds.bottomRight, false);
 });
 
-test('Path#contains() (Round Rectangle)', function() {
+test('Path#contains() (round rectangle: #227)', function() {
     var rectangle = new Rectangle({
         point: new Point(0, 0),
         size: new Size(200, 40)
@@ -83,14 +83,14 @@ test('Path#contains() (Round Rectangle)', function() {
     testPoint(path, new Point(100, 20), true);
 });
 
-test('Path#contains() (Open Circle)', function() {
+test('Path#contains() (open circle)', function() {
     var path = new Path.Circle([100, 100], 100);
     path.closed = false;
     path.fillColor = '#ff0000';
     testPoint(path, new Point(40, 160), false);
 });
 
-test('CompoundPath#contains() (Donut)', function() {
+test('CompoundPath#contains() (donut)', function() {
     var path = new CompoundPath([
         new Path.Circle([0, 0], 50),
         new Path.Circle([0, 0], 25)
@@ -163,7 +163,7 @@ test('Shape#contains()', function() {
     testPoint(shape, new Point(1.1, 0).multiply(half), false);
 });
 
-test('Path#contains() (Rectangle Contours)', function() {
+test('Path#contains() (rectangle contours)', function() {
     var path = new Path.Rectangle(new Point(100, 100), [200, 200]),
         curves = path.getCurves();
 
@@ -174,7 +174,7 @@ test('Path#contains() (Rectangle Contours)', function() {
 });
 
 
-test('Path#contains() (Rotated Rectangle Contours)', function() {
+test('Path#contains() (rotated rectangle contours)', function() {
     var path = new Path.Rectangle(new Point(100, 100), [200, 200]),
         curves = path.getCurves();
 
@@ -200,7 +200,7 @@ test('Path#contains() (touching stationary point with changing orientation)', fu
     testPoint(path, new Point(200, 200), true);
 });
 
-test('Path#contains() (complex shape)', function() {
+test('Path#contains() (complex shape: #400)', function() {
     var path = new Path({
         pathData: 'M301 162L307 154L315 149L325 139.5L332.5 135.5L341 128.5L357.5 117.5L364.5 114.5L368.5 110.5L380 105.5L390.5 102L404 96L410.5 96L415 97.5L421 104L425.5 113.5L428.5 126L429.5 134L429.5 141L429.5 148L425.5 161.5L425.5 169L414 184.5L409.5 191L401 201L395 209L386 214.5L378.5 217L368 220L348 219.5L338 218L323.5 212.5L312 205.5L302.5 197.5L295.5 189L291.5 171.5L294 168L298 165.5L301 162z',
         fillColor: 'blue',
@@ -215,7 +215,7 @@ test('Path#contains() (complex shape)', function() {
 });
 
 
-test('Path#contains() (straight curves with zero-winding)', function() {
+test('Path#contains() (straight curves with zero-winding: #943)', function() {
     var pointData = [
         [[250, 230], true, true, false, true],
         [[200, 230], true, true, true, true],
@@ -282,7 +282,7 @@ test('Path#contains() (straight curves with zero-winding)', function() {
     }
 });
 
-test('CompoundPath#contains() (nested touching circles)', function() {
+test('CompoundPath#contains() (nested touching circles: #944)', function() {
     var c1 = new Path.Circle({
         center: [200, 200],
         radius: 100

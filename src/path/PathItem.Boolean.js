@@ -47,10 +47,12 @@ PathItem.inject(new function() {
      * remove empty curves, #resolveCrossings() to resolve self-intersection
      * make sure all paths have correct winding direction.
      */
-    function preparePath(path, resolve) {
+    function preparePath(path, closed) {
         var res = path.clone(false).reduce({ simplify: true })
                 .transform(null, true, true);
-        return resolve ? res.resolveCrossings() : res;
+        if (closed)
+            res.setClosed(true);
+        return closed ? res.resolveCrossings() : res;
     }
 
     function createResult(ctor, paths, reduce, path1, path2) {
@@ -74,8 +76,10 @@ PathItem.inject(new function() {
         // Add a simple boolean property to check for a given operation,
         // e.g. `if (operator.unite)`
         operator[operation] = true;
-        // If path1 is open, delegate to computeOpenBoolean()
-        if (!path1._children && !path1._closed)
+        // If path1 is open, delegate to computeOpenBoolean().
+        // NOTE: Do not access private _closed property here, since path1 may
+        // be a CompoundPath.
+        if (!path1.isClosed())
             return computeOpenBoolean(path1, path2, operator);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
@@ -139,11 +143,11 @@ PathItem.inject(new function() {
 
     function computeOpenBoolean(path1, path2, operator) {
         // Only support subtract and intersect operations between an open
-        // and a closed path. Assume that compound-paths are closed.
-        // TODO: Should we complain about not supported operations?
-        if (!path2 || !path2._children && !path2._closed
-                || !operator.subtract && !operator.intersect)
-            return null;
+        // and a closed path.
+        if (!path2 || !operator.subtract && !operator.intersect) {
+            throw new Error('Boolean operations on open paths only support ' +
+                    'subtraction and intersection with another path.');
+        }
         var _path1 = preparePath(path1, false),
             _path2 = preparePath(path2, false),
             crossings = _path1.getCrossings(_path2),
@@ -612,7 +616,7 @@ PathItem.inject(new function() {
                 // are bringing us back to the beginning, and are both valid,
                 // meaning they are part of the boolean result.
                 if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
-                    || !seg._visited && !nextSeg._visited
+                    || nextSeg && !seg._visited && !nextSeg._visited
                     // Self-intersections (!operator) don't need isValid() calls
                     && (!operator || isValid(seg) && (isValid(nextSeg)
                         // If the next segment isn't valid, its intersection

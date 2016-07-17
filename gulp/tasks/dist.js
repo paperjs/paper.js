@@ -15,7 +15,9 @@ var gulp = require('gulp'),
     merge = require('merge-stream'),
     zip = require('gulp-zip');
 
-gulp.task('dist', ['minify', 'docs', 'clean:dist'], function() {
+gulp.task('dist', ['build', 'minify', 'docs']);
+
+gulp.task('zip', ['clean:zip', 'dist'], function() {
     return merge(
             gulp.src([
                 'dist/paper-full*.js',
@@ -31,7 +33,7 @@ gulp.task('dist', ['minify', 'docs', 'clean:dist'], function() {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('clean:dist', function() {
+gulp.task('clean:zip', function() {
     return del([
         'dist/paperjs.zip'
     ]);

@@ -14,14 +14,14 @@
   ],
   "main": "dist/paper-full.js",
   "ignore": [
-    "build",
-    "components",
-    "dist/paper-node.js",
-    "projects",
-    "node_modules",
     "package.json",
+    "gulpfile.js",
+    "gulp",
+    "node_modules",
+    "projects",
     "src",
-    "test"
+    "test",
+    "travis"
   ],
   "keywords": [
     "vector",

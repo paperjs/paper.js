@@ -170,7 +170,32 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The first Segment contained within the path.
+     * Specifies whether the compound-path is fully closed, meaning all its
+     * contained sub-paths are closed path.
+     *
+     * @bean
+     * @type Boolean
+     * @see Path#isClosed()
+     */
+    isClosed: function() {
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            if (!children[i]._closed)
+                return false;
+        }
+        return true;
+    },
+
+    setClosed: function(closed) {
+        var children = this._children;
+        for (var i = 0, l = children.length; i < l; i++) {
+            children[i].setClosed(closed);
+        }
+    },
+
+    /**
+     * The first Segment contained within the compound-path, a short-cut to
+     * calling {@link Path#getFirstSegment()} on {@link Item#getFirstChild()}.
      *
      * @bean
      * @type Segment
@@ -181,7 +206,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The last Segment contained within the path.
+     * The last Segment contained within the compound-path, a short-cut to
+     * calling {@link Path#getLastSegment()} on {@link Item#getLastChild()}.
      *
      * @bean
      * @type Segment
@@ -207,7 +233,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The first Curve contained within the path.
+     * The first Curve contained within the compound-path, a short-cut to
+     * calling {@link Path#getFirstCurve()} on {@link Item#getFirstChild()}.
      *
      * @bean
      * @type Curve
@@ -218,14 +245,15 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The last Curve contained within the path.
+     * The last Curve contained within the compound-path, a short-cut to
+     * calling {@link Path#getLastCurve()} on {@link Item#getLastChild()}.
      *
      * @bean
      * @type Curve
      */
     getLastCurve: function() {
         var last = this.getLastChild();
-        return last && last.getFirstCurve();
+        return last && last.getLastCurve();
     },
 
     /**
