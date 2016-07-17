@@ -311,7 +311,6 @@ new function() {
                 if (type === 'style') {
                     style.push(entry.attribute + ': ' + value);
                 } else {
-
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
                                 // true for noAlpha, see above
@@ -320,23 +319,6 @@ new function() {
                             : type === 'array' ? value.join(',')
                             : type === 'lookup' ? entry.toSVG[value]
                             : value;
-
-                    if(entry.attribute === 'font-weight' && value){
-                        if (value !== 'bold' && value !== 'italic'){
-
-                            var vals = value.split(' ');
-                            attrs['font-weight'] = vals[0];
-                            attrs['font-style'] = vals[1];
-
-                        }
-
-                        if (value === 'italic'){
-                            attrs['font-style'] = value;
-
-                        }
-                    }
-
-
                 }
             }
         });

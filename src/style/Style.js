@@ -94,7 +94,6 @@ var Style = Base.extend(new function() {
         // Characters
         fontFamily: 'sans-serif',
         fontWeight: 'normal',
-        fontStyle: 'normal',
         fontSize: 12,
         leading: null,
         // Paragraphs
