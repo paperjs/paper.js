@@ -101,9 +101,9 @@ PathItem.inject(new function() {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
                 curves.push.apply(curves, path.getCurves());
-                // Keep track if there are valid intersections other than
-                // overlaps in each path.
-                path._overlapsOnly = path._validOverlapsOnly = true;
+                // Keep track of whether there are valid intersections that are
+                // not overlaps in each path.
+                path._overlapsOnly = true;
             }
         }
 
@@ -126,16 +126,11 @@ PathItem.inject(new function() {
             if (segment._winding == null) {
                 propagateWinding(segment, _path1, _path2, curves, operator);
             }
-            // See if there are any valid segments that aren't part of overlaps.
-            // This information is used to determine where to start tracing the
-            // path, and how to treat encountered invalid segments.
             if (!(inter && inter._overlap)) {
-                var path = segment._path;
-                path._overlapsOnly = false;
-                // This is not an overlap. If it is valid, take note that there
-                // are valid intersections other than overlaps in this path.
-                if (operator[segment._winding])
-                    path._validOverlapsOnly = false;
+                // Keep track of whether there are valid intersections that are
+                // not overlaps in each path. This information is used later to
+                // handle fully overlapping paths.
+                segment._path._overlapsOnly = false;
             }
         }
         return createResult(CompoundPath, tracePaths(segments, operator), true,
