@@ -105,9 +105,9 @@ PathItem.inject(new function() {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
                 curves.push.apply(curves, path.getCurves());
-                // Keep track of whether there are valid intersections that are
-                // not overlaps in each path.
-                path._overlapsOnly = true;
+                // Keep track if there are valid intersections other than
+                // overlaps in each path.
+                path._overlapsOnly = path._validOverlapsOnly = true;
             }
         }
 
@@ -130,11 +130,16 @@ PathItem.inject(new function() {
             if (segment._winding == null) {
                 propagateWinding(segment, _path1, _path2, curves, operator);
             }
+            // See if there are any valid segments that aren't part of overlaps.
+            // This information is used to determine where to start tracing the
+            // path, and how to treat encountered invalid segments.
             if (!(inter && inter._overlap)) {
-                // Keep track of whether there are valid intersections that are
-                // not overlaps in each path. This information is used later to
-                // handle fully overlapping paths.
-                segment._path._overlapsOnly = false;
+                var path = segment._path;
+                path._overlapsOnly = false;
+                // This is not an overlap. If it is valid, take note that there
+                // are valid intersections other than overlaps in this path.
+                if (operator[segment._winding])
+                    path._validOverlapsOnly = false;
             }
         }
         return createResult(CompoundPath, tracePaths(segments, operator), true,
@@ -492,8 +497,8 @@ PathItem.inject(new function() {
                     // Use the on-path windings if no other intersections
                     // were found or if they canceled each other.
                     var add = path.isClockwise() ? 1 : -1;
-                    windingL += add;
-                    windingR -= add;
+                    // windingL += add;
+                    // windingR -= add;
                     onPathWinding += add;
                 } else {
                     windingL += pathWindingL;
@@ -713,8 +718,11 @@ PathItem.inject(new function() {
                     seg._visited = true;
                     break;
                 }
-                // If we encounter and invalid segment, bail out immediately.
-                if (!isValid(seg))
+                // If there are only valid overlaps and we encounter and invalid
+                // segment, bail out immediately. Otherwise we need to be more
+                // tolerant due to complex situations of crossing,
+                // see findBestIntersection()
+                if (seg._path._validOverlapsOnly && !isValid(seg))
                     break;
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
