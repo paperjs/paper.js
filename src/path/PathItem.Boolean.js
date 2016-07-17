@@ -1024,9 +1024,7 @@ PathItem.inject(new function() {
             return item;
         }
     };
-});
-
-Path.inject(/** @lends Path# */{
+}, /** @lends PathItem# */{
     /**
      * Returns a point that is guaranteed to be inside the path.
      *
@@ -1052,23 +1050,23 @@ Path.inject(/** @lends Path# */{
                     o1 = v[3],
                     o2 = v[5],
                     o3 = v[7];
-                if ((o0 <= y || o1 <= y || o2 <= y || o3 <= y) &&
-                    (o0 >= y || o1 >= y || o2 >= y || o3 >= y)) {
+                if (y >= Math.min(o0, o1, o2, o3) &&
+                    y <= Math.max(o0, o1, o2, o3)) {
                     var monos = Curve.getMonoCurves(v);
                     for (var j = 0, m = monos.length; j < m; j++) {
-                        var m = monos[j],
-                            mo0 = m[1],
-                            mo3 = m[7];
+                        var mv = monos[j],
+                            mo0 = mv[1],
+                            mo3 = mv[7];
                         // Filter out horizontal monotone curves by comparing
                         // their ordinate values, and make sure the y coordinate
                         // is within the curve before testing for intercepts.
                         if ((mo0 !== mo3) &&
                             (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)) {
-                            var x = y === mo0 ? m[0]
-                                : y === mo3 ? m[6]
-                                : Curve.solveCubic(m, 1, y, roots, 0, 1) === 1
-                                    ? Curve.getPoint(m, roots[0]).x
-                                    : (m[0] + m[6]) / 2;
+                            var x = y === mo0 ? mv[0]
+                                : y === mo3 ? mv[6]
+                                : Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
+                                    ? Curve.getPoint(mv, roots[0]).x
+                                    : (mv[0] + mv[6]) / 2;
                             intercepts.push(x);
                         }
                     }
