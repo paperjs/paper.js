@@ -1044,7 +1044,6 @@ Path.inject(/** @lends Path# */{
             var curves = this.getCurves(),
                 y = point.y,
                 intercepts = [],
-                monoCurves = [],
                 roots = [];
             // Get values for all y-monotone curves that intersect the ray at y.
             for (var i = 0, l = curves.length; i < l; i++) {
@@ -1057,30 +1056,27 @@ Path.inject(/** @lends Path# */{
                     (o0 >= y || o1 >= y || o2 >= y || o3 >= y)) {
                     var monos = Curve.getMonoCurves(v);
                     for (var j = 0, m = monos.length; j < m; j++) {
-                        var mono = monos[j],
-                            mo0 = mono[1],
-                            mo3 = mono[7];
-                        if (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0) {
-                            var winding = mo0 > mo3 ? 1 : mo0 < mo3 ? -1 : 0;
-                            if (winding) {
-                                monoCurves.push(mono);
-                            }
+                        var m = monos[j],
+                            mo0 = m[1],
+                            mo3 = m[7];
+                        // Filter out horizontal monotone curves by comparing
+                        // their ordinate values, and make sure the y coordinate
+                        // is within the curve before testing for intercepts.
+                        if ((mo0 !== mo3) &&
+                            (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)) {
+                            var x = y === mo0 ? m[0]
+                                : y === mo3 ? m[6]
+                                : Curve.solveCubic(m, 1, y, roots, 0, 1) === 1
+                                    ? Curve.getPoint(m, roots[0]).x
+                                    : (m[0] + m[6]) / 2;
+                            intercepts.push(x);
                         }
                     }
                 }
             }
             // Fallback in case no non-horizontal curves were found.
-            if (!monoCurves.length)
+            if (!intercepts.length)
                 return point;
-            for (var i = 0, l = monoCurves.length; i < l; i++) {
-                var v =  monoCurves[i];
-                    x = y === v[1] ? v[0]
-                        : y === v[7] ? v[6]
-                        : Curve.solveCubic(v, 1, y, roots, 0, 1) === 1
-                            ? Curve.getPoint(v, roots[0]).x
-                            : (v[0] + v[6]) / 2;
-                intercepts.push(x);
-            }
             intercepts.sort(function(a, b) {
                 return a - b;
             });
