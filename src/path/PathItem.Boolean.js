@@ -1045,8 +1045,7 @@ Path.inject(/** @lends Path# */{
                 y = point.y,
                 intercepts = [],
                 monoCurves = [],
-                roots = [],
-                windingPrev = 0;
+                roots = [];
             // Get values for all y-monotone curves that intersect the ray at y.
             for (var i = 0, l = curves.length; i < l; i++) {
                 var v = curves[i].getValues(),
@@ -1064,11 +1063,7 @@ Path.inject(/** @lends Path# */{
                         if (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0) {
                             var winding = mo0 > mo3 ? 1 : mo0 < mo3 ? -1 : 0;
                             if (winding) {
-                                monoCurves.push({
-                                    values: mono,
-                                    winding: winding
-                                });
-                                windingPrev = winding;
+                                monoCurves.push(mono);
                             }
                         }
                     }
@@ -1078,17 +1073,13 @@ Path.inject(/** @lends Path# */{
             if (!monoCurves.length)
                 return point;
             for (var i = 0, l = monoCurves.length; i < l; i++) {
-                var entry = monoCurves[i],
-                    v = entry.values,
-                    winding = entry.winding,
+                var v =  monoCurves[i];
                     x = y === v[1] ? v[0]
                         : y === v[7] ? v[6]
                         : Curve.solveCubic(v, 1, y, roots, 0, 1) === 1
                             ? Curve.getPoint(v, roots[0]).x
                             : (v[0] + v[6]) / 2;
-                // if (y != v[1] || winding != windingPrev)
-                    intercepts.push(x);
-                windingPrev = winding;
+                intercepts.push(x);
             }
             intercepts.sort(function(a, b) {
                 return a - b;
