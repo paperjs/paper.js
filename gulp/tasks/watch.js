@@ -16,7 +16,7 @@ var gulp = require('gulp'),
 
 
 gulp.task('watch', function () {
-    gulp.watch('src/**/*.js', ['jshint'])
+    gulp.watch('src/**/*.js', ['jshint', 'build'])
         .on('change', function(event) {
             gutil.log(
                 gutil.colors.green('File ' + event.type + ': ') +
