@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 14 10:49:12 2016 +0200
+ * Date: Mon Jul 18 20:11:01 2016 +0200
  *
  ***
  *
@@ -41,48 +41,41 @@ var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
 
 		forEach = [].forEach || function(iter, bind) {
-			for (var i = 0, l = this.length; i < l; i++)
+			for (var i = 0, l = this.length; i < l; i++) {
 				iter.call(bind, this[i], i, this);
+			}
 		},
 
 		forIn = function(iter, bind) {
-			for (var i in this)
+			for (var i in this) {
 				if (this.hasOwnProperty(i))
 					iter.call(bind, this[i], i, this);
-		},
-
-		create = Object.create || function(proto) {
-			return { __proto__: proto };
-		},
-
-		describe = Object.getOwnPropertyDescriptor || function(obj, name) {
-			var get = obj.__lookupGetter__ && obj.__lookupGetter__(name);
-			return get
-					? { get: get, set: obj.__lookupSetter__(name),
-						enumerable: true, configurable: true }
-					: obj.hasOwnProperty(name)
-						? { value: obj[name], enumerable: true,
-							configurable: true, writable: true }
-						: null;
-		},
-
-		_define = Object.defineProperty || function(obj, name, desc) {
-			if ((desc.get || desc.set) && obj.__defineGetter__) {
-				if (desc.get)
-					obj.__defineGetter__(name, desc.get);
-				if (desc.set)
-					obj.__defineSetter__(name, desc.set);
-			} else {
-				obj[name] = desc.value;
 			}
-			return obj;
 		},
 
-		define = function(obj, name, desc) {
-			delete obj[name];
-			return _define(obj, name, desc);
-		};
+		create = Object.create,
+		describe = Object.getOwnPropertyDescriptor,
+		define = Object.defineProperty,
 
+		set = Object.assign || function(dst) {
+			for (var i = 1, l = arguments.length; i < l; i++) {
+				var src = arguments[i];
+				for (var key in src) {
+					if (src.hasOwnProperty(key))
+						dst[key] = src[key];
+				}
+			}
+			return dst;
+		},
+
+		each = function(obj, iter, bind) {
+			if (obj) {
+				var desc = describe(obj, 'length');
+				(desc && typeof desc.value === 'number' ? forEach : forIn)
+					.call(obj, iter, bind = bind || obj);
+			}
+			return bind;
+		};
 	function inject(dest, src, enumerable, beans, preserve) {
 		var beansNames = {};
 
@@ -130,28 +123,16 @@ var Base = new function() {
 		return dest;
 	}
 
-	function each(obj, iter, bind) {
-		if (obj)
-			('length' in obj && !obj.getLength
-					&& typeof obj.length === 'number'
-				? forEach
-				: forIn).call(obj, iter, bind = bind || obj);
-		return bind;
-	}
-
-	function set(obj, args, start) {
-		for (var i = start, l = args.length; i < l; i++) {
-			var props = args[i];
-			for (var key in props)
-				if (props.hasOwnProperty(key))
-					obj[key] = props[key];
+	function Base() {
+		for (var i = 0, l = arguments.length; i < l; i++) {
+			var src = arguments[i];
+			if (src)
+				set(this, src);
 		}
-		return obj;
+		return this;
 	}
 
-	return inject(function Base() {
-		return set(this, arguments, 0);
-	}, {
+	return inject(Base, {
 		inject: function(src) {
 			if (src) {
 				var statics = src.statics === true ? src : src.statics,
@@ -189,11 +170,16 @@ var Base = new function() {
 			return ctor;
 		}
 	}, true).inject({
+		initialize: Base,
+
+		set: Base,
+
 		inject: function() {
 			for (var i = 0, l = arguments.length; i < l; i++) {
 				var src = arguments[i];
-				if (src)
+				if (src) {
 					inject(this, src, src.enumerable, src.beans, src.preserve);
+				}
 			}
 			return this;
 		},
@@ -207,26 +193,19 @@ var Base = new function() {
 			return each(this, iter, bind);
 		},
 
-		set: function() {
-			return set(this, arguments, 0);
-		},
-
 		clone: function() {
 			return new this.constructor(this);
 		},
 
 		statics: {
+			set: set,
 			each: each,
 			create: create,
 			define: define,
 			describe: describe,
 
-			set: function(obj) {
-				return set(obj, arguments, 1);
-			},
-
 			clone: function(obj) {
-				return set(new obj.constructor(), arguments, 0);
+				return set(new obj.constructor(), obj);
 			},
 
 			isPlainObject: function(obj) {
@@ -539,7 +518,7 @@ Base.inject({
 							if (Base.isPlainObject(arg))
 								arg.insert = false;
 						}
-						(useTarget ? obj._set : ctor).apply(obj, args);
+						(useTarget ? obj.set : ctor).apply(obj, args);
 						if (useTarget)
 							target = null;
 						return obj;
@@ -1178,43 +1157,43 @@ var Point = Base.extend({
 	_readIndex: true,
 
 	initialize: function Point(arg0, arg1) {
-		var type = typeof arg0;
+		var type = typeof arg0,
+			reading = this.__read,
+			read = 0;
 		if (type === 'number') {
 			var hasY = typeof arg1 === 'number';
-			this.x = arg0;
-			this.y = hasY ? arg1 : arg0;
-			if (this.__read)
-				this.__read = hasY ? 2 : 1;
+			this._set(arg0, hasY ? arg1 : arg0);
+			if (reading)
+				read = hasY ? 2 : 1;
 		} else if (type === 'undefined' || arg0 === null) {
-			this.x = this.y = 0;
-			if (this.__read)
-				this.__read = arg0 === null ? 1 : 0;
+			this._set(0, 0);
+			if (reading)
+				read = arg0 === null ? 1 : 0;
 		} else {
 			var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+			read = 1;
 			if (Array.isArray(obj)) {
-				this.x = obj[0];
-				this.y = obj.length > 1 ? obj[1] : obj[0];
+				this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]));
 			} else if ('x' in obj) {
-				this.x = obj.x;
-				this.y = obj.y;
+				this._set(obj.x || 0, obj.y || 0);
 			} else if ('width' in obj) {
-				this.x = obj.width;
-				this.y = obj.height;
+				this._set(obj.width || 0, obj.height || 0);
 			} else if ('angle' in obj) {
-				this.x = obj.length;
-				this.y = 0;
-				this.setAngle(obj.angle);
+				this._set(obj.length || 0, 0);
+				this.setAngle(obj.angle || 0);
 			} else {
-				this.x = this.y = 0;
-				if (this.__read)
-					this.__read = 0;
+				this._set(0, 0);
+				read = 0;
 			}
-			if (this.__read)
-				this.__read = 1;
 		}
+		if (reading)
+			this.__read = read;
+		return this;
 	},
 
-	set: function(x, y) {
+	set: '#initialize',
+
+	_set: function(x, y) {
 		this.x = x;
 		this.y = y;
 		return this;
@@ -1249,7 +1228,7 @@ var Point = Base.extend({
 	setLength: function(length) {
 		if (this.isZero()) {
 			var angle = this._angle || 0;
-			this.set(
+			this._set(
 				Math.cos(angle) * length,
 				Math.sin(angle) * length
 			);
@@ -1257,7 +1236,7 @@ var Point = Base.extend({
 			var scale = length / this.getLength();
 			if (Numerical.isZero(scale))
 				this.getAngle();
-			this.set(
+			this._set(
 				this.x * scale,
 				this.y * scale
 			);
@@ -1295,7 +1274,7 @@ var Point = Base.extend({
 		this._angle = angle;
 		if (!this.isZero()) {
 			var length = this.getLength();
-			this.set(
+			this._set(
 				Math.cos(angle) * length,
 				Math.sin(angle) * length
 			);
@@ -1479,7 +1458,7 @@ var LinkedPoint = Point.extend({
 		this._setter = setter;
 	},
 
-	set: function(x, y, _dontNotify) {
+	_set: function(x, y, _dontNotify) {
 		this._x = x;
 		this._y = y;
 		if (!_dontNotify)
@@ -1523,39 +1502,40 @@ var Size = Base.extend({
 	_readIndex: true,
 
 	initialize: function Size(arg0, arg1) {
-		var type = typeof arg0;
+		var type = typeof arg0,
+			reading = this.__read,
+			read = 0;
 		if (type === 'number') {
 			var hasHeight = typeof arg1 === 'number';
-			this.width = arg0;
-			this.height = hasHeight ? arg1 : arg0;
-			if (this.__read)
-				this.__read = hasHeight ? 2 : 1;
+			this._set(arg0, hasHeight ? arg1 : arg0);
+			if (reading)
+				read = hasHeight ? 2 : 1;
 		} else if (type === 'undefined' || arg0 === null) {
-			this.width = this.height = 0;
-			if (this.__read)
-				this.__read = arg0 === null ? 1 : 0;
+			this._set(0, 0);
+			if (reading)
+				read = arg0 === null ? 1 : 0;
 		} else {
 			var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+			read = 1;
 			if (Array.isArray(obj)) {
-				this.width = obj[0];
-				this.height = obj.length > 1 ? obj[1] : obj[0];
+				this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]));
 			} else if ('width' in obj) {
-				this.width = obj.width;
-				this.height = obj.height;
+				this._set(obj.width || 0, obj.height || 0);
 			} else if ('x' in obj) {
-				this.width = obj.x;
-				this.height = obj.y;
+				this._set(obj.x || 0, obj.y || 0);
 			} else {
-				this.width = this.height = 0;
-				if (this.__read)
-					this.__read = 0;
+				this._set(0, 0);
+				read = 0;
 			}
-			if (this.__read)
-				this.__read = 1;
 		}
+		if (reading)
+			this.__read = read;
+		return this;
 	},
 
-	set: function(width, height) {
+	set: '#initialize',
+
+	_set: function(width, height) {
 		this.width = width;
 		this.height = height;
 		return this;
@@ -1653,7 +1633,7 @@ var LinkedSize = Size.extend({
 		this._setter = setter;
 	},
 
-	set: function(width, height, _dontNotify) {
+	_set: function(width, height, _dontNotify) {
 		this._width = width;
 		this._height = height;
 		if (!_dontNotify)
@@ -1687,64 +1667,63 @@ var Rectangle = Base.extend({
 
 	initialize: function Rectangle(arg0, arg1, arg2, arg3) {
 		var type = typeof arg0,
-			read = 0;
+			read;
 		if (type === 'number') {
-			this.x = arg0;
-			this.y = arg1;
-			this.width = arg2;
-			this.height = arg3;
+			this._set(arg0, arg1, arg2, arg3);
 			read = 4;
 		} else if (type === 'undefined' || arg0 === null) {
-			this.x = this.y = this.width = this.height = 0;
+			this._set(0, 0, 0, 0);
 			read = arg0 === null ? 1 : 0;
 		} else if (arguments.length === 1) {
 			if (Array.isArray(arg0)) {
-				this.x = arg0[0];
-				this.y = arg0[1];
-				this.width = arg0[2];
-				this.height = arg0[3];
+				this._set.apply(this, arg0);
 				read = 1;
 			} else if (arg0.x !== undefined || arg0.width !== undefined) {
-				this.x = arg0.x || 0;
-				this.y = arg0.y || 0;
-				this.width = arg0.width || 0;
-				this.height = arg0.height || 0;
+				this._set(arg0.x || 0, arg0.y || 0,
+						arg0.width || 0, arg0.height || 0);
 				read = 1;
 			} else if (arg0.from === undefined && arg0.to === undefined) {
-				this.x = this.y = this.width = this.height = 0;
-				this._set(arg0);
+				this._set(0, 0, 0, 0);
+				Base.filter(this, arg0);
 				read = 1;
 			}
 		}
-		if (!read) {
-			var point = Point.readNamed(arguments, 'from'),
-				next = Base.peek(arguments);
-			this.x = point.x;
-			this.y = point.y;
-			if (next && next.x !== undefined || Base.hasNamed(arguments, 'to')) {
+		if (read === undefined) {
+			var frm = Point.readNamed(arguments, 'from'),
+				next = Base.peek(arguments),
+				x = frm.x,
+				y = frm.y,
+				width,
+				height;
+			if (next && next.x !== undefined
+					|| Base.hasNamed(arguments, 'to')) {
 				var to = Point.readNamed(arguments, 'to');
-				this.width = to.x - point.x;
-				this.height = to.y - point.y;
-				if (this.width < 0) {
-					this.x = to.x;
-					this.width = -this.width;
+				width = to.x - x;
+				height = to.y - y;
+				if (width < 0) {
+					x = to.x;
+					width = -width;
 				}
-				if (this.height < 0) {
-					this.y = to.y;
-					this.height = -this.height;
+				if (height < 0) {
+					y = to.y;
+					height = -height;
 				}
 			} else {
 				var size = Size.read(arguments);
-				this.width = size.width;
-				this.height = size.height;
+				width = size.width;
+				height = size.height;
 			}
+			this._set(x, y, width, height);
 			read = arguments.__index;
 		}
 		if (this.__read)
 			this.__read = read;
+		return this;
 	},
 
-	set: function(x, y, width, height) {
+	set: '#initialize',
+
+	_set: function(x, y, width, height) {
 		this.x = x;
 		this.y = y;
 		this.width = width;
@@ -2012,12 +1991,12 @@ var Rectangle = Base.extend({
 
 var LinkedRectangle = Rectangle.extend({
 	initialize: function Rectangle(x, y, width, height, owner, setter) {
-		this.set(x, y, width, height, true);
+		this._set(x, y, width, height, true);
 		this._owner = owner;
 		this._setter = setter;
 	},
 
-	set: function(x, y, width, height, _dontNotify) {
+	_set: function(x, y, width, height, _dontNotify) {
 		this._x = x;
 		this._y = y;
 		this._width = width;
@@ -2076,12 +2055,12 @@ var Matrix = Base.extend({
 		var count = arguments.length,
 			ok = true;
 		if (count === 6) {
-			this.set.apply(this, arguments);
+			this._set.apply(this, arguments);
 		} else if (count === 1) {
 			if (arg instanceof Matrix) {
-				this.set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
+				this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
 			} else if (Array.isArray(arg)) {
-				this.set.apply(this, arg);
+				this._set.apply(this, arg);
 			} else {
 				ok = false;
 			}
@@ -2093,9 +2072,12 @@ var Matrix = Base.extend({
 		if (!ok) {
 			throw new Error('Unsupported matrix parameters');
 		}
+		return this;
 	},
 
-	set: function(a, b, c, d, tx, ty, _dontNotify) {
+	set: '#initialize',
+
+	_set: function(a, b, c, d, tx, ty, _dontNotify) {
 		this._a = a;
 		this._b = b;
 		this._c = c;
@@ -2351,7 +2333,7 @@ var Matrix = Base.extend({
 			y = point.y;
 		if (!dest)
 			dest = new Point();
-		return dest.set(
+		return dest._set(
 				x * this._a + y * this._c + this._tx,
 				x * this._b + y * this._d + this._ty,
 				_dontNotify);
@@ -2391,7 +2373,7 @@ var Matrix = Base.extend({
 		}
 		if (!dest)
 			dest = new Rectangle();
-		return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
+		return dest._set(min[0], min[1], max[0] - min[0], max[1] - min[1],
 				_dontNotify);
 	},
 
@@ -2413,7 +2395,7 @@ var Matrix = Base.extend({
 				y = point.y - this._ty;
 			if (!dest)
 				dest = new Point();
-			res = dest.set(
+			res = dest._set(
 					(x * d - y * c) / det,
 					(y * a - x * b) / det,
 					_dontNotify);
@@ -2682,7 +2664,7 @@ var Project = PaperScopeItem.extend({
 	},
 
 	setCurrentStyle: function(style) {
-		this._currentStyle.initialize(style);
+		this._currentStyle.set(style);
 	},
 
 	getIndex: function() {
@@ -3219,7 +3201,7 @@ new function() {
 		matrix.translate(center);
 		if (rect.width != bounds.width || rect.height != bounds.height) {
 			if (!_matrix.isInvertible()) {
-				_matrix.initialize(_matrix._backup
+				_matrix.set(_matrix._backup
 						|| new Matrix().translate(_matrix.getTranslation()));
 				bounds = this.getBounds();
 			}
@@ -3543,7 +3525,7 @@ new function() {
 				this[key] = source[key];
 		}
 		if (!excludeMatrix)
-			this._matrix.initialize(source._matrix);
+			this._matrix.set(source._matrix);
 		this.setApplyMatrix(source._applyMatrix);
 		this.setPivot(source._pivot);
 		this.setSelection(source._selection);
@@ -4638,15 +4620,14 @@ var Shape = Item.extend({
 				width = size.width,
 				height = size.height;
 			if (type === 'rectangle') {
-				var radius = Size.min(this._radius, size.divide(2));
-				this._radius.set(radius.width, radius.height);
+				this._radius.set(Size.min(this._radius, size.divide(2)));
 			} else if (type === 'circle') {
 				width = height = (width + height) / 2;
 				this._radius = width / 2;
 			} else if (type === 'ellipse') {
-				this._radius.set(width / 2, height / 2);
+				this._radius._set(width / 2, height / 2);
 			}
-			this._size.set(width, height);
+			this._size._set(width, height);
 			this._changed(9);
 		}
 	},
@@ -4665,7 +4646,7 @@ var Shape = Item.extend({
 				return;
 			var size = radius * 2;
 			this._radius = radius;
-			this._size.set(size, size);
+			this._size._set(size, size);
 		} else {
 			radius = Size.read(arguments);
 			if (!this._radius) {
@@ -4673,12 +4654,12 @@ var Shape = Item.extend({
 			} else {
 				if (this._radius.equals(radius))
 					return;
-				this._radius.set(radius.width, radius.height);
+				this._radius.set(radius);
 				if (type === 'rectangle') {
 					var size = Size.max(this._size, radius.multiply(2));
-					this._size.set(size.width, size.height);
+					this._size.set(size);
 				} else if (type === 'ellipse') {
-					this._size.set(radius.width * 2, radius.height * 2);
+					this._size._set(radius.width * 2, radius.height * 2);
 				}
 			}
 		}
@@ -5515,8 +5496,7 @@ var Segment = Base.extend({
 	},
 
 	setPoint: function() {
-		var point = Point.read(arguments);
-		this._point.set(point.x, point.y);
+		this._point.set(Point.read(arguments));
 	},
 
 	getHandleIn: function() {
@@ -5524,8 +5504,7 @@ var Segment = Base.extend({
 	},
 
 	setHandleIn: function() {
-		var point = Point.read(arguments);
-		this._handleIn.set(point.x, point.y);
+		this._handleIn.set(Point.read(arguments));
 	},
 
 	getHandleOut: function() {
@@ -5533,8 +5512,7 @@ var Segment = Base.extend({
 	},
 
 	setHandleOut: function() {
-		var point = Point.read(arguments);
-		this._handleOut.set(point.x, point.y);
+		this._handleOut.set(Point.read(arguments));
 	},
 
 	hasHandles: function() {
@@ -5542,8 +5520,8 @@ var Segment = Base.extend({
 	},
 
 	clearHandles: function() {
-		this._handleIn.set(0, 0);
-		this._handleOut.set(0, 0);
+		this._handleIn._set(0, 0);
+		this._handleOut._set(0, 0);
 	},
 
 	getSelection: function() {
@@ -5674,10 +5652,9 @@ var Segment = Base.extend({
 	reverse: function() {
 		var handleIn = this._handleIn,
 			handleOut = this._handleOut,
-			inX = handleIn._x,
-			inY = handleIn._y;
-		handleIn.set(handleOut._x, handleOut._y);
-		handleOut.set(inX, inY);
+			tmp = handleIn.clone();
+		handleIn.set(handleOut);
+		handleOut.set(tmp);
 	},
 
 	reversed: function() {
@@ -5723,13 +5700,13 @@ var Segment = Base.extend({
 			handleIn2 = to._handleIn,
 			handleOut2 = to._handleOut,
 			handleOut1 = from._handleOut;
-		this._point.set(
+		this._point._set(
 				u * point1._x + v * point2._x,
 				u * point1._y + v * point2._y, true);
-		this._handleIn.set(
+		this._handleIn._set(
 				u * handleIn1._x + v * handleIn2._x,
 				u * handleIn1._y + v * handleIn2._y, true);
-		this._handleOut.set(
+		this._handleOut._set(
 				u * handleOut1._x + v * handleOut2._x,
 				u * handleOut1._y + v * handleOut2._y, true);
 		this._changed();
@@ -5810,7 +5787,7 @@ var SegmentPoint = Point.extend({
 			this.setSelected(true);
 	},
 
-	set: function(x, y) {
+	_set: function(x, y) {
 		this._x = x;
 		this._y = y;
 		this._owner._changed(this);
@@ -5937,7 +5914,7 @@ var Curve = Base.extend({
 				handleOut = segment2._handleOut;
 			removed = segment2.remove();
 			if (removed)
-				this._segment1._handleOut.set(handleOut.x, handleOut.y);
+				this._segment1._handleOut.set(handleOut);
 		}
 		return removed;
 	},
@@ -5947,8 +5924,7 @@ var Curve = Base.extend({
 	},
 
 	setPoint1: function() {
-		var point = Point.read(arguments);
-		this._segment1._point.set(point.x, point.y);
+		this._segment1._point.set(Point.read(arguments));
 	},
 
 	getPoint2: function() {
@@ -5956,8 +5932,7 @@ var Curve = Base.extend({
 	},
 
 	setPoint2: function() {
-		var point = Point.read(arguments);
-		this._segment2._point.set(point.x, point.y);
+		this._segment2._point.set(Point.read(arguments));
 	},
 
 	getHandle1: function() {
@@ -5965,8 +5940,7 @@ var Curve = Base.extend({
 	},
 
 	setHandle1: function() {
-		var point = Point.read(arguments);
-		this._segment1._handleOut.set(point.x, point.y);
+		this._segment1._handleOut.set(Point.read(arguments));
 	},
 
 	getHandle2: function() {
@@ -5974,8 +5948,7 @@ var Curve = Base.extend({
 	},
 
 	setHandle2: function() {
-		var point = Point.read(arguments);
-		this._segment2._handleIn.set(point.x, point.y);
+		this._segment2._handleIn.set(Point.read(arguments));
 	},
 
 	getSegment1: function() {
@@ -6088,8 +6061,8 @@ var Curve = Base.extend({
 				segment2 = this._segment2,
 				path = this._path;
 			if (setHandles) {
-				segment1._handleOut.set(left[2] - left[0], left[3] - left[1]);
-				segment2._handleIn.set(right[4] - right[6],right[5] - right[7]);
+				segment1._handleOut._set(left[2] - left[0], left[3] - left[1]);
+				segment2._handleIn._set(right[4] - right[6],right[5] - right[7]);
 			}
 			var x = left[6], y = left[7],
 				segment = new Segment(new Point(x, y),
@@ -6130,8 +6103,8 @@ var Curve = Base.extend({
 	},
 
 	clearHandles: function() {
-		this._segment1._handleOut.set(0, 0);
-		this._segment2._handleIn.set(0, 0);
+		this._segment1._handleOut._set(0, 0);
+		this._segment2._handleIn._set(0, 0);
 	},
 
 statics: {
@@ -9985,8 +9958,8 @@ PathItem.inject(new function() {
 						next = seg.getNext();
 					if (seg._path && hasOverlap(prev) && hasOverlap(next)) {
 						seg.remove();
-						prev._handleOut.set(0, 0);
-						next._handleIn.set(0, 0);
+						prev._handleOut._set(0, 0);
+						next._handleIn._set(0, 0);
 						var curve = prev.getCurve();
 						if (curve.isStraight() && curve.getLength() === 0)
 							prev.remove();
@@ -10929,9 +10902,10 @@ var Color = Base.extend(new function() {
 			this._alpha = alpha;
 			if (reading)
 				this.__read = read;
+			return this;
 		},
 
-		_set: '#initialize',
+		set: '#initialize',
 
 		_serialize: function(options, dictionary) {
 			var components = this.getComponents();
@@ -11137,10 +11111,12 @@ var Gradient = Base.extend({
 
 	initialize: function Gradient(stops, radial) {
 		this._id = UID.get();
-		if (stops && this._set(stops))
+		if (stops && this._set(stops)) {
 			stops = radial = null;
-		if (!this._stops)
+		}
+		if (this._stops == null) {
 			this.setStops(stops || ['white', 'black']);
+		}
 		if (this._radial == null) {
 			this.setRadial(typeof radial === 'string' && radial === 'radial'
 					|| radial || false);
@@ -11346,12 +11322,13 @@ var Style = Base.extend(new function() {
 		_class: 'Style',
 		beans: true,
 
-		initialize: function Style(style, owner, project) {
+		initialize: function Style(style, _owner, _project) {
 			this._values = {};
-			this._owner = owner;
-			this._project = owner && owner._project || project || paper.project;
-			this._defaults = !owner || owner instanceof Group ? groupDefaults
-					: owner instanceof TextItem ? textDefaults
+			this._owner = _owner;
+			this._project = _owner && _owner._project || _project
+					|| paper.project;
+			this._defaults = !_owner || _owner instanceof Group ? groupDefaults
+					: _owner instanceof TextItem ? textDefaults
 					: itemDefaults;
 			if (style)
 				this.set(style);
@@ -11448,6 +11425,7 @@ var Style = Base.extend(new function() {
 	return fields;
 }, {
 	set: function(style) {
+		this._values = {};
 		var isStyle = style instanceof Style,
 			values = isStyle ? style._values : style;
 		if (values) {
@@ -11913,7 +11891,7 @@ var View = Base.extend(Emitter, {
 		if (delta.isZero())
 			return;
 		this._setElementSize(width, height);
-		this._viewSize.set(width, height);
+		this._viewSize._set(width, height);
 		this.emit('resize', {
 			size: size,
 			delta: delta
