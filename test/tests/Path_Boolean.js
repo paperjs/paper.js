@@ -524,6 +524,19 @@ test('#968', function() {
         'M352,280l0,64c0,0 -13.69105,1.79261 -31.82528,4.17778c-15.66463,-26.96617 31.82528,-89.12564 31.82528,-68.17778z');
 });
 
+test('#973', function() {
+    var path = new Path.Ellipse(100, 100, 150, 110);
+    path.segments[1].point.y += 60;
+    path.segments[3].point.y -= 60;
+
+    var resolved = path.resolveCrossings();
+    var orientation = resolved.children.map(function(child) {
+        return child.isClockwise();
+    });
+    equals(orientation, [true, false, true],
+            'children orientation after calling path.resolveCrossings()');
+});
+
 test('#1054', function() {
     var p1 = new Path({
         segments: [
