@@ -28,18 +28,21 @@
  * http://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
-    // Set up lookup tables for each operator, to decide if a given segment is
-    // to be considered a part of the solution, or to be discarded, based on its
-    // winding contribution, as calculated by propagateWinding().
-    // Boolean operators return true if a segment with the given winding
-    // contribution contributes to the final result or not. They are applied to
-    // for each segment after the paths are split at crossings.
-    var operators = {
-        unite:     { 1: true },
-        intersect: { 2: true },
-        subtract:  { 1: true },
-        exclude:   { 1: true }
-    };
+    var min = Math.min,
+        max = Math.max,
+        abs = Math.abs,
+        // Set up lookup tables for each operator, to decide if a given segment
+        // is to be considered a part of the solution, or to be discarded, based
+        // on its winding contribution, as calculated by propagateWinding().
+        // Boolean operators return true if a segment with the given winding
+        // contribution contributes to the final result or not. They are applied
+        // to for each segment after the paths are split at crossings.
+        operators = {
+            unite:     { 1: true },
+            intersect: { 2: true },
+            subtract:  { 1: true },
+            exclude:   { 1: true }
+        };
 
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
@@ -324,7 +327,6 @@ PathItem.inject(new function() {
      */
     function getWinding(point, curves, dir) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
-            abs = Math.abs,
             // Determine the index of the abscissa and ordinate values in the
             // curve values arrays, based on the direction:
             ia = dir ? 1 : 0, // the abscissa index
@@ -346,8 +348,7 @@ PathItem.inject(new function() {
         function addWinding(v) {
             var o0 = v[io],
                 o3 = v[io + 6];
-            if (o0 > po && o3 > po ||
-                o0 < po && o3 < po) {
+            if (o0 > po && o3 > po ||  o0 < po && o3 < po) {
                 // If curve is outside the ordinates' range, no intersection
                 // with the ray is possible.
                 return v;
@@ -373,8 +374,7 @@ PathItem.inject(new function() {
             var roots = [],
                 a =   po === o0 ? a0
                     : po === o3 ? a3
-                    : (a0 < paL && a1 < paL && a2 < paL && a3 < paL) ||
-                      (a0 > paR && a1 > paR && a2 > paR && a3 > paR)
+                    : paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
                     ? (a0 + a3) / 2
                     : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
                         ? Curve.getPoint(v, roots[0])[dir ? 'y' : 'x']
@@ -402,8 +402,7 @@ PathItem.inject(new function() {
                 if (a3Prev > paL) {
                     pathWindingR += winding;
                 }
-            } else if (a3Prev < paL && a > paL
-                    || a3Prev > paR  && a < paR) {
+            } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
                 // horizontal and the current curve.
                 isOnPath = true;
@@ -425,8 +424,7 @@ PathItem.inject(new function() {
                 o2 = v[io + 4],
                 o3 = v[io + 6];
             // Only handle curves that can cross the point's ordinate.
-            if ((o0 >= po || o1 >= po || o2 >= po || o3 >= po) &&
-                (o0 <= po || o1 <= po || o2 <= po || o3 <= po)) {
+            if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
                 // Get the abscissas:
                 var a0 = v[ia],
                     a1 = v[ia + 2],
@@ -434,8 +432,8 @@ PathItem.inject(new function() {
                     a3 = v[ia + 6],
                     // Get monotone curves. If the curve is outside the point's
                     // abscissa, it can be treated as a monotone curve:
-                    monoCurves = (a0 < paL && a1 < paL && a2 < paL && a3 < paL)
-                              || (a0 > paR && a1 > paR && a2 > paR && a3 > paR)
+                    monoCurves = paL > max(a0, a1, a2, a3) ||
+                                 paR < min(a0, a1, a2, a3)
                             ? [v] : Curve.getMonoCurves(v, dir);
                 for (var i = 0, l = monoCurves.length; i < l; i++) {
                     vPrev = addWinding(monoCurves[i]);
@@ -518,7 +516,7 @@ PathItem.inject(new function() {
         // This is required when handling unite operations, where a winding
         // contribution of 2 is not part of the result unless it's the contour:
         return {
-            winding: Math.max(windingL, windingR),
+            winding: max(windingL, windingR),
             contour: !windingL ^ !windingR
         };
     }
@@ -553,8 +551,8 @@ PathItem.inject(new function() {
                     // Determine the direction in which to check the winding
                     // from the point (horizontal or vertical), based on the
                     // curve's direction at that point.
-                    dir = Math.abs(curve.getTangentAtTime(t).normalize().y)
-                            < 0.5 ? 1 : 0;
+                    dir = abs(curve.getTangentAtTime(t).normalize().y) < 0.5
+                            ? 1 : 0;
                 if (parent instanceof CompoundPath)
                     path = parent;
                 // While subtracting, we need to omit this curve if it is
@@ -757,7 +755,7 @@ PathItem.inject(new function() {
                 // location, but the winding calculation still produces a valid
                 // number due to their slight differences producing a tiny area.
                 var area = path.getArea(true);
-                if (Math.abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
+                if (abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
                     // This path wasn't finished and is hence invalid.
                     // Report the error to the console for the time being.
                     console.error('Boolean operation resulted in open path',
