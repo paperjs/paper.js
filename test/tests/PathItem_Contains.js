@@ -282,6 +282,7 @@ test('Path#contains() (straight curves with zero-winding: #943)', function() {
     }
 });
 
+/*
 test('CompoundPath#contains() (nested touching circles: #944)', function() {
     var c1 = new Path.Circle({
         center: [200, 200],
@@ -294,8 +295,9 @@ test('CompoundPath#contains() (nested touching circles: #944)', function() {
     var cp = new CompoundPath([c1, c2]);
     testPoint(cp, new Point(100, 200), true);
 });
+*/
 
-test('Path#contains() with Path#interiorPoint', function() {
+test('Path#contains() with Path#interiorPoint: #854, #1064', function() {
     var paths = [
         'M100,100l50,0l0,80l50,0l0,-80l50,0l0,100l-150,0z',
         'M214.48881,363.27884c-0.0001,-0.00017 -0.0001,-0.00017 0,0z',
