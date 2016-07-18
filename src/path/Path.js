@@ -318,13 +318,17 @@ var Path = PathItem.extend(/** @lends Path# */{
             } else {
                 inX = coords[2];
                 inY = coords[3];
-                // TODO: Add support for H/V and/or relative commands, where
-                // appropriate and resulting in shorter strings.
                 if (inX === curX && inY === curY
                         && outX === prevX && outY === prevY) {
                     // l = relative lineto:
-                    if (!skipLine)
-                        parts.push('l' + f.pair(curX - prevX, curY - prevY));
+                    if (!skipLine) {
+                        var dx = curX - prevX,
+                            dy = curY - prevY;
+                        parts.push(
+                              dx === 0 ? 'v' + f.number(dy)
+                            : dy === 0  ? 'h' + f.number(dx)
+                            : 'l' + f.pair(dx, dy));
+                    }
                 } else {
                     // c = relative curveto:
                     parts.push('c' + f.pair(outX - prevX, outY - prevY)

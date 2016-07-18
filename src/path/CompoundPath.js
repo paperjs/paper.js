@@ -284,7 +284,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             paths.push(child.getPathData(_matrix && !mx.isIdentity()
                     ? _matrix.appended(mx) : _matrix, _precision));
         }
-        return paths.join(' ');
+        return paths.join('');
     }
 }, /** @lends CompoundPath# */{
     _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
