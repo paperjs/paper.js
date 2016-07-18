@@ -799,8 +799,8 @@ PathItem.inject(new function() {
                         next = seg.getNext();
                     if (seg._path && hasOverlap(prev) && hasOverlap(next)) {
                         seg.remove();
-                        prev._handleOut.set(0, 0);
-                        next._handleIn.set(0, 0);
+                        prev._handleOut._set(0, 0);
+                        next._handleIn._set(0, 0);
                         var curve = prev.getCurve();
                         if (curve.isStraight() && curve.getLength() === 0)
                             prev.remove();

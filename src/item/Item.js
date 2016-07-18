@@ -239,8 +239,8 @@ new function() { // Injection scope for various item event handlers
     },
 
     /**
-     * Sets those properties of the passed object literal on this item to
-     * the values defined in the object literal, if the item has property of the
+     * Sets the properties of the passed object literal on this item to the
+     * values defined in the object literal, if the item has property of the
      * given name (or a setter defined for it).
      *
      * @param {Object} props
@@ -400,7 +400,7 @@ new function() { // Injection scope for various item event handlers
     },
 
     setStyle: function(style) {
-        // Don't access _style directly so Path#getStyle() can be overriden for
+        // Don't access _style directly so Path#getStyle() can be overridden for
         // CompoundPaths.
         this.getStyle().set(style);
     }
@@ -852,7 +852,7 @@ new function() { // Injection scope for various item event handlers
             // Restore to the last revertible matrix stored in _backup, and get
             // the bounds again. That way, we can prevent collapsing to 0-size.
             if (!_matrix.isInvertible()) {
-                _matrix.initialize(_matrix._backup
+                _matrix.set(_matrix._backup
                         || new Matrix().translate(_matrix.getTranslation()));
                 bounds = this.getBounds();
             }
@@ -1565,7 +1565,7 @@ new function() { // Injection scope for various item event handlers
         }
         // Use Matrix#initialize to easily copy over values.
         if (!excludeMatrix)
-            this._matrix.initialize(source._matrix);
+            this._matrix.set(source._matrix);
         // We can't just set _applyMatrix as many item types won't allow it,
         // e.g. creating a Shape in Path#toShape().
         // Using the setter instead takes care of it.

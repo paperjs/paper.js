@@ -166,7 +166,7 @@ var Curve = Base.extend(/** @lends Curve# */{
                 handleOut = segment2._handleOut;
             removed = segment2.remove();
             if (removed)
-                this._segment1._handleOut.set(handleOut.x, handleOut.y);
+                this._segment1._handleOut.set(handleOut);
         }
         return removed;
     },
@@ -182,8 +182,7 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     setPoint1: function(/* point */) {
-        var point = Point.read(arguments);
-        this._segment1._point.set(point.x, point.y);
+        this._segment1._point.set(Point.read(arguments));
     },
 
     /**
@@ -197,8 +196,7 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     setPoint2: function(/* point */) {
-        var point = Point.read(arguments);
-        this._segment2._point.set(point.x, point.y);
+        this._segment2._point.set(Point.read(arguments));
     },
 
     /**
@@ -212,8 +210,7 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     setHandle1: function(/* point */) {
-        var point = Point.read(arguments);
-        this._segment1._handleOut.set(point.x, point.y);
+        this._segment1._handleOut.set(Point.read(arguments));
     },
 
     /**
@@ -227,8 +224,7 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     setHandle2: function(/* point */) {
-        var point = Point.read(arguments);
-        this._segment2._handleIn.set(point.x, point.y);
+        this._segment2._handleIn.set(Point.read(arguments));
     },
 
     /**
@@ -487,8 +483,8 @@ var Curve = Base.extend(/** @lends Curve# */{
                 // Adjust the handles on the existing segments. The new segment
                 // will be inserted between the existing segment1 and segment2:
                 // Convert absolute -> relative
-                segment1._handleOut.set(left[2] - left[0], left[3] - left[1]);
-                segment2._handleIn.set(right[4] - right[6],right[5] - right[7]);
+                segment1._handleOut._set(left[2] - left[0], left[3] - left[1]);
+                segment2._handleIn._set(right[4] - right[6],right[5] - right[7]);
             }
             // Create the new segment:
             var x = left[6], y = left[7],
@@ -543,7 +539,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * @deprecated, use use {@link #divideAt(offset)} or
+     * @deprecated use use {@link #divideAt(offset)} or
      * {@link #divideAtTime(time)} instead.
      */
     divide: function(offset, isTime) {
@@ -553,7 +549,7 @@ var Curve = Base.extend(/** @lends Curve# */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * @deprecated, use use {@link #splitAt(offset)} or
+     * @deprecated use use {@link #splitAt(offset)} or
      * {@link #splitAtTime(time)} instead.
      */
     split: function(offset, isTime) {
@@ -576,8 +572,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * turning the curve into a straight line.
      */
     clearHandles: function() {
-        this._segment1._handleOut.set(0, 0);
-        this._segment2._handleIn.set(0, 0);
+        this._segment1._handleOut._set(0, 0);
+        this._segment2._handleIn._set(0, 0);
     },
 
 statics: /** @lends Curve */{
@@ -1068,7 +1064,7 @@ statics: /** @lends Curve */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * @deprecated, use use {@link #getTimeOf(point)} instead.
+     * @deprecated use use {@link #getTimeOf(point)} instead.
      */
     getParameterAt: '#getTimeAt',
 
@@ -1121,7 +1117,7 @@ statics: /** @lends Curve */{
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
     /**
-     * @deprecated, use use {@link #getTimeOf(point)} instead.
+     * @deprecated use use {@link #getTimeOf(point)} instead.
      */
     getParameterOf: '#getTimeOf',
 

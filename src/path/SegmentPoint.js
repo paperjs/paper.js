@@ -46,7 +46,8 @@ var SegmentPoint = Point.extend({
             this.setSelected(true);
     },
 
-    set: function(x, y) {
+    // See Point#_set() for an explanation of #_set():
+    _set: function(x, y) {
         this._x = x;
         this._y = y;
         this._owner._changed(this);

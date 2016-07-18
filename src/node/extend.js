@@ -67,7 +67,7 @@ module.exports = function(paper) {
         },
 
         /**
-         * @deprecated, use use {@link #createCanvas(width, height)} instead.
+         * @deprecated use use {@link #createCanvas(width, height)} instead.
          */
         Canvas: '#createCanvas'
     });

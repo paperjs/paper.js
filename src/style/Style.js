@@ -126,14 +126,15 @@ var Style = Base.extend(new function() {
         _class: 'Style',
         beans: true,
 
-        initialize: function Style(style, owner, project) {
+        initialize: function Style(style, _owner, _project) {
             // We keep values in a separate object that we can iterate over.
             this._values = {};
-            this._owner = owner;
-            this._project = owner && owner._project || project || paper.project;
+            this._owner = _owner;
+            this._project = _owner && _owner._project || _project
+                    || paper.project;
             // Use different defaults based on the owner
-            this._defaults = !owner || owner instanceof Group ? groupDefaults
-                    : owner instanceof TextItem ? textDefaults
+            this._defaults = !_owner || _owner instanceof Group ? groupDefaults
+                    : _owner instanceof TextItem ? textDefaults
                     : itemDefaults;
             if (style)
                 this.set(style);
@@ -263,6 +264,7 @@ var Style = Base.extend(new function() {
     return fields;
 }, /** @lends Style# */{
     set: function(style) {
+        this._values = {}; // Reset already set styles.
         // If the passed style object is also a Style, clone its clonable
         // fields rather than simply copying them.
         var isStyle = style instanceof Style,

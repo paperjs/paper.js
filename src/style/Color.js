@@ -625,10 +625,17 @@ var Color = Base.extend(new function() {
             this._alpha = alpha;
             if (reading)
                 this.__read = read;
+            return this;
         },
 
-        // Have #_set point to #initialize, as used by Base.importJSON()
-        _set: '#initialize',
+        /**
+         * Sets the color to the passed values. Note that any sequence of
+         * parameters that is supported by the various {@link Color()}
+         * constructors also work for calls of `set()`.
+         *
+         * @function
+         */
+        set: '#initialize',
 
         _serialize: function(options, dictionary) {
             var components = this.getComponents();

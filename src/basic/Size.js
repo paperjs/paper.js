@@ -93,36 +93,51 @@ var Size = Base.extend(/** @lends Size# */{
      * console.log(size.height); // 50
      */
     initialize: function Size(arg0, arg1) {
-        var type = typeof arg0;
+        var type = typeof arg0,
+            reading = this.__read,
+            read = 0;
         if (type === 'number') {
             var hasHeight = typeof arg1 === 'number';
-            this.width = arg0;
-            this.height = hasHeight ? arg1 : arg0;
-            if (this.__read)
-                this.__read = hasHeight ? 2 : 1;
+            this._set(arg0, hasHeight ? arg1 : arg0);
+            if (reading)
+                read = hasHeight ? 2 : 1;
         } else if (type === 'undefined' || arg0 === null) {
-            this.width = this.height = 0;
-            if (this.__read)
-                this.__read = arg0 === null ? 1 : 0;
+            this._set(0, 0);
+            if (reading)
+                read = arg0 === null ? 1 : 0;
         } else {
             var obj = type === 'string' ? arg0.split(/[\s,]+/) || [] : arg0;
+            read = 1;
             if (Array.isArray(obj)) {
-                this.width = obj[0];
-                this.height = obj.length > 1 ? obj[1] : obj[0];
+                this._set(+obj[0], +(obj.length > 1 ? obj[1] : obj[0]));
             } else if ('width' in obj) {
-                this.width = obj.width;
-                this.height = obj.height;
+                this._set(obj.width || 0, obj.height || 0);
             } else if ('x' in obj) {
-                this.width = obj.x;
-                this.height = obj.y;
+                this._set(obj.x || 0, obj.y || 0);
             } else {
-                this.width = this.height = 0;
-                if (this.__read)
-                    this.__read = 0;
+                this._set(0, 0);
+                read = 0;
             }
-            if (this.__read)
-                this.__read = 1;
         }
+        if (reading)
+            this.__read = read;
+        return this;
+    },
+
+    /**
+     * Sets the size to the passed values. Note that any sequence of parameters
+     * that is supported by the various {@link Size()} constructors also work
+     * for calls of `set()`.
+     *
+     * @function
+     */
+    set: '#initialize',
+
+    // See Point#_set() for an explanation of #_set():
+    _set: function(width, height) {
+        this.width = width;
+        this.height = height;
+        return this;
     },
 
     /**
@@ -138,12 +153,6 @@ var Size = Base.extend(/** @lends Size# */{
      * @name Size#height
      * @type Number
      */
-
-    set: function(width, height) {
-        this.width = width;
-        this.height = height;
-        return this;
-    },
 
     /**
      * Checks whether the width and height of the size are equal to those of the
@@ -551,7 +560,8 @@ var LinkedSize = Size.extend({
         this._setter = setter;
     },
 
-    set: function(width, height, _dontNotify) {
+    // See Point#_set() for an explanation of #_set():
+    _set: function(width, height, _dontNotify) {
         this._width = width;
         this._height = height;
         if (!_dontNotify)

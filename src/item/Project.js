@@ -192,7 +192,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     setCurrentStyle: function(style) {
         // TODO: Style selected items with the style:
-        this._currentStyle.initialize(style);
+        this._currentStyle.set(style);
     },
 
     /**

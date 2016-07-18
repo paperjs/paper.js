@@ -46,6 +46,8 @@ test('new Point("10, 20")', function() {
     equals(new Point('10, 20'), new Point(10, 20));
     equals(new Point('10,20'), new Point(10, 20));
     equals(new Point('10 20'), new Point(10, 20));
+    // Make sure it's integer values from the string:
+    equals(new Point('10 20').add(10), new Point(20, 30));
 });
 
 test('normalize(length)', function() {

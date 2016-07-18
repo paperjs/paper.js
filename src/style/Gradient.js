@@ -68,10 +68,15 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     initialize: function Gradient(stops, radial) {
         // Use UID here since Gradients are exported through dictionary.add().
         this._id = UID.get();
-        if (stops && this._set(stops))
+        if (stops && this._set(stops)) {
+            // Erase arguments since we used the passed object instead.
             stops = radial = null;
-        if (!this._stops)
+        }
+        // As these values might already have been set in the _set() call above,
+        // only initialize them if that hasn't happened yet.
+        if (this._stops == null) {
             this.setStops(stops || ['white', 'black']);
+        }
         if (this._radial == null) {
             // Support old string type argument and new radial boolean.
             this.setRadial(typeof radial === 'string' && radial === 'radial'

@@ -198,10 +198,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     setPoint: function(/* point */) {
-        var point = Point.read(arguments);
-        // Do not replace the internal object but update it instead, so
-        // references to it are kept alive.
-        this._point.set(point.x, point.y);
+        this._point.set(Point.read(arguments));
     },
 
     /**
@@ -216,9 +213,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     setHandleIn: function(/* point */) {
-        var point = Point.read(arguments);
-        // See #setPoint:
-        this._handleIn.set(point.x, point.y);
+        this._handleIn.set(Point.read(arguments));
     },
 
     /**
@@ -233,9 +228,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     setHandleOut: function(/* point */) {
-        var point = Point.read(arguments);
-        // See #setPoint:
-        this._handleOut.set(point.x, point.y);
+        this._handleOut.set(Point.read(arguments));
     },
 
     /**
@@ -256,8 +249,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * turning the segment into a corner.
      */
     clearHandles: function() {
-        this._handleIn.set(0, 0);
-        this._handleOut.set(0, 0);
+        this._handleIn._set(0, 0);
+        this._handleOut._set(0, 0);
     },
 
     getSelection: function() {
@@ -527,10 +520,9 @@ var Segment = Base.extend(/** @lends Segment# */{
     reverse: function() {
         var handleIn = this._handleIn,
             handleOut = this._handleOut,
-            inX = handleIn._x,
-            inY = handleIn._y;
-        handleIn.set(handleOut._x, handleOut._y);
-        handleOut.set(inX, inY);
+            tmp = handleIn.clone();
+        handleIn.set(handleOut);
+        handleOut.set(tmp);
     },
 
     /**
@@ -603,13 +595,13 @@ var Segment = Base.extend(/** @lends Segment# */{
             handleIn2 = to._handleIn,
             handleOut2 = to._handleOut,
             handleOut1 = from._handleOut;
-        this._point.set(
+        this._point._set(
                 u * point1._x + v * point2._x,
                 u * point1._y + v * point2._y, true);
-        this._handleIn.set(
+        this._handleIn._set(
                 u * handleIn1._x + v * handleIn2._x,
                 u * handleIn1._y + v * handleIn2._y, true);
-        this._handleOut.set(
+        this._handleOut._set(
                 u * handleOut1._x + v * handleOut2._x,
                 u * handleOut1._y + v * handleOut2._y, true);
         this._changed();

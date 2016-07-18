@@ -80,11 +80,10 @@ Base.inject(/** @lends Base# */{
     /**
      * #_set() is part of the mechanism for constructors which take one object
      * literal describing all the properties to be set on the created instance.
+     * Through {@link Base.filter()} it supports `_filtered`
+     * handling as required by the {@link Base.readNamed()} mechanism.
      *
      * @param {Object} props an object describing the properties to set
-     * @param {Object} [exclude] a lookup table listing properties to exclude
-     * @param {Boolean} [dontCheck=false] whether to perform a
-     * Base.isPlainObject() check on props or not
      * @return {Boolean} {@true if the object is a plain object}
      */
     _set: function(props) {
@@ -306,8 +305,9 @@ Base.inject(/** @lends Base# */{
 
         /**
          * Copies all properties from `source` over to `dest`, supporting
-         * _filtered handling as required by Base.readNamed() mechanism, as well
-         * as an optional exclude` object that lists properties to exclude.
+         * `_filtered` handling as required by {@link Base.readNamed()}
+         * mechanism, as well as an optional exclude` object that lists
+         * properties to exclude.
          */
         filter: function(dest, source, exclude) {
             // If source is a filtering object, we need to get the keys from the
@@ -515,7 +515,7 @@ Base.inject(/** @lends Base# */{
                         }
                         // When reusing an object, initialize it through #_set()
                         // instead of the constructor function:
-                        (useTarget ? obj._set : ctor).apply(obj, args);
+                        (useTarget ? obj.set : ctor).apply(obj, args);
                         // Clear target to only use it once.
                         if (useTarget)
                             target = null;

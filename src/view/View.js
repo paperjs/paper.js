@@ -389,7 +389,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         if (delta.isZero())
             return;
         this._setElementSize(width, height);
-        this._viewSize.set(width, height);
+        this._viewSize._set(width, height);
         // Call onResize handler on any size change
         this.emit('resize', {
             size: size,

@@ -41,4 +41,6 @@ test('new Size("10, 20")', function() {
     equals(new Size('10, 20'), new Size(10, 20));
     equals(new Size('10,20'), new Size(10, 20));
     equals(new Size('10 20'), new Size(10, 20));
+    // Make sure it's integer values from the string:
+    equals(new Size('10 20').add(10), new Size(20, 30));
 });

@@ -1086,7 +1086,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * @deprecated, use use {@link #splitAt(offset)} instead.
+     * @deprecated use use {@link #splitAt(offset)} instead.
      */
     split: function(index, time) {
         var curve,

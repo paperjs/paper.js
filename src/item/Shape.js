@@ -90,8 +90,7 @@ var Shape = Item.extend(/** @lends Shape# */{
                 height = size.height;
             if (type === 'rectangle') {
                 // Shrink radius accordingly
-                var radius = Size.min(this._radius, size.divide(2));
-                this._radius.set(radius.width, radius.height);
+                this._radius.set(Size.min(this._radius, size.divide(2)));
             } else if (type === 'circle') {
                 // Use average of width and height as new size, then calculate
                 // radius as a number from that:
@@ -99,9 +98,9 @@ var Shape = Item.extend(/** @lends Shape# */{
                 this._radius = width / 2;
             } else if (type === 'ellipse') {
                 // The radius is a size.
-                this._radius.set(width / 2, height / 2);
+                this._radius._set(width / 2, height / 2);
             }
-            this._size.set(width, height);
+            this._size._set(width, height);
             this._changed(/*#=*/Change.GEOMETRY);
         }
     },
@@ -127,7 +126,7 @@ var Shape = Item.extend(/** @lends Shape# */{
                 return;
             var size = radius * 2;
             this._radius = radius;
-            this._size.set(size, size);
+            this._size._set(size, size);
         } else {
             radius = Size.read(arguments);
             if (!this._radius) {
@@ -136,13 +135,13 @@ var Shape = Item.extend(/** @lends Shape# */{
             } else {
                 if (this._radius.equals(radius))
                     return;
-                this._radius.set(radius.width, radius.height);
+                this._radius.set(radius);
                 if (type === 'rectangle') {
                     // Grow size accordingly
                     var size = Size.max(this._size, radius.multiply(2));
-                    this._size.set(size.width, size.height);
+                    this._size.set(size);
                 } else if (type === 'ellipse') {
-                    this._size.set(radius.width * 2, radius.height * 2);
+                    this._size._set(radius.width * 2, radius.height * 2);
                 }
             }
         }
