@@ -55,7 +55,7 @@ PathItem.inject(new function() {
                 .transform(null, true, true);
         if (closed)
             res.setClosed(true);
-        return closed ? res.resolveCrossings() : res;
+        return closed ? res.resolveCrossings().reorient() : res;
     }
 
     function createResult(ctor, paths, reduce, path1, path2) {
@@ -854,17 +854,13 @@ PathItem.inject(new function() {
         },
 
         /*
-         * Resolves all crossings of a path item, first by splitting the path or
-         * compound-path in each self-intersection and tracing the result, then
-         * fixing the orientation of the resulting sub-paths by making sure that
-         * all sub-paths are of different winding direction than the first path,
-         * except for when individual sub-paths are disjoint, i.e. islands,
-         * which are reoriented so that:
-         * - The holes have opposite winding direction.
-         * - Islands have to have the same winding direction as the first child.
+         * Resolves all crossings of a path item by splitting the path or
+         * compound-path in each self-intersection and tracing the result.
          * If possible, the existing path / compound-path is modified if the
          * amount of resulting paths allows so, otherwise a new path /
          * compound-path is created, replacing the current one.
+         *
+         * @return {PahtItem} the resulting path item
          */
         resolveCrossings: function() {
             var children = this._children,
@@ -881,8 +877,8 @@ PathItem.inject(new function() {
             var hasOverlaps = false,
                 hasCrossings = false,
                 intersections = this.getIntersections(null, function(inter) {
-                    return inter._overlap && (hasOverlaps = true)
-                            || inter.isCrossing() && (hasCrossings = true);
+                    return inter._overlap && (hasOverlaps = true) ||
+                            inter.isCrossing() && (hasCrossings = true);
                 });
             intersections = CurveLocation.expand(intersections);
             if (hasOverlaps) {
@@ -932,72 +928,11 @@ PathItem.inject(new function() {
                     this.push.apply(this, path._segments);
                 }, []));
             }
-            // By now, all paths are non-overlapping, but might be fully
-            // contained inside each other.
-            // Next we adjust their orientation based on on further checks:
+            // Determine how to return the paths: First try to recycle the
+            // current path / compound-path, if the amount of paths does not
+            // require a conversion.
             var length = paths.length,
                 item;
-            if (length > 1) {
-                // First order the paths by the area of their bounding boxes.
-                // Make a clone of paths as it may still be the children array.
-                paths = paths.slice().sort(function (a, b) {
-                    return b.getBounds().getArea() - a.getBounds().getArea();
-                });
-                var first = paths[0],
-                    items = [first],
-                    excluded = {},
-                    isNonZero = this.getFillRule() === 'nonzero',
-                    windings = isNonZero && Base.each(paths, function(path) {
-                        this.push(path.isClockwise() ? 1 : -1);
-                    }, []);
-                // Walk through paths, from largest to smallest.
-                // The first, largest child can be skipped.
-                for (var i = 1; i < length; i++) {
-                    var path = paths[i],
-                        point = path.getInteriorPoint(),
-                        isContained = false,
-                        container = null,
-                        exclude = false;
-                    for (var j = i - 1; j >= 0 && !container; j--) {
-                        // We run through the paths from largest to smallest,
-                        // meaning that for any current path, all potentially
-                        // containing paths have already been processed and
-                        // their orientation has been fixed. Since we want to
-                        // achieve alternating orientation of contained paths,
-                        // all we have to do is to find one include path that
-                        // contains the current path, and then set the
-                        // orientation to the opposite of the containing path.
-                        if (paths[j].contains(point)) {
-                            if (isNonZero && !isContained) {
-                                windings[i] += windings[j];
-                                // Remove path if rule is nonzero and winding
-                                // of path and containing path is not zero.
-                                if (windings[i] && windings[j]) {
-                                    exclude = excluded[i] = true;
-                                    break;
-                                }
-                            }
-                            isContained = true;
-                            // If the containing path is not excluded, we're
-                            // done searching for the orientation defining path.
-                            container = !excluded[j] && paths[j];
-                        }
-                    }
-                    if (!exclude) {
-                        // Set to the opposite orientation of containing path,
-                        // or the same orientation as the first path if the path
-                        // is not contained in any other path.
-                        path.setClockwise(container ? !container.isClockwise()
-                                : first.isClockwise());
-                        items.push(path);
-                    }
-                }
-                // Replace paths with the processed items list:
-                paths = items;
-                length = items.length;
-            }
-            // First try to recycle the current path / compound-path, if the
-            // amount of paths do not require a conversion.
             if (length > 1 && children) {
                 if (paths !== children) {
                     // TODO: Fix automatic child-orientation in CompoundPath,
@@ -1020,64 +955,133 @@ PathItem.inject(new function() {
                 this.replaceWith(item);
             }
             return item;
-        }
-    };
-}, /** @lends PathItem# */{
-    /**
-     * Returns a point that is guaranteed to be inside the path.
-     *
-     * @bean
-     * @type Point
-     */
-    getInteriorPoint: function() {
-        var bounds = this.getBounds(),
-            point = bounds.getCenter(true);
-        if (!this.contains(point)) {
-            // Since there is no guarantee that a poly-bezier path contains the
-            // center of its bounding rectangle, we shoot a ray in x direction
-            // and select a point between the first consecutive intersections of
-            // the ray on the left.
-            var curves = this.getCurves(),
-                y = point.y,
-                intercepts = [],
-                roots = [];
-            // Get values for all y-monotone curves that intersect the ray at y.
-            for (var i = 0, l = curves.length; i < l; i++) {
-                var v = curves[i].getValues(),
-                    o0 = v[1],
-                    o1 = v[3],
-                    o2 = v[5],
-                    o3 = v[7];
-                if (y >= Math.min(o0, o1, o2, o3) &&
-                    y <= Math.max(o0, o1, o2, o3)) {
-                    var monos = Curve.getMonoCurves(v);
-                    for (var j = 0, m = monos.length; j < m; j++) {
-                        var mv = monos[j],
-                            mo0 = mv[1],
-                            mo3 = mv[7];
-                        // Filter out horizontal monotone curves by comparing
-                        // their ordinate values, and make sure the y coordinate
-                        // is within the curve before testing for intercepts.
-                        if ((mo0 !== mo3) &&
-                            (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)) {
-                            var x = y === mo0 ? mv[0]
-                                : y === mo3 ? mv[6]
-                                : Curve.solveCubic(mv, 1, y, roots, 0, 1) === 1
-                                    ? Curve.getPoint(mv, roots[0]).x
-                                    : (mv[0] + mv[6]) / 2;
-                            intercepts.push(x);
+        },
+
+        /**
+         * Fixes the orientation of the sub-paths of a compound-path, by first
+         * ordering them according to the area they cover, and then making sure
+         * that all sub-paths are of different winding direction than the first,
+         * biggest path, except for when individual sub-paths are disjoint,
+         * i.e. islands, which are reoriented so that:
+         *
+         * - The holes have opposite winding direction.
+         * - Islands have to have the same winding direction as the first child.
+         *
+         * @return {PahtItem} a reference to the item itself, reoriented
+         */
+        reorient: function() {
+            var children = this._children;
+            if (children && children.length > 1) {
+                // First order the paths by their areas.
+                children = this.removeChildren().sort(function (a, b) {
+                    return abs(b.getArea()) - abs(a.getArea());
+                });
+                var first = children[0],
+                    paths = [first],
+                    excluded = {},
+                    isNonZero = this.getFillRule() === 'nonzero',
+                    windings = isNonZero && Base.each(children, function(path) {
+                        this.push(path.isClockwise() ? 1 : -1);
+                    }, []);
+                // Walk through children, from largest to smallest.
+                // The first, largest child can be skipped.
+                for (var i = 1, l = children.length; i < l; i++) {
+                    var path = children[i],
+                        point = path.getInteriorPoint(),
+                        isContained = false,
+                        container = null,
+                        exclude = false;
+                    for (var j = i - 1; j >= 0 && !container; j--) {
+                        // We run through the paths from largest to smallest,
+                        // meaning that for any current path, all potentially
+                        // containing paths have already been processed and
+                        // their orientation has been fixed. Since we want to
+                        // achieve alternating orientation of contained paths,
+                        // all we have to do is to find one include path that
+                        // contains the current path, and then set the
+                        // orientation to the opposite of the containing path.
+                        if (children[j].contains(point)) {
+                            if (isNonZero && !isContained) {
+                                windings[i] += windings[j];
+                                // Remove path if rule is nonzero and winding
+                                // of path and containing path is not zero.
+                                if (windings[i] && windings[j]) {
+                                    exclude = excluded[i] = true;
+                                    break;
+                                }
+                            }
+                            isContained = true;
+                            // If the containing path is not excluded, we're
+                            // done searching for the orientation defining path.
+                            container = !excluded[j] && children[j];
+                        }
+                    }
+                    if (!exclude) {
+                        // Set to the opposite orientation of containing path,
+                        // or the same orientation as the first path if the path
+                        // is not contained in any other path.
+                        path.setClockwise(container ? !container.isClockwise()
+                                : first.isClockwise());
+                        paths.push(path);
+                    }
+                }
+                this.setChildren(paths, true); // Preserve orientation
+            }
+            return this;
+        },
+
+        /**
+         * Returns a point that is guaranteed to be inside the path.
+         *
+         * @bean
+         * @type Point
+         */
+        getInteriorPoint: function() {
+            var bounds = this.getBounds(),
+                point = bounds.getCenter(true);
+            if (!this.contains(point)) {
+                // Since there is no guarantee that a poly-bezier path contains
+                // the center of its bounding rectangle, we shoot a ray in x
+                // direction and select a point between the first consecutive
+                // intersections of the ray on the left.
+                var curves = this.getCurves(),
+                    y = point.y,
+                    intercepts = [],
+                    roots = [];
+                // Process all y-monotone curves that intersect the ray at y:
+                for (var i = 0, l = curves.length; i < l; i++) {
+                    var v = curves[i].getValues(),
+                        o0 = v[1],
+                        o1 = v[3],
+                        o2 = v[5],
+                        o3 = v[7];
+                    if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
+                        var monos = Curve.getMonoCurves(v);
+                        for (var j = 0, m = monos.length; j < m; j++) {
+                            var mv = monos[j],
+                                mo0 = mv[1],
+                                mo3 = mv[7];
+                            // Only handle curves that are not horizontal and
+                            // that can cross the point's ordinate.
+                            if ((mo0 !== mo3) &&
+                                (y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)){
+                                var x = y === mo0 ? mv[0]
+                                    : y === mo3 ? mv[6]
+                                    : Curve.solveCubic(mv, 1, y, roots, 0, 1)
+                                        === 1
+                                        ? Curve.getPoint(mv, roots[0]).x
+                                        : (mv[0] + mv[6]) / 2;
+                                intercepts.push(x);
+                            }
                         }
                     }
                 }
+                if (intercepts.length > 1) {
+                    intercepts.sort(function(a, b) { return a - b; });
+                    point.x = (intercepts[0] + intercepts[1]) / 2;
+                }
             }
-            // Fallback in case no non-horizontal curves were found.
-            if (!intercepts.length)
-                return point;
-            intercepts.sort(function(a, b) {
-                return a - b;
-            });
-            point.x = (intercepts[0] + intercepts[1]) / 2;
+            return point;
         }
-        return point;
-    }
+    };
 });
