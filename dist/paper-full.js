@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 19 16:14:46 2016 +0200
+ * Date: Tue Jul 19 19:09:23 2016 +0200
  *
  ***
  *
@@ -9451,6 +9451,14 @@ var CompoundPath = PathItem.extend({
 		for (var i = 0, l = children.length; i < l; i++)
 			area += children[i].getArea();
 		return area;
+	},
+
+	getLength: function() {
+		var children = this._children,
+			length = 0;
+		for (var i = 0, l = children.length; i < l; i++)
+			length += children[i].getLength();
+		return length;
 	}
 }, {
 	beans: true,
