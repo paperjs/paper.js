@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 19 14:55:57 2016 +0200
+ * Date: Tue Jul 19 16:14:46 2016 +0200
  *
  ***
  *
@@ -9966,18 +9966,20 @@ PathItem.inject(new function() {
 			return null;
 		}
 
-		segments.sort(function(a, b) {
-			var path1 = a._path,
-				path2 = b._path,
-				inter1 = a._intersection,
-				inter2 = b._intersection,
+		segments.sort(function(seg1, seg2) {
+			var inter1 = seg1._intersection,
+				inter2 = seg2._intersection,
 				over1 = !!(inter1 && inter1._overlap),
-				over2 = !!(inter2 && inter2._overlap);
-			return path1 !== path2
-					? path1._id - path2._id
-					: over1 ^ over2
-						? over1 ? 1 : -1
-						: a._index - b._index;
+				over2 = !!(inter2 && inter2._overlap),
+				path1 = seg1._path,
+				path2 = seg2._path;
+			return over1 ^ over2
+					? over1 ? 1 : -1
+					: inter1 ^ inter2
+						? inter1 ? 1 : -1
+						: path1 !== path2
+							? path1._id - path2._id
+							: seg1._index - seg2._index;
 		});
 
 		for (var i = 0, l = segments.length; i < l; i++) {
