@@ -22,6 +22,7 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
         'M 0 1.5 l 1e1 0 m -10 2 l 1e+1 0 m -10 2 l 100e-1 0',
         'M372 130Q272 50 422 10zm70 0q50-150-80-90z'
     ];
+
     var expected = [
         [[[11,18],[11,6],[2.5,12],true], [[11.5,12],[20,18],[20,6],true]],
         [[[20,20],[40,40],[40,20],true], [[40,40],[20,60],[40,60],true]],
@@ -33,8 +34,6 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
             [[442,130,0,0,33.33333,-100],[362,40,86.66667,-40,0,0],true]]
     ];
 
-    var formatter = new Formatter(5);
-
     function describe(path) {
         var res;
         if (path.children) {
@@ -45,11 +44,14 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
             res = path.segments.map(function(segment) {
                 var pt = segment.point,
                     hi = segment.handleIn,
-                    ho = segment.handleOut;
+                    ho = segment.handleOut,
+                    multiplier = Math.pow(10, 5);
                 return (hi.isZero() && ho.isZero()
                         ? [pt.x, pt.y]
                         : [pt.x, pt.y, hi.x, hi.y, ho.x, ho.y])
-                        .map(function(x) { return formatter.number(x); });
+                        .map(function(x) {
+                            return Math.round(x * multiplier) / multiplier;
+                        });
             });
             if (path.closed)
                 res.push(true);
@@ -58,11 +60,12 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
     }
 
     function create(data) {
-        if (!data)
+        var first = data && data[0];
+        if (first == null)
             return null;
-        var first = data[0],
-            peek = first && first[0];
-        if (typeof peek === 'number') {
+        if (Array.isArray(first[0])) {
+            return new CompoundPath(data.map(create));
+        } else {
             var closed = data[data.length - 1];
             if (typeof closed === 'boolean') {
                 data.length--;
@@ -74,15 +77,12 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
             // when inserted into the compound-path.
             path.clockwise = path.clockwise;
             return path;
-        } else {
-            return new CompoundPath(data.map(create));
         }
     }
 
     data.forEach(function(entry, i) {
-        var item = PathItem.create(entry);
-        // console.log(JSON.stringify(describe(item)));
-        var compare = create(expected[i]);
-        equals(item, compare, 'data[' + i + ']');
+        var path = PathItem.create(entry);
+        // console.log(JSON.stringify(describe(path)));
+        equals(path, create(expected[i]), 'data[' + i + ']');
     });
 });
