@@ -779,13 +779,11 @@ new function() { // Injection scope for various item event handlers
      * @type Point
      * @default null
      */
-    getPivot: function(_dontLink) {
+    getPivot: function() {
         var pivot = this._pivot;
-        if (pivot) {
-            var ctor = _dontLink ? Point : LinkedPoint;
-            pivot = new ctor(pivot.x, pivot.y, this, 'setPivot');
-        }
-        return pivot;
+        return pivot
+                ? new LinkedPoint(pivot.x, pivot.y, this, 'setPivot')
+                : null;
     },
 
     setPivot: function(/* point */) {
@@ -1088,11 +1086,12 @@ new function() { // Injection scope for various item event handlers
      * @bean
      * @type Point
      */
-    getScaling: function(_dontLink) {
+    getScaling: function() {
         var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling,
-            ctor = _dontLink ? Point : LinkedPoint;
-        return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
+            scaling = decomposed && decomposed.scaling;
+        return scaling
+                ? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
+                : undefined;
     },
 
     setScaling: function(/* scaling */) {

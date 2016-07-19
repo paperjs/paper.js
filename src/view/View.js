@@ -107,7 +107,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // Link this id to our view
         View._viewsById[this._id] = this;
         (this._matrix = new Matrix())._owner = this;
-        this._zoom = 1;
         // Make sure the first view is focused for keyboard input straight away
         if (!View._focused)
             View._focused = this;
@@ -331,7 +330,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // one thing:
         this._project._changed(/*#=*/Change.VIEW);
         // Force recalculation of these values next time they are requested.
-        this._bounds = null;
+        this._bounds = this._decomposed = undefined;
     },
 
     /**
@@ -437,56 +436,6 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
-     * The center of the visible area in project coordinates.
-     *
-     * @bean
-     * @type Point
-     */
-    getCenter: function() {
-        return this.getBounds().getCenter();
-    },
-
-    setCenter: function(/* center */) {
-        var center = Point.read(arguments);
-        this.translate(this.getCenter().subtract(center));
-    },
-
-    /**
-     * The zoom factor by which the project coordinates are magnified.
-     *
-     * @bean
-     * @type Number
-     */
-    getZoom: function() {
-        return this._zoom;
-    },
-
-    setZoom: function(zoom) {
-        this.transform(new Matrix().scale(zoom / this._zoom,
-            this.getCenter()));
-        this._zoom = zoom;
-    },
-
-    /**
-     * The view's transformation matrix, defining the view onto the project's
-     * contents (position, zoom level, rotation, etc).
-     *
-     * @bean
-     * @type Matrix
-     */
-    getMatrix: function() {
-        return this._matrix;
-    },
-
-    setMatrix: function() {
-        // Use Matrix#initialize to easily copy over values.
-        // NOTE: calling initialize() also calls #_changed() for us, through its
-        // call to #set() / #reset(), and this also handles _applyMatrix for us.
-        var matrix = this._matrix;
-        matrix.initialize.apply(matrix, arguments);
-    },
-
-    /**
      * Checks whether the view is currently visible within the current browser
      * viewport.
      *
@@ -539,6 +488,10 @@ var View = Base.extend(Emitter, /** @lends View# */{
                 center || this.getCenter(true)));
     };
 }, /** @lends View# */{
+    _decompose: function() {
+        return this._decomposed || (this._decomposed = this._matrix.decompose());
+    },
+
     /**
      * {@grouptitle Transform Functions}
      *
@@ -549,6 +502,104 @@ var View = Base.extend(Emitter, /** @lends View# */{
     translate: function(/* delta */) {
         var mx = new Matrix();
         return this.transform(mx.translate.apply(mx, arguments));
+    },
+
+    /**
+     * The center of the visible area in project coordinates.
+     *
+     * @bean
+     * @type Point
+     */
+    getCenter: function() {
+        return this.getBounds().getCenter();
+    },
+
+    setCenter: function(/* center */) {
+        var center = Point.read(arguments);
+        this.translate(this.getCenter().subtract(center));
+    },
+
+    /**
+     * The view's zoom factor by which the project coordinates are magnified.
+     *
+     * @bean
+     * @type Number
+     * @see #getScaling()
+     */
+    getZoom: function() {
+        var decomposed = this._decompose(),
+            scaling = decomposed && decomposed.scaling;
+        // Use average since it can be non-uniform, and return 0 when it can't
+        // be decomposed.
+        return scaling ? (scaling.x + scaling.y) / 2 : 0;
+    },
+
+    setZoom: function(zoom) {
+        this.transform(new Matrix().scale(zoom / this.getZoom(),
+            this.getCenter()));
+    },
+
+    /**
+     * The current rotation angle of the view, as described by its
+     * {@link #matrix}.
+     *
+     * @bean
+     * @type Number
+     */
+    getRotation: function() {
+        var decomposed = this._decompose();
+        return decomposed && decomposed.rotation;
+    },
+
+    setRotation: function(rotation) {
+        var current = this.getRotation();
+        if (current != null && rotation != null) {
+            this.rotate(rotation - current);
+        }
+    },
+
+    /**
+     * The current scale factor of the view, as described by its
+     * {@link #matrix}.
+     *
+     * @bean
+     * @type Point
+     * @see #getZoom()
+     */
+    getScaling: function() {
+        var decomposed = this._decompose(),
+            scaling = decomposed && decomposed.scaling;
+        return scaling
+                ? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
+                : undefined;
+    },
+
+    setScaling: function(/* scaling */) {
+        var current = this.getScaling(),
+            // Clone existing points since we're caching internally.
+            scaling = Point.read(arguments, 0, { clone: true, readNull: true });
+        if (current && scaling) {
+            this.scale(scaling.x / current.x, scaling.y / current.y);
+        }
+    },
+
+    /**
+     * The view's transformation matrix, defining the view onto the project's
+     * contents (position, zoom level, rotation, etc).
+     *
+     * @bean
+     * @type Matrix
+     */
+    getMatrix: function() {
+        return this._matrix;
+    },
+
+    setMatrix: function() {
+        // Use Matrix#initialize to easily copy over values.
+        // NOTE: calling initialize() also calls #_changed() for us, through its
+        // call to #set() / #reset(), and this also handles _applyMatrix for us.
+        var matrix = this._matrix;
+        matrix.initialize.apply(matrix, arguments);
     },
 
     /**
