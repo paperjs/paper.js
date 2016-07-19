@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 19 13:14:26 2016 +0200
+ * Date: Tue Jul 19 14:55:57 2016 +0200
  *
  ***
  *
@@ -999,10 +999,10 @@ var Numerical = new function() {
 		EPSILON: EPSILON,
 		MACHINE_EPSILON: MACHINE_EPSILON,
 		CURVETIME_EPSILON: 4e-7,
-		GEOMETRIC_EPSILON: 2e-7,
-		WINDING_EPSILON: 2e-7,
-		TRIGONOMETRIC_EPSILON: 1e-7,
-		CLIPPING_EPSILON: 1e-9,
+		GEOMETRIC_EPSILON: 1e-7,
+		WINDING_EPSILON: 1e-8,
+		TRIGONOMETRIC_EPSILON: 1e-8,
+		CLIPPING_EPSILON: 1e-10,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
@@ -1442,13 +1442,13 @@ var Point = Base.extend({
 		isCollinear: function(x1, y1, x2, y2) {
 			return Math.abs(x1 * y2 - y1 * x2)
 					<= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
-						* 1e-7;
+						* 1e-8;
 		},
 
 		isOrthogonal: function(x1, y1, x2, y2) {
 			return Math.abs(x1 * x2 + y1 * y2)
 					<= Math.sqrt((x1 * x1 + y1 * y1) * (x2 * x2 + y2 * y2))
-						* 1e-7;
+						* 1e-8;
 		}
 	}
 }, Base.each(['round', 'ceil', 'floor', 'abs'], function(key) {
@@ -6150,6 +6150,42 @@ statics: {
 		];
 	},
 
+	getMonoCurves: function(v, dir) {
+		var curves = [],
+			io = dir ? 0 : 1,
+			o0 = v[io],
+			o1 = v[io + 2],
+			o2 = v[io + 4],
+			o3 = v[io + 6];
+		if ((o0 >= o1) === (o1 >= o2) && (o1 >= o2) === (o2 >= o3)
+				|| Curve.isStraight(v)) {
+			curves.push(v);
+		} else {
+			var a = 3 * (o1 - o2) - o0 + o3,
+				b = 2 * (o0 + o2) - 4 * o1,
+				c = o1 - o0,
+				tMin = 4e-7,
+				tMax = 1 - tMin,
+				roots = [],
+				n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
+			if (n === 0) {
+				curves.push(v);
+			} else {
+				roots.sort();
+				var t = roots[0],
+					parts = Curve.subdivide(v, t);
+				curves.push(parts[0]);
+				if (n > 1) {
+					t = (roots[1] - t) / (1 - t);
+					parts = Curve.subdivide(parts[1], t);
+					curves.push(parts[0]);
+				}
+				curves.push(parts[1]);
+			}
+		}
+		return curves;
+	},
+
 	solveCubic: function (v, coord, val, roots, min, max) {
 		var p1 = v[coord],
 			c1 = v[coord + 2],
@@ -6177,7 +6213,7 @@ statics: {
 			return t;
 		var coords = [point.x, point.y],
 			roots = [],
-			geomEpsilon = 2e-7;
+			geomEpsilon = 1e-7;
 		for (var c = 0; c < 2; c++) {
 			var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
 			for (var i = 0; i < count; i++) {
@@ -6342,7 +6378,7 @@ statics: {
 			return true;
 		} else {
 			var v = l.getVector(),
-				epsilon = 2e-7;
+				epsilon = 1e-7;
 			if (v.isZero()) {
 				return false;
 			} else if (l.getDistance(h1) < epsilon
@@ -6390,12 +6426,12 @@ statics: {
 
 	isHorizontal: function() {
 		return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).y)
-				< 1e-7;
+				< 1e-8;
 	},
 
 	isVertical: function() {
 		return this.isStraight() && Math.abs(this.getTangentAtTime(0.5).x)
-				< 1e-7;
+				< 1e-8;
 	}
 }), {
 	beans: false,
@@ -6708,7 +6744,7 @@ new function() {
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
 		if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-				< 1e-9) {
+				< 1e-10) {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
@@ -6847,7 +6883,7 @@ new function() {
 			if (!v2) {
 				return Curve._getSelfIntersection(v1, c1, locations, param);
 			}
-			var epsilon = 2e-7,
+			var epsilon = 1e-7,
 				c1p1x = v1[0], c1p1y = v1[1],
 				c1p2x = v1[6], c1p2y = v1[7],
 				c2p1x = v2[0], c2p1y = v2[1],
@@ -6966,7 +7002,7 @@ new function() {
 		getOverlaps: function(v1, v2) {
 			var abs = Math.abs,
 				timeEpsilon = 4e-7,
-				geomEpsilon = 2e-7,
+				geomEpsilon = 1e-7,
 				straight1 = Curve.isStraight(v1),
 				straight2 = Curve.isStraight(v2),
 				straightBoth = straight1 && straight2;
@@ -7183,7 +7219,7 @@ var CurveLocation = Base.extend({
 
 	equals: function(loc, _ignoreOther) {
 		var res = this === loc,
-			epsilon = 2e-7;
+			epsilon = 1e-7;
 		if (!res && loc instanceof CurveLocation
 				&& this.getPath() === loc.getPath()
 				&& this.getPoint().isClose(loc.getPoint(), epsilon)) {
@@ -7313,7 +7349,7 @@ new function() {
 			for (var i = index + dir; i >= -1 && i <= length; i += dir) {
 				var loc2 = locations[((i % length) + length) % length];
 				if (!loc.getPoint().isClose(loc2.getPoint(),
-						2e-7))
+						1e-7))
 					break;
 				if (loc.equals(loc2))
 					return loc2;
@@ -7334,10 +7370,10 @@ new function() {
 			}
 		var path1 = loc.getPath(),
 			path2 = loc2.getPath(),
-			diff = path1 === path2
-				? (loc.getIndex() + loc.getTime())
-				- (loc2.getIndex() + loc2.getTime())
-				: path1._id - path2._id;
+			diff = path1 !== path2
+				? path1._id - path2._id
+				: (loc.getIndex() + loc.getTime())
+				- (loc2.getIndex() + loc2.getTime());
 			if (diff < 0) {
 				r = m - 1;
 			} else {
@@ -7677,8 +7713,7 @@ var Path = PathItem.extend({
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & 8) {
-			this._length = this._area = this._clockwise = this._monoCurves =
-					undefined;
+			this._length = this._area = this._clockwise = undefined;
 			if (flags & 16) {
 				this._version++;
 			} else if (this._curves) {
@@ -8143,7 +8178,7 @@ var Path = PathItem.extend({
 	reduce: function(options) {
 		var curves = this.getCurves(),
 			simplify = options && options.simplify,
-			tolerance = simplify ? 2e-7 : 0;
+			tolerance = simplify ? 1e-7 : 0;
 		for (var i = curves.length - 1; i >= 0; i--) {
 			var curve = curves[i];
 			if (!curve.hasHandles() && (curve.getLength() < tolerance
@@ -9523,19 +9558,22 @@ new function() {
 }, {}));
 
 PathItem.inject(new function() {
-	var operators = {
-		unite:     { 1: true },
-		intersect: { 2: true },
-		subtract:  { 1: true },
-		exclude:   { 1: true }
-	};
+	var min = Math.min,
+		max = Math.max,
+		abs = Math.abs,
+		operators = {
+			unite:     { 1: true },
+			intersect: { 2: true },
+			subtract:  { 1: true },
+			exclude:   { 1: true }
+		};
 
 	function preparePath(path, closed) {
 		var res = path.clone(false).reduce({ simplify: true })
 				.transform(null, true, true);
 		if (closed)
 			res.setClosed(true);
-		return closed ? res.resolveCrossings() : res;
+		return closed ? res.resolveCrossings().reorient() : res;
 	}
 
 	function createResult(ctor, paths, reduce, path1, path2) {
@@ -9562,13 +9600,13 @@ PathItem.inject(new function() {
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
 			segments = [],
-			monoCurves = [];
+			curves = [];
 
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
 				segments.push.apply(segments, path._segments);
-				monoCurves.push.apply(monoCurves, path._getMonoCurves());
+				curves.push.apply(curves, path.getCurves());
 				path._overlapsOnly = path._validOverlapsOnly = true;
 			}
 		}
@@ -9577,14 +9615,14 @@ PathItem.inject(new function() {
 		if (_path2)
 			collect(_path2._children || [_path2]);
 		for (var i = 0, l = crossings.length; i < l; i++) {
-			propagateWinding(crossings[i]._segment, _path1, _path2, monoCurves,
+			propagateWinding(crossings[i]._segment, _path1, _path2, curves,
 					operator);
 		}
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var segment = segments[i],
 				inter = segment._intersection;
 			if (segment._winding == null) {
-				propagateWinding(segment, _path1, _path2, monoCurves, operator);
+				propagateWinding(segment, _path1, _path2, curves, operator);
 			}
 			if (!(inter && inter._overlap)) {
 				var path = segment._path;
@@ -9701,101 +9739,159 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curves, horizontal) {
-		var epsilon = 2e-7,
-			px = point.x,
-			py = point.y,
-			windLeft = 0,
-			windRight = 0,
-			length = curves.length,
-			roots = [],
-			abs = Math.abs;
-		if (horizontal) {
-			var yTop = -Infinity,
-				yBottom = Infinity,
-				yBefore = py - epsilon,
-				yAfter = py + epsilon;
-			for (var i = 0; i < length; i++) {
-				var values = curves[i].values,
-					count = Curve.solveCubic(values, 0, px, roots, 0, 1);
-				for (var j = count - 1; j >= 0; j--) {
-					var y = Curve.getPoint(values, roots[j]).y;
-					if (y < yBefore && y > yTop) {
-						yTop = y;
-					} else if (y > yAfter && y < yBottom) {
-						yBottom = y;
-					}
+	function getWinding(point, curves, dir) {
+		var epsilon = 1e-8,
+			ia = dir ? 1 : 0,
+			io = dir ? 0 : 1,
+			pv = [point.x, point.y],
+			pa = pv[ia],
+			po = pv[io],
+			paL = pa - epsilon,
+			paR = pa + epsilon,
+			windingL = 0,
+			windingR = 0,
+			pathWindingL = 0,
+			pathWindingR = 0,
+			onPathWinding = 0,
+			isOnPath = false,
+			vPrev,
+			vClose;
+
+		function addWinding(v) {
+			var o0 = v[io],
+				o3 = v[io + 6];
+			if (o0 > po && o3 > po ||  o0 < po && o3 < po) {
+				return v;
+			}
+			var a0 = v[ia],
+				a1 = v[ia + 2],
+				a2 = v[ia + 4],
+				a3 = v[ia + 6];
+			if (o0 === o3) {
+				if (a1 < paR && a3 > paL || a3 < paR && a1 > paL) {
+					isOnPath = true;
+				}
+				return vPrev;
+			}
+			var roots = [],
+				a =   po === o0 ? a0
+					: po === o3 ? a3
+					: paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
+					? (a0 + a3) / 2
+					: Curve.solveCubic(v, io, po, roots, 0, 1) === 1
+						? Curve.getPoint(v, roots[0])[dir ? 'y' : 'x']
+						: (a0 + a3) / 2;
+			var winding = o0 > o3 ? 1 : -1,
+				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
+				a3Prev = vPrev[ia + 6];
+			if (po !== o0) {
+				if (a < paL) {
+					pathWindingL += winding;
+				} else if (a > paR) {
+					pathWindingR += winding;
+				} else {
+					isOnPath = true;
+					pathWindingL += winding;
+					pathWindingR += winding;
+				}
+			} else if (winding !== windingPrev) {
+				if (a3Prev < paR) {
+					pathWindingL += winding;
+				}
+				if (a3Prev > paL) {
+					pathWindingR += winding;
+				}
+			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
+				isOnPath = true;
+				if (a3Prev < paL) {
+					pathWindingR += winding;
+				} else if (a3Prev > paR) {
+					pathWindingL += winding;
 				}
 			}
-			yTop = (yTop + py) / 2;
-			yBottom = (yBottom + py) / 2;
-			if (yTop > -Infinity)
-				windLeft = getWinding(new Point(px, yTop), curves).winding;
-			if (yBottom < Infinity)
-				windRight = getWinding(new Point(px, yBottom), curves).winding;
-		} else {
-			var xBefore = px - epsilon,
-				xAfter = px + epsilon,
-				prevWinding,
-				prevXEnd,
-				windLeftOnCurve = 0,
-				windRightOnCurve = 0,
-				isOnCurve = false;
-			for (var i = 0; i < length; i++) {
-				var curve = curves[i],
-					winding = curve.winding,
-					values = curve.values,
-					yStart = values[1],
-					yEnd = values[7];
-				if (curve.last) {
-					prevWinding = curve.last.winding;
-					prevXEnd = curve.last.values[6];
-					isOnCurve = false;
+			return v;
+		}
+
+		function handleCurve(v) {
+			var o0 = v[io],
+				o1 = v[io + 2],
+				o2 = v[io + 4],
+				o3 = v[io + 6];
+			if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
+				var a0 = v[ia],
+					a1 = v[ia + 2],
+					a2 = v[ia + 4],
+					a3 = v[ia + 6],
+					monoCurves = paL > max(a0, a1, a2, a3) ||
+								 paR < min(a0, a1, a2, a3)
+							? [v] : Curve.getMonoCurves(v, dir);
+				for (var i = 0, l = monoCurves.length; i < l; i++) {
+					vPrev = addWinding(monoCurves[i]);
 				}
-				if (py >= yStart && py <= yEnd || py >= yEnd && py <= yStart) {
-					if (winding) {
-						var x = py === yStart ? values[0]
-							: py === yEnd ? values[6]
-							: Curve.solveCubic(values, 1, py, roots, 0, 1) === 1
-							? Curve.getPoint(values, roots[0]).x
-							: null;
-						if (x != null) {
-							if (x >= xBefore && x <= xAfter) {
-								isOnCurve = true;
-							} else if (
-								(py !== yStart || winding !== prevWinding)
-								&& !(py === yStart
-									&& (px - x) * (px - prevXEnd) < 0)) {
-								if (x < xBefore) {
-									windLeft += winding;
-								} else if (x > xAfter) {
-									windRight += winding;
-								}
-							}
-						}
-						prevWinding = winding;
-						prevXEnd = values[6];
-					} else if ((px - values[0]) * (px - values[6]) <= 0) {
-						isOnCurve = true;
-					}
-				}
-				if (isOnCurve && (i >= length - 1 || curves[i + 1].last)) {
-					windLeftOnCurve += 1;
-					windRightOnCurve -= 1;
-				}
-			}
-			if (windLeft === 0 && windRight === 0) {
-				windLeft = windLeftOnCurve;
-				windRight = windRightOnCurve;
 			}
 		}
+
+		for (var i = 0, l = curves.length; i < l; i++) {
+			var curve = curves[i],
+				path = curve._path,
+				v = curve.getValues();
+			if (i === 0 || curves[i - 1]._path !== path) {
+				vPrev = null;
+				if (!path._closed) {
+					var p1 = path.getLastCurve().getPoint2(),
+						p2 = curve.getPoint1(),
+						x1 = p1._x, y1 = p1._y,
+						x2 = p2._x, y2 = p2._y;
+					vClose = [x1, y1, x1, y1, x2, y2, x2, y2];
+					if (vClose[io] !== vClose[io + 6]) {
+						vPrev = vClose;
+					}
+				}
+
+				if (!vPrev) {
+					vPrev = v;
+					var prev = path.getLastCurve();
+					while (prev && prev !== curve) {
+						var v2 = prev.getValues();
+						if (v2[io] !== v2[io + 6]) {
+							vPrev = v2;
+							break;
+						}
+						prev = prev.getPrevious();
+					}
+				}
+			}
+
+			handleCurve(v);
+
+			if (i + 1 === l || curves[i + 1]._path !== path) {
+				if (vClose) {
+					handleCurve(vClose);
+					vClose = null;
+				}
+				if (!pathWindingL && !pathWindingR && isOnPath) {
+					var add = path.isClockwise() ? 1 : -1;
+					onPathWinding += add;
+				} else {
+					windingL += pathWindingL;
+					windingR += pathWindingR;
+					pathWindingL = pathWindingR = 0;
+				}
+				isOnPath = false;
+			}
+		}
+		if (!windingL && !windingR) {
+			windingL = windingR = onPathWinding;
+		}
+		windingL = windingL && (2 - abs(windingL) % 2);
+		windingR = windingR && (2 - abs(windingR) % 2);
 		return {
-			winding: Math.max(abs(windLeft), abs(windRight)),
-			contour: !windLeft ^ !windRight
+			winding: max(windingL, windingR),
+			contour: !windingL ^ !windingR
 		};
 	}
 
-	function propagateWinding(segment, path1, path2, monoCurves, operator) {
+	function propagateWinding(segment, path1, path2, curves, operator) {
 		var chain = [],
 			start = segment,
 			totalLength = 0,
@@ -9817,16 +9913,16 @@ PathItem.inject(new function() {
 					parent = path._parent,
 					t = curve.getTimeAt(length),
 					pt = curve.getPointAtTime(t),
-					hor = Math.abs(curve.getTangentAtTime(t).y)
-							< 1e-7;
+					dir = abs(curve.getTangentAtTime(t).normalize().y) < 0.5
+							? 1 : 0;
 				if (parent instanceof CompoundPath)
 					path = parent;
 				winding = !(operator.subtract && path2 && (
-						path === path1 &&  path2._getWinding(pt, hor) ||
-						path === path2 && !path1._getWinding(pt, hor)))
-							? getWinding(pt, monoCurves, hor)
+						path === path1 &&  path2._getWinding(pt, dir) ||
+						path === path2 && !path1._getWinding(pt, dir)))
+							? getWinding(pt, curves, dir)
 							: { winding: 0 };
-				 break;
+				break;
 			}
 			length -= curveLength;
 		}
@@ -9870,6 +9966,20 @@ PathItem.inject(new function() {
 			return null;
 		}
 
+		segments.sort(function(a, b) {
+			var path1 = a._path,
+				path2 = b._path,
+				inter1 = a._intersection,
+				inter2 = b._intersection,
+				over1 = !!(inter1 && inter1._overlap),
+				over2 = !!(inter2 && inter2._overlap);
+			return path1 !== path2
+					? path1._id - path2._id
+					: over1 ^ over2
+						? over1 ? 1 : -1
+						: a._index - b._index;
+		});
+
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var path = null,
 				finished = false,
@@ -9891,8 +10001,7 @@ PathItem.inject(new function() {
 					}
 				}
 			}
-			if (!isValid(seg, true)
-					|| !seg._path._validOverlapsOnly && inter && inter._overlap)
+			if (!isValid(seg, true))
 				continue;
 			start = otherStart = null;
 			while (true) {
@@ -9936,7 +10045,7 @@ PathItem.inject(new function() {
 				path.setClosed(true);
 			} else if (path) {
 				var area = path.getArea(true);
-				if (Math.abs(area) >= 2e-7) {
+				if (abs(area) >= 1e-7) {
 					console.error('Boolean operation resulted in open path',
 							'segments =', path._segments.length,
 							'length =', path.getLength(),
@@ -9954,8 +10063,8 @@ PathItem.inject(new function() {
 	}
 
 	return {
-		_getWinding: function(point, horizontal) {
-			return getWinding(point, this._getMonoCurves(), horizontal).winding;
+		_getWinding: function(point, dir) {
+			return getWinding(point, this.getCurves(), dir).winding;
 		},
 
 		unite: function(path) {
@@ -9991,8 +10100,8 @@ PathItem.inject(new function() {
 			var hasOverlaps = false,
 				hasCrossings = false,
 				intersections = this.getIntersections(null, function(inter) {
-					return inter._overlap && (hasOverlaps = true)
-							|| inter.isCrossing() && (hasCrossings = true);
+					return inter._overlap && (hasOverlaps = true) ||
+							inter.isCrossing() && (hasCrossings = true);
 				});
 			intersections = CurveLocation.expand(intersections);
 			if (hasOverlaps) {
@@ -10030,45 +10139,6 @@ PathItem.inject(new function() {
 			}
 			var length = paths.length,
 				item;
-			if (length > 1) {
-				paths = paths.slice().sort(function (a, b) {
-					return b.getBounds().getArea() - a.getBounds().getArea();
-				});
-				var first = paths[0],
-					items = [first],
-					excluded = {},
-					isNonZero = this.getFillRule() === 'nonzero',
-					windings = isNonZero && Base.each(paths, function(path) {
-						this.push(path.isClockwise() ? 1 : -1);
-					}, []);
-				for (var i = 1; i < length; i++) {
-					var path = paths[i],
-						point = path.getInteriorPoint(),
-						isContained = false,
-						container = null,
-						exclude = false;
-					for (var j = i - 1; j >= 0 && !container; j--) {
-						if (paths[j].contains(point)) {
-							if (isNonZero && !isContained) {
-								windings[i] += windings[j];
-								if (windings[i] && windings[j]) {
-									exclude = excluded[i] = true;
-									break;
-								}
-							}
-							isContained = true;
-							container = !excluded[j] && paths[j];
-						}
-					}
-					if (!exclude) {
-						path.setClockwise(container ? !container.isClockwise()
-								: first.isClockwise());
-						items.push(path);
-					}
-				}
-				paths = items;
-				length = items.length;
-			}
 			if (length > 1 && children) {
 				if (paths !== children) {
 					this.setChildren(paths, true);
@@ -10087,119 +10157,92 @@ PathItem.inject(new function() {
 				this.replaceWith(item);
 			}
 			return item;
+		},
+
+		reorient: function() {
+			var children = this._children;
+			if (children && children.length > 1) {
+				children = this.removeChildren().sort(function (a, b) {
+					return abs(b.getArea()) - abs(a.getArea());
+				});
+				var first = children[0],
+					paths = [first],
+					excluded = {},
+					isNonZero = this.getFillRule() === 'nonzero',
+					windings = isNonZero && Base.each(children, function(path) {
+						this.push(path.isClockwise() ? 1 : -1);
+					}, []);
+				for (var i = 1, l = children.length; i < l; i++) {
+					var path = children[i],
+						point = path.getInteriorPoint(),
+						isContained = false,
+						container = null,
+						exclude = false;
+					for (var j = i - 1; j >= 0 && !container; j--) {
+						if (children[j].contains(point)) {
+							if (isNonZero && !isContained) {
+								windings[i] += windings[j];
+								if (windings[i] && windings[j]) {
+									exclude = excluded[i] = true;
+									break;
+								}
+							}
+							isContained = true;
+							container = !excluded[j] && children[j];
+						}
+					}
+					if (!exclude) {
+						path.setClockwise(container ? !container.isClockwise()
+								: first.isClockwise());
+						paths.push(path);
+					}
+				}
+				this.setChildren(paths, true);
+			}
+			return this;
+		},
+
+		getInteriorPoint: function() {
+			var bounds = this.getBounds(),
+				point = bounds.getCenter(true);
+			if (!this.contains(point)) {
+				var curves = this.getCurves(),
+					y = point.y,
+					intercepts = [],
+					roots = [];
+				for (var i = 0, l = curves.length; i < l; i++) {
+					var v = curves[i].getValues(),
+						o0 = v[1],
+						o1 = v[3],
+						o2 = v[5],
+						o3 = v[7];
+					if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
+						var monos = Curve.getMonoCurves(v);
+						for (var j = 0, m = monos.length; j < m; j++) {
+							var mv = monos[j],
+								mo0 = mv[1],
+								mo3 = mv[7];
+							if ((mo0 !== mo3) &&
+								(y >= mo0 && y <= mo3 || y >= mo3 && y <= mo0)){
+								var x = y === mo0 ? mv[0]
+									: y === mo3 ? mv[6]
+									: Curve.solveCubic(mv, 1, y, roots, 0, 1)
+										=== 1
+										? Curve.getPoint(mv, roots[0]).x
+										: (mv[0] + mv[6]) / 2;
+								intercepts.push(x);
+							}
+						}
+					}
+				}
+				if (intercepts.length > 1) {
+					intercepts.sort(function(a, b) { return a - b; });
+					point.x = (intercepts[0] + intercepts[1]) / 2;
+				}
+			}
+			return point;
 		}
 	};
-});
-
-Path.inject({
-	_getMonoCurves: function() {
-		var monoCurves = this._monoCurves,
-			last;
-
-		function insertCurve(v) {
-			var y0 = v[1],
-				y1 = v[7],
-				winding = Math.abs((y0 - y1) / (v[0] - v[6]))
-						< 2e-7
-					? 0
-					: y0 > y1
-						? -1
-						: 1,
-				curve = { values: v, winding: winding };
-			monoCurves.push(curve);
-			if (winding)
-				last = curve;
-		}
-
-		function handleCurve(v) {
-			if (Curve.getLength(v) === 0)
-				return;
-			var y0 = v[1],
-				y1 = v[3],
-				y2 = v[5],
-				y3 = v[7];
-			if (Curve.isStraight(v)
-					|| y0 >= y1 === y1 >= y2 && y1 >= y2 === y2 >= y3) {
-				insertCurve(v);
-			} else {
-				var a = 3 * (y1 - y2) - y0 + y3,
-					b = 2 * (y0 + y2) - 4 * y1,
-					c = y1 - y0,
-					tMin = 4e-7,
-					tMax = 1 - tMin,
-					roots = [],
-					n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
-				if (n < 1) {
-					insertCurve(v);
-				} else {
-					roots.sort();
-					var t = roots[0],
-						parts = Curve.subdivide(v, t);
-					insertCurve(parts[0]);
-					if (n > 1) {
-						t = (roots[1] - t) / (1 - t);
-						parts = Curve.subdivide(parts[1], t);
-						insertCurve(parts[0]);
-					}
-					insertCurve(parts[1]);
-				}
-			}
-		}
-
-		if (!monoCurves) {
-			monoCurves = this._monoCurves = [];
-			var curves = this.getCurves(),
-				segments = this._segments;
-			for (var i = 0, l = curves.length; i < l; i++)
-				handleCurve(curves[i].getValues());
-			if (!this._closed && segments.length > 1) {
-				var p1 = segments[segments.length - 1]._point,
-					p2 = segments[0]._point,
-					p1x = p1._x, p1y = p1._y,
-					p2x = p2._x, p2y = p2._y;
-				handleCurve([p1x, p1y, p1x, p1y, p2x, p2y, p2x, p2y]);
-			}
-			if (monoCurves.length > 0) {
-				monoCurves[0].last = last;
-			}
-		}
-		return monoCurves;
-	},
-
-	getInteriorPoint: function() {
-		var bounds = this.getBounds(),
-			point = bounds.getCenter(true);
-		if (!this.contains(point)) {
-			var curves = this._getMonoCurves(),
-				roots = [],
-				y = point.y,
-				intercepts = [];
-			for (var i = 0, l = curves.length; i < l; i++) {
-				var values = curves[i].values;
-				if (curves[i].winding === 1
-						&& y > values[1] && y <= values[7]
-						|| y >= values[7] && y < values[1]) {
-					var count = Curve.solveCubic(values, 1, y, roots, 0, 1);
-					for (var j = count - 1; j >= 0; j--) {
-						intercepts.push(Curve.getPoint(values, roots[j]).x);
-					}
-				}
-			}
-			intercepts.sort(function(a, b) { return a - b; });
-			point.x = (intercepts[0] + intercepts[1]) / 2;
-		}
-		return point;
-	}
-});
-
-CompoundPath.inject({
-	_getMonoCurves: function() {
-		var children = this._children,
-			monoCurves = [];
-		for (var i = 0, l = children.length; i < l; i++)
-			monoCurves.push.apply(monoCurves, children[i]._getMonoCurves());
-		return monoCurves;
-	}
 });
 
 var PathIterator = Base.extend({
