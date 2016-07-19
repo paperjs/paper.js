@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 19 19:09:23 2016 +0200
+ * Date: Wed Jul 20 00:04:24 2016 +0200
  *
  ***
  *
@@ -3161,13 +3161,11 @@ new function() {
 		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
-	getPivot: function(_dontLink) {
+	getPivot: function() {
 		var pivot = this._pivot;
-		if (pivot) {
-			var ctor = _dontLink ? Point : LinkedPoint;
-			pivot = new ctor(pivot.x, pivot.y, this, 'setPivot');
-		}
-		return pivot;
+		return pivot
+				? new LinkedPoint(pivot.x, pivot.y, this, 'setPivot')
+				: null;
 	},
 
 	setPivot: function() {
@@ -3335,11 +3333,12 @@ new function() {
 		}
 	},
 
-	getScaling: function(_dontLink) {
+	getScaling: function() {
 		var decomposed = this._decompose(),
-			scaling = decomposed && decomposed.scaling,
-			ctor = _dontLink ? Point : LinkedPoint;
-		return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
+			scaling = decomposed && decomposed.scaling;
+		return scaling
+				? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
+				: undefined;
 	},
 
 	setScaling: function() {
@@ -11821,7 +11820,6 @@ var View = Base.extend(Emitter, {
 		View._views.push(this);
 		View._viewsById[this._id] = this;
 		(this._matrix = new Matrix())._owner = this;
-		this._zoom = 1;
 		if (!View._focused)
 			View._focused = this;
 		this._frameItems = {};
@@ -11962,7 +11960,7 @@ var View = Base.extend(Emitter, {
 
 	_changed: function() {
 		this._project._changed(2049);
-		this._bounds = null;
+		this._bounds = this._decomposed = undefined;
 	},
 
 	getElement: function() {
@@ -12021,34 +12019,6 @@ var View = Base.extend(Emitter, {
 		return this.getBounds().getSize();
 	},
 
-	getCenter: function() {
-		return this.getBounds().getCenter();
-	},
-
-	setCenter: function() {
-		var center = Point.read(arguments);
-		this.translate(this.getCenter().subtract(center));
-	},
-
-	getZoom: function() {
-		return this._zoom;
-	},
-
-	setZoom: function(zoom) {
-		this.transform(new Matrix().scale(zoom / this._zoom,
-			this.getCenter()));
-		this._zoom = zoom;
-	},
-
-	getMatrix: function() {
-		return this._matrix;
-	},
-
-	setMatrix: function() {
-		var matrix = this._matrix;
-		matrix.initialize.apply(matrix, arguments);
-	},
-
 	isVisible: function() {
 		return DomElement.isInView(this._element);
 	},
@@ -12085,9 +12055,70 @@ var View = Base.extend(Emitter, {
 				center || this.getCenter(true)));
 	};
 }, {
+	_decompose: function() {
+		return this._decomposed || (this._decomposed = this._matrix.decompose());
+	},
+
 	translate: function() {
 		var mx = new Matrix();
 		return this.transform(mx.translate.apply(mx, arguments));
+	},
+
+	getCenter: function() {
+		return this.getBounds().getCenter();
+	},
+
+	setCenter: function() {
+		var center = Point.read(arguments);
+		this.translate(this.getCenter().subtract(center));
+	},
+
+	getZoom: function() {
+		var decomposed = this._decompose(),
+			scaling = decomposed && decomposed.scaling;
+		return scaling ? (scaling.x + scaling.y) / 2 : 0;
+	},
+
+	setZoom: function(zoom) {
+		this.transform(new Matrix().scale(zoom / this.getZoom(),
+			this.getCenter()));
+	},
+
+	getRotation: function() {
+		var decomposed = this._decompose();
+		return decomposed && decomposed.rotation;
+	},
+
+	setRotation: function(rotation) {
+		var current = this.getRotation();
+		if (current != null && rotation != null) {
+			this.rotate(rotation - current);
+		}
+	},
+
+	getScaling: function() {
+		var decomposed = this._decompose(),
+			scaling = decomposed && decomposed.scaling;
+		return scaling
+				? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
+				: undefined;
+	},
+
+	setScaling: function() {
+		var current = this.getScaling(),
+			scaling = Point.read(arguments, 0, { clone: true, readNull: true });
+		if (current && scaling) {
+			this.scale(scaling.x / current.x, scaling.y / current.y);
+		}
+	},
+
+	getMatrix: function() {
+		return this._matrix;
+	},
+
+	setMatrix: function() {
+		var matrix = this._matrix;
+		matrix.initialize.apply(matrix, arguments);
 	},
 
 	transform: function(matrix) {
