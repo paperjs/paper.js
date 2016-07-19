@@ -322,14 +322,14 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // appropriate and resulting in shorter strings.
                 if (inX === curX && inY === curY
                         && outX === prevX && outY === prevY) {
-                    // l = relative lineto:
+                    // L = absolute lineto:
                     if (!skipLine)
-                        parts.push('l' + f.pair(curX - prevX, curY - prevY));
+                        parts.push('L' + f.pair(curX, curY));
                 } else {
-                    // c = relative curveto:
-                    parts.push('c' + f.pair(outX - prevX, outY - prevY)
-                            + ' ' + f.pair(inX - prevX, inY - prevY)
-                            + ' ' + f.pair(curX - prevX, curY - prevY));
+                    // C = absolute curveto:
+                    parts.push('C' + f.pair(outX, outY)
+                            + ' ' + f.pair(inX, inY)
+                            + ' ' + f.pair(curX, curY));
                 }
             }
             prevX = curX;
