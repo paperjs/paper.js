@@ -633,25 +633,29 @@ PathItem.inject(new function() {
             return null;
         }
 
-        // Sort segments to give non-overlapping segments the preference as
-        // starting points when tracing.
-        segments.sort(function(a, b) {
-            var path1 = a._path,
-                path2 = b._path,
-                inter1 = a._intersection,
-                inter2 = b._intersection,
+        // Sort segments to give non-ambiguous segments the preference as
+        // starting points when tracing: prefer segments with no intersections
+        // over intersections, and process intersections with overlaps last:
+        segments.sort(function(seg1, seg2) {
+            var inter1 = seg1._intersection,
+                inter2 = seg2._intersection,
                 over1 = !!(inter1 && inter1._overlap),
-                over2 = !!(inter2 && inter2._overlap);
-            return path1 !== path2
-                    // Sort by path id to group all segments on same path.
-                    ? path1._id - path2._id
-                    // If only one of the two segments on the same path is an
-                    // overlap, sort it so it comes after the other.
-                    : over1 ^ over2
-                        ? over1 ? 1 : -1
-                        // All other segments, intersection or not, are sorted
-                        // by their natural order within the path.
-                        : a._index - b._index;
+                over2 = !!(inter2 && inter2._overlap),
+                path1 = seg1._path,
+                path2 = seg2._path;
+            // Use bitwise-or to sort cases where only one segment is an overlap
+            // or intersection separately, and fall back on natural order within
+            // the path.
+            return over1 ^ over2
+                    ? over1 ? 1 : -1
+                    : inter1 ^ inter2
+                        ? inter1 ? 1 : -1
+                        // All other segments, also when comparing two overlaps
+                        // or two intersections, are sorted by their order.
+                        // Sort by path id to group segments on the same path.
+                        : path1 !== path2
+                            ? path1._id - path2._id
+                            : seg1._index - seg2._index;
         });
 
         for (var i = 0, l = segments.length; i < l; i++) {
