@@ -117,6 +117,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             case 'h':
             case 'v':
                 var coord = lower === 'h' ? 'x' : 'y';
+                current = current.clone(); // Clone as we're going to modify it.
                 for (var j = 0; j < length; j++) {
                     current[coord] = getCoord(j, coord);
                     this.lineTo(current);

@@ -12,7 +12,7 @@
 
 QUnit.module('Compound Path');
 
-test('moveTo / lineTo', function() {
+test('moveTo() / lineTo()', function() {
     var path = new CompoundPath();
 
     var lists = [
@@ -34,7 +34,7 @@ test('moveTo / lineTo', function() {
     }, 2);
 });
 
-test('clockwise', function() {
+test('CompoundPath() and default clockwise settings', function() {
     var path1 = new Path.Rectangle([200, 200], [100, 100]);
     var path2 = new Path.Rectangle([50, 50], [200, 200]);
     var path3 = new Path.Rectangle([0, 0], [400, 400]);
@@ -68,7 +68,7 @@ test('clockwise', function() {
     }, false);
 });
 
-test('Cloning with non-standard clockwise settings', function() {
+test('CompoundPath() and predefined clockwise settings', function() {
     var path1 = new Path.Rectangle([200, 200], [100, 100]);
     var path2 = new Path.Rectangle([50, 50], [200, 200]);
     var path3 = new Path.Rectangle([0, 0], [400, 400]);
