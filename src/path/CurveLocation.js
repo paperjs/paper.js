@@ -563,13 +563,13 @@ new function() { // Scope for statics
             path2 = loc2.getPath(),
             // NOTE: equals() takes the intersection location into account,
             // while this calculation of diff doesn't!
-            diff = path1 === path2
-                //Sort by both index and time. The two values added
-                // together provides a convenient sorting index.
-                ? (loc.getIndex() + loc.getTime())
-                - (loc2.getIndex() + loc2.getTime())
+            diff = path1 !== path2
                 // Sort by path id to group all locs on same path.
-                : path1._id - path2._id;
+                ? path1._id - path2._id
+                // Sort by both index and time on the same path. The two values
+                // added together provides a convenient sorting index.
+                : (loc.getIndex() + loc.getTime())
+                - (loc2.getIndex() + loc2.getTime());
             if (diff < 0) {
                 r = m - 1;
             } else {

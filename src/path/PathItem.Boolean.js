@@ -633,15 +633,25 @@ PathItem.inject(new function() {
             return null;
         }
 
-        // Sort segments to give non-ambiguous segments the preference as
-        // starting points when tracing: prefer segments with no intersections
-        // over intersections, and process intersections with overlaps last:
+        // Sort segments to give non-overlapping segments the preference as
+        // starting points when tracing.
         segments.sort(function(a, b) {
-            var i1 = a._intersection,
-                i2 = b._intersection,
-                o1 = !!(i1 && i1._overlap),
-                o2 = !!(i2 && i2._overlap);
-            return !i1 && !i2 ? -1 : o1 ^ o2 ? o1 ? 1 : -1 : 0;
+            var path1 = a._path,
+                path2 = b._path,
+                inter1 = a._intersection,
+                inter2 = b._intersection,
+                over1 = !!(inter1 && inter1._overlap),
+                over2 = !!(inter2 && inter2._overlap);
+            return path1 !== path2
+                    // Sort by path id to group all segments on same path.
+                    ? path1._id - path2._id
+                    // If only one of the two segments on the same path is an
+                    // overlap, sort it so it comes after the other.
+                    : over1 ^ over2
+                        ? over1 ? 1 : -1
+                        // All other segments, intersection or not, are sorted
+                        // by their natural order within the path.
+                        : a._index - b._index;
         });
 
         for (var i = 0, l = segments.length; i < l; i++) {
