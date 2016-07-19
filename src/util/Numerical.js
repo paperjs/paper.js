@@ -146,21 +146,21 @@ var Numerical = new function() {
          * The epsilon to be used when performing "geometric" checks, such as
          * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
+        GEOMETRIC_EPSILON: 1e-7,
         /**
          * The epsilon to be used when performing winding contribution checks.
          */
-        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
+        WINDING_EPSILON: 1e-8,
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity.
          */
-        TRIGONOMETRIC_EPSILON: 1e-7,
+        TRIGONOMETRIC_EPSILON: 1e-8,
         /**
          * The epsilon to be used when comparing curve-time parameters in the
          * fat-line clipping code.
          */
-        CLIPPING_EPSILON: 1e-9,
+        CLIPPING_EPSILON: 1e-10,
         /**
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.

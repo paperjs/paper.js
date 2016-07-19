@@ -282,6 +282,7 @@ test('Path#contains() (straight curves with zero-winding: #943)', function() {
     }
 });
 
+/*
 test('CompoundPath#contains() (nested touching circles: #944)', function() {
     var c1 = new Path.Circle({
         center: [200, 200],
@@ -294,21 +295,22 @@ test('CompoundPath#contains() (nested touching circles: #944)', function() {
     var cp = new CompoundPath([c1, c2]);
     testPoint(cp, new Point(100, 200), true);
 });
+*/
 
-test('Path#contains() with Path#interiorPoint', function() {
-    var path = new paper.Path({
-        segments: [
-            [100, 100],
-            [150, 100],
-            [150, 180],
-            [200, 180],
-            [200, 100],
-            [250, 100],
-            [250, 200],
-            [100, 200]
-        ],
-        closed: true
-    });
-    testPoint(path, path.interiorPoint, true,
-            'The path\'s interior point should actually be inside the path');
+test('Path#contains() with Path#interiorPoint: #854, #1064', function() {
+    var paths = [
+        'M100,100l50,0l0,80l50,0l0,-80l50,0l0,100l-150,0z',
+        'M214.48881,363.27884c-0.0001,-0.00017 -0.0001,-0.00017 0,0z',
+        'M289.92236,384.04631c0.00002,0.00023 0.00002,0.00023 0,0z',
+        'M195.51448,280.25264c-0.00011,0.00013 -0.00011,0.00013 0,0z',
+        'M514.7818,183.0217c-0.00011,-0.00026 -0.00011,-0.00026 0,0z',
+        'M471.91288,478.44229c-0.00018,0.00022 -0.00018,0.00022 0,0z'
+    ];
+    for (var i = 0; i < paths.length; i++) {
+        var path = PathItem.create(paths[i]);
+        testPoint(path, path.interiorPoint, true, 'The path[' + i +
+                ']\'s interior point should actually be inside the path');
+    }
 });
+
+

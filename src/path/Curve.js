@@ -618,6 +618,57 @@ statics: /** @lends Curve */{
         ];
     },
 
+    /**
+     * Splits the specified curve values into curves that are monotone in the
+     * specified coordinate direction.
+     *
+     * @param {Number[]} v the curve values, as returned by
+     *     {@link Curve#getValues()}
+     * @param {Number} [dir=0] the direction in which the curves should be
+     *     monotone, `0`: monotone in x-direction, `1`: monotone in y-direction
+     * @return {Number[][]} an array of curve value arrays of the resulting
+     *     monotone curve. If the original curve was already monotone, an array
+     *     only containing its values are returned.
+     */
+    getMonoCurves: function(v, dir) {
+        var curves = [],
+            // Determine the ordinate index in the curve values array.
+            io = dir ? 0 : 1,
+            o0 = v[io],
+            o1 = v[io + 2],
+            o2 = v[io + 4],
+            o3 = v[io + 6];
+        if ((o0 >= o1) === (o1 >= o2) && (o1 >= o2) === (o2 >= o3)
+                || Curve.isStraight(v)) {
+            // Straight curves and curves with all involved points ordered
+            // in coordinate direction are guaranteed to be monotone.
+            curves.push(v);
+        } else {
+            var a = 3 * (o1 - o2) - o0 + o3,
+                b = 2 * (o0 + o2) - 4 * o1,
+                c = o1 - o0,
+                tMin = 4e-7,
+                tMax = 1 - tMin,
+                roots = [],
+                n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
+            if (n === 0) {
+                curves.push(v);
+            } else {
+                roots.sort();
+                var t = roots[0],
+                    parts = Curve.subdivide(v, t);
+                curves.push(parts[0]);
+                if (n > 1) {
+                    t = (roots[1] - t) / (1 - t);
+                    parts = Curve.subdivide(parts[1], t);
+                    curves.push(parts[0]);
+                }
+                curves.push(parts[1]);
+            }
+        }
+        return curves;
+    },
+
     // Converts from the point coordinates (p1, c1, c2, p2) for one axis to
     // the polynomial coefficients and solves the polynomial for val
     solveCubic: function (v, coord, val, roots, min, max) {

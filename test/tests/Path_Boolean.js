@@ -524,6 +524,19 @@ test('#968', function() {
         'M352,280l0,64c0,0 -13.69105,1.79261 -31.82528,4.17778c-15.66463,-26.96617 31.82528,-89.12564 31.82528,-68.17778z');
 });
 
+test('#973', function() {
+    var path = new Path.Ellipse(100, 100, 150, 110);
+    path.segments[1].point.y += 60;
+    path.segments[3].point.y -= 60;
+
+    var resolved = path.resolveCrossings();
+    var orientation = resolved.children.map(function(child) {
+        return child.isClockwise();
+    });
+    equals(orientation, [true, false, true],
+            'children orientation after calling path.resolveCrossings()');
+});
+
 test('#1054', function() {
     var p1 = new Path({
         segments: [
@@ -572,6 +585,38 @@ test('#1059', function() {
     });
     compareBoolean(function() { return p1.unite(p2); },
         'M428.48409,189.03444c-21.46172,0 -42.92343,8.188 -59.29943,24.56401c-32.75202,32.75202 -32.75202,85.84686 0,118.59888l-160,0c0,0 -32.75202,-85.84686 0,-118.59888l0,0c16.37601,-16.37601 37.83772,-24.56401 59.29944,-24.56401z');
+});
+
+test('#1075', function() {
+    var p1 = new paper.Path({
+        segments: [
+            [150, 120],
+            [150, 85],
+            [178, 85],
+            [178, 110],
+            [315, 110],
+            [315, 85],
+            [342, 85],
+            [342, 120],
+        ],
+        closed: true
+    });
+    var p2 = new paper.Path({
+        segments: [
+            [350, 60],
+            [350, 125],
+            [315, 125],
+            [315, 85],
+            [178, 85],
+            [178, 125],
+            [140, 125],
+            [140, 60]
+        ],
+        closed: true
+    });
+
+    compareBoolean(function() { return p1.unite(p2); },
+        'M140,125l0,-65l210,0l0,65l-35,0l0,-5l-137,0l0,5z M315,85l-137,0l0,25l137,0z');
 });
 
 test('frame.intersect(rect);', function() {
