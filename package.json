@@ -72,7 +72,7 @@
     "resemblejs": "^2.2.1",
     "run-sequence": "^1.2.2",
     "stats.js": "0.16.0",
-    "straps": "^2.0.1"
+    "straps": "^2.1.0"
   },
   "browser": {
     "canvas": false,

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 19 10:24:37 2016 +0200
+ * Date: Tue Jul 19 13:08:21 2016 +0200
  *
  ***
  *
@@ -39,8 +39,13 @@ var window = self.window,
 
 var Base = new function() {
 	var hidden = /^(statics|enumerable|beans|preserve)$/,
+		array = [],
+		slice = array.slice,
+		create = Object.create,
+		describe = Object.getOwnPropertyDescriptor,
+		define = Object.defineProperty,
 
-		forEach = [].forEach || function(iter, bind) {
+		forEach = array.forEach || function(iter, bind) {
 			for (var i = 0, l = this.length; i < l; i++) {
 				iter.call(bind, this[i], i, this);
 			}
@@ -52,10 +57,6 @@ var Base = new function() {
 					iter.call(bind, this[i], i, this);
 			}
 		},
-
-		create = Object.create,
-		describe = Object.getOwnPropertyDescriptor,
-		define = Object.defineProperty,
 
 		set = Object.assign || function(dst) {
 			for (var i = 1, l = arguments.length; i < l; i++) {
@@ -76,6 +77,7 @@ var Base = new function() {
 			}
 			return bind;
 		};
+
 	function inject(dest, src, enumerable, beans, preserve) {
 		var beansNames = {};
 
@@ -216,6 +218,10 @@ var Base = new function() {
 
 			pick: function(a, b) {
 				return a !== undefined ? a : b;
+			},
+
+			slice: function(list, begin, end) {
+				return slice.call(list, begin, end);
 			}
 		}
 	});
@@ -309,7 +315,7 @@ Base.inject({
 			return false;
 		},
 
-		read: function(list, start, options, length) {
+		read: function(list, start, options, amount) {
 			if (this === Base) {
 				var value = this.peek(list, start);
 				list.__index++;
@@ -317,24 +323,24 @@ Base.inject({
 			}
 			var proto = this.prototype,
 				readIndex = proto._readIndex,
-				index = start || readIndex && list.__index || 0;
-			if (!length)
-				length = list.length - index;
-			var obj = list[index];
+				begin = start || readIndex && list.__index || 0,
+				length = list.length,
+				obj = list[begin];
+			amount = amount || length - begin;
 			if (obj instanceof this
-				|| options && options.readNull && obj == null && length <= 1) {
+				|| options && options.readNull && obj == null && amount <= 1) {
 				if (readIndex)
-					list.__index = index + 1;
+					list.__index = begin + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
 			obj = Base.create(this.prototype);
 			if (readIndex)
 				obj.__read = true;
-			obj = obj.initialize.apply(obj, index > 0 || length < list.length
-				? Array.prototype.slice.call(list, index, index + length)
-				: list) || obj;
+			obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
+					? Base.slice(list, begin, begin + amount)
+					: list) || obj;
 			if (readIndex) {
-				list.__index = index + obj.__read;
+				list.__index = begin + obj.__read;
 				obj.__read = undefined;
 			}
 			return obj;
@@ -348,10 +354,12 @@ Base.inject({
 			return list.length - (list.__index || 0);
 		},
 
-		readAll: function(list, start, options) {
+		readList: function(list, start, options, amount) {
 			var res = [],
-				entry;
-			for (var i = start || 0, l = list.length; i < l; i++) {
+				entry,
+				begin = start || 0,
+				end = amount ? begin + amount : list.length;
+			for (var i = begin; i < end; i++) {
 				res.push(Array.isArray(entry = list[i])
 						? this.read(entry, 0, options)
 						: this.read(list, i, options, 1));
@@ -359,7 +367,7 @@ Base.inject({
 			return res;
 		},
 
-		readNamed: function(list, name, start, options, length) {
+		readNamed: function(list, name, start, options, amount) {
 			var value = this.getNamed(list, name),
 				hasObject = value !== undefined;
 			if (hasObject) {
@@ -370,7 +378,7 @@ Base.inject({
 				}
 				filtered[name] = undefined;
 			}
-			return this.read(hasObject ? [value] : list, start, options, length);
+			return this.read(hasObject ? [value] : list, start, options, amount);
 		},
 
 		getNamed: function(list, name) {
@@ -622,7 +630,7 @@ var Emitter = {
 		var handlers = this._callbacks && this._callbacks[type];
 		if (!handlers)
 			return false;
-		var args = [].slice.call(arguments, 1),
+		var args = Base.slice(arguments, 1),
 			setTarget = event && event.target && !event.currentTarget;
 		handlers = handlers.slice();
 		if (setTarget)
@@ -3860,13 +3868,13 @@ new function() {
 		return this.insertChildren(this._children.length, items, _preserve);
 	},
 
-	insertChildren: function(index, items, _preserve, _proto) {
+	insertChildren: function(index, items, _preserve) {
 		var children = this._children;
 		if (children && items && items.length > 0) {
-			items = Array.prototype.slice.apply(items);
+			items = Base.slice(items);
 			for (var i = items.length - 1; i >= 0; i--) {
 				var item = items[i];
-				if (!item || _proto && !(item instanceof _proto)) {
+				if (!item) {
 					items.splice(i, 1);
 				} else {
 					item._remove(false, true);
@@ -5432,27 +5440,25 @@ var Segment = Base.extend({
 
 	initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
 		var count = arguments.length,
-			point, handleIn, handleOut,
-			selection;
-		if (count === 0) {
-		} else if (count === 1) {
-			if (arg0 && 'point' in arg0) {
-				point = arg0.point;
-				handleIn = arg0.handleIn;
-				handleOut = arg0.handleOut;
-				selection = arg0.selection;
+			point, handleIn, handleOut, selection;
+		if (count > 0) {
+			if (arg0 == null || typeof arg0 === 'object') {
+				if (count === 1 && arg0 && 'point' in arg0) {
+					point = arg0.point;
+					handleIn = arg0.handleIn;
+					handleOut = arg0.handleOut;
+					selection = arg0.selection;
+				} else {
+					point = arg0;
+					handleIn = arg1;
+					handleOut = arg2;
+					selection = arg3;
+				}
 			} else {
-				point = arg0;
+				point = [ arg0, arg1 ];
+				handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
+				handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
 			}
-		} else if (arg0 == null || typeof arg0 === 'object') {
-			point = arg0;
-			handleIn = arg1;
-			handleOut = arg2;
-			selection = arg3;
-		} else {
-			point = arg0 !== undefined ? [ arg0, arg1 ] : null;
-			handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
-			handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
 		}
 		new SegmentPoint(point, this, '_point');
 		new SegmentPoint(handleIn, this, '_handleIn');
@@ -7364,10 +7370,28 @@ var PathItem = Item.extend({
 	},
 
 	statics: {
-		create: function(pathData) {
-			var ctor = (pathData && pathData.match(/m/gi) || []).length > 1
-					|| /z\s*\S+/i.test(pathData) ? CompoundPath : Path;
-			return new ctor(pathData);
+
+		create: function(arg) {
+			var data,
+				segments,
+				compound;
+			if (Base.isPlainObject(arg)) {
+				segments = arg.segments;
+				data = arg.pathData;
+			} else if (Array.isArray(arg)) {
+				segments = arg;
+			} else if (typeof arg === 'string') {
+				data = arg;
+			}
+			if (segments) {
+				var first = segments[0];
+				compound = first && Array.isArray(first[0]);
+			} else if (data) {
+				compound = (data.match(/m/gi) || []).length > 1
+						|| /z\s*\S+/i.test(data);
+			}
+			var ctor = compound ? CompoundPath : Path;
+			return new ctor(arg);
 		}
 	},
 
@@ -7676,12 +7700,19 @@ var Path = PathItem.extend({
 	},
 
 	setSegments: function(segments) {
-		var fullySelected = this.isFullySelected();
+		var fullySelected = this.isFullySelected(),
+			length = segments && segments.length;
 		this._segments.length = 0;
 		this._segmentSelection = 0;
 		this._curves = undefined;
-		if (segments && segments.length > 0)
-			this._add(Segment.readAll(segments));
+		if (length) {
+			var last = segments[length - 1];
+			if (typeof last === 'boolean') {
+				this.setClosed(last);
+				length--;
+			}
+			this._add(Segment.readList(segments, 0, {}, length));
+		}
 		if (fullySelected)
 			this.setFullySelected(true);
 	},
@@ -7764,13 +7795,13 @@ var Path = PathItem.extend({
 							dy = curY - prevY;
 						parts.push(
 							  dx === 0 ? 'v' + f.number(dy)
-							: dy === 0  ? 'h' + f.number(dx)
+							: dy === 0 ? 'h' + f.number(dx)
 							: 'l' + f.pair(dx, dy));
 					}
 				} else {
 					parts.push('c' + f.pair(outX - prevX, outY - prevY)
-							+ ' ' + f.pair(inX - prevX, inY - prevY)
-							+ ' ' + f.pair(curX - prevX, curY - prevY));
+							 + ' ' + f.pair( inX - prevX,  inY - prevY)
+							 + ' ' + f.pair(curX - prevX, curY - prevY));
 				}
 			}
 			prevX = curX;
@@ -7872,13 +7903,13 @@ var Path = PathItem.extend({
 
 	add: function(segment1 ) {
 		return arguments.length > 1 && typeof segment1 !== 'number'
-			? this._add(Segment.readAll(arguments))
+			? this._add(Segment.readList(arguments))
 			: this._add([ Segment.read(arguments) ])[0];
 	},
 
 	insert: function(index, segment1 ) {
 		return arguments.length > 2 && typeof segment1 !== 'number'
-			? this._add(Segment.readAll(arguments, 1), index)
+			? this._add(Segment.readList(arguments, 1), index)
 			: this._add([ Segment.read(arguments, 1) ], index)[0];
 	},
 
@@ -7891,11 +7922,11 @@ var Path = PathItem.extend({
 	},
 
 	addSegments: function(segments) {
-		return this._add(Segment.readAll(segments));
+		return this._add(Segment.readList(segments));
 	},
 
 	insertSegments: function(index, segments) {
-		return this._add(Segment.readAll(segments), index);
+		return this._add(Segment.readList(segments), index);
 	},
 
 	removeSegment: function(index) {
@@ -9282,21 +9313,30 @@ var CompoundPath = PathItem.extend({
 	},
 
 	insertChildren: function insertChildren(index, items, _preserve) {
+		var list = items,
+			first = list[0];
+		if (first && typeof first[0] === 'number')
+			list = [list];
 		for (var i = items.length - 1; i >= 0; i--) {
-			var item = items[i];
-			if (item instanceof CompoundPath) {
-				items = items.slice();
-				items.splice.apply(items, [i, 1].concat(item.removeChildren()));
+			var item = list[i];
+			if (list === items && !(item instanceof Path))
+				list = Base.slice(list);
+			if (Array.isArray(item)) {
+				var path = new Path({ segments: item, insert: false });
+				path.setClockwise(path.isClockwise());
+				list[i] = path;
+			} else if (item instanceof CompoundPath) {
+				list.splice.apply(list, [i, 1].concat(item.removeChildren()));
 				item.remove();
 			}
 		}
-		items = insertChildren.base.call(this, index, items, _preserve, Path);
-		for (var i = 0, l = !_preserve && items && items.length; i < l; i++) {
-			var item = items[i];
+		list = insertChildren.base.call(this, index, list, _preserve);
+		for (var i = 0, l = !_preserve && list && list.length; i < l; i++) {
+			var item = list[i];
 			if (item._clockwise === undefined)
 				item.setClockwise(item._index === 0);
 		}
-		return items;
+		return list;
 	},
 
 	reduce: function reduce(options) {
@@ -10793,8 +10833,7 @@ var Color = Base.extend(new function() {
 		_readIndex: true,
 
 		initialize: function Color(arg) {
-			var slice = Array.prototype.slice,
-				args = arguments,
+			var args = arguments,
 				reading = this.__read,
 				read = 0,
 				type,
@@ -10815,7 +10854,7 @@ var Color = Base.extend(new function() {
 				} else {
 					if (reading)
 						read = 1;
-					args = slice.call(args, 1);
+					args = Base.slice(args, 1);
 					argType = typeof arg;
 				}
 			}
@@ -10838,7 +10877,7 @@ var Color = Base.extend(new function() {
 							: 1;
 					}
 					if (values.length > length)
-						values = slice.call(values, 0, length);
+						values = Base.slice(values, 0, length);
 				} else if (argType === 'string') {
 					type = 'rgb';
 					components = fromCSS(arg);
@@ -11180,7 +11219,7 @@ var Gradient = Base.extend({
 			for (var i = 0, l = _stops.length; i < l; i++)
 				_stops[i]._owner = undefined;
 		}
-		_stops = this._stops = GradientStop.readAll(stops, 0, { clone: true });
+		_stops = this._stops = GradientStop.readList(stops, 0, { clone: true });
 		for (var i = 0, l = _stops.length; i < l; i++)
 			_stops[i]._owner = this;
 		this._changed();
@@ -12363,7 +12402,7 @@ var CanvasView = View.extend({
 			if (size.isZero())
 				throw new Error(
 						'Cannot create CanvasView with the provided argument: '
-						+ [].slice.call(arguments, 1));
+						+ Base.slice(arguments, 1));
 			canvas = CanvasProvider.getCanvas(size);
 		}
 		var ctx = this._context = canvas.getContext('2d');
