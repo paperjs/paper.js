@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jul 18 20:11:01 2016 +0200
+ * Date: Tue Jul 19 10:09:55 2016 +0200
  *
  ***
  *
@@ -7424,6 +7424,7 @@ var PathItem = Item.extend({
 			case 'h':
 			case 'v':
 				var coord = lower === 'h' ? 'x' : 'y';
+				current = current.clone();
 				for (var j = 0; j < length; j++) {
 					current[coord] = getCoord(j, coord);
 					this.lineTo(current);
@@ -7758,8 +7759,14 @@ var Path = PathItem.extend({
 				inY = coords[3];
 				if (inX === curX && inY === curY
 						&& outX === prevX && outY === prevY) {
-					if (!skipLine)
-						parts.push('l' + f.pair(curX - prevX, curY - prevY));
+					if (!skipLine) {
+						var dx = curX - prevX,
+							dy = curY - prevY;
+						parts.push(
+							  dx === 0 ? 'v' + f.number(dy)
+							: dy === 0  ? 'h' + f.number(dx)
+							: 'l' + f.pair(dx, dy));
+					}
 				} else {
 					parts.push('c' + f.pair(outX - prevX, outY - prevY)
 							+ ' ' + f.pair(inX - prevX, inY - prevY)
@@ -9382,7 +9389,7 @@ var CompoundPath = PathItem.extend({
 			paths.push(child.getPathData(_matrix && !mx.isIdentity()
 					? _matrix.appended(mx) : _matrix, _precision));
 		}
-		return paths.join(' ');
+		return paths.join('');
 	}
 }, {
 	_hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
