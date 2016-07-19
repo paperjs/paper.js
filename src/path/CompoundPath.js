@@ -283,6 +283,21 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         for (var i = 0, l = children.length; i < l; i++)
             area += children[i].getArea();
         return area;
+    },
+
+    /**
+     * The total length of all sub-paths in this compound-path, calculated by
+     * getting {@link Path#getLength()} of each sub-path and it adding up.
+     *
+     * @bean
+     * @type Number
+     */
+    getLength: function() {
+        var children = this._children,
+            length = 0;
+        for (var i = 0, l = children.length; i < l; i++)
+            length += children[i].getLength();
+        return length;
     }
 }, /** @lends CompoundPath# */{
     // Enforce bean creation for getPathData(), as it has hidden parameters.
