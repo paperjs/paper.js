@@ -77,7 +77,7 @@ var ProxyContext = new function() {
                 if (name === 'restore')
                     this._indents--;
                 console.log(this.getIndentation() + 'ctx.' + name + '('
-                        + Array.prototype.slice.call(arguments, 0)
+                        + Base.slice(arguments, 0)
                             .map(stringify).join(', ')
                         + ');');
                 if (name === 'save')

@@ -2328,24 +2328,21 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item[]} the inserted items, or `null` if inserted was not
      *     possible
      */
-    insertChildren: function(index, items, _preserve, _proto) {
+    insertChildren: function(index, items, _preserve) {
         // CompoundPath#insertChildren() requires _preserve and _type:
         // _preserve avoids changing of the children's path orientation
-        // _proto enforces the prototype of the inserted items, as used by
-        // CompoundPath#insertChildren()
         var children = this._children;
         if (children && items && items.length > 0) {
-            // We need to clone items because it might be
-            // an Item#children array. Also, we're removing elements if they
-            // don't match _type. Use Array.prototype.slice because items can be
-            // an arguments object.
-            items = Array.prototype.slice.apply(items);
+            // We need to clone items because it may be an Item#children array.
+            // Also, we're removing elements if they don't match _type.
+            // Use Base.slice() because items can be an arguments object.
+            items = Base.slice(items);
             // Remove the items from their parents first, since they might be
             // inserted into their own parents, affecting indices.
-            // Use the loop also to filter out wrong _type.
+            // Use the loop also to filter invalid items.
             for (var i = items.length - 1; i >= 0; i--) {
                 var item = items[i];
-                if (!item || _proto && !(item instanceof _proto)) {
+                if (!item) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
@@ -3949,9 +3946,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#on
      * @function
-     * @param {Object} object an object literal containing one or more of the
-     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
-     *     click, doubleclick, mousemove, mouseenter, mouseleave}
+     * @param {Object} object an object containing one or more of the following
+     *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
+     *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -4018,9 +4015,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#off
      * @function
-     * @param {Object} object an object literal containing one or more of the
-     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
-     *     click, doubleclick, mousemove, mouseenter, mouseleave}
+     * @param {Object} object an object containing one or more of the following
+     *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
+     *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      */
 

@@ -408,8 +408,8 @@ statics: new function() {
          * object literal.
          *
          * @name Shape.Circle
-         * @param {Object} object an object literal containing properties
-         * describing the shape's attributes
+         * @param {Object} object an object containing properties describing the
+         *     shape's attributes
          * @return {Shape} the newly created shape
          *
          * @example {@paperscript}
@@ -481,8 +481,8 @@ statics: new function() {
          * object literal.
          *
          * @name Shape.Rectangle
-         * @param {Object} object an object literal containing properties
-         * describing the shape's attributes
+         * @param {Object} object an object containing properties describing the
+         *     shape's attributes
          * @return {Shape} the newly created shape
          *
          * @example {@paperscript}
@@ -541,8 +541,8 @@ statics: new function() {
          * object literal.
          *
          * @name Shape.Ellipse
-         * @param {Object} object an object literal containing properties
-         * describing the shape's attributes
+         * @param {Object} object an object containing properties describing the
+         *     shape's attributes
          * @return {Shape} the newly created shape
          *
          * @example {@paperscript}

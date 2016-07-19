@@ -80,7 +80,7 @@ var Emitter = {
         var handlers = this._callbacks && this._callbacks[type];
         if (!handlers)
             return false;
-        var args = [].slice.call(arguments, 1),
+        var args = Base.slice(arguments, 1),
             // Set the current target to `this` if the event object defines
             // #target but not #currentTarget.
             setTarget = event && event.target && !event.currentTarget;

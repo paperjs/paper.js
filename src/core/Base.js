@@ -166,13 +166,13 @@ Base.inject(/** @lends Base# */{
          * @param {Array} list the list to read from, either an arguments object
          *     or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {Number} length the amount of elements that can be read
          * @param {Object} options `options.readNull` controls whether null is
          *     returned or converted. `options.clone` controls whether passed
          *     objects should be cloned if they are already provided in the
          *     required type
+         * @param {Number} length the amount of elements that can be read
          */
-        read: function(list, start, options, length) {
+        read: function(list, start, options, amount) {
             // See if it's called directly on Base, and if so, read value and
             // return without object conversion.
             if (this === Base) {
@@ -182,24 +182,29 @@ Base.inject(/** @lends Base# */{
             }
             var proto = this.prototype,
                 readIndex = proto._readIndex,
-                index = start || readIndex && list.__index || 0;
-            if (!length)
-                length = list.length - index;
-            var obj = list[index];
+                begin = start || readIndex && list.__index || 0,
+                length = list.length,
+                obj = list[begin];
+            amount = amount || length - begin;
+            // When read() is called on a sub-class of which the object is
+            // already an instance, or when there is only one value in the list
+            // and it's null or undefined, return the obj.
             if (obj instanceof this
-                || options && options.readNull && obj == null && length <= 1) {
+                || options && options.readNull && obj == null && amount <= 1) {
                 if (readIndex)
-                    list.__index = index + 1;
+                    list.__index = begin + 1;
                 return obj && options && options.clone ? obj.clone() : obj;
             }
+            // Otherwise, create a new object and read through its initialize
+            // function.
             obj = Base.create(this.prototype);
             if (readIndex)
                 obj.__read = true;
-            obj = obj.initialize.apply(obj, index > 0 || length < list.length
-                ? Array.prototype.slice.call(list, index, index + length)
-                : list) || obj;
+            obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
+                    ? Base.slice(list, begin, begin + amount)
+                    : list) || obj;
             if (readIndex) {
-                list.__index = index + obj.__read;
+                list.__index = begin + obj.__read;
                 obj.__read = undefined;
             }
             return obj;
@@ -235,11 +240,14 @@ Base.inject(/** @lends Base# */{
          *     returned or converted. `options.clone` controls whether passed
          *     objects should be cloned if they are already provided in the
          *     required type
+         * @param {Number} amount the amount of elements that should be read
          */
-        readAll: function(list, start, options) {
+        readList: function(list, start, options, amount) {
             var res = [],
-                entry;
-            for (var i = start || 0, l = list.length; i < l; i++) {
+                entry,
+                begin = start || 0,
+                end = amount ? begin + amount : list.length;
+            for (var i = begin; i < end; i++) {
                 res.push(Array.isArray(entry = list[i])
                         ? this.read(entry, 0, options)
                         : this.read(list, i, options, 1));
@@ -255,11 +263,16 @@ Base.inject(/** @lends Base# */{
          * various Path.Constructors.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
-         * @param {Number} start the index at which to start reading in the list
+         *     or a normal array
          * @param {String} name the property name to read from
+         * @param {Number} start the index at which to start reading in the list
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
+         * @param {Number} amount the amount of elements that can be read
          */
-        readNamed: function(list, name, start, options, length) {
+        readNamed: function(list, name, start, options, amount) {
             var value = this.getNamed(list, name),
                 hasObject = value !== undefined;
             if (hasObject) {
@@ -276,7 +289,7 @@ Base.inject(/** @lends Base# */{
                 // shine through.
                 filtered[name] = undefined;
             }
-            return this.read(hasObject ? [value] : list, start, options, length);
+            return this.read(hasObject ? [value] : list, start, options, amount);
         },
 
         /**
@@ -513,7 +526,7 @@ Base.inject(/** @lends Base# */{
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        // When reusing an object, initialize it through #_set()
+                        // When reusing an object, initialize it through #set()
                         // instead of the constructor function:
                         (useTarget ? obj.set : ctor).apply(obj, args);
                         // Clear target to only use it once.

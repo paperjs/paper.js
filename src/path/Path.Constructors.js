@@ -67,8 +67,8 @@ Path.inject({ statics: new function() {
          * literal.
          *
          * @name Path.Line
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -102,8 +102,8 @@ Path.inject({ statics: new function() {
          * object literal.
          *
          * @name Path.Circle
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -174,8 +174,8 @@ Path.inject({ statics: new function() {
          * object literal.
          *
          * @name Path.Rectangle
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -267,8 +267,8 @@ Path.inject({ statics: new function() {
          * object literal.
          *
          * @name Path.Ellipse
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -317,8 +317,8 @@ Path.inject({ statics: new function() {
          * object literal.
          *
          * @name Path.Arc
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -363,8 +363,8 @@ Path.inject({ statics: new function() {
          * described by an object literal.
          *
          * @name Path.RegularPolygon
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}
@@ -417,8 +417,8 @@ Path.inject({ statics: new function() {
          * object literal.
          *
          * @name Path.Star
-         * @param {Object} object an object literal containing properties
-         * describing the path's attributes
+         * @param {Object} object an object containing properties describing the
+         *     path's attributes
          * @return {Path} the newly created path
          *
          * @example {@paperscript}

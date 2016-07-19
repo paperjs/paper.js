@@ -39,7 +39,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             if (size.isZero())
                 throw new Error(
                         'Cannot create CanvasView with the provided argument: '
-                        + [].slice.call(arguments, 1));
+                        + Base.slice(arguments, 1));
             canvas = CanvasProvider.getCanvas(size);
         }
         var ctx = this._context = canvas.getContext('2d');

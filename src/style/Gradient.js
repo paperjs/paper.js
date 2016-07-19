@@ -156,7 +156,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
             for (var i = 0, l = _stops.length; i < l; i++)
                 _stops[i]._owner = undefined;
         }
-        _stops = this._stops = GradientStop.readAll(stops, 0, { clone: true });
+        _stops = this._stops = GradientStop.readList(stops, 0, { clone: true });
         // Now assign this gradient as the new gradients' owner.
         for (var i = 0, l = _stops.length; i < l; i++)
             _stops[i]._owner = this;

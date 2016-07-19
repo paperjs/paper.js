@@ -57,8 +57,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * Creates a new Segment object.
      *
      * @name Segment#initialize
-     * @param {Object} object an object literal containing properties to
-     * be set on the segment
+     * @param {Object} object an object containing properties to be set on the
+     *     segment
      *
      * @example {@paperscript}
      * // Creating segments using object notation:
@@ -115,32 +115,31 @@ var Segment = Base.extend(/** @lends Segment# */{
      */
     initialize: function Segment(arg0, arg1, arg2, arg3, arg4, arg5) {
         var count = arguments.length,
-            point, handleIn, handleOut,
-            selection;
-        // TODO: Use Point.read or Point.readNamed to read these?
-        if (count === 0) {
-            // Nothing
-        } else if (count === 1) {
-            // NOTE: This copies from existing segments through accessors.
-            if (arg0 && 'point' in arg0) {
-                point = arg0.point;
-                handleIn = arg0.handleIn;
-                handleOut = arg0.handleOut;
-                selection = arg0.selection;
+            point, handleIn, handleOut, selection;
+        // TODO: Should we use Point.read() or Point.readNamed() to read these?
+        if (count > 0) {
+            if (arg0 == null || typeof arg0 === 'object') {
+                // Handle undefined, null and passed objects:
+                if (count === 1 && arg0 && 'point' in arg0) {
+                    // NOTE: This copies from segments through accessors.
+                    point = arg0.point;
+                    handleIn = arg0.handleIn;
+                    handleOut = arg0.handleOut;
+                    selection = arg0.selection;
+                } else {
+                    // It doesn't matter if all of these arguments exist.
+                    // SegmentPoint() creates points with (0, 0) otherwise.
+                    point = arg0;
+                    handleIn = arg1;
+                    handleOut = arg2;
+                    selection = arg3;
+                }
             } else {
-                point = arg0;
+                // Read points from the arguments list as a row of numbers.
+                point = [ arg0, arg1 ];
+                handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
+                handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
             }
-        } else if (arg0 == null || typeof arg0 === 'object') {
-            // It doesn't matter if all of these arguments exist.
-            // new SegmentPoint() produces creates points with (0, 0) otherwise.
-            point = arg0;
-            handleIn = arg1;
-            handleOut = arg2;
-            selection = arg3;
-        } else { // Read points from the arguments list as a row of numbers
-            point = arg0 !== undefined ? [ arg0, arg1 ] : null;
-            handleIn = arg2 !== undefined ? [ arg2, arg3 ] : null;
-            handleOut = arg4 !== undefined ? [ arg4, arg5 ] : null;
         }
         new SegmentPoint(point, this, '_point');
         new SegmentPoint(handleIn, this, '_handleIn');

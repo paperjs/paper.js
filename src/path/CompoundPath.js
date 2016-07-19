@@ -59,8 +59,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * at the top of the active layer.
      *
      * @name CompoundPath#initialize
-     * @param {Object} object an object literal containing properties to
-     * be set on the path
+     * @param {Object} object an object containing properties to be set on the
+     *     path
      * @return {CompoundPath} the newly created path
      *
      * @example {@paperscript}
@@ -107,31 +107,44 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     insertChildren: function insertChildren(index, items, _preserve) {
-        // Convert CompoundPath items in the children list by adding their
-        // children to the list, replacing their parent.
+        // If we're passed an array notation for a simple path, wrap it again
+        // in an array to turn it into the array notation for a compound-path.
+        var list = items,
+            first = list[0];
+        if (first && typeof first[0] === 'number')
+            list = [list];
+        // Perform some conversions depending on the type of item passed:
+        // Convert array-notation to paths, and expand compound-paths in the
+        // items list by adding their children to the it replacing their parent.
         for (var i = items.length - 1; i >= 0; i--) {
-            var item = items[i];
-            if (item instanceof CompoundPath) {
-                // Clone the items array before modifying it, as it may be a
-                // passed children array from another item.
-                items = items.slice();
-                items.splice.apply(items, [i, 1].concat(item.removeChildren()));
+            var item = list[i];
+            // Clone the list array before modifying it, as it may be a passed
+            // children array from another item.
+            if (list === items && !(item instanceof Path))
+                list = Base.slice(list);
+            if (Array.isArray(item)) {
+                var path = new Path({ segments: item, insert: false });
+                // Fix natural clockwise value, so it's not automatically
+                // determined when inserted into the compound-path.
+                // TODO: Remove reorientation code instead.
+                path.setClockwise(path.isClockwise());
+                list[i] = path;
+            } else if (item instanceof CompoundPath) {
+                list.splice.apply(list, [i, 1].concat(item.removeChildren()));
                 item.remove();
             }
         }
-        // Pass on 'path' for _type, to make sure that only paths are added as
-        // children.
-        items = insertChildren.base.call(this, index, items, _preserve, Path);
+        list = insertChildren.base.call(this, index, list, _preserve);
         // All children except for the bottom one (first one in list) are set
         // to anti-clockwise orientation, so that they appear as holes, but
         // only if their orientation was not already specified before
         // (= _clockwise is defined).
-        for (var i = 0, l = !_preserve && items && items.length; i < l; i++) {
-            var item = items[i];
+        for (var i = 0, l = !_preserve && list && list.length; i < l; i++) {
+            var item = list[i];
             if (item._clockwise === undefined)
                 item.setClockwise(item._index === 0);
         }
-        return items;
+        return list;
     },
 
     // DOCS: reduce()

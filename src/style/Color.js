@@ -483,8 +483,7 @@ var Color = Base.extend(new function() {
          */
         initialize: function Color(arg) {
             // We are storing color internally as an array of components
-            var slice = Array.prototype.slice,
-                args = arguments,
+            var args = arguments,
                 reading = this.__read,
                 read = 0,
                 type,
@@ -512,7 +511,7 @@ var Color = Base.extend(new function() {
                     if (reading)
                         read = 1; // Will be increased below
                     // Shift type out of the arguments, and process normally.
-                    args = slice.call(args, 1);
+                    args = Base.slice(args, 1);
                     argType = typeof arg;
                 }
             }
@@ -543,7 +542,7 @@ var Color = Base.extend(new function() {
                             : 1;
                     }
                     if (values.length > length)
-                        values = slice.call(values, 0, length);
+                        values = Base.slice(values, 0, length);
                 } else if (argType === 'string') {
                     type = 'rgb';
                     components = fromCSS(arg);

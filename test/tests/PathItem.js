@@ -59,30 +59,9 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
         return res;
     }
 
-    function create(data) {
-        var first = data && data[0];
-        if (first == null)
-            return null;
-        if (Array.isArray(first[0])) {
-            return new CompoundPath(data.map(create));
-        } else {
-            var closed = data[data.length - 1];
-            if (typeof closed === 'boolean') {
-                data.length--;
-            } else {
-                closed = false;
-            }
-            var path = new Path({ segments: data, closed: closed });
-            // Fix natural clockwise value, so it's not automatically determined
-            // when inserted into the compound-path.
-            path.clockwise = path.clockwise;
-            return path;
-        }
-    }
-
     data.forEach(function(entry, i) {
         var path = PathItem.create(entry);
         // console.log(JSON.stringify(describe(path)));
-        equals(path, create(expected[i]), 'data[' + i + ']');
+        equals(path, PathItem.create(expected[i]), 'data[' + i + ']');
     });
 });

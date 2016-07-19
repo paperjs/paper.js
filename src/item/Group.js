@@ -74,8 +74,8 @@ var Group = Item.extend(/** @lends Group# */{
      * Creates a new Group item and places it at the top of the active layer.
      *
      * @name Group#initialize
-     * @param {Object} object an object literal containing the properties to be
-     * set on the group
+     * @param {Object} object an object containing the properties to be set on
+     *     the group
      *
      * @example {@paperscript}
      * var path = new Path([100, 100], [100, 200]);

@@ -51,8 +51,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * top of the active layer.
      *
      * @name Path#initialize
-     * @param {Object} object an object literal containing properties to
-     * be set on the path
+     * @param {Object} object an object containing properties to be set on the
+     *     path
      * @return {Path} the newly created path
      *
      * @example {@paperscript}
@@ -178,13 +178,20 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     setSegments: function(segments) {
-        var fullySelected = this.isFullySelected();
+        var fullySelected = this.isFullySelected(),
+            length = segments && segments.length;
         this._segments.length = 0;
         this._segmentSelection = 0;
         // Calculate new curves next time we call getCurves()
         this._curves = undefined;
-        if (segments && segments.length > 0)
-            this._add(Segment.readAll(segments));
+        if (length) {
+            var last = segments[length - 1];
+            if (typeof last === 'boolean') {
+                this.setClosed(last);
+                length--;
+            }
+            this._add(Segment.readList(segments, 0, {}, length));
+        }
         // Preserve fullySelected state.
         // TODO: Do we still need this?
         if (fullySelected)
@@ -326,14 +333,14 @@ var Path = PathItem.extend(/** @lends Path# */{
                             dy = curY - prevY;
                         parts.push(
                               dx === 0 ? 'v' + f.number(dy)
-                            : dy === 0  ? 'h' + f.number(dx)
+                            : dy === 0 ? 'h' + f.number(dx)
                             : 'l' + f.pair(dx, dy));
                     }
                 } else {
                     // c = relative curveto:
                     parts.push('c' + f.pair(outX - prevX, outY - prevY)
-                            + ' ' + f.pair(inX - prevX, inY - prevY)
-                            + ' ' + f.pair(curX - prevX, curY - prevY));
+                             + ' ' + f.pair( inX - prevX,  inY - prevY)
+                             + ' ' + f.pair(curX - prevX, curY - prevY));
                 }
             }
             prevX = curX;
@@ -545,7 +552,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     add: function(segment1 /*, segment2, ... */) {
         return arguments.length > 1 && typeof segment1 !== 'number'
             // addSegments
-            ? this._add(Segment.readAll(arguments))
+            ? this._add(Segment.readList(arguments))
             // addSegment
             : this._add([ Segment.read(arguments) ])[0];
     },
@@ -589,7 +596,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     insert: function(index, segment1 /*, segment2, ... */) {
         return arguments.length > 2 && typeof segment1 !== 'number'
             // insertSegments
-            ? this._add(Segment.readAll(arguments, 1), index)
+            ? this._add(Segment.readList(arguments, 1), index)
             // insertSegment
             : this._add([ Segment.read(arguments, 1) ], index)[0];
     },
@@ -645,7 +652,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path2.position.x += 30;
      */
     addSegments: function(segments) {
-        return this._add(Segment.readAll(segments));
+        return this._add(Segment.readList(segments));
     },
 
     /**
@@ -659,7 +666,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * belongs to another path
      */
     insertSegments: function(index, segments) {
-        return this._add(Segment.readAll(segments), index);
+        return this._add(Segment.readList(segments), index);
     },
 
     /**
