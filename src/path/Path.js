@@ -185,6 +185,9 @@ var Path = PathItem.extend(/** @lends Path# */{
         // Calculate new curves next time we call getCurves()
         this._curves = undefined;
         if (length) {
+            // See if the last segment is a boolean describing the path's closed
+            // state. This is part of the shorter segment array notation that
+            // can also be nested to create compound-paths out of one array.
             var last = segments[length - 1];
             if (typeof last === 'boolean') {
                 this.setClosed(last);

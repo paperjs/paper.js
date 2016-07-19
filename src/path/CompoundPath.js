@@ -107,8 +107,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     insertChildren: function insertChildren(index, items, _preserve) {
-        // If we're passed an array notation for a simple path, wrap it again
-        // in an array to turn it into the array notation for a compound-path.
+        // If we're passed a segment array describing a simple path instead of a
+        // compound-path, wrap it in another array to turn it into the array
+        // notation for compound-paths.
         var list = items,
             first = list[0];
         if (first && typeof first[0] === 'number')
