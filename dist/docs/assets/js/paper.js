@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 17:56:04 2016 +0200
+ * Date: Wed Jul 20 17:58:47 2016 +0200
  *
  ***
  *
@@ -6775,10 +6775,12 @@ new function() {
 				}
 			} else {
 				if (uMax - uMin >= 1e-10) {
-					calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
+					calls = addCurveIntersections(
+						v2, v1, c2, c1, locations, param,
 						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				} else {
-					calls = addCurveIntersections(v1, v2, c1, c2, locations, param,
+					calls = addCurveIntersections(
+						v1, v2, c1, c2, locations, param,
 						tMinNew, tMaxNew, uMin, uMax, flip, recursion, calls);
 				}
 			}
