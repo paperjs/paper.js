@@ -156,6 +156,14 @@ var comparePixels = function(actual, expected, message, options) {
                 + '" src="' + raster.source + '">';
     }
 
+    if (!expected) {
+        return QUnit.strictEqual(actual, expected, message, options);
+    } else if (!actual) {
+        // In order to compare pixels, just create an empty item that can be
+        // rasterized to an empty raster.
+        actual = new Group();
+    }
+
     options = options || {};
     // In order to properly compare pixel by pixel, we need to put each item
     // into a group with a white background of the united dimensions of the
@@ -452,10 +460,15 @@ var compareBoolean = function(actual, expected, message, options) {
             message = getFunctionMessage(actual);
         actual = actual();
     }
-    actual.style = expected.style = {
+    var style = {
         strokeColor: 'black',
-        fillColor: expected.closed || expected.children ? 'yellow' : null
+        fillColor: expected &&
+                (expected.closed || expected.children && 'yellow') || null
     };
+    if (actual)
+        actual.style = style;
+    if (expected)
+        expected.style = style;
     equals(actual, expected, message, Base.set({ rasterize: true }, options));
 };
 

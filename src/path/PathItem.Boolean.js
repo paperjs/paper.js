@@ -101,7 +101,10 @@ PathItem.inject(new function() {
                 CurveLocation.expand(_path1.getCrossings(_path2))),
             segments = [],
             // Aggregate of all curves in both operands.
-            curves = [];
+            curves = [],
+            paths1 = _path1._children || [_path1],
+            paths2 = _path2 && (_path2._children || [_path2]),
+            paths;
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -114,39 +117,74 @@ PathItem.inject(new function() {
             }
         }
 
-        // Collect all segments and monotonic curves
-        collect(_path1._children || [_path1]);
-        if (_path2)
-            collect(_path2._children || [_path2]);
-        // Propagate the winding contribution. Winding contribution of curves
-        // does not change between two crossings.
-        // First, propagate winding contributions for curve chains starting in
-        // all crossings:
-        for (var i = 0, l = crossings.length; i < l; i++) {
-            propagateWinding(crossings[i]._segment, _path1, _path2, curves,
-                    operator);
+        function contains(paths1, paths2) {
+            return false;
         }
-        // Now process the segments that are not part of any intersecting chains
-        for (var i = 0, l = segments.length; i < l; i++) {
-            var segment = segments[i],
-                inter = segment._intersection;
-            if (segment._winding == null) {
-                propagateWinding(segment, _path1, _path2, curves, operator);
+
+        // When there are no crossings, and the two paths are not contained
+        // within each other, the result can be known ahead of tracePaths(),
+        // largely simplifying the processing required:
+        if (!crossings.length) {
+            // If we have two operands, check their bounds to find cases where
+            // one path is fully contained in another. These cases cannot be
+            // simplified, we still need tracePaths() for them.
+            var ok = true;
+            if (paths2) {
+                for (var i1 = 0, l1 = paths1.length; i1 < l1 && ok; i1++) {
+                    var bounds1 = paths1[i1].getBounds();
+                    for (var i2 = 0, l2 = paths2.length; i2 < l2 && ok; i2++) {
+                        var bounds2 = paths2[i2].getBounds();
+                        // If either of the bounds fully contains the other,
+                        // skip the simple approach and delegate to tracePaths()
+                        ok = !bounds1._containsRectangle(bounds2) &&
+                             !bounds2._containsRectangle(bounds1);
+                    }
+                }
             }
-            // See if there are any valid segments that aren't part of overlaps.
-            // This information is used to determine where to start tracing the
-            // path, and how to treat encountered invalid segments.
-            if (!(inter && inter._overlap)) {
-                var path = segment._path;
-                path._overlapsOnly = false;
-                // This is not an overlap. If it is valid, take note that there
-                // are valid intersections other than overlaps in this path.
-                if (operator[segment._winding])
-                    path._validOverlapsOnly = false;
+            if (ok) {
+                paths = operator.unite || operator.exclude ? [_path1, _path2]
+                        : operator.subtract ? [_path1]
+                        // No result, but let's return an empty path to keep
+                        // chainability and transfer styles to the result.
+                        : operator.intersect ? [new Path(Item.NO_INSERT)]
+                        : null;
             }
         }
-        return createResult(CompoundPath, tracePaths(segments, operator), true,
-                    path1, path2);
+        if (!paths) {
+            // Collect all segments and monotonic curves
+            collect(paths1);
+            if (paths2)
+                collect(paths2);
+            // Propagate the winding contribution. Winding contribution of
+            // curves does not change between two crossings.
+            // First, propagate winding contributions for curve chains starting
+            // in all crossings:
+            for (var i = 0, l = crossings.length; i < l; i++) {
+                propagateWinding(crossings[i]._segment, _path1, _path2, curves,
+                        operator);
+            }
+            for (var i = 0, l = segments.length; i < l; i++) {
+                var segment = segments[i],
+                    inter = segment._intersection;
+                if (segment._winding == null) {
+                    propagateWinding(segment, _path1, _path2, curves, operator);
+                }
+                // See if there are any valid segments that aren't part of
+                // overlaps. Use this information to determine how to deal with
+                // various edge-cases in tracePaths().
+                if (!(inter && inter._overlap)) {
+                    var path = segment._path;
+                    path._overlapsOnly = false;
+                    // This is no overlap. If it is valid, take note that this
+                    // path contains valid intersections other than overlaps.
+                    if (operator[segment._winding])
+                        path._validOverlapsOnly = false;
+                }
+            }
+            paths = tracePaths(segments, operator);
+        }
+
+        return createResult(CompoundPath, paths, true, path1, path2);
     }
 
     function computeOpenBoolean(path1, path2, operator) {
@@ -383,7 +421,7 @@ PathItem.inject(new function() {
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
                 a3Prev = vPrev[ia + 6];
             if (po !== o0) {
-                // Standard case, curve is crossed by not at its start point.
+                // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
                     pathWindingL += winding;
                 } else if (a > paR) {
@@ -394,7 +432,7 @@ PathItem.inject(new function() {
                     pathWindingR += winding;
                 }
             } else if (winding !== windingPrev) {
-                // Curve is crossed at start point and winding changes from
+                // Curve is crossed at starting point and winding changes from
                 // previous. Cancel winding contribution from previous curve.
                 if (a3Prev < paR) {
                     pathWindingL += winding;
@@ -495,8 +533,8 @@ PathItem.inject(new function() {
                     // If the point is on the path and the windings canceled
                     // each other, we treat the point as if it was inside the
                     // path. A point inside a path has a winding of [+1,-1]
-                    // for clockwise and [-1,+1] for counter-clockwise paths. 
-                    // If the ray is cast in y direction (dir == 1), the 
+                    // for clockwise and [-1,+1] for counter-clockwise paths.
+                    // If the ray is cast in y direction (dir == 1), the
                     // windings always have opposite sign.
                     var add = path.isClockwise() ^ dir ? 1 : -1;
                     windingL += add;
@@ -1077,9 +1115,9 @@ PathItem.inject(new function() {
                         o2 = v[5],
                         o3 = v[7];
                     if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
-                        var monos = Curve.getMonoCurves(v);
-                        for (var j = 0, m = monos.length; j < m; j++) {
-                            var mv = monos[j],
+                        var monoCurves = Curve.getMonoCurves(v);
+                        for (var j = 0, m = monoCurves.length; j < m; j++) {
+                            var mv = monoCurves[j],
                                 mo0 = mv[1],
                                 mo3 = mv[7];
                             // Only handle curves that are not horizontal and
