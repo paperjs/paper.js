@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 15:42:04 2016 +0200
+ * Date: Wed Jul 20 16:15:10 2016 +0200
  *
  ***
  *
@@ -9607,7 +9607,10 @@ PathItem.inject(new function() {
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
 			segments = [],
-			curves = [];
+			curves = [],
+			paths1 = _path1._children || [_path1],
+			paths2 = _path2 && (_path2._children || [_path2]),
+			paths;
 
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
@@ -9618,28 +9621,54 @@ PathItem.inject(new function() {
 			}
 		}
 
-		collect(_path1._children || [_path1]);
-		if (_path2)
-			collect(_path2._children || [_path2]);
-		for (var i = 0, l = crossings.length; i < l; i++) {
-			propagateWinding(crossings[i]._segment, _path1, _path2, curves,
-					operator);
+		function contains(paths1, paths2) {
+			return false;
 		}
-		for (var i = 0, l = segments.length; i < l; i++) {
-			var segment = segments[i],
-				inter = segment._intersection;
-			if (segment._winding == null) {
-				propagateWinding(segment, _path1, _path2, curves, operator);
+
+		if (!crossings.length) {
+			var ok = true;
+			if (paths2) {
+				for (var i1 = 0, l1 = paths1.length; i1 < l1 && ok; i1++) {
+					var bounds1 = paths1[i1].getBounds();
+					for (var i2 = 0, l2 = paths2.length; i2 < l2 && ok; i2++) {
+						var bounds2 = paths2[i2].getBounds();
+						ok = !bounds1._containsRectangle(bounds2) &&
+							 !bounds2._containsRectangle(bounds1);
+					}
+				}
 			}
-			if (!(inter && inter._overlap)) {
-				var path = segment._path;
-				path._overlapsOnly = false;
-				if (operator[segment._winding])
-					path._validOverlapsOnly = false;
+			if (ok) {
+				paths = operator.unite || operator.exclude ? [_path1, _path2]
+						: operator.subtract ? [_path1]
+						: operator.intersect ? [new Path(Item.NO_INSERT)]
+						: null;
 			}
 		}
-		return createResult(CompoundPath, tracePaths(segments, operator), true,
-					path1, path2);
+		if (!paths) {
+			collect(paths1);
+			if (paths2)
+				collect(paths2);
+			for (var i = 0, l = crossings.length; i < l; i++) {
+				propagateWinding(crossings[i]._segment, _path1, _path2, curves,
+						operator);
+			}
+			for (var i = 0, l = segments.length; i < l; i++) {
+				var segment = segments[i],
+					inter = segment._intersection;
+				if (segment._winding == null) {
+					propagateWinding(segment, _path1, _path2, curves, operator);
+				}
+				if (!(inter && inter._overlap)) {
+					var path = segment._path;
+					path._overlapsOnly = false;
+					if (operator[segment._winding])
+						path._validOverlapsOnly = false;
+				}
+			}
+			paths = tracePaths(segments, operator);
+		}
+
+		return createResult(CompoundPath, paths, true, path1, path2);
 	}
 
 	function computeOpenBoolean(path1, path2, operator) {
@@ -10230,9 +10259,9 @@ PathItem.inject(new function() {
 						o2 = v[5],
 						o3 = v[7];
 					if (y >= min(o0, o1, o2, o3) && y <= max(o0, o1, o2, o3)) {
-						var monos = Curve.getMonoCurves(v);
-						for (var j = 0, m = monos.length; j < m; j++) {
-							var mv = monos[j],
+						var monoCurves = Curve.getMonoCurves(v);
+						for (var j = 0, m = monoCurves.length; j < m; j++) {
+							var mv = monoCurves[j],
 								mo0 = mv[1],
 								mo3 = mv[7];
 							if ((mo0 !== mo3) &&
