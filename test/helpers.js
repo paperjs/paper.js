@@ -377,7 +377,7 @@ var comparators = {
 
     Path: function(actual, expected, message, options) {
         compareItem(actual, expected, message, options,
-                ['segments', 'closed', 'clockwise', 'length']);
+                ['segments', 'closed', 'clockwise']);
     },
 
     CompoundPath: function(actual, expected, message, options) {
