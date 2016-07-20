@@ -911,7 +911,8 @@ PathItem.inject(new function() {
                         next._handleIn._set(0, 0);
                         var curve = prev.getCurve();
                         if (curve.isStraight() && curve.getLength() === 0) {
-                            next._handleIn.set(prev._handleIn.x, prev._handleIn.y);
+                            // Transfer handleIn when removing segment:
+                            next._handleIn.set(prev._handleIn);
                             prev.remove();
                         }
                     }
