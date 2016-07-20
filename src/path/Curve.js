@@ -1709,9 +1709,15 @@ new function() { // Scope for intersection using bezier fat-line clipping
                             u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
                 }
             } else { // Iterate
-                calls = addCurveIntersections(
-                        v2, v1, c2, c1, locations, param,
+                if (uMax - uMin >= /*#=*/Numerical.CLIPPING_EPSILON) {
+                    calls = addCurveIntersections(v2, v1, c2, c1, locations, param,
                         uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
+                } else {
+                    // The interval on the other curve is already tight enough,
+                    // therefore we keep iterating on the same curve.
+                    calls = addCurveIntersections(v1, v2, c1, c2, locations, param,
+                        tMinNew, tMaxNew, uMin, uMax, flip, recursion, calls);
+                }
             }
         }
         return calls;
