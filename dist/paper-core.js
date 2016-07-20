@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 10:29:27 2016 +0200
+ * Date: Wed Jul 20 10:50:33 2016 +0200
  *
  ***
  *
@@ -9877,7 +9877,9 @@ PathItem.inject(new function() {
 					vClose = null;
 				}
 				if (!pathWindingL && !pathWindingR && isOnPath) {
-					var add = path.isClockwise() ? 1 : -1;
+					var add = path.isClockwise() ^ dir ? 1 : -1;
+					windingL += add;
+					windingR -= add;
 					onPathWinding += add;
 				} else {
 					windingL += pathWindingL;
