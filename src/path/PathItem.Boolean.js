@@ -910,8 +910,10 @@ PathItem.inject(new function() {
                         prev._handleOut._set(0, 0);
                         next._handleIn._set(0, 0);
                         var curve = prev.getCurve();
-                        if (curve.isStraight() && curve.getLength() === 0)
+                        if (curve.isStraight() && curve.getLength() === 0) {
+                            next._handleIn.set(prev._handleIn.x, prev._handleIn.y);
                             prev.remove();
+                        }
                     }
                 }
             }
