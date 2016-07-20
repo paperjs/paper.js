@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 10:27:24 2016 +0200
+ * Date: Wed Jul 20 10:29:27 2016 +0200
  *
  ***
  *
@@ -10127,7 +10127,7 @@ PathItem.inject(new function() {
 						next._handleIn._set(0, 0);
 						var curve = prev.getCurve();
 						if (curve.isStraight() && curve.getLength() === 0) {
-							next._handleIn.set(prev._handleIn.x, prev._handleIn.y);
+							next._handleIn.set(prev._handleIn);
 							prev.remove();
 						}
 					}
