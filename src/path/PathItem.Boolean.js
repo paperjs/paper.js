@@ -492,11 +492,15 @@ PathItem.inject(new function() {
                     vClose = null;
                 }
                 if (!pathWindingL && !pathWindingR && isOnPath) {
-                    // Use the on-path windings if no other intersections
-                    // were found or if they canceled each other.
-                    var add = path.isClockwise() ? 1 : -1;
-                    // windingL += add;
-                    // windingR -= add;
+                    // If the point is on the path and the windings canceled
+                    // each other, we treat the point as if it was inside the
+                    // path. A point inside a path has a winding of [+1,-1]
+                    // for clockwise and [-1,+1] for counter-clockwise paths. 
+                    // If the ray is cast in y direction (dir == 1), the 
+                    // windings always have opposite sign.
+                    var add = path.isClockwise() ^ dir ? 1 : -1;
+                    windingL += add;
+                    windingR -= add;
                     onPathWinding += add;
                 } else {
                     windingL += pathWindingL;
