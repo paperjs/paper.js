@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 16:15:10 2016 +0200
+ * Date: Wed Jul 20 16:32:21 2016 +0200
  *
  ***
  *
@@ -9606,24 +9606,11 @@ PathItem.inject(new function() {
 			_path2.reverse();
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
-			segments = [],
-			curves = [],
 			paths1 = _path1._children || [_path1],
 			paths2 = _path2 && (_path2._children || [_path2]),
+			segments = [],
+			curves = [],
 			paths;
-
-		function collect(paths) {
-			for (var i = 0, l = paths.length; i < l; i++) {
-				var path = paths[i];
-				segments.push.apply(segments, path._segments);
-				curves.push.apply(curves, path.getCurves());
-				path._overlapsOnly = path._validOverlapsOnly = true;
-			}
-		}
-
-		function contains(paths1, paths2) {
-			return false;
-		}
 
 		if (!crossings.length) {
 			var ok = true;
@@ -9644,6 +9631,16 @@ PathItem.inject(new function() {
 						: null;
 			}
 		}
+
+		function collect(paths) {
+			for (var i = 0, l = paths.length; i < l; i++) {
+				var path = paths[i];
+				segments.push.apply(segments, path._segments);
+				curves.push.apply(curves, path.getCurves());
+				path._overlapsOnly = path._validOverlapsOnly = true;
+			}
+		}
+
 		if (!paths) {
 			collect(paths1);
 			if (paths2)
