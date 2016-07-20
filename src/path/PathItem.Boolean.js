@@ -99,27 +99,11 @@ PathItem.inject(new function() {
         // intersection, path2 is null and getIntersections() handles it.
         var crossings = divideLocations(
                 CurveLocation.expand(_path1.getCrossings(_path2))),
-            segments = [],
-            // Aggregate of all curves in both operands.
-            curves = [],
             paths1 = _path1._children || [_path1],
             paths2 = _path2 && (_path2._children || [_path2]),
+            segments = [],
+            curves = [],
             paths;
-
-        function collect(paths) {
-            for (var i = 0, l = paths.length; i < l; i++) {
-                var path = paths[i];
-                segments.push.apply(segments, path._segments);
-                curves.push.apply(curves, path.getCurves());
-                // Keep track if there are valid intersections other than
-                // overlaps in each path.
-                path._overlapsOnly = path._validOverlapsOnly = true;
-            }
-        }
-
-        function contains(paths1, paths2) {
-            return false;
-        }
 
         // When there are no crossings, and the two paths are not contained
         // within each other, the result can be known ahead of tracePaths(),
@@ -142,6 +126,7 @@ PathItem.inject(new function() {
                 }
             }
             if (ok) {
+                // See #1113 for a description of how to deal with operators:
                 paths = operator.unite || operator.exclude ? [_path1, _path2]
                         : operator.subtract ? [_path1]
                         // No result, but let's return an empty path to keep
@@ -150,8 +135,20 @@ PathItem.inject(new function() {
                         : null;
             }
         }
+
+        function collect(paths) {
+            for (var i = 0, l = paths.length; i < l; i++) {
+                var path = paths[i];
+                segments.push.apply(segments, path._segments);
+                curves.push.apply(curves, path.getCurves());
+                // Keep track if there are valid intersections other than
+                // overlaps in each path.
+                path._overlapsOnly = path._validOverlapsOnly = true;
+            }
+        }
+
         if (!paths) {
-            // Collect all segments and monotonic curves
+            // Collect all segments and curves of both involved operands.
             collect(paths1);
             if (paths2)
                 collect(paths2);
