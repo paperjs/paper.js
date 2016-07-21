@@ -9128,7 +9128,7 @@ function onMouseDown(event) {
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>Specifies whether the path is oriented clock-wise.</p>
+	<p>Specifies whether the path as a whole is oriented clock-wise, by looking at the path&rsquo;s area. Note that self-intersecting paths and sub-paths of different orientation can result in areas that cancel each other out.</p>
 	
 	
 	
@@ -9140,6 +9140,15 @@ function onMouseDown(event) {
 	</ul>
     
 	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><tt>Path#getArea</tt>()</tt></li>
+		
+			<li><tt><tt>CompoundPath#getArea</tt>()</tt></li>
+		
+	</ul>
+
 	
 </div>
 
