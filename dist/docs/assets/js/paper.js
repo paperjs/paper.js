@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 21 13:50:55 2016 +0200
+ * Date: Thu Jul 21 15:21:45 2016 +0200
  *
  ***
  *
@@ -2774,11 +2774,11 @@ var Project = PaperScopeItem.extend({
 		return layer;
 	},
 
-	_insertItem: function(index, item, _preserve, _created) {
+	_insertItem: function(index, item, _created) {
 		item = this.insertLayer(index, item)
 				|| (this._activeLayer || this._insertItem(undefined,
-						new Layer(Item.NO_INSERT), true, true))
-						.insertChild(index, item, _preserve);
+						new Layer(Item.NO_INSERT), true))
+						.insertChild(index, item);
 		if (_created && item.activate)
 			item.activate();
 		return item;
@@ -2948,7 +2948,7 @@ new function() {
 			this._setProject(project);
 		} else {
 			(hasProps && props.parent || project)
-					._insertItem(undefined, this, true, true);
+					._insertItem(undefined, this, true);
 		}
 		if (hasProps && props !== Item.NO_INSERT) {
 			Base.filter(this, props, {
@@ -3441,9 +3441,9 @@ new function() {
 		return this._children;
 	},
 
-	setChildren: function(items, _preserve) {
+	setChildren: function(items) {
 		this.removeChildren();
-		this.addChildren(items, _preserve);
+		this.addChildren(items);
 	},
 
 	getFirstChild: function() {
@@ -3854,20 +3854,20 @@ new function() {
 		return res !== this ? this.addChild(res) : res;
 	},
 
-	addChild: function(item, _preserve) {
-		return this.insertChild(undefined, item, _preserve);
+	addChild: function(item) {
+		return this.insertChild(undefined, item);
 	},
 
-	insertChild: function(index, item, _preserve) {
-		var res = item ? this.insertChildren(index, [item], _preserve) : null;
+	insertChild: function(index, item) {
+		var res = item ? this.insertChildren(index, [item]) : null;
 		return res && res[0];
 	},
 
-	addChildren: function(items, _preserve) {
-		return this.insertChildren(this._children.length, items, _preserve);
+	addChildren: function(items) {
+		return this.insertChildren(this._children.length, items);
 	},
 
-	insertChildren: function(index, items, _preserve) {
+	insertChildren: function(index, items) {
 		var children = this._children;
 		if (children && items && items.length > 0) {
 			items = Base.slice(items);
@@ -3901,13 +3901,13 @@ new function() {
 
 	_insertItem: '#insertChild',
 
-	_insertAt: function(item, offset, _preserve) {
+	_insertAt: function(item, offset) {
 		var res = this;
 		if (res !== item) {
 			var owner = item && item._getOwner();
 			if (owner) {
 				res._remove(false, true);
-				owner._insertItem(item._index + offset, res, _preserve);
+				owner._insertItem(item._index + offset, res);
 			} else {
 				res = null;
 			}
@@ -3915,12 +3915,12 @@ new function() {
 		return res;
 	},
 
-	insertAbove: function(item, _preserve) {
-		return this._insertAt(item, 1, _preserve);
+	insertAbove: function(item) {
+		return this._insertAt(item, 1);
 	},
 
-	insertBelow: function(item, _preserve) {
-		return this._insertAt(item, 0, _preserve);
+	insertBelow: function(item) {
+		return this._insertAt(item, 0);
 	},
 
 	sendToBack: function() {
@@ -7440,6 +7440,15 @@ var PathItem = Item.extend({
 		return this;
 	},
 
+	isClockwise: function() {
+		return this.getArea() >= 0;
+	},
+
+	setClockwise: function(clockwise) {
+		if (this.isClockwise() != (clockwise = !!clockwise))
+			this.reverse();
+	},
+
 	setPathData: function(data) {
 
 		var parts = data && data.match(/[mlhvcsqtaz][^mlhvcsqtaz]*/ig),
@@ -7710,15 +7719,12 @@ var Path = PathItem.extend({
 	copyContent: function(source) {
 		this.setSegments(source._segments);
 		this._closed = source._closed;
-		var clockwise = source._clockwise;
-		if (clockwise !== undefined)
-			this._clockwise = clockwise;
 	},
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
 		if (flags & 8) {
-			this._length = this._area = this._clockwise = undefined;
+			this._length = this._area = undefined;
 			if (flags & 16) {
 				this._version++;
 			} else if (this._curves) {
@@ -8053,18 +8059,6 @@ var Path = PathItem.extend({
 		return area;
 	},
 
-	isClockwise: function() {
-		if (this._clockwise !== undefined)
-			return this._clockwise;
-		return this.getArea() >= 0;
-	},
-
-	setClockwise: function(clockwise) {
-		if (this.isClockwise() != (clockwise = !!clockwise))
-			this.reverse();
-		this._clockwise = clockwise;
-	},
-
 	isFullySelected: function() {
 		var length = this._segments.length;
 		return this.isSelected() && length > 0 && this._segmentSelection
@@ -8122,7 +8116,7 @@ var Path = PathItem.extend({
 				path = this;
 			} else {
 				path = new Path(Item.NO_INSERT);
-				path.insertAbove(this, true);
+				path.insertAbove(this);
 				path.copyAttributes(this);
 			}
 			path._add(segs, 0);
@@ -8203,8 +8197,6 @@ var Path = PathItem.extend({
 			segment._index = i;
 		}
 		this._curves = null;
-		if (this._clockwise !== undefined)
-			this._clockwise = !this._clockwise;
 		this._changed(9);
 	},
 
@@ -9352,7 +9344,7 @@ var CompoundPath = PathItem.extend({
 		}
 	},
 
-	insertChildren: function insertChildren(index, items, _preserve) {
+	insertChildren: function insertChildren(index, items) {
 		var list = items,
 			first = list[0];
 		if (first && typeof first[0] === 'number')
@@ -9362,21 +9354,13 @@ var CompoundPath = PathItem.extend({
 			if (list === items && !(item instanceof Path))
 				list = Base.slice(list);
 			if (Array.isArray(item)) {
-				var path = new Path({ segments: item, insert: false });
-				path.setClockwise(path.isClockwise());
-				list[i] = path;
+				list[i] = new Path({ segments: item, insert: false });
 			} else if (item instanceof CompoundPath) {
 				list.splice.apply(list, [i, 1].concat(item.removeChildren()));
 				item.remove();
 			}
 		}
-		list = insertChildren.base.call(this, index, list, _preserve);
-		for (var i = 0, l = !_preserve && list && list.length; i < l; i++) {
-			var item = list[i];
-			if (item._clockwise === undefined)
-				item.setClockwise(item._index === 0);
-		}
-		return list;
+		return insertChildren.base.call(this, index, list);
 	},
 
 	reduce: function reduce(options) {
@@ -9394,16 +9378,6 @@ var CompoundPath = PathItem.extend({
 			return path;
 		}
 		return reduce.base.call(this);
-	},
-
-	isClockwise: function() {
-		var child = this.getFirstChild();
-		return child && child.isClockwise();
-	},
-
-	setClockwise: function(clockwise) {
-		if (this.isClockwise() ^ !!clockwise)
-			this.reverse();
 	},
 
 	isClosed: function() {
@@ -9586,7 +9560,9 @@ PathItem.inject(new function() {
 				.transform(null, true, true);
 		if (closed)
 			res.setClosed(true);
-		return closed ? res.resolveCrossings().reorient(true) : res;
+		return closed
+			? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero')
+			: res;
 	}
 
 	function createResult(ctor, paths, reduce, path1, path2) {
@@ -10185,9 +10161,8 @@ PathItem.inject(new function() {
 			var length = paths.length,
 				item;
 			if (length > 1 && children) {
-				if (paths !== children) {
-					this.setChildren(paths, true);
-				}
+				if (paths !== children)
+					this.setChildren(paths);
 				item = this;
 			} else if (length === 1 && !children) {
 				if (paths[0] !== this)
@@ -10196,7 +10171,7 @@ PathItem.inject(new function() {
 			}
 			if (!item) {
 				item = new CompoundPath(Item.NO_INSERT);
-				item.addChildren(paths, true);
+				item.addChildren(paths);
 				item = item.reduce();
 				item.copyAttributes(this);
 				this.replaceWith(item);
@@ -10204,27 +10179,25 @@ PathItem.inject(new function() {
 			return item;
 		},
 
-		reorient: function(sort) {
+		reorient: function(nonZero) {
 			var children = this._children,
 				length = children && children.length;
 			if (length > 1) {
-				children = this.removeChildren();
-				var sorted = children.slice().sort(function (a, b) {
+				var lookup = Base.each(children, function(path, i) {
+						this[path._id] = {
+							winding: path.isClockwise() ? 1 : -1,
+							index: i
+						};
+					}, {}),
+					sorted = this.removeChildren().sort(function (a, b) {
 						return abs(b.getArea()) - abs(a.getArea());
 					}),
 					first = sorted[0],
-					paths = [first],
-					isNonZero = this.getFillRule() === 'nonzero',
-					lookup = (isNonZero || !sort) && Base.each(children,
-						function(path, i) {
-							this[path._id] = {
-								winding: path.isClockwise() ? 1 : -1,
-								index: i
-							};
-						}, {});
+					paths = [];
+				paths[lookup[first._id].index] = first;
 				for (var i1 = 1; i1 < length; i1++) {
 					var path1 = sorted[i1],
-						entry1 = lookup && lookup[path1._id],
+						entry1 = lookup[path1._id],
 						point = path1.getInteriorPoint(),
 						isContained = false,
 						container = null,
@@ -10232,8 +10205,8 @@ PathItem.inject(new function() {
 					for (var i2 = i1 - 1; i2 >= 0 && !container; i2--) {
 						var path2 = sorted[i2];
 						if (path2.contains(point)) {
-							var entry2 = lookup && lookup[path2._id];
-							if (isNonZero && !isContained) {
+							var entry2 = lookup[path2._id];
+							if (nonZero && !isContained) {
 								entry1.winding += entry2.winding;
 								if (entry1.winding && entry2.winding) {
 									exclude = entry1.exclude = true;
@@ -10241,21 +10214,17 @@ PathItem.inject(new function() {
 								}
 							}
 							isContained = true;
-							container = !(entry2 && entry2.exclude) && path2;
+							container = !entry2.exclude && path2;
 						}
 					}
 					if (!exclude) {
 						path1.setClockwise(container
 								? !container.isClockwise()
 								: first.isClockwise());
-						if (!sort) {
-							paths[entry1.index] = path1;
-						} else {
-							paths.push(path1);
-						}
+						paths[entry1.index] = path1;
 					}
 				}
-				this.setChildren(paths, true);
+				this.setChildren(paths);
 			}
 			return this;
 		},
