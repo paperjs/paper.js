@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 21 23:07:01 2016 +0200
+ * Date: Fri Jul 22 00:05:21 2016 +0200
  *
  ***
  *
@@ -7691,7 +7691,7 @@ var PathItem = Item.extend({
 				var path1 = paths1[i1];
 				ok = false;
 				for (var i2 = length2 - 1; i2 >= 0 && !ok; i2--) {
-					if (Path.compare(path1, paths2[i2])) {
+					if (path1.compare(paths2[i2])) {
 						if (!matched[i2]) {
 							matched[i2] = true;
 							count++;
