@@ -106,7 +106,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         }
     },
 
-    insertChildren: function insertChildren(index, items, _preserve) {
+    insertChildren: function insertChildren(index, items) {
         // If we're passed a segment array describing a simple path instead of a
         // compound-path, wrap it in another array to turn it into the array
         // notation for compound-paths.
@@ -124,28 +124,13 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             if (list === items && !(item instanceof Path))
                 list = Base.slice(list);
             if (Array.isArray(item)) {
-                var path = new Path({ segments: item, insert: false });
-                // Fix natural clockwise value, so it's not automatically
-                // determined when inserted into the compound-path.
-                // TODO: Remove reorientation code instead.
-                path.setClockwise(path.isClockwise());
-                list[i] = path;
+                list[i] = new Path({ segments: item, insert: false });
             } else if (item instanceof CompoundPath) {
                 list.splice.apply(list, [i, 1].concat(item.removeChildren()));
                 item.remove();
             }
         }
-        list = insertChildren.base.call(this, index, list, _preserve);
-        // All children except for the bottom one (first one in list) are set
-        // to anti-clockwise orientation, so that they appear as holes, but
-        // only if their orientation was not already specified before
-        // (= _clockwise is defined).
-        for (var i = 0, l = !_preserve && list && list.length; i < l; i++) {
-            var item = list[i];
-            if (item._clockwise === undefined)
-                item.setClockwise(item._index === 0);
-        }
-        return list;
+        return insertChildren.base.call(this, index, list);
     },
 
     // DOCS: reduce()
@@ -165,22 +150,6 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             return path;
         }
         return reduce.base.call(this);
-    },
-
-    /**
-     * Specifies whether the compound path is oriented clock-wise.
-     *
-     * @bean
-     * @type Boolean
-     */
-    isClockwise: function() {
-        var child = this.getFirstChild();
-        return child && child.isClockwise();
-    },
-
-    setClockwise: function(clockwise) {
-        if (this.isClockwise() ^ !!clockwise)
-            this.reverse();
     },
 
     /**

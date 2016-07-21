@@ -91,13 +91,30 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     /**
+     * Specifies whether the path is oriented clock-wise.
+     *
+     * @bean
+     * @type Boolean
+     */
+    isClockwise: function() {
+        return this.getArea() >= 0;
+    },
+
+    setClockwise: function(clockwise) {
+        // Only revers the path if its clockwise orientation is not the same
+        // as what it is now demanded to be.
+        // On-the-fly conversion to boolean:
+        if (this.isClockwise() != (clockwise = !!clockwise))
+            this.reverse();
+    },
+
+    /**
      * The path's geometry, formatted as SVG style path data.
      *
      * @name PathItem#getPathData
      * @bean
      * @type String
      */
-
     setPathData: function(data) {
         // NOTE: #getPathData() is defined in CompoundPath / Path
         // This is a very compact SVG Path Data parser that works both for Path

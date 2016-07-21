@@ -134,17 +134,12 @@ var Path = PathItem.extend(/** @lends Path# */{
     copyContent: function(source) {
         this.setSegments(source._segments);
         this._closed = source._closed;
-        var clockwise = source._clockwise;
-        if (clockwise !== undefined)
-            this._clockwise = clockwise;
     },
 
     _changed: function _changed(flags) {
         _changed.base.call(this, flags);
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
-            // Clockwise state becomes undefined as soon as geometry changes.
-            // Also clear cached mono curves used for winding calculations.
-            this._length = this._area = this._clockwise = undefined;
+            this._length = this._area = undefined;
             if (flags & /*#=*/ChangeFlag.SEGMENTS) {
                 this._version++; // See CurveLocation
             } else if (this._curves) {
@@ -855,29 +850,6 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
-     * Specifies whether the path is oriented clock-wise.
-     *
-     * @bean
-     * @type Boolean
-     */
-    isClockwise: function() {
-        if (this._clockwise !== undefined)
-            return this._clockwise;
-        return this.getArea() >= 0;
-    },
-
-    setClockwise: function(clockwise) {
-        // Only revers the path if its clockwise orientation is not the same
-        // as what it is now demanded to be.
-        // On-the-fly conversion to boolean:
-        if (this.isClockwise() != (clockwise = !!clockwise))
-            this.reverse();
-        // Reverse only flips _clockwise state if it was already set, so let's
-        // always set this here now.
-        this._clockwise = clockwise;
-    },
-
-    /**
      * Specifies whether an path is selected and will also return `true` if the
      * path is partially selected, i.e. one or more of its segments is selected.
      *
@@ -1084,9 +1056,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                 path = this;
             } else {
                 path = new Path(Item.NO_INSERT);
-                // Pass true for _preserve, in case of CompoundPath, to avoid
-                // reversing of path direction, which would mess with segments!
-                path.insertAbove(this, true);
+                path.insertAbove(this);
                 path.copyAttributes(this);
             }
             path._add(segs, 0);
@@ -1264,9 +1234,6 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // Clear curves since it all has changed.
         this._curves = null;
-        // Flip clockwise state if it's defined
-        if (this._clockwise !== undefined)
-            this._clockwise = !this._clockwise;
         this._changed(/*#=*/Change.GEOMETRY);
     },
 

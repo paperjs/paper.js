@@ -350,7 +350,7 @@ test('#870', function() {
 });
 
 test('#875', function() {
-    var cp = new Path({
+    var p1 = new Path({
         segments: [
             [158.7, 389.3, 0, 0, -4.95, 4.95],
             [158.7, 407.2, -4.95, -4.95, 4.95, 4.95],
@@ -360,26 +360,29 @@ test('#875', function() {
         ],
         closed: true
     });
-    var p = new Path.Circle(260, 320, 100);
+    var p2 = new Path.Circle(260, 320, 100);
 
-    compareBoolean(function() { return cp.subtract(p); },
+    compareBoolean(function() { return p1.subtract(p2); },
         'M158.7,407.2c4.95,4.95 12.95,4.95 17.9,0c4.95,-4.95 4.95,-12.95 0,-17.9c-4.95,-4.95 -12.95,-4.95 -17.9,0c-4.95,4.95 -4.95,12.95 0,17.9z');
 });
 
 test('#877', function() {
-    var cp = new CompoundPath([
-        new Path.Circle(100, 60, 50),
-        new Path.Circle(100, 60, 30),
-        new Path({
-            segments: [
-                [120, 140],
-                [150, 140],
-                [150, 190],
-                [120, 190]
-            ],
-            closed: true
-        })
-    ]);
+    var cp = new CompoundPath({
+        children: [
+            new Path.Circle(100, 60, 50),
+            new Path.Circle(100, 60, 30),
+            new Path({
+                segments: [
+                    [120, 140],
+                    [150, 140],
+                    [150, 190],
+                    [120, 190]
+                ],
+                closed: true
+            }),
+        ],
+        fillRule: 'evenodd'
+    });
 
     var p = new Path({
         segments: [

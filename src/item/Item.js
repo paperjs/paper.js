@@ -157,7 +157,7 @@ new function() { // Injection scope for various item event handlers
             this._setProject(project);
         } else {
             (hasProps && props.parent || project)
-                    ._insertItem(undefined, this, true, true);
+                    ._insertItem(undefined, this, true); // _created = true
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT) {
@@ -1373,9 +1373,9 @@ new function() { // Injection scope for various item event handlers
         return this._children;
     },
 
-    setChildren: function(items, _preserve) {
+    setChildren: function(items) {
         this.removeChildren();
-        this.addChildren(items, _preserve);
+        this.addChildren(items);
     },
 
     /**
@@ -2287,8 +2287,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
      */
-    addChild: function(item, _preserve) {
-        return this.insertChild(undefined, item, _preserve);
+    addChild: function(item) {
+        return this.insertChild(undefined, item);
     },
 
     /**
@@ -2300,8 +2300,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertChild: function(index, item, _preserve) {
-        var res = item ? this.insertChildren(index, [item], _preserve) : null;
+    insertChild: function(index, item) {
+        var res = item ? this.insertChildren(index, [item]) : null;
         return res && res[0];
     },
 
@@ -2313,8 +2313,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item[]} items the items to be added as children
      * @return {Item[]} the added items, or `null` if adding was not possible
      */
-    addChildren: function(items, _preserve) {
-        return this.insertChildren(this._children.length, items, _preserve);
+    addChildren: function(items) {
+        return this.insertChildren(this._children.length, items);
     },
 
     /**
@@ -2327,9 +2327,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item[]} the inserted items, or `null` if inserted was not
      *     possible
      */
-    insertChildren: function(index, items, _preserve) {
-        // CompoundPath#insertChildren() requires _preserve and _type:
-        // _preserve avoids changing of the children's path orientation
+    insertChildren: function(index, items) {
         var children = this._children;
         if (children && items && items.length > 0) {
             // We need to clone items because it may be an Item#children array.
@@ -2386,7 +2384,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} offset the offset at which the item should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    _insertAt: function(item, offset, _preserve) {
+    _insertAt: function(item, offset) {
         var res = this;
         if (res !== item) {
             var owner = item && item._getOwner();
@@ -2394,7 +2392,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // Notify parent of change. Don't notify item itself yet,
                 // as we're doing so when adding it to the new owner below.
                 res._remove(false, true);
-                owner._insertItem(item._index + offset, res, _preserve);
+                owner._insertItem(item._index + offset, res);
             } else {
                 res = null;
             }
@@ -2408,8 +2406,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertAbove: function(item, _preserve) {
-        return this._insertAt(item, 1, _preserve);
+    insertAbove: function(item) {
+        return this._insertAt(item, 1);
     },
 
     /**
@@ -2418,8 +2416,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item below which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertBelow: function(item, _preserve) {
-        return this._insertAt(item, 0, _preserve);
+    insertBelow: function(item) {
+        return this._insertAt(item, 0);
     },
 
     /**

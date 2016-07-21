@@ -696,7 +696,8 @@ test('hit-testing compound-paths', function() {
     });
     var compoundPath = new CompoundPath({
         children: [path1, path2],
-        fillColor: 'blue'
+        fillColor: 'blue',
+        fillRule: 'evenodd'
     });
     // When hit-testing a side, we should get a result on the torus
     equals(function() {

@@ -378,13 +378,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     // Project#_insertItem() and Item#_insertItem() are helper functions called
     // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
     // methods. They are called the same to facilitate so duck-typing.
-    _insertItem: function(index, item, _preserve, _created) {
+    _insertItem: function(index, item, _created) {
         item = this.insertLayer(index, item)
                 // Anything else than layers needs to be added to a layer first.
                 // If none exists yet, create one now, then add the item to it.
                 || (this._activeLayer || this._insertItem(undefined,
-                        new Layer(Item.NO_INSERT), true, true))
-                        .insertChild(index, item, _preserve);
+                        new Layer(Item.NO_INSERT), true)) // _created = true
+                        .insertChild(index, item);
         // If a layer was newly created, also activate it.
         if (_created && item.activate)
             item.activate();

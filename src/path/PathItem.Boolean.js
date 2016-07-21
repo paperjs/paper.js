@@ -55,7 +55,9 @@ PathItem.inject(new function() {
                 .transform(null, true, true);
         if (closed)
             res.setClosed(true);
-        return closed ? res.resolveCrossings().reorient(true) : res;
+        return closed
+            ? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero')
+            : res;
     }
 
     function createResult(ctor, paths, reduce, path1, path2) {
@@ -990,11 +992,8 @@ PathItem.inject(new function() {
             var length = paths.length,
                 item;
             if (length > 1 && children) {
-                if (paths !== children) {
-                    // TODO: Fix automatic child-orientation in CompoundPath,
-                    // and stop passing true for _preserve.
-                    this.setChildren(paths, true); // Preserve orientation
-                }
+                if (paths !== children)
+                    this.setChildren(paths);
                 item = this;
             } else if (length === 1 && !children) {
                 if (paths[0] !== this)
@@ -1005,7 +1004,7 @@ PathItem.inject(new function() {
             // and attempt to replace this item with it.
             if (!item) {
                 item = new CompoundPath(Item.NO_INSERT);
-                item.addChildren(paths, true); // Preserve orientation
+                item.addChildren(paths);
                 item = item.reduce();
                 item.copyAttributes(this);
                 this.replaceWith(item);
@@ -1015,49 +1014,44 @@ PathItem.inject(new function() {
 
         /**
          * Fixes the orientation of the sub-paths of a compound-path, assuming
-         * that non of its sub-paths intersect, by reorienting sub-paths so that
-         * they are of different winding direction than their containing path,
-         * except for disjoint sub-paths, i.e. islands, which are reoriented so
+         * that non of its sub-paths intersect, by reorienting them so that they
+         * are of different winding direction than their containing paths,
+         * except for disjoint sub-paths, i.e. islands, which are oriented so
          * that they have the same winding direction as the the biggest path.
          *
-         * Additionally, if the compound-path has the `'nonzero'`
-         * {@link #getFillRule()}, the winding of each nested path is counted,
-         * and sub-paths that do not contribute to the final result are
-         * discarded.
-         *
-         * @param {Boolean} [sort=false] controls if the sub-paths should be
-         *     sorted according to their area from largest to smallest, or if
-         *     normal sequence should be preserved
+         * @param {Boolean} [nonZero=false] controls if the non-zero fill-rule
+         *     is to be applied, by counting the winding of each nested path and
+         *     discarding sub-paths that do not contribute to the final result
          * @return {PahtItem} a reference to the item itself, reoriented
-         * @see #getFillRule()
          */
-        reorient: function(sort) {
+        reorient: function(nonZero) {
             var children = this._children,
                 length = children && children.length;
             if (length > 1) {
-                children = this.removeChildren();
-                // First order the paths by their areas.
-                var sorted = children.slice().sort(function (a, b) {
+                // Build a lookup table with information for each path's
+                // original index and winding contribution.
+                var lookup = Base.each(children, function(path, i) {
+                        this[path._id] = {
+                            winding: path.isClockwise() ? 1 : -1,
+                            index: i
+                        };
+                    }, {}),
+                    // Now sort the paths by their areas, from large to small.
+                    sorted = this.removeChildren().sort(function (a, b) {
                         return abs(b.getArea()) - abs(a.getArea());
                     }),
+                    // Get reference to the first, largest path and insert it
+                    // already.
                     first = sorted[0],
-                    paths = [first],
-                    isNonZero = this.getFillRule() === 'nonzero',
-                    // We only need to build a lookup table with information for
-                    // each path if we process with non-zero fill-rule, or if we
-                    // are to preserve the original sequence in the result.
-                    lookup = (isNonZero || !sort) && Base.each(children,
-                        function(path, i) {
-                            this[path._id] = {
-                                winding: path.isClockwise() ? 1 : -1,
-                                index: i
-                            };
-                        }, {});
-                // Walk through sorted paths, from largest to smallest.
-                // The first, largest path can be skipped.
+                    paths = [];
+                // Always insert paths at their original index. With exclusion,
+                // this produces null entries, but #setChildren() handles those.
+                paths[lookup[first._id].index] = first;
+                // Walk through the sorted paths, from largest to smallest.
+                // Skip the first path, as it is already added.
                 for (var i1 = 1; i1 < length; i1++) {
                     var path1 = sorted[i1],
-                        entry1 = lookup && lookup[path1._id],
+                        entry1 = lookup[path1._id],
                         point = path1.getInteriorPoint(),
                         isContained = false,
                         container = null,
@@ -1073,8 +1067,8 @@ PathItem.inject(new function() {
                         // contains the current path, and then set the
                         // orientation to the opposite of the containing path.
                         if (path2.contains(point)) {
-                            var entry2 = lookup && lookup[path2._id];
-                            if (isNonZero && !isContained) {
+                            var entry2 = lookup[path2._id];
+                            if (nonZero && !isContained) {
                                 entry1.winding += entry2.winding;
                                 // Remove path if rule is nonzero and winding
                                 // of path and containing path is not zero.
@@ -1086,7 +1080,7 @@ PathItem.inject(new function() {
                             isContained = true;
                             // If the containing path is not excluded, we're
                             // done searching for the orientation defining path.
-                            container = !(entry2 && entry2.exclude) && path2;
+                            container = !entry2.exclude && path2;
                         }
                     }
                     if (!exclude) {
@@ -1096,18 +1090,10 @@ PathItem.inject(new function() {
                         path1.setClockwise(container
                                 ? !container.isClockwise()
                                 : first.isClockwise());
-                        if (!sort) {
-                            // If asked to preserve sequence (not sort children
-                            // according to their area), insert back at their
-                            // original index. With exclusion this produces null
-                            // entries, but #setChildren() can handle those.
-                            paths[entry1.index] = path1;
-                        } else {
-                            paths.push(path1);
-                        }
+                        paths[entry1.index] = path1;
                     }
                 }
-                this.setChildren(paths, true); // Preserve orientation
+                this.setChildren(paths);
             }
             return this;
         },

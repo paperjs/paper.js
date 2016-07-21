@@ -96,40 +96,50 @@ test('CompoundPath#contains() (donut)', function() {
         new Path.Circle([0, 0], 25)
     ]);
 
-    testPoint(path, new Point(0, -50), true,
-        'The top center point of the outer circle should be inside the donut.');
-    testPoint(path, new Point(0, 0), false,
-        'The center point should be outside the donut.');
-    testPoint(path, new Point(-35, 0), true,
-        'A vertically centered point on the left side should be inside the donut.');
-    testPoint(path, new Point(35, 0), true,
-        'A vertically centered point on the right side should be inside the donut.');
-    testPoint(path, new Point(0, 49), true,
-        'The near bottom center point of the outer circle should be inside the donut.');
-    testPoint(path, new Point(0, 50), true,
-        'The bottom center point of the outer circle should be inside the donut.');
-    testPoint(path, new Point(0, 51), false,
-        'The near bottom center point of the outer circle should be outside the donut.');
-    testPoint(path, new Point({ length: 50, angle: 30 }), true,
-        'A random point on the periphery of the outer circle should be inside the donut.');
-    testPoint(path, new Point(-25, 0), true,
-        'The left center point of the inner circle should be inside the donut.');
-    testPoint(path, new Point(0, -25), true,
-        'The top center point of the inner circle should be inside the donut.');
-    testPoint(path, new Point(25, 0), true,
-        'The right center point of the inner circle should be inside the donut.');
-    testPoint(path, new Point(0, 25), true,
-        'The bottom center point of the inner circle should be inside the donut.');
-    testPoint(path, new Point(-50, -50), false,
-        'The top left point of bounding box should be outside the donut.');
-    testPoint(path, new Point(50, -50), false,
-        'The top right point of the bounding box should be outside the donut.');
-    testPoint(path, new Point(-50, 50), false,
-        'The bottom left point of bounding box should be outside the donut.');
-    testPoint(path, new Point(50, 50), false,
-        'The bottom right point of the bounding box should be outside the donut.');
-    testPoint(path, new Point(-45, 45), false,
-        'The near bottom left point of bounding box should be outside the donut.');
+    function testDonut(path, title) {
+        title = 'fillRule = ' + title + ': ';
+        testPoint(path, new Point(0, -50), true, title +
+            'The top center point of the outer circle should be inside the donut.');
+        testPoint(path, new Point(0, 0), false, title +
+            'The center point should be outside the donut.');
+        testPoint(path, new Point(-35, 0), true, title +
+            'A vertically centered point on the left side should be inside the donut.');
+        testPoint(path, new Point(35, 0), true, title +
+            'A vertically centered point on the right side should be inside the donut.');
+        testPoint(path, new Point(0, 49), true, title +
+            'The near bottom center point of the outer circle should be inside the donut.');
+        testPoint(path, new Point(0, 50), true, title +
+            'The bottom center point of the outer circle should be inside the donut.');
+        testPoint(path, new Point(0, 51), false, title +
+            'The near bottom center point of the outer circle should be outside the donut.');
+        testPoint(path, new Point({ length: 50, angle: 30 }), true, title +
+            'A random point on the periphery of the outer circle should be inside the donut.');
+        testPoint(path, new Point(-25, 0), true, title +
+            'The left center point of the inner circle should be inside the donut.');
+        testPoint(path, new Point(0, -25), true, title +
+            'The top center point of the inner circle should be inside the donut.');
+        testPoint(path, new Point(25, 0), true, title +
+            'The right center point of the inner circle should be inside the donut.');
+        testPoint(path, new Point(0, 25), true, title +
+            'The bottom center point of the inner circle should be inside the donut.');
+        testPoint(path, new Point(-50, -50), false, title +
+            'The top left point of bounding box should be outside the donut.');
+        testPoint(path, new Point(50, -50), false, title +
+            'The top right point of the bounding box should be outside the donut.');
+        testPoint(path, new Point(-50, 50), false, title +
+            'The bottom left point of bounding box should be outside the donut.');
+        testPoint(path, new Point(50, 50), false, title +
+            'The bottom right point of the bounding box should be outside the donut.');
+        testPoint(path, new Point(-45, 45), false, title +
+            'The near bottom left point of bounding box should be outside the donut.');
+    }
+
+    path.fillRule = 'evenodd';
+    // testDonut(path, '\'evenodd\'');
+    path.reorient();
+    testDonut(path, '\'evenodd\' + reorient()');
+    path.fillRule = 'nonzero';
+    testDonut(path, '\'nonzero\' + reorient()');
 });
 
 test('Shape#contains()', function() {
