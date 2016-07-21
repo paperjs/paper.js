@@ -6678,17 +6678,26 @@ function onMouseDown(event) {
 	
 <div id="reorient" class="member">
 <div class="member-link">
-<a name="reorient" href="#reorient"><tt><b>reorient</b>()</tt></a>
+<a name="reorient" href="#reorient"><tt><b>reorient</b>([sort])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Fixes the orientation of the sub-paths of a compound-path, by first ordering them according to the area they cover, and then making sure that all sub-paths are of different winding direction than the first, biggest path, except for when individual sub-paths are disjoint, i.e. islands, which are reoriented so that:</p>
-<ul>
-  <li>The holes have opposite winding direction.</li>
-  <li>Islands have to have the same winding direction as the first child.</li>
-</ul>
+	<p>Fixes the orientation of the sub-paths of a compound-path, assuming that non of its sub-paths intersect, by reorienting sub-paths so that they are of different winding direction than their containing path, except for disjoint sub-paths, i.e. islands, which are reoriented so that they have the same winding direction as the the biggest path.</p>
+<p>Additionally, if the compound-path has the <code>&#39;nonzero&#39;</code> <tt>#getFillRule</tt>(), the winding of each nested path is counted, and sub-paths that do not contribute to the final result are discarded.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>sort:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;controls if the sub-paths should be  sorted according to their area from largest to smallest, or if  normal sequence should be preserved
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
 	
 	<ul class="member-list">
 		<h4>Returns:</h4>
@@ -6700,6 +6709,13 @@ function onMouseDown(event) {
 	</ul>
 
 	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><tt>#getFillRule</tt>()</tt></li>
+		
+	</ul>
+
 	
 </div>
 </div>

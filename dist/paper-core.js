@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 20 17:58:47 2016 +0200
+ * Date: Thu Jul 21 13:50:55 2016 +0200
  *
  ***
  *
@@ -9586,7 +9586,7 @@ PathItem.inject(new function() {
 				.transform(null, true, true);
 		if (closed)
 			res.setClosed(true);
-		return closed ? res.resolveCrossings().reorient() : res;
+		return closed ? res.resolveCrossings().reorient(true) : res;
 	}
 
 	function createResult(ctor, paths, reduce, path1, path2) {
@@ -10204,42 +10204,55 @@ PathItem.inject(new function() {
 			return item;
 		},
 
-		reorient: function() {
-			var children = this._children;
-			if (children && children.length > 1) {
-				children = this.removeChildren().sort(function (a, b) {
-					return abs(b.getArea()) - abs(a.getArea());
-				});
-				var first = children[0],
+		reorient: function(sort) {
+			var children = this._children,
+				length = children && children.length;
+			if (length > 1) {
+				children = this.removeChildren();
+				var sorted = children.slice().sort(function (a, b) {
+						return abs(b.getArea()) - abs(a.getArea());
+					}),
+					first = sorted[0],
 					paths = [first],
-					excluded = {},
 					isNonZero = this.getFillRule() === 'nonzero',
-					windings = isNonZero && Base.each(children, function(path) {
-						this.push(path.isClockwise() ? 1 : -1);
-					}, []);
-				for (var i = 1, l = children.length; i < l; i++) {
-					var path = children[i],
-						point = path.getInteriorPoint(),
+					lookup = (isNonZero || !sort) && Base.each(children,
+						function(path, i) {
+							this[path._id] = {
+								winding: path.isClockwise() ? 1 : -1,
+								index: i
+							};
+						}, {});
+				for (var i1 = 1; i1 < length; i1++) {
+					var path1 = sorted[i1],
+						entry1 = lookup && lookup[path1._id],
+						point = path1.getInteriorPoint(),
 						isContained = false,
 						container = null,
 						exclude = false;
-					for (var j = i - 1; j >= 0 && !container; j--) {
-						if (children[j].contains(point)) {
+					for (var i2 = i1 - 1; i2 >= 0 && !container; i2--) {
+						var path2 = sorted[i2];
+						if (path2.contains(point)) {
+							var entry2 = lookup && lookup[path2._id];
 							if (isNonZero && !isContained) {
-								windings[i] += windings[j];
-								if (windings[i] && windings[j]) {
-									exclude = excluded[i] = true;
+								entry1.winding += entry2.winding;
+								if (entry1.winding && entry2.winding) {
+									exclude = entry1.exclude = true;
 									break;
 								}
 							}
 							isContained = true;
-							container = !excluded[j] && children[j];
+							container = !(entry2 && entry2.exclude) && path2;
 						}
 					}
 					if (!exclude) {
-						path.setClockwise(container ? !container.isClockwise()
+						path1.setClockwise(container
+								? !container.isClockwise()
 								: first.isClockwise());
-						paths.push(path);
+						if (!sort) {
+							paths[entry1.index] = path1;
+						} else {
+							paths.push(path1);
+						}
 					}
 				}
 				this.setChildren(paths, true);
