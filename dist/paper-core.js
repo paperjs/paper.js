@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 21 20:57:39 2016 +0200
+ * Date: Thu Jul 21 23:07:01 2016 +0200
  *
  ***
  *
@@ -7677,6 +7677,34 @@ var PathItem = Item.extend({
 		}
 	},
 
+	compare: function(path) {
+		var ok = false;
+		if (path) {
+			var paths1 = this._children || [this],
+				paths2 = path._children.slice() || [path],
+				length1 = paths1.length,
+				length2 = paths2.length,
+				matched = [],
+				count;
+			ok = true;
+			for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
+				var path1 = paths1[i1];
+				ok = false;
+				for (var i2 = length2 - 1; i2 >= 0 && !ok; i2--) {
+					if (Path.compare(path1, paths2[i2])) {
+						if (!matched[i2]) {
+							matched[i2] = true;
+							count++;
+						}
+						ok = true;
+					}
+				}
+			}
+			ok = ok && count === length2;
+		}
+		return ok;
+	},
+
 });
 
 var Path = PathItem.extend({
@@ -8426,7 +8454,9 @@ var Path = PathItem.extend({
 
 	toPath: '#clone',
 
-	compare: function(path) {
+	compare: function compare(path) {
+		if (!path || path instanceof CompoundPath)
+			return compare.base.call(this, path);
 		var curves1 = this.getCurves(),
 			curves2 = path.getCurves(),
 			length1 = curves1.length,
@@ -8438,12 +8468,12 @@ var Path = PathItem.extend({
 			values2 = [],
 			pos1 = 0, pos2,
 			end1 = 0, end2;
-		for (var i2 = 0; i2 < length2; i2++) {
-			var v2 = curves2[i2].getValues();
+		for (var i = 0; i < length2; i++) {
+			var v2 = curves2[i].getValues();
 			values2.push(v2);
 			var overlaps = Curve.getOverlaps(v1, v2);
 			if (overlaps) {
-				pos2 = !i2 && overlaps[0][0] > 0 ? length2 - 1 : i2;
+				pos2 = !i && overlaps[0][0] > 0 ? length2 - 1 : i;
 				end2 = overlaps[0][1];
 				break;
 			}
