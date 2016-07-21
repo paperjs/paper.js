@@ -778,7 +778,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 var path1 = paths1[i1];
                 ok = false;
                 for (var i2 = length2 - 1; i2 >= 0 && !ok; i2--) {
-                    if (Path.compare(path1, paths2[i2])) {
+                    if (path1.compare(paths2[i2])) {
                         if (!matched[i2]) {
                             matched[i2] = true;
                             count++;

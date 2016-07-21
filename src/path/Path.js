@@ -1573,9 +1573,9 @@ var Path = PathItem.extend(/** @lends Path# */{
             values2.push(v2);
             var overlaps = Curve.getOverlaps(v1, v2);
             if (overlaps) {
-                // If the overlap doesn't start at the beginning of v2, then
-                // it can only be the a partial overlap with curves2[0], and
-                // the start is at curves2[-1]:
+                // If the overlap doesn't start at the beginning of v2, then it
+                // can only be a partial overlap with curves2[0], and the start
+                // will be at curves2[length2 - 1]:
                 pos2 = !i && overlaps[0][0] > 0 ? length2 - 1 : i;
                 // Set end2 to the start of the first overlap on curves2, so
                 // connection checks further down can work.
