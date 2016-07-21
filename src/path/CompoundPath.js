@@ -240,8 +240,10 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     },
 
     /**
-     * The area that the path's geometry is covering. Self-intersecting paths
-     * can contain sub-areas that cancel each other out.
+     * The area that the compound-path's geometry is covering, calculated by
+     * getting th e{@link Path#getArea()} of each sub-path and it adding up.
+     * Note that self-intersecting paths and sub-paths of different orientation
+     * can result in areas that cancel each other out.
      *
      * @bean
      * @type Number
@@ -256,7 +258,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The total length of all sub-paths in this compound-path, calculated by
-     * getting {@link Path#getLength()} of each sub-path and it adding up.
+     * getting the {@link Path#getLength()} of each sub-path and it adding up.
      *
      * @bean
      * @type Number

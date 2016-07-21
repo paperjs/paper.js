@@ -91,10 +91,15 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     /**
-     * Specifies whether the path is oriented clock-wise.
+     * Specifies whether the path as a whole is oriented clock-wise, by looking
+     * at the path's area.
+     * Note that self-intersecting paths and sub-paths of different orientation
+     * can result in areas that cancel each other out.
      *
      * @bean
      * @type Boolean
+     * @see Path#getArea()
+     * @see CompoundPath#getArea()
      */
     isClockwise: function() {
         return this.getArea() >= 0;
