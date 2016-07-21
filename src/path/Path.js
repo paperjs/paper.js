@@ -1548,6 +1548,96 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
+    /**
+     * Compares the geometry of two paths to see if they describe the same
+     * shape, detecting cases where paths start in different segments or even
+     * use different amounts of curves to describe the same shape, as long as
+     * their orientation is the same, and their segments and handles really
+     * result in the same visual appearance of curves.
+     *
+     * @param {Path} path the path to compare this path's geometry with
+     * @return {Boolean} {@true if two paths describe the shame shape}
+     */
+    compare: function(path) {
+        var curves1 = this.getCurves(),
+            curves2 = path.getCurves(),
+            length1 = curves1.length,
+            length2 = curves2.length;
+        if (!length1 || !length2) {
+            // If one path defines curves and the other doesn't, we can't have
+            // matching geometries.
+            return length1 ^ length2;
+        }
+        var v1 = curves1[0].getValues(),
+            values2 = [],
+            pos1 = 0, pos2,
+            end1 = 0, end2;
+        // First, loop through curves2, looking for the start of the overlapping
+        // sequence with curves1[0]. Also cache curve values for later reuse.
+        for (var i2 = 0; i2 < length2; i2++) {
+            var v2 = curves2[i2].getValues();
+            values2.push(v2);
+            var overlaps = Curve.getOverlaps(v1, v2);
+            if (overlaps) {
+                // If the overlap doesn't start at the beginning of v2, then
+                // it can only be the a partial overlap with curves2[0], and
+                // the start is at curves2[-1]:
+                pos2 = !i2 && overlaps[0][0] > 0 ? length2 - 1 : i2;
+                // Set end2 to the start of the first overlap on curves2, so
+                // connection checks further down can work.
+                end2 = overlaps[0][1];
+                break;
+            }
+        }
+        // Now loop through both curve arrays, find their overlaps, verify that
+        // they keep joining, and see if we end back at the start on both paths.
+        var abs = Math.abs,
+            epsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+            v2 = values2[pos2],
+            start2;
+        while (v1 && v2) {
+            var overlaps = Curve.getOverlaps(v1, v2);
+            if (overlaps) {
+                // Check that the overlaps are joining on curves1
+                var t1 = overlaps[0][0];
+                if (abs(t1 - end1) < epsilon) {
+                    end1 = overlaps[1][0];
+                    if (end1 === 1) {
+                        // Skip to the next curve if we're at the end of the
+                        // current, and set v1 to null if at the end of curves1.
+                        v1 = ++pos1 < length1 ? curves1[pos1].getValues() : null;
+                        end1 = 0;
+                    }
+                    // Check that the overlaps are joining on curves2
+                    var t2 = overlaps[0][1];
+                    if (abs(t2 - end2) < epsilon) {
+                        if (!start2)
+                            start2 = [pos2, t2];
+                        end2 = overlaps[1][1];
+                        if (end2 === 1) {
+                            // Wrap pos2 around the end on values2:
+                            if (++pos2 >= length2)
+                                pos2 = 0;
+                            // Reuse cached values from initial search.
+                            v2 = values2[pos2] || curves2[pos2].getValues();
+                            end2 = 0;
+                        }
+                        if (!v1) {
+                            // We're done with curves1. If we're not back at the
+                            // start on curve2, the two paths are not identical.
+                            return start2[0] === pos2 && start2[1] === end2;
+                        }
+                        // All good, continue to avoid the break; further down
+                        continue;
+                    }
+                }
+            }
+            // No overlap match found, break out early.
+            break;
+        }
+        return false;
+    },
+
     _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
         var that = this,
             style = this.getStyle(),

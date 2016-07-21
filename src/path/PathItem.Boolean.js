@@ -646,6 +646,13 @@ PathItem.inject(new function() {
             return seg === start || seg === otherStart;
         }
 
+        function visitPath(path) {
+            var segments = path._segments;
+            for (var i = 0, l = segments.length; i < l; i++) {
+                segments[i]._visited = true;
+            }
+        }
+
         // If there are multiple possible intersections, find the one that's
         // either connecting back to start or is not visited yet, and will be
         // part of the boolean result:
@@ -711,19 +718,16 @@ PathItem.inject(new function() {
             if (!seg._visited && seg._path._overlapsOnly) {
                 // TODO: Don't we also need to check for multiple overlaps?
                 var path1 = seg._path,
-                    path2 = inter._segment._path,
-                    segments1 = path1._segments,
-                    segments2 = path2._segments;
-                if (Base.equals(segments1, segments2)) {
+                    path2 = inter._segment._path;
+                if (path1.compare(path2)) {
                     // Only add the path to the result if it has an area.
                     if ((operator.unite || operator.intersect)
                             && path1.getArea()) {
                         paths.push(path1.clone(false));
                     }
                     // Now mark all involved segments as visited.
-                    for (var j = 0, k = segments1.length; j < k; j++) {
-                        segments1[j]._visited = segments2[j]._visited = true;
-                    }
+                    visitPath(path1);
+                    visitPath(path2);
                 }
             }
             // Exclude three cases of invalid starting segments:
