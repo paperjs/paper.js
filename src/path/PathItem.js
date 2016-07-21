@@ -752,6 +752,48 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     },
 
     /**
+     * Compares the geometry of two paths to see if they describe the same
+     * shape, detecting cases where paths start in different segments or even
+     * use different amounts of curves to describe the same shape, as long as
+     * their orientation is the same, and their segments and handles really
+     * result in the same visual appearance of curves.
+     *
+     * @name PathItem#compare
+     * @function
+     *
+     * @param {PathItem} path the path to compare this path's geometry with
+     * @return {Boolean} {@true if two paths describe the shame shape}
+     */
+    compare: function(path) {
+        var ok = false;
+        if (path) {
+            var paths1 = this._children || [this],
+                paths2 = path._children.slice() || [path],
+                length1 = paths1.length,
+                length2 = paths2.length,
+                matched = [],
+                count;
+            ok = true;
+            for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
+                var path1 = paths1[i1];
+                ok = false;
+                for (var i2 = length2 - 1; i2 >= 0 && !ok; i2--) {
+                    if (Path.compare(path1, paths2[i2])) {
+                        if (!matched[i2]) {
+                            matched[i2] = true;
+                            count++;
+                        }
+                        ok = true;
+                    }
+                }
+            }
+            // Each path in path2 needs to be matched at least once.
+            ok = ok && count === length2;
+        }
+        return ok;
+    },
+
+    /**
      * {@grouptitle Postscript Style Drawing Commands}
      *
      * On a normal empty {@link Path}, the point is simply added as the path's

@@ -1548,17 +1548,11 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     toPath: '#clone',
 
-    /**
-     * Compares the geometry of two paths to see if they describe the same
-     * shape, detecting cases where paths start in different segments or even
-     * use different amounts of curves to describe the same shape, as long as
-     * their orientation is the same, and their segments and handles really
-     * result in the same visual appearance of curves.
-     *
-     * @param {Path} path the path to compare this path's geometry with
-     * @return {Boolean} {@true if two paths describe the shame shape}
-     */
-    compare: function(path) {
+    // NOTE: Documentation is in PathItem#compare()
+    compare: function compare(path) {
+        // If a compound-path is involved, redirect to PathItem#compare()
+        if (!path || path instanceof CompoundPath)
+            return compare.base.call(this, path);
         var curves1 = this.getCurves(),
             curves2 = path.getCurves(),
             length1 = curves1.length,
@@ -1574,15 +1568,15 @@ var Path = PathItem.extend(/** @lends Path# */{
             end1 = 0, end2;
         // First, loop through curves2, looking for the start of the overlapping
         // sequence with curves1[0]. Also cache curve values for later reuse.
-        for (var i2 = 0; i2 < length2; i2++) {
-            var v2 = curves2[i2].getValues();
+        for (var i = 0; i < length2; i++) {
+            var v2 = curves2[i].getValues();
             values2.push(v2);
             var overlaps = Curve.getOverlaps(v1, v2);
             if (overlaps) {
                 // If the overlap doesn't start at the beginning of v2, then
                 // it can only be the a partial overlap with curves2[0], and
                 // the start is at curves2[-1]:
-                pos2 = !i2 && overlaps[0][0] > 0 ? length2 - 1 : i2;
+                pos2 = !i && overlaps[0][0] > 0 ? length2 - 1 : i;
                 // Set end2 to the start of the first overlap on curves2, so
                 // connection checks further down can work.
                 end2 = overlaps[0][1];
@@ -1598,7 +1592,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         while (v1 && v2) {
             var overlaps = Curve.getOverlaps(v1, v2);
             if (overlaps) {
-                // Check that the overlaps are joining on curves1
+                // Check that the overlaps are joining on curves1.
                 var t1 = overlaps[0][0];
                 if (abs(t1 - end1) < epsilon) {
                     end1 = overlaps[1][0];
@@ -1608,7 +1602,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                         v1 = ++pos1 < length1 ? curves1[pos1].getValues() : null;
                         end1 = 0;
                     }
-                    // Check that the overlaps are joining on curves2
+                    // Check that the overlaps are joining on curves2.
                     var t2 = overlaps[0][1];
                     if (abs(t2 - end2) < epsilon) {
                         if (!start2)
@@ -1627,7 +1621,7 @@ var Path = PathItem.extend(/** @lends Path# */{
                             // start on curve2, the two paths are not identical.
                             return start2[0] === pos2 && start2[1] === end2;
                         }
-                        // All good, continue to avoid the break; further down
+                        // All good, continue to avoid the break; further down.
                         continue;
                     }
                 }
