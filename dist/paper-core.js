@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 21 15:30:31 2016 +0200
+ * Date: Thu Jul 21 20:57:39 2016 +0200
  *
  ***
  *
@@ -8426,6 +8426,65 @@ var Path = PathItem.extend({
 
 	toPath: '#clone',
 
+	compare: function(path) {
+		var curves1 = this.getCurves(),
+			curves2 = path.getCurves(),
+			length1 = curves1.length,
+			length2 = curves2.length;
+		if (!length1 || !length2) {
+			return length1 ^ length2;
+		}
+		var v1 = curves1[0].getValues(),
+			values2 = [],
+			pos1 = 0, pos2,
+			end1 = 0, end2;
+		for (var i2 = 0; i2 < length2; i2++) {
+			var v2 = curves2[i2].getValues();
+			values2.push(v2);
+			var overlaps = Curve.getOverlaps(v1, v2);
+			if (overlaps) {
+				pos2 = !i2 && overlaps[0][0] > 0 ? length2 - 1 : i2;
+				end2 = overlaps[0][1];
+				break;
+			}
+		}
+		var abs = Math.abs,
+			epsilon = 4e-7,
+			v2 = values2[pos2],
+			start2;
+		while (v1 && v2) {
+			var overlaps = Curve.getOverlaps(v1, v2);
+			if (overlaps) {
+				var t1 = overlaps[0][0];
+				if (abs(t1 - end1) < epsilon) {
+					end1 = overlaps[1][0];
+					if (end1 === 1) {
+						v1 = ++pos1 < length1 ? curves1[pos1].getValues() : null;
+						end1 = 0;
+					}
+					var t2 = overlaps[0][1];
+					if (abs(t2 - end2) < epsilon) {
+						if (!start2)
+							start2 = [pos2, t2];
+						end2 = overlaps[1][1];
+						if (end2 === 1) {
+							if (++pos2 >= length2)
+								pos2 = 0;
+							v2 = values2[pos2] || curves2[pos2].getValues();
+							end2 = 0;
+						}
+						if (!v1) {
+							return start2[0] === pos2 && start2[1] === end2;
+						}
+						continue;
+					}
+				}
+			}
+			break;
+		}
+		return false;
+	},
+
 	_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
 		var that = this,
 			style = this.getStyle(),
@@ -9965,6 +10024,13 @@ PathItem.inject(new function() {
 			return seg === start || seg === otherStart;
 		}
 
+		function visitPath(path) {
+			var segments = path._segments;
+			for (var i = 0, l = segments.length; i < l; i++) {
+				segments[i]._visited = true;
+			}
+		}
+
 		function findBestIntersection(inter, exclude) {
 			if (!inter._next)
 				return inter;
@@ -10007,17 +10073,14 @@ PathItem.inject(new function() {
 				handleIn;
 			if (!seg._visited && seg._path._overlapsOnly) {
 				var path1 = seg._path,
-					path2 = inter._segment._path,
-					segments1 = path1._segments,
-					segments2 = path2._segments;
-				if (Base.equals(segments1, segments2)) {
+					path2 = inter._segment._path;
+				if (path1.compare(path2)) {
 					if ((operator.unite || operator.intersect)
 							&& path1.getArea()) {
 						paths.push(path1.clone(false));
 					}
-					for (var j = 0, k = segments1.length; j < k; j++) {
-						segments1[j]._visited = segments2[j]._visited = true;
-					}
+					visitPath(path1);
+					visitPath(path2);
 				}
 			}
 			if (!isValid(seg, true))
