@@ -294,15 +294,19 @@ test('Path#contains() (straight curves with zero-winding: #943)', function() {
 
 /*
 test('CompoundPath#contains() (nested touching circles: #944)', function() {
-    var c1 = new Path.Circle({
-        center: [200, 200],
-        radius: 100
+    var cp = new CompoundPath({
+        children: [
+            new Path.Circle({
+                center: [200, 200],
+                radius: 100
+            }),
+            new Path.Circle({
+                center: [150, 200],
+                radius: 50
+            })
+        ],
+        fillRule: 'evenodd'
     });
-    var c2 = new Path.Circle({
-        center: [150, 200],
-        radius: 50
-    });
-    var cp = new CompoundPath([c1, c2]);
     testPoint(cp, new Point(100, 200), true);
 });
 */
