@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 13:46:24 2016 +0200
+ * Date: Fri Jul 22 14:21:35 2016 +0200
  *
  ***
  *
@@ -10422,18 +10422,21 @@ var PathIterator = Base.extend({
 	},
 
 	_get: function(offset) {
-		var i, j = this.index;
+		var parts = this.parts,
+			length = parts.length,
+			start,
+			i, j = this.index;
 		for (;;) {
 			i = j;
-			if (!j || this.parts[--j].offset < offset)
+			if (!j || parts[--j].offset < offset)
 				break;
 		}
-		for (var l = this.parts.length; i < l; i++) {
-			var part = this.parts[i];
+		for (; i < length; i++) {
+			var part = parts[i];
 			if (part.offset >= offset) {
 				this.index = i;
-				var prev = this.parts[i - 1];
-				var prevTime = prev && prev.index === part.index ? prev.time : 0,
+				var prev = parts[i - 1],
+					prevTime = prev && prev.index === part.index ? prev.time : 0,
 					prevOffset = prev ? prev.offset : 0;
 				return {
 					index: part.index,
@@ -10442,9 +10445,8 @@ var PathIterator = Base.extend({
 				};
 			}
 		}
-		var part = this.parts[this.parts.length - 1];
 		return {
-			index: part.index,
+			index: parts[length - 1].index,
 			time: 1
 		};
 	},
