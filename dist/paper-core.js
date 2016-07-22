@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 15:46:42 2016 +0200
+ * Date: Fri Jul 22 16:50:39 2016 +0200
  *
  ***
  *
@@ -9847,7 +9847,7 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curves, dir) {
+	function getWinding(point, curves, dir, dontFlip) {
 		var epsilon = 1e-8,
 			ia = dir ? 1 : 0,
 			io = dir ? 0 : 1,
@@ -9863,8 +9863,10 @@ PathItem.inject(new function() {
 			onPathWinding = 0,
 			onPathCount = 0,
 			onPath = false,
+			roots = [],
 			vPrev,
-			vClose;
+			vClose,
+			result;
 
 		function addWinding(v) {
 			var o0 = v[io],
@@ -9882,15 +9884,15 @@ PathItem.inject(new function() {
 				}
 				return vPrev;
 			}
-			var roots = [],
+			var t = null,
 				a =   po === o0 ? a0
 					: po === o3 ? a3
 					: paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
 					? (a0 + a3) / 2
 					: Curve.solveCubic(v, io, po, roots, 0, 1) === 1
-						? Curve.getPoint(v, roots[0])[dir ? 'y' : 'x']
-						: (a0 + a3) / 2;
-			var winding = o0 > o3 ? 1 : -1,
+						? Curve.getPoint(v, t = roots[0])[dir ? 'y' : 'x']
+						: (a0 + a3) / 2,
+				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
 				a3Prev = vPrev[ia + 6];
 			if (po !== o0) {
@@ -9918,6 +9920,12 @@ PathItem.inject(new function() {
 					pathWindingL += winding;
 				}
 			}
+			if (onPath && !dontFlip) {
+				t = po === o0 ? 0 : po === o3 ? 1 : t;
+				result = t !== null
+						&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
+						&& getWinding(point, curves, dir ? 0 : 1, true);
+			}
 			return v;
 		}
 
@@ -9934,13 +9942,13 @@ PathItem.inject(new function() {
 					monoCurves = paL > max(a0, a1, a2, a3) ||
 								 paR < min(a0, a1, a2, a3)
 							? [v] : Curve.getMonoCurves(v, dir);
-				for (var i = 0, l = monoCurves.length; i < l; i++) {
+				for (var i = 0, l = monoCurves.length; !result && i < l; i++) {
 					vPrev = addWinding(monoCurves[i]);
 				}
 			}
 		}
 
-		for (var i = 0, l = curves.length; i < l; i++) {
+		for (var i = 0, l = curves.length; !result && i < l; i++) {
 			var curve = curves[i],
 				path = curve._path,
 				v = curve.getValues();
@@ -9973,7 +9981,7 @@ PathItem.inject(new function() {
 
 			handleCurve(v);
 
-			if (i + 1 === l || curves[i + 1]._path !== path) {
+			if (!result && (i + 1 === l || curves[i + 1]._path !== path)) {
 				if (vClose) {
 					handleCurve(vClose);
 					vClose = null;
@@ -9993,18 +10001,21 @@ PathItem.inject(new function() {
 				onPath = false;
 			}
 		}
-		if (!windingL && !windingR) {
-			windingL = windingR = onPathWinding;
+		if (!result) {
+			if (!windingL && !windingR) {
+				windingL = windingR = onPathWinding;
+			}
+			windingL = windingL && (2 - abs(windingL) % 2);
+			windingR = windingR && (2 - abs(windingR) % 2);
+			result = {
+				winding: max(windingL, windingR),
+				windingL: windingL,
+				windingR: windingR,
+				onContour: !windingL ^ !windingR,
+				onPathCount: onPathCount
+			};
 		}
-		windingL = windingL && (2 - abs(windingL) % 2);
-		windingR = windingR && (2 - abs(windingR) % 2);
-		return {
-			winding: max(windingL, windingR),
-			windingL: windingL,
-			windingR: windingR,
-			onContour: !windingL ^ !windingR,
-			onPathCount: onPathCount
-		};
+		return result;
 	}
 
 	function propagateWinding(segment, path1, path2, curves, operator) {
