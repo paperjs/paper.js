@@ -107,25 +107,28 @@ var PathIterator = Base.extend({
     _get: function(offset) {
         // Make sure we're not beyond the requested offset already. Search the
         // start position backwards from where to then process the loop below.
-        var i, j = this.index;
+        var parts = this.parts,
+            length = parts.length,
+            start,
+            i, j = this.index;
         for (;;) {
             i = j;
-            if (!j || this.parts[--j].offset < offset)
+            if (!j || parts[--j].offset < offset)
                 break;
         }
         // Find the part that succeeds the given offset, then interpolate
         // with the previous part
-        for (var l = this.parts.length; i < l; i++) {
-            var part = this.parts[i];
+        for (; i < length; i++) {
+            var part = parts[i];
             if (part.offset >= offset) {
                 // Found the right part, remember current position
                 this.index = i;
                 // Now get the previous part so we can linearly interpolate
                 // the curve parameter
-                var prev = this.parts[i - 1];
-                // Make sure we only use the previous parameter value if its
-                // for the same curve, by checking index. Use 0 otherwise.
-                var prevTime = prev && prev.index === part.index ? prev.time : 0,
+                var prev = parts[i - 1],
+                    // Make sure we only use the previous parameter value if its
+                    // for the same curve, by checking index. Use 0 otherwise.
+                    prevTime = prev && prev.index === part.index ? prev.time : 0,
                     prevOffset = prev ? prev.offset : 0;
                 return {
                     index: part.index,
@@ -136,9 +139,8 @@ var PathIterator = Base.extend({
             }
         }
         // If we're still here, return last one
-        var part = this.parts[this.parts.length - 1];
         return {
-            index: part.index,
+            index: parts[length - 1].index,
             time: 1
         };
     },
