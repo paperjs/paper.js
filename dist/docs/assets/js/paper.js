@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 13:15:05 2016 +0200
+ * Date: Fri Jul 22 13:46:24 2016 +0200
  *
  ***
  *
@@ -2072,7 +2072,7 @@ var Matrix = Base.extend({
 			} else {
 				ok = false;
 			}
-		} else if (count === 0) {
+		} else if (!count) {
 			this.reset();
 		} else {
 			ok = false;
@@ -2652,7 +2652,7 @@ var Project = PaperScopeItem.extend({
 	},
 
 	isEmpty: function() {
-		return this._children.length === 0;
+		return !this._children.length;
 	},
 
 	remove: function remove() {
@@ -3192,7 +3192,7 @@ new function() {
 		if (!opts.stroke || this.getStrokeScaling())
 			opts.cacheItem = this;
 		var bounds = this._getCachedBounds(hasMatrix && matrix, opts);
-		return arguments.length === 0
+		return !arguments.length
 				? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
 						bounds.height, this, 'setBounds')
 				: bounds;
@@ -3222,7 +3222,7 @@ new function() {
 
 	_getBounds: function(matrix, options) {
 		var children = this._children;
-		if (!children || children.length === 0)
+		if (!children || !children.length)
 			return new Rectangle();
 		Item._updateBoundsCache(this, options.cacheItem);
 		return Item._getBounds(children, matrix, options);
@@ -4044,7 +4044,8 @@ new function() {
 	},
 
 	isEmpty: function() {
-		return !this._children || this._children.length === 0;
+		var children = this._children;
+		return !children || !children.length;
 	},
 
 	isEditable: function() {
@@ -4432,7 +4433,7 @@ new function() {
 				var coords = mx._transformCorners(this.getInternalBounds());
 				ctx.beginPath();
 				for (var i = 0; i < 8; i++) {
-					ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+					ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
 				}
 				ctx.closePath();
 				ctx.stroke();
@@ -5646,7 +5647,7 @@ var Segment = Base.extend({
 	},
 
 	isFirst: function() {
-		return this._index === 0;
+		return !this._index;
 	},
 
 	isLast: function() {
@@ -5850,7 +5851,7 @@ var Curve = Base.extend({
 			this._path = arg0;
 			seg1 = arg1;
 			seg2 = arg2;
-		} else if (count === 0) {
+		} else if (!count) {
 			seg1 = new Segment();
 			seg2 = new Segment();
 		} else if (count === 1) {
@@ -5985,7 +5986,7 @@ var Curve = Base.extend({
 	},
 
 	isFirst: function() {
-		return this._segment1._index === 0;
+		return !this._segment1._index;
 	},
 
 	isLast: function() {
@@ -6167,7 +6168,7 @@ statics: {
 				tMax = 1 - tMin,
 				roots = [],
 				n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
-			if (n === 0) {
+			if (!n) {
 				curves.push(v);
 			} else {
 				roots.sort();
@@ -7048,12 +7049,12 @@ new function() {
 						v[i][t1 === 0 ? 1 : 7]));
 				if (t2 != null) {
 					var pair = i === 0 ? [t1, t2] : [t2, t1];
-					if (pairs.length === 0 ||
+					if (!pairs.length ||
 						abs(pair[0] - pairs[0][0]) > timeEpsilon &&
 						abs(pair[1] - pairs[0][1]) > timeEpsilon)
 						pairs.push(pair);
 				}
-				if (i === 1 && pairs.length === 0)
+				if (i === 1 && !pairs.length)
 					break;
 			}
 			if (pairs.length !== 2) {
@@ -7489,7 +7490,7 @@ var PathItem = Item.extend({
 			case 'l':
 				var move = lower === 'm';
 				for (var j = 0; j < length; j += 2)
-					this[j === 0 && move ? 'moveTo' : 'lineTo'](
+					this[!j && move ? 'moveTo' : 'lineTo'](
 							current = getPoint(j));
 				control = current;
 				if (move)
@@ -7884,7 +7885,7 @@ var Path = PathItem.extend({
 			outY = coords[5];
 		}
 
-		if (length === 0)
+		if (!length)
 			return '';
 
 		for (var i = 0; i < length; i++)
@@ -7897,7 +7898,7 @@ var Path = PathItem.extend({
 	},
 
 	isEmpty: function() {
-		return this._segments.length === 0;
+		return !this._segments.length;
 	},
 
 	_transformContent: function(matrix) {
@@ -7959,7 +7960,7 @@ var Path = PathItem.extend({
 			curve._segment2 = segments[i + 1] || segments[0];
 			curve._changed();
 		}
-		if (curve = curves[this._closed && start === 0 ? segments.length - 1
+		if (curve = curves[this._closed && !start ? segments.length - 1
 				: start - 1]) {
 			curve._segment2 = segments[start] || segments[0];
 			curve._changed();
@@ -8847,7 +8848,7 @@ new function() {
 new function() {
 	function getCurrentSegment(that) {
 		var segments = that._segments;
-		if (segments.length === 0)
+		if (!segments.length)
 			throw new Error('Use a moveTo() command first');
 		return segments[segments.length - 1];
 	}
@@ -9006,7 +9007,7 @@ new function() {
 						pt = center.add(vector);
 					}
 				}
-				if (i === 0) {
+				if (!i) {
 					current.setHandleOut(out);
 				} else {
 					var _in = vector.rotate(-90).multiply(z);
@@ -9263,7 +9264,7 @@ statics: {
 			var segment = segments[i];
 			segment._transformCoordinates(matrix, coords);
 			for (var j = 0; j < 6; j += 2) {
-				var padding = j === 0 ? joinPadding : strokePadding,
+				var padding = !j ? joinPadding : strokePadding,
 					paddingX = padding ? padding[0] : 0,
 					paddingY = padding ? padding[1] : 0,
 					x = coords[j],
@@ -9459,7 +9460,7 @@ var CompoundPath = PathItem.extend({
 			if (path.isEmpty())
 				path.remove();
 		}
-		if (children.length === 0) {
+		if (!children.length) {
 			var path = new Path(Item.NO_INSERT);
 			path.copyAttributes(this);
 			path.insertAbove(this);
@@ -9552,7 +9553,7 @@ var CompoundPath = PathItem.extend({
 
 	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
 		var children = this._children;
-		if (children.length === 0)
+		if (!children.length)
 			return;
 
 		param = param.extend({ dontStart: true, dontFinish: true });
@@ -9587,7 +9588,7 @@ var CompoundPath = PathItem.extend({
 new function() {
 	function getCurrentPath(that, check) {
 		var children = that._children;
-		if (check && children.length === 0)
+		if (check && !children.length)
 			throw new Error('Use a moveTo() command first');
 		return children[children.length - 1];
 	}
@@ -9939,7 +9940,7 @@ PathItem.inject(new function() {
 			var curve = curves[i],
 				path = curve._path,
 				v = curve.getValues();
-			if (i === 0 || curves[i - 1]._path !== path) {
+			if (!i || curves[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
 					var p1 = path.getLastCurve().getPoint2(),
@@ -10424,7 +10425,7 @@ var PathIterator = Base.extend({
 		var i, j = this.index;
 		for (;;) {
 			i = j;
-			if (j === 0 || this.parts[--j].offset < offset)
+			if (!j || this.parts[--j].offset < offset)
 				break;
 		}
 		for (var l = this.parts.length; i < l; i++) {
@@ -11079,7 +11080,7 @@ var Color = Base.extend(new function() {
 						this._components = components = [];
 						for (var i = 0, l = properties.length; i < l; i++) {
 							var value = arg[properties[i]];
-							if (value == null && i === 0 && type === 'gradient'
+							if (value == null && !i && type === 'gradient'
 									&& 'stops' in arg) {
 								value = {
 									stops: arg.stops,
@@ -11355,7 +11356,7 @@ var Gradient = Base.extend({
 		var index = this._owners ? this._owners.indexOf(color) : -1;
 		if (index != -1) {
 			this._owners.splice(index, 1);
-			if (this._owners.length === 0)
+			if (!this._owners.length)
 				this._owners = undefined;
 		}
 	},
@@ -11582,7 +11583,7 @@ var Style = Base.extend(new function() {
 			var owner = this._owner,
 				children = owner && owner._children,
 				value;
-			if (key in this._defaults && (!children || children.length === 0
+			if (key in this._defaults && (!children || !children.length
 					|| _dontMerge || owner instanceof CompoundPath)) {
 				var value = this._values[key];
 				if (value === undefined) {
@@ -11601,7 +11602,7 @@ var Style = Base.extend(new function() {
 			} else if (children) {
 				for (var i = 0, l = children.length; i < l; i++) {
 					var childValue = children[i]._style[get]();
-					if (i === 0) {
+					if (!i) {
 						value = childValue;
 					} else if (!Base.equals(value, childValue)) {
 						return undefined;
