@@ -203,7 +203,7 @@ var Style = Base.extend(new function() {
             // If the owner has children, walk through all of them and see if
             // they all have the same style.
             // If true is passed for _dontMerge, don't merge children styles
-            if (key in this._defaults && (!children || children.length === 0
+            if (key in this._defaults && (!children || !children.length
                     || _dontMerge || owner instanceof CompoundPath)) {
                 var value = this._values[key];
                 if (value === undefined) {
@@ -224,7 +224,7 @@ var Style = Base.extend(new function() {
             } else if (children) {
                 for (var i = 0, l = children.length; i < l; i++) {
                     var childValue = children[i]._style[get]();
-                    if (i === 0) {
+                    if (!i) {
                         value = childValue;
                     } else if (!Base.equals(value, childValue)) {
                         // If there is another child with a different

@@ -71,7 +71,7 @@ var Curve = Base.extend(/** @lends Curve# */{
             this._path = arg0;
             seg1 = arg1;
             seg2 = arg2;
-        } else if (count === 0) {
+        } else if (!count) {
             seg1 = new Segment();
             seg2 = new Segment();
         } else if (count === 1) {
@@ -299,7 +299,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @return {Boolean} {@true if this is the first curve}
      */
     isFirst: function() {
-        return this._segment1._index === 0;
+        return !this._segment1._index;
     },
 
     /**
@@ -651,7 +651,7 @@ statics: /** @lends Curve */{
                 tMax = 1 - tMin,
                 roots = [],
                 n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
-            if (n === 0) {
+            if (!n) {
                 curves.push(v);
             } else {
                 roots.sort();
@@ -2110,13 +2110,13 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 if (t2 != null) {  // If point is on curve
                     var pair = i === 0 ? [t1, t2] : [t2, t1];
                     // Filter out tiny overlaps.
-                    if (pairs.length === 0 ||
+                    if (!pairs.length ||
                         abs(pair[0] - pairs[0][0]) > timeEpsilon &&
                         abs(pair[1] - pairs[0][1]) > timeEpsilon)
                         pairs.push(pair);
                 }
                 // We checked 3 points but found no match, curves can't overlap.
-                if (i === 1 && pairs.length === 0)
+                if (i === 1 && !pairs.length)
                     break;
             }
             if (pairs.length !== 2) {

@@ -829,7 +829,7 @@ new function() { // Injection scope for various item event handlers
         // If we're returning '#bounds', create a LinkedRectangle that uses
         // the setBounds() setter to update the Item whenever the bounds are
         // changed:
-        return arguments.length === 0
+        return !arguments.length
                 ? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
                         bounds.height, this, 'setBounds')
                 : bounds;
@@ -878,7 +878,7 @@ new function() { // Injection scope for various item event handlers
         var children = this._children;
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
-        if (!children || children.length === 0)
+        if (!children || !children.length)
             return new Rectangle();
         // Call _updateBoundsCache() even when the group only holds empty /
         // invisible items), so future changes in these items will cause right
@@ -2667,7 +2667,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return Boolean
      */
     isEmpty: function() {
-        return !this._children || this._children.length === 0;
+        var children = this._children;
+        return !children || !children.length;
     },
 
     /**
@@ -4309,7 +4310,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // bounds corners, and draw the corners.
                 ctx.beginPath();
                 for (var i = 0; i < 8; i++) {
-                    ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+                    ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
                 }
                 ctx.closePath();
                 ctx.stroke();

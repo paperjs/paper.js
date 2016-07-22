@@ -482,7 +482,7 @@ PathItem.inject(new function() {
             var curve = curves[i],
                 path = curve._path,
                 v = curve.getValues();
-            if (i === 0 || curves[i - 1]._path !== path) {
+            if (!i || curves[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;

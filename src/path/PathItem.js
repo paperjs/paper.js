@@ -169,7 +169,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             case 'l':
                 var move = lower === 'm';
                 for (var j = 0; j < length; j += 2)
-                    this[j === 0 && move ? 'moveTo' : 'lineTo'](
+                    this[!j && move ? 'moveTo' : 'lineTo'](
                             current = getPoint(j));
                 control = current;
                 if (move)

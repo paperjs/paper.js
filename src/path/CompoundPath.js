@@ -142,7 +142,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
             if (path.isEmpty())
                 path.remove();
         }
-        if (children.length === 0) { // Replace with a simple empty Path
+        if (!children.length) { // Replace with a simple empty Path
             var path = new Path(Item.NO_INSERT);
             path.copyAttributes(this);
             path.insertAbove(this);
@@ -301,7 +301,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     _draw: function(ctx, param, viewMatrix, strokeMatrix) {
         var children = this._children;
         // Return early if the compound path doesn't have any children:
-        if (children.length === 0)
+        if (!children.length)
             return;
 
         param = param.extend({ dontStart: true, dontFinish: true });
@@ -342,7 +342,7 @@ new function() { // Injection scope for PostScript-like drawing functions
      */
     function getCurrentPath(that, check) {
         var children = that._children;
-        if (check && children.length === 0)
+        if (check && !children.length)
             throw new Error('Use a moveTo() command first');
         return children[children.length - 1];
     }

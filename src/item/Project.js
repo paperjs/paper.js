@@ -135,7 +135,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return Boolean
      */
     isEmpty: function() {
-        return this._children.length === 0;
+        return !this._children.length;
     },
 
     /**

@@ -346,7 +346,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             outY = coords[5];
         }
 
-        if (length === 0)
+        if (!length)
             return '';
 
         for (var i = 0; i < length; i++)
@@ -364,7 +364,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     // taken into account.
 
     isEmpty: function() {
-        return this._segments.length === 0;
+        return !this._segments.length;
     },
 
     _transformContent: function(matrix) {
@@ -457,7 +457,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         // If it's the first segment, correct the last segment of closed
         // paths too:
-        if (curve = curves[this._closed && start === 0 ? segments.length - 1
+        if (curve = curves[this._closed && !start ? segments.length - 1
                 : start - 1]) {
             curve._segment2 = segments[start] || segments[0];
             curve._changed();
@@ -2303,7 +2303,7 @@ new function() { // PostScript-style drawing commands
      */
     function getCurrentSegment(that) {
         var segments = that._segments;
-        if (segments.length === 0)
+        if (!segments.length)
             throw new Error('Use a moveTo() command first');
         return segments[segments.length - 1];
     }
@@ -2522,7 +2522,7 @@ new function() { // PostScript-style drawing commands
                         pt = center.add(vector);
                     }
                 }
-                if (i === 0) {
+                if (!i) {
                     // Modify startSegment
                     current.setHandleOut(out);
                 } else {
@@ -2864,7 +2864,7 @@ statics: {
             segment._transformCoordinates(matrix, coords);
             for (var j = 0; j < 6; j += 2) {
                 // Use different padding for points or handles
-                var padding = j === 0 ? joinPadding : strokePadding,
+                var padding = !j ? joinPadding : strokePadding,
                     paddingX = padding ? padding[0] : 0,
                     paddingY = padding ? padding[1] : 0,
                     x = coords[j],

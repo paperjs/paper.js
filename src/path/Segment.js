@@ -496,7 +496,7 @@ var Segment = Base.extend(/** @lends Segment# */{
      * @return {Boolean} {@true if this is the first segment}
      */
     isFirst: function() {
-        return this._index === 0;
+        return !this._index;
     },
 
     /**

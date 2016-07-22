@@ -588,7 +588,7 @@ var Color = Base.extend(new function() {
                             // Allow implicit definition of gradients through
                             // stops / radial properties. Conversion happens
                             // here on the fly:
-                            if (value == null && i === 0 && type === 'gradient'
+                            if (value == null && !i && type === 'gradient'
                                     && 'stops' in arg) {
                                 value = {
                                     stops: arg.stops,

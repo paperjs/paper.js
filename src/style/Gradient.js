@@ -119,7 +119,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
         var index = this._owners ? this._owners.indexOf(color) : -1;
         if (index != -1) {
             this._owners.splice(index, 1);
-            if (this._owners.length === 0)
+            if (!this._owners.length)
                 this._owners = undefined;
         }
     },

@@ -83,7 +83,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             } else {
                 ok = false;
             }
-        } else if (count === 0) {
+        } else if (!count) {
             this.reset();
         } else {
             ok = false;
