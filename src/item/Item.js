@@ -2385,17 +2385,15 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
     _insertAt: function(item, offset) {
-        var res = this;
-        if (res !== item) {
-            var owner = item && item._getOwner();
-            if (owner) {
-                // Notify parent of change. Don't notify item itself yet,
-                // as we're doing so when adding it to the new owner below.
-                res._remove(false, true);
-                owner._insertItem(item._index + offset, res);
-            } else {
-                res = null;
-            }
+        var owner = item && item._getOwner(),
+            // Only insert if the item is not the same as `this`, and if it
+            // actually has an owner into which we can insert.
+            res = item !== this && owner ? this : null;
+        if (res) {
+            // Notify parent of change. Don't notify item itself yet,
+            // as we're doing so when adding it to the new owner below.
+            res._remove(false, true);
+            owner._insertItem(item._index + offset, res);
         }
         return res;
     },
