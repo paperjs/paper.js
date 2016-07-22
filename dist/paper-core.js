@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 14:21:35 2016 +0200
+ * Date: Fri Jul 22 15:46:42 2016 +0200
  *
  ***
  *
@@ -7565,8 +7565,11 @@ var PathItem = Item.extend({
 	_contains: function(point) {
 		var winding = point.isInside(
 				this.getBounds({ internal: true, handle: true }))
-					&& this._getWinding(point);
-		return !!(this.getFillRule() === 'evenodd' ? winding & 1 : winding);
+					? this._getWinding(point)
+					: {};
+		return !!(this.getFillRule() === 'evenodd'
+				? winding.windingL & 1 || winding.windingR & 1
+				: winding.winding);
 	},
 
 	getIntersections: function(path, include, _matrix, _returnFirst) {
@@ -9730,7 +9733,7 @@ PathItem.inject(new function() {
 				if (!(inter && inter._overlap)) {
 					var path = segment._path;
 					path._overlapsOnly = false;
-					if (operator[segment._winding])
+					if (operator[segment._winding.winding])
 						path._validOverlapsOnly = false;
 				}
 			}
@@ -9858,7 +9861,8 @@ PathItem.inject(new function() {
 			pathWindingL = 0,
 			pathWindingR = 0,
 			onPathWinding = 0,
-			isOnPath = false,
+			onPathCount = 0,
+			onPath = false,
 			vPrev,
 			vClose;
 
@@ -9874,7 +9878,7 @@ PathItem.inject(new function() {
 				a3 = v[ia + 6];
 			if (o0 === o3) {
 				if (a1 < paR && a3 > paL || a3 < paR && a1 > paL) {
-					isOnPath = true;
+					onPath = true;
 				}
 				return vPrev;
 			}
@@ -9895,7 +9899,7 @@ PathItem.inject(new function() {
 				} else if (a > paR) {
 					pathWindingR += winding;
 				} else {
-					isOnPath = true;
+					onPath = true;
 					pathWindingL += winding;
 					pathWindingR += winding;
 				}
@@ -9907,7 +9911,7 @@ PathItem.inject(new function() {
 					pathWindingR += winding;
 				}
 			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-				isOnPath = true;
+				onPath = true;
 				if (a3Prev < paL) {
 					pathWindingR += winding;
 				} else if (a3Prev > paR) {
@@ -9974,7 +9978,7 @@ PathItem.inject(new function() {
 					handleCurve(vClose);
 					vClose = null;
 				}
-				if (!pathWindingL && !pathWindingR && isOnPath) {
+				if (!pathWindingL && !pathWindingR && onPath) {
 					var add = path.isClockwise() ^ dir ? 1 : -1;
 					windingL += add;
 					windingR -= add;
@@ -9984,7 +9988,9 @@ PathItem.inject(new function() {
 					windingR += pathWindingR;
 					pathWindingL = pathWindingR = 0;
 				}
-				isOnPath = false;
+				if (onPath)
+					onPathCount++;
+				onPath = false;
 			}
 		}
 		if (!windingL && !windingR) {
@@ -9994,7 +10000,10 @@ PathItem.inject(new function() {
 		windingR = windingR && (2 - abs(windingR) % 2);
 		return {
 			winding: max(windingL, windingR),
-			contour: !windingL ^ !windingR
+			windingL: windingL,
+			windingR: windingR,
+			onContour: !windingL ^ !windingR,
+			onPathCount: onPathCount
 		};
 	}
 
@@ -10025,8 +10034,8 @@ PathItem.inject(new function() {
 				if (parent instanceof CompoundPath)
 					path = parent;
 				winding = !(operator.subtract && path2 && (
-						path === path1 &&  path2._getWinding(pt, dir) ||
-						path === path2 && !path1._getWinding(pt, dir)))
+						path === path1 &&  path2._getWinding(pt, dir).winding ||
+						path === path2 && !path1._getWinding(pt, dir).winding))
 							? getWinding(pt, curves, dir)
 							: { winding: 0 };
 				break;
@@ -10034,9 +10043,7 @@ PathItem.inject(new function() {
 			length -= curveLength;
 		}
 		for (var j = chain.length - 1; j >= 0; j--) {
-			var seg = chain[j].segment;
-			seg._winding = winding.winding;
-			seg._contour = winding.contour;
+			chain[j].segment._winding = winding;
 		}
 	}
 
@@ -10046,9 +10053,10 @@ PathItem.inject(new function() {
 			otherStart;
 
 		function isValid(seg, excludeContour) {
+			var winding;
 			return !!(seg && !seg._visited && (!operator
-					|| operator[seg._winding]
-					|| !excludeContour && operator.unite && seg._contour));
+					|| operator[(winding = seg._winding).winding]
+					|| !excludeContour && operator.unite && winding.onContour));
 		}
 
 		function isStart(seg) {
@@ -10177,7 +10185,7 @@ PathItem.inject(new function() {
 
 	return {
 		_getWinding: function(point, dir) {
-			return getWinding(point, this.getCurves(), dir).winding;
+			return getWinding(point, this.getCurves(), dir);
 		},
 
 		unite: function(path) {
