@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 16:50:39 2016 +0200
+ * Date: Fri Jul 22 23:30:36 2016 +0200
  *
  ***
  *
@@ -3902,15 +3902,11 @@ new function() {
 	_insertItem: '#insertChild',
 
 	_insertAt: function(item, offset) {
-		var res = this;
-		if (res !== item) {
-			var owner = item && item._getOwner();
-			if (owner) {
-				res._remove(false, true);
-				owner._insertItem(item._index + offset, res);
-			} else {
-				res = null;
-			}
+		var owner = item && item._getOwner(),
+			res = item !== this && owner ? this : null;
+		if (res) {
+			res._remove(false, true);
+			owner._insertItem(item._index + offset, res);
 		}
 		return res;
 	},
@@ -9865,14 +9861,13 @@ PathItem.inject(new function() {
 			onPath = false,
 			roots = [],
 			vPrev,
-			vClose,
-			result;
+			vClose;
 
 		function addWinding(v) {
 			var o0 = v[io],
 				o3 = v[io + 6];
-			if (o0 > po && o3 > po ||  o0 < po && o3 < po) {
-				return v;
+			if (po < min(o0, o3) || po > max(o0, o3)) {
+				return;
 			}
 			var a0 = v[ia],
 				a1 = v[ia + 2],
@@ -9882,16 +9877,18 @@ PathItem.inject(new function() {
 				if (a1 < paR && a3 > paL || a3 < paR && a1 > paL) {
 					onPath = true;
 				}
-				return vPrev;
+				return;
 			}
-			var t = null,
-				a =   po === o0 ? a0
-					: po === o3 ? a3
+			var t =   po === o0 ? 0
+					: po === o3 ? 1
 					: paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-					? (a0 + a3) / 2
+					? 0.5
 					: Curve.solveCubic(v, io, po, roots, 0, 1) === 1
-						? Curve.getPoint(v, t = roots[0])[dir ? 'y' : 'x']
-						: (a0 + a3) / 2,
+						? roots[0]
+						: 0.5,
+				a =   t === 0 ? a0
+					: t === 1 ? a3
+					: Curve.getPoint(v, t)[dir ? 'y' : 'x'],
 				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
 				a3Prev = vPrev[ia + 6];
@@ -9920,13 +9917,10 @@ PathItem.inject(new function() {
 					pathWindingL += winding;
 				}
 			}
-			if (onPath && !dontFlip) {
-				t = po === o0 ? 0 : po === o3 ? 1 : t;
-				result = t !== null
-						&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-						&& getWinding(point, curves, dir ? 0 : 1, true);
-			}
-			return v;
+			vPrev = v;
+			return onPath && !dontFlip
+					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
+					&& getWinding(point, curves, dir ? 0 : 1, true);
 		}
 
 		function handleCurve(v) {
@@ -9941,17 +9935,20 @@ PathItem.inject(new function() {
 					a3 = v[ia + 6],
 					monoCurves = paL > max(a0, a1, a2, a3) ||
 								 paR < min(a0, a1, a2, a3)
-							? [v] : Curve.getMonoCurves(v, dir);
-				for (var i = 0, l = monoCurves.length; !result && i < l; i++) {
-					vPrev = addWinding(monoCurves[i]);
+							? [v] : Curve.getMonoCurves(v, dir),
+					res;
+				for (var i = 0, l = monoCurves.length; i < l; i++) {
+					if (res = addWinding(monoCurves[i]))
+						return res;
 				}
 			}
 		}
 
-		for (var i = 0, l = curves.length; !result && i < l; i++) {
+		for (var i = 0, l = curves.length; i < l; i++) {
 			var curve = curves[i],
 				path = curve._path,
-				v = curve.getValues();
+				v = curve.getValues(),
+				res;
 			if (!i || curves[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
@@ -9979,13 +9976,12 @@ PathItem.inject(new function() {
 				}
 			}
 
-			handleCurve(v);
+			if (res = handleCurve(v))
+				return res;
 
-			if (!result && (i + 1 === l || curves[i + 1]._path !== path)) {
-				if (vClose) {
-					handleCurve(vClose);
-					vClose = null;
-				}
+			if (i + 1 === l || curves[i + 1]._path !== path) {
+				if (vClose && (res = handleCurve(vClose)))
+					return res;
 				if (!pathWindingL && !pathWindingR && onPath) {
 					var add = path.isClockwise() ^ dir ? 1 : -1;
 					windingL += add;
@@ -9999,23 +9995,21 @@ PathItem.inject(new function() {
 				if (onPath)
 					onPathCount++;
 				onPath = false;
+				vClose = null;
 			}
 		}
-		if (!result) {
-			if (!windingL && !windingR) {
-				windingL = windingR = onPathWinding;
-			}
-			windingL = windingL && (2 - abs(windingL) % 2);
-			windingR = windingR && (2 - abs(windingR) % 2);
-			result = {
-				winding: max(windingL, windingR),
-				windingL: windingL,
-				windingR: windingR,
-				onContour: !windingL ^ !windingR,
-				onPathCount: onPathCount
-			};
+		if (!windingL && !windingR) {
+			windingL = windingR = onPathWinding;
 		}
-		return result;
+		windingL = windingL && (2 - abs(windingL) % 2);
+		windingR = windingR && (2 - abs(windingR) % 2);
+		return {
+			winding: max(windingL, windingR),
+			windingL: windingL,
+			windingR: windingR,
+			onContour: !windingL ^ !windingR,
+			onPathCount: onPathCount
+		};
 	}
 
 	function propagateWinding(segment, path1, path2, curves, operator) {
