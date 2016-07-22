@@ -358,6 +358,8 @@ PathItem.inject(new function() {
      *     {@link CompoundPath#getCurves()}
      * @param {Number} [dir=0] the direction in which to determine the
      *     winding contribution, `0`: in x-direction, `1`: in y-direction
+     * @param {Boolean} [dontFlip=false] controls whether the algorithm is
+     *     allowed to flip direction if it is deemed to produce better results
      * @return {Object} an object containing the calculated winding number, as
      *     well as an indication whether the point was situated on the contour
      * @private
@@ -382,16 +384,15 @@ PathItem.inject(new function() {
             onPath = false,
             roots = [],
             vPrev,
-            vClose,
-            result;
+            vClose;
 
         function addWinding(v) {
             var o0 = v[io],
                 o3 = v[io + 6];
-            if (o0 > po && o3 > po ||  o0 < po && o3 < po) {
-                // If curve is outside the ordinates' range, no intersection
+            if (po < min(o0, o3) || po > max(o0, o3)) {
+                // If the curve is outside the ordinates' range, no intersection
                 // with the ray is possible.
-                return v;
+                return;
             }
             var a0 = v[ia],
                 a1 = v[ia + 2],
@@ -409,16 +410,19 @@ PathItem.inject(new function() {
                 }
                 // If curve does not change in ordinate direction, windings will
                 // be added by adjacent curves.
-                return vPrev;
+                // Bail out without updating vPrev at the end of the call.
+                return;
             }
-            var t = null,
-                a =   po === o0 ? a0
-                    : po === o3 ? a3
+            var t =   po === o0 ? 0
+                    : po === o3 ? 1
                     : paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-                    ? (a0 + a3) / 2
+                    ? 0.5
                     : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
-                        ? Curve.getPoint(v, t = roots[0])[dir ? 'y' : 'x']
-                        : (a0 + a3) / 2,
+                        ? roots[0]
+                        : 0.5,
+                a =   t === 0 ? a0
+                    : t === 1 ? a3
+                    : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
                 winding = o0 > o3 ? 1 : -1,
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
                 a3Prev = vPrev[ia + 6];
@@ -435,7 +439,7 @@ PathItem.inject(new function() {
                 }
             } else if (winding !== windingPrev) {
                 // Curve is crossed at starting point and winding changes from
-                // previous. Cancel winding contribution from previous curve.
+                // previous curve. Cancel the winding from previous curve.
                 if (a3Prev < paR) {
                     pathWindingL += winding;
                 }
@@ -454,15 +458,14 @@ PathItem.inject(new function() {
                     pathWindingL += winding;
                 }
             }
-            if (onPath && !dontFlip) {
-                // If we're on the path, look at the tangent to determine if we
-                // should flip direction to determine a reliable winding number.
-                t = po === o0 ? 0 : po === o3 ? 1 : t;
-                result = t !== null
-                        && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-                        && getWinding(point, curves, dir ? 0 : 1, true);
-            }
-            return v;
+            vPrev = v;
+            // If we're on the path, look at the tangent to decide whether to
+            // flip direction to determine a reliable winding number:
+            // If the tangent is parallel to the direction, call getWinding()
+            // again with flipped direction and return the result.
+            return onPath && !dontFlip
+                    && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
+                    && getWinding(point, curves, dir ? 0 : 1, true);
         }
 
         function handleCurve(v) {
@@ -482,17 +485,22 @@ PathItem.inject(new function() {
                     // abscissa, it can be treated as a monotone curve:
                     monoCurves = paL > max(a0, a1, a2, a3) ||
                                  paR < min(a0, a1, a2, a3)
-                            ? [v] : Curve.getMonoCurves(v, dir);
-                for (var i = 0, l = monoCurves.length; !result && i < l; i++) {
-                    vPrev = addWinding(monoCurves[i]);
+                            ? [v] : Curve.getMonoCurves(v, dir),
+                    res;
+                for (var i = 0, l = monoCurves.length; i < l; i++) {
+                    // Calling addWinding() my lead to direction flipping, in
+                    // which case we already have the result and can return it.
+                    if (res = addWinding(monoCurves[i]))
+                        return res;
                 }
             }
         }
 
-        for (var i = 0, l = curves.length; !result && i < l; i++) {
+        for (var i = 0, l = curves.length; i < l; i++) {
             var curve = curves[i],
                 path = curve._path,
-                v = curve.getValues();
+                v = curve.getValues(),
+                res;
             if (!i || curves[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
@@ -529,16 +537,17 @@ PathItem.inject(new function() {
                 }
             }
 
-            handleCurve(v);
+            // Calling handleCurve() my lead to direction flipping, in which
+            // case we already have the result and can return it.
+            if (res = handleCurve(v))
+                return res;
 
-            if (!result && (i + 1 === l || curves[i + 1]._path !== path)) {
+            if (i + 1 === l || curves[i + 1]._path !== path) {
                 // We're at the last curve of the current (sub-)path. If a
                 // closing curve was calculated at the beginning of it, handle
                 // it now to treat the path as closed:
-                if (vClose) {
-                    handleCurve(vClose);
-                    vClose = null;
-                }
+                if (vClose && (res = handleCurve(vClose)))
+                    return res;
                 if (!pathWindingL && !pathWindingR && onPath) {
                     // If the point is on the path and the windings canceled
                     // each other, we treat the point as if it was inside the
@@ -558,27 +567,25 @@ PathItem.inject(new function() {
                 if (onPath)
                     onPathCount++;
                 onPath = false;
+                vClose = null;
             }
         }
-        if (!result) {
-            if (!windingL && !windingR) {
-                windingL = windingR = onPathWinding;
-            }
-            windingL = windingL && (2 - abs(windingL) % 2);
-            windingR = windingR && (2 - abs(windingR) % 2);
-            // Return the calculated winding contribution and detect if we are
-            // on the contour of the area by comparing windingL and windingR.
-            // This is required when handling unite operations, where a winding
-            // number of 2 is not part of the result unless it's the contour:
-            result = {
-                winding: max(windingL, windingR),
-                windingL: windingL,
-                windingR: windingR,
-                onContour: !windingL ^ !windingR,
-                onPathCount: onPathCount
-            };
+        if (!windingL && !windingR) {
+            windingL = windingR = onPathWinding;
         }
-        return result;
+        windingL = windingL && (2 - abs(windingL) % 2);
+        windingR = windingR && (2 - abs(windingR) % 2);
+        // Return the calculated winding contribution and detect if we are
+        // on the contour of the area by comparing windingL and windingR.
+        // This is required when handling unite operations, where a winding
+        // number of 2 is not part of the result unless it's the contour:
+        return {
+            winding: max(windingL, windingR),
+            windingL: windingL,
+            windingR: windingR,
+            onContour: !windingL ^ !windingR,
+            onPathCount: onPathCount
+        };
     }
 
     function propagateWinding(segment, path1, path2, curves, operator) {
