@@ -135,7 +135,7 @@ test('CompoundPath#contains() (donut)', function() {
     }
 
     path.fillRule = 'evenodd';
-    // testDonut(path, '\'evenodd\'');
+    testDonut(path, '\'evenodd\'');
     path.reorient();
     testDonut(path, '\'evenodd\' + reorient()');
     path.fillRule = 'nonzero';

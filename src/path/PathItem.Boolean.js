@@ -176,7 +176,7 @@ PathItem.inject(new function() {
                     path._overlapsOnly = false;
                     // This is no overlap. If it is valid, take note that this
                     // path contains valid intersections other than overlaps.
-                    if (operator[segment._winding])
+                    if (operator[segment._winding.winding])
                         path._validOverlapsOnly = false;
                 }
             }
@@ -378,7 +378,8 @@ PathItem.inject(new function() {
             pathWindingL = 0,
             pathWindingR = 0,
             onPathWinding = 0,
-            isOnPath = false,
+            onPathCount = 0,
+            onPath = false,
             vPrev,
             vClose;
 
@@ -402,7 +403,7 @@ PathItem.inject(new function() {
                 //     +----+     |
                 //          +-----+
                 if (a1 < paR && a3 > paL || a3 < paR && a1 > paL) {
-                    isOnPath = true;
+                    onPath = true;
                 }
                 // If curve does not change in ordinate direction, windings will
                 // be added by adjacent curves.
@@ -426,7 +427,7 @@ PathItem.inject(new function() {
                 } else if (a > paR) {
                     pathWindingR += winding;
                 } else {
-                    isOnPath = true;
+                    onPath = true;
                     pathWindingL += winding;
                     pathWindingR += winding;
                 }
@@ -442,7 +443,7 @@ PathItem.inject(new function() {
             } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
                 // horizontal and the current curve.
-                isOnPath = true;
+                onPath = true;
                 if (a3Prev < paL) {
                     // left winding was added before, now add right winding.
                     pathWindingR += winding;
@@ -528,7 +529,7 @@ PathItem.inject(new function() {
                     handleCurve(vClose);
                     vClose = null;
                 }
-                if (!pathWindingL && !pathWindingR && isOnPath) {
+                if (!pathWindingL && !pathWindingR && onPath) {
                     // If the point is on the path and the windings canceled
                     // each other, we treat the point as if it was inside the
                     // path. A point inside a path has a winding of [+1,-1]
@@ -544,7 +545,9 @@ PathItem.inject(new function() {
                     windingR += pathWindingR;
                     pathWindingL = pathWindingR = 0;
                 }
-                isOnPath = false;
+                if (onPath)
+                    onPathCount++;
+                onPath = false;
             }
         }
         if (!windingL && !windingR) {
@@ -558,7 +561,10 @@ PathItem.inject(new function() {
         // contribution of 2 is not part of the result unless it's the contour:
         return {
             winding: max(windingL, windingR),
-            contour: !windingL ^ !windingR
+            windingL: windingL,
+            windingR: windingR,
+            onContour: !windingL ^ !windingR,
+            onPathCount: onPathCount
         };
     }
 
@@ -600,8 +606,8 @@ PathItem.inject(new function() {
                 // contributing to the second operand and is outside the
                 // first operand.
                 winding = !(operator.subtract && path2 && (
-                        path === path1 &&  path2._getWinding(pt, dir) ||
-                        path === path2 && !path1._getWinding(pt, dir)))
+                        path === path1 &&  path2._getWinding(pt, dir).winding ||
+                        path === path2 && !path1._getWinding(pt, dir).winding))
                             ? getWinding(pt, curves, dir)
                             : { winding: 0 };
                 break;
@@ -610,9 +616,7 @@ PathItem.inject(new function() {
         }
         // Now assign the winding to the entire curve chain.
         for (var j = chain.length - 1; j >= 0; j--) {
-            var seg = chain[j].segment;
-            seg._winding = winding.winding;
-            seg._contour = winding.contour;
+            chain[j].segment._winding = winding;
         }
     }
 
@@ -637,9 +641,10 @@ PathItem.inject(new function() {
             // also part of the contour of the result. Such segments are not
             // chosen as the start of new paths and are not always counted as a
             // valid next step, as controlled by the excludeContour parameter.
+            var winding;
             return !!(seg && !seg._visited && (!operator
-                    || operator[seg._winding]
-                    || !excludeContour && operator.unite && seg._contour));
+                    || operator[(winding = seg._winding).winding]
+                    || !excludeContour && operator.unite && winding.onContour));
         }
 
         function isStart(seg) {
@@ -849,7 +854,7 @@ PathItem.inject(new function() {
          * @return {Number} the winding number
          */
         _getWinding: function(point, dir) {
-            return getWinding(point, this.getCurves(), dir).winding;
+            return getWinding(point, this.getCurves(), dir);
         },
 
         /**
