@@ -382,6 +382,7 @@ PathItem.inject(new function() {
             onPath = false,
             onPathWinding = 0,
             onPathCount = 0,
+            onCurves = [],
             roots = [],
             vPrev,
             vClose;
@@ -426,13 +427,15 @@ PathItem.inject(new function() {
                 winding = o0 > o3 ? 1 : -1,
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
                 a3Prev = vPrev[ia + 6],
+                curveWindingL = 0,
+                curveWindingR = 0,
                 onCurve = false;
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
-                    pathWindingL += winding;
+                    curveWindingL = winding;
                 } else if (a > paR) {
-                    pathWindingR += winding;
+                    curveWindingR = winding;
                 } else {
                     onCurve = true;
                     pathWindingL += winding;
@@ -442,10 +445,10 @@ PathItem.inject(new function() {
                 // Curve is crossed at starting point and winding changes from
                 // previous curve. Cancel the winding from previous curve.
                 if (a3Prev < paR) {
-                    pathWindingL += winding;
+                    curveWindingL = winding;
                 }
                 if (a3Prev > paL) {
-                    pathWindingR += winding;
+                    curveWindingR = winding;
                 }
             } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
@@ -453,15 +456,24 @@ PathItem.inject(new function() {
                 onCurve = true;
                 if (a3Prev < paL) {
                     // left winding was added before, now add right winding.
-                    pathWindingR += winding;
+                    curveWindingR = winding;
                 } else if (a3Prev > paR) {
                     // right winding was added before, not add left winding.
-                    pathWindingL += winding;
+                    curveWindingL = winding;
                 }
             }
             vPrev = v;
-            if (onCurve)
+            if (onCurve) {
+                onCurves.push({
+                    curve: v,
+                    winding: winding,
+                    windingL: curveWindingL,
+                    windingR: curveWindingR,
+                });
                 onPath = true;
+            }
+            pathWindingL += curveWindingL;
+            pathWindingR += curveWindingR;
             // If we're on the curve, look at the tangent to decide whether to
             // flip direction to determine a reliable winding number:
             // If the tangent is parallel to the direction, call getWinding()
@@ -573,6 +585,20 @@ PathItem.inject(new function() {
                 vClose = null;
             }
         }
+
+        for (var i = 0; i < onCurves.length - 1; i++) {
+            var entry1 = onCurves[i],
+                hasOverlaps = false;
+            for (var j = i + 1; !hasOverlaps && j < onCurves.length; j++) {
+                var entry2 = onCurves[j];
+                hasOverlaps = !!Curve.getOverlaps(entry1.curve, entry2.curve);
+            }
+            if (!hasOverlaps) {
+                windingL -= entry1.windingL;
+                windingR -= entry1.windingR;
+            }
+        }
+
         if (!windingL && !windingR) {
             windingL = windingR = onPathWinding;
         }
