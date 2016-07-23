@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 22 23:30:36 2016 +0200
+ * Date: Sat Jul 23 13:30:40 2016 +0200
  *
  ***
  *
@@ -9856,9 +9856,9 @@ PathItem.inject(new function() {
 			windingR = 0,
 			pathWindingL = 0,
 			pathWindingR = 0,
+			onPath = false,
 			onPathWinding = 0,
 			onPathCount = 0,
-			onPath = false,
 			roots = [],
 			vPrev,
 			vClose;
@@ -9891,14 +9891,15 @@ PathItem.inject(new function() {
 					: Curve.getPoint(v, t)[dir ? 'y' : 'x'],
 				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-				a3Prev = vPrev[ia + 6];
+				a3Prev = vPrev[ia + 6],
+				onCurve = false;
 			if (po !== o0) {
 				if (a < paL) {
 					pathWindingL += winding;
 				} else if (a > paR) {
 					pathWindingR += winding;
 				} else {
-					onPath = true;
+					onCurve = true;
 					pathWindingL += winding;
 					pathWindingR += winding;
 				}
@@ -9910,7 +9911,7 @@ PathItem.inject(new function() {
 					pathWindingR += winding;
 				}
 			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-				onPath = true;
+				onCurve = true;
 				if (a3Prev < paL) {
 					pathWindingR += winding;
 				} else if (a3Prev > paR) {
@@ -9918,7 +9919,9 @@ PathItem.inject(new function() {
 				}
 			}
 			vPrev = v;
-			return onPath && !dontFlip
+			if (onCurve)
+				onPath = true;
+			return onCurve && !dontFlip
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
 					&& getWinding(point, curves, dir ? 0 : 1, true);
 		}
@@ -9982,7 +9985,7 @@ PathItem.inject(new function() {
 			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
-				if (!pathWindingL && !pathWindingR && onPath) {
+				if (onPath && !pathWindingL && !pathWindingR) {
 					var add = path.isClockwise() ^ dir ? 1 : -1;
 					windingL += add;
 					windingR -= add;
