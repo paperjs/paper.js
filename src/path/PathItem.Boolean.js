@@ -379,9 +379,9 @@ PathItem.inject(new function() {
             windingR = 0,
             pathWindingL = 0,
             pathWindingR = 0,
+            onPath = false,
             onPathWinding = 0,
             onPathCount = 0,
-            onPath = false,
             roots = [],
             vPrev,
             vClose;
@@ -425,7 +425,8 @@ PathItem.inject(new function() {
                     : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
                 winding = o0 > o3 ? 1 : -1,
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-                a3Prev = vPrev[ia + 6];
+                a3Prev = vPrev[ia + 6],
+                onCurve = false;
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
@@ -433,7 +434,7 @@ PathItem.inject(new function() {
                 } else if (a > paR) {
                     pathWindingR += winding;
                 } else {
-                    onPath = true;
+                    onCurve = true;
                     pathWindingL += winding;
                     pathWindingR += winding;
                 }
@@ -449,7 +450,7 @@ PathItem.inject(new function() {
             } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
                 // horizontal and the current curve.
-                onPath = true;
+                onCurve = true;
                 if (a3Prev < paL) {
                     // left winding was added before, now add right winding.
                     pathWindingR += winding;
@@ -459,11 +460,13 @@ PathItem.inject(new function() {
                 }
             }
             vPrev = v;
-            // If we're on the path, look at the tangent to decide whether to
+            if (onCurve)
+                onPath = true;
+            // If we're on the curve, look at the tangent to decide whether to
             // flip direction to determine a reliable winding number:
             // If the tangent is parallel to the direction, call getWinding()
             // again with flipped direction and return the result.
-            return onPath && !dontFlip
+            return onCurve && !dontFlip
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
                     && getWinding(point, curves, dir ? 0 : 1, true);
         }
@@ -548,7 +551,7 @@ PathItem.inject(new function() {
                 // it now to treat the path as closed:
                 if (vClose && (res = handleCurve(vClose)))
                     return res;
-                if (!pathWindingL && !pathWindingR && onPath) {
+                if (onPath && !pathWindingL && !pathWindingR) {
                     // If the point is on the path and the windings canceled
                     // each other, we treat the point as if it was inside the
                     // path. A point inside a path has a winding of [+1,-1]
