@@ -425,8 +425,7 @@ PathItem.inject(new function() {
                     : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
                 winding = o0 > o3 ? 1 : -1,
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-                a3Prev = vPrev[ia + 6],
-                onCurve = false;
+                a3Prev = vPrev[ia + 6];
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
@@ -434,7 +433,7 @@ PathItem.inject(new function() {
                 } else if (a > paR) {
                     pathWindingR += winding;
                 } else {
-                    onCurve = true;
+                    onPath = true;
                     pathWindingL += winding;
                     pathWindingR += winding;
                 }
@@ -450,7 +449,7 @@ PathItem.inject(new function() {
             } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
                 // horizontal and the current curve.
-                onCurve = true;
+                onPath = true;
                 if (a3Prev < paL) {
                     // left winding was added before, now add right winding.
                     pathWindingR += winding;
@@ -460,13 +459,11 @@ PathItem.inject(new function() {
                 }
             }
             vPrev = v;
-            if (onCurve)
-                onPath = true;
             // If we're on the curve, look at the tangent to decide whether to
-            // flip direction to determine a reliable winding number:
+            // flip direction to better determine a reliable winding number:
             // If the tangent is parallel to the direction, call getWinding()
-            // again with flipped direction and return the result.
-            return onCurve && !dontFlip
+            // again with flipped direction and return that result instead.
+            return !dontFlip && a > paL && a < paR
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
                     && getWinding(point, curves, dir ? 0 : 1, true);
         }
