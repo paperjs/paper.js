@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 23 13:30:40 2016 +0200
+ * Date: Sat Jul 23 18:50:58 2016 +0200
  *
  ***
  *
@@ -9891,15 +9891,14 @@ PathItem.inject(new function() {
 					: Curve.getPoint(v, t)[dir ? 'y' : 'x'],
 				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
-				a3Prev = vPrev[ia + 6],
-				onCurve = false;
+				a3Prev = vPrev[ia + 6];
 			if (po !== o0) {
 				if (a < paL) {
 					pathWindingL += winding;
 				} else if (a > paR) {
 					pathWindingR += winding;
 				} else {
-					onCurve = true;
+					onPath = true;
 					pathWindingL += winding;
 					pathWindingR += winding;
 				}
@@ -9911,7 +9910,7 @@ PathItem.inject(new function() {
 					pathWindingR += winding;
 				}
 			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-				onCurve = true;
+				onPath = true;
 				if (a3Prev < paL) {
 					pathWindingR += winding;
 				} else if (a3Prev > paR) {
@@ -9919,9 +9918,7 @@ PathItem.inject(new function() {
 				}
 			}
 			vPrev = v;
-			if (onCurve)
-				onPath = true;
-			return onCurve && !dontFlip
+			return !dontFlip && a > paL && a < paR
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
 					&& getWinding(point, curves, dir ? 0 : 1, true);
 		}
