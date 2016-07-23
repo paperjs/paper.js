@@ -267,6 +267,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 this.getBounds({ internal: true, handle: true }))
                     ? this._getWinding(point)
                     : {};
+        console.log(JSON.stringify(winding));
         return !!(this.getFillRule() === 'evenodd'
                 ? winding.windingL & 1 || winding.windingR & 1
                 : winding.winding);

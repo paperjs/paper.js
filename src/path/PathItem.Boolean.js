@@ -429,7 +429,7 @@ PathItem.inject(new function() {
                 a3Prev = vPrev[ia + 6],
                 curveWindingL = 0,
                 curveWindingR = 0,
-                onCurve = false;
+                onCurve = a > paL && a < paR;
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
@@ -437,9 +437,9 @@ PathItem.inject(new function() {
                 } else if (a > paR) {
                     curveWindingR = winding;
                 } else {
-                    onCurve = true;
-                    pathWindingL += winding;
-                    pathWindingR += winding;
+                    onPath = true;
+                    curveWindingL = winding;
+                    curveWindingR = winding;
                 }
             } else if (winding !== windingPrev) {
                 // Curve is crossed at starting point and winding changes from
@@ -453,7 +453,7 @@ PathItem.inject(new function() {
             } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
                 // Point is on a horizontal curve between the previous non-
                 // horizontal and the current curve.
-                onCurve = true;
+                onPath = true;
                 if (a3Prev < paL) {
                     // left winding was added before, now add right winding.
                     curveWindingR = winding;
@@ -462,18 +462,18 @@ PathItem.inject(new function() {
                     curveWindingL = winding;
                 }
             }
-            vPrev = v;
+            pathWindingL += curveWindingL;
+            pathWindingR += curveWindingR;
             if (onCurve) {
                 onCurves.push({
                     curve: v,
+                    time: t,
                     winding: winding,
                     windingL: curveWindingL,
-                    windingR: curveWindingR,
+                    windingR: curveWindingR
                 });
-                onPath = true;
             }
-            pathWindingL += curveWindingL;
-            pathWindingR += curveWindingR;
+            vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
             // flip direction to determine a reliable winding number:
             // If the tangent is parallel to the direction, call getWinding()
@@ -586,18 +586,37 @@ PathItem.inject(new function() {
             }
         }
 
-        for (var i = 0; i < onCurves.length - 1; i++) {
-            var entry1 = onCurves[i],
-                hasOverlaps = false;
-            for (var j = i + 1; !hasOverlaps && j < onCurves.length; j++) {
-                var entry2 = onCurves[j];
-                hasOverlaps = !!Curve.getOverlaps(entry1.curve, entry2.curve);
-            }
-            if (!hasOverlaps) {
+        console.log('before', windingL, windingR, onCurves);
+        for (var i = 0; i < onCurves.length; i++) {
+            var entry1 = onCurves[i];
+            if (i > 0) {
                 windingL -= entry1.windingL;
                 windingR -= entry1.windingR;
             }
+            for (var j = i + 1; j < onCurves.length; j++) {
+                var entry2 = onCurves[j],
+                    v1 = entry1.curve,
+                    v2 = entry2.curve,
+                    overlaps = Curve.getOverlaps(v1, v2);
+                if (overlaps) {
+                    var t1 = entry1.time,
+                        t2 = entry2.time,
+                        start1 = overlaps[0][0],
+                        start2 = overlaps[0][1],
+                        end1 = overlaps[1][0],
+                        end2 = overlaps[1][1];
+                    console.log('overlap', t1, start1, end1, t2, start2, end2);
+                    if (t1 >= min(start1, end1) && t1 <= max(start1, end1) &&
+                        t2 >= min(start2, end2) && t2 <= max(start2, end2)) {
+                        var dir = start1 < end1 === start2 < end2;
+                        console.log('overlap', dir, entry1.winding, entry2.winding);
+                        windingL += entry2.windingL;
+                        windingR += entry2.windingR;
+                    }
+                }
+            }
         }
+        console.log('after', windingL, windingR);
 
         if (!windingL && !windingR) {
             windingL = windingR = onPathWinding;
