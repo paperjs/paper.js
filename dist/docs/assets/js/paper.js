@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jul 23 18:50:58 2016 +0200
+ * Date: Mon Jul 25 21:42:06 2016 +0200
  *
  ***
  *
@@ -11198,7 +11198,7 @@ var Color = Base.extend(new function() {
 					: color;
 			return col === this || col && this._class === col._class
 					&& this._type === col._type
-					&& this._alpha === col._alpha
+					&& this.getAlpha() === col.getAlpha()
 					&& Base.equals(this._components, col._components)
 					|| false;
 		},
@@ -11665,8 +11665,23 @@ var Style = Base.extend(new function() {
 	},
 
 	equals: function(style) {
+		function compare(style1, style2, secondary) {
+			var values1 = style1._values,
+				values2 = style2._values,
+				defaults2 = style2._defaults;
+			for (var key in values1) {
+				var value1 = values1[key],
+					value2 = values2[key];
+				if (!(secondary && key in values2) && !Base.equals(value1,
+						value2 === undefined ? defaults2[key] : value2))
+					return false;
+			}
+			return true;
+		}
+
 		return style === this || style && this._class === style._class
-				&& Base.equals(this._values, style._values)
+				&& compare(this, style)
+				&& compare(style, this, true)
 				|| false;
 	},
 
