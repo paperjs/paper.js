@@ -2952,6 +2952,59 @@ path.onMouseLeave = function(event) {
 <div class="reference-members"><h2>Methods inherited from <a href="../classes/Item.html"><tt>Item</tt></a></h2>
 
 	
+<div id="hittestall-point" class="member">
+<div class="member-link">
+<a name="hittestall-point" href="#hittestall-point"><tt><b>hitTestAll</b>(point[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning all found hits.</p>
+<p>The options object allows you to control the specifics of the hit- test. See <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a> for a list of all options.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/HitResult.html"><tt>HitResult</tt></a> objects</tt>&nbsp;&mdash;&nbsp;hit result objects for all hits, describing what  exactly was hit or <code>null</code> if nothing was hit
+</li>
+		
+	</ul>
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>;</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
 <div id="set-props" class="member">
 <div class="member-link">
 <a name="set-props" href="#set-props"><tt><b>set</b>(props)</tt></a>
@@ -6333,59 +6386,6 @@ function onMouseDown(event) {
 </div>
 
 
-</div>
-</div>
-</div>
-
-	
-<div id="hittestall-point" class="member">
-<div class="member-link">
-<a name="hittestall-point" href="#hittestall-point"><tt><b>hitTestAll</b>(point[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning all found hits.</p>
-<p>The options object allows you to control the specifics of the hit- test. See <a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a> for a list of all options.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>point:</tt> 
-<a href="../classes/Point.html"><tt>Point</tt></a>
-&mdash;&nbsp;the point where the hit-test should be performed
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-
-&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt>Array of <a href="../classes/HitResult.html"><tt>HitResult</tt></a> objects</tt>&nbsp;&mdash;&nbsp;hit result objects for all hits, describing what  exactly was hit or <code>null</code> if nothing was hit
-</li>
-		
-	</ul>
-
-	
-	<ul class="member-list">
-		<h4>See also:</h4>
-		
-			<li><tt><a href="../classes/Item.html#hittest-point"><tt>hitTest(point[, options])</tt></a>;</tt></li>
-		
-	</ul>
-
-	
 </div>
 </div>
 </div>
