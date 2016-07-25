@@ -769,7 +769,7 @@ var Color = Base.extend(new function() {
                     : color;
             return col === this || col && this._class === col._class
                     && this._type === col._type
-                    && this._alpha === col._alpha
+                    && this.getAlpha() === col.getAlpha()
                     && Base.equals(this._components, col._components)
                     || false;
         },
