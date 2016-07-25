@@ -79,7 +79,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         clipMask: false,
         selected: false,
         data: {}
-    }
+    },
+    // Prioritize `applyMatrix` over `matrix`:
+    _prioritize: ['applyMatrix']
 },
 new function() { // Injection scope for various item event handlers
     var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -161,9 +163,8 @@ new function() { // Injection scope for various item event handlers
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT) {
-            // Filter out internal, insert, parent and project properties as
-            // these were handled above.
-            Base.filter(this, props, {
+            this.set(props, {
+                // Filter out these properties as they were handled above:
                 internal: true, insert: true, project: true, parent: true
             });
         }
@@ -243,6 +244,8 @@ new function() { // Injection scope for various item event handlers
      * values defined in the object literal, if the item has property of the
      * given name (or a setter defined for it).
      *
+     * @name Item#set
+     * @function
      * @param {Object} props
      * @return {Item} the item itself
      *
@@ -260,11 +263,6 @@ new function() { // Injection scope for various item event handlers
      *     selected: true
      * });
      */
-    set: function(props) {
-        if (props)
-            this._set(props);
-        return this;
-    },
 
     /**
      * The unique id of the item.

@@ -68,7 +68,8 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     initialize: function Gradient(stops, radial) {
         // Use UID here since Gradients are exported through dictionary.add().
         this._id = UID.get();
-        if (stops && this._set(stops)) {
+        if (stops && Base.isPlainObject(stops)) {
+            this.set(stops);
             // Erase arguments since we used the passed object instead.
             stops = radial = null;
         }

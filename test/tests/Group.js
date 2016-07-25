@@ -49,6 +49,9 @@ test('new Group({children:[item]})', function() {
         return paper.project.activeLayer.children.length;
     }, 1);
     equals(function() {
+        return path.parent == group;
+    }, true);
+    equals(function() {
         return group.children[0] == path;
     }, true);
 });

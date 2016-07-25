@@ -78,17 +78,20 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
-     * #_set() is part of the mechanism for constructors which take one object
+     * #set() is part of the mechanism for constructors which take one object
      * literal describing all the properties to be set on the created instance.
      * Through {@link Base.filter()} it supports `_filtered`
      * handling as required by the {@link Base.readNamed()} mechanism.
      *
      * @param {Object} props an object describing the properties to set
-     * @return {Boolean} {@true if the object is a plain object}
+     * @param {Object} [exclude] an object that can define any properties as
+     *     `true` that should be excluded
+     * @return {Object} a reference to `this`, for chainability.
      */
-    _set: function(props) {
-        if (props && Base.isPlainObject(props))
-            return Base.filter(this, props);
+    set: function(props, exclude) {
+        if (props)
+            Base.filter(this, props, exclude, this._prioritize);
+        return this;
     },
 
     statics: /** @lends Base */{
@@ -276,14 +279,14 @@ Base.inject(/** @lends Base# */{
             var value = this.getNamed(list, name),
                 hasObject = value !== undefined;
             if (hasObject) {
-                // Create a _filtered object that inherits from argument 0, and
+                // Create a _filtered object that inherits from list[0], and
                 // override all fields that were already read with undefined.
                 var filtered = list._filtered;
                 if (!filtered) {
                     filtered = list._filtered = Base.create(list[0]);
-                    // Point _filtering to the original so Base#_set() can
+                    // Point _unfiltered to the original so Base#_set() can
                     // execute hasOwnProperty on it.
-                    filtered._filtering = list[0];
+                    filtered._unfiltered = list[0];
                 }
                 // delete wouldn't work since the masked parent's value would
                 // shine through.
@@ -319,17 +322,24 @@ Base.inject(/** @lends Base# */{
         /**
          * Copies all properties from `source` over to `dest`, supporting
          * `_filtered` handling as required by {@link Base.readNamed()}
-         * mechanism, as well as an optional exclude` object that lists
-         * properties to exclude.
+         * mechanism, as well as a way to exclude and prioritize properties.
+         *
+         * @param {Object} dest the destination that is to receive the
+         *     properties
+         * @param {Object} source the source from where to retrieve the
+         *     properties to be copied
+         * @param {Object} [exclude] an object that can define any properties
+         *     as `true` that should be excluded when copying
+         * @param {String[]} [prioritize] a list of keys that should be
+         *     prioritized when copying, if they are defined in `source`,
+         *     processed in the order of appearance
          */
-        filter: function(dest, source, exclude) {
-            // If source is a filtering object, we need to get the keys from the
-            // the original object (it's parent / prototype). See _filtered
-            // inheritance trick in the argument reading code.
-            var keys = Object.keys(source._filtering || source);
-            for (var i = 0, l = keys.length; i < l; i++) {
-                var key = keys[i];
-                if (!(exclude && exclude[key])) {
+        filter: function(dest, source, exclude, prioritize) {
+            var processed;
+
+            function handleKey(key) {
+                if (!(exclude && key in exclude) &&
+                    !(processed && key in processed)) {
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
                     var value = source[key];
@@ -337,6 +347,25 @@ Base.inject(/** @lends Base# */{
                         dest[key] = value;
                 }
             }
+
+            // If there are prioritized keys, process them first.
+            if (prioritize) {
+                var keys = {};
+                prioritize.forEach(function(key) {
+                    if (key in source) {
+                        handleKey(key);
+                        keys[key] = true;
+                    }
+                });
+                // Now reference the processed keys as processed, so that
+                // handleKey() will not set them again below.
+                processed = keys;
+            }
+
+            // If source is a filtered object, we get the keys from the
+            // the original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            Object.keys(source._unfiltered || source).forEach(handleKey);
             return dest;
         },
 

@@ -787,9 +787,10 @@ test('Item#applyMatrix', function() {
 
     var path = new Path.Rectangle({
         size: [100, 100],
-        position: [0, 0],
-        applyMatrix: false
+        position: [0, 0]
     });
+
+    path.applyMatrix = false;
 
     equals(path.matrix, new Matrix(),
             'path.matrix before scaling');
