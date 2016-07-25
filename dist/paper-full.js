@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jul 25 21:42:06 2016 +0200
+ * Date: Mon Jul 25 23:17:45 2016 +0200
  *
  ***
  *
@@ -262,9 +262,10 @@ Base.inject({
 		return Base.serialize(this);
 	},
 
-	_set: function(props) {
-		if (props && Base.isPlainObject(props))
-			return Base.filter(this, props);
+	set: function(props, exclude) {
+		if (props)
+			Base.filter(this, props, exclude, this._prioritize);
+		return this;
 	},
 
 	statics: {
@@ -374,7 +375,7 @@ Base.inject({
 				var filtered = list._filtered;
 				if (!filtered) {
 					filtered = list._filtered = Base.create(list[0]);
-					filtered._filtering = list[0];
+					filtered._unfiltered = list[0];
 				}
 				filtered[name] = undefined;
 			}
@@ -393,16 +394,30 @@ Base.inject({
 			return !!this.getNamed(list, name);
 		},
 
-		filter: function(dest, source, exclude) {
-			var keys = Object.keys(source._filtering || source);
-			for (var i = 0, l = keys.length; i < l; i++) {
-				var key = keys[i];
-				if (!(exclude && exclude[key])) {
+		filter: function(dest, source, exclude, prioritize) {
+			var processed;
+
+			function handleKey(key) {
+				if (!(exclude && key in exclude) &&
+					!(processed && key in processed)) {
 					var value = source[key];
 					if (value !== undefined)
 						dest[key] = value;
 				}
 			}
+
+			if (prioritize) {
+				var keys = {};
+				prioritize.forEach(function(key) {
+					if (key in source) {
+						handleKey(key);
+						keys[key] = true;
+					}
+				});
+				processed = keys;
+			}
+
+			Object.keys(source._unfiltered || source).forEach(handleKey);
 			return dest;
 		},
 
@@ -2890,7 +2905,8 @@ var Item = Base.extend(Emitter, {
 		clipMask: false,
 		selected: false,
 		data: {}
-	}
+	},
+	_prioritize: ['applyMatrix']
 },
 new function() {
 	var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -2951,7 +2967,7 @@ new function() {
 					._insertItem(undefined, this, true);
 		}
 		if (hasProps && props !== Item.NO_INSERT) {
-			Base.filter(this, props, {
+			this.set(props, {
 				internal: true, insert: true, project: true, parent: true
 			});
 		}
@@ -2998,12 +3014,6 @@ new function() {
 			project._changed(flags, this);
 		if (symbol)
 			symbol._changed(flags);
-	},
-
-	set: function(props) {
-		if (props)
-			this._set(props);
-		return this;
 	},
 
 	getId: function() {
@@ -4911,6 +4921,7 @@ var Raster = Item.extend({
 		crossOrigin: null,
 		source: null
 	},
+	_prioritize: ['crossOrigin'],
 
 	initialize: function Raster(object, position) {
 		if (!this._initialize(object,
@@ -11336,7 +11347,8 @@ var Gradient = Base.extend({
 
 	initialize: function Gradient(stops, radial) {
 		this._id = UID.get();
-		if (stops && this._set(stops)) {
+		if (stops && Base.isPlainObject(stops)) {
+			this.set(stops);
 			stops = radial = null;
 		}
 		if (this._stops == null) {
@@ -13031,7 +13043,7 @@ var Tool = PaperScopeItem.extend({
 		PaperScopeItem.call(this);
 		this._moveCount = -1;
 		this._downCount = -1;
-		this._set(props);
+		this.set(props);
 	},
 
 	getMinDistance: function() {
