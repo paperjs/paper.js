@@ -12,7 +12,7 @@
 
 QUnit.module('Style');
 
-test('style defaults', function() {
+test('Style defaults', function() {
     var path = new Path();
     equals(function() {
         return path.strokeWidth;
@@ -34,7 +34,7 @@ test('style defaults', function() {
     }, [] + '');
 });
 
-test('currentStyle', function() {
+test('Project#currentStyle', function() {
     paper.project.currentStyle.fillColor = 'black';
     var path = new Path();
     equals(path.fillColor, new Color('black'), 'path.fillColor');
@@ -45,7 +45,7 @@ test('currentStyle', function() {
     equals(path.fillColor, new Color('black'), 'path.fillColor');
 });
 
-test('setting currentStyle to an object', function() {
+test('setting Project#currentStyle to an object', function() {
     paper.project.currentStyle = {
         fillColor: 'red',
         strokeColor: 'green'
@@ -55,7 +55,7 @@ test('setting currentStyle to an object', function() {
     equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
-test('setting path styles to an object', function() {
+test('setting Path#style to an object', function() {
     var path = new Path();
     path.style = {
         fillColor: 'red',
@@ -65,7 +65,7 @@ test('setting path styles to an object', function() {
     equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
-test('setting group styles to an object', function() {
+test('setting Group#style to an object', function() {
     var group = new Group();
     var path = new Path();
     group.addChild(path);
@@ -77,7 +77,7 @@ test('setting group styles to an object', function() {
     equals(path.strokeColor, new Color('green'), 'path.strokeColor');
 });
 
-test('getting group styles', function() {
+test('getting Group#fillColor', function() {
     var group = new Group();
     var path = new Path();
     path.fillColor = 'red';
@@ -100,7 +100,7 @@ test('getting group styles', function() {
     equals(group.fillColor, new Color('black'), 'group.fillColor');
 });
 
-test('getting group styles 2', function() {
+test('getting Groupy#fillColor 2', function() {
     var star = new Path.Circle({
        center: [100, 100],
        radius: 40,
@@ -120,7 +120,7 @@ test('getting group styles 2', function() {
     }, undefined);
 });
 
-test('setting group styles', function() {
+test('setting Group#fillColor and #strokeColor', function() {
     var group = new Group();
     var path = new Path();
     path.fillColor = 'red';
@@ -143,7 +143,7 @@ test('setting group styles', function() {
     equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });
 
-test('setting group styles 2', function() {
+test('setting Group#fillColor and #strokeColor 2', function() {
     var group = new Group();
     var path = new Path();
     path.strokeColor = 'red';

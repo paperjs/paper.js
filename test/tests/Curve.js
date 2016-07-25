@@ -182,6 +182,16 @@ test('Curve#getTimeAt()', function() {
             'Should return null when offset is out of range.');
 });
 
+test('Curve#getTimeAt() with straight curve', function() {
+    var path = new Path();
+    path.moveTo(100, 100);
+    path.lineTo(500, 500);
+    var curve = path.firstCurve;
+    var length = curve.length;
+    var t = curve.getTimeAt(length / 3);
+    equals(t, 0.3869631475722452);
+});
+
 test('Curve#getLocationAt()', function() {
     var curve = new Path([
         [[0, 0], [0, 0], [100, 0]],
