@@ -351,12 +351,12 @@ Base.inject(/** @lends Base# */{
             // If there are prioritized keys, process them first.
             if (prioritize) {
                 var keys = {};
-                prioritize.forEach(function(key) {
-                    if (key in source) {
+                for (var i = 0, key, l = prioritize.length; i < l; i++) {
+                    if ((key = prioritize[i]) in source) {
                         handleKey(key);
                         keys[key] = true;
                     }
-                });
+                }
                 // Now reference the processed keys as processed, so that
                 // handleKey() will not set them again below.
                 processed = keys;
