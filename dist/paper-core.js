@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 26 10:20:30 2016 +0200
+ * Date: Tue Jul 26 10:25:32 2016 +0200
  *
  ***
  *
@@ -334,7 +334,7 @@ Base.inject({
 					list.__index = begin + 1;
 				return obj && options && options.clone ? obj.clone() : obj;
 			}
-			obj = Base.create(this.prototype);
+			obj = Base.create(proto);
 			if (readIndex)
 				obj.__read = true;
 			obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
@@ -422,7 +422,7 @@ Base.inject({
 		},
 
 		isPlainValue: function(obj, asString) {
-			return this.isPlainObject(obj) || Array.isArray(obj)
+			return Base.isPlainObject(obj) || Array.isArray(obj)
 					|| asString && typeof obj === 'string';
 		},
 
