@@ -200,7 +200,7 @@ Base.inject(/** @lends Base# */{
             }
             // Otherwise, create a new object and read through its initialize
             // function.
-            obj = Base.create(this.prototype);
+            obj = Base.create(proto);
             if (readIndex)
                 obj.__read = true;
             obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
@@ -374,7 +374,7 @@ Base.inject(/** @lends Base# */{
          * many argument reading methods.
          */
         isPlainValue: function(obj, asString) {
-            return this.isPlainObject(obj) || Array.isArray(obj)
+            return Base.isPlainObject(obj) || Array.isArray(obj)
                     || asString && typeof obj === 'string';
         },
 
