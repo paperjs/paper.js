@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jul 25 23:17:45 2016 +0200
+ * Date: Tue Jul 26 10:20:30 2016 +0200
  *
  ***
  *
@@ -408,12 +408,12 @@ Base.inject({
 
 			if (prioritize) {
 				var keys = {};
-				prioritize.forEach(function(key) {
-					if (key in source) {
+				for (var i = 0, key, l = prioritize.length; i < l; i++) {
+					if ((key = prioritize[i]) in source) {
 						handleKey(key);
 						keys[key] = true;
 					}
-				});
+				}
 				processed = keys;
 			}
 
