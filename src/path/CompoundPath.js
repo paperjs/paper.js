@@ -251,11 +251,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Number
      */
-    getArea: function(_closed) {
+    getArea: function() {
         var children = this._children,
             area = 0;
         for (var i = 0, l = children.length; i < l; i++)
-            area += children[i].getArea(_closed);
+            area += children[i].getArea();
         return area;
     },
 

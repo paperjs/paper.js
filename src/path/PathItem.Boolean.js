@@ -95,7 +95,7 @@ PathItem.inject(new function() {
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
-                ^ (_path2.isClockwise(true) ^ _path1.isClockwise(true)))
+                ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
@@ -510,15 +510,10 @@ PathItem.inject(new function() {
                 // - `true`: Connect with a curve that takes the segment handles
                 //   into account, just like how closed paths behave.
                 if (!path._closed) {
-                    var s1 = path.getLastCurve().getSegment2(),
-                        s2 = curve.getSegment1(),
-                        p1 = s1._point,
-                        p2 = s2._point,
-                        x1 = p1._x, y1 = p1._y,
-                        x2 = p2._x, y2 = p2._y;
-                    vClose = closed
-                            ? Curve.getValues(s1, s2)
-                            : [x1, y1, x1, y1, x2, y2, x2, y2];
+                    vClose = Curve.getValues(
+                            path.getLastCurve().getSegment2(),
+                            curve.getSegment1(),
+                            null, !closed);
                     // This closing curve is a potential candidate for the last
                     // non-horizontal curve.
                     if (vClose[io] !== vClose[io + 6]) {
@@ -850,7 +845,7 @@ PathItem.inject(new function() {
                 // close to each other that they are considered the same
                 // location, but the winding calculation still produces a valid
                 // number due to their slight differences producing a tiny area.
-                var area = path.getArea(true);
+                var area = path.getArea();
                 if (abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
                     // This path wasn't finished and is hence invalid.
                     // Report the error to the console for the time being.

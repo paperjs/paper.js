@@ -577,17 +577,21 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
 statics: /** @lends Curve */{
-    getValues: function(segment1, segment2, matrix) {
+    getValues: function(segment1, segment2, matrix, straight) {
         var p1 = segment1._point,
             h1 = segment1._handleOut,
             h2 = segment2._handleIn,
             p2 = segment2._point,
-            values = [
-                p1._x, p1._y,
-                p1._x + h1._x, p1._y + h1._y,
-                p2._x + h2._x, p2._y + h2._y,
-                p2._x, p2._y
-            ];
+            x1 = p1.x, y1 = p1.y,
+            x2 = p2.x, y2 = p2.y,
+            values = straight
+                ? [ x1, y1, x1, y1, x2, y2, x2, y2 ]
+                : [
+                    x1, y1,
+                    x1 + h1._x, y1 + h1._y,
+                    x2 + h2._x, y2 + h2._y,
+                    x2, y2
+                ];
         if (matrix)
             matrix._transformCoordinates(values, values, 4);
         return values;

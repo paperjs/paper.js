@@ -828,29 +828,23 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @bean
      * @type Number
      */
-    getArea: function(_closed) {
-        // Cache the area for the open path, and the the final curve separately,
-        // so open and closed area can be returned at almost no additional cost.
-        var closed = Base.pick(_closed, this._closed),
-            cached = this._area;
-        if (cached == null) {
+    getArea: function() {
+        var area = this._area;
+        if (area == null) {
             var segments = this._segments,
-                sum = 0,
-                close = 0;
+                closed = this._closed;
+            area = 0;
             for (var i = 0, l = segments.length; i < l; i++) {
-                var next = i + 1,
-                    last = next >= l,
-                    area = Curve.getArea(Curve.getValues(
-                        segments[i], segments[last ? 0 : i + 1]));
-                if (last) {
-                    close = area;
-                } else {
-                    sum += area;
-                }
+                var last = i + 1 === l;
+                area += Curve.getArea(Curve.getValues(
+                        segments[i], segments[last ? 0 : i + 1],
+                        // If this is the last curve and the last is not closed,
+                        // connect with a straight curve and ignore the handles.
+                        null, last && !closed));
             }
-            cached = this._area = [sum, close];
+            this._area = area;
         }
-        return cached[0] + (closed ? cached[1] : 0);
+        return area;
     },
 
     /**
