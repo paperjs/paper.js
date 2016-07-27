@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 21:48:55 2016 +0200
+ * Date: Wed Jul 27 22:57:08 2016 +0200
  *
  ***
  *
@@ -10085,9 +10085,7 @@ PathItem.inject(new function() {
 		function findBestIntersection(segment) {
 			var inter = segment._intersection,
 				start = inter;
-			if (!inter || !inter._next)
-				return inter;
-			while (inter && inter !== start) {
+			while (inter) {
 				var other = inter._segment,
 					next = other.getNext(),
 					nextInter = next && next._intersection;
