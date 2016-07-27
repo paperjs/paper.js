@@ -729,21 +729,20 @@ PathItem.inject(new function() {
         });
 
         for (var i = 0, l = segments.length; i < l; i++) {
-            var path = null,
+            var seg = segments[i],
+                path = null,
                 finished = false,
                 closed = true,
                 branches = [],
                 branch,
                 visited,
-                seg = segments[i],
-                inter = seg._intersection,
                 handleIn;
             // If all encountered segments in a path are overlaps, we may have
             // two fully overlapping paths that need special handling.
             if (!seg._visited && seg._path._overlapsOnly) {
                 // TODO: Don't we also need to check for multiple overlaps?
                 var path1 = seg._path,
-                    path2 = inter._segment._path;
+                    path2 = seg._intersection._segment._path;
                 if (path1.compare(path2)) {
                     // Only add the path to the result if it has an area.
                     if ((operator.unite || operator.intersect)
@@ -804,12 +803,11 @@ PathItem.inject(new function() {
                     branch = null;
                 }
                 if (!branch) {
-                    visited = [];
                     branch = {
                         start: path._segments.length,
                         segment: seg,
                         handleIn: handleIn,
-                        visited: visited
+                        visited: visited = []
                     };
                 }
                 if (cross)
@@ -832,10 +830,9 @@ PathItem.inject(new function() {
                     // Now restore the previous branch and keep adding to it,
                     // since we don't cross here anymore.
                     branch = branches.pop();
-                    if (!branch) {
-                        console.log('run out of branches, breaking.');
+                    // Stop once we run out of branches to try.
+                    if (!branch)
                         break;
-                    }
                 }
                 // Add the segment to the path, and mark it as visited.
                 // But first we need to look ahead. If we encounter the end of
