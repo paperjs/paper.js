@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 22:57:08 2016 +0200
+ * Date: Wed Jul 27 22:58:57 2016 +0200
  *
  ***
  *
@@ -10094,10 +10094,10 @@ PathItem.inject(new function() {
 					&& (!operator || isValid(other) && (isValid(next)
 						|| nextInter && isValid(nextInter._segment)))
 					))
-					return inter;
+					break;
 				inter = inter._next;
 			}
-			return start;
+			return inter || start;
 		}
 
 		segments.sort(function(seg1, seg2) {
