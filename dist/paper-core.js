@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 14:18:01 2016 +0200
+ * Date: Wed Jul 27 17:09:52 2016 +0200
  *
  ***
  *
@@ -7414,6 +7414,7 @@ var PathItem = Item.extend({
 	_class: 'PathItem',
 	_selectBounds: false,
 	_canScaleStroke: true,
+	beans: true,
 
 	initialize: function PathItem() {
 	},
@@ -7448,8 +7449,8 @@ var PathItem = Item.extend({
 		return this;
 	},
 
-	isClockwise: function() {
-		return this.getArea() >= 0;
+	isClockwise: function(_closed) {
+		return this.getArea(_closed) >= 0;
 	},
 
 	setClockwise: function(clockwise) {
@@ -8080,22 +8081,26 @@ var Path = PathItem.extend({
 	},
 
 	getArea: function(_closed) {
-		var cached = _closed === undefined,
-			area = this._area;
-		if (!cached || area == null) {
+		var closed = Base.pick(_closed, this._closed),
+			cached = this._area;
+		if (cached == null) {
 			var segments = this._segments,
-				count = segments.length,
-				closed = cached ? this._closed : _closed,
-				last = count - 1;
-			area = 0;
-			for (var i = 0, l = closed ? count : last; i < l; i++) {
-				area += Curve.getArea(Curve.getValues(
-						segments[i], segments[i < last ? i + 1 : 0]));
+				sum = 0,
+				close = 0;
+			for (var i = 0, l = segments.length; i < l; i++) {
+				var next = i + 1,
+					last = next >= l,
+					area = Curve.getArea(Curve.getValues(
+						segments[i], segments[last ? 0 : i + 1]));
+				if (last) {
+					close = area;
+				} else {
+					sum += area;
+				}
 			}
-			if (cached)
-				this._area = area;
+			cached = this._area = [sum, close];
 		}
-		return area;
+		return cached[0] + (closed ? cached[1] : 0);
 	},
 
 	isFullySelected: function() {
@@ -9431,6 +9436,7 @@ var CompoundPath = PathItem.extend({
 	_serializeFields: {
 		children: []
 	},
+	beans: true,
 
 	initialize: function CompoundPath(arg) {
 		this._children = [];
@@ -9524,11 +9530,11 @@ var CompoundPath = PathItem.extend({
 		return last && last.getLastCurve();
 	},
 
-	getArea: function() {
+	getArea: function(_closed) {
 		var children = this._children,
 			area = 0;
 		for (var i = 0, l = children.length; i < l; i++)
-			area += children[i].getArea();
+			area += children[i].getArea(_closed);
 		return area;
 	},
 
@@ -9538,9 +9544,7 @@ var CompoundPath = PathItem.extend({
 		for (var i = 0, l = children.length; i < l; i++)
 			length += children[i].getLength();
 		return length;
-	}
-}, {
-	beans: true,
+	},
 
 	getPathData: function(_matrix, _precision) {
 		var children = this._children,
@@ -9552,8 +9556,8 @@ var CompoundPath = PathItem.extend({
 					? _matrix.appended(mx) : _matrix, _precision));
 		}
 		return paths.join('');
-	}
-}, {
+	},
+
 	_hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
 		return _hitTestChildren.base.call(this, point,
 				options.class === Path || options.type === 'path' ? options
@@ -9655,36 +9659,37 @@ PathItem.inject(new function() {
 			exclude:   { 1: true }
 		};
 
-	function preparePath(path, closed) {
+	function preparePath(path, resolve) {
 		var res = path.clone(false).reduce({ simplify: true })
 				.transform(null, true, true);
-		if (closed)
-			res.setClosed(true);
-		return closed
+		return resolve
 			? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero')
 			: res;
 	}
 
-	function createResult(ctor, paths, reduce, path1, path2) {
+	function createResult(ctor, paths, reduce, path1, path2, options) {
 		var result = new ctor(Item.NO_INSERT);
 		result.addChildren(paths, true);
 		if (reduce)
 			result = result.reduce({ simplify: true });
-		result.insertAbove(path2 && path1.isSibling(path2)
-				&& path1.getIndex() < path2.getIndex() ? path2 : path1);
+		if (!(options && options.insert === false)) {
+			result.insertAbove(path2 && path1.isSibling(path2)
+					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
+		}
 		result.copyAttributes(path1, true);
 		return result;
 	}
 
-	function computeBoolean(path1, path2, operation) {
-		var operator = operators[operation];
-		operator[operation] = true;
-		if (!path1.isClosed())
-			return computeOpenBoolean(path1, path2, operator);
+	function computeBoolean(path1, path2, operation, options) {
+		if (options && options.stroke &&
+				/^(subtract|intersect)$/.test(operation))
+			return computeStrokeBoolean(path1, path2, operation === 'subtract');
 		var _path1 = preparePath(path1, true),
-			_path2 = path2 && path1 !== path2 && preparePath(path2, true);
+			_path2 = path2 && path1 !== path2 && preparePath(path2, true),
+			operator = operators[operation];
+		operator[operation] = true;
 		if (_path2 && (operator.subtract || operator.exclude)
-				^ (_path2.isClockwise() ^ _path1.isClockwise()))
+				^ (_path2.isClockwise(true) ^ _path1.isClockwise(true)))
 			_path2.reverse();
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
@@ -9747,22 +9752,18 @@ PathItem.inject(new function() {
 			paths = tracePaths(segments, operator);
 		}
 
-		return createResult(CompoundPath, paths, true, path1, path2);
+		return createResult(CompoundPath, paths, true, path1, path2, options);
 	}
 
-	function computeOpenBoolean(path1, path2, operator) {
-		if (!path2 || !operator.subtract && !operator.intersect) {
-			throw new Error('Boolean operations on open paths only support ' +
-					'subtraction and intersection with another path.');
-		}
-		var _path1 = preparePath(path1, false),
-			_path2 = preparePath(path2, false),
+	function computeStrokeBoolean(path1, path2, subtract) {
+		var _path1 = preparePath(path1),
+			_path2 = preparePath(path2),
 			crossings = _path1.getCrossings(_path2),
-			sub = operator.subtract,
 			paths = [];
 
 		function addPath(path) {
-			if (_path2.contains(path.getPointAt(path.getLength() / 2)) ^ sub) {
+			if (_path2.contains(path.getPointAt(path.getLength() / 2))
+					^ subtract) {
 				paths.unshift(path);
 				return true;
 			}
@@ -9854,7 +9855,7 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curves, dir, dontFlip) {
+	function getWinding(point, curves, dir, closed, dontFlip) {
 		var epsilon = 1e-8,
 			ia = dir ? 1 : 0,
 			io = dir ? 0 : 1,
@@ -9931,7 +9932,7 @@ PathItem.inject(new function() {
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-					&& getWinding(point, curves, dir ? 0 : 1, true);
+					&& getWinding(point, curves, dir ? 0 : 1, closed, true);
 		}
 
 		function handleCurve(v) {
@@ -9963,11 +9964,15 @@ PathItem.inject(new function() {
 			if (!i || curves[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
-					var p1 = path.getLastCurve().getPoint2(),
-						p2 = curve.getPoint1(),
+					var s1 = path.getLastCurve().getSegment2(),
+						s2 = curve.getSegment1(),
+						p1 = s1._point,
+						p2 = s2._point,
 						x1 = p1._x, y1 = p1._y,
 						x2 = p2._x, y2 = p2._y;
-					vClose = [x1, y1, x1, y1, x2, y2, x2, y2];
+					vClose = closed
+							? Curve.getValues(s1, s2)
+							: [x1, y1, x1, y1, x2, y2, x2, y2];
 					if (vClose[io] !== vClose[io + 6]) {
 						vPrev = vClose;
 					}
@@ -9994,7 +9999,7 @@ PathItem.inject(new function() {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
 				if (onPath && !pathWindingL && !pathWindingR) {
-					var add = path.isClockwise() ^ dir ? 1 : -1;
+					var add = path.isClockwise(closed) ^ dir ? 1 : -1;
 					windingL += add;
 					windingR -= add;
 					onPathWinding += add;
@@ -10050,10 +10055,12 @@ PathItem.inject(new function() {
 				if (parent instanceof CompoundPath)
 					path = parent;
 				winding = !(operator.subtract && path2 && (
-						path === path1 &&  path2._getWinding(pt, dir).winding ||
-						path === path2 && !path1._getWinding(pt, dir).winding))
-							? getWinding(pt, curves, dir)
-							: { winding: 0 };
+						path === path1 &&
+							path2._getWinding(pt, dir, true).winding ||
+						path === path2 &&
+							!path1._getWinding(pt, dir, true).winding))
+						? getWinding(pt, curves, dir, true)
+						: { winding: 0 };
 				break;
 			}
 			length -= curveLength;
@@ -10123,6 +10130,7 @@ PathItem.inject(new function() {
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var path = null,
 				finished = false,
+				closed = true,
 				seg = segments[i],
 				inter = seg._intersection,
 				handleIn;
@@ -10158,11 +10166,14 @@ PathItem.inject(new function() {
 						seg = other;
 					}
 				}
-				if (finished || seg._visited) {
+				if (finished) {
 					seg._visited = true;
+					if (seg.isFirst() || seg.isLast())
+						closed = seg._path._closed;
 					break;
 				}
-				if (seg._path._validOverlapsOnly && !isValid(seg))
+				if (seg._visited
+						|| seg._path._validOverlapsOnly && !isValid(seg))
 					break;
 				if (!path) {
 					path = new Path(Item.NO_INSERT);
@@ -10179,7 +10190,7 @@ PathItem.inject(new function() {
 			}
 			if (finished) {
 				path.firstSegment.setHandleIn(handleIn);
-				path.setClosed(true);
+				path.setClosed(closed);
 			} else if (path) {
 				var area = path.getArea(true);
 				if (abs(area) >= 1e-7) {
@@ -10200,29 +10211,31 @@ PathItem.inject(new function() {
 	}
 
 	return {
-		_getWinding: function(point, dir) {
-			return getWinding(point, this.getCurves(), dir);
+		_getWinding: function(point, dir, closed) {
+			return getWinding(point, this.getCurves(), dir, closed);
 		},
 
-		unite: function(path) {
-			return computeBoolean(this, path, 'unite');
+		unite: function(path, options) {
+			return computeBoolean(this, path, 'unite', options);
 		},
 
-		intersect: function(path) {
-			return computeBoolean(this, path, 'intersect');
+		intersect: function(path, options) {
+			return computeBoolean(this, path, 'intersect', options);
 		},
 
 		subtract: function(path) {
 			return computeBoolean(this, path, 'subtract');
 		},
 
-		exclude: function(path) {
-			return computeBoolean(this, path, 'exclude');
+		exclude: function(path, options) {
+			return computeBoolean(this, path, 'exclude', options);
 		},
 
-		divide: function(path) {
-			return createResult(Group, [this.subtract(path),
-					this.intersect(path)], true, this, path);
+		divide: function(path, options) {
+			return createResult(Group, [
+					this.subtract(path, options),
+					this.intersect(path, options)
+				], true, this, path, options);
 		},
 
 		resolveCrossings: function() {

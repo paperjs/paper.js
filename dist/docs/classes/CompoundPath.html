@@ -6497,12 +6497,15 @@ function onMouseDown(event) {
 
 <div id="unite-path" class="member">
 <div class="member-link">
-<a name="unite-path" href="#unite-path"><tt><b>unite</b>(path)</tt></a>
+<a name="unite-path" href="#unite-path"><tt><b>unite</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Merges the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    
+	<p>Unites the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
@@ -6512,6 +6515,13 @@ function onMouseDown(event) {
 <a href="../classes/PathItem.html"><tt>PathItem</tt></a>
 &mdash;&nbsp;the path to unite with
 
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -6535,12 +6545,16 @@ function onMouseDown(event) {
 	
 <div id="intersect-path" class="member">
 <div class="member-link">
-<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path)</tt></a>
+<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Intersects the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
@@ -6550,6 +6564,13 @@ function onMouseDown(event) {
 <a href="../classes/PathItem.html"><tt>PathItem</tt></a>
 &mdash;&nbsp;the path to intersect with
 
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -6573,12 +6594,16 @@ function onMouseDown(event) {
 	
 <div id="subtract-path" class="member">
 <div class="member-link">
-<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path)</tt></a>
+<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Subtracts the geometry of the specified path from this path&rsquo;s geometry and returns the result as a new path item.</p>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
@@ -6588,6 +6613,13 @@ function onMouseDown(event) {
 <a href="../classes/PathItem.html"><tt>PathItem</tt></a>
 &mdash;&nbsp;the path to subtract
 
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -6611,12 +6643,15 @@ function onMouseDown(event) {
 	
 <div id="exclude-path" class="member">
 <div class="member-link">
-<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path)</tt></a>
+<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Excludes the intersection of the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
@@ -6626,6 +6661,13 @@ function onMouseDown(event) {
 <a href="../classes/PathItem.html"><tt>PathItem</tt></a>
 &mdash;&nbsp;the path to exclude the intersection of
 
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
@@ -6649,12 +6691,16 @@ function onMouseDown(event) {
 	
 <div id="divide-path" class="member">
 <div class="member-link">
-<a name="divide-path" href="#divide-path"><tt><b>divide</b>(path)</tt></a>
+<a name="divide-path" href="#divide-path"><tt><b>divide</b>(path[, options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Splits the geometry of this path along the geometry of the specified path returns the result as a new group item. This is equivalent to calling <a href="../classes/PathItem.html#subtract-path"><tt>subtract(path)</tt></a> and <a href="../classes/PathItem.html#subtract-path"><tt>subtract(path)</tt></a> and putting the results into a new group.</p>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
@@ -6664,6 +6710,13 @@ function onMouseDown(event) {
 <a href="../classes/PathItem.html"><tt>PathItem</tt></a>
 &mdash;&nbsp;the path to divide by
 
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
