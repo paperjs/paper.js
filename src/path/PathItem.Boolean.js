@@ -694,11 +694,11 @@ PathItem.inject(new function() {
                         // to which we may switch might be, so check that.
                         || nextInter && isValid(nextInter._segment)))
                     ))
-                    return inter;
+                    break;
                 // If it's no match, continue with the next linked intersection.
                 inter = inter._next;
             }
-            return start;
+            return inter || start;
         }
 
         // Sort segments to give non-ambiguous segments the preference as
