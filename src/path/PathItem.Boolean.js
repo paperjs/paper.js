@@ -143,9 +143,9 @@ PathItem.inject(new function() {
                 var path = paths[i];
                 segments.push.apply(segments, path._segments);
                 curves.push.apply(curves, path.getCurves());
-                // Keep track if there are valid intersections other than
-                // overlaps in each path.
-                path._overlapsOnly = path._validOverlapsOnly = true;
+                // See if all encountered segments in a path are overlaps, to
+                // be able to separately handle fully overlapping paths.
+                path._overlapsOnly = true;
             }
         }
 
@@ -168,17 +168,9 @@ PathItem.inject(new function() {
                 if (segment._winding == null) {
                     propagateWinding(segment, _path1, _path2, curves, operator);
                 }
-                // See if there are any valid segments that aren't part of
-                // overlaps. Use this information to determine how to deal with
-                // various edge-cases in tracePaths().
-                if (!(inter && inter._overlap)) {
-                    var path = segment._path;
-                    path._overlapsOnly = false;
-                    // This is no overlap. If it is valid, take note that this
-                    // path contains valid intersections other than overlaps.
-                    if (operator[segment._winding.winding])
-                        path._validOverlapsOnly = false;
-                }
+                // See if all encountered segments in a path are overlaps.
+                if (!(inter && inter._overlap))
+                    segment._path._overlapsOnly = false;
             }
             paths = tracePaths(segments, operator);
         }
@@ -741,9 +733,8 @@ PathItem.inject(new function() {
                 seg = segments[i],
                 inter = seg._intersection,
                 handleIn;
-            // If all encountered segments in a path are overlaps (regardless if
-            // valid or not), we may have two fully overlapping paths that need
-            // special handling.
+            // If all encountered segments in a path are overlaps, we may have
+            // two fully overlapping paths that need special handling.
             if (!seg._visited && seg._path._overlapsOnly) {
                 // TODO: Don't we also need to check for multiple overlaps?
                 var path1 = seg._path,
@@ -788,12 +779,6 @@ PathItem.inject(new function() {
                         // segment. See isValid()/getWinding() for explanations.
                         // We are at a crossing and the other segment is part of
                         // the boolean result, switch over.
-                        // We need to mark segments as visited when processing
-                        // intersection and subtraction.
-                        if (operator
-                                && (operator.intersect || operator.subtract)) {
-                            seg._visited = true;
-                        }
                         seg = other;
                     }
                 }
@@ -806,12 +791,8 @@ PathItem.inject(new function() {
                         closed = seg._path._closed;
                     break;
                 }
-                // If a visited or invalid segment is encountered, bail out
-                // immediately. But if there aren't only valid overlaps, be more
-                // tolerant due to complex crossing situations.
-                // See findBestIntersection()
-                if (seg._visited
-                        || seg._path._validOverlapsOnly && !isValid(seg))
+                // If a invalid segment is encountered, bail out immediately.
+                if (!isValid(seg))
                     break;
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
