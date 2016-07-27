@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 17:09:52 2016 +0200
+ * Date: Wed Jul 27 19:09:42 2016 +0200
  *
  ***
  *
@@ -6121,17 +6121,21 @@ var Curve = Base.extend({
 	},
 
 statics: {
-	getValues: function(segment1, segment2, matrix) {
+	getValues: function(segment1, segment2, matrix, straight) {
 		var p1 = segment1._point,
 			h1 = segment1._handleOut,
 			h2 = segment2._handleIn,
 			p2 = segment2._point,
-			values = [
-				p1._x, p1._y,
-				p1._x + h1._x, p1._y + h1._y,
-				p2._x + h2._x, p2._y + h2._y,
-				p2._x, p2._y
-			];
+			x1 = p1.x, y1 = p1.y,
+			x2 = p2.x, y2 = p2.y,
+			values = straight
+				? [ x1, y1, x1, y1, x2, y2, x2, y2 ]
+				: [
+					x1, y1,
+					x1 + h1._x, y1 + h1._y,
+					x2 + h2._x, y2 + h2._y,
+					x2, y2
+				];
 		if (matrix)
 			matrix._transformCoordinates(values, values, 4);
 		return values;
@@ -8080,27 +8084,21 @@ var Path = PathItem.extend({
 		return this._length;
 	},
 
-	getArea: function(_closed) {
-		var closed = Base.pick(_closed, this._closed),
-			cached = this._area;
-		if (cached == null) {
+	getArea: function() {
+		var area = this._area;
+		if (area == null) {
 			var segments = this._segments,
-				sum = 0,
-				close = 0;
+				closed = this._closed;
+			area = 0;
 			for (var i = 0, l = segments.length; i < l; i++) {
-				var next = i + 1,
-					last = next >= l,
-					area = Curve.getArea(Curve.getValues(
-						segments[i], segments[last ? 0 : i + 1]));
-				if (last) {
-					close = area;
-				} else {
-					sum += area;
-				}
+				var last = i + 1 === l;
+				area += Curve.getArea(Curve.getValues(
+						segments[i], segments[last ? 0 : i + 1],
+						null, last && !closed));
 			}
-			cached = this._area = [sum, close];
+			this._area = area;
 		}
-		return cached[0] + (closed ? cached[1] : 0);
+		return area;
 	},
 
 	isFullySelected: function() {
@@ -9530,11 +9528,11 @@ var CompoundPath = PathItem.extend({
 		return last && last.getLastCurve();
 	},
 
-	getArea: function(_closed) {
+	getArea: function() {
 		var children = this._children,
 			area = 0;
 		for (var i = 0, l = children.length; i < l; i++)
-			area += children[i].getArea(_closed);
+			area += children[i].getArea();
 		return area;
 	},
 
@@ -9689,7 +9687,7 @@ PathItem.inject(new function() {
 			operator = operators[operation];
 		operator[operation] = true;
 		if (_path2 && (operator.subtract || operator.exclude)
-				^ (_path2.isClockwise(true) ^ _path1.isClockwise(true)))
+				^ (_path2.isClockwise() ^ _path1.isClockwise()))
 			_path2.reverse();
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
@@ -9964,15 +9962,10 @@ PathItem.inject(new function() {
 			if (!i || curves[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
-					var s1 = path.getLastCurve().getSegment2(),
-						s2 = curve.getSegment1(),
-						p1 = s1._point,
-						p2 = s2._point,
-						x1 = p1._x, y1 = p1._y,
-						x2 = p2._x, y2 = p2._y;
-					vClose = closed
-							? Curve.getValues(s1, s2)
-							: [x1, y1, x1, y1, x2, y2, x2, y2];
+					vClose = Curve.getValues(
+							path.getLastCurve().getSegment2(),
+							curve.getSegment1(),
+							null, !closed);
 					if (vClose[io] !== vClose[io + 6]) {
 						vPrev = vClose;
 					}
@@ -10192,7 +10185,7 @@ PathItem.inject(new function() {
 				path.firstSegment.setHandleIn(handleIn);
 				path.setClosed(closed);
 			} else if (path) {
-				var area = path.getArea(true);
+				var area = path.getArea();
 				if (abs(area) >= 1e-7) {
 					console.error('Boolean operation resulted in open path',
 							'segments =', path._segments.length,
