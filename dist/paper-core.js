@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 20:12:29 2016 +0200
+ * Date: Wed Jul 27 21:40:53 2016 +0200
  *
  ***
  *
@@ -10082,22 +10082,24 @@ PathItem.inject(new function() {
 			}
 		}
 
-		function findBestIntersection(inter, exclude) {
-			if (!inter._next)
+		function findBestIntersection(segment) {
+			var inter = segment._intersection,
+				start = inter;
+			if (!inter || !inter._next)
 				return inter;
-			while (inter) {
-				var seg = inter._segment,
-					nextSeg = seg.getNext(),
-					nextInter = nextSeg && nextSeg._intersection;
-				if (seg !== exclude && (isStart(seg) || isStart(nextSeg)
-					|| nextSeg && !seg._visited && !nextSeg._visited
-					&& (!operator || isValid(seg) && (isValid(nextSeg)
+			while (inter && inter !== start) {
+				var other = inter._segment,
+					next = other.getNext(),
+					nextInter = next && next._intersection;
+				if (other !== segment && (isStart(other) || isStart(next)
+					|| next && !other._visited && !next._visited
+					&& (!operator || isValid(other) && (isValid(next)
 						|| nextInter && isValid(nextInter._segment)))
 					))
 					return inter;
 				inter = inter._next;
 			}
-			return null;
+			return start;
 		}
 
 		segments.sort(function(seg1, seg2) {
@@ -10120,6 +10122,9 @@ PathItem.inject(new function() {
 			var path = null,
 				finished = false,
 				closed = true,
+				branches = [],
+				branch,
+				visited,
 				seg = segments[i],
 				inter = seg._intersection,
 				handleIn;
@@ -10139,17 +10144,19 @@ PathItem.inject(new function() {
 				continue;
 			start = otherStart = null;
 			while (true) {
-				inter = inter && findBestIntersection(inter, seg) || inter;
-				var other = inter && inter._segment;
-				if (isStart(seg)) {
-					finished = true;
-				} else if (other) {
-					if (isStart(other)) {
-						finished = true;
-						seg = other;
-					} else if (isValid(other, isValid(seg, true))) {
-						seg = other;
-					}
+				var inter = findBestIntersection(seg),
+					other = inter && inter._segment,
+					first = !path,
+					cross = false;
+				if (first) {
+					path = new Path(Item.NO_INSERT);
+					start = seg;
+					otherStart = other;
+				}
+				finished = !first && isStart(seg);
+				if (!finished && other) {
+					finished = !first && isStart(other);
+					cross = finished || isValid(other, isValid(seg, true));
 				}
 				if (finished) {
 					seg._visited = true;
@@ -10157,20 +10164,42 @@ PathItem.inject(new function() {
 						closed = seg._path._closed;
 					break;
 				}
-				if (!isValid(seg))
-					break;
-				if (!path) {
-					path = new Path(Item.NO_INSERT);
-					start = seg;
-					otherStart = other;
+				if (cross && branch) {
+					branches.push(branch);
+					branch = null;
+				}
+				if (!branch) {
+					visited = [];
+					branch = {
+						start: path._segments.length,
+						segment: seg,
+						handleIn: handleIn,
+						visited: visited
+					};
+				}
+				if (cross)
+					seg = other;
+				if (!isValid(seg)) {
+					path.removeSegments(branch.start);
+					for (var j = 0, k = visited.length; j < k; j++) {
+						visited[j]._visited = false;
+					}
+					seg = branch.segment;
+					handleIn = branch.handleIn;
+					visited = branch.visited;
+					branch = branches.pop();
+					if (!branch) {
+						console.log('run out of branches, breaking.');
+						break;
+					}
 				}
 				var next = seg.getNext();
 				path.add(new Segment(seg._point, handleIn,
 						next && seg._handleOut));
 				seg._visited = true;
+				visited.push(seg);
 				seg = next || seg._path.getFirstSegment();
 				handleIn = next && next._handleIn;
-				inter = seg._intersection;
 			}
 			if (finished) {
 				path.firstSegment.setHandleIn(handleIn);
