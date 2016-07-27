@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 19:35:19 2016 +0200
+ * Date: Wed Jul 27 19:41:23 2016 +0200
  *
  ***
  *
@@ -7453,8 +7453,8 @@ var PathItem = Item.extend({
 		return this;
 	},
 
-	isClockwise: function(_closed) {
-		return this.getArea(_closed) >= 0;
+	isClockwise: function() {
+		return this.getArea() >= 0;
 	},
 
 	setClockwise: function(clockwise) {
