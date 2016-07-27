@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 21:40:53 2016 +0200
+ * Date: Wed Jul 27 21:48:55 2016 +0200
  *
  ***
  *
@@ -10119,18 +10119,17 @@ PathItem.inject(new function() {
 		});
 
 		for (var i = 0, l = segments.length; i < l; i++) {
-			var path = null,
+			var seg = segments[i],
+				path = null,
 				finished = false,
 				closed = true,
 				branches = [],
 				branch,
 				visited,
-				seg = segments[i],
-				inter = seg._intersection,
 				handleIn;
 			if (!seg._visited && seg._path._overlapsOnly) {
 				var path1 = seg._path,
-					path2 = inter._segment._path;
+					path2 = seg._intersection._segment._path;
 				if (path1.compare(path2)) {
 					if ((operator.unite || operator.intersect)
 							&& path1.getArea()) {
@@ -10169,12 +10168,11 @@ PathItem.inject(new function() {
 					branch = null;
 				}
 				if (!branch) {
-					visited = [];
 					branch = {
 						start: path._segments.length,
 						segment: seg,
 						handleIn: handleIn,
-						visited: visited
+						visited: visited = []
 					};
 				}
 				if (cross)
@@ -10188,10 +10186,8 @@ PathItem.inject(new function() {
 					handleIn = branch.handleIn;
 					visited = branch.visited;
 					branch = branches.pop();
-					if (!branch) {
-						console.log('run out of branches, breaking.');
+					if (!branch)
 						break;
-					}
 				}
 				var next = seg.getNext();
 				path.add(new Segment(seg._point, handleIn,
