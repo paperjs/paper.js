@@ -45,7 +45,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
         var tagName = tagNames[i];
         text = text.replace(
             new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
-            function(all, start) {
+            function(match, start) {
                 return start + tagName;
             });
     }

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jul 26 10:25:32 2016 +0200
+ * Date: Wed Jul 27 14:18:01 2016 +0200
  *
  ***
  *
@@ -579,7 +579,7 @@ Base.inject({
 		},
 
 		camelize: function(str) {
-			return str.replace(/-(.)/g, function(all, chr) {
+			return str.replace(/-(.)/g, function(match, chr) {
 				return chr.toUpperCase();
 			});
 		},
@@ -752,7 +752,7 @@ var PaperScope = Base.extend({
 				agent[platform] = true;
 			user.replace(
 				/(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
-				function(all, n, v1, v2, rv) {
+				function(match, n, v1, v2, rv) {
 					if (!agent.chrome) {
 						var v = n === 'opera' ? v2 :
 								/^(node|trident)$/.test(n) ? rv : v1;
@@ -8240,8 +8240,8 @@ var Path = PathItem.extend({
 	},
 
 	flatten: function(flatness) {
-		var iterator = new PathIterator(this, flatness || 0.25, 256, true),
-			parts = iterator.parts,
+		var flattener = new PathFlattener(this, flatness || 0.25, 256, true),
+			parts = flattener.parts,
 			length = parts.length,
 			segments = [];
 		for (var i = 0; i < length; i++) {
@@ -8825,9 +8825,9 @@ new function() {
 					if (dashLength) {
 						if (!dontStart)
 							ctx.beginPath();
-						var iterator = new PathIterator(this, 0.25, 32, false,
+						var flattener = new PathFlattener(this, 0.25, 32, false,
 								strokeMatrix),
-							length = iterator.length,
+							length = flattener.length,
 							from = -style.getDashOffset(), to,
 							i = 0;
 						from = from % length;
@@ -8837,7 +8837,7 @@ new function() {
 						while (from < length) {
 							to = from + getOffset(i++);
 							if (from > 0 || to > 0)
-								iterator.drawPart(ctx,
+								flattener.drawPart(ctx,
 										Math.max(from, 0), Math.max(to, 0));
 							from = to + getOffset(i++);
 						}
@@ -10390,8 +10390,8 @@ PathItem.inject(new function() {
 	};
 });
 
-var PathIterator = Base.extend({
-	_class: 'PathIterator',
+var PathFlattener = Base.extend({
+	_class: 'PathFlattener',
 
 	initialize: function(path, flatness, maxRecursion, ignoreStraight, matrix) {
 		var curves = [],
