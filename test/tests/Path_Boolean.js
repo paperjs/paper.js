@@ -596,6 +596,38 @@ test('#1054', function() {
     });
     compareBoolean(function() { return p1.unite(p2); },
         'M190,350l0,-190l130,0l0,190z');
+
+
+    var cp = new CompoundPath();
+    cp.addChild(new Path({
+        segments: [
+            [150, 100],
+            [150, 150],
+            [100, 150],
+            [100, 100]
+        ],
+        closed: true
+    }));
+    cp.addChild(new Path({
+        segments: [
+            [200, 150],
+            [200, 100],
+            [220, 100],
+            [220, 150]
+        ],
+        closed: true
+    }));
+    var p = new Path({
+        segments: [
+            [200, 100],
+            [200, 150],
+            [120, 150],
+            [120, 100]
+        ],
+        closed: true
+    });
+    compareBoolean(function() { return cp.unite(p); },
+        'M100,150l0,-50l120,0l0,50z');
 });
 
 test('#1059', function() {
