@@ -296,7 +296,7 @@ var Path = PathItem.extend(/** @lends Path# */{
     }
 }, /** @lends Path# */{
     // Enforce creation of beans, as bean getters have hidden parameters.
-    // See #getPathData() and #getArea below.
+    // See #getPathData() below.
     beans: true,
 
     getPathData: function(_matrix, _precision) {

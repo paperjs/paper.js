@@ -104,8 +104,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @see Path#getArea()
      * @see CompoundPath#getArea()
      */
-    isClockwise: function(_closed) {
-        return this.getArea(_closed) >= 0;
+    isClockwise: function() {
+        return this.getArea() >= 0;
     },
 
     setClockwise: function(clockwise) {
