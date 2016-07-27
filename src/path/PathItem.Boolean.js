@@ -679,9 +679,7 @@ PathItem.inject(new function() {
         function findBestIntersection(segment) {
             var inter = segment._intersection,
                 start = inter;
-            if (!inter || !inter._next)
-                return inter;
-            while (inter && inter !== start) {
+            while (inter) {
                 var other = inter._segment,
                     next = other.getNext(),
                     nextInter = next && next._intersection;
