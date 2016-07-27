@@ -613,13 +613,13 @@ Base.inject(/** @lends Base# */{
          * Camelizes the passed hyphenated string: caps-lock -> capsLock
          */
         camelize: function(str) {
-            return str.replace(/-(.)/g, function(all, chr) {
+            return str.replace(/-(.)/g, function(match, chr) {
                 return chr.toUpperCase();
             });
         },
 
         /**
-         * Converst camelized strings to hyphenated ones: CapsLock -> caps-lock
+         * Converts camelized strings to hyphenated ones: CapsLock -> caps-lock
          */
         hyphenate: function(str) {
             return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();

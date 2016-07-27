@@ -89,7 +89,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // only difference to jQuery.browser
             user.replace(
                 /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
-                function(all, n, v1, v2, rv) {
+                function(match, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
                     if (!agent.chrome) {
                         var v = n === 'opera' ? v2 :
