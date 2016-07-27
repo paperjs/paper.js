@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 19:09:42 2016 +0200
+ * Date: Wed Jul 27 19:35:19 2016 +0200
  *
  ***
  *
@@ -9722,7 +9722,7 @@ PathItem.inject(new function() {
 				var path = paths[i];
 				segments.push.apply(segments, path._segments);
 				curves.push.apply(curves, path.getCurves());
-				path._overlapsOnly = path._validOverlapsOnly = true;
+				path._overlapsOnly = true;
 			}
 		}
 
@@ -9740,12 +9740,8 @@ PathItem.inject(new function() {
 				if (segment._winding == null) {
 					propagateWinding(segment, _path1, _path2, curves, operator);
 				}
-				if (!(inter && inter._overlap)) {
-					var path = segment._path;
-					path._overlapsOnly = false;
-					if (operator[segment._winding.winding])
-						path._validOverlapsOnly = false;
-				}
+				if (!(inter && inter._overlap))
+					segment._path._overlapsOnly = false;
 			}
 			paths = tracePaths(segments, operator);
 		}
@@ -10152,10 +10148,6 @@ PathItem.inject(new function() {
 						finished = true;
 						seg = other;
 					} else if (isValid(other, isValid(seg, true))) {
-						if (operator
-								&& (operator.intersect || operator.subtract)) {
-							seg._visited = true;
-						}
 						seg = other;
 					}
 				}
@@ -10165,8 +10157,7 @@ PathItem.inject(new function() {
 						closed = seg._path._closed;
 					break;
 				}
-				if (seg._visited
-						|| seg._path._validOverlapsOnly && !isValid(seg))
+				if (!isValid(seg))
 					break;
 				if (!path) {
 					path = new Path(Item.NO_INSERT);
