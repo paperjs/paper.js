@@ -295,8 +295,8 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
     }
 }, /** @lends Path# */{
-    // Enforce bean creation for getPathData() and getArea(), as they have
-    // hidden parameters.
+    // Enforce creation of beans, as bean getters have hidden parameters.
+    // See #getPathData() and #getArea below.
     beans: true,
 
     getPathData: function(_matrix, _precision) {
@@ -829,24 +829,28 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @type Number
      */
     getArea: function(_closed) {
-        // If the call overrides the 'closed' state, do not cache the result.
-        // This is used in tracePaths().
-        var cached = _closed === undefined,
-            area = this._area;
-        if (!cached || area == null) {
+        // Cache the area for the open path, and the the final curve separately,
+        // so open and closed area can be returned at almost no additional cost.
+        var closed = Base.pick(_closed, this._closed),
+            cached = this._area;
+        if (cached == null) {
             var segments = this._segments,
-                count = segments.length,
-                closed = cached ? this._closed : _closed,
-                last = count - 1;
-            area = 0;
-            for (var i = 0, l = closed ? count : last; i < l; i++) {
-                area += Curve.getArea(Curve.getValues(
-                        segments[i], segments[i < last ? i + 1 : 0]));
+                sum = 0,
+                close = 0;
+            for (var i = 0, l = segments.length; i < l; i++) {
+                var next = i + 1,
+                    last = next >= l,
+                    area = Curve.getArea(Curve.getValues(
+                        segments[i], segments[last ? 0 : i + 1]));
+                if (last) {
+                    close = area;
+                } else {
+                    sum += area;
+                }
             }
-            if (cached)
-                this._area = area;
+            cached = this._area = [sum, close];
         }
-        return area;
+        return cached[0] + (closed ? cached[1] : 0);
     },
 
     /**

@@ -23,6 +23,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     _class: 'PathItem',
     _selectBounds: false,
     _canScaleStroke: true,
+    // Enforce creation of beans, as bean getters have hidden parameters.
+    // See  #isClockwise() below.
+    beans: true,
 
     initialize: function PathItem() {
         // Do nothing.
@@ -101,8 +104,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @see Path#getArea()
      * @see CompoundPath#getArea()
      */
-    isClockwise: function() {
-        return this.getArea() >= 0;
+    isClockwise: function(_closed) {
+        return this.getArea(_closed) >= 0;
     },
 
     setClockwise: function(clockwise) {

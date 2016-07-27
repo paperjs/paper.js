@@ -30,6 +30,9 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
     _serializeFields: {
         children: []
     },
+    // Enforce creation of beans, as bean getters have hidden parameters.
+    // See #getPathData() and #getArea below.
+    beans: true,
 
     /**
      * Creates a new compound path item and places it in the active layer.
@@ -248,11 +251,11 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      * @bean
      * @type Number
      */
-    getArea: function() {
+    getArea: function(_closed) {
         var children = this._children,
             area = 0;
         for (var i = 0, l = children.length; i < l; i++)
-            area += children[i].getArea();
+            area += children[i].getArea(_closed);
         return area;
     },
 
@@ -269,10 +272,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
         for (var i = 0, l = children.length; i < l; i++)
             length += children[i].getLength();
         return length;
-    }
-}, /** @lends CompoundPath# */{
-    // Enforce bean creation for getPathData(), as it has hidden parameters.
-    beans: true,
+    },
 
     getPathData: function(_matrix, _precision) {
         // NOTE: #setPathData() is defined in PathItem.
@@ -285,8 +285,8 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
                     ? _matrix.appended(mx) : _matrix, _precision));
         }
         return paths.join('');
-    }
-}, /** @lends CompoundPath# */{
+    },
+
     _hitTestChildren: function _hitTestChildren(point, options, viewMatrix) {
         return _hitTestChildren.base.call(this, point,
                 // If we're not specifically asked to returns paths through

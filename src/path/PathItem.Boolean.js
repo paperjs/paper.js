@@ -50,52 +50,52 @@ PathItem.inject(new function() {
      * remove empty curves, #resolveCrossings() to resolve self-intersection
      * make sure all paths have correct winding direction.
      */
-    function preparePath(path, closed) {
+    function preparePath(path, resolve) {
         var res = path.clone(false).reduce({ simplify: true })
                 .transform(null, true, true);
-        if (closed)
-            res.setClosed(true);
-        return closed
+        return resolve
             ? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero')
             : res;
     }
 
-    function createResult(ctor, paths, reduce, path1, path2) {
+    function createResult(ctor, paths, reduce, path1, path2, options) {
         var result = new ctor(Item.NO_INSERT);
         result.addChildren(paths, true);
         // See if the item can be reduced to just a simple Path.
         if (reduce)
             result = result.reduce({ simplify: true });
-        // Insert the resulting path above whichever of the two paths appear
-        // further up in the stack.
-        result.insertAbove(path2 && path1.isSibling(path2)
-                && path1.getIndex() < path2.getIndex() ? path2 : path1);
+        if (!(options && options.insert === false)) {
+            // Insert the resulting path above whichever of the two paths appear
+            // further up in the stack.
+            result.insertAbove(path2 && path1.isSibling(path2)
+                    && path1.getIndex() < path2.getIndex() ? path2 : path1);
+        }
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
         return result;
     }
 
-    function computeBoolean(path1, path2, operation) {
-        // Retrieve the operator lookup table for winding numbers.
-        var operator = operators[operation];
+    function computeBoolean(path1, path2, operation, options) {
+        // Only support subtract and intersect operations when computing stroke
+        // based boolean operations.
+        if (options && options.stroke &&
+                /^(subtract|intersect)$/.test(operation))
+            return computeStrokeBoolean(path1, path2, operation === 'subtract');
+        // We do not modify the operands themselves, but create copies instead,
+        // fas produced by the calls to preparePath().
+        // NOTE: The result paths might not belong to the same type i.e.
+        // subtract(A:Path, B:Path):CompoundPath etc.
+        var _path1 = preparePath(path1, true),
+            _path2 = path2 && path1 !== path2 && preparePath(path2, true),
+            // Retrieve the operator lookup table for winding numbers.
+            operator = operators[operation];
         // Add a simple boolean property to check for a given operation,
         // e.g. `if (operator.unite)`
         operator[operation] = true;
-        // If path1 is open, delegate to computeOpenBoolean().
-        // NOTE: Do not access private _closed property here, since path1 may
-        // be a CompoundPath.
-        if (!path1.isClosed())
-            return computeOpenBoolean(path1, path2, operator);
-        // We do not modify the operands themselves, but create copies instead,
-        // fas produced by the calls to preparePath().
-        // Note that the result paths might not belong to the same type
-        // i.e. subtraction(A:Path, B:Path):CompoundPath etc.
-        var _path1 = preparePath(path1, true),
-            _path2 = path2 && path1 !== path2 && preparePath(path2, true);
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
-                ^ (_path2.isClockwise() ^ _path1.isClockwise()))
+                ^ (_path2.isClockwise(true) ^ _path1.isClockwise(true)))
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
@@ -183,26 +183,20 @@ PathItem.inject(new function() {
             paths = tracePaths(segments, operator);
         }
 
-        return createResult(CompoundPath, paths, true, path1, path2);
+        return createResult(CompoundPath, paths, true, path1, path2, options);
     }
 
-    function computeOpenBoolean(path1, path2, operator) {
-        // Only support subtract and intersect operations between an open
-        // and a closed path.
-        if (!path2 || !operator.subtract && !operator.intersect) {
-            throw new Error('Boolean operations on open paths only support ' +
-                    'subtraction and intersection with another path.');
-        }
-        var _path1 = preparePath(path1, false),
-            _path2 = preparePath(path2, false),
+    function computeStrokeBoolean(path1, path2, subtract) {
+        var _path1 = preparePath(path1),
+            _path2 = preparePath(path2),
             crossings = _path1.getCrossings(_path2),
-            sub = operator.subtract,
             paths = [];
 
         function addPath(path) {
             // Simple see if the point halfway across the open path is inside
             // path2, and include / exclude the path based on the operator.
-            if (_path2.contains(path.getPointAt(path.getLength() / 2)) ^ sub) {
+            if (_path2.contains(path.getPointAt(path.getLength() / 2))
+                    ^ subtract) {
                 paths.unshift(path);
                 return true;
             }
@@ -358,13 +352,17 @@ PathItem.inject(new function() {
      *     {@link CompoundPath#getCurves()}
      * @param {Number} [dir=0] the direction in which to determine the
      *     winding contribution, `0`: in x-direction, `1`: in y-direction
+     * @param {Boolean} [closed=false] determines how areas should be closed
+     *     when a curve is part of an open path, `false`: area is closed with a
+     *     straight line, `true`: area is closed taking the handles of the first
+     *     and last segment into account
      * @param {Boolean} [dontFlip=false] controls whether the algorithm is
      *     allowed to flip direction if it is deemed to produce better results
      * @return {Object} an object containing the calculated winding number, as
      *     well as an indication whether the point was situated on the contour
      * @private
      */
-    function getWinding(point, curves, dir, dontFlip) {
+    function getWinding(point, curves, dir, closed, dontFlip) {
         var epsilon = /*#=*/Numerical.WINDING_EPSILON,
             // Determine the index of the abscissa and ordinate values in the
             // curve values arrays, based on the direction:
@@ -465,7 +463,7 @@ PathItem.inject(new function() {
             // again with flipped direction and return that result instead.
             return !dontFlip && a > paL && a < paR
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-                    && getWinding(point, curves, dir ? 0 : 1, true);
+                    && getWinding(point, curves, dir ? 0 : 1, closed, true);
         }
 
         function handleCurve(v) {
@@ -505,14 +503,22 @@ PathItem.inject(new function() {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
-                // If the path is not closed, connect the end points with a
-                // straight curve, just like how filling open paths works.
+                // If the path is not closed, connect the first and last segment
+                // based on the value of `closed`:
+                // - `false`: Connect with a straight curve, just like how
+                //   filling open paths works.
+                // - `true`: Connect with a curve that takes the segment handles
+                //   into account, just like how closed paths behave.
                 if (!path._closed) {
-                    var p1 = path.getLastCurve().getPoint2(),
-                        p2 = curve.getPoint1(),
+                    var s1 = path.getLastCurve().getSegment2(),
+                        s2 = curve.getSegment1(),
+                        p1 = s1._point,
+                        p2 = s2._point,
                         x1 = p1._x, y1 = p1._y,
                         x2 = p2._x, y2 = p2._y;
-                    vClose = [x1, y1, x1, y1, x2, y2, x2, y2];
+                    vClose = closed
+                            ? Curve.getValues(s1, s2)
+                            : [x1, y1, x1, y1, x2, y2, x2, y2];
                     // This closing curve is a potential candidate for the last
                     // non-horizontal curve.
                     if (vClose[io] !== vClose[io + 6]) {
@@ -555,7 +561,7 @@ PathItem.inject(new function() {
                     // for clockwise and [-1,+1] for counter-clockwise paths.
                     // If the ray is cast in y direction (dir == 1), the
                     // windings always have opposite sign.
-                    var add = path.isClockwise() ^ dir ? 1 : -1;
+                    var add = path.isClockwise(closed) ^ dir ? 1 : -1;
                     windingL += add;
                     windingR -= add;
                     onPathWinding += add;
@@ -626,10 +632,12 @@ PathItem.inject(new function() {
                 // contributing to the second operand and is outside the
                 // first operand.
                 winding = !(operator.subtract && path2 && (
-                        path === path1 &&  path2._getWinding(pt, dir).winding ||
-                        path === path2 && !path1._getWinding(pt, dir).winding))
-                            ? getWinding(pt, curves, dir)
-                            : { winding: 0 };
+                        path === path1 &&
+                            path2._getWinding(pt, dir, true).winding ||
+                        path === path2 &&
+                            !path1._getWinding(pt, dir, true).winding))
+                        ? getWinding(pt, curves, dir, true)
+                        : { winding: 0 };
                 break;
             }
             length -= curveLength;
@@ -734,6 +742,7 @@ PathItem.inject(new function() {
         for (var i = 0, l = segments.length; i < l; i++) {
             var path = null,
                 finished = false,
+                closed = true,
                 seg = segments[i],
                 inter = seg._intersection,
                 handleIn;
@@ -793,18 +802,21 @@ PathItem.inject(new function() {
                         seg = other;
                     }
                 }
-                // Bail out if we're done, or if we encounter an already visited
-                // next segment.
-                if (finished || seg._visited) {
-                    // It doesn't hurt to set again to share some code.
+                if (finished) {
                     seg._visited = true;
+                    // If we end up on the first or last segment of an operand,
+                    // copy over its closed state, to support mixed open/closed
+                    // scenarios as described in #1036
+                    if (seg.isFirst() || seg.isLast())
+                        closed = seg._path._closed;
                     break;
                 }
-                // If there are only valid overlaps and we encounter and invalid
-                // segment, bail out immediately. Otherwise we need to be more
-                // tolerant due to complex situations of crossing,
-                // see findBestIntersection()
-                if (seg._path._validOverlapsOnly && !isValid(seg))
+                // If a visited or invalid segment is encountered, bail out
+                // immediately. But if there aren't only valid overlaps, be more
+                // tolerant due to complex crossing situations.
+                // See findBestIntersection()
+                if (seg._visited
+                        || seg._path._validOverlapsOnly && !isValid(seg))
                     break;
                 if (!path) {
                     path = new Path(Item.NO_INSERT);
@@ -830,7 +842,7 @@ PathItem.inject(new function() {
                 // Finish with closing the paths, and carrying over the last
                 // handleIn to the first segment.
                 path.firstSegment.setHandleIn(handleIn);
-                path.setClosed(true);
+                path.setClosed(closed);
             } else if (path) {
                 // Only complain about open paths if they would actually contain
                 // an area when closed. Open paths that can silently discarded
@@ -873,39 +885,58 @@ PathItem.inject(new function() {
          *     winding contribution, `0`: in x-direction, `1`: in y-direction
          * @return {Number} the winding number
          */
-        _getWinding: function(point, dir) {
-            return getWinding(point, this.getCurves(), dir);
+        _getWinding: function(point, dir, closed) {
+            return getWinding(point, this.getCurves(), dir, closed);
         },
 
         /**
          * {@grouptitle Boolean Path Operations}
          *
-         * Merges the geometry of the specified path with this path's geometry
+         * Unites the geometry of the specified path with this path's geometry
          * and returns the result as a new path item.
          *
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         *
          * @param {PathItem} path the path to unite with
+         * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          */
-        unite: function(path) {
-            return computeBoolean(this, path, 'unite');
+        unite: function(path, options) {
+            return computeBoolean(this, path, 'unite', options);
         },
 
         /**
          * Intersects the geometry of the specified path with this path's
          * geometry and returns the result as a new path item.
          *
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.stroke=false] {Boolean} whether the operation should
+         *     be performed on the stroke or on the fill of the first path
+         *
          * @param {PathItem} path the path to intersect with
+         * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          */
-        intersect: function(path) {
-            return computeBoolean(this, path, 'intersect');
+        intersect: function(path, options) {
+            return computeBoolean(this, path, 'intersect', options);
         },
 
         /**
          * Subtracts the geometry of the specified path from this path's
          * geometry and returns the result as a new path item.
          *
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.stroke=false] {Boolean} whether the operation should
+         *     be performed on the stroke or on the fill of the first path
+         *
          * @param {PathItem} path the path to subtract
+         * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          */
         subtract: function(path) {
@@ -916,11 +947,16 @@ PathItem.inject(new function() {
          * Excludes the intersection of the geometry of the specified path with
          * this path's geometry and returns the result as a new path item.
          *
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         *
          * @param {PathItem} path the path to exclude the intersection of
+         * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting group item
          */
-        exclude: function(path) {
-            return computeBoolean(this, path, 'exclude');
+        exclude: function(path, options) {
+            return computeBoolean(this, path, 'exclude', options);
         },
 
         /**
@@ -929,12 +965,21 @@ PathItem.inject(new function() {
          * calling {@link #subtract(path)} and {@link #subtract(path)} and
          * putting the results into a new group.
          *
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.stroke=false] {Boolean} whether the operation should
+         *     be performed on the stroke or on the fill of the first path
+         *
          * @param {PathItem} path the path to divide by
+         * @param {Object} [options] the boolean operation options
          * @return {Group} the resulting group item
          */
-        divide: function(path) {
-            return createResult(Group, [this.subtract(path),
-                    this.intersect(path)], true, this, path);
+        divide: function(path, options) {
+            return createResult(Group, [
+                    this.subtract(path, options),
+                    this.intersect(path, options)
+                ], true, this, path, options);
         },
 
         /*
