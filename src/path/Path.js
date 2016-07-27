@@ -1239,17 +1239,17 @@ var Path = PathItem.extend(/** @lends Path# */{
 
     // NOTE: Documentation is in PathItem#flatten()
     flatten: function(flatness) {
-        // Use PathIterator to subdivide the curves into parts that are flat
+        // Use PathFlattener to subdivide the curves into parts that are flat
         // enough, as specified by `flatness` / Curve.isFlatEnough():
-        var iterator = new PathIterator(this, flatness || 0.25, 256, true),
-            parts = iterator.parts,
+        var flattener = new PathFlattener(this, flatness || 0.25, 256, true),
+            parts = flattener.parts,
             length = parts.length,
             segments = [];
         for (var i = 0; i < length; i++) {
             segments.push(new Segment(parts[i].curve.slice(0, 2)));
         }
         if (!this._closed && length > 0) {
-            // We need to explicitly add the end point of the last curve on open paths.
+            // Explicitly add the end point of the last curve on open paths.
             segments.push(new Segment(parts[length - 1].curve.slice(6)));
         }
         this.setSegments(segments);
@@ -2260,12 +2260,12 @@ new function() { // Scope for drawing
                 if (hasStroke) {
                     if (dashLength) {
                         // We cannot use the path created by drawSegments above
-                        // Use PathIterator to draw dashed paths:
+                        // Use PathFlattener to draw dashed paths:
                         if (!dontStart)
                             ctx.beginPath();
-                        var iterator = new PathIterator(this, 0.25, 32, false,
+                        var flattener = new PathFlattener(this, 0.25, 32, false,
                                 strokeMatrix),
-                            length = iterator.length,
+                            length = flattener.length,
                             from = -style.getDashOffset(), to,
                             i = 0;
                         from = from % length;
@@ -2277,7 +2277,7 @@ new function() { // Scope for drawing
                         while (from < length) {
                             to = from + getOffset(i++);
                             if (from > 0 || to > 0)
-                                iterator.drawPart(ctx,
+                                flattener.drawPart(ctx,
                                         Math.max(from, 0), Math.max(to, 0));
                             from = to + getOffset(i++);
                         }

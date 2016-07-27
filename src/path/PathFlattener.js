@@ -11,22 +11,22 @@
  */
 
 /**
- * @name PathIterator
+ * @name PathFlattener
  * @class
  * @private
  */
-var PathIterator = Base.extend({
-    _class: 'PathIterator',
+var PathFlattener = Base.extend({
+    _class: 'PathFlattener',
 
     /**
-     * Creates a path iterator for the given path. The iterator converts curves
-     * into a sequence of straight lines by the use of curve-subdivision with an
-     * allowed maximum error to create a lookup table that maps curve-time to
-     * path offsets, and can be used for efficient iteration over the full
-     * length of the path, and getting points / tangents / normals and curvature
-     * in path offset space.
+     * Creates a path flattener for the given path. The flattener converts
+     * curves into a sequence of straight lines by the use of curve-subdivision
+     * with an allowed maximum error to create a lookup table that maps curve-
+     * time to path offsets, and can be used for efficient iteration over the
+     * full length of the path, and getting points / tangents / normals and
+     * curvature in path offset space.
      *
-     * @param {Path} path the path to create the iterator for
+     * @param {Path} path the path to create the flattener for
      * @param {Number} [flatness=0.25] the maximum error allowed for the
      *     straight lines to deviate from the original curves
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
@@ -37,7 +37,7 @@ var PathIterator = Base.extend({
      *     translation
      * @param {Matrix} [matrix] the matrix by which to transform the path's
      *     coordinates without modifying the actual path.
-     * @return {PathIterator} the newly created path iterator
+     * @return {PathFlattener} the newly created path flattener
      */
     initialize: function(path, flatness, maxRecursion, ignoreStraight, matrix) {
         // Instead of relying on path.curves, we only use segments here and
@@ -100,7 +100,7 @@ var PathIterator = Base.extend({
         this.parts = parts;
         this.length = length;
         // Keep a current index from the part where we last where in
-        // _get(), to optimise for iterator-like usage of iterator.
+        // _get(), to optimise for iterator-like usage of flattener.
         this.index = 0;
     },
 
