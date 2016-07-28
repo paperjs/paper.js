@@ -647,23 +647,26 @@ PathItem.inject(new function() {
      */
     function tracePaths(segments, operator) {
         var paths = [],
-            start,
-            otherStart;
+            starts;
 
-        function isValid(seg, excludeContour) {
-            // Unite operations need special handling of segments with a winding
-            // contribution of two (part of both involved areas) but which are
-            // also part of the contour of the result. Such segments are not
-            // chosen as the start of new paths and are not always counted as a
-            // valid next step, as controlled by the excludeContour parameter.
+        function isValid(seg) {
             var winding;
             return !!(seg && !seg._visited && (!operator
-                    || operator[(winding = seg._winding).winding]
-                    || !excludeContour && operator.unite && winding.onContour));
+                    || operator[(winding = seg._winding || {}).winding]
+                    // Unite operations need special handling of segments with a
+                    // winding contribution of two (part of both involved areas)
+                    // but which are also part of the contour of the result.
+                    || operator.unite && winding.onContour));
         }
 
         function isStart(seg) {
-            return seg === start || seg === otherStart;
+            if (seg) {
+                for (var i = 0, l = starts.length; i < l; i++) {
+                    if (seg === starts[i])
+                        return true;
+                }
+            }
+            return false;
         }
 
         function visitPath(path) {
@@ -673,32 +676,47 @@ PathItem.inject(new function() {
             }
         }
 
-        // If there are multiple possible intersections, find the one that's
-        // either connecting back to start or is not visited yet, and will be
+        // If there are multiple possible intersections, find the ones that's
+        // either connecting back to start or are not visited yet, and will be
         // part of the boolean result:
-        function findBestIntersection(segment) {
+        function getIntersections(segment, collectStarts) {
             var inter = segment._intersection,
-                start = inter;
-            while (inter) {
-                var other = inter._segment,
-                    next = other.getNext(),
-                    nextInter = next && next._intersection;
-                // See if this segment and the next are both not visited yet, or
-                // are bringing us back to the beginning, and are both valid,
-                // meaning they are part of the boolean result.
-                if (other !== segment && (isStart(other) || isStart(next)
-                    || next && !other._visited && !next._visited
-                    // Self-intersections (!operator) don't need isValid() calls
-                    && (!operator || isValid(other) && (isValid(next)
-                        // If the next segment isn't valid, its intersection
-                        // to which we may switch might be, so check that.
-                        || nextInter && isValid(nextInter._segment)))
-                    ))
-                    break;
-                // If it's no match, continue with the next linked intersection.
-                inter = inter._next;
+                start = inter,
+                inters = [];
+            if (collectStarts)
+                starts = [segment];
+
+            function collect(inter, end) {
+                while (inter && inter !== end) {
+                    var other = inter._segment,
+                        path = other._path,
+                        next = other.getNext() || path && path.getFirstSegment(),
+                        nextInter = next && next._intersection;
+                    // See if this segment and the next are both not visited
+                    // yet, or are bringing us back to the beginning, and are
+                    // both valid, meaning they are part of the boolean result.
+                    if (other !== segment && (isStart(other) || isStart(next)
+                        || next && (isValid(other) && (isValid(next)
+                            // If the next segment isn't valid, its intersection
+                            // to which we may switch might be, so check that.
+                            || nextInter && isValid(nextInter._segment))))) {
+                        inters.push(inter);
+                    }
+                    if (collectStarts)
+                        starts.push(other);
+                    inter = inter._next;
+                }
             }
-            return inter || start;
+
+            if (inter) {
+                collect(inter);
+                // Find the beginning of the linked intersections and loop all
+                // the way back to start, to collect all valid intersections.
+                while (inter && inter._prev)
+                    inter = inter._prev;
+                collect(inter, start);
+            }
+            return inters;
         }
 
         // Sort segments to give non-ambiguous segments the preference as
@@ -728,6 +746,7 @@ PathItem.inject(new function() {
 
         for (var i = 0, l = segments.length; i < l; i++) {
             var seg = segments[i],
+                valid = isValid(seg),
                 path = null,
                 finished = false,
                 closed = true,
@@ -737,7 +756,7 @@ PathItem.inject(new function() {
                 handleIn;
             // If all encountered segments in a path are overlaps, we may have
             // two fully overlapping paths that need special handling.
-            if (!seg._visited && seg._path._overlapsOnly) {
+            if (valid && seg._path._overlapsOnly) {
                 // TODO: Don't we also need to check for multiple overlaps?
                 var path1 = seg._path,
                     path2 = seg._intersection._segment._path;
@@ -750,48 +769,30 @@ PathItem.inject(new function() {
                     // Now mark all involved segments as visited.
                     visitPath(path1);
                     visitPath(path2);
+                    valid = false;
                 }
             }
-            // Exclude three cases of invalid starting segments:
-            // - Do not start with invalid segments (segments that were already
-            //   visited, or that are not going to be part of the result).
-            // - Do not start in segments that have an invalid winding
-            //   contribution but are part of the contour (excludeContour=true).
-            // - Do not start in overlaps, unless all segments are part of
-            //   overlaps, in which case we have no other choice.
-            if (!isValid(seg, true))
-                continue;
-            start = otherStart = null;
-            while (true) {
+            // Do not start with invalid segments (segments that were already
+            // visited, or that are not going to be part of the result).
+            while (valid) {
                 // For each segment we encounter, see if there are multiple
                 // intersections, and if so, pick the best one:
-                var inter = findBestIntersection(seg),
+                var first = !path,
+                    intersections = getIntersections(seg, first),
+                    inter = intersections.shift(),
                     // Get the other segment on the intersection.
                     other = inter && inter._segment,
-                    first = !path,
-                    cross = false;
-                if (first) {
+                    finished = !first && (isStart(seg) || isStart(other)),
+                    cross = !finished && other;
+                if (first)
                     path = new Path(Item.NO_INSERT);
-                    start = seg;
-                    otherStart = other;
-                }
-                finished = !first && isStart(seg);
-                if (!finished && other) {
-                    finished = !first && isStart(other);
-                    // Are we at the end or at a crossing and the other segment
-                    // is part of the boolean result? If so, switch over.
-                    cross = finished || isValid(other, isValid(seg, true));
-                    // NOTE: We pass `true` for excludeContour here if the
-                    // current segment is valid and not a contour segment.
-                    // See isValid()/getWinding() for explanations.
-                }
                 if (finished) {
-                    seg._visited = true;
                     // If we end up on the first or last segment of an operand,
                     // copy over its closed state, to support mixed open/closed
                     // scenarios as described in #1036
                     if (seg.isFirst() || seg.isLast())
                         closed = seg._path._closed;
+                    seg._visited = true;
                     break;
                 }
                 if (cross && branch) {
@@ -804,8 +805,9 @@ PathItem.inject(new function() {
                     branch = {
                         start: path._segments.length,
                         segment: seg,
-                        handleIn: handleIn,
-                        visited: visited = []
+                        intersections: intersections,
+                        visited: visited = [],
+                        handleIn: handleIn
                     };
                 }
                 if (cross)
@@ -814,23 +816,27 @@ PathItem.inject(new function() {
                 // crossing and try the other direction by not crossing at the
                 // intersection.
                 if (!isValid(seg)) {
-                    // Remove the already added segments, and mark them as no
+                    // Remove the already added segments, and mark them as not
                     // visited so they become available again as options.
                     path.removeSegments(branch.start);
                     for (var j = 0, k = visited.length; j < k; j++) {
                         visited[j]._visited = false;
                     }
                     // Go back to the segment at which the crossing happened,
-                    // but don't cross this time.
-                    seg = branch.segment;
+                    // and try other crossings first.
+                    if (inter = branch.intersections.shift()) {
+                        seg = inter._segment;
+                        visited.length = 0;
+                    } else {
+                        // If there are no crossings left, try not crossing:
+                        // Restore the previous branch and keep adding to it,
+                        // but stop once we run out of branches to try.
+                        if (!(branch = branches.pop()) ||
+                            !isValid(seg = branch.segment))
+                            break;
+                        visited = branch.visited;
+                    }
                     handleIn = branch.handleIn;
-                    visited = branch.visited;
-                    // Now restore the previous branch and keep adding to it,
-                    // since we don't cross here anymore.
-                    branch = branches.pop();
-                    // Stop once we run out of branches to try.
-                    if (!branch)
-                        break;
                 }
                 // Add the segment to the path, and mark it as visited.
                 // But first we need to look ahead. If we encounter the end of
@@ -848,36 +854,15 @@ PathItem.inject(new function() {
                 handleIn = next && next._handleIn;
             }
             if (finished) {
-                // Finish with closing the paths, and carrying over the last
-                // handleIn to the first segment.
-                path.firstSegment.setHandleIn(handleIn);
-                path.setClosed(closed);
-            } else if (path) {
-                // Only complain about open paths if they would actually contain
-                // an area when closed. Open paths that can silently discarded
-                // can occur due to epsilons, e.g. when two segments are so
-                // close to each other that they are considered the same
-                // location, but the winding calculation still produces a valid
-                // number due to their slight differences producing a tiny area.
-                var area = path.getArea();
-                if (abs(area) >= /*#=*/Numerical.GEOMETRIC_EPSILON) {
-                    // This path wasn't finished and is hence invalid.
-                    // Report the error to the console for the time being.
-                    console.error('Boolean operation resulted in open path',
-                            'segments =', path._segments.length,
-                            'length =', path.getLength(),
-                            'area=', area);
+                if (closed) {
+                    // Carry over the last handleIn to the first segment.
+                    path.firstSegment.setHandleIn(handleIn);
+                    path.setClosed(closed);
                 }
-                path = null;
-            }
-            // Add the path to the result, while avoiding stray segments and
-            // paths that are incomplete or cover no area.
-            // As an optimization, only check paths with 8 or less segments
-            // for their area, and assume that they cover an area when more.
-            if (path && (path._segments.length > 8
-                    || !Numerical.isZero(path.getArea()))) {
-                paths.push(path);
-                path = null;
+                // Only add finished paths that cover an area to the result.
+                if (path.getArea() !== 0) {
+                    paths.push(path);
+                }
             }
         }
         return paths;
