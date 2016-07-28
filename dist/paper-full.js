@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jul 27 22:58:57 2016 +0200
+ * Date: Thu Jul 28 12:14:02 2016 +0200
  *
  ***
  *
@@ -10061,18 +10061,23 @@ PathItem.inject(new function() {
 
 	function tracePaths(segments, operator) {
 		var paths = [],
-			start,
-			otherStart;
+			starts;
 
-		function isValid(seg, excludeContour) {
+		function isValid(seg) {
 			var winding;
 			return !!(seg && !seg._visited && (!operator
-					|| operator[(winding = seg._winding).winding]
-					|| !excludeContour && operator.unite && winding.onContour));
+					|| operator[(winding = seg._winding || {}).winding]
+					|| operator.unite && winding.onContour));
 		}
 
 		function isStart(seg) {
-			return seg === start || seg === otherStart;
+			if (seg) {
+				for (var i = 0, l = starts.length; i < l; i++) {
+					if (seg === starts[i])
+						return true;
+				}
+			}
+			return false;
 		}
 
 		function visitPath(path) {
@@ -10082,22 +10087,37 @@ PathItem.inject(new function() {
 			}
 		}
 
-		function findBestIntersection(segment) {
+		function getIntersections(segment, collectStarts) {
 			var inter = segment._intersection,
-				start = inter;
-			while (inter) {
-				var other = inter._segment,
-					next = other.getNext(),
-					nextInter = next && next._intersection;
-				if (other !== segment && (isStart(other) || isStart(next)
-					|| next && !other._visited && !next._visited
-					&& (!operator || isValid(other) && (isValid(next)
-						|| nextInter && isValid(nextInter._segment)))
-					))
-					break;
-				inter = inter._next;
+				start = inter,
+				inters = [];
+			if (collectStarts)
+				starts = [segment];
+
+			function collect(inter, end) {
+				while (inter && inter !== end) {
+					var other = inter._segment,
+						path = other._path,
+						next = other.getNext() || path && path.getFirstSegment(),
+						nextInter = next && next._intersection;
+					if (other !== segment && (isStart(other) || isStart(next)
+						|| next && (isValid(other) && (isValid(next)
+							|| nextInter && isValid(nextInter._segment))))) {
+						inters.push(inter);
+					}
+					if (collectStarts)
+						starts.push(other);
+					inter = inter._next;
+				}
 			}
-			return inter || start;
+
+			if (inter) {
+				collect(inter);
+				while (inter && inter._prev)
+					inter = inter._prev;
+				collect(inter, start);
+			}
+			return inters;
 		}
 
 		segments.sort(function(seg1, seg2) {
@@ -10118,6 +10138,7 @@ PathItem.inject(new function() {
 
 		for (var i = 0, l = segments.length; i < l; i++) {
 			var seg = segments[i],
+				valid = isValid(seg),
 				path = null,
 				finished = false,
 				closed = true,
@@ -10125,7 +10146,7 @@ PathItem.inject(new function() {
 				branch,
 				visited,
 				handleIn;
-			if (!seg._visited && seg._path._overlapsOnly) {
+			if (valid && seg._path._overlapsOnly) {
 				var path1 = seg._path,
 					path2 = seg._intersection._segment._path;
 				if (path1.compare(path2)) {
@@ -10135,30 +10156,22 @@ PathItem.inject(new function() {
 					}
 					visitPath(path1);
 					visitPath(path2);
+					valid = false;
 				}
 			}
-			if (!isValid(seg, true))
-				continue;
-			start = otherStart = null;
-			while (true) {
-				var inter = findBestIntersection(seg),
+			while (valid) {
+				var first = !path,
+					intersections = getIntersections(seg, first),
+					inter = intersections.shift(),
 					other = inter && inter._segment,
-					first = !path,
-					cross = false;
-				if (first) {
+					finished = !first && (isStart(seg) || isStart(other)),
+					cross = !finished && other;
+				if (first)
 					path = new Path(Item.NO_INSERT);
-					start = seg;
-					otherStart = other;
-				}
-				finished = !first && isStart(seg);
-				if (!finished && other) {
-					finished = !first && isStart(other);
-					cross = finished || isValid(other, isValid(seg, true));
-				}
 				if (finished) {
-					seg._visited = true;
 					if (seg.isFirst() || seg.isLast())
 						closed = seg._path._closed;
+					seg._visited = true;
 					break;
 				}
 				if (cross && branch) {
@@ -10169,8 +10182,9 @@ PathItem.inject(new function() {
 					branch = {
 						start: path._segments.length,
 						segment: seg,
-						handleIn: handleIn,
-						visited: visited = []
+						intersections: intersections,
+						visited: visited = [],
+						handleIn: handleIn
 					};
 				}
 				if (cross)
@@ -10180,12 +10194,16 @@ PathItem.inject(new function() {
 					for (var j = 0, k = visited.length; j < k; j++) {
 						visited[j]._visited = false;
 					}
-					seg = branch.segment;
+					if (inter = branch.intersections.shift()) {
+						seg = inter._segment;
+						visited.length = 0;
+					} else {
+						if (!(branch = branches.pop()) ||
+							!isValid(seg = branch.segment))
+							break;
+						visited = branch.visited;
+					}
 					handleIn = branch.handleIn;
-					visited = branch.visited;
-					branch = branches.pop();
-					if (!branch)
-						break;
 				}
 				var next = seg.getNext();
 				path.add(new Segment(seg._point, handleIn,
@@ -10196,22 +10214,13 @@ PathItem.inject(new function() {
 				handleIn = next && next._handleIn;
 			}
 			if (finished) {
-				path.firstSegment.setHandleIn(handleIn);
-				path.setClosed(closed);
-			} else if (path) {
-				var area = path.getArea();
-				if (abs(area) >= 1e-7) {
-					console.error('Boolean operation resulted in open path',
-							'segments =', path._segments.length,
-							'length =', path.getLength(),
-							'area=', area);
+				if (closed) {
+					path.firstSegment.setHandleIn(handleIn);
+					path.setClosed(closed);
 				}
-				path = null;
-			}
-			if (path && (path._segments.length > 8
-					|| !Numerical.isZero(path.getArea()))) {
-				paths.push(path);
-				path = null;
+				if (path.getArea() !== 0) {
+					paths.push(path);
+				}
 			}
 		}
 		return paths;
