@@ -395,8 +395,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
             delta: delta
         });
         this._changed();
-        if (this._autoUpdate)
-            this.requestUpdate();
+        if (this._autoUpdate) {
+            // Update right away, don't wait for the next animation frame as
+            // otherwise the view would flicker during resizes, see #1126
+            this.update();
+        }
     },
 
     /**
