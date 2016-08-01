@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jul 28 12:14:02 2016 +0200
+ * Date: Mon Aug 1 17:10:00 2016 +0200
  *
  ***
  *
@@ -12177,8 +12177,9 @@ var View = Base.extend(Emitter, {
 			delta: delta
 		});
 		this._changed();
-		if (this._autoUpdate)
-			this.requestUpdate();
+		if (this._autoUpdate) {
+			this.update();
+		}
 	},
 
 	_setElementSize: function(width, height) {
