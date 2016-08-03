@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Aug 3 13:08:08 2016 +0200
+ * Date: Wed Aug 3 13:33:58 2016 +0200
  *
  ***
  *
@@ -12165,18 +12165,13 @@ var View = Base.extend(Emitter, {
 
 	setViewSize: function() {
 		var size = Size.read(arguments),
-			width = size.width,
-			height = size.height,
 			delta = size.subtract(this._viewSize);
 		if (delta.isZero())
 			return;
-		this._setElementSize(width, height);
-		this._viewSize._set(width, height);
+		this._setElementSize(size.width, size.height);
+		this._viewSize.set(size);
 		this._changed();
-		this.emit('resize', {
-			size: size,
-			delta: delta
-		});
+		this.emit('resize', { size: size, delta: delta });
 		if (this._autoUpdate) {
 			this.update();
 		}
