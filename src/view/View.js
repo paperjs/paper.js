@@ -382,19 +382,14 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     setViewSize: function(/* size */) {
         var size = Size.read(arguments),
-            width = size.width,
-            height = size.height,
             delta = size.subtract(this._viewSize);
         if (delta.isZero())
             return;
-        this._setElementSize(width, height);
-        this._viewSize._set(width, height);
+        this._setElementSize(size.width, size.height);
+        this._viewSize.set(size);
         this._changed();
         // Emit resize event on any size changes.
-        this.emit('resize', {
-            size: size,
-            delta: delta
-        });
+        this.emit('resize', { size: size, delta: delta });
         if (this._autoUpdate) {
             // Update right away, don't wait for the next animation frame as
             // otherwise the view would flicker during resizes, see #1126
