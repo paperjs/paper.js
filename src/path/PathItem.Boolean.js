@@ -864,6 +864,8 @@ PathItem.inject(new function() {
                     paths.push(path);
                 }
             }
+            // Clear branch so we start with a new one on the next contour.
+            branch = null;
         }
         return paths;
     }
