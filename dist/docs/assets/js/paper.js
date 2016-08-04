@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Aug 3 13:33:58 2016 +0200
+ * Date: Thu Aug 4 12:21:58 2016 +0200
  *
  ***
  *
@@ -10222,6 +10222,7 @@ PathItem.inject(new function() {
 					paths.push(path);
 				}
 			}
+			branch = null;
 		}
 		return paths;
 	}
