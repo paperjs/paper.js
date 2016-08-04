@@ -784,8 +784,11 @@ PathItem.inject(new function() {
                     other = inter && inter._segment,
                     finished = !first && (isStart(seg) || isStart(other)),
                     cross = !finished && other;
-                if (first)
+                if (first) {
                     path = new Path(Item.NO_INSERT);
+                    // Clear branch to start a new one with each new path.
+                    branch = null;
+                }
                 if (finished) {
                     // If we end up on the first or last segment of an operand,
                     // copy over its closed state, to support mixed open/closed
@@ -864,8 +867,6 @@ PathItem.inject(new function() {
                     paths.push(path);
                 }
             }
-            // Clear branch so we start with a new one on the next contour.
-            branch = null;
         }
         return paths;
     }
