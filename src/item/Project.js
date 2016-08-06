@@ -356,6 +356,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
             // as we're doing so when adding it to the new owner below.
             layer._remove(false, true);
             Base.splice(this._children, [layer], index, 0);
+            layer._parent = this;
             layer._setProject(this, true);
             // Set the name again to make sure all name lookup structures
             // are kept in sync.
