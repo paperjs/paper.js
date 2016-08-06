@@ -125,3 +125,17 @@ test('addChild / appendBottom / nesting', function() {
             && project.layers[1] == firstLayer;
     }, true);
 });
+
+test('remove', function(){
+    var layer1 = new Layer({name: 'test-layer'});
+    var layer2 = new Layer({name: 'test-layer'});
+    var removeCount = 0;
+    while (project.layers['test-layer']) {
+        project.layers['test-layer'].remove();
+        ++removeCount;
+        if (removeCount > 2) break;
+    }
+    equals(function(){
+        return removeCount;
+    }, 2);
+});
