@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Aug 4 12:21:58 2016 +0200
+ * Date: Sun Aug 7 15:55:17 2016 +0200
  *
  ***
  *
@@ -682,7 +682,7 @@ var Emitter = {
 					if (func)
 						func.call(this, type);
 				}
-		}
+			}
 		}
 	},
 
@@ -3994,14 +3994,14 @@ new function() {
 			project = this._project,
 			index = this._index;
 		if (owner) {
+			if (this._name)
+				this._removeNamed();
 			if (index != null) {
 				if (project._activeLayer === this)
 					project._activeLayer = this.getNextSibling()
 							|| this.getPreviousSibling();
 				Base.splice(owner._children, null, index, 1);
 			}
-			if (this._name)
-				this._removeNamed();
 			this._installEvents(false);
 			if (notifySelf && project._changes)
 				this._changed(5);
