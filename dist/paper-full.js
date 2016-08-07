@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Aug 7 15:55:17 2016 +0200
+ * Date: Sun Aug 7 15:58:54 2016 +0200
  *
  ***
  *
@@ -10166,8 +10166,10 @@ PathItem.inject(new function() {
 					other = inter && inter._segment,
 					finished = !first && (isStart(seg) || isStart(other)),
 					cross = !finished && other;
-				if (first)
+				if (first) {
 					path = new Path(Item.NO_INSERT);
+					branch = null;
+				}
 				if (finished) {
 					if (seg.isFirst() || seg.isLast())
 						closed = seg._path._closed;
@@ -10222,7 +10224,6 @@ PathItem.inject(new function() {
 					paths.push(path);
 				}
 			}
-			branch = null;
 		}
 		return paths;
 	}
