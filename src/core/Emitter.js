@@ -125,7 +125,7 @@ var Emitter = {
                     if (func)
                         func.call(this, type);
                 }
-        }
+            }
         }
     },
 

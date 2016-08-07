@@ -2549,6 +2549,9 @@ new function() { // Injection scope for hit-test functions shared with project
             project = this._project,
             index = this._index;
         if (owner) {
+            // Handle named children separately from index:
+            if (this._name)
+                this._removeNamed();
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2560,9 +2563,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            // Handle named children separately from index:
-            if (this._name)
-                this._removeNamed();
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
