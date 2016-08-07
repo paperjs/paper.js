@@ -12,7 +12,7 @@
 
 QUnit.module('Layer');
 
-test('previousSibling / nextSibling', function() {
+test('#previousSibling / #nextSibling', function() {
     var project = paper.project;
     var firstLayer = project.activeLayer;
     var secondLayer = new Layer();
@@ -51,7 +51,7 @@ test('previousSibling / nextSibling', function() {
     }, 1);
 });
 
-test('insertAbove / insertBelow', function() {
+test('#insertAbove() / #insertBelow()', function() {
     var project = paper.project;
     var firstLayer = project.activeLayer;
     firstLayer.name = 'first';
@@ -94,7 +94,7 @@ test('insertAbove / insertBelow', function() {
     }, 2);
 });
 
-test('addChild / appendBottom / nesting', function() {
+test('#addChild() / #insertBelow() with nesting', function() {
     var project = paper.project;
     var firstLayer = project.activeLayer;
     var secondLayer = new Layer();
@@ -126,16 +126,16 @@ test('addChild / appendBottom / nesting', function() {
     }, true);
 });
 
-test('remove', function(){
-    var layer1 = new Layer({name: 'test-layer'});
-    var layer2 = new Layer({name: 'test-layer'});
+test('#remove() with named layers', function(){
+    var name = 'my layer';
+    var layer1 = new Layer({name: name });
+    var layer2 = new Layer({name: name });
     var removeCount = 0;
-    while (project.layers['test-layer']) {
-        project.layers['test-layer'].remove();
-        ++removeCount;
-        if (removeCount > 2) break;
+    while (project.layers[name]) {
+        project.layers[name].remove();
+        if (++removeCount > 2)
+            break;
     }
-    equals(function(){
-        return removeCount;
-    }, 2);
+    equals(removeCount, 2,
+            'project.layers[name].remove(); should be called twice');
 });
