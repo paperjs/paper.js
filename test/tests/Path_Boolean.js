@@ -685,6 +685,38 @@ test('#1075', function() {
         'M140,125l0,-65l210,0l0,65l-35,0l0,-5l-137,0l0,5z M315,85l-137,0l0,25l137,0z');
 });
 
+test('#1109', function() {
+    var segments = [
+        [274.616046379547, 215.30654471841746],
+        [296.47810618021146, 202.68940186127458],
+        [297.0266776087829, 160.32607960213838],
+        [260.5870762798793, 181.99677727655697],
+        [260.5870762798793, 207.20554804067655],
+    ];
+
+    var p1 = new CompoundPath([
+        new Path.Rectangle(200, 100, 200, 200),
+        new Path({ segments: segments, closed: true })
+    ]);
+
+    var p2 = new paper.CompoundPath([
+        new Path.Rectangle(210, 110, 180, 180),
+        new Path({ segments: segments, closed: true })
+    ]);
+
+    segments.push(segments.shift());
+
+    var p3 = new paper.CompoundPath([
+        new Path.Rectangle(210, 110, 180, 180),
+        new Path({ segments: segments, closed: true })
+    ]);
+
+    compareBoolean(function() { return p1.unite(p2); },
+        'M200,300v-200h200v200zM274.61605,215.30654l21.86206,-12.61714l0.54857,-42.36332l-36.4396,21.6707v25.20877z');
+    compareBoolean(function() { return p1.unite(p3); },
+        'M200,300v-200h200v200zM274.61605,215.30654l21.86206,-12.61714l0.54857,-42.36332l-36.4396,21.6707v25.20877z');
+});
+
 test('#1123', function() {
     var p1 = new paper.Path({
         segments: [
