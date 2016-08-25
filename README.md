@@ -25,6 +25,8 @@ or:
     
     bower install paper
 
+Note: `bower install paperjs` installs an [unrelated package](https://github.com/kmakblob/paperjs) featuring [epic sax guys](https://www.youtube.com/embed/kxopViU98Xo).
+
 Upon execution, you will find a `paper` folder inside the project's
 `node_modules` / `bower_components` folder.
 
