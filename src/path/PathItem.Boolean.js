@@ -610,8 +610,10 @@ PathItem.inject(new function() {
                     pt = curve.getPointAtTime(t),
                     // Determine the direction in which to check the winding
                     // from the point (horizontal or vertical), based on the
-                    // curve's direction at that point.
-                    dir = abs(curve.getTangentAtTime(t).normalize().y) < 0.5
+                    // curve's direction at that point. If the tangent is less
+                    // than 45° (y of tangent < sqrt(0.5)), cast the ray
+                    // vertically, otherwise horizontally.
+                    dir = abs(curve.getTangentAtTime(t).normalize().y) < 0.7071
                             ? 1 : 0;
                 if (parent instanceof CompoundPath)
                     path = parent;
