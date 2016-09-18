@@ -67,7 +67,7 @@ module.exports = function(paper) {
         },
 
         /**
-         * @deprecated use use {@link #createCanvas(width, height)} instead.
+         * @deprecated, use use {@link #createCanvas(width, height)} instead.
          */
         Canvas: '#createCanvas'
     });
@@ -87,9 +87,12 @@ module.exports = function(paper) {
                 fps: 30,
                 prefix: 'frame-',
                 amount: 1,
+                extension: 'png' // options are 'png' or 'jpg'
             }, options);
             if (!options.directory)
                 throw new Error('Missing options.directory');
+            if (options.extension && (options.extension !== 'jpg' && options.extension !== 'png'))
+                throw new Error('Unsupported extension. Options are "jpg" or "png"');
             var view = this,
                 count = 0,
                 frameDuration = 1 / options.fps,
@@ -109,7 +112,7 @@ module.exports = function(paper) {
                     count: count
                 }));
                 var file = path.join(options.directory, options.prefix +
-                        (paddedStr + count).slice(-padding) + '.png');
+                        (paddedStr + count).slice(-padding) + '.' + options.extension);
                 var out = view.exportImage(file, function() {
                     // Once the file has been closed, export the next fame:
                     var then = Date.now();
@@ -140,7 +143,7 @@ module.exports = function(paper) {
         exportImage: function(path, callback) {
             this.update();
             var out = fs.createWriteStream(path),
-                stream = this._element.createPNGStream();
+                stream = path.substr(-3) === 'jpg' ? this._element.createJPEGStream() : this._element.createPNGStream();
             // Pipe the png stream to the write stream:
             stream.pipe(out);
             if (callback) {
