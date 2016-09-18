@@ -52,7 +52,7 @@ module.exports = function(window) {
     });
 
     // Extend HTMLCanvasElement with useful methods from the underlying Canvas:
-    ['toBuffer', 'pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream']
+    ['toBuffer', 'pngStream', 'createPNGStream', 'jpegStream', 'createJPEGStream']
         .forEach(function(key) {
             HTMLCanvasElement.prototype[key] = function() {
                 var canvas = idlUtils.implForWrapper(this)._canvas;
