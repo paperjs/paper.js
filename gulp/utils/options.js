@@ -13,7 +13,8 @@
 var execSync = require('child_process').execSync,
     // Require the __options object, so we have access to the version number and
     // make amendments, e.g. the release date.
-    options = require('../../src/options.js');
+    options = require('../../src/options.js'),
+    argv = require('minimist')(process.argv.slice(2));
 
 function git(command) {
     return execSync('git ' + command).toString().trim();
@@ -21,6 +22,13 @@ function git(command) {
 
 options.date = git('log -1 --pretty=format:%ad');
 options.branch = git('rev-parse --abbrev-ref HEAD');
+
+// If a specific branch is requested, quit without errors if we don't match.
+if (argv.branch && argv.branch !== options.branch) {
+    console.log('Branch "' + options.branch + '" does not match "' +
+            argv.branch + '". There is nothing to do here.');
+    process.exit(0);
+}
 
 // Get the date of the last commit from this branch for release date:
 var version = options.version,

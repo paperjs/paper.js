@@ -32,7 +32,7 @@ install:
 before_script:
 - travis/setup-git.sh
 - npm set progress=false
-- which gulp || npm install -g gulp
+- which gulp || npm install -g gulp-cli
 - npm install
 script:
 - gulp jshint
