@@ -1212,7 +1212,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             // any collinear neighboring curves regardless of their orientation.
             // This serves as a reliable way to remove linear overlaps but only
             // as long as the lines are truly overlapping.
-            if (!curve.hasHandles() && (curve.getLength() < tolerance
+            if (!curve.hasHandles() && (!curve.hasLength(tolerance)
                     || simplify && curve.isCollinear(curve.getNext())))
                 curve.remove();
         }

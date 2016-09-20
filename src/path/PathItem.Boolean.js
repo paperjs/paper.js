@@ -1017,12 +1017,13 @@ PathItem.inject(new function() {
                     var seg = overlaps[i]._segment,
                         prev = seg.getPrevious(),
                         next = seg.getNext();
-                    if (seg._path && hasOverlap(prev) && hasOverlap(next)) {
+                    if (hasOverlap(prev) && hasOverlap(next)) {
                         seg.remove();
                         prev._handleOut._set(0, 0);
                         next._handleIn._set(0, 0);
-                        var curve = prev.getCurve();
-                        if (curve.isStraight() && curve.getLength() === 0) {
+                        // If the curve that is left has no length,
+                        // remove it altogether.
+                        if (!prev.getCurve().hasLength()) {
                             // Transfer handleIn when removing segment:
                             next._handleIn.set(prev._handleIn);
                             prev.remove();

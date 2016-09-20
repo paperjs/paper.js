@@ -476,15 +476,15 @@ var Curve = Base.extend(/** @lends Curve# */{
                 left = parts[0],
                 right = parts[1],
                 setHandles = _setHandles || this.hasHandles(),
-                segment1 = this._segment1,
-                segment2 = this._segment2,
+                seg1 = this._segment1,
+                seg2 = this._segment2,
                 path = this._path;
             if (setHandles) {
                 // Adjust the handles on the existing segments. The new segment
                 // will be inserted between the existing segment1 and segment2:
                 // Convert absolute -> relative
-                segment1._handleOut._set(left[2] - left[0], left[3] - left[1]);
-                segment2._handleIn._set(right[4] - right[6],right[5] - right[7]);
+                seg1._handleOut._set(left[2] - left[0], left[3] - left[1]);
+                seg2._handleIn._set(right[4] - right[6],right[5] - right[7]);
             }
             // Create the new segment:
             var x = left[6], y = left[7],
@@ -493,10 +493,10 @@ var Curve = Base.extend(/** @lends Curve# */{
                         setHandles && new Point(right[2] - x, right[3] - y));
             // Insert it in the segments list, if needed:
             if (path) {
-                // By inserting at segment1.index + 1, we make sure to insert at
+                // By inserting at seg1.index + 1, we make sure to insert at
                 // the end if this curve is a closing curve of a closed path,
                 // as with segment2.index it would be inserted at 0.
-                path.insert(segment1._index + 1, segment);
+                path.insert(seg1._index + 1, segment);
                 // The newly inserted segment is the start of the next curve:
                 res = this.getNext();
             } else {
@@ -1013,6 +1013,21 @@ statics: /** @lends Curve */{
     hasHandles: function() {
         return !this._segment1._handleOut.isZero()
                 || !this._segment2._handleIn.isZero();
+    },
+
+    /**
+     * Checks if this curve has any length.
+     *
+     * @param {Number} [epsilon=0] the epsilon against which to compare the
+     *     curve's length
+     * @return {Boolean} {@true if the curve is longer than the given epsilon}
+     */
+    hasLength: function(epsilon) {
+        var seg1 = this._segment1,
+            seg2 = this._segment2;
+        return (!seg1._point.equals(seg2._point)
+                    || seg1.hasHandles() || seg2.hasHandles())
+                && this.getLength() > (epsilon || 0);
     },
 
     /**
