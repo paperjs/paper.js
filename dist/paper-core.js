@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Sep 20 17:07:38 2016 -0400
+ * Date: Tue Sep 20 17:59:56 2016 -0400
  *
  ***
  *
@@ -6070,19 +6070,19 @@ var Curve = Base.extend({
 				left = parts[0],
 				right = parts[1],
 				setHandles = _setHandles || this.hasHandles(),
-				segment1 = this._segment1,
-				segment2 = this._segment2,
+				seg1 = this._segment1,
+				seg2 = this._segment2,
 				path = this._path;
 			if (setHandles) {
-				segment1._handleOut._set(left[2] - left[0], left[3] - left[1]);
-				segment2._handleIn._set(right[4] - right[6],right[5] - right[7]);
+				seg1._handleOut._set(left[2] - left[0], left[3] - left[1]);
+				seg2._handleIn._set(right[4] - right[6],right[5] - right[7]);
 			}
 			var x = left[6], y = left[7],
 				segment = new Segment(new Point(x, y),
 						setHandles && new Point(left[4] - x, left[5] - y),
 						setHandles && new Point(right[2] - x, right[3] - y));
 			if (path) {
-				path.insert(segment1._index + 1, segment);
+				path.insert(seg1._index + 1, segment);
 				res = this.getNext();
 			} else {
 				this._segment2 = segment;
@@ -6428,6 +6428,14 @@ statics: {
 	hasHandles: function() {
 		return !this._segment1._handleOut.isZero()
 				|| !this._segment2._handleIn.isZero();
+	},
+
+	hasLength: function(epsilon) {
+		var seg1 = this._segment1,
+			seg2 = this._segment2;
+		return (!seg1._point.equals(seg2._point)
+					|| seg1.hasHandles() || seg2.hasHandles())
+				&& this.getLength() > (epsilon || 0);
 	},
 
 	isCollinear: function(curve) {
@@ -8224,7 +8232,7 @@ var Path = PathItem.extend({
 			tolerance = simplify ? 1e-7 : 0;
 		for (var i = curves.length - 1; i >= 0; i--) {
 			var curve = curves[i];
-			if (!curve.hasHandles() && (curve.getLength() < tolerance
+			if (!curve.hasHandles() && (!curve.hasLength(tolerance)
 					|| simplify && curve.isCollinear(curve.getNext())))
 				curve.remove();
 		}
@@ -10282,12 +10290,11 @@ PathItem.inject(new function() {
 					var seg = overlaps[i]._segment,
 						prev = seg.getPrevious(),
 						next = seg.getNext();
-					if (seg._path && hasOverlap(prev) && hasOverlap(next)) {
+					if (hasOverlap(prev) && hasOverlap(next)) {
 						seg.remove();
 						prev._handleOut._set(0, 0);
 						next._handleIn._set(0, 0);
-						var curve = prev.getCurve();
-						if (curve.isStraight() && curve.getLength() === 0) {
+						if (!prev.getCurve().hasLength()) {
 							next._handleIn.set(prev._handleIn);
 							prev.remove();
 						}
