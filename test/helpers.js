@@ -243,6 +243,8 @@ var compareItem = function(actual, expected, message, options, properties) {
     options = options || {};
     if (options.rasterize) {
         comparePixels(actual, expected, message, options);
+    } else if (!actual || !expected) {
+        QUnit.strictEqual(actual, expected, message);
     } else {
         if (options.cloned)
             QUnit.notStrictEqual(actual.id, expected.id,
