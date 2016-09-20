@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Sep 20 17:59:56 2016 -0400
+ * Date: Tue Sep 20 18:13:47 2016 -0400
  *
  ***
  *
@@ -10294,7 +10294,7 @@ PathItem.inject(new function() {
 						seg.remove();
 						prev._handleOut._set(0, 0);
 						next._handleIn._set(0, 0);
-						if (!prev.getCurve().hasLength()) {
+						if (prev !== seg && !prev.getCurve().hasLength()) {
 							next._handleIn.set(prev._handleIn);
 							prev.remove();
 						}
