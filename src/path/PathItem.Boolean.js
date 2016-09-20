@@ -1021,9 +1021,10 @@ PathItem.inject(new function() {
                         seg.remove();
                         prev._handleOut._set(0, 0);
                         next._handleIn._set(0, 0);
-                        // If the curve that is left has no length,
-                        // remove it altogether.
-                        if (!prev.getCurve().hasLength()) {
+                        // If the curve that is left has no length, remove it
+                        // altogether. Check for paths with only one segment
+                        // before removal, since `prev.getCurve() == null`.
+                        if (prev !== seg && !prev.getCurve().hasLength()) {
                             // Transfer handleIn when removing segment:
                             next._handleIn.set(prev._handleIn);
                             prev.remove();
