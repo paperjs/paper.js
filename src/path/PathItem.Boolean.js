@@ -734,7 +734,9 @@ PathItem.inject(new function() {
             // the path.
             return over1 ^ over2
                     ? over1 ? 1 : -1
-                    : inter1 ^ inter2
+                    // NOTE: inter1 & 2 are objects, convert to boolean first
+                    // as otherwise toString() is called on them.
+                    : !inter1 ^ !inter2
                         ? inter1 ? 1 : -1
                         // All other segments, also when comparing two overlaps
                         // or two intersections, are sorted by their order.
