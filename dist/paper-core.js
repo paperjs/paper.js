@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Sep 20 18:43:02 2016 -0400
+ * Date: Fri Sep 23 06:55:12 2016 -0400
  *
  ***
  *
@@ -7094,7 +7094,6 @@ new function() {
 
 var CurveLocation = Base.extend({
 	_class: 'CurveLocation',
-	beans: true,
 
 	initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
 		if (time > 0.9999996) {
@@ -7158,8 +7157,7 @@ var CurveLocation = Base.extend({
 
 		function trySegment(segment) {
 			var curve = segment && segment.getCurve();
-			if (curve && (that._time = curve.getTimeOf(that._point))
-					!= null) {
+			if (curve && (that._time = curve.getTimeOf(that._point)) != null) {
 				that._setCurve(curve);
 				that._segment = segment;
 				return curve;
@@ -9812,19 +9810,19 @@ PathItem.inject(new function() {
 			prevTime;
 
 		for (var i = locations.length - 1; i >= 0; i--) {
-			var loc = locations[i];
+			var loc = locations[i],
+				time = loc._time;
 			if (include) {
 				if (!include(loc))
 					continue;
 				results.unshift(loc);
 			}
 			var curve = loc._curve,
-				time = loc._time,
 				origTime = time,
 				segment;
 			if (curve !== prevCurve) {
 				noHandles = !curve.hasHandles();
-			} else if (prevTime >= tMin && prevTime <= tMax ) {
+			} else if (prevTime > tMin) {
 				time /= prevTime;
 			}
 			if (time < tMin) {
@@ -10139,7 +10137,7 @@ PathItem.inject(new function() {
 				path2 = seg2._path;
 			return over1 ^ over2
 					? over1 ? 1 : -1
-					: inter1 ^ inter2
+					: !inter1 ^ !inter2
 						? inter1 ? 1 : -1
 						: path1 !== path2
 							? path1._id - path2._id
@@ -13228,7 +13226,7 @@ var CanvasProvider = {
 		var ctx = canvas.getContext('2d');
 		if (!ctx) {
 			throw new Error('Canvas ' + canvas +
-					' is unable toprovide a 2D context.');
+					' is unable to provide a 2D context.');
 		}
 		if (canvas.width === width && canvas.height === height) {
 			if (clear)
