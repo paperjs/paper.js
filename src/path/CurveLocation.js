@@ -28,9 +28,6 @@
  */
 var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     _class: 'CurveLocation',
-    // Enforce creation of beans, as bean getters have hidden parameters.
-    // See #getSegment() below.
-    beans: true,
 
     // DOCS: CurveLocation class description: add these back when the mentioned
     // functioned have been added: {@link Path#split(location)}
@@ -134,8 +131,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // still, otherwise assume it's the curve before segment2.
         function trySegment(segment) {
             var curve = segment && segment.getCurve();
-            if (curve && (that._time = curve.getTimeOf(that._point))
-                    != null) {
+            if (curve && (that._time = curve.getTimeOf(that._point)) != null) {
                 // Fetch path again as it could be on a new one through split()
                 that._setCurve(curve);
                 that._segment = segment;

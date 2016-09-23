@@ -264,22 +264,25 @@ PathItem.inject(new function() {
             prevTime;
 
         for (var i = locations.length - 1; i >= 0; i--) {
-            var loc = locations[i];
-            // Call include() before retrieving _curve, because it might cause a
-            // change in the cached location values (see #resolveCrossings()).
+            var loc = locations[i],
+                // Retrieve curve-time before calling include(), because it may
+                // be changed to the scaled value after splitting previously.
+                // See CurveLocation#getCurve(), #resolveCrossings()
+                time = loc._time;
             if (include) {
                 if (!include(loc))
                     continue;
                 results.unshift(loc);
             }
+            // Retrieve curve after calling include(), because it may cause a
+            // change in the cached location values, see above.
             var curve = loc._curve,
-                time = loc._time,
                 origTime = time,
                 segment;
             if (curve !== prevCurve) {
                 // This is a new curve, update noHandles setting.
                 noHandles = !curve.hasHandles();
-            } else if (prevTime >= tMin && prevTime <= tMax ) {
+            } else if (prevTime > tMin) {
                 // Scale parameter when we are splitting same curve multiple
                 // times, but only if splitting was done previously.
                 time /= prevTime;
