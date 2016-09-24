@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 24 14:34:46 2016 -0400
+ * Date: Sat Sep 24 14:48:42 2016 -0400
  *
  ***
  *
@@ -6220,22 +6220,20 @@ statics: {
 			t = point.isClose(p1, epsilon) ? 0
 			  : point.isClose(p2, epsilon) ? 1
 			  : null;
-		if (t !== null)
-			return t;
-		var coords = [point.x, point.y],
-			roots = [],
-			geomEpsilon = 1e-7;
-		for (var c = 0; c < 2; c++) {
-			var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
-			for (var i = 0; i < count; i++) {
-				t = roots[i];
-				if (point.isClose(Curve.getPoint(v, t), geomEpsilon))
-					return t;
+		if (t === null) {
+			var coords = [point.x, point.y],
+				roots = [];
+			for (var c = 0; c < 2; c++) {
+				var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
+				for (var i = 0; i < count; i++) {
+					var u = roots[i];
+					if (point.isClose(Curve.getPoint(v, u),
+							1e-7))
+						return u;
+				}
 			}
 		}
-		return point.isClose(p1, geomEpsilon) ? 0
-			 : point.isClose(p2, geomEpsilon) ? 1
-			 : null;
+		return t;
 	},
 
 	getNearestTime: function(v, point) {
