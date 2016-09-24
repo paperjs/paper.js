@@ -216,8 +216,10 @@ var Numerical = new function() {
                     nx = x - dx;
                 // See if we can trust the Newton-Raphson result. If not we use
                 // bisection to find another candidate for Newton's method.
-                if (abs(dx) < tolerance)
-                    return nx;
+                if (abs(dx) < tolerance) {
+                    x = nx;
+                    break;
+                }
                 // Update the root-bounding interval and test for containment of
                 // the candidate. If candidate is outside the root-bounding
                 // interval, use bisection instead.
@@ -234,7 +236,8 @@ var Numerical = new function() {
             }
             // Return the best result even though we haven't gotten close
             // enough to the root... (In paper.js this never seems to happen).
-            return x;
+            // But make sure, that it actually is within the given range [a, b]
+            return clamp(x, a, b);
         },
 
         /**

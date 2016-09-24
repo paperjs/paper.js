@@ -192,6 +192,25 @@ test('Curve#getTimeAt() with straight curve', function() {
     equals(t, 0.3869631475722452);
 });
 
+test('Curve#getTimeAt() with straight curve', function() {
+    // #1000:
+    var curve = new Curve([
+        1584.4999999999998, 1053.2499999999995,
+        1584.4999999999998,1053.2499999999995,
+        1520.5,1053.2499999999995,
+        1520.5,1053.2499999999995
+    ]);
+    var offset = 63.999999999999716;
+    equals(function() { return offset < curve.length; }, true);
+    equals(function() { return curve.getTimeAt(offset); }, 1);
+});
+
+test('Curve#getTimeAt() with offset at end of curve', function() {
+    // #1149:
+    var curve = [-7500, 0, -7500, 4142.135623730952, -4142.135623730952, 7500, 0, 7500];
+    equals(Curve.getTimeAt(curve, 11782.625235553916), 1);
+});
+
 test('Curve#getLocationAt()', function() {
     var curve = new Path([
         [[0, 0], [0, 0], [100, 0]],
@@ -248,7 +267,7 @@ test('Curve#isLinear()', function() {
 });
 
 test('Curve#getTimeOf()', function() {
-    // For issue #708:
+    // #708:
     var path = new Path.Rectangle({
         center: new Point(300, 100),
         size: new Point(100, 100),
@@ -273,19 +292,6 @@ test('Curve#getTimeOf()', function() {
         equals(point1, point2, 'curve.getLocationAt(curve.getTimeOf('
                 + point1 + ')).point;');
     }
-});
-
-test('Curve#getTimeAt() with straight curve', function() {
-    // #1000:
-    var curve = new Curve([
-        1584.4999999999998, 1053.2499999999995,
-        1584.4999999999998,1053.2499999999995,
-        1520.5,1053.2499999999995,
-        1520.5,1053.2499999999995
-    ]);
-    var offset = 63.999999999999716;
-    equals(function() { return offset < curve.length; }, true);
-    equals(function() { return curve.getTimeAt(offset); }, 1);
 });
 
 test('Curve#getPartLength() with straight curve', function() {
