@@ -1908,7 +1908,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             // a little optimization, we can scale the handles with 0.75
             // before calculating the control bounds and still be sure that
             // the curve is fully contained.
-            var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            var epsilon = /*#=*/Numerical.EPSILON,
                 c1p1x = v1[0], c1p1y = v1[1],
                 c1p2x = v1[6], c1p2y = v1[7],
                 c2p1x = v2[0], c2p1y = v2[1],

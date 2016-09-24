@@ -172,3 +172,23 @@ test('#1088', function() {
         { point: { x: 309.99726, y: 309.5004975367957 }, index: 0, time: 0.17182, crossing: true }
     ]);
 });
+
+test('#1174', function() {
+    var path1 = new paper.Path({
+        segments: [
+            [20, 60],
+            [20, 100],
+            [150, 100]
+        ]
+    });
+    var path2 = new paper.Path({
+        segments: [
+            [20, 140],
+            [20, 100.00000001],
+            [150, 98]
+        ]
+    });
+    testIntersection(path1.getIntersections(path2), [
+        { point: { x: 20, y: 100 }, index: 1, time: 0.00004, crossing: true }
+    ]);
+})
