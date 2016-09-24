@@ -701,27 +701,22 @@ statics: /** @lends Curve */{
             t = point.isClose(p1, epsilon) ? 0
               : point.isClose(p2, epsilon) ? 1
               : null;
-        if (t !== null)
-            return t;
-        // Solve the cubic for both x- and y-coordinates and consider all found
-        // solutions, testing with the larger / looser geometric epsilon.
-        var coords = [point.x, point.y],
-            roots = [],
-            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
-        for (var c = 0; c < 2; c++) {
-            var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
-            for (var i = 0; i < count; i++) {
-                t = roots[i];
-                if (point.isClose(Curve.getPoint(v, t), geomEpsilon))
-                    return t;
+        if (t === null) {
+            // Solve the cubic for both x- and y-coordinates and consider all
+            // solutions, testing with the larger / looser geometric epsilon.
+            var coords = [point.x, point.y],
+                roots = [];
+            for (var c = 0; c < 2; c++) {
+                var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
+                for (var i = 0; i < count; i++) {
+                    var u = roots[i];
+                    if (point.isClose(Curve.getPoint(v, u),
+                            /*#=*/Numerical.GEOMETRIC_EPSILON))
+                        return u;
+                }
             }
         }
-        // For very short curves (length ~ 1e-13), the above code will not
-        // necessarily produce any valid roots. As a fall-back, just check the
-        // beginnings and ends at the end so we can still return a valid result.
-        return point.isClose(p1, geomEpsilon) ? 0
-             : point.isClose(p2, geomEpsilon) ? 1
-             : null;
+        return t;
     },
 
     getNearestTime: function(v, point) {
