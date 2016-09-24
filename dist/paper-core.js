@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 24 14:53:36 2016 -0400
+ * Date: Sat Sep 24 15:39:09 2016 -0400
  *
  ***
  *
@@ -1046,8 +1046,10 @@ var Numerical = new function() {
 				var fx = f(x),
 					dx = fx / df(x),
 					nx = x - dx;
-				if (abs(dx) < tolerance)
-					return nx;
+				if (abs(dx) < tolerance) {
+					x = nx;
+					break;
+				}
 				if (fx > 0) {
 					b = x;
 					x = nx <= a ? (a + b) * 0.5 : nx;
@@ -1056,7 +1058,7 @@ var Numerical = new function() {
 					x = nx >= b ? (a + b) * 0.5 : nx;
 				}
 			}
-			return x;
+			return clamp(x, a, b);
 		},
 
 		solveQuadratic: function(a, b, c, roots, min, max) {
