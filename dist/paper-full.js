@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Sep 23 18:24:20 2016 -0400
+ * Date: Sat Sep 24 14:28:43 2016 -0400
  *
  ***
  *
@@ -6087,7 +6087,7 @@ var Curve = Base.extend({
 			} else {
 				this._segment2 = segment;
 				this._changed();
-				res = new Curve(segment, segment2);
+				res = new Curve(segment, seg2);
 			}
 		}
 		return res;
@@ -6908,7 +6908,7 @@ new function() {
 			if (!v2) {
 				return Curve._getSelfIntersection(v1, c1, locations, param);
 			}
-			var epsilon = 1e-7,
+			var epsilon = 1e-12,
 				c1p1x = v1[0], c1p1y = v1[1],
 				c1p2x = v1[6], c1p2y = v1[7],
 				c2p1x = v2[0], c2p1y = v2[1],
