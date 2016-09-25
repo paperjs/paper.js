@@ -58,6 +58,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         View.call(this, project, canvas);
         // We can't be sure the canvas is clear
         this._needsUpdate = true;
+        // Option to not clear canvas before redrawing
+        this.noAutoClear = false;
     },
 
     remove: function remove() {
@@ -135,7 +137,8 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         var project = this._project,
             ctx = this._context,
             size = this._viewSize;
-        ctx.clearRect(0, 0, size.width + 1, size.height + 1);
+        // Clear canvas if not told otherwise
+        if (!this.noAutoClear) ctx.clearRect(0, 0, size.width + 1, size.height + 1);
         if (project)
             project.draw(ctx, this._matrix, this._pixelRatio);
         this._needsUpdate = false;
