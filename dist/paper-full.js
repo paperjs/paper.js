@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Nov 20 20:53:41 2016 -0500
+ * Date: Sun Nov 20 21:12:02 2016 -0500
  *
  ***
  *
@@ -14695,9 +14695,11 @@ Base.exports.PaperScript = function() {
 						if (/^.=$/.test(node.operator)
 								&& node.left.type !== 'Literal') {
 							var left = getCode(node.left),
-								right = getCode(node.right);
-							replaceCode(node, left + ' = __$__(' + left + ', "'
-									+ node.operator[0] + '", ' + right + ')');
+								right = getCode(node.right),
+								exp = left + ' = __$__(' + left + ', "'
+									+ node.operator[0] + '", ' + right + ')';
+							replaceCode(node, /^\(.*\)$/.test(getCode(node))
+									? '(' + exp + ')' : exp);
 						}
 					}
 				}
