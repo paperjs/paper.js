@@ -195,4 +195,26 @@ test('#1174', function() {
     testIntersection(path1.getIntersections(path2), [
         { point: { x: 20, y: 100 }, index: 1, time: 0.00004, crossing: true }
     ]);
-})
+});
+
+test('#1197', function() {
+    var path1 = new Path({
+        segments: [
+            [99, 106],
+            [99, 200]
+        ],
+        strokeColor: 'green'
+    });
+
+    var path2 = new Path({
+        segments: [
+            [100, 193, 0, 0, 0, -28],
+            [140, 106, -52, -12, 0, 0]
+        ],
+        strokeColor: 'red'
+    });
+    testIntersection(path1.getIntersections(path2), [
+        { point: { x: 99, y: 148.74959 }, index: 0, time: 0.46982, crossing: true },
+        { point: { x: 99, y: 167.82203 }, index: 0, time: 0.60674, crossing: true }
+    ]);
+});
