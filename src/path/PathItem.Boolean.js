@@ -1036,6 +1036,11 @@ PathItem.inject(new function() {
                         }
                     }
                 }
+                // _time of intersections may be out of synch. Calling getTime()
+                // on intersections makes sure that _time has correct value.
+                for (var i = 0; i < intersections.length; i++) {
+                    intersections[i].getTime();
+                }
             }
             if (hasCrossings) {
                 // Divide any remaining intersections that are still part of
