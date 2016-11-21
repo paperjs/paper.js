@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Nov 20 20:19:38 2016 -0500
+ * Date: Sun Nov 20 20:53:41 2016 -0500
  *
  ***
  *
@@ -13881,8 +13881,8 @@ new function() {
 	function getDefinition(item, type) {
 		if (!definitions)
 			definitions = { ids: {}, svgs: {} };
-		var id = item._id || item.__id || (item.__id = UID.get('svg'));
-		return item && definitions.svgs[type + '-' + id];
+		return item && definitions.svgs[type + '-'
+				+ (item._id || item.__id || (item.__id = UID.get('svg')))];
 	}
 
 	function setDefinition(item, node, type) {
