@@ -217,11 +217,9 @@ var comparePixels = function(actual, expected, message, options) {
         var tolerance = (options.tolerance || 1e-4) * 100,
             fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
             identical = result ? 100 - result.misMatchPercentage : 0,
-            reached = identical.toFixed(fixed),
-            hundred = (100).toFixed(fixed),
-            ok = reached == hundred,
-            text = reached + '% identical';
-        QUnit.push(ok, text, hundred + '% identical', message);
+            ok = Math.abs(100 - identical) <= tolerance,
+            text = identical.toFixed(fixed) + '% identical';
+        QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
         if (!ok && result && !isNode) {
             // Get the right entry for this unit test and assertion, and
             // replace the results with images

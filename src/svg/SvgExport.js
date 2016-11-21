@@ -326,8 +326,8 @@ new function() {
             definitions = { ids: {}, svgs: {} };
         // Use #__id for items that don't have internal #_id properties (Color),
         // and give them ids from their own private id pool named 'svg'.
-        var id = item._id || item.__id || (item.__id = UID.get('svg'));
-        return item && definitions.svgs[type + '-' + id];
+        return item && definitions.svgs[type + '-'
+                + (item._id || item.__id || (item.__id = UID.get('svg')))];
     }
 
     function setDefinition(item, node, type) {
