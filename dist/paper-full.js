@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 24 15:39:09 2016 -0400
+ * Date: Sun Nov 20 20:19:38 2016 -0500
  *
  ***
  *
@@ -6910,27 +6910,23 @@ new function() {
 			}
 			var epsilon = 1e-12,
 				c1p1x = v1[0], c1p1y = v1[1],
+				c1h1x = v1[2], c1h1y = v1[3],
+				c1h2x = v1[4], c1h2y = v1[5],
 				c1p2x = v1[6], c1p2y = v1[7],
 				c2p1x = v2[0], c2p1y = v2[1],
+				c2h1x = v2[2], c2h1y = v2[3],
+				c2h2x = v2[4], c2h2y = v2[5],
 				c2p2x = v2[6], c2p2y = v2[7],
-				c1s1x = (3 * v1[2] + c1p1x) / 4,
-				c1s1y = (3 * v1[3] + c1p1y) / 4,
-				c1s2x = (3 * v1[4] + c1p2x) / 4,
-				c1s2y = (3 * v1[5] + c1p2y) / 4,
-				c2s1x = (3 * v2[2] + c2p1x) / 4,
-				c2s1y = (3 * v2[3] + c2p1y) / 4,
-				c2s2x = (3 * v2[4] + c2p2x) / 4,
-				c2s2y = (3 * v2[5] + c2p2y) / 4,
 				min = Math.min,
 				max = Math.max;
-			if (!(  max(c1p1x, c1s1x, c1s2x, c1p2x) + epsilon >
-					min(c2p1x, c2s1x, c2s2x, c2p2x) &&
-					min(c1p1x, c1s1x, c1s2x, c1p2x) - epsilon <
-					max(c2p1x, c2s1x, c2s2x, c2p2x) &&
-					max(c1p1y, c1s1y, c1s2y, c1p2y) + epsilon >
-					min(c2p1y, c2s1y, c2s2y, c2p2y) &&
-					min(c1p1y, c1s1y, c1s2y, c1p2y) - epsilon <
-					max(c2p1y, c2s1y, c2s2y, c2p2y)))
+			if (!(  max(c1p1x, c1h1x, c1h2x, c1p2x) + epsilon >
+					min(c2p1x, c2h1x, c2h2x, c2p2x) &&
+					min(c1p1x, c1h1x, c1h2x, c1p2x) - epsilon <
+					max(c2p1x, c2h1x, c2h2x, c2p2x) &&
+					max(c1p1y, c1h1y, c1h2y, c1p2y) + epsilon >
+					min(c2p1y, c2h1y, c2h2y, c2p2y) &&
+					min(c1p1y, c1h1y, c1h2y, c1p2y) - epsilon <
+					max(c2p1y, c2h1y, c2h2y, c2p2y)))
 				return locations;
 			var overlaps = Curve.getOverlaps(v1, v2);
 			if (overlaps) {
