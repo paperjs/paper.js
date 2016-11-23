@@ -776,11 +776,11 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         var ok = false;
         if (path) {
             var paths1 = this._children || [this],
-                paths2 = path._children.slice() || [path],
+                paths2 = path._children ? path._children.slice() : [path],
                 length1 = paths1.length,
                 length2 = paths2.length,
                 matched = [],
-                count;
+                count = 0;
             ok = true;
             for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
                 var path1 = paths1[i1];
