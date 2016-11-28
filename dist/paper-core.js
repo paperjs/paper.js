@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Nov 22 19:05:06 2016 -0500
+ * Date: Mon Nov 28 18:50:11 2016 -0500
  *
  ***
  *
@@ -10043,8 +10043,8 @@ PathItem.inject(new function() {
 					parent = path._parent,
 					t = curve.getTimeAt(length),
 					pt = curve.getPointAtTime(t),
-					dir = abs(curve.getTangentAtTime(t).normalize().y) < 0.5
-							? 1 : 0;
+					dir = abs(curve.getTangentAtTime(t).normalize().y)
+							< Math.SQRT1_2 ? 1 : 0;
 				if (parent instanceof CompoundPath)
 					path = parent;
 				winding = !(operator.subtract && path2 && (
