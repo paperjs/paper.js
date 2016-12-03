@@ -2848,7 +2848,7 @@ statics: {
             if (style.getStrokeJoin() === 'miter')
                 joinRadius = strokeRadius * style.getMiterLimit();
             if (style.getStrokeCap() === 'square')
-                joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
+                joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2);
             strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
             joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
         }
