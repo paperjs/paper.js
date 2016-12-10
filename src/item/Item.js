@@ -1276,7 +1276,7 @@ new function() { // Injection scope for various item event handlers
      * console.log(path.parent == project.activeLayer); // true
      *
      * var group = new Group();
-     * group.parent = path;
+     * path.parent = group;
      *
      * // Now the parent of the path has become the group:
      * console.log(path.parent == group); // true
