@@ -29,22 +29,49 @@ test('Hit-testing options', function() {
     equals(HitResult.getOptions(), defaultOptions, 'Default options');
 });
 
+function testHitResult(hitResult, options, message) {
+    equals(!!(!!hitResult ^ !!options), false, message
+            ? message
+            : options
+                ? 'A HitResult should be returned.'
+                : 'No HitResult should be returned.');
+    if (hitResult && options) {
+        if (options.type) {
+            equals(hitResult.type, options.type,
+                    'hitResult.type == \'' + options.type + '\'');
+        }
+        if (options.item) {
+            equals(hitResult.item == options.item, true,
+                    'hitResult.item == ' + options.item);
+        }
+        if (options.name) {
+            equals(hitResult.name, options.name,
+                    'hitResult.name == \'' + options.name + '\'');
+        }
+        if (options.point) {
+            equals(hitResult.point.toString(), options.point.toString(),
+                    'hitResult.point == \'' + options.point + '\'');
+        }
+        if (options.segment) {
+            equals(hitResult.segment == options.segment, true,
+                    'hitResult.segment == ' + options.segment);
+        }
+    }
+}
+
+
 test('hitting a filled shape', function() {
     var path = new Path.Circle([50, 50], 50);
 
     var hitResult = path.hitTest([75, 75]);
-    equals(function() {
-        return hitResult == null;
-    }, true, 'Since the path is not filled, the hit-test should return null');
+    testHitResult(path.hitTest([75, 75]), null,
+            'Since the path is not filled, the hit-test should return null.');
 
     path.fillColor = 'red';
-    hitResult = path.hitTest([75, 75]);
-    equals(function() {
-        return hitResult.type == 'fill';
-    }, true);
-    equals(function() {
-        return hitResult.item == path;
-    }, true);
+    testHitResult(path.hitTest([75, 75]), {
+        type: 'fill',
+        item: path
+    });
 });
 
 test('the item on top should be returned', function() {
@@ -54,11 +81,11 @@ test('the item on top should be returned', function() {
     // The cloned path is lying above the path:
     var copy = path.clone();
 
-    var hitResult = paper.project.hitTest([75, 75]);
-    equals(function() {
-        return hitResult.item == copy;
-    }, true);
-});
+    testHitResult(paper.project.hitTest([75, 75]), {
+        type: 'fill',
+        item: copy
+    });
+ });
 
 test('hitting a stroked path', function() {
     var path = new Path([0, 0], [50, 0]);
@@ -66,171 +93,89 @@ test('hitting a stroked path', function() {
     // We are hit-testing with an offset of 5pt on a path with a stroke width
     // of 10:
 
-    var hitResult = paper.project.hitTest([25, 5]);
-    equals(function() {
-        return hitResult == null;
-    }, true, 'Since the path is not stroked yet, the hit-test should return null');
+    testHitResult(paper.project.hitTest([25, 5]), null,
+            'Since the path is not stroked yet, the hit-test should return null.');
 
     path.strokeColor = 'black';
     path.strokeWidth = 10;
-    hitResult = path.hitTest([25, 5]);
-    equals(function() {
-        return hitResult.type == 'stroke';
-    }, true);
-    equals(function() {
-        return hitResult.item == path;
-    }, true);
+
+    testHitResult(path.hitTest([25, 5]), {
+        type: 'stroke',
+        item: path
+    });
 });
 
 test('hitting a selected path', function() {
     var path = new Path.Circle([50, 50], 50);
     path.fillColor = 'red';
 
-    var hitResult = paper.project.hitTest([75, 75], {
-        selected: true
-    });
-    equals(function() {
-        return hitResult == null;
-    }, true, 'Since the path is not selected, the hit-test should return null');
+    testHitResult(paper.project.hitTest([75, 75], { selected: true }), null,
+            'Since the path is not stroked yet, the hit-test should return null.');
 
     path.selected = true;
-    hitResult = paper.project.hitTest([75, 75]);
-    equals(function() {
-        return hitResult.type == 'fill';
-    }, true);
-    equals(function() {
-        return hitResult.item == path;
-    }, true);
+
+    testHitResult(paper.project.hitTest([75, 75]), {
+        type: 'fill',
+        item: path
+    });
 });
 
 test('hitting path segments', function() {
     var path = new Path([0, 0], [10, 10], [20, 0]);
 
-    var hitResult = paper.project.hitTest([10, 10]);
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned.');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'segment');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true);
-    }
+    testHitResult(paper.project.hitTest([10, 10]), {
+        type: 'segment',
+        item: path
+    });
 });
 
 test('hitting the center of a path', function() {
     var path = new Path([0, 0], [100, 100], [200, 0]);
     path.closed = true;
 
-    var hitResult = paper.project.hitTest(path.position, {
+    testHitResult(paper.project.hitTest(path.position, {
         center: true
+    }), {
+        type: 'center',
+        item: path,
+        point: path.position
     });
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned.');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.point.toString();
-        }, path.position.toString());
-
-        equals(function() {
-            return hitResult.type;
-        }, 'center');
-        equals(function() {
-            return hitResult.item !== paper.project.activeLayer;
-        }, true, 'We should not be hitting the active layer.');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true, 'We should be hitting the path.');
-    }
 });
 
 test('hitting the center of a path with tolerance', function() {
     var path = new Path([0, 0], [100, 100], [200, 0]);
     path.closed = true;
     var offset = new Point(1, 1);
-    var hitResult = paper.project.hitTest(path.position.add(offset), {
+
+    testHitResult(paper.project.hitTest(path.position.add(offset), {
         tolerance: offset.length,
         center: true
+    }), {
+        type: 'center',
+        item: path,
+        point: path.position
     });
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned.');
-
-    if (hitResult) {
-        equals(function() {
-            return !!hitResult.point;
-        }, true, 'HitResult#point should not be empty');
-
-        if (hitResult.point) {
-            equals(function() {
-                return hitResult.point.toString();
-            }, path.position.toString());
-        }
-
-        equals(function() {
-            return hitResult.type;
-        }, 'center');
-
-        equals(function() {
-            return hitResult.item !== paper.project.activeLayer;
-        }, true, 'We should not be hitting the active layer.');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true, 'We should be hitting the path.');
-    }
 });
 
-test('hitting path handles', function() {
+test('hitting path handles (1)', function() {
     var path = new Path.Circle(new Point(), 10);
     path.firstSegment.handleIn = [-50, 0];
     path.firstSegment.handleOut = [50, 0];
     var firstPoint = path.firstSegment.point;
-    var hitResult = paper.project.hitTest(firstPoint.add(50, 0), {
+
+    testHitResult(paper.project.hitTest(firstPoint.add(50, 0), {
         handles: true
+    }), {
+        type: 'handle-out',
+        item: path
     });
 
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned (1)');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'handle-out');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true);
-    }
-
-    var hitResult = paper.project.hitTest(firstPoint.add(-50, 0), {
+    testHitResult(paper.project.hitTest(firstPoint.add(-50, 0), {
         handles: true
+    }), {
+        type: 'handle-in',
+        item: path
     });
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned (2)');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'handle-in');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true);
-    }
 });
 
 test('hitting path handles (2)', function() {
@@ -240,41 +185,19 @@ test('hitting path handles (2)', function() {
         handleOut: [50, 50]
     }));
 
-    var hitResult = paper.project.hitTest([50, 50], {
+    testHitResult(paper.project.hitTest([50, 50], {
         handles: true
+    }), {
+        type: 'handle-out',
+        item: path
     });
 
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned (1)');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'handle-out');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true);
-    }
-
-    var hitResult = paper.project.hitTest([-50, -50], {
+    testHitResult(paper.project.hitTest([-50, -50], {
         handles: true
+    }), {
+        type: 'handle-in',
+        item: path
     });
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned (2)');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'handle-in');
-
-        equals(function() {
-            return hitResult.item == path;
-        }, true);
-    }
 });
 
 test('hit-testing stroke on segment point of a path', function() {
@@ -322,27 +245,17 @@ test('hitting path ends', function() {
         return !paper.project.hitTest(path.firstSegment.point, {
             ends: true
         });
-    }, true, 'No hitresult should be returned, because the path is closed.');
+    }, true, 'No HitResult should be returned, because the path is closed.');
 
     path.closed = false;
 
-    var hitResult = paper.project.hitTest(path.lastSegment.point, {
+    testHitResult(paper.project.hitTest(path.lastSegment.point, {
         ends: true
+    }), {
+        type: 'segment',
+        item: path,
+        segment: path.lastSegment
     });
-
-    equals(function() {
-        return !!hitResult;
-    }, true, 'A HitResult should be returned (1)');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'segment');
-
-        equals(function() {
-            return hitResult.segment == path.lastSegment;
-        }, true);
-    }
 
     equals(function() {
         return !paper.project.hitTest(path.segments[1].point, {
@@ -370,25 +283,14 @@ test('hitting path bounding box', function() {
         fillColor: 'red'
     });
 
-    var hitResult = paper.project.hitTest(path.bounds.topLeft, {
+    testHitResult(paper.project.hitTest(path.bounds.topLeft, {
         bounds: true
+    }), {
+        type: 'bounds',
+        item: path,
+        name: 'top-left',
+        point: path.bounds.topLeft
     });
-
-    equals(!!hitResult, true, 'A HitResult should be returned');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'bounds');
-
-        equals(function() {
-            return hitResult.name;
-        }, 'top-left');
-
-        equals(function() {
-            return hitResult.point;
-        }, path.bounds.topLeft);
-    }
 });
 
 test('hitting raster bounding box', function() {
@@ -400,25 +302,14 @@ test('hitting raster bounding box', function() {
     var raster = path.rasterize(72);
     path.remove();
 
-    var hitResult = paper.project.hitTest(raster.bounds.topLeft, {
+    testHitResult(paper.project.hitTest(raster.bounds.topLeft, {
         bounds: true
+    }), {
+        type: 'bounds',
+        item: raster,
+        name: 'top-left',
+        point: path.bounds.topLeft
     });
-
-    equals(!!hitResult, true, 'A HitResult should be returned');
-
-    if (hitResult) {
-        equals(function() {
-            return hitResult.type;
-        }, 'bounds');
-
-        equals(function() {
-            return hitResult.name;
-        }, 'top-left');
-
-        equals(function() {
-            return hitResult.point;
-        }, path.bounds.topLeft);
-    }
 });
 
 test('hitting guides', function() {
@@ -861,5 +752,43 @@ test('hit-testing for all items', function() {
     }, true);
 });
 
-// TODO: project.hitTest(point, {type: AnItemType});
+test('hit-testing shapes with strokes and rounded corners (#???)', function() {
+    var rect = new Shape.Rectangle({
+      size: [300, 180],
+      strokeWidth: 30,
+      strokeColor: 'black',
+      fillColor: 'blue',
+      radius: 90
+    });
 
+    var path = rect.toPath();
+    path.visible = false;
+
+    // Test a few shape stroke hit-test edge cases that are right between the
+    // rounded corners and the straight parts.
+
+    testHitResult(project.hitTest([90, -10]), {
+        type: 'stroke'
+    });
+    testHitResult(project.hitTest([90, 190]), {
+        type: 'stroke'
+    });
+    testHitResult(project.hitTest([-10, 90]), {
+        type: 'stroke'
+    });
+
+    // Test at regular intervals along the stroke, and step away from the center
+    // in both directions to hit-test
+
+    for (var pos = 0; pos < path.length; pos += 10) {
+        var loc = path.getLocationAt(pos),
+            step = loc.normal.multiply(5);
+        testHitResult(project.hitTest(loc.point.add(step)), {
+            type: 'stroke'
+        });
+        testHitResult(project.hitTest(loc.point.subtract(step)), {
+            type: 'stroke'
+        });
+    }
+});
+// TODO: project.hitTest(point, {type: AnItemType});

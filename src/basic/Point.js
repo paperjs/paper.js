@@ -761,6 +761,26 @@ var Point = Base.extend(/** @lends Point# */{
     },
 
     /**
+     * Checks if the vector is within the specified quadrant. Note that if the
+     * vector lies on the boundary between two quadrants, `true` will be
+     * returned for both quadrants.
+     *
+     * @param {Number} quadrant the quadrant to check against
+     * @return {Boolean} {@true if either x or y are not a number}
+     * @see #getQuadrant()
+     */
+    isInQuadrant: function(q) {
+        // Map quadrant to x & y coordinate pairs and multiply with coordinates,
+        // then check sign:
+        // 1: [ 1,  1]
+        // 2: [-1,  1]
+        // 3: [-1, -1]
+        // 4: [ 1, -1]
+        return this.x * (q > 1 && q < 4 ? -1 : 1) >= 0
+            && this.y * (q > 2 ? -1 : 1) >= 0;
+    },
+
+    /**
      * {@grouptitle Vector Math Functions}
      * Returns the dot product of the point and another point.
      *

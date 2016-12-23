@@ -295,15 +295,18 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         var radius = that._radius;
         if (!radius.isZero()) {
             var halfSize = that._size.divide(2);
-            for (var i = 0; i < 4; i++) {
+            for (var q = 1; q <= 4; q++) {
                 // Calculate the bounding boxes of the four quarter ellipses
                 // that define the rounded rectangle, and hit-test these.
-                var dir = new Point(i & 1 ? 1 : -1, i > 1 ? 1 : -1),
+                // Setup `dir` to be in quadrant `q` (See Point#isInQuadrant()):
+                var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
                     corner = dir.multiply(halfSize),
                     center = corner.subtract(dir.multiply(radius)),
-                    rect = new Rectangle(corner, center);
-                if ((expand ? rect.expand(expand) : rect).contains(point))
-                    return center;
+                    rect = new Rectangle(
+                            expand ? corner.add(dir.multiply(expand)) : corner,
+                            center);
+                if (rect.contains(point))
+                    return { point: center, quadrant: q };
             }
         }
     }
@@ -319,7 +322,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
         var vector = point.divide(radius);
         // We also have to check the vector's quadrant in case we're matching
         // quarter ellipses in the corners.
-        return (!quadrant || vector.quadrant === quadrant) &&
+        return (!quadrant || vector.isInQuadrant(quadrant)) &&
                 vector.subtract(vector.normalize()).multiply(radius)
                     .divide(padding).length <= 1;
     }
@@ -331,7 +334,7 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                 return center
                         // If there's a quarter ellipse center, use the same
                         // check as for ellipses below.
-                        ? point.subtract(center).divide(this._radius)
+                        ? point.subtract(center.point).divide(this._radius)
                             .getLength() <= 1
                         : _contains.base.call(this, point);
             } else {
@@ -359,8 +362,8 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
                         center = getCornerCenter(this, point, padding);
                     if (center) {
                         // Check the stroke of the quarter corner ellipse:
-                        hit = isOnEllipseStroke(point.subtract(center), radius,
-                                strokePadding, center.getQuadrant());
+                        hit = isOnEllipseStroke(point.subtract(center.point),
+                                radius, strokePadding, center.quadrant);
                     } else {
                         var rect = new Rectangle(this._size).setCenter(0, 0),
                             outer = rect.expand(padding),
