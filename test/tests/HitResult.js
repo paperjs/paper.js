@@ -752,7 +752,7 @@ test('hit-testing for all items', function() {
     }, true);
 });
 
-test('hit-testing shapes with strokes and rounded corners (#???)', function() {
+test('hit-testing shapes with strokes and rounded corners (#1207)', function() {
     var rect = new Shape.Rectangle({
       size: [300, 180],
       strokeWidth: 30,
