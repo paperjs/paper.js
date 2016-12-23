@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Dec 18 21:41:42 2016 -0500
+ * Date: Fri Dec 23 23:08:01 2016 +0100
  *
  ***
  *
@@ -1412,6 +1412,11 @@ var Point = Base.extend({
 
 	isNaN: function() {
 		return isNaN(this.x) || isNaN(this.y);
+	},
+
+	isInQuadrant: function(q) {
+		return this.x * (q > 1 && q < 4 ? -1 : 1) >= 0
+			&& this.y * (q > 2 ? -1 : 1) >= 0;
 	},
 
 	dot: function() {
@@ -4799,20 +4804,22 @@ new function() {
 		var radius = that._radius;
 		if (!radius.isZero()) {
 			var halfSize = that._size.divide(2);
-			for (var i = 0; i < 4; i++) {
-				var dir = new Point(i & 1 ? 1 : -1, i > 1 ? 1 : -1),
+			for (var q = 1; q <= 4; q++) {
+				var dir = new Point(q > 1 && q < 4 ? -1 : 1, q > 2 ? -1 : 1),
 					corner = dir.multiply(halfSize),
 					center = corner.subtract(dir.multiply(radius)),
-					rect = new Rectangle(corner, center);
-				if ((expand ? rect.expand(expand) : rect).contains(point))
-					return center;
+					rect = new Rectangle(
+							expand ? corner.add(dir.multiply(expand)) : corner,
+							center);
+				if (rect.contains(point))
+					return { point: center, quadrant: q };
 			}
 		}
 	}
 
 	function isOnEllipseStroke(point, radius, padding, quadrant) {
 		var vector = point.divide(radius);
-		return (!quadrant || vector.quadrant === quadrant) &&
+		return (!quadrant || vector.isInQuadrant(quadrant)) &&
 				vector.subtract(vector.normalize()).multiply(radius)
 					.divide(padding).length <= 1;
 	}
@@ -4822,7 +4829,7 @@ new function() {
 			if (this._type === 'rectangle') {
 				var center = getCornerCenter(this, point);
 				return center
-						? point.subtract(center).divide(this._radius)
+						? point.subtract(center.point).divide(this._radius)
 							.getLength() <= 1
 						: _contains.base.call(this, point);
 			} else {
@@ -4847,8 +4854,8 @@ new function() {
 					var padding = strokePadding.multiply(2),
 						center = getCornerCenter(this, point, padding);
 					if (center) {
-						hit = isOnEllipseStroke(point.subtract(center), radius,
-								strokePadding, center.getQuadrant());
+						hit = isOnEllipseStroke(point.subtract(center.point),
+								radius, strokePadding, center.quadrant);
 					} else {
 						var rect = new Rectangle(this._size).setCenter(0, 0),
 							outer = rect.expand(padding),
