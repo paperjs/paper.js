@@ -2,8 +2,6 @@
 // you would use this instead:
 // var paper = require('paper');
 var paper = require('../../dist/paper-core.js');
-var path = require('path');
-var fs = require('fs');
 
 paper.setup(new paper.Size(300, 600));
 paper.project.importSVG('in.svg', {
