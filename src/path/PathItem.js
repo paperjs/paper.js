@@ -770,7 +770,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * @function
      *
      * @param {PathItem} path the path to compare this path's geometry with
-     * @return {Boolean} {@true if two paths describe the shame shape}
+     * @return {Boolean} {@true if two paths describe the same shape}
      */
     compare: function(path) {
         var ok = false;
