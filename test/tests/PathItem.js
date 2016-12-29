@@ -118,3 +118,36 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
         equals(path, PathItem.create(expected[i]), 'data[' + i + ']');
     });
 });
+
+test('PathItem#compare()', function() {
+    var empty = new Path();
+    var circle = new Path.Circle({
+        point: [100, 100],
+        radius: 100
+    });
+    var square = new Path.Rectangle({
+        point: [0, 0],
+        size: [100, 100]
+    });
+    equals(function() {
+        return square.compare(null);
+    }, false, 'Comparing with an invalid item should return false.');
+    equals(function() {
+        return square.compare(empty);
+    }, false, 'Comparing a square with an empty path should return false.');
+    equals(function() {
+        return square.compare(circle);
+    }, false, 'Comparing a square with a circle should return false.');
+    equals(function() {
+        return square.compare(square.clone());
+    }, true, 'Comparing a square with its clone should return true.');
+    equals(function() {
+        return circle.compare(circle.clone());
+    }, true, 'Comparing a circle with its clone should return true.');
+    equals(function() {
+        return square.compare(square.clone().rotate(90));
+    }, true, 'Comparing a square with its rotated clone should return true.');
+    equals(function() {
+        return circle.compare(circle.clone().rotate(90));
+    }, true, 'Comparing a circle with its rotated clone should return true.');
+});
