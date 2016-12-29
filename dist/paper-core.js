@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Dec 28 23:55:20 2016 +0100
+ * Date: Thu Dec 29 09:34:05 2016 +0100
  *
  ***
  *
@@ -9275,7 +9275,7 @@ statics: {
 			if (style.getStrokeJoin() === 'miter')
 				joinRadius = strokeRadius * style.getMiterLimit();
 			if (style.getStrokeCap() === 'square')
-				joinRadius = Math.max(joinRadius, strokeRadius * Math.sqrt(2));
+				joinRadius = Math.max(joinRadius, strokeRadius * Math.SQRT2);
 			strokePadding = Path._getStrokePadding(strokeRadius, strokeMatrix);
 			joinPadding = Path._getStrokePadding(joinRadius, strokeMatrix);
 		}
