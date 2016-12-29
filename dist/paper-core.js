@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Dec 29 09:34:05 2016 +0100
+ * Date: Thu Dec 29 10:55:31 2016 +0100
  *
  ***
  *
@@ -8487,7 +8487,7 @@ var Path = PathItem.extend({
 			length1 = curves1.length,
 			length2 = curves2.length;
 		if (!length1 || !length2) {
-			return length1 ^ length2;
+			return length1 == length2;
 		}
 		var v1 = curves1[0].getValues(),
 			values2 = [],
