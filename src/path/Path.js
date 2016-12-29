@@ -1558,7 +1558,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (!length1 || !length2) {
             // If one path defines curves and the other doesn't, we can't have
             // matching geometries.
-            return length1 ^ length2;
+            return length1 == length2;
         }
         var v1 = curves1[0].getValues(),
             values2 = [],
