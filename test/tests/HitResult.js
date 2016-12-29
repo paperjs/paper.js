@@ -540,7 +540,7 @@ test('hit-testing fills with tolerance', function() {
     });
 
     var tolerance = 10;
-    var point = path.bounds.bottomRight.add(tolerance / Math.sqrt(2));
+    var point = path.bounds.bottomRight.add(tolerance / Math.SQRT2);
 
     equals(function() {
         var result = paper.project.hitTest(point, {
