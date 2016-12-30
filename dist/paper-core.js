@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Dec 29 10:55:53 2016 +0100
+ * Date: Fri Dec 30 13:25:08 2016 +0100
  *
  ***
  *
@@ -2081,16 +2081,18 @@ new function() {
 var Matrix = Base.extend({
 	_class: 'Matrix',
 
-	initialize: function Matrix(arg) {
+	initialize: function Matrix(arg, _dontNotify) {
 		var count = arguments.length,
 			ok = true;
-		if (count === 6) {
+		if (count >= 6) {
 			this._set.apply(this, arguments);
-		} else if (count === 1) {
+		} else if (count === 1 || count === 2) {
 			if (arg instanceof Matrix) {
-				this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
+				this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty,
+						_dontNotify);
 			} else if (Array.isArray(arg)) {
-				this._set.apply(this, arg);
+				this._set.apply(this,
+						_dontNotify ? arg.concat([_dontNotify]) : arg);
 			} else {
 				ok = false;
 			}
@@ -3549,7 +3551,7 @@ new function() {
 				this[key] = source[key];
 		}
 		if (!excludeMatrix)
-			this._matrix.set(source._matrix);
+			this._matrix.set(source._matrix, true);
 		this.setApplyMatrix(source._applyMatrix);
 		this.setPivot(source._pivot);
 		this.setSelection(source._selection);
