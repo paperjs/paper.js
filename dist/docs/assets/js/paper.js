@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 30 13:25:08 2016 +0100
+ * Date: Sat Dec 31 00:34:37 2016 +0100
  *
  ***
  *
@@ -6069,7 +6069,7 @@ var Curve = Base.extend({
 
 	divideAt: function(location) {
 		return this.divideAtTime(location && location.curve === this
-				? location.time : location);
+				? location.time : this.getTimeAt(location));
 	},
 
 	divideAtTime: function(time, _setHandles) {
