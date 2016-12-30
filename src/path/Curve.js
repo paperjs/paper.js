@@ -451,7 +451,7 @@ var Curve = Base.extend(/** @lends Curve# */{
         // Accept offsets and CurveLocation objects, as well as objects that act
         // like them.
         return this.divideAtTime(location && location.curve === this
-                ? location.time : location);
+                ? location.time : this.getTimeAt(location));
     },
 
     /**

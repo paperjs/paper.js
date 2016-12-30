@@ -302,3 +302,15 @@ test('Curve#getPartLength() with straight curve', function() {
     equals(function() { return curve.getPartLength(0.5, 0.75); }, 22);
     equals(function() { return curve.getPartLength(0.75, 1); }, 10);
 });
+
+test('Curve#divideAt(offset)', function() {
+    var point1 = new Point(0, 0);
+    var point2 = new Point(100, 0);
+    var middle = point1.add(point2).divide(2);
+    equals(function() {
+        return new Curve(point1, point2).divideAt(50).point1;
+    }, middle);
+    equals(function() {
+        return new Curve(point1, point2).divideAtTime(0.5).point1;
+    }, middle);
+});
