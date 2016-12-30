@@ -122,7 +122,7 @@ test('PathItem#create() with SVG path-data (#1101)', function() {
 test('PathItem#compare()', function() {
     var empty = new Path();
     var circle = new Path.Circle({
-        point: [100, 100],
+        center: [100, 100],
         radius: 100
     });
     var square = new Path.Rectangle({

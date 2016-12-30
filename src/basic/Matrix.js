@@ -70,16 +70,20 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @name Matrix#initialize
      * @param {Matrix} matrix the matrix to copy the values from
      */
-    initialize: function Matrix(arg) {
+    initialize: function Matrix(arg, _dontNotify) {
         var count = arguments.length,
             ok = true;
-        if (count === 6) {
+        if (count >= 6) { // >= 6 to pass on optional _dontNotify argument.
             this._set.apply(this, arguments);
-        } else if (count === 1) {
+        } else if (count === 1 || count === 2) {
+            // Support both Matrix and Array arguments through #_set(), and pass
+            // on the optional _dontNotify argument:
             if (arg instanceof Matrix) {
-                this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty);
+                this._set(arg._a, arg._b, arg._c, arg._d, arg._tx, arg._ty,
+                        _dontNotify);
             } else if (Array.isArray(arg)) {
-                this._set.apply(this, arg);
+                this._set.apply(this,
+                        _dontNotify ? arg.concat([_dontNotify]) : arg);
             } else {
                 ok = false;
             }

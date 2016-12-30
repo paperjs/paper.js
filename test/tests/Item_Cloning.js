@@ -179,3 +179,22 @@ test('Item#clone() Hierarchy', function() {
         return clone.isBelow(path2);
     }, true);
 });
+
+test('Item#clone() and #applyMatrix (#1225)', function() {
+    var group = new Group({
+        applyMatrix: false,
+        children: [
+            new Shape.Rectangle({
+                size: [100, 100],
+                point: [100, 100],
+                strokeColor: 'red',
+            })
+        ]
+    });
+
+    group.translate(300, 300);
+
+    equals(function() {
+        return group.clone().matrix.translation;
+    }, new Point(300, 300));
+});

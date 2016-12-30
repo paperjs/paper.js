@@ -1562,7 +1562,7 @@ new function() { // Injection scope for various item event handlers
         }
         // Use Matrix#initialize to easily copy over values.
         if (!excludeMatrix)
-            this._matrix.set(source._matrix);
+            this._matrix.set(source._matrix, true);
         // We can't just set _applyMatrix as many item types won't allow it,
         // e.g. creating a Shape in Path#toShape().
         // Using the setter instead takes care of it.
