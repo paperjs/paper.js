@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 31 01:07:50 2016 +0100
+ * Date: Sat Dec 31 01:09:28 2016 +0100
  *
  ***
  *
@@ -7064,6 +7064,7 @@ new function() {
 			}
 
 			var v = [v1, v2],
+				insert = 'push',
 				pairs = [];
 			for (var i = 0, t1 = 0;
 					i < 2 && pairs.length < 2;
@@ -7075,10 +7076,13 @@ new function() {
 					var pair = i === 0 ? [t1, t2] : [t2, t1];
 					if (!pairs.length ||
 						abs(pair[0] - pairs[0][0]) > timeEpsilon &&
-						abs(pair[1] - pairs[0][1]) > timeEpsilon)
-						pairs.push(pair);
+						abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+						pairs[insert](pair);
+						if (i || t1)
+							insert = 'unshift';
+					}
 				}
-				if (i === 1 && !pairs.length)
+				if (i && !pairs.length)
 					break;
 			}
 			if (pairs.length !== 2) {
