@@ -2105,31 +2105,27 @@ new function() { // Scope for intersection using bezier fat-line clipping
             }
 
             var v = [v1, v2],
-                insert = 'push',
                 pairs = [];
             // Iterate through all end points:
-            // First p1 and p2 of curve 1, then p1 and p2 of curve 2.
-            for (var i = 0, t1 = 0;
-                    i < 2 && pairs.length < 2;
-                    i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-                var t2 = Curve.getTimeOf(v[i ^ 1], new Point(
-                        v[i][t1 === 0 ? 0 : 6],
-                        v[i][t1 === 0 ? 1 : 7]));
+            // First p1 of curve 1 & 2, then p2 of curve 1 & 2.
+            for (var i = 0; i < 4 && pairs.length < 2; i++) {
+                var i1 = i & 1,  // 0, 1, 0, 1
+                    i2 = i1 ^ 1, // 1, 0, 1, 0
+                    t1 = i >> 1, // 0, 0, 1, 1
+                    t2 = Curve.getTimeOf(v[i1], new Point(
+                        v[i2][t1 === 0 ? 0 : 6],
+                        v[i2][t1 === 0 ? 1 : 7]));
                 if (t2 != null) {  // If point is on curve
-                    var pair = i === 0 ? [t1, t2] : [t2, t1];
+                    var pair = i1 ? [t1, t2] : [t2, t1];
                     // Filter out tiny overlaps.
                     if (!pairs.length ||
                         abs(pair[0] - pairs[0][0]) > timeEpsilon &&
                         abs(pair[1] - pairs[0][1]) > timeEpsilon) {
-                        pairs[insert](pair);
-                        // If the first pair isn't found in the first iteration,
-                        // invert insertion to preserve overlap orientation.
-                        if (i || t1)
-                            insert = 'unshift';
+                        pairs.push(pair);
                     }
                 }
                 // We checked 3 points but found no match, curves can't overlap.
-                if (i && !pairs.length)
+                if (i > 2 && !pairs.length)
                     break;
             }
             if (pairs.length !== 2) {

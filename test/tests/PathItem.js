@@ -158,11 +158,11 @@ test('PathItem#compare()', function() {
     }, true, 'Comparing a square with an identical square with additional segments should return true.');
     equals(function() {
         return square2.compare(square);
-    }, true, 'Comparing a square with an identical square with additional segments should return true.');
+    }, true, 'Comparing a square with additional segments with an identical square should return true.');
     equals(function() {
         return circle.compare(circle2);
     }, true, 'Comparing a circle with an identical circle with additional segments should return true.');
     equals(function() {
         return circle2.compare(circle);
-    }, true, 'Comparing a circle with an identical circle with additional segments should return true.');
+    }, true, 'Comparing a circle with additional segments with an identical circle should return true.');
 });
