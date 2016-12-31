@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 31 01:09:28 2016 +0100
+ * Date: Sat Dec 31 06:52:56 2016 +0100
  *
  ***
  *
@@ -7064,25 +7064,23 @@ new function() {
 			}
 
 			var v = [v1, v2],
-				insert = 'push',
 				pairs = [];
-			for (var i = 0, t1 = 0;
-					i < 2 && pairs.length < 2;
-					i += t1 === 0 ? 0 : 1, t1 = t1 ^ 1) {
-				var t2 = Curve.getTimeOf(v[i ^ 1], new Point(
-						v[i][t1 === 0 ? 0 : 6],
-						v[i][t1 === 0 ? 1 : 7]));
+			for (var i = 0; i < 4 && pairs.length < 2; i++) {
+				var i1 = i & 1,
+					i2 = i1 ^ 1,
+					t1 = i >> 1,
+					t2 = Curve.getTimeOf(v[i1], new Point(
+						v[i2][t1 === 0 ? 0 : 6],
+						v[i2][t1 === 0 ? 1 : 7]));
 				if (t2 != null) {
-					var pair = i === 0 ? [t1, t2] : [t2, t1];
+					var pair = i1 ? [t1, t2] : [t2, t1];
 					if (!pairs.length ||
 						abs(pair[0] - pairs[0][0]) > timeEpsilon &&
 						abs(pair[1] - pairs[0][1]) > timeEpsilon) {
-						pairs[insert](pair);
-						if (i || t1)
-							insert = 'unshift';
+						pairs.push(pair);
 					}
 				}
-				if (i && !pairs.length)
+				if (i > 2 && !pairs.length)
 					break;
 			}
 			if (pairs.length !== 2) {
@@ -8153,7 +8151,7 @@ var Path = PathItem.extend({
 	},
 
 	divideAt: function(location) {
-		var loc = this.getLocationAt(location);
+		var loc = this.getLocationAt(location),
 			ret = null;
 		if (loc) {
 			var curve = loc.getCurve().divideAt(loc.getCurveOffset());
