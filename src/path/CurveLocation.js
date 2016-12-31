@@ -292,11 +292,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     divide: function() {
         var curve = this.getCurve(),
             res = null;
-        if (curve) {
-            res = curve.divideAtTime(this.getTime());
-            // Change to the newly inserted segment, also adjusting _time.
-            if (res)
-                this._setSegment(res._segment1);
+        // Change to the newly inserted segment, also adjusts _time.
+        if (curve && (res = curve.divideAtTime(this.getTime()))) {
+            this._setSegment(res._segment1);
         }
         return res;
     },

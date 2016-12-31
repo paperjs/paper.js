@@ -974,13 +974,10 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
     divideAt: function(location) {
         var loc = this.getLocationAt(location),
-            ret = null;
-        if (loc) {
-            var curve = loc.getCurve().divideAt(loc.getCurveOffset());
-            if (curve)
-                ret = curve._segment1;
-        }
-        return ret;
+            curve;
+        return loc && (curve = loc.getCurve().divideAt(loc.getCurveOffset()))
+                ? curve._segment1
+                : null;
     },
 
     /**

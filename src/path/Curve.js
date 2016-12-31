@@ -2113,8 +2113,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     i2 = i1 ^ 1, // 1, 0, 1, 0
                     t1 = i >> 1, // 0, 0, 1, 1
                     t2 = Curve.getTimeOf(v[i1], new Point(
-                        v[i2][t1 === 0 ? 0 : 6],
-                        v[i2][t1 === 0 ? 1 : 7]));
+                        v[i2][t1 ? 6 : 0],
+                        v[i2][t1 ? 7 : 1]));
                 if (t2 != null) {  // If point is on curve
                     var pair = i1 ? [t1, t2] : [t2, t1];
                     // Filter out tiny overlaps.
