@@ -973,7 +973,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @see Curve#divideAt(location)
      */
     divideAt: function(location) {
-        var loc = this.getLocationAt(location);
+        var loc = this.getLocationAt(location),
             ret = null;
         if (loc) {
             var curve = loc.getCurve().divideAt(loc.getCurveOffset());
