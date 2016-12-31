@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 31 10:48:19 2016 +0100
+ * Date: Sat Dec 31 11:30:38 2016 +0100
  *
  ***
  *
@@ -7613,15 +7613,15 @@ var PathItem = Item.extend({
 			values2 = [],
 			arrays = [],
 			locations,
-			path;
+			current;
 		for (var i = 0; i < length2; i++)
 			values2[i] = curves2[i].getValues(matrix2);
 		for (var i = 0; i < length1; i++) {
 			var curve1 = curves1[i],
 				values1 = self ? values2[i] : curve1.getValues(matrix1),
 				path1 = curve1.getPath();
-			if (path1 !== path) {
-				path = path1;
+			if (path1 !== current) {
+				current = path1;
 				locations = [];
 				arrays.push(locations);
 			}
