@@ -963,6 +963,27 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+     * Divides the path on the curve at the given offset or location into two
+     * curves, by inserting a new segment at the given location.
+     *
+     * @param {Number|CurveLocation} location the offset or location on the
+     *     path at which to divide the existing curve by inserting a new segment
+     * @return {Segment} the newly inserted segment if the location is valid,
+     *     {code null} otherwise
+     * @see Curve#divideAt(location)
+     */
+    divideAt: function(location) {
+        var loc = this.getLocationAt(location);
+            ret = null;
+        if (loc) {
+            var curve = loc.getCurve().divideAt(loc.getCurveOffset());
+            if (curve)
+                ret = curve._segment1;
+        }
+        return ret;
+    },
+
+    /**
      * Splits the path at the given offset or location. After splitting, the
      * path will be open. If the path was open already, splitting will result in
      * two paths.
@@ -1019,8 +1040,8 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.firstSegment.selected = true;
      */
     splitAt: function(location) {
-        var loc = typeof location === 'number'
-                ? this.getLocationAt(location) : location,
+        // NOTE: getLocationAt() handles both offset and location:
+        var loc = this.getLocationAt(location),
             index = loc && loc.index,
             time = loc && loc.time,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
@@ -1855,21 +1876,27 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @return {CurveLocation} the curve location at the specified offset
      */
     getLocationAt: function(offset) {
-        var curves = this.getCurves(),
-            length = 0;
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var start = length,
-                curve = curves[i];
-            length += curve.getLength();
-            if (length > offset) {
-                // Found the segment within which the length lies
-                return curve.getLocationAt(offset - start);
+        if (typeof offset === 'number') {
+            var curves = this.getCurves(),
+                length = 0;
+            for (var i = 0, l = curves.length; i < l; i++) {
+                var start = length,
+                    curve = curves[i];
+                length += curve.getLength();
+                if (length > offset) {
+                    // Found the segment within which the length lies
+                    return curve.getLocationAt(offset - start);
+                }
             }
+            // It may be that through imprecision of getLength, that the end of
+            // the last curve was missed:
+            if (curves.length > 0 && offset <= this.getLength()) {
+                return new CurveLocation(curves[curves.length - 1], 1);
+            }
+        } else if (offset && offset.getPath && offset.getPath() === this) {
+            // offset is already a CurveLocation on this path, just return it.
+            return offset;
         }
-        // It may be that through imprecision of getLength, that the end of the
-        // last curve was missed:
-        if (curves.length > 0 && offset <= this.getLength())
-            return new CurveLocation(curves[curves.length - 1], 1);
         return null;
     }
 

@@ -436,15 +436,16 @@ var Curve = Base.extend(/** @lends Curve# */{
     // TODO: adjustThroughPoint
 
     /**
-     * Divides the curve into two curves at the given offset. The curve itself
-     * is modified and becomes the first part, the second part is returned as a
-     * new curve. If the modified curve belongs to a path item, the second part
-     * is also added to the path.
+     * Divides the curve into two curves at the given offset or location. The
+     * curve itself is modified and becomes the first part, the second part is
+     * returned as a new curve. If the curve belongs to a path item, a new
+     * segment is inserted into the path at the given location, and the second
+     * part becomes a part of the path as well.
      *
      * @param {Number|CurveLocation} location the offset or location on the
      *     curve at which to divide
-     * @return {Curve} the second part of the divided curve, if the offset is
-     *     within the valid range, {code null} otherwise.
+     * @return {Curve} the second part of the divided curve if the location is
+     *     valid, {code null} otherwise
      * @see #divideAtTime(time)
      */
     divideAt: function(location) {
