@@ -126,9 +126,18 @@ test('PathItem#compare()', function() {
         radius: 100
     });
     var square = new Path.Rectangle({
-        point: [0, 0],
+        point: [100, 100],
         size: [100, 100]
     });
+
+    var square2 = square.clone();
+    square2.divideAt(50);
+    square2.divideAt(150);
+
+    var circle2 = circle.clone();
+    circle2.divideAt(50);
+    circle2.divideAt(100);
+
     equals(function() {
         return square.compare(null);
     }, false, 'Comparing with an invalid item should return false.');
@@ -145,9 +154,15 @@ test('PathItem#compare()', function() {
         return circle.compare(circle.clone());
     }, true, 'Comparing a circle with its clone should return true.');
     equals(function() {
-        return square.compare(square.clone().rotate(90));
-    }, true, 'Comparing a square with its rotated clone should return true.');
+        return square.compare(square2);
+    }, true, 'Comparing a square with an identical square with additional segments should return true.');
     equals(function() {
-        return circle.compare(circle.clone().rotate(90));
-    }, true, 'Comparing a circle with its rotated clone should return true.');
+        return square2.compare(square);
+    }, true, 'Comparing a square with an identical square with additional segments should return true.');
+    equals(function() {
+        return circle.compare(circle2);
+    }, true, 'Comparing a circle with an identical circle with additional segments should return true.');
+    equals(function() {
+        return circle2.compare(circle);
+    }, true, 'Comparing a circle with an identical circle with additional segments should return true.');
 });
