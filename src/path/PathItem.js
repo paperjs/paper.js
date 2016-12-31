@@ -336,7 +336,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             values2 = [],
             arrays = [],
             locations,
-            path;
+            current;
         // Cache values for curves2 as we re-iterate them for each in curves1.
         for (var i = 0; i < length2; i++)
             values2[i] = curves2[i].getValues(matrix2);
@@ -348,8 +348,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             // use separate location arrays per path1, to make sure the
             // circularity checks are not getting confused by locations on
             // separate paths. We are flattening the separate arrays at the end.
-            if (path1 !== path) {
-                path = path1;
+            if (path1 !== current) {
+                current = path1;
                 locations = [];
                 arrays.push(locations);
             }
