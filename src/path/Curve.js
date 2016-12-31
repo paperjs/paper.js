@@ -2105,6 +2105,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
             }
 
             var v = [v1, v2],
+                insert = 'push',
                 pairs = [];
             // Iterate through all end points:
             // First p1 and p2 of curve 1, then p1 and p2 of curve 2.
@@ -2119,11 +2120,16 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     // Filter out tiny overlaps.
                     if (!pairs.length ||
                         abs(pair[0] - pairs[0][0]) > timeEpsilon &&
-                        abs(pair[1] - pairs[0][1]) > timeEpsilon)
-                        pairs.push(pair);
+                        abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+                        pairs[insert](pair);
+                        // If the first pair isn't found in the first iteration,
+                        // invert insertion to preserve overlap orientation.
+                        if (i || t1)
+                            insert = 'unshift';
+                    }
                 }
                 // We checked 3 points but found no match, curves can't overlap.
-                if (i === 1 && !pairs.length)
+                if (i && !pairs.length)
                     break;
             }
             if (pairs.length !== 2) {
