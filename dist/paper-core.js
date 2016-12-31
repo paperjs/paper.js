@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 31 00:34:37 2016 +0100
+ * Date: Sat Dec 31 01:07:50 2016 +0100
  *
  ***
  *
@@ -8148,9 +8148,19 @@ var Path = PathItem.extend({
 			this.setSelected(true);
 	},
 
+	divideAt: function(location) {
+		var loc = this.getLocationAt(location);
+			ret = null;
+		if (loc) {
+			var curve = loc.getCurve().divideAt(loc.getCurveOffset());
+			if (curve)
+				ret = curve._segment1;
+		}
+		return ret;
+	},
+
 	splitAt: function(location) {
-		var loc = typeof location === 'number'
-				? this.getLocationAt(location) : location,
+		var loc = this.getLocationAt(location),
 			index = loc && loc.index,
 			time = loc && loc.time,
 			tMin = 4e-7,
@@ -8693,18 +8703,23 @@ var Path = PathItem.extend({
 	},
 
 	getLocationAt: function(offset) {
-		var curves = this.getCurves(),
-			length = 0;
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var start = length,
-				curve = curves[i];
-			length += curve.getLength();
-			if (length > offset) {
-				return curve.getLocationAt(offset - start);
+		if (typeof offset === 'number') {
+			var curves = this.getCurves(),
+				length = 0;
+			for (var i = 0, l = curves.length; i < l; i++) {
+				var start = length,
+					curve = curves[i];
+				length += curve.getLength();
+				if (length > offset) {
+					return curve.getLocationAt(offset - start);
+				}
 			}
+			if (curves.length > 0 && offset <= this.getLength()) {
+				return new CurveLocation(curves[curves.length - 1], 1);
+			}
+		} else if (offset && offset.getPath && offset.getPath() === this) {
+			return offset;
 		}
-		if (curves.length > 0 && offset <= this.getLength())
-			return new CurveLocation(curves[curves.length - 1], 1);
 		return null;
 	}
 

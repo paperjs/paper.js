@@ -860,7 +860,7 @@
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Divides the curve into two curves at the given offset. The curve itself is modified and becomes the first part, the second part is returned as a new curve. If the modified curve belongs to a path item, the second part is also added to the path.</p>
+	<p>Divides the curve into two curves at the given offset or location. The curve itself is modified and becomes the first part, the second part is returned as a new curve. If the curve belongs to a path item, a new segment is inserted into the path at the given location, and the second part becomes a part of the path as well.</p>
     
 	
 <ul class="member-list">
@@ -880,7 +880,7 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;the second part of the divided curve, if the offset is  within the valid range, {code null} otherwise.
+<tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;the second part of the divided curve if the location is  valid, {code null} otherwise
 </li>
 		
 	</ul>
