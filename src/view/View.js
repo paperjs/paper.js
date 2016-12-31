@@ -1429,13 +1429,11 @@ new function() { // Injection scope for event handling on the browser
                     || called;
             }
 
-            // Now call preventDefault()`, if any of these conditions are met:
+            // Now call `preventDefault()`, if any of these conditions are met:
             // - If any of the handlers were called, except for mousemove events
-            //   which need to call `event.preventDefault()` explicitly, or
-            //   `return false;`.
-            // - If this is a mousedown event, and the view or tools respond to
-            //   mouseup.
-
+            //   which can call `preventDefault()` explicitly or return `false`.
+            // - If this is a unhandled mousedown event, but the view or tools
+            //   respond to mouseup.
             if (called && !mouse.move || mouse.down && responds('mouseup'))
                 event.preventDefault();
         },
