@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 31 11:30:38 2016 +0100
+ * Date: Sat Dec 31 11:33:18 2016 +0100
  *
  ***
  *
@@ -7070,8 +7070,8 @@ new function() {
 					i2 = i1 ^ 1,
 					t1 = i >> 1,
 					t2 = Curve.getTimeOf(v[i1], new Point(
-						v[i2][t1 === 0 ? 0 : 6],
-						v[i2][t1 === 0 ? 1 : 7]));
+						v[i2][t1 ? 6 : 0],
+						v[i2][t1 ? 7 : 1]));
 				if (t2 != null) {
 					var pair = i1 ? [t1, t2] : [t2, t1];
 					if (!pairs.length ||
@@ -7234,10 +7234,8 @@ var CurveLocation = Base.extend({
 	divide: function() {
 		var curve = this.getCurve(),
 			res = null;
-		if (curve) {
-			res = curve.divideAtTime(this.getTime());
-			if (res)
-				this._setSegment(res._segment1);
+		if (curve && (res = curve.divideAtTime(this.getTime()))) {
+			this._setSegment(res._segment1);
 		}
 		return res;
 	},
@@ -8152,13 +8150,10 @@ var Path = PathItem.extend({
 
 	divideAt: function(location) {
 		var loc = this.getLocationAt(location),
-			ret = null;
-		if (loc) {
-			var curve = loc.getCurve().divideAt(loc.getCurveOffset());
-			if (curve)
-				ret = curve._segment1;
-		}
-		return ret;
+			curve;
+		return loc && (curve = loc.getCurve().divideAt(loc.getCurveOffset()))
+				? curve._segment1
+				: null;
 	},
 
 	splitAt: function(location) {
