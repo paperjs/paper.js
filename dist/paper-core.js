@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 1 14:40:58 2017 +0100
+ * Date: Sun Jan 1 18:32:45 2017 +0100
  *
  ***
  *
@@ -3632,16 +3632,9 @@ new function() {
 	function hitTestAll() {
 		var point = Point.read(arguments),
 			options = HitResult.getOptions(arguments),
-			callback = options.match,
-			results = [];
-		options = Base.set({}, options, {
-			match: function(hit) {
-				if (!callback || callback(hit))
-					results.push(hit);
-			}
-		});
-		this._hitTest(point, options);
-		return results;
+			all = [];
+		this._hitTest(point, Base.set({ all: all }, options));
+		return all;
 	}
 
 	function hitTestChildren(point, options, viewMatrix, _exclude) {
@@ -3651,7 +3644,7 @@ new function() {
 				var child = children[i];
 				var res = child !== _exclude && child._hitTest(point, options,
 						viewMatrix);
-				if (res)
+				if (res && !options.all)
 					return res;
 			}
 		}
@@ -3698,13 +3691,17 @@ new function() {
 				|| options.selected && !this.isSelected()
 				|| options.type && options.type !== Base.hyphenate(this._class)
 				|| options.class && !(this instanceof options.class)),
-			callback = options.match,
+			match = options.match,
 			that = this,
 			bounds,
 			res;
 
-		function match(hit) {
-			return !callback || hit && callback(hit) ? hit : null;
+		function filter(hit) {
+			if (hit && match && !match(hit))
+				hit = null;
+			if (hit && options.all)
+				options.all.push(hit);
+			return hit;
 		}
 
 		function checkBounds(type, part) {
@@ -3729,13 +3726,13 @@ new function() {
 					res = checkBounds('bounds', points[i]);
 				}
 			}
-			res = match(res);
+			res = filter(res);
 		}
 
 		if (!res) {
 			res = this._hitTestChildren(point, options, viewMatrix)
 				|| checkSelf
-					&& match(this._hitTestSelf(point, options, viewMatrix,
+					&& filter(this._hitTestSelf(point, options, viewMatrix,
 						strokeMatrix))
 				|| null;
 		}
