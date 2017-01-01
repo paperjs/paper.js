@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 1 18:32:45 2017 +0100
+ * Date: Mon Jan 2 00:32:21 2017 +0100
  *
  ***
  *
@@ -9814,40 +9814,68 @@ PathItem.inject(new function() {
 		}
 	}
 
-	function divideLocations(locations, include) {
+	function clearCurveHandles(curves) {
+		for (var i = curves.length - 1; i >= 0; i--)
+			curves[i].clearHandles();
+	}
+
+	function divideLocations(locations, include, clearLater) {
 		var results = include && [],
 			tMin = 4e-7,
 			tMax = 1 - tMin,
-			noHandles = false,
-			clearCurves = [],
+			clearHandles = false,
+			clearCurves = clearLater || [],
+			clearLookup = clearLater && {},
+			rescaleLocs,
 			prevCurve,
 			prevTime;
 
+		function getId(curve) {
+			return curve._path._id + '.' + curve._segment1._index;
+		}
+
+		for (var i = (clearLater && clearLater.length) - 1; i >= 0; i--) {
+			var curve = clearLater[i];
+			if (curve._path)
+				clearLookup[getId(curve)] = true;
+		}
+
 		for (var i = locations.length - 1; i >= 0; i--) {
 			var loc = locations[i],
-				time = loc._time;
-			if (include) {
-				if (!include(loc))
-					continue;
+				time = loc._time,
+				exclude = include && !include(loc),
+				curve = loc._curve,
+				segment;
+			if (curve && curve !== prevCurve) {
+				clearHandles = !curve.hasHandles()
+						|| clearLookup && clearLookup[getId(curve)];
+				rescaleLocs = [];
+				prevTime = null;
+			} else if (prevTime > tMin) {
+				loc._time /= prevTime;
+			}
+			prevCurve = curve;
+			if (exclude) {
+				rescaleLocs.push(loc);
+				continue;
+			} else if (include) {
 				results.unshift(loc);
 			}
-			var curve = loc._curve,
-				origTime = time,
-				segment;
-			if (curve !== prevCurve) {
-				noHandles = !curve.hasHandles();
-			} else if (prevTime > tMin) {
-				time /= prevTime;
-			}
+			prevTime = time;
+			time = loc._time;
 			if (time < tMin) {
 				segment = curve._segment1;
 			} else if (time > tMax) {
 				segment = curve._segment2;
 			} else {
 				var newCurve = curve.divideAtTime(time, true);
-				if (noHandles)
+				if (clearHandles)
 					clearCurves.push(curve, newCurve);
 				segment = newCurve._segment1;
+				for (var j = rescaleLocs.length - 1; j >= 0; j--) {
+					var l = rescaleLocs[j];
+					l._time = (l._time - time) / (1 - time);
+				}
 			}
 			loc._setSegment(segment);
 			var inter = segment._intersection,
@@ -9862,12 +9890,9 @@ PathItem.inject(new function() {
 			} else {
 				segment._intersection = dest;
 			}
-			prevCurve = curve;
-			prevTime = origTime;
 		}
-		for (var i = 0, l = clearCurves.length; i < l; i++) {
-			clearCurves[i].clearHandles();
-		}
+		if (!clearLater)
+			clearCurveHandles(clearCurves);
 		return results || locations;
 	}
 
@@ -10292,12 +10317,13 @@ PathItem.inject(new function() {
 				intersections = this.getIntersections(null, function(inter) {
 					return inter._overlap && (hasOverlaps = true) ||
 							inter.isCrossing() && (hasCrossings = true);
-				});
+				}),
+				clearCurves = hasOverlaps && hasCrossings && [];
 			intersections = CurveLocation.expand(intersections);
 			if (hasOverlaps) {
 				var overlaps = divideLocations(intersections, function(inter) {
 					return inter._overlap;
-				});
+				}, clearCurves);
 				for (var i = overlaps.length - 1; i >= 0; i--) {
 					var seg = overlaps[i]._segment,
 						prev = seg.getPrevious(),
@@ -10323,7 +10349,9 @@ PathItem.inject(new function() {
 					} else if (seg) {
 						seg._intersection = null;
 					}
-				});
+				}, clearCurves);
+				if (clearCurves)
+					clearCurveHandles(clearCurves);
 				paths = tracePaths(Base.each(paths, function(path) {
 					this.push.apply(this, path._segments);
 				}, []));
