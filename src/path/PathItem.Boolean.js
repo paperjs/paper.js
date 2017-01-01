@@ -243,6 +243,12 @@ PathItem.inject(new function() {
         }
     }
 
+    function clearCurveHandles(curves) {
+        // Clear segment handles if they were part of a curve with no handles.
+        for (var i = curves.length - 1; i >= 0; i--)
+            curves[i].clearHandles();
+    }
+
     /**
      * Divides the path-items at the given locations.
      *
@@ -254,39 +260,71 @@ PathItem.inject(new function() {
      *     were divided
      * @private
      */
-    function divideLocations(locations, include) {
+    function divideLocations(locations, include, clearLater) {
         var results = include && [],
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
-            noHandles = false,
-            clearCurves = [],
+            clearHandles = false,
+            clearCurves = clearLater || [],
+            clearLookup = clearLater && {},
+            rescaleLocs,
             prevCurve,
             prevTime;
 
+        // When dealing with overlaps and crossings, divideLocations() is called
+        // twice. If curve handles of curves that originally didn't have handles
+        // are cleared after the first call , we loose  curve-time consistency
+        // and CurveLocation#_time values become invalid.
+        // In those situations, clearLater is passed as a container for all
+        // curves of which the handles need to be cleared in the end.
+        // Create a lookup table that allows us to quickly determine if a given
+        // curve was resulting from an original curve without handles.
+        function getId(curve) {
+            return curve._path._id + '.' + curve._segment1._index;
+        }
+
+        for (var i = (clearLater && clearLater.length) - 1; i >= 0; i--) {
+            var curve = clearLater[i];
+            if (curve._path)
+                clearLookup[getId(curve)] = true;
+        }
+
+        // Loop backwards through all sorted locations, from right to left, so
+        // we can assume a predefined sequence for curve-time rescaling.
         for (var i = locations.length - 1; i >= 0; i--) {
             var loc = locations[i],
                 // Retrieve curve-time before calling include(), because it may
                 // be changed to the scaled value after splitting previously.
                 // See CurveLocation#getCurve(), #resolveCrossings()
-                time = loc._time;
-            if (include) {
-                if (!include(loc))
-                    continue;
+                time = loc._time,
+                exclude = include && !include(loc),
+                // Retrieve curve after calling include(), because it may cause
+                // a change in the cached location values, see above.
+                curve = loc._curve,
+                segment;
+            if (curve && curve !== prevCurve) {
+                // This is a new curve, update clearHandles setting.
+                clearHandles = !curve.hasHandles()
+                        || clearLookup && clearLookup[getId(curve)];
+                // Only keep track of information for rescaling within the curve
+                rescaleLocs = [];
+                prevTime = null;
+            } else if (prevTime > tMin) {
+                // Rescale curve-time when we are splitting the same curve
+                // multiple times, if splitting was done previously.
+                loc._time /= prevTime;
+            }
+            prevCurve = curve;
+            if (exclude) {
+                // Store this excluded location for later rescaling, in case we
+                // divide the same curve further to the left of this location.
+                rescaleLocs.push(loc);
+                continue;
+            } else if (include) {
                 results.unshift(loc);
             }
-            // Retrieve curve after calling include(), because it may cause a
-            // change in the cached location values, see above.
-            var curve = loc._curve,
-                origTime = time,
-                segment;
-            if (curve !== prevCurve) {
-                // This is a new curve, update noHandles setting.
-                noHandles = !curve.hasHandles();
-            } else if (prevTime > tMin) {
-                // Scale parameter when we are splitting same curve multiple
-                // times, but only if splitting was done previously.
-                time /= prevTime;
-            }
+            prevTime = time;
+            time = loc._time;
             if (time < tMin) {
                 segment = curve._segment1;
             } else if (time > tMax) {
@@ -298,9 +336,15 @@ PathItem.inject(new function() {
                 var newCurve = curve.divideAtTime(time, true);
                 // Keep track of curves without handles, so they can be cleared
                 // again at the end.
-                if (noHandles)
+                if (clearHandles)
                     clearCurves.push(curve, newCurve);
                 segment = newCurve._segment1;
+                // If there are locations to be rescaled within the same curve
+                // after this location, we need to rescale their curve-time now.
+                for (var j = rescaleLocs.length - 1; j >= 0; j--) {
+                    var l = rescaleLocs[j];
+                    l._time = (l._time - time) / (1 - time);
+                }
             }
             loc._setSegment(segment);
             // Create links from the new segment to the intersection on the
@@ -321,14 +365,10 @@ PathItem.inject(new function() {
             } else {
                 segment._intersection = dest;
             }
-            prevCurve = curve;
-            prevTime = origTime;
         }
-        // Clear segment handles if they were part of a curve with no handles,
-        // once we are done with the entire curve.
-        for (var i = 0, l = clearCurves.length; i < l; i++) {
-            clearCurves[i].clearHandles();
-        }
+        // Clear curve handles right away if we're not storing them for later.
+        if (!clearLater)
+            clearCurveHandles(clearCurves);
         return results || locations;
     }
 
@@ -615,7 +655,7 @@ PathItem.inject(new function() {
                     // from the point (horizontal or vertical), based on the
                     // curve's direction at that point. If the tangent is less
                     // than 45°, cast the ray vertically, else horizontally.
-                    dir = abs(curve.getTangentAtTime(t).normalize().y) 
+                    dir = abs(curve.getTangentAtTime(t).normalize().y)
                             < Math.SQRT1_2 ? 1 : 0;
                 if (parent instanceof CompoundPath)
                     path = parent;
@@ -1011,14 +1051,17 @@ PathItem.inject(new function() {
                 intersections = this.getIntersections(null, function(inter) {
                     return inter._overlap && (hasOverlaps = true) ||
                             inter.isCrossing() && (hasCrossings = true);
-                });
+                }),
+                // We only need to keep track of curves that need clearing
+                // outside of divideLocations() if two calls are necessary.
+                clearCurves = hasOverlaps && hasCrossings && [];
             intersections = CurveLocation.expand(intersections);
             if (hasOverlaps) {
                 // First divide in all overlaps, and then remove the inside of
                 // the resulting overlap ranges.
                 var overlaps = divideLocations(intersections, function(inter) {
                     return inter._overlap;
-                });
+                }, clearCurves);
                 for (var i = overlaps.length - 1; i >= 0; i--) {
                     var seg = overlaps[i]._segment,
                         prev = seg.getPrevious(),
@@ -1059,7 +1102,9 @@ PathItem.inject(new function() {
                         // handling of overlaps, to not confuse tracePaths().
                         seg._intersection = null;
                     }
-                });
+                }, clearCurves);
+                if (clearCurves)
+                    clearCurveHandles(clearCurves);
                 // Finally resolve self-intersections through tracePaths()
                 paths = tracePaths(Base.each(paths, function(path) {
                     this.push.apply(this, path._segments);
