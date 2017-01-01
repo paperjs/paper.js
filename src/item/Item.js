@@ -1739,20 +1739,14 @@ new function() { // Injection scope for hit-test functions shared with project
     function hitTestAll(/* point, options */) {
         var point = Point.read(arguments),
             options = HitResult.getOptions(arguments),
-            callback = options.match,
-            results = [];
-        options = Base.set({}, options, {
-            match: function(hit) {
-                if (!callback || callback(hit))
-                    results.push(hit);
-            }
-        });
-        this._hitTest(point, options);
-        return results;
+            all = [];
+        this._hitTest(point, Base.set({ all: all }, options));
+        return all;
     }
 
     function hitTestChildren(point, options, viewMatrix, _exclude) {
         // NOTE: _exclude is only used in Group#_hitTestChildren()
+        // to exclude #clipItem
         var children = this._children;
         if (children) {
             // Loop backwards, so items that get drawn last are tested first.
@@ -1760,7 +1754,9 @@ new function() { // Injection scope for hit-test functions shared with project
                 var child = children[i];
                 var res = child !== _exclude && child._hitTest(point, options,
                         viewMatrix);
-                if (res)
+                // Only return the found result if we're not asked to collect
+                // all matches through hitTestAll()
+                if (res && !options.all)
                     return res;
             }
         }
@@ -1888,13 +1884,18 @@ new function() { // Injection scope for hit-test functions shared with project
                 // class-names.
                 || options.type && options.type !== Base.hyphenate(this._class)
                 || options.class && !(this instanceof options.class)),
-            callback = options.match,
+            match = options.match,
             that = this,
             bounds,
             res;
 
-        function match(hit) {
-            return !callback || hit && callback(hit) ? hit : null;
+        function filter(hit) {
+            if (hit && match && !match(hit))
+                hit = null;
+            // If we're collecting all matches, add it to options.all
+            if (hit && options.all)
+                options.all.push(hit);
+            return hit;
         }
 
         function checkBounds(type, part) {
@@ -1925,15 +1926,15 @@ new function() { // Injection scope for hit-test functions shared with project
                     res = checkBounds('bounds', points[i]);
                 }
             }
-            res = match(res);
+            res = filter(res);
         }
 
         if (!res) {
             res = this._hitTestChildren(point, options, viewMatrix)
-                // NOTE: We don't call callback on _hitTestChildren()
-                // because that's already called internally.
+                // NOTE: We don't call match on _hitTestChildren() because
+                // it is already called internally.
                 || checkSelf
-                    && match(this._hitTestSelf(point, options, viewMatrix,
+                    && filter(this._hitTestSelf(point, options, viewMatrix,
                         strokeMatrix))
                 || null;
         }
