@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 3 00:08:28 2017 +0100
+ * Date: Tue Jan 3 00:20:10 2017 +0100
  *
  ***
  *
@@ -9847,15 +9847,17 @@ PathItem.inject(new function() {
 				exclude = include && !include(loc),
 				curve = loc._curve,
 				segment;
-			if (curve && curve !== prevCurve) {
-				clearHandles = !curve.hasHandles()
-						|| clearLookup && clearLookup[getId(curve)];
-				rescaleLocs = [];
-				prevTime = null;
-			} else if (prevTime > tMin) {
-				loc._time /= prevTime;
+			if (curve) {
+				if (curve !== prevCurve) {
+					clearHandles = !curve.hasHandles()
+							|| clearLookup && clearLookup[getId(curve)];
+					rescaleLocs = [];
+					prevTime = null;
+				} else if (prevTime > tMin) {
+					loc._time /= prevTime;
+				}
+				prevCurve = curve;
 			}
-			prevCurve = curve;
 			if (exclude) {
 				rescaleLocs.push(loc);
 				continue;
