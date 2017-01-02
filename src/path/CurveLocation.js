@@ -142,6 +142,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return this._curve
             || trySegment(this._segment)
             || trySegment(this._segment1)
+            || trySegment(this._segment1.getNext())
             || trySegment(this._segment2.getPrevious());
     },
 
