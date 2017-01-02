@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 3 00:20:10 2017 +0100
+ * Date: Tue Jan 3 00:50:22 2017 +0100
  *
  ***
  *
@@ -10200,10 +10200,8 @@ PathItem.inject(new function() {
 				var path1 = seg._path,
 					path2 = seg._intersection._segment._path;
 				if (path1.compare(path2)) {
-					if ((operator.unite || operator.intersect)
-							&& path1.getArea()) {
+					if (path1.getArea())
 						paths.push(path1.clone(false));
-					}
 					visitPath(path1);
 					visitPath(path2);
 					valid = false;
