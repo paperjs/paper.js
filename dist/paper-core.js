@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jan 2 00:32:21 2017 +0100
+ * Date: Tue Jan 3 00:08:28 2017 +0100
  *
  ***
  *
@@ -7171,6 +7171,7 @@ var CurveLocation = Base.extend({
 		return this._curve
 			|| trySegment(this._segment)
 			|| trySegment(this._segment1)
+			|| trySegment(this._segment1.getNext())
 			|| trySegment(this._segment2.getPrevious());
 	},
 
