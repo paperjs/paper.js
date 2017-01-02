@@ -810,10 +810,8 @@ PathItem.inject(new function() {
                     path2 = seg._intersection._segment._path;
                 if (path1.compare(path2)) {
                     // Only add the path to the result if it has an area.
-                    if ((operator.unite || operator.intersect)
-                            && path1.getArea()) {
+                    if (path1.getArea())
                         paths.push(path1.clone(false));
-                    }
                     // Now mark all involved segments as visited.
                     visitPath(path1);
                     visitPath(path2);
