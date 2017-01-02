@@ -302,19 +302,21 @@ PathItem.inject(new function() {
                 // a change in the cached location values, see above.
                 curve = loc._curve,
                 segment;
-            if (curve && curve !== prevCurve) {
-                // This is a new curve, update clearHandles setting.
-                clearHandles = !curve.hasHandles()
-                        || clearLookup && clearLookup[getId(curve)];
-                // Only keep track of information for rescaling within the curve
-                rescaleLocs = [];
-                prevTime = null;
-            } else if (prevTime > tMin) {
-                // Rescale curve-time when we are splitting the same curve
-                // multiple times, if splitting was done previously.
-                loc._time /= prevTime;
+            if (curve) {
+                if (curve !== prevCurve) {
+                    // This is a new curve, update clearHandles setting.
+                    clearHandles = !curve.hasHandles()
+                            || clearLookup && clearLookup[getId(curve)];
+                    // Only keep track of rescaling information within the curve
+                    rescaleLocs = [];
+                    prevTime = null;
+                } else if (prevTime > tMin) {
+                    // Rescale curve-time when we are splitting the same curve
+                    // multiple times, if splitting was done previously.
+                    loc._time /= prevTime;
+                }
+                prevCurve = curve;
             }
-            prevCurve = curve;
             if (exclude) {
                 // Store this excluded location for later rescaling, in case we
                 // divide the same curve further to the left of this location.
