@@ -699,6 +699,7 @@ statics: /** @lends Curve */{
         var p1 = new Point(v[0], v[1]),
             p2 = new Point(v[6], v[7]),
             epsilon = /*#=*/Numerical.EPSILON,
+            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
             t = point.isClose(p1, epsilon) ? 0
               : point.isClose(p2, epsilon) ? 1
               : null;
@@ -711,13 +712,16 @@ statics: /** @lends Curve */{
                 var count = Curve.solveCubic(v, c, coords[c], roots, 0, 1);
                 for (var i = 0; i < count; i++) {
                     var u = roots[i];
-                    if (point.isClose(Curve.getPoint(v, u),
-                            /*#=*/Numerical.GEOMETRIC_EPSILON))
+                    if (point.isClose(Curve.getPoint(v, u), geomEpsilon))
                         return u;
                 }
             }
         }
-        return t;
+        // Since we're comparing with geometric epsilon for any other t along
+        // the curve, do so as well now for the beginning and end of the curve.
+        return point.isClose(p1, geomEpsilon) ? 0
+             : point.isClose(p2, geomEpsilon) ? 1
+             : null;
     },
 
     getNearestTime: function(v, point) {
