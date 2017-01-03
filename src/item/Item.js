@@ -1055,12 +1055,19 @@ new function() { // Injection scope for various item event handlers
     beans: true,
 
     _decompose: function() {
-        return this._decomposed || (this._decomposed = this._matrix.decompose());
+        // Only decompose if the item isn't directly baking transformations into
+        // its content.
+        return this._applyMatrix
+            ? null
+            : this._decomposed || (this._decomposed = this._matrix.decompose());
     },
 
     /**
      * The current rotation angle of the item, as described by its
      * {@link #matrix}.
+     * Please note that this only works for items with {@link #applyMatrix} set
+     * to `false`, meaning they do not directly bake transformations into their
+     * content.
      *
      * @bean
      * @type Number
@@ -1073,13 +1080,21 @@ new function() { // Injection scope for various item event handlers
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
+            // Preserve the cached _decomposed values over rotation, and only
+            // update the rotation property on it.
+            var decomposed = this._decomposed;
             this.rotate(rotation - current);
+            decomposed.rotation = rotation;
+            this._decomposed = decomposed;
         }
     },
 
     /**
      * The current scale factor of the item, as described by its
      * {@link #matrix}.
+     * Please note that this only works for items with {@link #applyMatrix} set
+     * to `false`, meaning they do not directly bake transformations into their
+     * content.
      *
      * @bean
      * @type Point
@@ -1096,8 +1111,12 @@ new function() { // Injection scope for various item event handlers
         var current = this.getScaling(),
             // Clone existing points since we're caching internally.
             scaling = Point.read(arguments, 0, { clone: true, readNull: true });
-        if (current && scaling) {
+        if (current && scaling && !current.equals(scaling)) {
+            // See #setRotation() for preservation of _decomposed.
+            var decomposed = this._decomposed;
             this.scale(scaling.x / current.x, scaling.y / current.y);
+            decomposed.scaling = scaling;
+            this._decomposed = decomposed;
         }
     },
 
