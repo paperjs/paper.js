@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 3 00:53:54 2017 +0100
+ * Date: Tue Jan 3 13:23:44 2017 +0100
  *
  ***
  *
@@ -3337,7 +3337,9 @@ new function() {
 	beans: true,
 
 	_decompose: function() {
-		return this._decomposed || (this._decomposed = this._matrix.decompose());
+		return this._applyMatrix
+			? null
+			: this._decomposed || (this._decomposed = this._matrix.decompose());
 	},
 
 	getRotation: function() {
@@ -3348,7 +3350,10 @@ new function() {
 	setRotation: function(rotation) {
 		var current = this.getRotation();
 		if (current != null && rotation != null) {
+			var decomposed = this._decomposed;
 			this.rotate(rotation - current);
+			decomposed.rotation = rotation;
+			this._decomposed = decomposed;
 		}
 	},
 
@@ -3363,8 +3368,11 @@ new function() {
 	setScaling: function() {
 		var current = this.getScaling(),
 			scaling = Point.read(arguments, 0, { clone: true, readNull: true });
-		if (current && scaling) {
+		if (current && scaling && !current.equals(scaling)) {
+			var decomposed = this._decomposed;
 			this.scale(scaling.x / current.x, scaling.y / current.y);
+			decomposed.scaling = scaling;
+			this._decomposed = decomposed;
 		}
 	},
 
