@@ -1074,6 +1074,7 @@ new function() { // Injection scope for various item event handlers
      */
     getRotation: function() {
         var decomposed = this._decompose();
+        // Return 0 if matrix wasn't decomposed, e.g. on items with #applyMatrix
         return decomposed ? decomposed.rotation : 0;
     },
 
@@ -1104,6 +1105,7 @@ new function() { // Injection scope for various item event handlers
     getScaling: function() {
         var decomposed = this._decompose(),
             s = decomposed && decomposed.scaling;
+        // Return [1, 1] if matrix wasn't decomposed, e.g. with #applyMatrix.
         return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'setScaling');
     },
 
