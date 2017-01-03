@@ -1065,16 +1065,16 @@ new function() { // Injection scope for various item event handlers
     /**
      * The current rotation angle of the item, as described by its
      * {@link #matrix}.
-     * Please note that this only works for items with {@link #applyMatrix} set
-     * to `false`, meaning they do not directly bake transformations into their
-     * content.
+     * Please note that this only returns meaningful values for items with
+     * {@link #applyMatrix} set to `false`, meaning they do not directly bake
+     * transformations into their content.
      *
      * @bean
      * @type Number
      */
     getRotation: function() {
         var decomposed = this._decompose();
-        return decomposed && decomposed.rotation;
+        return decomposed ? decomposed.rotation : 0;
     },
 
     setRotation: function(rotation) {
@@ -1084,27 +1084,27 @@ new function() { // Injection scope for various item event handlers
             // update the rotation property on it.
             var decomposed = this._decomposed;
             this.rotate(rotation - current);
-            decomposed.rotation = rotation;
-            this._decomposed = decomposed;
+            if (decomposed) {
+                decomposed.rotation = rotation;
+                this._decomposed = decomposed;
+            }
         }
     },
 
     /**
      * The current scale factor of the item, as described by its
      * {@link #matrix}.
-     * Please note that this only works for items with {@link #applyMatrix} set
-     * to `false`, meaning they do not directly bake transformations into their
-     * content.
+     * Please note that this only returns meaningful values for items with
+     * {@link #applyMatrix} set to `false`, meaning they do not directly bake
+     * transformations into their content.
      *
      * @bean
      * @type Point
      */
     getScaling: function() {
         var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling;
-        return scaling
-                ? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
-                : undefined;
+            s = decomposed && decomposed.scaling;
+        return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'setScaling');
     },
 
     setScaling: function(/* scaling */) {
@@ -1115,8 +1115,10 @@ new function() { // Injection scope for various item event handlers
             // See #setRotation() for preservation of _decomposed.
             var decomposed = this._decomposed;
             this.scale(scaling.x / current.x, scaling.y / current.y);
-            decomposed.scaling = scaling;
-            this._decomposed = decomposed;
+            if (decomposed) {
+                decomposed.scaling = scaling;
+                this._decomposed = decomposed;
+            }
         }
     },
 
