@@ -256,26 +256,26 @@ var PathItem = Item.extend(/** @lends PathItem# */{
     _contains: function(point) {
         // NOTE: point is reverse transformed by _matrix, so we don't need to
         // apply the matrix here.
-/*#*/ if (__options.nativeContains || !__options.booleanOperations) {
-        // To compare with native canvas approach:
-        var ctx = CanvasProvider.getContext(1, 1);
-        // Use dontFinish to tell _draw to only produce geometries for hit-test.
-        this._draw(ctx, new Base({ dontFinish: true }));
-        var res = ctx.isPointInPath(point.x, point.y, this.getFillRule());
-        CanvasProvider.release(ctx);
-        return res;
-/*#*/ } else { // !__options.nativeContains && __options.booleanOperations
-        // Check the transformed point against the untransformed (internal)
-        // handle bounds, which is the fastest rough bounding box to calculate
-        // for a quick check before calculating the actual winding.
-        var winding = point.isInside(
+        /*#*/ if (__options.nativeContains || !__options.booleanOperations) {
+            // To compare with native canvas approach:
+            var ctx = CanvasProvider.getContext(1, 1);
+            // Use dontFinish to tell _draw to only produce geometries for hit-test.
+            this._draw(ctx, new Base({ dontFinish: true }));
+            var res = ctx.isPointInPath(point.x, point.y, this.getFillRule());
+            CanvasProvider.release(ctx);
+            return res;
+            /*#*/ } else { // !__options.nativeContains && __options.booleanOperations
+            // Check the transformed point against the untransformed (internal)
+            // handle bounds, which is the fastest rough bounding box to calculate
+            // for a quick check before calculating the actual winding.
+            var winding = point.isInside(
                 this.getBounds({ internal: true, handle: true }))
-                    ? this._getWinding(point)
-                    : {};
-        return !!(this.getFillRule() === 'evenodd'
-                ? winding.windingL & 1 || winding.windingR & 1
-                : winding.winding);
-/*#*/ } // !__options.nativeContains && __options.booleanOperations
+                ? this._getWinding(point)
+                : {};
+            return winding.onPath || !!(this.getFillRule() === 'evenodd'
+                    ? winding.windingL & 1 || winding.windingR & 1
+                    : winding.winding);
+            /*#*/ } // !__options.nativeContains && __options.booleanOperations
     },
 
     /**
