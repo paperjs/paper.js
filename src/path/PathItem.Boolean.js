@@ -458,15 +458,16 @@ PathItem.inject(new function() {
                 winding = o0 > o3 ? 1 : -1,
                 windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
                 a3Prev = vPrev[ia + 6];
-            if (a >= paL && a <= paR) {
-                onPath = true;
-            }
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
                     windingL += winding;
                 } else if (a > paR) {
                     windingR += winding;
+                } else {
+                    windingL += winding;
+                    windingR += winding;
+                    onPath = true;
                 }
             } else if (winding !== windingPrev) {
                 // Curve is crossed at starting point and winding changes from
@@ -596,6 +597,17 @@ PathItem.inject(new function() {
                 // it now to treat the path as closed:
                 if (vClose && (res = handleCurve(vClose)))
                     return res;
+                if (onPath && !windingL && !windingR) {
+                    // If the point is on the path and the windings canceled
+                    // each other, we treat the point as if it was inside the
+                    // path. A point inside a path has a winding of [+1,-1]
+                    // for clockwise and [-1,+1] for counter-clockwise paths.
+                    // If the ray is cast in y direction (dir == 1), the
+                    // windings always have opposite sign.
+                    var add = path.isClockwise(closed) ^ dir ? 1 : -1;
+                    windingL += add;
+                    windingR += add;
+                }
                 vClose = null;
             }
         }
