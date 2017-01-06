@@ -637,7 +637,9 @@ PathItem.inject(new function() {
         // the best quality.
         var offsets = [0.48, 0.1, 0.9],
             windingZero = { winding: 0, quality: 0 },
-            winding = windingZero;
+            winding = windingZero,
+            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            tMax = 1 - tMin;
         for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
             var length = totalLength * offsets[i];
             for (var j = 0, l = chain.length; j < l; j++) {
@@ -647,7 +649,7 @@ PathItem.inject(new function() {
                     var curve = entry.curve,
                         path = curve._path,
                         parent = path._parent,
-                        t = curve.getTimeAt(length),
+                        t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
                         pt = curve.getPointAtTime(t),
                         // Determine the direction in which to check the winding
                         // from the point (horizontal or vertical), based on the
