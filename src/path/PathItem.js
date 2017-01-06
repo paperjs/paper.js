@@ -272,7 +272,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 this.getBounds({ internal: true, handle: true }))
                     ? this._getWinding(point)
                     : {};
-        return !!(this.getFillRule() === 'evenodd'
+        return winding.onPath || !!(this.getFillRule() === 'evenodd'
                 ? winding.windingL & 1 || winding.windingR & 1
                 : winding.winding);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
