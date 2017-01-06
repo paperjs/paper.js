@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jan 6 12:17:33 2017 +0100
+ * Date: Fri Jan 6 14:23:27 2017 +0100
  *
  ***
  *
@@ -9957,14 +9957,15 @@ PathItem.inject(new function() {
 				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
 				a3Prev = vPrev[ia + 6];
-			if (a >= paL && a <= paR) {
-				onPath = true;
-			}
 			if (po !== o0) {
 				if (a < paL) {
 					windingL += winding;
 				} else if (a > paR) {
 					windingR += winding;
+				} else {
+					windingL += winding;
+					windingR += winding;
+					onPath = true;
 				}
 			} else if (winding !== windingPrev) {
 				if (a3Prev < paR) {
@@ -10052,6 +10053,11 @@ PathItem.inject(new function() {
 			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
+				if (onPath && !windingL && !windingR) {
+					var add = path.isClockwise(closed) ^ dir ? 1 : -1;
+					windingL += add;
+					windingR += add;
+				}
 				vClose = null;
 			}
 		}
@@ -10079,9 +10085,12 @@ PathItem.inject(new function() {
 			totalLength += length;
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
-		var offsets = [0.48, 0.1, 0.9];
-		for (var i = 0; (!winding || winding.quality < 0.5) && i < offsets.length; i++) {
-			var length = totalLength * offsets[i];
+		var windingZero = { winding: 0, quality: 0 },
+			winding = windingZero,
+			tMin = 4e-7,
+			tMax = 1 - tMin;
+		for (var i = 0; i < 3 && winding.quality < 0.5; i++) {
+			var length = totalLength * (i + 1) / 4;
 			for (var j = 0, l = chain.length; j < l; j++) {
 				var entry = chain[j],
 					curveLength = entry.length;
@@ -10089,23 +10098,21 @@ PathItem.inject(new function() {
 					var curve = entry.curve,
 						path = curve._path,
 						parent = path._parent,
-						t = curve.getTimeAt(length),
+						t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
 						pt = curve.getPointAtTime(t),
 						dir = abs(curve.getTangentAtTime(t).normalize().y)
 							< Math.SQRT1_2 ? 1 : 0;
 					if (parent instanceof CompoundPath)
 						path = parent;
-					var windingNew = !(operator.subtract && path2 && (
+					var wind = !(operator.subtract && path2 && (
 							path === path1 &&
 								path2._getWinding(pt, dir, true).winding ||
 							path === path2 &&
 								!path1._getWinding(pt, dir, true).winding))
 							? getWinding(pt, curves, dir, true)
-							: { winding: 0 };
-					if (windingNew.winding &&
-						(!winding || winding.quality < windingNew.quality)) {
-						winding = windingNew;
-					}
+							: windingZero;
+					if (wind.quality > winding.quality)
+						winding = wind;
 					break;
 				}
 				length -= curveLength;
