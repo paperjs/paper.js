@@ -635,8 +635,10 @@ PathItem.inject(new function() {
         // Determine winding at three points in the chain. If a winding with
         // sufficient quality is found, use it. Otherwise use the winding with
         // the best quality.
-        var offsets = [0.48, 0.1, 0.9];
-        for (var i = 0; (!winding || winding.quality < 0.5) && i < offsets.length; i++) {
+        var offsets = [0.48, 0.1, 0.9],
+            windingZero = { winding: 0, quality: 0 },
+            winding = windingZero;
+        for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
             var length = totalLength * offsets[i];
             for (var j = 0, l = chain.length; j < l; j++) {
                 var entry = chain[j],
@@ -658,17 +660,15 @@ PathItem.inject(new function() {
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
-                    var windingNew = !(operator.subtract && path2 && (
+                    var wind = !(operator.subtract && path2 && (
                             path === path1 &&
                                 path2._getWinding(pt, dir, true).winding ||
                             path === path2 &&
                                 !path1._getWinding(pt, dir, true).winding))
                             ? getWinding(pt, curves, dir, true)
-                            : { winding: 0 };
-                    if (windingNew.winding &&
-                        (!winding || winding.quality < windingNew.quality)) {
-                        winding = windingNew;
-                    }
+                            : windingZero;
+                    if (wind.quality > winding.quality)
+                        winding = wind;
                     break;
                 }
                 length -= curveLength;
