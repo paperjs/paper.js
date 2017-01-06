@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 3 13:41:26 2017 +0100
+ * Date: Fri Jan 6 12:12:43 2017 +0100
  *
  ***
  *
@@ -7602,7 +7602,7 @@ var PathItem = Item.extend({
 				this.getBounds({ internal: true, handle: true }))
 					? this._getWinding(point)
 					: {};
-		return !!(this.getFillRule() === 'evenodd'
+		return winding.onPath || !!(this.getFillRule() === 'evenodd'
 				? winding.windingL & 1 || winding.windingR & 1
 				: winding.winding);
 	},
@@ -9922,11 +9922,8 @@ PathItem.inject(new function() {
 			paR = pa + epsilon,
 			windingL = 0,
 			windingR = 0,
-			pathWindingL = 0,
-			pathWindingR = 0,
 			onPath = false,
-			onPathWinding = 0,
-			onPathCount = 0,
+			quality = 1,
 			roots = [],
 			vPrev,
 			vClose;
@@ -9942,7 +9939,7 @@ PathItem.inject(new function() {
 				a2 = v[ia + 4],
 				a3 = v[ia + 6];
 			if (o0 === o3) {
-				if (a1 < paR && a3 > paL || a3 < paR && a1 > paL) {
+				if (a0 < paR && a3 > paL || a3 < paR && a0 > paL) {
 					onPath = true;
 				}
 				return;
@@ -9960,30 +9957,36 @@ PathItem.inject(new function() {
 				winding = o0 > o3 ? 1 : -1,
 				windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
 				a3Prev = vPrev[ia + 6];
+			if (a >= paL && a <= paR) {
+				onPath = true;
+			}
 			if (po !== o0) {
 				if (a < paL) {
-					pathWindingL += winding;
+					windingL += winding;
 				} else if (a > paR) {
-					pathWindingR += winding;
-				} else {
-					onPath = true;
-					pathWindingL += winding;
-					pathWindingR += winding;
+					windingR += winding;
 				}
 			} else if (winding !== windingPrev) {
 				if (a3Prev < paR) {
-					pathWindingL += winding;
+					windingL += winding;
 				}
 				if (a3Prev > paL) {
-					pathWindingR += winding;
+					windingR += winding;
 				}
 			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
 				onPath = true;
 				if (a3Prev < paL) {
-					pathWindingR += winding;
+					windingR += winding;
 				} else if (a3Prev > paR) {
-					pathWindingL += winding;
+					windingL += winding;
 				}
+			}
+			if (po !== o0) {
+				if (a > pa - 100 * epsilon && a < pa + 100 * epsilon) {
+					quality /= 2;
+				}
+			} else {
+				quality = 0;
 			}
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
@@ -10049,24 +10052,8 @@ PathItem.inject(new function() {
 			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
-				if (onPath && !pathWindingL && !pathWindingR) {
-					var add = path.isClockwise(closed) ^ dir ? 1 : -1;
-					windingL += add;
-					windingR -= add;
-					onPathWinding += add;
-				} else {
-					windingL += pathWindingL;
-					windingR += pathWindingR;
-					pathWindingL = pathWindingR = 0;
-				}
-				if (onPath)
-					onPathCount++;
-				onPath = false;
 				vClose = null;
 			}
-		}
-		if (!windingL && !windingR) {
-			windingL = windingR = onPathWinding;
 		}
 		windingL = windingL && (2 - abs(windingL) % 2);
 		windingR = windingR && (2 - abs(windingR) % 2);
@@ -10074,8 +10061,9 @@ PathItem.inject(new function() {
 			winding: max(windingL, windingR),
 			windingL: windingL,
 			windingR: windingR,
+			quality: quality,
 			onContour: !windingL ^ !windingR,
-			onPathCount: onPathCount
+			onPath: onPath
 		};
 	}
 
@@ -10091,30 +10079,37 @@ PathItem.inject(new function() {
 			totalLength += length;
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
-		var length = totalLength / 2;
-		for (var j = 0, l = chain.length; j < l; j++) {
-			var entry = chain[j],
-				curveLength = entry.length;
-			if (length <= curveLength) {
-				var curve = entry.curve,
-					path = curve._path,
-					parent = path._parent,
-					t = curve.getTimeAt(length),
-					pt = curve.getPointAtTime(t),
-					dir = abs(curve.getTangentAtTime(t).normalize().y)
+		var offsets = [0.48, 0.1, 0.9];
+		for (var i = 0; (!winding || winding.quality < 0.5) && i < offsets.length; i++) {
+			var length = totalLength * offsets[i];
+			for (var j = 0, l = chain.length; j < l; j++) {
+				var entry = chain[j],
+					curveLength = entry.length;
+				if (length <= curveLength) {
+					var curve = entry.curve,
+						path = curve._path,
+						parent = path._parent,
+						t = curve.getTimeAt(length),
+						pt = curve.getPointAtTime(t),
+						dir = abs(curve.getTangentAtTime(t).normalize().y)
 							< Math.SQRT1_2 ? 1 : 0;
-				if (parent instanceof CompoundPath)
-					path = parent;
-				winding = !(operator.subtract && path2 && (
-						path === path1 &&
-							path2._getWinding(pt, dir, true).winding ||
-						path === path2 &&
-							!path1._getWinding(pt, dir, true).winding))
-						? getWinding(pt, curves, dir, true)
-						: { winding: 0 };
-				break;
+					if (parent instanceof CompoundPath)
+						path = parent;
+					var windingNew = !(operator.subtract && path2 && (
+							path === path1 &&
+								path2._getWinding(pt, dir, true).winding ||
+							path === path2 &&
+								!path1._getWinding(pt, dir, true).winding))
+							? getWinding(pt, curves, dir, true)
+							: { winding: 0 };
+					if (windingNew.winding &&
+						(!winding || winding.quality < windingNew.quality)) {
+						winding = windingNew;
+					}
+					break;
+				}
+				length -= curveLength;
 			}
-			length -= curveLength;
 		}
 		for (var j = chain.length - 1; j >= 0; j--) {
 			chain[j].segment._winding = winding;
