@@ -292,8 +292,7 @@ test('Path#contains() (straight curves with zero-winding: #943)', function() {
     }
 });
 
-/*
-test('CompoundPath#contains() (nested touching circles: #944)', function() {
+test('CompoundPath#contains() (nested touching circles and other edge cases: #944)', function() {
     var cp = new CompoundPath({
         children: [
             new Path.Circle({
@@ -308,8 +307,76 @@ test('CompoundPath#contains() (nested touching circles: #944)', function() {
         fillRule: 'evenodd'
     });
     testPoint(cp, new Point(100, 200), true);
+
+    var cp = new CompoundPath({
+        children: [
+            new Path.Circle({
+                center: [200, 200],
+                radius: 100
+            }),
+            new Path.Circle({
+                center: [200, 200],
+                radius: 100,
+                clockwise: false
+            }),
+            new Path.Circle({
+                center: [200, 200],
+                radius: 100
+            }),
+            new Path.Circle({
+                center: [150, 200],
+                radius: 50,
+                clockwise: false
+            })
+        ]
+    });
+    testPoint(cp, new Point(100, 200), true);
+
+    var cp = new CompoundPath({
+        children: [
+            new Path.Rectangle({
+                point: [100, 100],
+                size: [200, 200]
+            }),
+            new Path.Rectangle({
+                point: [100, 150],
+                size: [100, 100]
+            })
+        ],
+        fillRule: 'evenodd'
+    });
+    testPoint(cp, new Point(100, 200), true);
+
+    var cp = new CompoundPath({
+        children: [
+            new Path.Rectangle({
+                point: [100, 100],
+                size: [200, 200]
+            }),
+            new Path.Rectangle({
+                point: [100, 100],
+                size: [200, 200]
+            })
+        ],
+        fillRule: 'nonzero'
+    });
+    testPoint(cp, new Point(100, 200), true);
+
+    var cp = new CompoundPath({
+        children: [
+            new Path.Rectangle({
+                point: [100, 100],
+                size: [200, 200]
+            }),
+            new Path.Rectangle({
+                point: [300, 100],
+                size: [200, 200]
+            })
+        ],
+        fillRule: 'evenodd'
+    });
+    testPoint(cp, new Point(300, 200), true);
 });
-*/
 
 test('Path#contains() with Path#interiorPoint: #854, #1064', function() {
     var paths = [
