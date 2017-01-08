@@ -731,9 +731,20 @@ test('#1109', function() {
         new Path({ segments: segments, closed: true })
     ]);
 
+    // Rotate segments to produce different sequence that describes same shape.
     segments.push(segments.shift());
 
     var p3 = new paper.CompoundPath([
+        new Path.Rectangle(210, 110, 180, 180),
+        new Path({ segments: segments, closed: true })
+    ]);
+
+    // Add a little spike, see #issuecomment-236026445
+    segments.splice(3, 0,
+        [260.5870762798793, 200],
+        [265.5870762798793, 201],
+        [260.5870762798793, 202]);
+    var p4 = new paper.CompoundPath([
         new Path.Rectangle(210, 110, 180, 180),
         new Path({ segments: segments, closed: true })
     ]);
@@ -742,6 +753,8 @@ test('#1109', function() {
         'M200,300v-200h200v200zM274.61605,215.30654l21.86206,-12.61714l0.54857,-42.36332l-36.4396,21.6707v25.20877z');
     compareBoolean(function() { return p1.unite(p3); },
         'M200,300v-200h200v200zM274.61605,215.30654l21.86206,-12.61714l0.54857,-42.36332l-36.4396,21.6707v25.20877z');
+    compareBoolean(function() { return p1.unite(p4); },
+        'M200,300v-200h200v200zM265.58708,201l-5,1v5.20555l14.02897,8.101l21.86206,-12.61714l0.54857,-42.36332l-36.4396,21.6707v18.00322z');
 });
 
 test('#1123', function() {
