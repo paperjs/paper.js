@@ -1881,15 +1881,16 @@ new function() { // Injection scope for hit-test functions shared with project
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
                     : this.getGlobalMatrix().prepend(this.getView()._matrix),
-            strokeMatrix = this.getStrokeScaling()
-                    ? null
-                    : viewMatrix.inverted()._shiftless(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
             // since we're using it for division.
             tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
+            // Hit-tests are performed in the item's local coordinate space.
+            // To calculate the correct 2D padding for tolerance, we therefore
+            // need to apply the inverted item matrix.
             tolerancePadding = options._tolerancePadding = new Size(
-                    Path._getStrokePadding(tolerance, strokeMatrix));
+                    Path._getStrokePadding(tolerance,
+                        matrix.inverted()._shiftless()));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
@@ -1958,7 +1959,10 @@ new function() { // Injection scope for hit-test functions shared with project
                 // it is already called internally.
                 || checkSelf
                     && filter(this._hitTestSelf(point, options, viewMatrix,
-                        strokeMatrix))
+                        // If the item has a non-scaling stroke, we need to
+                        // apply the inverted viewMatrix to stroke dimensions.
+                        this.getStrokeScaling() ? null
+                            : viewMatrix.inverted()._shiftless()))
                 || null;
         }
         // Transform the point back to the outer coordinate system.

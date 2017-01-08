@@ -29,32 +29,32 @@ test('Hit-testing options', function() {
     equals(HitResult.getOptions(), defaultOptions, 'Default options');
 });
 
-function testHitResult(hitResult, options, message) {
-    equals(!!(!!hitResult ^ !!options), false, message
+function testHitResult(hitResult, expeced, message) {
+    equals(!!hitResult, !!expeced, message
             ? message
-            : options
+            : expeced
                 ? 'A HitResult should be returned.'
                 : 'No HitResult should be returned.');
-    if (hitResult && options) {
-        if (options.type) {
-            equals(hitResult.type, options.type,
-                    'hitResult.type == \'' + options.type + '\'');
+    if (hitResult && expeced) {
+        if (expeced.type) {
+            equals(hitResult.type, expeced.type,
+                    'hitResult.type == \'' + expeced.type + '\'');
         }
-        if (options.item) {
-            equals(hitResult.item == options.item, true,
-                    'hitResult.item == ' + options.item);
+        if (expeced.item) {
+            equals(hitResult.item == expeced.item, true,
+                    'hitResult.item == ' + expeced.item);
         }
-        if (options.name) {
-            equals(hitResult.name, options.name,
-                    'hitResult.name == \'' + options.name + '\'');
+        if (expeced.name) {
+            equals(hitResult.name, expeced.name,
+                    'hitResult.name == \'' + expeced.name + '\'');
         }
-        if (options.point) {
-            equals(hitResult.point.toString(), options.point.toString(),
-                    'hitResult.point == \'' + options.point + '\'');
+        if (expeced.point) {
+            equals(hitResult.point.toString(), expeced.point.toString(),
+                    'hitResult.point == \'' + expeced.point + '\'');
         }
-        if (options.segment) {
-            equals(hitResult.segment == options.segment, true,
-                    'hitResult.segment == ' + options.segment);
+        if (expeced.segment) {
+            equals(hitResult.segment == expeced.segment, true,
+                    'hitResult.segment == ' + expeced.segment);
         }
     }
 }
@@ -791,4 +791,52 @@ test('hit-testing shapes with strokes and rounded corners (#1207)', function() {
         });
     }
 });
+
+test('hit-testing scaled items with different settings of view.zoom and item.strokeScaling (#1195)', function() {
+    function testItem(ctor, zoom, strokeScaling) {
+        var item = new ctor.Rectangle({
+            point: [100, 100],
+            size: [100, 100],
+            fillColor: 'red',
+            strokeColor: 'black',
+            strokeWidth: 10,
+            strokeScaling: strokeScaling,
+            applyMatrix: true
+        });
+        item.scale(2);
+        view.zoom = zoom;
+
+        var tolerance = 10,
+            options = { tolerance: tolerance, fill: true, stroke: true },
+            bounds = item.strokeBounds,
+            point = bounds.leftCenter,
+            name = ctor.name + '.Rectangle, strokeScaling = ' + strokeScaling
+                    + ', zoom = ' + zoom;
+
+        testHitResult(project.hitTest(point.subtract(tolerance + 1, 0), options),
+                null,
+                name + ' outside of stroke'
+        );
+        testHitResult(project.hitTest(point.subtract(tolerance, 0), options),
+                { type: 'stroke' },
+                name + ' on stroke within tolerance'
+        );
+        testHitResult(project.hitTest(point, options),
+                { type: 'stroke' },
+                name + ' on stroke'
+        );
+        item.remove();
+    }
+
+    testItem(Shape, 1, false);
+    testItem(Shape, 1, true);
+    testItem(Shape, 2, false);
+    testItem(Shape, 2, true);
+
+    testItem(Path, 1, false);
+    testItem(Path, 1, true);
+    testItem(Path, 2, false);
+    testItem(Path, 2, true);
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});
