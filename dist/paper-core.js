@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jan 6 14:23:27 2017 +0100
+ * Date: Sun Jan 8 14:34:58 2017 +0100
  *
  ***
  *
@@ -3684,12 +3684,10 @@ new function() {
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
 					: this.getGlobalMatrix().prepend(this.getView()._matrix),
-			strokeMatrix = this.getStrokeScaling()
-					? null
-					: viewMatrix.inverted()._shiftless(),
 			tolerance = Math.max(options.tolerance, 1e-6),
 			tolerancePadding = options._tolerancePadding = new Size(
-					Path._getStrokePadding(tolerance, strokeMatrix));
+					Path._getStrokePadding(tolerance,
+						matrix.inverted()._shiftless()));
 		point = matrix._inverseTransform(point);
 		if (!point || !this._children &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
@@ -3743,7 +3741,8 @@ new function() {
 			res = this._hitTestChildren(point, options, viewMatrix)
 				|| checkSelf
 					&& filter(this._hitTestSelf(point, options, viewMatrix,
-						strokeMatrix))
+						this.getStrokeScaling() ? null
+							: viewMatrix.inverted()._shiftless()))
 				|| null;
 		}
 		if (res && res.point) {
