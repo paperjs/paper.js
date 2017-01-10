@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 8 15:14:47 2017 +0100
+ * Date: Tue Jan 10 13:34:50 2017 +0100
  *
  ***
  *
@@ -10084,12 +10084,13 @@ PathItem.inject(new function() {
 			totalLength += length;
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
-		var windingZero = { winding: 0, quality: 0 },
+		var offsets = [0.5, 0.25, 0.75],
+			windingZero = { winding: 0, quality: 0 },
 			winding = windingZero,
 			tMin = 4e-7,
 			tMax = 1 - tMin;
-		for (var i = 0; i < 3 && winding.quality < 0.5; i++) {
-			var length = totalLength * (i + 1) / 4;
+		for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
+			var length = totalLength * offsets[i];
 			for (var j = 0, l = chain.length; j < l; j++) {
 				var entry = chain[j],
 					curveLength = entry.length;
