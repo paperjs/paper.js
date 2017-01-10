@@ -267,7 +267,7 @@ PathItem.inject(new function() {
             clearHandles = false,
             clearCurves = clearLater || [],
             clearLookup = clearLater && {},
-            rescaleLocs,
+            renormalizeLocs,
             prevCurve,
             prevTime;
 
@@ -290,7 +290,7 @@ PathItem.inject(new function() {
         }
 
         // Loop backwards through all sorted locations, from right to left, so
-        // we can assume a predefined sequence for curve-time rescaling.
+        // we can assume a predefined sequence for curve-time renormalization.
         for (var i = locations.length - 1; i >= 0; i--) {
             var loc = locations[i],
                 // Retrieve curve-time before calling include(), because it may
@@ -307,8 +307,9 @@ PathItem.inject(new function() {
                     // This is a new curve, update clearHandles setting.
                     clearHandles = !curve.hasHandles()
                             || clearLookup && clearLookup[getId(curve)];
-                    // Only keep track of rescaling information within the curve
-                    rescaleLocs = [];
+                    // Keep track of locations for later curve-time
+                    // renormalization within the curve.
+                    renormalizeLocs = [];
                     prevTime = null;
                 } else if (prevTime > tMin) {
                     // Rescale curve-time when we are splitting the same curve
@@ -318,9 +319,9 @@ PathItem.inject(new function() {
                 prevCurve = curve;
             }
             if (exclude) {
-                // Store this excluded location for later rescaling, in case we
-                // divide the same curve further to the left of this location.
-                rescaleLocs.push(loc);
+                // Store excluded locations for later renormalization, in case
+                // the same curve is divided to their left.
+                renormalizeLocs.push(loc);
                 continue;
             } else if (include) {
                 results.unshift(loc);
@@ -341,10 +342,10 @@ PathItem.inject(new function() {
                 if (clearHandles)
                     clearCurves.push(curve, newCurve);
                 segment = newCurve._segment1;
-                // If there are locations to be rescaled within the same curve
-                // after this location, we need to rescale their curve-time now.
-                for (var j = rescaleLocs.length - 1; j >= 0; j--) {
-                    var l = rescaleLocs[j];
+                // Handle locations that need their curve-time renormalized
+                // within the same curve after dividing at this location.
+                for (var j = renormalizeLocs.length - 1; j >= 0; j--) {
+                    var l = renormalizeLocs[j];
                     l._time = (l._time - time) / (1 - time);
                 }
             }

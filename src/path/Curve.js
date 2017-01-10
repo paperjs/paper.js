@@ -2039,6 +2039,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     // Divide the curve in two and then apply the normal curve
                     // intersection code.
                     var parts = Curve.subdivide(v1, tSplit);
+                    // NOTE: It's ok to modify param here, since this is an
+                    // internal function and we pass a new object on each call.
                     // After splitting, the end is always connected, so exclude:
                     param.excludeEnd = true;
                     // Since the curve was split above, we need to adjust the
