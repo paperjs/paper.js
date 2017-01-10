@@ -644,15 +644,16 @@ PathItem.inject(new function() {
             totalLength += length;
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
-        // Sample winding at up to three points in the chain, until a winding
-        // with sufficient quality is found. The winding with the best quality
-        // is used otherwise.
-        var windingZero = { winding: 0, quality: 0 },
+        // Determine winding at three points in the chain. If a winding with
+        // sufficient quality is found, use it. Otherwise use the winding with
+        // the best quality.
+        var offsets = [0.5, 0.25, 0.75],
+            windingZero = { winding: 0, quality: 0 },
             winding = windingZero,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
-        for (var i = 0; i < 3 && winding.quality < 0.5; i++) {
-            var length = totalLength * (i + 1) / 4;
+        for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
+            var length = totalLength * offsets[i];
             for (var j = 0, l = chain.length; j < l; j++) {
                 var entry = chain[j],
                     curveLength = entry.length;
