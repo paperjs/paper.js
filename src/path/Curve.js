@@ -162,7 +162,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @return {Object} the curve classification information as an object, see
      *     options
      * @result info.type {String} the type of Bézier curve, possible values are:
-     *     {@values 'line', 'quadratic', 'serpentine', 'cusp', 'loop'}
+     *     {@values 'line', 'quadratic', 'serpentine', 'cusp', 'loop', 'arch'}
      * @result info.roots {Number[]} the curve-time parameters of the
      *     associated points of inflection for serpentine curves, loops, cusps,
            etc
@@ -1526,6 +1526,11 @@ new function() { // Scope for methods that require private functions
             //   'serpentine' (d > 0)
             //   'cusp'       (d == 0)
             //   'loop'       (d < 0)
+            //   'arch'       (serpentine, cusp or loop with roots outside 0..1)
+            //
+            // NOTE: Roots for serpentine, cusp and loop curves are only
+            // considered if they are within 0..1. If the roots are outside,
+            // then we degrade the type of curve down to an 'arch'.
 
             var x1 = v[0], y1 = v[1],
                 x2 = v[2], y2 = v[3],
@@ -1552,7 +1557,7 @@ new function() { // Scope for methods that require private functions
                 var hasRoots = t1 !== undefined,
                     t1Ok = hasRoots && t1 > 0 && t1 < 1,
                     t2Ok = hasRoots && t2 > 0 && t2 < 1;
-                // Degrade to arch for serpentine, cusp or loop ifno solutions
+                // Degrade to arch for serpentine, cusp or loop if no solutions
                 // within 0..1 are found. loop requires 2 solutions to be valid.
                 if (hasRoots && (!(t1Ok || t2Ok)
                         || type === 'loop' && !(t1Ok && t2Ok))) {
