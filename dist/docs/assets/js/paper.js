@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 10 13:34:50 2017 +0100
+ * Date: Wed Jan 11 15:01:10 2017 +0100
  *
  ***
  *
@@ -5937,6 +5937,10 @@ var Curve = Base.extend({
 		return '{ ' + parts.join(', ') + ' }';
 	},
 
+	classify: function() {
+		return Curve.classify(this.getValues());
+	},
+
 	remove: function() {
 		var removed = false;
 		if (this._path) {
@@ -6635,6 +6639,61 @@ new function() {
 
 	return { statics: {
 
+		classify: function(v) {
+
+			var x1 = v[0], y1 = v[1],
+				x2 = v[2], y2 = v[3],
+				x3 = v[4], y3 = v[5],
+				x4 = v[6], y4 = v[7],
+				a1 = x1 * (y4 - y3) + y1 * (x3 - x4) + x4 * y3 - y4 * x3,
+				a2 = x2 * (y1 - y4) + y2 * (x4 - x1) + x1 * y4 - y1 * x4,
+				a3 = x3 * (y2 - y1) + y3 * (x1 - x2) + x2 * y1 - y2 * x1,
+				d3 = 3 * a3,
+				d2 = d3 - a2,
+				d1 = d2 - a2 + a1,
+				l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3),
+				s = l !== 0 ? 1 / l : 0,
+				isZero = Numerical.isZero,
+				serpentine = 'serpentine';
+			d1 *= s;
+			d2 *= s;
+			d3 *= s;
+
+			function type(type, t1, t2) {
+				var hasRoots = t1 !== undefined,
+					t1Ok = hasRoots && t1 > 0 && t1 < 1,
+					t2Ok = hasRoots && t2 > 0 && t2 < 1;
+				if (hasRoots && (!(t1Ok || t2Ok)
+						|| type === 'loop' && !(t1Ok && t2Ok))) {
+					type = 'arch';
+					t1Ok = t2Ok = false;
+				}
+				return {
+					type: type,
+					roots: t1Ok || t2Ok
+							? t1Ok && t2Ok
+								? t1 < t2 ? [t1, t2] : [t2, t1]
+								: [t1Ok ? t1 : t2]
+							: null
+				};
+			}
+
+			if (isZero(d1)) {
+				return isZero(d2)
+						? type(isZero(d3) ? 'line' : 'quadratic')
+						: type(serpentine, d3 / (3 * d2));
+			}
+			var d = 3 * d2 * d2 - 4 * d1 * d3;
+			if (isZero(d)) {
+				return type('cusp', d2 / (2 * d1));
+			}
+			var f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d),
+				f2 = 2 * d1;
+			return type(d > 0 ? serpentine : 'loop',
+					(d2 + f1) / f2,
+					(d2 - f1) / f2);
+		},
+
 		getLength: function(v, a, b, ds) {
 			if (a === undefined)
 				a = 0;
@@ -6728,12 +6787,6 @@ new function() {
 				t2 = Curve.getTimeOf(v2, p2);
 			if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
 				t2 <= (excludeStart ? tMax : 1)) {
-				var renormalize = param.renormalize;
-				if (renormalize) {
-					var res = renormalize(t1, t2);
-					t1 = res[0];
-					t2 = res[1];
-				}
 				var loc1 = new CurveLocation(c1, t1,
 						p1 || Curve.getPoint(v1, t1), overlap),
 					loc2 = new CurveLocation(c2, t2,
@@ -6923,7 +6976,7 @@ new function() {
 	return { statics: {
 		_getIntersections: function(v1, v2, c1, c2, locations, param) {
 			if (!v2) {
-				return Curve._getSelfIntersection(v1, c1, locations, param);
+				return Curve._getLoopIntersection(v1, c1, locations, param);
 			}
 			var epsilon = 1e-12,
 				c1p1x = v1[0], c1p1y = v1[1],
@@ -6984,57 +7037,15 @@ new function() {
 			return locations;
 		},
 
-		_getSelfIntersection: function(v1, c1, locations, param) {
-			var p1x = v1[0], p1y = v1[1],
-				h1x = v1[2], h1y = v1[3],
-				h2x = v1[4], h2y = v1[5],
-				p2x = v1[6], p2y = v1[7];
-			var line = new Line(p1x, p1y, p2x, p2y, false),
-				side1 = line.getSide(new Point(h1x, h1y), true),
-				side2 = line.getSide(new Point(h2x, h2y), true);
-			if (side1 === side2) {
-				var edgeSum = (p1x - h2x) * (h1y - p2y)
-							+ (h1x - p2x) * (h2y - p1y);
-				if (edgeSum * side1 > 0)
-					return locations;
+		_getLoopIntersection: function(v1, c1, locations, param) {
+			var info = Curve.classify(v1);
+			if (info.type === 'loop') {
+				var roots = info.roots;
+				addLocation(locations, param,
+					v1, c1, roots[0], null,
+					v1, c1, roots[1], null);
 			}
-			var ax = p2x - 3 * h2x + 3 * h1x - p1x,
-				bx = h2x - 2 * h1x + p1x,
-				cx = h1x - p1x,
-				ay = p2y - 3 * h2y + 3 * h1y - p1y,
-				by = h2y - 2 * h1y + p1y,
-				cy = h1y - p1y,
-				ac = ay * cx - ax * cy,
-				ab = ay * bx - ax * by,
-				bc = by * cx - bx * cy;
-			if (ac * ac - 4 * ab * bc < 0) {
-				var roots = [],
-					tSplit,
-					count = Numerical.solveCubic(
-							ax * ax  + ay * ay,
-							3 * (ax * bx + ay * by),
-							2 * (bx * bx + by * by) + ax * cx + ay * cy,
-							bx * cx + by * cy,
-							roots, 0, 1);
-				if (count > 0) {
-					for (var i = 0, maxCurvature = 0; i < count; i++) {
-						var curvature = Math.abs(
-								c1.getCurvatureAtTime(roots[i]));
-						if (curvature > maxCurvature) {
-							maxCurvature = curvature;
-							tSplit = roots[i];
-						}
-					}
-					var parts = Curve.subdivide(v1, tSplit);
-					param.excludeEnd = true;
-					param.renormalize = function(t1, t2) {
-						return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
-					};
-					Curve._getIntersections(parts[0], parts[1], c1, c1,
-							locations, param);
-				}
-			}
-			return locations;
+		  return locations;
 		},
 
 		getOverlaps: function(v1, v2) {
@@ -7444,7 +7455,6 @@ var PathItem = Item.extend({
 	},
 
 	statics: {
-
 		create: function(arg) {
 			var data,
 				segments,
@@ -7633,7 +7643,7 @@ var PathItem = Item.extend({
 				arrays.push(locations);
 			}
 			if (self) {
-				Curve._getSelfIntersection(values1, curve1, locations, {
+				Curve._getLoopIntersection(values1, curve1, locations, {
 					include: include,
 					excludeStart: length1 === 1 &&
 							curve1.getPoint1().equals(curve1.getPoint2())
@@ -9838,7 +9848,7 @@ PathItem.inject(new function() {
 			clearHandles = false,
 			clearCurves = clearLater || [],
 			clearLookup = clearLater && {},
-			rescaleLocs,
+			renormalizeLocs,
 			prevCurve,
 			prevTime;
 
@@ -9862,7 +9872,7 @@ PathItem.inject(new function() {
 				if (curve !== prevCurve) {
 					clearHandles = !curve.hasHandles()
 							|| clearLookup && clearLookup[getId(curve)];
-					rescaleLocs = [];
+					renormalizeLocs = [];
 					prevTime = null;
 				} else if (prevTime > tMin) {
 					loc._time /= prevTime;
@@ -9870,7 +9880,7 @@ PathItem.inject(new function() {
 				prevCurve = curve;
 			}
 			if (exclude) {
-				rescaleLocs.push(loc);
+				renormalizeLocs.push(loc);
 				continue;
 			} else if (include) {
 				results.unshift(loc);
@@ -9886,8 +9896,8 @@ PathItem.inject(new function() {
 				if (clearHandles)
 					clearCurves.push(curve, newCurve);
 				segment = newCurve._segment1;
-				for (var j = rescaleLocs.length - 1; j >= 0; j--) {
-					var l = rescaleLocs[j];
+				for (var j = renormalizeLocs.length - 1; j >= 0; j--) {
+					var l = renormalizeLocs[j];
 					l._time = (l._time - time) / (1 - time);
 				}
 			}

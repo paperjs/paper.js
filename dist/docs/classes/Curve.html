@@ -60,8 +60,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>
 </li>
+
 		
 	</ul>
+
+
 
     
     
@@ -119,8 +122,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>
 </li>
+
 		
 	</ul>
+
+
 
     
     
@@ -454,7 +460,7 @@
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Number</tt>
+			Array of <tt>Number</tt>s
 		</li>
 	</ul>
     
@@ -657,8 +663,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -683,8 +692,43 @@
 			<li>
 <tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;a string representation of the curve
 </li>
+
 		
 	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="classify" class="member">
+<div class="member-link">
+<a name="classify" href="#classify"><tt><b>classify</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Determines the type of cubic Bézier curve via discriminant classification, as well as the curve-time parameters of the associated points of inflection, loops, cusps, etc.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Object</tt></tt>&nbsp;&mdash;&nbsp;the curve classification information as an object, see  options
+</li>
+
+		
+	</ul>
+
+<ul class="member-list">
+<li><tt>info.type: <tt>String</tt></tt> &mdash; the type of Bézier curve, possible values are:  <tt>&lsquo;line&rsquo;</tt>, <tt>&lsquo;quadratic&rsquo;</tt>, <tt>&lsquo;serpentine&rsquo;</tt>, <tt>&lsquo;cusp&rsquo;</tt>, <tt>&lsquo;loop&rsquo;</tt></li>
+<li><tt>info.roots: Array of <tt>Number</tt>s</tt> &mdash; the curve-time parameters of the  associated points of inflection for serpentine curves, loops, cusps,  etc</li>
+</ul>
 
 	
 	
@@ -709,8 +753,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the curve was removed, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -735,8 +782,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if this is the first curve, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -761,8 +811,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if this is the last curve, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -806,8 +859,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;the newly create sub-curve
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -844,8 +900,11 @@
 			<li>
 <tt>Array of <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the locations of all intersections between the  curves
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -882,8 +941,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;the second part of the divided curve if the location is  valid, {code null} otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	<ul class="member-list">
@@ -927,8 +989,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;the second part of the divided curve, if the offset is  within the valid range, {code null} otherwise.
 </li>
+
 		
 	</ul>
+
+
 
 	
 	<ul class="member-list">
@@ -972,8 +1037,11 @@
 			<li>
 <tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path after splitting, if any
 </li>
+
 		
 	</ul>
+
+
 
 	
 	<ul class="member-list">
@@ -1017,8 +1085,11 @@
 			<li>
 <tt><a href="../classes/Path.html"><tt>Path</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created path after splitting, if any
 </li>
+
 		
 	</ul>
+
+
 
 	
 	<ul class="member-list">
@@ -1050,8 +1121,11 @@
 			<li>
 <tt><a href="../classes/Curve.html"><tt>Curve</tt></a></tt>&nbsp;&mdash;&nbsp;a reversed version of the curve
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1070,6 +1144,8 @@
     
 	
 	
+
+
 	
 	
 </div>
@@ -1095,8 +1171,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the curve has handles set, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	<ul class="member-list">
@@ -1146,8 +1225,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the curve is longer than the given epsilon, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1172,8 +1254,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the curve is straight, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1198,8 +1283,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the curve is parametrically linear, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1236,8 +1324,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the two lines are collinear, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1262,8 +1353,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the line is horizontal, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1288,8 +1382,11 @@
 			<li>
 <tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the line is vertical, <tt>false</tt> otherwise
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1328,8 +1425,11 @@
 			<li>
 <tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the curve location at the specified the offset
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1366,8 +1466,11 @@
 			<li>
 <tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the curve location at the specified the location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1411,8 +1514,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter at the specified location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1449,8 +1555,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve offset at the specified the location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1487,8 +1596,11 @@
 			<li>
 <tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the curve location of the specified point
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1525,8 +1637,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the length of the path up to the specified point
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1563,8 +1678,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curve-time parameter of the specified point
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1601,8 +1719,11 @@
 			<li>
 <tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>&nbsp;&mdash;&nbsp;the location on the curve that&rsquo;s the closest to the specified point
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1639,8 +1760,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the point on the curve that&rsquo;s the closest to the specified point
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1677,8 +1801,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the point on the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1715,8 +1842,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the normalized tangent of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1753,8 +1883,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the normal of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1791,8 +1924,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the weighted tangent of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1829,8 +1965,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the weighted normal of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1867,8 +2006,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curvature of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1905,8 +2047,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the point on the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1943,8 +2088,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the normalized tangent of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -1981,8 +2129,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the normal of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -2019,8 +2170,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the weighted tangent of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -2057,8 +2211,11 @@
 			<li>
 <tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the weighted normal of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -2095,8 +2252,11 @@
 			<li>
 <tt><tt>Number</tt></tt>&nbsp;&mdash;&nbsp;the curvature of the curve at the given location
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -2127,7 +2287,7 @@
 	
 	<li>
 <tt>v:</tt> 
-<tt>Number</tt>
+Array of <tt>Number</tt>s
 &mdash;&nbsp;the curve values, as returned by  <tt>Curve#getValues</tt>()
 
 </li>
@@ -2146,10 +2306,13 @@
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Number[]</tt>[]</tt>&nbsp;&mdash;&nbsp;an array of curve value arrays of the resulting  monotone curve. If the original curve was already monotone, an array  only containing its values are returned.
+<tt>Array of <tt>Number[]</tt> objects[]</tt>&nbsp;&mdash;&nbsp;an array of curve value arrays of the resulting  monotone curve. If the original curve was already monotone, an array  only containing its values are returned.
 </li>
+
 		
 	</ul>
+
+
 
 	
 	
@@ -2187,6 +2350,8 @@
 </ul>
 
 	
+
+
 	
 	
 </div>
