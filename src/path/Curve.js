@@ -155,6 +155,23 @@ var Curve = Base.extend(/** @lends Curve# */{
     },
 
     /**
+     * Determines the type of cubic Bézier curve via discriminant
+     * classification, as well as the curve-time parameters of the associated
+     * points of inflection, loops, cusps, etc.
+     *
+     * @return {Object} the curve classification information as an object, see
+     *     options
+     * @result info.type {String} the type of Bézier curve, possible values are:
+     *     {@values 'line', 'quadratic', 'serpentine', 'cusp', 'loop'}
+     * @result info.roots {Number[]} the curve-time parameters of the
+     *     associated points of inflection for serpentine curves, loops, cusps,
+           etc
+     */
+    classify: function() {
+        return Curve.classify(this.getValues());
+    },
+
+    /**
      * Removes the curve from the path that it belongs to, by removing its
      * second segment and merging its handle with the first segment.
      * @return {Boolean} {@true if the curve was removed}
@@ -1499,6 +1516,75 @@ new function() { // Scope for methods that require private functions
 
     return { statics: {
 
+        classify: function(v) {
+            // See: Loop and Blinn, 2005, Resolution Independent Curve Rendering
+            // using Programmable Graphics Hardware, GPU Gems 3 chapter 25
+            //
+            // Possible types:
+            //   'line'       (d1 == d2 == d3 == 0)
+            //   'quadratic'  (d1 == d2 == 0)
+            //   'serpentine' (d > 0)
+            //   'cusp'       (d == 0)
+            //   'loop'       (d < 0)
+
+            var x1 = v[0], y1 = v[1],
+                x2 = v[2], y2 = v[3],
+                x3 = v[4], y3 = v[5],
+                x4 = v[6], y4 = v[7],
+                // Calculate coefficients of I(s, t), of which the roots are
+                // inflection points.
+                a1 = x1 * (y4 - y3) + y1 * (x3 - x4) + x4 * y3 - y4 * x3,
+                a2 = x2 * (y1 - y4) + y2 * (x4 - x1) + x1 * y4 - y1 * x4,
+                a3 = x3 * (y2 - y1) + y3 * (x1 - x2) + x2 * y1 - y2 * x1,
+                d3 = 3 * a3,
+                d2 = d3 - a2,
+                d1 = d2 - a2 + a1,
+                // Normalize the vector (d1, d2, d3) to keep error consistent.
+                l = Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3),
+                s = l !== 0 ? 1 / l : 0,
+                isZero = Numerical.isZero,
+                serpentine = 'serpentine'; // short-cut
+            d1 *= s;
+            d2 *= s;
+            d3 *= s;
+
+            function type(type, t1, t2) {
+                var hasRoots = t1 !== undefined,
+                    t1Ok = hasRoots && t1 > 0 && t1 < 1,
+                    t2Ok = hasRoots && t2 > 0 && t2 < 1;
+                // Degrade to arch for serpentine, cusp or loop ifno solutions
+                // within 0..1 are found. loop requires 2 solutions to be valid.
+                if (hasRoots && (!(t1Ok || t2Ok)
+                        || type === 'loop' && !(t1Ok && t2Ok))) {
+                    type = 'arch';
+                    t1Ok = t2Ok = false;
+                }
+                return {
+                    type: type,
+                    roots: t1Ok || t2Ok
+                            ? t1Ok && t2Ok
+                                ? t1 < t2 ? [t1, t2] : [t2, t1] // 2 solutions
+                                : [t1Ok ? t1 : t2] // 1 solution
+                            : null
+                };
+            }
+
+            if (isZero(d1)) {
+                return isZero(d2)
+                        ? type(isZero(d3) ? 'line' : 'quadratic') // 5. / 4.
+                        : type(serpentine, d3 / (3 * d2));        // 3b.
+            }
+            var d = 3 * d2 * d2 - 4 * d1 * d3;
+            if (isZero(d)) {
+                return type('cusp', d2 / (2 * d1));               // 3a.
+            }
+            var f1 = d > 0 ? Math.sqrt(d / 3) : Math.sqrt(-d),
+                f2 = 2 * d1;
+            return type(d > 0 ? serpentine : 'loop',              // 1. / 2.
+                    (d2 + f1) / f2,
+                    (d2 - f1) / f2);
+        },
+
         getLength: function(v, a, b, ds) {
             if (a === undefined)
                 a = 0;
@@ -1620,12 +1706,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
                 t2 = Curve.getTimeOf(v2, p2);
             if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
                 t2 <= (excludeStart ? tMax : 1)) {
-                var renormalize = param.renormalize;
-                if (renormalize) {
-                    var res = renormalize(t1, t2);
-                    t1 = res[0];
-                    t2 = res[1];
-                }
                 var loc1 = new CurveLocation(c1, t1,
                         p1 || Curve.getPoint(v1, t1), overlap),
                     loc2 = new CurveLocation(c2, t2,
@@ -1902,7 +1982,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         _getIntersections: function(v1, v2, c1, c2, locations, param) {
             if (!v2) {
                 // If v2 is not provided, search for a self-intersection on v1.
-                return Curve._getSelfIntersection(v1, c1, locations, param);
+                return Curve._getLoopIntersection(v1, c1, locations, param);
             }
             // Avoid checking curves if completely out of control bounds.
             var epsilon = /*#=*/Numerical.EPSILON,
@@ -1974,85 +2054,15 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return locations;
         },
 
-        _getSelfIntersection: function(v1, c1, locations, param) {
-            // Read a detailed description of the approach used to handle self-
-            // intersection, developed by @iconexperience here:
-            // #773#issuecomment-144018379
-            var p1x = v1[0], p1y = v1[1],
-                h1x = v1[2], h1y = v1[3],
-                h2x = v1[4], h2y = v1[5],
-                p2x = v1[6], p2y = v1[7];
-            // Get the side of both control handles
-            var line = new Line(p1x, p1y, p2x, p2y, false),
-                side1 = line.getSide(new Point(h1x, h1y), true),
-                side2 = line.getSide(new Point(h2x, h2y), true);
-            if (side1 === side2) {
-                var edgeSum = (p1x - h2x) * (h1y - p2y)
-                            + (h1x - p2x) * (h2y - p1y);
-                // If both handles are on the same side, the curve can only have
-                // a self intersection if the edge sum and the handles' sides
-                // have different signs. If the handles are on the left side,
-                // the edge sum must be negative for a self intersection (and
-                // vice-versa).
-                if (edgeSum * side1 > 0)
-                    return locations;
+        _getLoopIntersection: function(v1, c1, locations, param) {
+            var info = Curve.classify(v1);
+            if (info.type === 'loop') {
+                var roots = info.roots;
+                addLocation(locations, param,
+                    v1, c1, roots[0], null,
+                    v1, c1, roots[1], null);
             }
-            // As a second condition we check if the curve has an inflection
-            // point. If an inflection point exists, the curve cannot have a
-            // self intersection.
-            var ax = p2x - 3 * h2x + 3 * h1x - p1x,
-                bx = h2x - 2 * h1x + p1x,
-                cx = h1x - p1x,
-                ay = p2y - 3 * h2y + 3 * h1y - p1y,
-                by = h2y - 2 * h1y + p1y,
-                cy = h1y - p1y,
-                // Condition for 1 or 2 inflection points:
-                // (ay*cx-ax*cy)^2 - 4*(ay*bx-ax*by)*(by*cx-bx*cy) >= 0
-                ac = ay * cx - ax * cy,
-                ab = ay * bx - ax * by,
-                bc = by * cx - bx * cy;
-            if (ac * ac - 4 * ab * bc < 0) {
-                // The curve has no inflection points, so it may have a self
-                // intersection. Find the right parameter at which to split the
-                // curve. We search for the parameter where the velocity has an
-                // extremum by finding the roots of the cross product between
-                // the bezier curve's first and second derivative.
-                var roots = [],
-                    tSplit,
-                    count = Numerical.solveCubic(
-                            ax * ax  + ay * ay,
-                            3 * (ax * bx + ay * by),
-                            2 * (bx * bx + by * by) + ax * cx + ay * cy,
-                            bx * cx + by * cy,
-                            roots, 0, 1);
-                if (count > 0) {
-                    // Select extremum with highest curvature. This is always on
-                    // the loop in case of a self intersection.
-                    for (var i = 0, maxCurvature = 0; i < count; i++) {
-                        var curvature = Math.abs(
-                                c1.getCurvatureAtTime(roots[i]));
-                        if (curvature > maxCurvature) {
-                            maxCurvature = curvature;
-                            tSplit = roots[i];
-                        }
-                    }
-                    // Divide the curve in two and then apply the normal curve
-                    // intersection code.
-                    var parts = Curve.subdivide(v1, tSplit);
-                    // NOTE: It's ok to modify param here, since this is an
-                    // internal function and we pass a new object on each call.
-                    // After splitting, the end is always connected, so exclude:
-                    param.excludeEnd = true;
-                    // Since the curve was split above, we need to adjust the
-                    // parameters for both locations.
-                    param.renormalize = function(t1, t2) {
-                        return [t1 * tSplit, t2 * (1 - tSplit) + tSplit];
-                    };
-                    Curve._getIntersections(parts[0], parts[1], c1, c1,
-                            locations, param);
-                }
-            }
-            return locations;
+          return locations;
         },
 
         /**

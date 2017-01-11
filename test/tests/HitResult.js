@@ -59,7 +59,6 @@ function testHitResult(hitResult, expeced, message) {
     }
 }
 
-
 test('hitting a filled shape', function() {
     var path = new Path.Circle([50, 50], 50);
 

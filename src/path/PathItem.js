@@ -358,7 +358,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             }
             if (self) {
                 // First check for self-intersections within the same curve.
-                Curve._getSelfIntersection(values1, curve1, locations, {
+                Curve._getLoopIntersection(values1, curve1, locations, {
                     include: include,
                     // Only possible if there is only one closed curve:
                     excludeStart: length1 === 1 &&

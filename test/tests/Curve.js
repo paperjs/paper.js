@@ -12,6 +12,36 @@
 
 QUnit.module('Curve');
 
+function testClassify(curve, expeced, message) {
+    var info = curve.classify();
+    if (expeced.type) {
+        equals(info.type, expeced.type,
+                'info.type == \'' + expeced.type + '\'');
+    }
+    if (expeced.roots !== undefined) {
+        equals(info.roots, expeced.roots,
+                'info.roots == ' + (expeced.roots ? '[' + expeced.roots + ']'
+                        : expeced.roots));
+    }
+}
+
+test('Curve#classify()', function() {
+    var point = new Curve([100, 100], null, null, [100, 100]);
+    var line = new Curve([100, 100], null, null, [200, 200]);
+    var cusp = new Curve([100, 200], [100, -100], [-100, -100], [200, 200]);
+    var loop = new Curve([100, 200], [150, -100], [-150, -100], [200, 200]);
+    var single = new Curve([100, 100], [50, 0], [-27, -46], [200, 200]);
+    var double = new Curve([100, 200], [100, -100], [-40, -80], [200, 200]);
+    var arch = new Curve([100, 100], [50, 0], [0, -50], [200, 200]);
+    testClassify(point, { type: 'line', roots: null });
+    testClassify(line, { type: 'line', roots: null });
+    testClassify(cusp, { type: 'cusp', roots: [ 0.5 ] });
+    testClassify(loop, { type: 'loop', roots: [ 0.17267316464601132, 0.8273268353539888 ] });
+    testClassify(single, { type: 'serpentine', roots: [ 0.870967741935484 ] });
+    testClassify(double, { type: 'serpentine', roots: [ 0.15047207654837885, 0.7384168123405099 ] });
+    testClassify(arch, { type: 'arch', roots: null });
+});
+
 test('Curve#getPointAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
