@@ -73,6 +73,7 @@ var Numerical = new function() {
     }
 
     function getDiscriminant(a, b, c) {
+        // d = b^2 - a * c  computed accurately enough by a tricky scheme.
         // Ported from @hkrish's polysolve.c
         function split(v) {
             var x = v * 134217729,

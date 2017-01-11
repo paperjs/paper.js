@@ -38,26 +38,27 @@ var PathItem = Item.extend(/** @lends PathItem# */{
          * sub-paths.
          *
          * @name PathItem.create
+         * @function
          * @param {String} pathData the SVG path-data to parse
          * @return {Path|CompoundPath} the newly created path item
          */
-
         /**
          * Creates a path item from the given segments array, determining if the
          * array describes a plain path or a compound-path with multiple
          * sub-paths.
          *
          * @name PathItem.create
+         * @function
          * @param {Number[][]} segments the segments array to parse
          * @return {Path|CompoundPath} the newly created path item
          */
-
         /**
          * Creates a path item from the given object, determining if the
          * contained information describes a plain path or a compound-path with
          * multiple sub-paths.
          *
          * @name PathItem.create
+         * @function
          * @param {Object} object an object containing the properties describing
          *     the item to be created
          * @return {Path|CompoundPath} the newly created path item
