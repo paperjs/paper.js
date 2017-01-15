@@ -327,9 +327,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                 // necessary to avoid issues wit CURVETIME_EPSILON imprecisions.
                 var abs = Math.abs,
                     epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    diff = abs(this.getOffset() - loc.getOffset()),
                     i1 = !_ignoreOther && this._intersection,
-                    i2 = !_ignoreOther && loc._intersection,
-                    diff = abs(this.getOffset() - loc.getOffset());
+                    i2 = !_ignoreOther && loc._intersection;
                 res = (diff < epsilon
                         || p1 && abs(p1.getLength() - diff) < epsilon)
                     // Compare the the other location, but prevent endless
@@ -359,7 +359,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             parts.push('distance: ' + f.number(this._distance));
         return '{ ' + parts.join(', ') + ' }';
     },
-
 
     /**
      * {@grouptitle Tests}
