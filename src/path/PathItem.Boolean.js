@@ -401,16 +401,18 @@ PathItem.inject(new function() {
      * @private
      */
     function getWinding(point, curves, dir, closed, dontFlip) {
-        var epsilon = /*#=*/Numerical.WINDING_EPSILON,
-            // Determine the index of the abscissa and ordinate values in the
-            // curve values arrays, based on the direction:
-            ia = dir ? 1 : 0, // the abscissa index
+        // Determine the index of the abscissa and ordinate values in the curve
+        // values arrays, based on the direction:
+        var ia = dir ? 1 : 0, // the abscissa index
             io = dir ? 0 : 1, // the ordinate index
             pv = [point.x, point.y],
             pa = pv[ia], // the point's abscissa
             po = pv[io], // the point's ordinate
-            paL = pa - epsilon,
-            paR = pa + epsilon,
+            // Use separate epsilons for winding contribution code.
+            windingEpsilon = 1e-8,
+            qualityEpsilon = 1e-6,
+            paL = pa - windingEpsilon,
+            paR = pa + windingEpsilon,
             windingL = 0,
             windingR = 0,
             onPath = false,
@@ -497,7 +499,7 @@ PathItem.inject(new function() {
             // curves, the quality becomes less than 0.5
             // TODO: Set quality depending on distance
             if (po !== o0) {
-                if (a > pa - 100 * epsilon && a < pa + 100 * epsilon) {
+                if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
                     //quality *= Math.min(1, (100 * epsilon * Math.abs(a - pa) + 0.5));
                     quality /= 2;
                 }

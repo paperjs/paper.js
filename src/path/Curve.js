@@ -1740,8 +1740,11 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // See also: #565 #899 #1074
         if (++recursion >= 48 || ++calls > 4096)
             return calls;
-        // Let P be the first curve and Q be the second
-        var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
+        // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
+        // parameters in fat-line clipping code.
+        var epsilon = 1e-9,
+            // Let P be the first curve and Q be the second
+            q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             getSignedDistance = Line.getSignedDistance,
             // Calculate the fat-line L for Q is the baseline l and two
             // offsets which completely encloses the curve P.
@@ -1776,8 +1779,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
         // original parameter range for v2.
         var tMinNew = tMin + (tMax - tMin) * tMinClip,
             tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-        if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-                < /*#=*/Numerical.CLIPPING_EPSILON) {
+        if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
             // We have isolated the intersection with sufficient precision
             var t = (tMinNew + tMaxNew) / 2,
                 u = (uMin + uMax) / 2;
@@ -1813,7 +1815,7 @@ new function() { // Scope for intersection using bezier fat-line clipping
                             u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
                 }
             } else { // Iterate
-                if (uMax - uMin >= /*#=*/Numerical.CLIPPING_EPSILON) {
+                if (uMax - uMin >= epsilon) {
                     calls = addCurveIntersections(
                         v2, v1, c2, c1, locations, param,
                         uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
