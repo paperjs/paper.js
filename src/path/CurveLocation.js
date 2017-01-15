@@ -314,36 +314,28 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @return {Boolean} {@true if the locations are equal}
      */
     equals: function(loc, _ignoreOther) {
-        var res = this === loc,
-            epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
-        // NOTE: We need to compare both by (index + parameter) and by proximity
-        // of points. See #784#issuecomment-143161586
-        if (!res && loc instanceof CurveLocation
-                && this.getPath() === loc.getPath()
-                && this.getPoint().isClose(loc.getPoint(), epsilon)) {
-            // The position is the same, but it could still be in a different
-            // location on the path. Perform more thorough checks now:
+        var res = this === loc;
+        if (!res && loc instanceof CurveLocation) {
             var c1 = this.getCurve(),
                 c2 = loc.getCurve(),
-                abs = Math.abs,
-                // We need to wrap diff around the path's beginning / end:
-                diff = abs(
-                    ((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
-                            + this.getTime()) -
-                    ((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-                            + loc.getTime()));
-            res = (diff < /*#=*/Numerical.CURVETIME_EPSILON
-                // If diff isn't close enough, compare the actual offsets of
-                // both locations to determine if they're in the same spot,
-                // taking into account the wrapping around path ends too.
-                // This is necessary in order to handle very short consecutive
-                // curves (length ~< 1e-7), which would lead to diff > 1.
-                || ((diff = abs(this.getOffset() - loc.getOffset())) < epsilon
-                    || abs(this.getPath().getLength() - diff) < epsilon))
-                && (_ignoreOther
-                    || (!this._intersection && !loc._intersection
-                        || this._intersection && this._intersection.equals(
-                                loc._intersection, true)));
+                p1 = c1._path,
+                p2 = c2._path;
+            if (p1 === p2) {
+                // instead of comparing curve-time, compare the actual offsets
+                // of both locations to determine if they're in the same spot,
+                // taking into account the wrapping around path ends. This is
+                // necessary to avoid issues wit CURVETIME_EPSILON imprecisions.
+                var abs = Math.abs,
+                    epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    i1 = !_ignoreOther && this._intersection,
+                    i2 = !_ignoreOther && loc._intersection,
+                    diff = abs(this.getOffset() - loc.getOffset());
+                res = (diff < epsilon
+                        || p1 && abs(p1.getLength() - diff) < epsilon)
+                    // Compare the the other location, but prevent endless
+                    // recursion by passing `true` for _ignoreOther.
+                    && (!i1 && !i2 || i1 && i2 && i1.equals(i2, true));
+            }
         }
         return res;
     },
