@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 15 18:44:02 2017 +0100
+ * Date: Sun Jan 15 18:53:23 2017 +0100
  *
  ***
  *
@@ -7273,9 +7273,9 @@ var CurveLocation = Base.extend({
 			if (p1 === p2) {
 				var abs = Math.abs,
 					epsilon = 1e-7,
+					diff = abs(this.getOffset() - loc.getOffset()),
 					i1 = !_ignoreOther && this._intersection,
-					i2 = !_ignoreOther && loc._intersection,
-					diff = abs(this.getOffset() - loc.getOffset());
+					i2 = !_ignoreOther && loc._intersection;
 				res = (diff < epsilon
 						|| p1 && abs(p1.getLength() - diff) < epsilon)
 					&& (!i1 && !i2 || i1 && i2 && i1.equals(i2, true));
