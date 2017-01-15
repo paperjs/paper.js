@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jan 11 15:16:22 2017 +0100
+ * Date: Sun Jan 15 11:47:23 2017 +0100
  *
  ***
  *
@@ -1015,9 +1015,7 @@ var Numerical = new function() {
 		MACHINE_EPSILON: MACHINE_EPSILON,
 		CURVETIME_EPSILON: 4e-7,
 		GEOMETRIC_EPSILON: 1e-7,
-		WINDING_EPSILON: 1e-8,
 		TRIGONOMETRIC_EPSILON: 1e-8,
-		CLIPPING_EPSILON: 1e-10,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
 
 		isZero: function(val) {
@@ -6808,7 +6806,8 @@ new function() {
 			uMin, uMax, flip, recursion, calls) {
 		if (++recursion >= 48 || ++calls > 4096)
 			return calls;
-		var q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
+		var epsilon = 1e-9,
+			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
 			d2 = getSignedDistance(q0x, q0y, q3x, q3y, v2[4], v2[5]),
@@ -6832,8 +6831,7 @@ new function() {
 			return calls;
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-		if (Math.max(uMax - uMin, tMaxNew - tMinNew)
-				< 1e-10) {
+		if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
@@ -6864,7 +6862,7 @@ new function() {
 							u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				}
 			} else {
-				if (uMax - uMin >= 1e-10) {
+				if (uMax - uMin >= epsilon) {
 					calls = addCurveIntersections(
 						v2, v1, c2, c1, locations, param,
 						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
@@ -9921,14 +9919,15 @@ PathItem.inject(new function() {
 	}
 
 	function getWinding(point, curves, dir, closed, dontFlip) {
-		var epsilon = 1e-8,
-			ia = dir ? 1 : 0,
+		var ia = dir ? 1 : 0,
 			io = dir ? 0 : 1,
 			pv = [point.x, point.y],
 			pa = pv[ia],
 			po = pv[io],
-			paL = pa - epsilon,
-			paR = pa + epsilon,
+			windingEpsilon = 1e-8,
+			qualityEpsilon = 1e-6,
+			paL = pa - windingEpsilon,
+			paR = pa + windingEpsilon,
 			windingL = 0,
 			windingR = 0,
 			onPath = false,
@@ -9992,7 +9991,7 @@ PathItem.inject(new function() {
 				}
 			}
 			if (po !== o0) {
-				if (a > pa - 100 * epsilon && a < pa + 100 * epsilon) {
+				if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
 					quality /= 2;
 				}
 			} else {
