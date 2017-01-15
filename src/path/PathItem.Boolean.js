@@ -321,7 +321,8 @@ PathItem.inject(new function() {
             if (exclude) {
                 // Store excluded locations for later renormalization, in case
                 // the same curve is divided to their left.
-                renormalizeLocs.push(loc);
+                if (renormalizeLocs)
+                    renormalizeLocs.push(loc);
                 continue;
             } else if (include) {
                 results.unshift(loc);
