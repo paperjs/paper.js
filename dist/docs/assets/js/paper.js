@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 15 11:47:23 2017 +0100
+ * Date: Sun Jan 15 18:44:02 2017 +0100
  *
  ***
  *
@@ -1013,7 +1013,7 @@ var Numerical = new function() {
 		TOLERANCE: 1e-6,
 		EPSILON: EPSILON,
 		MACHINE_EPSILON: MACHINE_EPSILON,
-		CURVETIME_EPSILON: 4e-7,
+		CURVETIME_EPSILON: 1e-8,
 		GEOMETRIC_EPSILON: 1e-7,
 		TRIGONOMETRIC_EPSILON: 1e-8,
 		KAPPA: 4 * (sqrt(2) - 1) / 3,
@@ -6081,7 +6081,7 @@ var Curve = Base.extend({
 	},
 
 	divideAtTime: function(time, _setHandles) {
-		var tMin = 4e-7,
+		var tMin = 1e-8,
 			tMax = 1 - tMin,
 			res = null;
 		if (time >= tMin && time <= tMax) {
@@ -6291,7 +6291,7 @@ statics: {
 			refine(i / count);
 
 		var step = 1 / (count * 2);
-		while (step > 4e-7) {
+		while (step > 1e-8) {
 			if (!refine(minT - step) && !refine(minT + step))
 				step /= 2;
 		}
@@ -6370,7 +6370,7 @@ statics: {
 					b = 2 * (v0 + v2) - 4 * v1,
 					c = v1 - v0,
 					count = Numerical.solveQuadratic(a, b, c, roots),
-					tMin = 4e-7,
+					tMin = 1e-8,
 					tMax = 1 - tMin;
 				add(v3, 0);
 				for (var i = 0; i < count; i++) {
@@ -6601,7 +6601,7 @@ new function() {
 			y = t === 0 ? p1y : t === 1 ? p2y
 					: ((ay * t + by) * t + cy) * t + p1y;
 		} else {
-			var tMin = 4e-7,
+			var tMin = 1e-8,
 				tMax = 1 - tMin;
 			if (t < tMin) {
 				x = cx;
@@ -6775,7 +6775,7 @@ new function() {
 			overlap) {
 		var excludeStart = !overlap && param.excludeStart,
 			excludeEnd = !overlap && param.excludeEnd,
-			tMin = 4e-7,
+			tMin = 1e-8,
 			tMax = 1 - tMin;
 		if (t1 == null)
 			t1 = Curve.getTimeOf(v1, p1);
@@ -6806,7 +6806,7 @@ new function() {
 			uMin, uMax, flip, recursion, calls) {
 		if (++recursion >= 48 || ++calls > 4096)
 			return calls;
-		var epsilon = 1e-9,
+		var fatLineEpsilon = 1e-9,
 			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
@@ -6831,7 +6831,7 @@ new function() {
 			return calls;
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-		if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
+		if (Math.max(uMax - uMin, tMaxNew - tMinNew) < fatLineEpsilon) {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
@@ -6862,7 +6862,7 @@ new function() {
 							u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				}
 			} else {
-				if (uMax - uMin >= epsilon) {
+				if (uMax - uMin >= fatLineEpsilon) {
 					calls = addCurveIntersections(
 						v2, v1, c2, c1, locations, param,
 						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
@@ -7048,7 +7048,7 @@ new function() {
 
 		getOverlaps: function(v1, v2) {
 			var abs = Math.abs,
-				timeEpsilon = 4e-7,
+				timeEpsilon = 1e-8,
 				geomEpsilon = 1e-7,
 				straight1 = Curve.isStraight(v1),
 				straight2 = Curve.isStraight(v2),
@@ -7120,7 +7120,7 @@ var CurveLocation = Base.extend({
 	_class: 'CurveLocation',
 
 	initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
-		if (time > 0.9999996) {
+		if (time > 0.99999999) {
 			var next = curve.getNext();
 			if (next) {
 				time = 0;
@@ -7264,26 +7264,22 @@ var CurveLocation = Base.extend({
 	},
 
 	equals: function(loc, _ignoreOther) {
-		var res = this === loc,
-			epsilon = 1e-7;
-		if (!res && loc instanceof CurveLocation
-				&& this.getPath() === loc.getPath()
-				&& this.getPoint().isClose(loc.getPoint(), epsilon)) {
+		var res = this === loc;
+		if (!res && loc instanceof CurveLocation) {
 			var c1 = this.getCurve(),
 				c2 = loc.getCurve(),
-				abs = Math.abs,
-				diff = abs(
-					((c1.isLast() && c2.isFirst() ? -1 : c1.getIndex())
-							+ this.getTime()) -
-					((c2.isLast() && c1.isFirst() ? -1 : c2.getIndex())
-							+ loc.getTime()));
-			res = (diff < 4e-7
-				|| ((diff = abs(this.getOffset() - loc.getOffset())) < epsilon
-					|| abs(this.getPath().getLength() - diff) < epsilon))
-				&& (_ignoreOther
-					|| (!this._intersection && !loc._intersection
-						|| this._intersection && this._intersection.equals(
-								loc._intersection, true)));
+				p1 = c1._path,
+				p2 = c2._path;
+			if (p1 === p2) {
+				var abs = Math.abs,
+					epsilon = 1e-7,
+					i1 = !_ignoreOther && this._intersection,
+					i2 = !_ignoreOther && loc._intersection,
+					diff = abs(this.getOffset() - loc.getOffset());
+				res = (diff < epsilon
+						|| p1 && abs(p1.getLength() - diff) < epsilon)
+					&& (!i1 && !i2 || i1 && i2 && i1.equals(i2, true));
+			}
 		}
 		return res;
 	},
@@ -7322,7 +7318,7 @@ var CurveLocation = Base.extend({
 			return false;
 		var t1 = this.getTime(),
 			t2 = inter.getTime(),
-			tMin = 4e-7,
+			tMin = 1e-8,
 			tMax = 1 - tMin,
 			t1Inside = t1 > tMin && t1 < tMax,
 			t2Inside = t2 > tMin && t2 < tMax;
@@ -8177,7 +8173,7 @@ var Path = PathItem.extend({
 		var loc = this.getLocationAt(location),
 			index = loc && loc.index,
 			time = loc && loc.time,
-			tMin = 4e-7,
+			tMin = 1e-8,
 			tMax = 1 - tMin;
 		if (time >= tMax) {
 			index++;
@@ -8530,7 +8526,7 @@ var Path = PathItem.extend({
 			}
 		}
 		var abs = Math.abs,
-			epsilon = 4e-7,
+			epsilon = 1e-8,
 			v2 = values2[pos2],
 			start2;
 		while (v1 && v2) {
@@ -9841,7 +9837,7 @@ PathItem.inject(new function() {
 
 	function divideLocations(locations, include, clearLater) {
 		var results = include && [],
-			tMin = 4e-7,
+			tMin = 1e-8,
 			tMax = 1 - tMin,
 			clearHandles = false,
 			clearCurves = clearLater || [],
@@ -9878,7 +9874,8 @@ PathItem.inject(new function() {
 				prevCurve = curve;
 			}
 			if (exclude) {
-				renormalizeLocs.push(loc);
+				if (renormalizeLocs)
+					renormalizeLocs.push(loc);
 				continue;
 			} else if (include) {
 				results.unshift(loc);
@@ -10096,7 +10093,7 @@ PathItem.inject(new function() {
 		var offsets = [0.5, 0.25, 0.75],
 			windingZero = { winding: 0, quality: 0 },
 			winding = windingZero,
-			tMin = 4e-7,
+			tMin = 1e-8,
 			tMax = 1 - tMin;
 		for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
 			var length = totalLength * offsets[i];
