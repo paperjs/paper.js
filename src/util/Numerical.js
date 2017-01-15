@@ -161,7 +161,7 @@ var Numerical = new function() {
          * The epsilon to be used when comparing curve-time parameters in the
          * fat-line clipping code.
          */
-        CLIPPING_EPSILON: 1e-10,
+        CLIPPING_EPSILON: 1e-9,
         /**
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.
