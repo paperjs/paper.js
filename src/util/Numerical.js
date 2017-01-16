@@ -112,7 +112,6 @@ var Numerical = new function() {
     }
 
     return /** @lends Numerical */{
-        TOLERANCE: 1e-6,
         /**
          * A very small absolute value used to check if a value is very close to
          * zero. The value should be large enough to offset any floating point

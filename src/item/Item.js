@@ -1883,8 +1883,8 @@ new function() { // Injection scope for hit-test functions shared with project
                     : this.getGlobalMatrix().prepend(this.getView()._matrix),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
-            // since we're using it for division.
-            tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
+            // since we're using it for division (see checkBounds()).
+            tolerance = Math.max(options.tolerance, /*#=*/Numerical.EPSILON),
             // Hit-tests are performed in the item's local coordinate space.
             // To calculate the correct 2D padding for tolerance, we therefore
             // need to apply the inverted item matrix.
