@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jan 15 18:53:23 2017 +0100
+ * Date: Mon Jan 16 17:48:26 2017 +0100
  *
  ***
  *
@@ -1010,7 +1010,6 @@ var Numerical = new function() {
 	}
 
 	return {
-		TOLERANCE: 1e-6,
 		EPSILON: EPSILON,
 		MACHINE_EPSILON: MACHINE_EPSILON,
 		CURVETIME_EPSILON: 1e-8,
@@ -3682,7 +3681,7 @@ new function() {
 			viewMatrix = parentViewMatrix
 					? parentViewMatrix.appended(matrix)
 					: this.getGlobalMatrix().prepend(this.getView()._matrix),
-			tolerance = Math.max(options.tolerance, 1e-6),
+			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
 					Path._getStrokePadding(tolerance,
 						matrix.inverted()._shiftless()));
@@ -10703,7 +10702,8 @@ var PathFitter = Base.extend({
 		}
 
 		var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
-			alpha1, alpha2;
+			alpha1,
+			alpha2;
 		if (abs(detC0C1) > epsilon) {
 			var detC0X = C[0][0] * X[1]    - C[1][0] * X[0],
 				detXC1 = X[0]    * C[1][1] - X[1]    * C[0][1];
@@ -10712,13 +10712,9 @@ var PathFitter = Base.extend({
 		} else {
 			var c0 = C[0][0] + C[0][1],
 				c1 = C[1][0] + C[1][1];
-			if (abs(c0) > epsilon) {
-				alpha1 = alpha2 = X[0] / c0;
-			} else if (abs(c1) > epsilon) {
-				alpha1 = alpha2 = X[1] / c1;
-			} else {
-				alpha1 = alpha2 = 0;
-			}
+			alpha1 = alpha2 = abs(c0) > epsilon ? X[0] / c0
+							: abs(c1) > epsilon ? X[1] / c1
+							: 0;
 		}
 
 		var segLength = pt2.getDistance(pt1),
@@ -10768,9 +10764,7 @@ var PathFitter = Base.extend({
 			pt2 = this.evaluate(1, curve2, u),
 			diff = pt.subtract(point),
 			df = pt1.dot(pt1) + diff.dot(pt2);
-		if (Math.abs(df) < 1e-6)
-			return u;
-		return u - diff.dot(pt1) / df;
+		return Numerical.isZero(df) ? u : u - diff.dot(pt1) / df;
 	},
 
 	evaluate: function(degree, curve, t) {
