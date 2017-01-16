@@ -145,7 +145,8 @@ var PathFitter = Base.extend({
 
         // Compute the determinants of C and X
         var detC0C1 = C[0][0] * C[1][1] - C[1][0] * C[0][1],
-            alpha1, alpha2;
+            alpha1,
+            alpha2;
         if (abs(detC0C1) > epsilon) {
             // Kramer's rule
             var detC0X = C[0][0] * X[1]    - C[1][0] * X[0],
@@ -157,14 +158,9 @@ var PathFitter = Base.extend({
             // Matrix is under-determined, try assuming alpha1 == alpha2
             var c0 = C[0][0] + C[0][1],
                 c1 = C[1][0] + C[1][1];
-            if (abs(c0) > epsilon) {
-                alpha1 = alpha2 = X[0] / c0;
-            } else if (abs(c1) > epsilon) {
-                alpha1 = alpha2 = X[1] / c1;
-            } else {
-                // Handle below
-                alpha1 = alpha2 = 0;
-            }
+            alpha1 = alpha2 = abs(c0) > epsilon ? X[0] / c0
+                            : abs(c1) > epsilon ? X[1] / c1
+                            : 0;
         }
 
         // If alpha negative, use the Wu/Barsky heuristic (see text)
@@ -234,11 +230,8 @@ var PathFitter = Base.extend({
             pt2 = this.evaluate(1, curve2, u),
             diff = pt.subtract(point),
             df = pt1.dot(pt1) + diff.dot(pt2);
-        // Compute f(u) / f'(u)
-        if (Math.abs(df) < /*#=*/Numerical.TOLERANCE)
-            return u;
         // u = u - f(u) / f'(u)
-        return u - diff.dot(pt1) / df;
+        return Numerical.isZero(df) ? u : u - diff.dot(pt1) / df;
     },
 
     // Evaluate a bezier curve at a particular parameter value
