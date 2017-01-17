@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jan 16 17:48:26 2017 +0100
+ * Date: Tue Jan 17 12:05:32 2017 +0100
  *
  ***
  *
@@ -6160,22 +6160,22 @@ statics: {
 	},
 
 	subdivide: function(v, t) {
-		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7];
+		var x0 = v[0], y0 = v[1],
+			x1 = v[2], y1 = v[3],
+			x2 = v[4], y2 = v[5],
+			x3 = v[6], y3 = v[7];
 		if (t === undefined)
 			t = 0.5;
 		var u = 1 - t,
-			p3x = u * p1x + t * c1x, p3y = u * p1y + t * c1y,
-			p4x = u * c1x + t * c2x, p4y = u * c1y + t * c2y,
-			p5x = u * c2x + t * p2x, p5y = u * c2y + t * p2y,
-			p6x = u * p3x + t * p4x, p6y = u * p3y + t * p4y,
-			p7x = u * p4x + t * p5x, p7y = u * p4y + t * p5y,
-			p8x = u * p6x + t * p7x, p8y = u * p6y + t * p7y;
+			x4 = u * x0 + t * x1, y4 = u * y0 + t * y1,
+			x5 = u * x1 + t * x2, y5 = u * y1 + t * y2,
+			x6 = u * x2 + t * x3, y6 = u * y2 + t * y3,
+			x7 = u * x4 + t * x5, y7 = u * y4 + t * y5,
+			x8 = u * x5 + t * x6, y8 = u * y5 + t * y6,
+			x9 = u * x7 + t * x8, y9 = u * y7 + t * y8;
 		return [
-			[p1x, p1y, p3x, p3y, p6x, p6y, p8x, p8y],
-			[p8x, p8y, p7x, p7y, p5x, p5y, p2x, p2y]
+			[x0, y0, x4, y4, x7, y7, x9, y9],
+			[x9, y9, x8, y8, x6, y6, x3, y3]
 		];
 	},
 
@@ -6193,7 +6193,7 @@ statics: {
 			var a = 3 * (o1 - o2) - o0 + o3,
 				b = 2 * (o0 + o2) - 4 * o1,
 				c = o1 - o0,
-				tMin = 4e-7,
+				tMin = 1e-8,
 				tMax = 1 - tMin,
 				roots = [],
 				n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
@@ -6216,28 +6216,28 @@ statics: {
 	},
 
 	solveCubic: function (v, coord, val, roots, min, max) {
-		var p1 = v[coord],
-			c1 = v[coord + 2],
-			c2 = v[coord + 4],
-			p2 = v[coord + 6],
+		var v0 = v[coord],
+			v1 = v[coord + 2],
+			v2 = v[coord + 4],
+			v3 = v[coord + 6],
 			res = 0;
-		if (  !(p1 < val && p2 < val && c1 < val && c2 < val ||
-				p1 > val && p2 > val && c1 > val && c2 > val)) {
-			var c = 3 * (c1 - p1),
-				b = 3 * (c2 - c1) - c,
-				a = p2 - p1 - c - b;
-			res = Numerical.solveCubic(a, b, c, p1 - val, roots, min, max);
+		if (  !(v0 < val && v3 < val && v1 < val && v2 < val ||
+				v0 > val && v3 > val && v1 > val && v2 > val)) {
+			var c = 3 * (v1 - v0),
+				b = 3 * (v2 - v1) - c,
+				a = v3 - v0 - c - b;
+			res = Numerical.solveCubic(a, b, c, v0 - val, roots, min, max);
 		}
 		return res;
 	},
 
 	getTimeOf: function(v, point) {
-		var p1 = new Point(v[0], v[1]),
-			p2 = new Point(v[6], v[7]),
+		var p0 = new Point(v[0], v[1]),
+			p3 = new Point(v[6], v[7]),
 			epsilon = 1e-12,
 			geomEpsilon = 1e-7,
-			t = point.isClose(p1, epsilon) ? 0
-			  : point.isClose(p2, epsilon) ? 1
+			t = point.isClose(p0, epsilon) ? 0
+			  : point.isClose(p3, epsilon) ? 1
 			  : null;
 		if (t === null) {
 			var coords = [point.x, point.y],
@@ -6251,24 +6251,24 @@ statics: {
 				}
 			}
 		}
-		return point.isClose(p1, geomEpsilon) ? 0
-			 : point.isClose(p2, geomEpsilon) ? 1
+		return point.isClose(p0, geomEpsilon) ? 0
+			 : point.isClose(p3, geomEpsilon) ? 1
 			 : null;
 	},
 
 	getNearestTime: function(v, point) {
 		if (Curve.isStraight(v)) {
-			var p1x = v[0], p1y = v[1],
-				p2x = v[6], p2y = v[7],
-				vx = p2x - p1x, vy = p2y - p1y,
+			var x0 = v[0], y0 = v[1],
+				x3 = v[6], y3 = v[7],
+				vx = x3 - x0, vy = y3 - y0,
 				det = vx * vx + vy * vy;
 			if (det === 0)
 				return 0;
-			var u = ((point.x - p1x) * vx + (point.y - p1y) * vy) / det;
+			var u = ((point.x - x0) * vx + (point.y - y0) * vy) / det;
 			return u < 1e-12 ? 0
 				 : u > 0.999999999999 ? 1
 				 : Curve.getTimeOf(v,
-					new Point(p1x + u * vx, p1y + u * vy));
+					new Point(x0 + u * vx, y0 + u * vy));
 		}
 
 		var count = 100,
@@ -6314,26 +6314,26 @@ statics: {
 	},
 
 	isFlatEnough: function(v, flatness) {
-		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7],
-			ux = 3 * c1x - 2 * p1x - p2x,
-			uy = 3 * c1y - 2 * p1y - p2y,
-			vx = 3 * c2x - 2 * p2x - p1x,
-			vy = 3 * c2y - 2 * p2y - p1y;
+		var x0 = v[0], y0 = v[1],
+			x1 = v[2], y1 = v[3],
+			x2 = v[4], y2 = v[5],
+			x3 = v[6], y3 = v[7],
+			ux = 3 * x1 - 2 * x0 - x3,
+			uy = 3 * y1 - 2 * y0 - y3,
+			vx = 3 * x2 - 2 * x3 - x0,
+			vy = 3 * y2 - 2 * y3 - y0;
 		return Math.max(ux * ux, vx * vx) + Math.max(uy * uy, vy * vy)
 				<= 16 * flatness * flatness;
 	},
 
 	getArea: function(v) {
-		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7];
-		return 3 * ((p2y - p1y) * (c1x + c2x) - (p2x - p1x) * (c1y + c2y)
-				+ c1y * (p1x - c2x) - c1x * (p1y - c2y)
-				+ p2y * (c2x + p1x / 3) - p2x * (c2y + p1y / 3)) / 20;
+		var x0 = v[0], y0 = v[1],
+			x1 = v[2], y1 = v[3],
+			x2 = v[4], y2 = v[5],
+			x3 = v[6], y3 = v[7];
+		return 3 * ((y3 - y0) * (x1 + x2) - (x3 - x0) * (y1 + y2)
+				+ y1 * (x0 - x2) - x1 * (y0 - y2)
+				+ y3 * (x2 + x0 / 3) - x3 * (y2 + y0 / 3)) / 20;
 	},
 
 	getBounds: function(v) {
@@ -6434,11 +6434,11 @@ statics: {
 	};
 
 	this.statics[name] = function(v) {
-		var p1x = v[0], p1y = v[1],
-			p2x = v[6], p2y = v[7];
-		return test(new Line(p1x, p1y, p2x, p2y),
-				new Point(v[2] - p1x, v[3] - p1y),
-				new Point(v[4] - p2x, v[5] - p2y));
+		var x0 = v[0], y0 = v[1],
+			x3 = v[6], y3 = v[7];
+		return test(new Line(x0, y0, x3, y3),
+				new Point(v[2] - x0, v[3] - y0),
+				new Point(v[4] - x3, v[5] - y3));
 	};
 }, {
 	statics: {},
@@ -6547,18 +6547,18 @@ new function() {
 new function() {
 
 	function getLengthIntegrand(v) {
-		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7],
+		var x0 = v[0], y0 = v[1],
+			x1 = v[2], y1 = v[3],
+			x2 = v[4], y2 = v[5],
+			x3 = v[6], y3 = v[7],
 
-			ax = 9 * (c1x - c2x) + 3 * (p2x - p1x),
-			bx = 6 * (p1x + c2x) - 12 * c1x,
-			cx = 3 * (c1x - p1x),
+			ax = 9 * (x1 - x2) + 3 * (x3 - x0),
+			bx = 6 * (x0 + x2) - 12 * x1,
+			cx = 3 * (x1 - x0),
 
-			ay = 9 * (c1y - c2y) + 3 * (p2y - p1y),
-			by = 6 * (p1y + c2y) - 12 * c1y,
-			cy = 3 * (c1y - p1y);
+			ay = 9 * (y1 - y2) + 3 * (y3 - y0),
+			by = 6 * (y0 + y2) - 12 * y1,
+			cy = 3 * (y1 - y0);
 
 		return function(t) {
 			var dx = (ax * t + bx) * t + cx,
@@ -6574,31 +6574,31 @@ new function() {
 	function evaluate(v, t, type, normalized) {
 		if (t == null || t < 0 || t > 1)
 			return null;
-		var p1x = v[0], p1y = v[1],
-			c1x = v[2], c1y = v[3],
-			c2x = v[4], c2y = v[5],
-			p2x = v[6], p2y = v[7],
+		var x0 = v[0], y0 = v[1],
+			x1 = v[2], y1 = v[3],
+			x2 = v[4], y2 = v[5],
+			x3 = v[6], y3 = v[7],
 			isZero = Numerical.isZero;
-		if (isZero(c1x - p1x) && isZero(c1y - p1y)) {
-			c1x = p1x;
-			c1y = p1y;
+		if (isZero(x1 - x0) && isZero(y1 - y0)) {
+			x1 = x0;
+			y1 = y0;
 		}
-		if (isZero(c2x - p2x) && isZero(c2y - p2y)) {
-			c2x = p2x;
-			c2y = p2y;
+		if (isZero(x2 - x3) && isZero(y2 - y3)) {
+			x2 = x3;
+			y2 = y3;
 		}
-		var cx = 3 * (c1x - p1x),
-			bx = 3 * (c2x - c1x) - cx,
-			ax = p2x - p1x - cx - bx,
-			cy = 3 * (c1y - p1y),
-			by = 3 * (c2y - c1y) - cy,
-			ay = p2y - p1y - cy - by,
+		var cx = 3 * (x1 - x0),
+			bx = 3 * (x2 - x1) - cx,
+			ax = x3 - x0 - cx - bx,
+			cy = 3 * (y1 - y0),
+			by = 3 * (y2 - y1) - cy,
+			ay = y3 - y0 - cy - by,
 			x, y;
 		if (type === 0) {
-			x = t === 0 ? p1x : t === 1 ? p2x
-					: ((ax * t + bx) * t + cx) * t + p1x;
-			y = t === 0 ? p1y : t === 1 ? p2y
-					: ((ay * t + by) * t + cy) * t + p1y;
+			x = t === 0 ? x0 : t === 1 ? x3
+					: ((ax * t + bx) * t + cx) * t + x0;
+			y = t === 0 ? y0 : t === 1 ? y3
+					: ((ay * t + by) * t + cy) * t + y0;
 		} else {
 			var tMin = 1e-8,
 				tMax = 1 - tMin;
@@ -6606,16 +6606,16 @@ new function() {
 				x = cx;
 				y = cy;
 			} else if (t > tMax) {
-				x = 3 * (p2x - c2x);
-				y = 3 * (p2y - c2y);
+				x = 3 * (x3 - x2);
+				y = 3 * (y3 - y2);
 			} else {
 				x = (3 * ax * t + 2 * bx) * t + cx;
 				y = (3 * ay * t + 2 * by) * t + cy;
 			}
 			if (normalized) {
 				if (x === 0 && y === 0 && (t < tMin || t > tMax)) {
-					x = c2x - c1x;
-					y = c2y - c1y;
+					x = x2 - x1;
+					y = y2 - y1;
 				}
 				var len = Math.sqrt(x * x + y * y);
 				if (len) {
@@ -6638,13 +6638,13 @@ new function() {
 
 		classify: function(v) {
 
-			var x1 = v[0], y1 = v[1],
-				x2 = v[2], y2 = v[3],
-				x3 = v[4], y3 = v[5],
-				x4 = v[6], y4 = v[7],
-				a1 = x1 * (y4 - y3) + y1 * (x3 - x4) + x4 * y3 - y4 * x3,
-				a2 = x2 * (y1 - y4) + y2 * (x4 - x1) + x1 * y4 - y1 * x4,
-				a3 = x3 * (y2 - y1) + y3 * (x1 - x2) + x2 * y1 - y2 * x1,
+			var x0 = v[0], y0 = v[1],
+				x1 = v[2], y1 = v[3],
+				x2 = v[4], y2 = v[5],
+				x3 = v[6], y3 = v[7],
+				a1 = x0 * (y3 - y2) + y0 * (x2 - x3) + x3 * y2 - y3 * x2,
+				a2 = x1 * (y0 - y3) + y1 * (x3 - x0) + x0 * y3 - y0 * x3,
+				a3 = x2 * (y1 - y0) + y2 * (x0 - x1) + x1 * y0 - y1 * x0,
 				d3 = 3 * a3,
 				d2 = d3 - a2,
 				d1 = d2 - a2 + a1,
@@ -6976,24 +6976,24 @@ new function() {
 				return Curve._getLoopIntersection(v1, c1, locations, param);
 			}
 			var epsilon = 1e-12,
-				c1p1x = v1[0], c1p1y = v1[1],
-				c1h1x = v1[2], c1h1y = v1[3],
-				c1h2x = v1[4], c1h2y = v1[5],
-				c1p2x = v1[6], c1p2y = v1[7],
-				c2p1x = v2[0], c2p1y = v2[1],
-				c2h1x = v2[2], c2h1y = v2[3],
-				c2h2x = v2[4], c2h2y = v2[5],
-				c2p2x = v2[6], c2p2y = v2[7],
+				c1x0 = v1[0], c1y0 = v1[1],
+				c1x1 = v1[2], c1y1 = v1[3],
+				c1x2 = v1[4], c1y2 = v1[5],
+				c1x3 = v1[6], c1y3 = v1[7],
+				c2x0 = v2[0], c2y0 = v2[1],
+				c2x1 = v2[2], c2y1 = v2[3],
+				c2x2 = v2[4], c2y2 = v2[5],
+				c2x3 = v2[6], c2y3 = v2[7],
 				min = Math.min,
 				max = Math.max;
-			if (!(  max(c1p1x, c1h1x, c1h2x, c1p2x) + epsilon >
-					min(c2p1x, c2h1x, c2h2x, c2p2x) &&
-					min(c1p1x, c1h1x, c1h2x, c1p2x) - epsilon <
-					max(c2p1x, c2h1x, c2h2x, c2p2x) &&
-					max(c1p1y, c1h1y, c1h2y, c1p2y) + epsilon >
-					min(c2p1y, c2h1y, c2h2y, c2p2y) &&
-					min(c1p1y, c1h1y, c1h2y, c1p2y) - epsilon <
-					max(c2p1y, c2h1y, c2h2y, c2p2y)))
+			if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
+					min(c2x0, c2x1, c2x2, c2x3) &&
+					min(c1x0, c1x1, c1x2, c1x3) - epsilon <
+					max(c2x0, c2x1, c2x2, c2x3) &&
+					max(c1y0, c1y1, c1y2, c1y3) + epsilon >
+					min(c2y0, c2y1, c2y2, c2y3) &&
+					min(c1y0, c1y1, c1y2, c1y3) - epsilon <
+					max(c2y0, c2y1, c2y2, c2y3)))
 				return locations;
 			var overlaps = Curve.getOverlaps(v1, v2);
 			if (overlaps) {
@@ -7019,18 +7019,18 @@ new function() {
 						0, 1, 0, 1, 0, 0, 0);
 			if (straight && locations.length > before)
 				return locations;
-			var c1p1 = new Point(c1p1x, c1p1y),
-				c1p2 = new Point(c1p2x, c1p2y),
-				c2p1 = new Point(c2p1x, c2p1y),
-				c2p2 = new Point(c2p2x, c2p2y);
-			if (c1p1.isClose(c2p1, epsilon))
-				addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 0, c2p1);
-			if (!param.excludeStart && c1p1.isClose(c2p2, epsilon))
-				addLocation(locations, param, v1, c1, 0, c1p1, v2, c2, 1, c2p2);
-			if (!param.excludeEnd && c1p2.isClose(c2p1, epsilon))
-				addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 0, c2p1);
-			if (c1p2.isClose(c2p2, epsilon))
-				addLocation(locations, param, v1, c1, 1, c1p2, v2, c2, 1, c2p2);
+			var c1p0 = new Point(c1x0, c1y0),
+				c1p3 = new Point(c1x3, c1y3),
+				c2p0 = new Point(c2x0, c2y0),
+				c2p3 = new Point(c2x3, c2y3);
+			if (c1p0.isClose(c2p0, epsilon))
+				addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
+			if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
+				addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
+			if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
+				addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
+			if (c1p3.isClose(c2p3, epsilon))
+				addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
 			return locations;
 		},
 
