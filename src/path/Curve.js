@@ -669,7 +669,7 @@ statics: /** @lends Curve */{
             var a = 3 * (o1 - o2) - o0 + o3,
                 b = 2 * (o0 + o2) - 4 * o1,
                 c = o1 - o0,
-                tMin = 4e-7,
+                tMin = /*#=*/Numerical.CURVETIME_EPSILON,
                 tMax = 1 - tMin,
                 roots = [],
                 n = Numerical.solveQuadratic(a, b, c, roots, tMin, tMax);
