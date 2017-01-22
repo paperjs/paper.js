@@ -38,10 +38,12 @@ PathItem.inject(new function() {
         // contribution contributes to the final result or not. They are applied
         // to for each segment after the paths are split at crossings.
         operators = {
-            unite:     { 1: true, 2: true },
-            intersect: { 2: true },
-            subtract:  { 1: true },
-            exclude:   { 1: true }
+            unite:     { '1': true, '2': true },
+            intersect: { '2': true },
+            subtract:  { '1': true },
+            // exclude only needs -1 to support reorientPaths() when there are
+            // no crossings.
+            exclude:   { '1': true, '-1': true }
         };
 
     /*
@@ -109,20 +111,6 @@ PathItem.inject(new function() {
             curves = [],
             paths;
 
-        // When there are no crossings, the result can be known ahead of tracePaths(),
-        // largely simplifying the processing required:
-        if (!crossings.length) {
-            if (paths2 && operator.exclude) {
-                for (var i = 0; i < paths2.length; i++) {
-                    paths2[i].reverse();
-                }
-            }
-            paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
-                    function(w) {
-                        return !!operator[w];
-                    });
-        }
-
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
@@ -134,7 +122,7 @@ PathItem.inject(new function() {
             }
         }
 
-        if (!paths) {
+        if (crossings.length) {
             // Collect all segments and curves of both involved operands.
             collect(paths1);
             if (paths2)
@@ -158,6 +146,13 @@ PathItem.inject(new function() {
                     segment._path._overlapsOnly = false;
             }
             paths = tracePaths(segments, operator);
+        } else {
+            // When there are no crossings, the result can be determined through
+            // a much faster call to reorientPaths():
+            paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
+                    function(w) {
+                        return !!operator[w];
+                    });
         }
 
         return createResult(CompoundPath, paths, true, path1, path2, options);
@@ -265,7 +260,7 @@ PathItem.inject(new function() {
                 first = sorted[0];
             if (clockwise == null)
                 clockwise = first.isClockwise();
-            // determine winding for each path
+            // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
                     entry1 = lookup[path1._id],
@@ -273,14 +268,12 @@ PathItem.inject(new function() {
                     containerWinding = 0;
                 for (var j = i - 1; j >= 0; j--) {
                     var path2 = sorted[j];
-                    // We run through the paths from largest to smallest,
-                    // meaning that for any current path, all potentially
-                    // containing paths have already been processed and their
-                    // orientation has been fixed. Since we want to achieve
-                    // alternating orientation of contained paths, all we have
-                    // to do is to find one include path that contains the
-                    // current path, and then set the orientation to the
-                    // opposite of the containing path.
+                    // As we run through the paths from largest to smallest, for
+                    // any current path, all potentially containing paths have
+                    // already been processed and their orientation fixed.
+                    // To achieve correct orientation of contained paths based
+                    // on winding, we have to find one containing path with
+                    // different "insideness" and set opposite orientation.
                     if (path2.contains(point)) {
                         var entry2 = lookup[path2._id];
                         entry1.container = entry2.exclude ? entry2.container
@@ -289,10 +282,10 @@ PathItem.inject(new function() {
                         break;
                     }
                 }
-                // only keep paths if the insideness changes when crossing the
+                // Only keep paths if the "insideness" changes when crossing the
                 // path, e.g. the inside of the path is filled and the outside
-                // not filled (or vice versa).
-                if (isInside(entry1.winding) == isInside(containerWinding)) {
+                // is not, or vice versa.
+                if (isInside(entry1.winding) === isInside(containerWinding)) {
                     entry1.exclude = true;
                     // No need to delete excluded entries. Setting to null is
                     // enough, as #setChildren() can handle arrays with gaps.
