@@ -38,7 +38,7 @@ PathItem.inject(new function() {
         // contribution contributes to the final result or not. They are applied
         // to for each segment after the paths are split at crossings.
         operators = {
-            unite:     { 1: true },
+            unite:     { 1: true, 2: true },
             intersect: { 2: true },
             subtract:  { 1: true },
             exclude:   { 1: true }
@@ -54,8 +54,9 @@ PathItem.inject(new function() {
         var res = path.clone(false).reduce({ simplify: true })
                 .transform(null, true, true);
         return resolve
-            ? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero', true)
-            : res;
+                ? res.resolveCrossings().reorient(
+                    res.getFillRule() === 'nonzero', true)
+                : res;
     }
 
     function createResult(ctor, paths, reduce, path1, path2, options) {
@@ -92,6 +93,7 @@ PathItem.inject(new function() {
         // Add a simple boolean property to check for a given operation,
         // e.g. `if (operator.unite)`
         operator[operation] = true;
+        operator.name = operation;
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
@@ -110,55 +112,16 @@ PathItem.inject(new function() {
         // When there are no crossings, the result can be known ahead of tracePaths(),
         // largely simplifying the processing required:
         if (!crossings.length) {
-            // the paths have been reoriented, therefore they have alternate
-            // windings.
-            var insideWindings =
-                operator.unite ? [1, 2] :
-                operator.subtract ? [1] :
-                operator.intersect ? [2] :
-                operator.exclude ? [1] :
-                [];
             if (paths2 && operator.exclude) {
                 for (var i = 0; i < paths2.length; i++) {
                     paths2[i].reverse();
                 }
             }
-            var reorientedPaths = reorientPaths(
-                paths2 ? paths1.concat(paths2) : paths1,
-                function(w) {return insideWindings.indexOf(w) >= 0;}
-            );
-            paths = [
-                new CompoundPath({children: reorientedPaths, insert: false})
-            ];
+            paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
+                    function(w) {
+                        return !!operator[w];
+                    });
         }
-        /*
-        if (!crossings.length) {
-            // If we have two operands, check their bounds to find cases where
-            // one path is fully contained in another. These cases cannot be
-            // simplified, we still need tracePaths() for them.
-            var ok = true;
-            if (paths2) {
-                for (var i1 = 0, l1 = paths1.length; i1 < l1 && ok; i1++) {
-                    var bounds1 = paths1[i1].getBounds();
-                    for (var i2 = 0, l2 = paths2.length; i2 < l2 && ok; i2++) {
-                        var bounds2 = paths2[i2].getBounds();
-                        // If either of the bounds fully contains the other,
-                        // skip the simple approach and delegate to tracePaths()
-                        ok = !bounds1._containsRectangle(bounds2) &&
-                             !bounds2._containsRectangle(bounds1);
-                    }
-                }
-            }
-            if (ok) {
-                // See #1113 for a description of how to deal with operators:
-                paths = operator.unite || operator.exclude ? [_path1, _path2]
-                        : operator.subtract ? [_path1]
-                        // No result, but let's return an empty path to keep
-                        // chainability and transfer styles to the result.
-                        : operator.intersect ? [new Path(Item.NO_INSERT)]
-                        : null;
-            }
-        }*/
 
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
@@ -268,37 +231,34 @@ PathItem.inject(new function() {
     /**
      * Reorients the specified paths.
      *
-     * windingInsideFn is a function which determines if the inside of a path
-     * is filled. For non-zero fill rule this function would be implemented as
-     * follows:
+     * @param {Item[]} paths the paths of which the orientation needs to be
+     *     reoriented
+     * @param {Function} isInside determines if the inside of a path is filled.
+     *     For non-zero fill rule this function would be implemented as follows:
      *
-     * windingInsideFn = function(w) {
-     *   return w != 0;
-     * }
-     *
-     * If clockwise is defined, the orientation of the root paths will be set to
-     * the orientation specified by clockwise. Otherwise the orientation of the
-     * first root child (which is the largest child) will be used.
-     *
-     * @param paths
-     * @param windingInsideFn
-     * @param clockwise (optional)
-     * @returns {*}
+     *     function isInside(w) {
+     *       return w != 0;
+     *     }
+     * @param {Boolean} [clockwise] if provided, the orientation of the root
+     *     paths will be set to the orientation specified by `clockwise`,
+     *     otherwise the orientation of the largest root child is used.
+     * @returns {Item[]} the reoriented paths
     */
-    function reorientPaths(paths, windingInsideFn, clockwise) {
+    function reorientPaths(paths, isInside, clockwise) {
         var length = paths && paths.length;
         if (length) {
             var lookup = Base.each(paths, function (path, i) {
                     // Build a lookup table with information for each path's
                     // original index and winding contribution.
                     this[path._id] = {
+                        container: null,
                         winding: path.isClockwise() ? 1 : -1,
                         index: i
                     };
                 }, {}),
                 // Now sort the paths by their areas, from large to small.
                 sorted = paths.slice().sort(function (a, b) {
-                    return Math.abs(b.getArea()) - Math.abs(a.getArea());
+                    return abs(b.getArea()) - abs(a.getArea());
                 }),
                 // Get reference to the first, largest path and insert it
                 // already.
@@ -315,37 +275,35 @@ PathItem.inject(new function() {
                     var path2 = sorted[j];
                     // We run through the paths from largest to smallest,
                     // meaning that for any current path, all potentially
-                    // containing paths have already been processed and
-                    // their orientation has been fixed. Since we want to
-                    // achieve alternating orientation of contained paths,
-                    // all we have to do is to find one include path that
-                    // contains the current path, and then set the
-                    // orientation to the opposite of the containing path.
+                    // containing paths have already been processed and their
+                    // orientation has been fixed. Since we want to achieve
+                    // alternating orientation of contained paths, all we have
+                    // to do is to find one include path that contains the
+                    // current path, and then set the orientation to the
+                    // opposite of the containing path.
                     if (path2.contains(point)) {
                         var entry2 = lookup[path2._id];
-                        entry1.newContainer = entry2.exclude ? entry2.newContainer : path2;
-                        containerWinding = entry2.winding;
-                        entry1.winding += containerWinding;
+                        entry1.container = entry2.exclude ? entry2.container
+                                : path2;
+                        entry1.winding += (containerWinding = entry2.winding);
                         break;
                     }
                 }
                 // only keep paths if the insideness changes when crossing the
                 // path, e.g. the inside of the path is filled and the outside
                 // not filled (or vice versa).
-                if (windingInsideFn(entry1.winding) == windingInsideFn(containerWinding)) {
+                if (isInside(entry1.winding) == isInside(containerWinding)) {
                     entry1.exclude = true;
+                    // No need to delete excluded entries. Setting to null is
+                    // enough, as #setChildren() can handle arrays with gaps.
+                    paths[entry1.index] = null;
                 } else {
-                    // If the containing path is not excluded, we're
-                    // done searching for the orientation defining path.
-                    path1.setClockwise(entry1.newContainer ?
-                        !entry1.newContainer.isClockwise() : clockwise);
+                    // If the containing path is not excluded, we're done
+                    // searching for the orientation defining path.
+                    var container = entry1.container;
+                    path1.setClockwise(container ? !container.isClockwise()
+                            : clockwise);
                 }
-            }
-        }
-        // remove the excluded paths from the array
-        for (var i = length - 1; i >= 0; i--) {
-            if (lookup[paths[i]._id].exclude) {
-                paths.splice(i, 1);
             }
         }
         return paths;
@@ -688,7 +646,6 @@ PathItem.inject(new function() {
             winding: max(windingL, windingR),
             windingL: windingL,
             windingR: windingR,
-            onContour: !windingL ^ !windingR,
             onPathCount: onPathCount
         };
     }
@@ -768,8 +725,11 @@ PathItem.inject(new function() {
                     || operator[(winding = seg._winding || {}).winding]
                     // Unite operations need special handling of segments with a
                     // winding contribution of two (part of both involved areas)
-                    // but which are also part of the contour of the result.
-                    || operator.unite && winding.onContour));
+                    // which are only valid if they are part of the contour of
+                    // the result, not contained inside another area.
+                    && !(operator.unite && winding.winding === 2
+                        // No contour if both windings are non-zero.
+                        && winding.windingL && winding.windingR)));
         }
 
         function isStart(seg) {
@@ -1210,26 +1170,21 @@ PathItem.inject(new function() {
          * @param {Boolean} [nonZero=false] controls if the non-zero fill-rule
          *     is to be applied, by counting the winding of each nested path and
          *     discarding sub-paths that do not contribute to the final result
+         * @param {Boolean} [clockwise] if provided, the orientation of the root
+         *     paths will be set to the orientation specified by `clockwise`,
+         *     otherwise the orientation of the largest root child is used.
          * @return {PahtItem} a reference to the item itself, reoriented
          */
         reorient: function(nonZero, clockwise) {
             var children = this._children;
             if (children && children.length) {
-                children = this.removeChildren();
-                reorientPaths(children,
-                    nonZero ?
-                        function (w) {
-                            // true if winding is non-zero
-                            return !w
-                        }
-                        : function (w) {
-                            // true if winding is even
-                            return !(w % 2)
+                this.setChildren(reorientPaths(this.removeChildren(),
+                        function(w) {
+                            // Handle both even-odd and non-zero rule.
+                            return !!(nonZero ? w : w & 1);
                         },
-                    clockwise
-                );
-                this.setChildren(children);
-            } else if (clockwise != null) {
+                        clockwise));
+            } else if (clockwise !== undefined) {
                 this.setClockwise(clockwise);
             }
             return this;
