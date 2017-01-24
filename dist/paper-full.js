@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 24 07:50:40 2017 -0500
+ * Date: Tue Jan 24 08:22:03 2017 -0500
  *
  ***
  *
@@ -7338,8 +7338,7 @@ var CurveLocation = Base.extend({
 
 		function addOffsets(curve, end) {
 			var v = curve.getValues(),
-				info = Curve.classify(v),
-				roots = info.roots || getPeaks(v),
+				roots = Curve.classify(v).roots || getPeaks(v),
 				count = roots.length,
 				t = end && count > 1 ? roots[count - 1]
 						: count > 0 ? roots[0]
