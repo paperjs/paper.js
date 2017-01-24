@@ -95,7 +95,6 @@ PathItem.inject(new function() {
         // Add a simple boolean property to check for a given operation,
         // e.g. `if (operator.unite)`
         operator[operation] = true;
-        operator.name = operation;
         // Give both paths the same orientation except for subtraction
         // and exclusion, where we need them at opposite orientation.
         if (_path2 && (operator.subtract || operator.exclude)
