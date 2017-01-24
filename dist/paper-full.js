@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 17 12:05:32 2017 +0100
+ * Date: Tue Jan 24 07:50:40 2017 -0500
  *
  ***
  *
@@ -7334,19 +7334,56 @@ var CurveLocation = Base.extend({
 		if (!c1 || !c2 || !c3 || !c4)
 			return false;
 
+		var offsets = [];
+
+		function addOffsets(curve, end) {
+			var v = curve.getValues(),
+				info = Curve.classify(v),
+				roots = info.roots || getPeaks(v),
+				count = roots.length,
+				t = end && count > 1 ? roots[count - 1]
+						: count > 0 ? roots[0]
+						: 0.5;
+			offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
+		}
+
+		function getPeaks(v) {
+			var x0 = v[0], y0 = v[1],
+				x1 = v[2], y1 = v[3],
+				x2 = v[4], y2 = v[5],
+				x3 = v[6], y3 = v[7],
+				ax =     -x0 + 3 * x1 - 3 * x2 + x3,
+				bx =  3 * x0 - 6 * x1 + 3 * x2,
+				cx = -3 * x0 + 3 * x1,
+				ay =     -y0 + 3 * y1 - 3 * y2 + y3,
+				by =  3 * y0 - 6 * y1 + 3 * y2,
+				cy = -3 * y0 + 3 * y1,
+				roots = [];
+			Numerical.solveCubic(
+					9 * (ax * ax + ay * ay),
+					9 * (ax * bx + by * ay),
+					2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+					(cx * bx + by * cy),
+					roots, tMin, tMax);
+			return roots.sort();
+		}
+
 		function isInRange(angle, min, max) {
 			return min < max
 					? angle > min && angle < max
 					: angle > min || angle < max;
 		}
 
-		var lenghts = [];
-		if (!t1Inside)
-			lenghts.push(c1.getLength(), c2.getLength());
-		if (!t2Inside)
-			lenghts.push(c3.getLength(), c4.getLength());
+		if (!t1Inside) {
+			addOffsets(c1, true);
+			addOffsets(c2, false);
+		}
+		if (!t2Inside) {
+			addOffsets(c3, true);
+			addOffsets(c4, false);
+		}
 		var pt = this.getPoint(),
-			offset = Math.min.apply(Math, lenghts) / 64,
+			offset = Math.min.apply(Math, offsets),
 			v2 = t1Inside ? c2.getTangentAtTime(t1)
 					: c2.getPointAt(offset).subtract(pt),
 			v1 = t1Inside ? v2.negate()
