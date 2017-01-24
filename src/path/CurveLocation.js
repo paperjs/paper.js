@@ -433,21 +433,19 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // - If the intersection is on a segment, step away at equal offsets on
         //   each curve, to calculate unambiguous angles. The vector from the
         //   intersection to this new location is used to determine the angle.
-        //   The offset is determined by the taking the shortest distance on all
-        //   involved curves that is unambiguous. We do this by determining the
-        //   largest offsets of unambiguous direction on each curve by finding
-        //   their inflections points and "peaks", and then use half of that.
 
         var offsets = [];
 
         function addOffsets(curve, end) {
+            // Find the largest offset of unambiguous direction on the curve by
+            // finding their inflections points and "peaks".
             var v = curve.getValues(),
-                info = Curve.classify(v),
-                roots = info.roots || getPeaks(v),
+                roots = Curve.classify(v).roots || getPeaks(v),
                 count = roots.length,
                 t = end && count > 1 ? roots[count - 1]
                         : count > 0 ? roots[0]
                         : 0.5;
+            // Then use half of the offset, for extra measure.
             offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
         }
 
@@ -492,6 +490,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             addOffsets(c4, false);
         }
         var pt = this.getPoint(),
+            // Determined the shared unambiguous offset by the taking the
+            // shortest offsets on all involved curves that are unambiguous.
             offset = Math.min.apply(Math, offsets),
             v2 = t1Inside ? c2.getTangentAtTime(t1)
                     : c2.getPointAt(offset).subtract(pt),
