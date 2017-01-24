@@ -427,6 +427,55 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         if (!c1 || !c2 || !c3 || !c4)
             return false;
 
+        // Calculate unambiguous angles for all 4 tangents at the intersection:
+        // - If the intersection is inside a curve (t1 / t2Inside), the tangent
+        //   at t1 / t2 is unambiguous, because the curve is continuous.
+        // - If the intersection is on a segment, step away at equal offsets on
+        //   each curve, to calculate unambiguous angles. The vector from the
+        //   intersection to this new location is used to determine the angle.
+        //   The offset is determined by the taking the shortest distance on all
+        //   involved curves that is unambiguous. We do this by determining the
+        //   largest offsets of unambiguous direction on each curve by finding
+        //   their inflections points and "peaks", and then use half of that.
+
+        var offsets = [];
+
+        function addOffsets(curve, end) {
+            var v = curve.getValues(),
+                info = Curve.classify(v),
+                roots = info.roots || getPeaks(v),
+                count = roots.length,
+                t = end && count > 1 ? roots[count - 1]
+                        : count > 0 ? roots[0]
+                        : 0.5;
+            offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
+        }
+
+        // Peaks are locations sharing some qualities of curvature extrema but
+        // are cheaper to compute. They fulfill their purpose here quite well.
+        // See: http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
+        function getPeaks(v) {
+            var x0 = v[0], y0 = v[1],
+                x1 = v[2], y1 = v[3],
+                x2 = v[4], y2 = v[5],
+                x3 = v[6], y3 = v[7],
+                ax =     -x0 + 3 * x1 - 3 * x2 + x3,
+                bx =  3 * x0 - 6 * x1 + 3 * x2,
+                cx = -3 * x0 + 3 * x1,
+                ay =     -y0 + 3 * y1 - 3 * y2 + y3,
+                by =  3 * y0 - 6 * y1 + 3 * y2,
+                cy = -3 * y0 + 3 * y1,
+                roots = [];
+            Numerical.solveCubic(
+                    9 * (ax * ax + ay * ay),
+                    9 * (ax * bx + by * ay),
+                    2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+                    (cx * bx + by * cy),
+                    // Exclude 0 and 1 as we don't want to use them as peaks.
+                    roots, tMin, tMax);
+            return roots.sort();
+        }
+
         function isInRange(angle, min, max) {
             return min < max
                     ? angle > min && angle < max
@@ -434,23 +483,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     : angle > min || angle < max;
         }
 
-        // Calculate unambiguous angles for all 4 tangents at the intersection:
-        // - If the intersection is inside a curve (t1 / t2Inside), the tangent
-        //   at t1 / t2 is unambiguous, because the curve is continuous.
-        // - If the intersection is on a segment, step away at equal offsets on
-        //   each curve, to calculate unambiguous angles. The vector from the
-        //   intersection to this new location is used to determine the angle.
-        //   The offset is determined by taking 1/64th of the length of the
-        //   shortest of all involved curves.
-        // NOTE: VectorBoolean has code that slowly shifts these offsets inwards
-        // until the resulting tangents are not ambiguous. Do we need this too?
-        var lenghts = [];
-        if (!t1Inside)
-            lenghts.push(c1.getLength(), c2.getLength());
-        if (!t2Inside)
-            lenghts.push(c3.getLength(), c4.getLength());
+        if (!t1Inside) {
+            addOffsets(c1, true);
+            addOffsets(c2, false);
+        }
+        if (!t2Inside) {
+            addOffsets(c3, true);
+            addOffsets(c4, false);
+        }
         var pt = this.getPoint(),
-            offset = Math.min.apply(Math, lenghts) / 64,
+            offset = Math.min.apply(Math, offsets),
             v2 = t1Inside ? c2.getTangentAtTime(t1)
                     : c2.getPointAt(offset).subtract(pt),
             v1 = t1Inside ? v2.negate()
@@ -459,7 +501,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     : c4.getPointAt(offset).subtract(pt),
             v3 = t2Inside ? v4.negate()
                     : c3.getPointAt(-offset).subtract(pt),
-            // NOTE: For shorter API calls we work with angles in degrees here:
             a1 = v1.getAngle(),
             a2 = v2.getAngle(),
             a3 = v3.getAngle(),

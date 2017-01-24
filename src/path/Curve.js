@@ -1468,8 +1468,6 @@ new function() { // Scope for methods that require private functions
             // 1: tangent, 1st derivative
             // 2: normal, 1st derivative
             // 3: curvature, 1st derivative & 2nd derivative
-            // Simply use the derivation of the bezier function for both
-            // the x and y coordinates:
             // Prevent tangents and normals of length 0:
             // http://stackoverflow.com/questions/10506868/
             if (t < tMin) {
