@@ -232,9 +232,10 @@ new function() {
             for (var i = 0, l = stops.length; i < l; i++) {
                 var stop = stops[i],
                     stopColor = stop._color,
-                    alpha = stopColor.getAlpha();
+                    alpha = stopColor.getAlpha(),
+                    offset = stop._offset;
                 attrs = {
-                    offset: stop._offset || i / (l - 1)
+                    offset: offset == null ? i / (l - 1) : offset
                 };
                 if (stopColor)
                     attrs['stop-color'] = stopColor.toCSS(true);

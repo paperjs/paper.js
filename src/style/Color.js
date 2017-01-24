@@ -863,12 +863,14 @@ var Color = Base.extend(new function() {
                         destination.x, destination.y);
             }
             for (var i = 0, l = stops.length; i < l; i++) {
-                var stop = stops[i];
+                var stop = stops[i],
+                    offset = stop._offset;
                 // Use the defined offset, and fall back to automatic linear
                 // calculation.
                 // NOTE: that if _offset is 0 for the first entry, the fall-back
                 // will be so too.
-                canvasGradient.addColorStop(stop._offset || i / (l - 1),
+                canvasGradient.addColorStop(
+                        offset == null ? i / (l - 1) : offset,
                         stop._color.toCanvasStyle());
             }
             return this._canvasStyle = canvasGradient;
