@@ -42,7 +42,7 @@ PathItem.inject(new function() {
             intersect: { '2': true },
             subtract:  { '1': true },
             // exclude only needs -1 to support reorientPaths() when there are
-            // no crossings.
+            // no crossings. The actual boolean code uses unsigned winding.
             exclude:   { '1': true, '-1': true }
         };
 
@@ -673,13 +673,12 @@ PathItem.inject(new function() {
                 vClose = null;
             }
         }
-        // TODO: If the winding one
-        windingL = windingL && (2 - abs(windingL) % 2);
-        windingR = windingR && (2 - abs(windingR) % 2);
-        // Return the calculated winding contribution and detect if we are
-        // on the contour of the area by comparing windingL and windingR.
-        // This is required when handling unite operations, where a winding
-        // number of 2 is not part of the result unless it's the contour:
+        // Use the unsigned winding contributions when determining which areas
+        // are part of the boolean result.
+        windingL = abs(windingL);
+        windingR = abs(windingR);
+        // Return the calculated winding contributions along with a quality
+        // value indicating how reliable the value really is.
         return {
             winding: max(windingL, windingR),
             windingL: windingL,
