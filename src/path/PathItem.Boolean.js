@@ -529,8 +529,6 @@ PathItem.inject(new function() {
                 } else if (a > paR) {
                     windingR += winding;
                 } else {
-                    windingL += winding;
-                    windingR += winding;
                     onPath = true;
                 }
                 // Determine the quality of the winding calculation. Reduce the
