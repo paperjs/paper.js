@@ -533,38 +533,36 @@ PathItem.inject(new function() {
                     windingR += winding;
                     onPath = true;
                 }
-            } else if (winding !== windingPrev) {
-                // Curve is crossed at starting point and winding changes from
-                // previous curve. Cancel the winding from previous curve.
-                if (a3Prev < paR) {
-                    windingL += winding;
-                }
-                if (a3Prev > paL) {
-                    windingR += winding;
-                }
-            } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-                // Point is on a horizontal curve between the previous non-
-                // horizontal and the current curve.
-                onPath = true;
-                if (a3Prev < paL) {
-                    // left winding was added before, now add right winding.
-                    windingR += winding;
-                } else if (a3Prev > paR) {
-                    // right winding was added before, now add left winding.
-                    windingL += winding;
-                }
-            }
-            // Determine the quality of the winding calculation. Currently the
-            // quality is reduced with every crossing of the ray very close
-            // to the path. This means that if the point is on or near multiple
-            // curves, the quality becomes less than 0.5
-            // TODO: Set quality depending on distance
-            if (po !== o0) {
+                // Determine the quality of the winding calculation. Reduce the
+                // quality with every crossing of the ray very close to the
+                // path. This means that if the point is on or near multiple
+                // curves, the quality becomes less than 0.5.
                 if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
-                    //quality *= Math.min(1, (100 * epsilon * Math.abs(a - pa) + 0.5));
+                    // TODO: Set quality depending on distance
+                    // quality *= Math.min(1, (100 * epsilon * Math.abs(a - pa) + 0.5));
                     quality /= 2;
                 }
             } else {
+                if (winding !== windingPrev) {
+                    // Curve is crossed at starting point and winding changes
+                    // from previous curve. Cancel winding from previous curve.
+                    if (a3Prev < paR) {
+                        windingL += winding;
+                    } else if (a3Prev > paL) {
+                        windingR += winding;
+                    }
+                } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
+                    // Point is on a horizontal curve between the previous non-
+                    // horizontal and the current curve.
+                    if (a3Prev < paL) {
+                        // Left winding was added before, now add right winding.
+                        windingR += winding;
+                    } else if (a3Prev > paR) {
+                        // Right winding was added before, now add left winding.
+                        windingL += winding;
+                    }
+                    onPath = true;
+                }
                 // TODO:
                 quality = 0;
             }
