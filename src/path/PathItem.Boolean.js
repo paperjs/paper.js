@@ -535,11 +535,8 @@ PathItem.inject(new function() {
                 // quality with every crossing of the ray very close to the
                 // path. This means that if the point is on or near multiple
                 // curves, the quality becomes less than 0.5.
-                if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
-                    // TODO: Set quality depending on distance
-                    // quality *= Math.min(1, (100 * epsilon * Math.abs(a - pa) + 0.5));
+                if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
                     quality /= 2;
-                }
             } else {
                 if (winding !== windingPrev) {
                     // Curve is crossed at starting point and winding changes
@@ -561,7 +558,8 @@ PathItem.inject(new function() {
                     }
                     onPath = true;
                 }
-                // TODO:
+                // TODO: Determine how to handle quality when curve is crossed
+                // at starting point. Do we always need to set to 0?
                 quality = 0;
             }
             vPrev = v;
