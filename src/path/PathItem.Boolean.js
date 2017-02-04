@@ -774,7 +774,7 @@ PathItem.inject(new function() {
         function isValid(seg) {
             var winding;
             return !!(seg && !seg._visited && (!operator
-                    || operator[(winding = seg._winding).winding]
+                    || operator[(winding = seg._winding || {}).winding]
                         // Unite operations need special handling of segments
                         // with a winding contribution of two (part of both
                         // areas), which are only valid if they are part of the
