@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 4 20:50:22 2017 +0100
+ * Date: Sat Feb 4 21:38:56 2017 +0100
  *
  ***
  *
@@ -10034,30 +10034,26 @@ PathItem.inject(new function() {
 				} else if (a > paR) {
 					windingR += winding;
 				} else {
-					windingL += winding;
-					windingR += winding;
 					onPath = true;
 				}
-			} else if (winding !== windingPrev) {
-				if (a3Prev < paR) {
-					windingL += winding;
-				}
-				if (a3Prev > paL) {
-					windingR += winding;
-				}
-			} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-				onPath = true;
-				if (a3Prev < paL) {
-					windingR += winding;
-				} else if (a3Prev > paR) {
-					windingL += winding;
-				}
-			}
-			if (po !== o0) {
 				if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
 					quality /= 2;
 				}
 			} else {
+				if (winding !== windingPrev) {
+					if (a3Prev < paR) {
+						windingL += winding;
+					} else if (a3Prev > paL) {
+						windingR += winding;
+					}
+				} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
+					if (a3Prev < paL) {
+						windingR += winding;
+					} else if (a3Prev > paR) {
+						windingL += winding;
+					}
+					onPath = true;
+				}
 				quality = 0;
 			}
 			vPrev = v;
@@ -10132,8 +10128,8 @@ PathItem.inject(new function() {
 				vClose = null;
 			}
 		}
-		windingL = windingL && (2 - abs(windingL) % 2);
-		windingR = windingR && (2 - abs(windingR) % 2);
+		windingL = abs(windingL);
+		windingR = abs(windingR);
 		return {
 			winding: max(windingL, windingR),
 			windingL: windingL,
