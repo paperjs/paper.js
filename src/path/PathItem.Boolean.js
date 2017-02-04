@@ -137,7 +137,7 @@ PathItem.inject(new function() {
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
                     inter = segment._intersection;
-                if (segment._winding == null) {
+                if (!segment._winding) {
                     propagateWinding(segment, _path1, _path2, curves, operator);
                 }
                 // See if all encountered segments in a path are overlaps.
@@ -275,9 +275,10 @@ PathItem.inject(new function() {
                     // different "insideness" and set opposite orientation.
                     if (path2.contains(point)) {
                         var entry2 = lookup[path2._id];
+                        containerWinding = entry2.winding;
+                        entry1.winding += containerWinding;
                         entry1.container = entry2.exclude ? entry2.container
                                 : path2;
-                        entry1.winding += (containerWinding = entry2.winding);
                         break;
                     }
                 }
@@ -713,15 +714,17 @@ PathItem.inject(new function() {
 
         function isValid(seg) {
             var winding;
-            return !!(seg && !seg._visited && (!operator
-                    || operator[(winding = seg._winding || {}).winding]
-                    // Unite operations need special handling of segments with a
-                    // winding contribution of two (part of both involved areas)
-                    // which are only valid if they are part of the contour of
-                    // the result, not contained inside another area.
-                    && !(operator.unite && winding.winding === 2
-                        // No contour if both windings are non-zero.
-                        && winding.windingL && winding.windingR)));
+            var res = !!(seg && !seg._visited && (!operator
+                    || operator[(winding = seg._winding).winding]
+                        // Unite operations need special handling of segments
+                        // with a winding contribution of two (part of both
+                        // areas), which are only valid if they are part of the
+                        // result's contour, not contained inside another area.
+                        && !(operator.unite && winding.winding === 2
+                            // No contour if both windings are non-zero.
+                            && winding.windingL && winding.windingR)));
+            console.log(seg && seg._winding);
+            return res;
         }
 
         function isStart(seg) {
