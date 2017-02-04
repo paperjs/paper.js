@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 4 20:20:21 2017 +0100
+ * Date: Sat Feb 4 20:50:22 2017 +0100
  *
  ***
  *
@@ -10201,7 +10201,7 @@ PathItem.inject(new function() {
 		function isValid(seg) {
 			var winding;
 			return !!(seg && !seg._visited && (!operator
-					|| operator[(winding = seg._winding).winding]
+					|| operator[(winding = seg._winding || {}).winding]
 						&& !(operator.unite && winding.winding === 2
 							&& winding.windingL && winding.windingR)));
 		}
