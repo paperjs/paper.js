@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jan 25 07:55:37 2017 -0500
+ * Date: Sat Feb 4 20:20:21 2017 +0100
  *
  ***
  *
@@ -9724,18 +9724,19 @@ PathItem.inject(new function() {
 		max = Math.max,
 		abs = Math.abs,
 		operators = {
-			unite:     { 1: true },
-			intersect: { 2: true },
-			subtract:  { 1: true },
-			exclude:   { 1: true }
+			unite:     { '1': true, '2': true },
+			intersect: { '2': true },
+			subtract:  { '1': true },
+			exclude:   { '1': true, '-1': true }
 		};
 
 	function preparePath(path, resolve) {
 		var res = path.clone(false).reduce({ simplify: true })
 				.transform(null, true, true);
 		return resolve
-			? res.resolveCrossings().reorient(res.getFillRule() === 'nonzero')
-			: res;
+				? res.resolveCrossings().reorient(
+					res.getFillRule() === 'nonzero', true)
+				: res;
 	}
 
 	function createResult(ctor, paths, reduce, path1, path2, options) {
@@ -9770,26 +9771,6 @@ PathItem.inject(new function() {
 			curves = [],
 			paths;
 
-		if (!crossings.length) {
-			var ok = true;
-			if (paths2) {
-				for (var i1 = 0, l1 = paths1.length; i1 < l1 && ok; i1++) {
-					var bounds1 = paths1[i1].getBounds();
-					for (var i2 = 0, l2 = paths2.length; i2 < l2 && ok; i2++) {
-						var bounds2 = paths2[i2].getBounds();
-						ok = !bounds1._containsRectangle(bounds2) &&
-							 !bounds2._containsRectangle(bounds1);
-					}
-				}
-			}
-			if (ok) {
-				paths = operator.unite || operator.exclude ? [_path1, _path2]
-						: operator.subtract ? [_path1]
-						: operator.intersect ? [new Path(Item.NO_INSERT)]
-						: null;
-			}
-		}
-
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
@@ -9799,7 +9780,7 @@ PathItem.inject(new function() {
 			}
 		}
 
-		if (!paths) {
+		if (crossings.length) {
 			collect(paths1);
 			if (paths2)
 				collect(paths2);
@@ -9810,13 +9791,18 @@ PathItem.inject(new function() {
 			for (var i = 0, l = segments.length; i < l; i++) {
 				var segment = segments[i],
 					inter = segment._intersection;
-				if (segment._winding == null) {
+				if (!segment._winding) {
 					propagateWinding(segment, _path1, _path2, curves, operator);
 				}
 				if (!(inter && inter._overlap))
 					segment._path._overlapsOnly = false;
 			}
 			paths = tracePaths(segments, operator);
+		} else {
+			paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
+					function(w) {
+						return !!operator[w];
+					});
 		}
 
 		return createResult(CompoundPath, paths, true, path1, path2, options);
@@ -9868,6 +9854,51 @@ PathItem.inject(new function() {
 	function clearCurveHandles(curves) {
 		for (var i = curves.length - 1; i >= 0; i--)
 			curves[i].clearHandles();
+	}
+
+	function reorientPaths(paths, isInside, clockwise) {
+		var length = paths && paths.length;
+		if (length) {
+			var lookup = Base.each(paths, function (path, i) {
+					this[path._id] = {
+						container: null,
+						winding: path.isClockwise() ? 1 : -1,
+						index: i
+					};
+				}, {}),
+				sorted = paths.slice().sort(function (a, b) {
+					return abs(b.getArea()) - abs(a.getArea());
+				}),
+				first = sorted[0];
+			if (clockwise == null)
+				clockwise = first.isClockwise();
+			for (var i = 0; i < length; i++) {
+				var path1 = sorted[i],
+					entry1 = lookup[path1._id],
+					point = path1.getInteriorPoint(),
+					containerWinding = 0;
+				for (var j = i - 1; j >= 0; j--) {
+					var path2 = sorted[j];
+					if (path2.contains(point)) {
+						var entry2 = lookup[path2._id];
+						containerWinding = entry2.winding;
+						entry1.winding += containerWinding;
+						entry1.container = entry2.exclude ? entry2.container
+								: path2;
+						break;
+					}
+				}
+				if (isInside(entry1.winding) === isInside(containerWinding)) {
+					entry1.exclude = true;
+					paths[entry1.index] = null;
+				} else {
+					var container = entry1.container;
+					path1.setClockwise(container ? !container.isClockwise()
+							: clockwise);
+				}
+			}
+		}
+		return paths;
 	}
 
 	function divideLocations(locations, include, clearLater) {
@@ -10108,7 +10139,6 @@ PathItem.inject(new function() {
 			windingL: windingL,
 			windingR: windingR,
 			quality: quality,
-			onContour: !windingL ^ !windingR,
 			onPath: onPath
 		};
 	}
@@ -10171,8 +10201,9 @@ PathItem.inject(new function() {
 		function isValid(seg) {
 			var winding;
 			return !!(seg && !seg._visited && (!operator
-					|| operator[(winding = seg._winding || {}).winding]
-					|| operator.unite && winding.onContour));
+					|| operator[(winding = seg._winding).winding]
+						&& !(operator.unite && winding.winding === 2
+							&& winding.windingL && winding.windingR)));
 		}
 
 		function isStart(seg) {
@@ -10433,52 +10464,16 @@ PathItem.inject(new function() {
 			return item;
 		},
 
-		reorient: function(nonZero) {
-			var children = this._children,
-				length = children && children.length;
-			if (length > 1) {
-				var lookup = Base.each(children, function(path, i) {
-						this[path._id] = {
-							winding: path.isClockwise() ? 1 : -1,
-							index: i
-						};
-					}, {}),
-					sorted = this.removeChildren().sort(function (a, b) {
-						return abs(b.getArea()) - abs(a.getArea());
-					}),
-					first = sorted[0],
-					paths = [];
-				paths[lookup[first._id].index] = first;
-				for (var i1 = 1; i1 < length; i1++) {
-					var path1 = sorted[i1],
-						entry1 = lookup[path1._id],
-						point = path1.getInteriorPoint(),
-						isContained = false,
-						container = null,
-						exclude = false;
-					for (var i2 = i1 - 1; i2 >= 0 && !container; i2--) {
-						var path2 = sorted[i2];
-						if (path2.contains(point)) {
-							var entry2 = lookup[path2._id];
-							if (nonZero && !isContained) {
-								entry1.winding += entry2.winding;
-								if (entry1.winding && entry2.winding) {
-									exclude = entry1.exclude = true;
-									break;
-								}
-							}
-							isContained = true;
-							container = !entry2.exclude && path2;
-						}
-					}
-					if (!exclude) {
-						path1.setClockwise(container
-								? !container.isClockwise()
-								: first.isClockwise());
-						paths[entry1.index] = path1;
-					}
-				}
-				this.setChildren(paths);
+		reorient: function(nonZero, clockwise) {
+			var children = this._children;
+			if (children && children.length) {
+				this.setChildren(reorientPaths(this.removeChildren(),
+						function(w) {
+							return !!(nonZero ? w : w & 1);
+						},
+						clockwise));
+			} else if (clockwise !== undefined) {
+				this.setClockwise(clockwise);
 			}
 			return this;
 		},

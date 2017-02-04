@@ -6971,7 +6971,7 @@ function onMouseDown(event) {
 	
 <div id="reorient" class="member">
 <div class="member-link">
-<a name="reorient" href="#reorient"><tt><b>reorient</b>([nonZero])</tt></a>
+<a name="reorient" href="#reorient"><tt><b>reorient</b>([nonZero[, clockwise]])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -6986,6 +6986,13 @@ function onMouseDown(event) {
 <tt>Boolean</tt>
 &mdash;&nbsp;controls if the non-zero fill-rule  is to be applied, by counting the winding of each nested path and  discarding sub-paths that do not contribute to the final result
 &mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+	<li>
+<tt>clockwise:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;if provided, the orientation of the root  paths will be set to the orientation specified by <code>clockwise</code>,  otherwise the orientation of the largest root child is used.
+&mdash;&nbsp;optional
 </li>
 	
 </ul>
