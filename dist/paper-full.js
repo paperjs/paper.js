@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 4 21:38:56 2017 +0100
+ * Date: Sat Feb 4 21:55:44 2017 +0100
  *
  ***
  *
@@ -10036,9 +10036,8 @@ PathItem.inject(new function() {
 				} else {
 					onPath = true;
 				}
-				if (a > pa - qualityEpsilon && a < pa + qualityEpsilon) {
+				if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
 					quality /= 2;
-				}
 			} else {
 				if (winding !== windingPrev) {
 					if (a3Prev < paR) {
