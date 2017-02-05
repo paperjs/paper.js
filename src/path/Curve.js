@@ -1960,36 +1960,38 @@ new function() { // Scope for intersection using bezier fat-line clipping
      * line is on the X axis, and solve the implicit equations for the X axis
      * and the curve.
      */
-    function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
-        var flip = Curve.isStraight(v1),
-            vc = flip ? v2 : v1,
-            vl = flip ? v1 : v2,
-            lx1 = vl[0], ly1 = vl[1],
-            lx2 = vl[6], ly2 = vl[7],
-            // Rotate both curve and line around l1 so that line is on x axis.
-            ldx = lx2 - lx1,
-            ldy = ly2 - ly1,
-            // Calculate angle to the x-axis (1, 0).
-            angle = Math.atan2(-ldy, ldx),
+    function getCurveLineIntersections(v, px, py, vx, vy) {
+        // Calculate angle to the x-axis (1, 0).
+        var angle = Math.atan2(-vy, vx),
             sin = Math.sin(angle),
             cos = Math.cos(angle),
             // (rlx1, rly1) = (0, 0)
             // Calculate the curve values of the rotated curve.
-            rvc = [];
+            rv = [],
+            roots = [];
         for(var i = 0; i < 8; i += 2) {
-            var x = vc[i] - lx1,
-                y = vc[i + 1] - ly1;
-            rvc.push(
+            var x = v[i] - px,
+                y = v[i + 1] - py;
+            rv.push(
                 x * cos - y * sin,
                 x * sin + y * cos);
         }
         // Solve it for y = 0. We need to include t = 0, 1 and let addLocation()
         // do the filtering, to catch important edge cases.
-        var roots = [],
-            count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
+        Curve.solveCubic(rv, 1, 0, roots, 0, 1);
+        return roots;
+    }
+
+    function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
+        var flip = Curve.isStraight(v1),
+            vc = flip ? v2 : v1,
+            vl = flip ? v1 : v2,
+            x1 = vl[0], y1 = vl[1],
+            x2 = vl[6], y2 = vl[7],
+            roots = getCurveLineIntersections(vc, x1, y1, x2 - x1, y2 - y1);
         // NOTE: count could be -1 for infinite solutions, but that should only
         // happen with lines, in which case we should not be here.
-        for (var i = 0; i < count; i++) {
+        for (var i = 0, l = roots.length; i < l; i++) {
             // For each found solution on the rotated curve, get the point on
             // the real curve and with that the location on the line.
             var tc = roots[i],
@@ -2201,6 +2203,9 @@ new function() { // Scope for intersection using bezier fat-line clipping
                     pairs = null;
             }
             return pairs;
-        }
+        },
+
+        // Exposed for use in boolean offsetting
+        getCurveLineIntersections: getCurveLineIntersections
     }};
 });
