@@ -437,41 +437,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         var offsets = [];
 
         function addOffsets(curve, end) {
-            // Find the largest offset of unambiguous direction on the curve by
-            // finding their inflections points and "peaks".
+            // Find the largest offset of unambiguous direction on the curve,
+            // taking their loops, cusps, inflections, and "peaks" into account.
             var v = curve.getValues(),
-                roots = Curve.classify(v).roots || getPeaks(v),
+                roots = Curve.classify(v).roots || Curve.getPeaks(v),
                 count = roots.length,
                 t = end && count > 1 ? roots[count - 1]
                         : count > 0 ? roots[0]
                         : 0.5;
             // Then use half of the offset, for extra measure.
             offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
-        }
-
-        // Peaks are locations sharing some qualities of curvature extrema but
-        // are cheaper to compute. They fulfill their purpose here quite well.
-        // See: http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
-        function getPeaks(v) {
-            var x0 = v[0], y0 = v[1],
-                x1 = v[2], y1 = v[3],
-                x2 = v[4], y2 = v[5],
-                x3 = v[6], y3 = v[7],
-                ax =     -x0 + 3 * x1 - 3 * x2 + x3,
-                bx =  3 * x0 - 6 * x1 + 3 * x2,
-                cx = -3 * x0 + 3 * x1,
-                ay =     -y0 + 3 * y1 - 3 * y2 + y3,
-                by =  3 * y0 - 6 * y1 + 3 * y2,
-                cy = -3 * y0 + 3 * y1,
-                roots = [];
-            Numerical.solveCubic(
-                    9 * (ax * ax + ay * ay),
-                    9 * (ax * bx + by * ay),
-                    2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
-                    (cx * bx + by * cy),
-                    // Exclude 0 and 1 as we don't want to use them as peaks.
-                    roots, tMin, tMax);
-            return roots.sort();
         }
 
         function isInRange(angle, min, max) {

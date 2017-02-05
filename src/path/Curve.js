@@ -1681,6 +1681,43 @@ new function() { // Scope for methods that require private functions
 
         getCurvature: function(v, t) {
             return evaluate(v, t, 3, false).x;
+        },
+
+        /**
+         * Returns the t values for the "peaks" of the curve. The peaks are
+         * calculated by finding the roots of the dot product of the first and
+         * second derivative.
+         *
+         * Peaks are locations sharing some qualities of curvature extrema but
+         * are cheaper to compute. They fulfill their purpose here quite well.
+         * See:
+         * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
+         *
+         * @param {Number[]} v the curve values array
+         * @returns {Number[]} the roots of all found peaks
+         */
+        getPeaks: function(v) {
+            var x0 = v[0], y0 = v[1],
+                x1 = v[2], y1 = v[3],
+                x2 = v[4], y2 = v[5],
+                x3 = v[6], y3 = v[7],
+                ax =     -x0 + 3 * x1 - 3 * x2 + x3,
+                bx =  3 * x0 - 6 * x1 + 3 * x2,
+                cx = -3 * x0 + 3 * x1,
+                ay =     -y0 + 3 * y1 - 3 * y2 + y3,
+                by =  3 * y0 - 6 * y1 + 3 * y2,
+                cy = -3 * y0 + 3 * y1,
+                tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+                tMax = 1 - tMin,
+                roots = [];
+            Numerical.solveCubic(
+                    9 * (ax * ax + ay * ay),
+                    9 * (ax * bx + by * ay),
+                    2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+                    (cx * bx + by * cy),
+                    // Exclude 0 and 1 as we don't count them as peaks.
+                    roots, tMin, tMax);
+            return roots.sort();
         }
     }};
 },
