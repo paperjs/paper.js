@@ -656,7 +656,7 @@ statics: /** @lends Curve */{
         var curves = [],
             // Determine the ordinate index in the curve values array.
             io = dir ? 0 : 1,
-            o0 = v[io],
+            o0 = v[io + 0],
             o1 = v[io + 2],
             o2 = v[io + 4],
             o3 = v[io + 6];

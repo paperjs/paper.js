@@ -465,7 +465,7 @@ PathItem.inject(new function() {
         // Determine the index of the abscissa and ordinate values in the curve
         // values arrays, based on the direction:
         var ia = dir ? 1 : 0, // the abscissa index
-            io = dir ? 0 : 1, // the ordinate index
+            io = ia ^ 1, // the ordinate index
             pv = [point.x, point.y],
             pa = pv[ia], // the point's abscissa
             po = pv[io], // the point's ordinate
@@ -483,14 +483,14 @@ PathItem.inject(new function() {
             vClose;
 
         function addWinding(v) {
-            var o0 = v[io],
+            var o0 = v[io + 0],
                 o3 = v[io + 6];
             if (po < min(o0, o3) || po > max(o0, o3)) {
                 // If the curve is outside the ordinates' range, no intersection
                 // with the ray is possible.
                 return;
             }
-            var a0 = v[ia],
+            var a0 = v[ia + 0],
                 a1 = v[ia + 2],
                 a2 = v[ia + 4],
                 a3 = v[ia + 6];
@@ -574,14 +574,14 @@ PathItem.inject(new function() {
 
         function handleCurve(v) {
             // Get the ordinates:
-            var o0 = v[io],
+            var o0 = v[io + 0],
                 o1 = v[io + 2],
                 o2 = v[io + 4],
                 o3 = v[io + 6];
             // Only handle curves that can cross the point's ordinate.
             if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
                 // Get the abscissas:
-                var a0 = v[ia],
+                var a0 = v[ia + 0],
                     a1 = v[ia + 2],
                     a2 = v[ia + 4],
                     a3 = v[ia + 6],
