@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 5 14:20:43 2017 +0100
+ * Date: Sun Feb 5 21:59:56 2017 +0100
  *
  ***
  *
@@ -6182,7 +6182,7 @@ statics: {
 	getMonoCurves: function(v, dir) {
 		var curves = [],
 			io = dir ? 0 : 1,
-			o0 = v[io],
+			o0 = v[io + 0],
 			o1 = v[io + 2],
 			o2 = v[io + 4],
 			o3 = v[io + 6];
@@ -6946,28 +6946,31 @@ new function() {
 		return null;
 	}
 
+	function getCurveLineIntersections(v, px, py, vx, vy) {
+		var angle = Math.atan2(-vy, vx),
+			sin = Math.sin(angle),
+			cos = Math.cos(angle),
+			rv = [],
+			roots = [];
+		for(var i = 0; i < 8; i += 2) {
+			var x = v[i] - px,
+				y = v[i + 1] - py;
+			rv.push(
+				x * cos - y * sin,
+				x * sin + y * cos);
+		}
+		Curve.solveCubic(rv, 1, 0, roots, 0, 1);
+		return roots;
+	}
+
 	function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
 		var flip = Curve.isStraight(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
-			lx1 = vl[0], ly1 = vl[1],
-			lx2 = vl[6], ly2 = vl[7],
-			ldx = lx2 - lx1,
-			ldy = ly2 - ly1,
-			angle = Math.atan2(-ldy, ldx),
-			sin = Math.sin(angle),
-			cos = Math.cos(angle),
-			rvc = [];
-		for(var i = 0; i < 8; i += 2) {
-			var x = vc[i] - lx1,
-				y = vc[i + 1] - ly1;
-			rvc.push(
-				x * cos - y * sin,
-				x * sin + y * cos);
-		}
-		var roots = [],
-			count = Curve.solveCubic(rvc, 1, 0, roots, 0, 1);
-		for (var i = 0; i < count; i++) {
+			x1 = vl[0], y1 = vl[1],
+			x2 = vl[6], y2 = vl[7],
+			roots = getCurveLineIntersections(vc, x1, y1, x2 - x1, y2 - y1);
+		for (var i = 0, l = roots.length; i < l; i++) {
 			var tc = roots[i],
 				pc = Curve.getPoint(vc, tc),
 				tl = Curve.getTimeOf(vl, pc);
@@ -7134,7 +7137,9 @@ new function() {
 					pairs = null;
 			}
 			return pairs;
-		}
+		},
+
+		getCurveLineIntersections: getCurveLineIntersections
 	}};
 });
 
@@ -9985,7 +9990,7 @@ PathItem.inject(new function() {
 
 	function getWinding(point, curves, dir, closed, dontFlip) {
 		var ia = dir ? 1 : 0,
-			io = dir ? 0 : 1,
+			io = ia ^ 1,
 			pv = [point.x, point.y],
 			pa = pv[ia],
 			po = pv[io],
@@ -10002,12 +10007,12 @@ PathItem.inject(new function() {
 			vClose;
 
 		function addWinding(v) {
-			var o0 = v[io],
+			var o0 = v[io + 0],
 				o3 = v[io + 6];
 			if (po < min(o0, o3) || po > max(o0, o3)) {
 				return;
 			}
-			var a0 = v[ia],
+			var a0 = v[ia + 0],
 				a1 = v[ia + 2],
 				a2 = v[ia + 4],
 				a3 = v[ia + 6];
@@ -10064,12 +10069,12 @@ PathItem.inject(new function() {
 		}
 
 		function handleCurve(v) {
-			var o0 = v[io],
+			var o0 = v[io + 0],
 				o1 = v[io + 2],
 				o2 = v[io + 4],
 				o3 = v[io + 6];
 			if (po <= max(o0, o1, o2, o3) && po >= min(o0, o1, o2, o3)) {
-				var a0 = v[ia],
+				var a0 = v[ia + 0],
 					a1 = v[ia + 2],
 					a2 = v[ia + 4],
 					a3 = v[ia + 6],
