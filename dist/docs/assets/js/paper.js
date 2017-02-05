@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 4 21:55:44 2017 +0100
+ * Date: Sun Feb 5 14:20:43 2017 +0100
  *
  ***
  *
@@ -6765,6 +6765,29 @@ new function() {
 
 		getCurvature: function(v, t) {
 			return evaluate(v, t, 3, false).x;
+		},
+
+		getPeaks: function(v) {
+			var x0 = v[0], y0 = v[1],
+				x1 = v[2], y1 = v[3],
+				x2 = v[4], y2 = v[5],
+				x3 = v[6], y3 = v[7],
+				ax =     -x0 + 3 * x1 - 3 * x2 + x3,
+				bx =  3 * x0 - 6 * x1 + 3 * x2,
+				cx = -3 * x0 + 3 * x1,
+				ay =     -y0 + 3 * y1 - 3 * y2 + y3,
+				by =  3 * y0 - 6 * y1 + 3 * y2,
+				cy = -3 * y0 + 3 * y1,
+				tMin = 1e-8,
+				tMax = 1 - tMin,
+				roots = [];
+			Numerical.solveCubic(
+					9 * (ax * ax + ay * ay),
+					9 * (ax * bx + by * ay),
+					2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
+					(cx * bx + by * cy),
+					roots, tMin, tMax);
+			return roots.sort();
 		}
 	}};
 },
@@ -7338,33 +7361,12 @@ var CurveLocation = Base.extend({
 
 		function addOffsets(curve, end) {
 			var v = curve.getValues(),
-				roots = Curve.classify(v).roots || getPeaks(v),
+				roots = Curve.classify(v).roots || Curve.getPeaks(v),
 				count = roots.length,
 				t = end && count > 1 ? roots[count - 1]
 						: count > 0 ? roots[0]
 						: 0.5;
 			offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
-		}
-
-		function getPeaks(v) {
-			var x0 = v[0], y0 = v[1],
-				x1 = v[2], y1 = v[3],
-				x2 = v[4], y2 = v[5],
-				x3 = v[6], y3 = v[7],
-				ax =     -x0 + 3 * x1 - 3 * x2 + x3,
-				bx =  3 * x0 - 6 * x1 + 3 * x2,
-				cx = -3 * x0 + 3 * x1,
-				ay =     -y0 + 3 * y1 - 3 * y2 + y3,
-				by =  3 * y0 - 6 * y1 + 3 * y2,
-				cy = -3 * y0 + 3 * y1,
-				roots = [];
-			Numerical.solveCubic(
-					9 * (ax * ax + ay * ay),
-					9 * (ax * bx + by * ay),
-					2 * (bx * bx + by * by) + 3 * (cx * ax + cy * ay),
-					(cx * bx + by * cy),
-					roots, tMin, tMax);
-			return roots.sort();
 		}
 
 		function isInRange(angle, min, max) {
