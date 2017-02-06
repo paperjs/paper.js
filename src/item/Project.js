@@ -446,7 +446,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The options object allows you to control the specifics of the hit-
      * test. See {@link #hitTest(point[, options])} for a list of all options.
      *
-     * @name Item#hitTestAll
+     * @name Project#hitTestAll
      * @function
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
