@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 5 21:59:56 2017 +0100
+ * Date: Mon Feb 6 16:37:05 2017 +0100
  *
  ***
  *
@@ -6069,7 +6069,7 @@ var Curve = Base.extend({
 	},
 
 	getIntersections: function(curve) {
-		return Curve._getIntersections(this.getValues(),
+		return Curve.getCurveIntersections(this.getValues(),
 				curve && curve !== this ? curve.getValues() : null,
 				this, curve, [], {});
 	},
@@ -6996,149 +6996,202 @@ new function() {
 		}
 	}
 
-	return { statics: {
-		_getIntersections: function(v1, v2, c1, c2, locations, param) {
-			if (!v2) {
-				return Curve._getLoopIntersection(v1, c1, locations, param);
-			}
-			var epsilon = 1e-12,
-				c1x0 = v1[0], c1y0 = v1[1],
-				c1x1 = v1[2], c1y1 = v1[3],
-				c1x2 = v1[4], c1y2 = v1[5],
-				c1x3 = v1[6], c1y3 = v1[7],
-				c2x0 = v2[0], c2y0 = v2[1],
-				c2x1 = v2[2], c2y1 = v2[3],
-				c2x2 = v2[4], c2y2 = v2[5],
-				c2x3 = v2[6], c2y3 = v2[7],
-				min = Math.min,
-				max = Math.max;
-			if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
-					min(c2x0, c2x1, c2x2, c2x3) &&
-					min(c1x0, c1x1, c1x2, c1x3) - epsilon <
-					max(c2x0, c2x1, c2x2, c2x3) &&
-					max(c1y0, c1y1, c1y2, c1y3) + epsilon >
-					min(c2y0, c2y1, c2y2, c2y3) &&
-					min(c1y0, c1y1, c1y2, c1y3) - epsilon <
-					max(c2y0, c2y1, c2y2, c2y3)))
-				return locations;
-			var overlaps = Curve.getOverlaps(v1, v2);
-			if (overlaps) {
-				for (var i = 0; i < 2; i++) {
-					var overlap = overlaps[i];
-					addLocation(locations, param,
-						v1, c1, overlap[0], null,
-						v2, c2, overlap[1], null, true);
-				}
-				return locations;
-			}
-
-			var straight1 = Curve.isStraight(v1),
-				straight2 = Curve.isStraight(v2),
-				straight = straight1 && straight2,
-				before = locations.length;
-			(straight
-				? addLineIntersection
-				: straight1 || straight2
-					? addCurveLineIntersections
-					: addCurveIntersections)(
-						v1, v2, c1, c2, locations, param,
-						0, 1, 0, 1, 0, 0, 0);
-			if (straight && locations.length > before)
-				return locations;
-			var c1p0 = new Point(c1x0, c1y0),
-				c1p3 = new Point(c1x3, c1y3),
-				c2p0 = new Point(c2x0, c2y0),
-				c2p3 = new Point(c2x3, c2y3);
-			if (c1p0.isClose(c2p0, epsilon))
-				addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
-			if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
-				addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
-			if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
-				addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
-			if (c1p3.isClose(c2p3, epsilon))
-				addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
+	function getCurveIntersections(v1, v2, c1, c2, locations, param) {
+		if (!v2) {
+			return getLoopIntersection(v1, c1, locations, param);
+		}
+		var epsilon = 1e-12,
+			c1x0 = v1[0], c1y0 = v1[1],
+			c1x1 = v1[2], c1y1 = v1[3],
+			c1x2 = v1[4], c1y2 = v1[5],
+			c1x3 = v1[6], c1y3 = v1[7],
+			c2x0 = v2[0], c2y0 = v2[1],
+			c2x1 = v2[2], c2y1 = v2[3],
+			c2x2 = v2[4], c2y2 = v2[5],
+			c2x3 = v2[6], c2y3 = v2[7],
+			min = Math.min,
+			max = Math.max;
+		if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
+				min(c2x0, c2x1, c2x2, c2x3) &&
+				min(c1x0, c1x1, c1x2, c1x3) - epsilon <
+				max(c2x0, c2x1, c2x2, c2x3) &&
+				max(c1y0, c1y1, c1y2, c1y3) + epsilon >
+				min(c2y0, c2y1, c2y2, c2y3) &&
+				min(c1y0, c1y1, c1y2, c1y3) - epsilon <
+				max(c2y0, c2y1, c2y2, c2y3)))
 			return locations;
-		},
-
-		_getLoopIntersection: function(v1, c1, locations, param) {
-			var info = Curve.classify(v1);
-			if (info.type === 'loop') {
-				var roots = info.roots;
+		var overlaps = getOverlaps(v1, v2);
+		if (overlaps) {
+			for (var i = 0; i < 2; i++) {
+				var overlap = overlaps[i];
 				addLocation(locations, param,
-					v1, c1, roots[0], null,
-					v1, c1, roots[1], null);
+					v1, c1, overlap[0], null,
+					v2, c2, overlap[1], null, true);
 			}
-		  return locations;
-		},
+			return locations;
+		}
 
-		getOverlaps: function(v1, v2) {
-			var abs = Math.abs,
-				timeEpsilon = 1e-8,
-				geomEpsilon = 1e-7,
-				straight1 = Curve.isStraight(v1),
-				straight2 = Curve.isStraight(v2),
-				straightBoth = straight1 && straight2;
+		var straight1 = Curve.isStraight(v1),
+			straight2 = Curve.isStraight(v2),
+			straight = straight1 && straight2,
+			before = locations.length;
+		(straight
+			? addLineIntersection
+			: straight1 || straight2
+				? addCurveLineIntersections
+				: addCurveIntersections)(
+					v1, v2, c1, c2, locations, param,
+					0, 1, 0, 1, 0, 0, 0);
+		if (straight && locations.length > before)
+			return locations;
+		var c1p0 = new Point(c1x0, c1y0),
+			c1p3 = new Point(c1x3, c1y3),
+			c2p0 = new Point(c2x0, c2y0),
+			c2p3 = new Point(c2x3, c2y3);
+		if (c1p0.isClose(c2p0, epsilon))
+			addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
+		if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
+			addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
+		if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
+			addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
+		if (c1p3.isClose(c2p3, epsilon))
+			addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
+		return locations;
+	}
 
-			function getSquaredLineLength(v) {
-				var x = v[6] - v[0],
-					y = v[7] - v[1];
-				return x * x + y * y;
+	function getLoopIntersection(v1, c1, locations, param) {
+		var info = Curve.classify(v1);
+		if (info.type === 'loop') {
+			var roots = info.roots;
+			addLocation(locations, param,
+				v1, c1, roots[0], null,
+				v1, c1, roots[1], null);
+		}
+	  return locations;
+	}
+
+	function getCurvesIntersections(curves1, curves2, include, matrix1, matrix2,
+			_returnFirst) {
+		var self = !curves2;
+		if (self)
+			curves2 = curves1;
+		var length1 = curves1.length,
+			length2 = curves2.length,
+			values2 = [],
+			arrays = [],
+			locations,
+			current;
+		for (var i = 0; i < length2; i++)
+			values2[i] = curves2[i].getValues(matrix2);
+		for (var i = 0; i < length1; i++) {
+			var curve1 = curves1[i],
+				values1 = self ? values2[i] : curve1.getValues(matrix1),
+				path1 = curve1.getPath();
+			if (path1 !== current) {
+				current = path1;
+				locations = [];
+				arrays.push(locations);
 			}
-
-			var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
-				l1 = flip ? v2 : v1,
-				l2 = flip ? v1 : v2,
-				line = new Line(l1[0], l1[1], l1[6], l1[7]);
-			if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
-				line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
-				if (!straightBoth &&
-					line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
-					line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
-					line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
-					line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
-					straight1 = straight2 = straightBoth = true;
-				}
-			} else if (straightBoth) {
-				return null;
+			if (self) {
+				getLoopIntersection(values1, curve1, locations, {
+					include: include,
+					excludeStart: length1 === 1 &&
+							curve1.getPoint1().equals(curve1.getPoint2())
+				});
 			}
-			if (straight1 ^ straight2) {
-				return null;
-			}
-
-			var v = [v1, v2],
-				pairs = [];
-			for (var i = 0; i < 4 && pairs.length < 2; i++) {
-				var i1 = i & 1,
-					i2 = i1 ^ 1,
-					t1 = i >> 1,
-					t2 = Curve.getTimeOf(v[i1], new Point(
-						v[i2][t1 ? 6 : 0],
-						v[i2][t1 ? 7 : 1]));
-				if (t2 != null) {
-					var pair = i1 ? [t1, t2] : [t2, t1];
-					if (!pairs.length ||
-						abs(pair[0] - pairs[0][0]) > timeEpsilon &&
-						abs(pair[1] - pairs[0][1]) > timeEpsilon) {
-						pairs.push(pair);
+			for (var j = self ? i + 1 : 0; j < length2; j++) {
+				if (_returnFirst && locations.length)
+					return locations;
+				var curve2 = curves2[j];
+				getCurveIntersections(
+					values1, values2[j], curve1, curve2, locations,
+					{
+						include: include,
+						excludeStart: self && curve1.getPrevious() === curve2,
+						excludeEnd: self && curve1.getNext() === curve2
 					}
-				}
-				if (i > 2 && !pairs.length)
-					break;
+				);
 			}
-			if (pairs.length !== 2) {
-				pairs = null;
-			} else if (!straightBoth) {
-				var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
-					o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
-				if (abs(o2[2] - o1[2]) > geomEpsilon ||
-					abs(o2[3] - o1[3]) > geomEpsilon ||
-					abs(o2[4] - o1[4]) > geomEpsilon ||
-					abs(o2[5] - o1[5]) > geomEpsilon)
-					pairs = null;
-			}
-			return pairs;
-		},
+		}
+		locations = [];
+		for (var i = 0, l = arrays.length; i < l; i++) {
+			locations.push.apply(locations, arrays[i]);
+		}
+		return locations;
+	}
 
+	function getOverlaps(v1, v2) {
+		var abs = Math.abs,
+			timeEpsilon = 1e-8,
+			geomEpsilon = 1e-7,
+			straight1 = Curve.isStraight(v1),
+			straight2 = Curve.isStraight(v2),
+			straightBoth = straight1 && straight2;
+
+		function getSquaredLineLength(v) {
+			var x = v[6] - v[0],
+				y = v[7] - v[1];
+			return x * x + y * y;
+		}
+
+		var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
+			l1 = flip ? v2 : v1,
+			l2 = flip ? v1 : v2,
+			line = new Line(l1[0], l1[1], l1[6], l1[7]);
+		if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
+			line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
+			if (!straightBoth &&
+				line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
+				line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
+				line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
+				line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
+				straight1 = straight2 = straightBoth = true;
+			}
+		} else if (straightBoth) {
+			return null;
+		}
+		if (straight1 ^ straight2) {
+			return null;
+		}
+
+		var v = [v1, v2],
+			pairs = [];
+		for (var i = 0; i < 4 && pairs.length < 2; i++) {
+			var i1 = i & 1,
+				i2 = i1 ^ 1,
+				t1 = i >> 1,
+				t2 = Curve.getTimeOf(v[i1], new Point(
+					v[i2][t1 ? 6 : 0],
+					v[i2][t1 ? 7 : 1]));
+			if (t2 != null) {
+				var pair = i1 ? [t1, t2] : [t2, t1];
+				if (!pairs.length ||
+					abs(pair[0] - pairs[0][0]) > timeEpsilon &&
+					abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+					pairs.push(pair);
+				}
+			}
+			if (i > 2 && !pairs.length)
+				break;
+		}
+		if (pairs.length !== 2) {
+			pairs = null;
+		} else if (!straightBoth) {
+			var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
+				o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+			if (abs(o2[2] - o1[2]) > geomEpsilon ||
+				abs(o2[3] - o1[3]) > geomEpsilon ||
+				abs(o2[4] - o1[4]) > geomEpsilon ||
+				abs(o2[5] - o1[5]) > geomEpsilon)
+				pairs = null;
+		}
+		return pairs;
+	}
+
+	return { statics: {
+		getCurveIntersections: getCurveIntersections,
+		getCurvesIntersections: getCurvesIntersections,
+		getOverlaps: getOverlaps,
 		getCurveLineIntersections: getCurveLineIntersections
 	}};
 });
@@ -7660,50 +7713,9 @@ var PathItem = Item.extend({
 		if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
 			return [];
 		var curves1 = this.getCurves(),
-			curves2 = self ? curves1 : path.getCurves(),
-			length1 = curves1.length,
-			length2 = self ? length1 : curves2.length,
-			values2 = [],
-			arrays = [],
-			locations,
-			current;
-		for (var i = 0; i < length2; i++)
-			values2[i] = curves2[i].getValues(matrix2);
-		for (var i = 0; i < length1; i++) {
-			var curve1 = curves1[i],
-				values1 = self ? values2[i] : curve1.getValues(matrix1),
-				path1 = curve1.getPath();
-			if (path1 !== current) {
-				current = path1;
-				locations = [];
-				arrays.push(locations);
-			}
-			if (self) {
-				Curve._getLoopIntersection(values1, curve1, locations, {
-					include: include,
-					excludeStart: length1 === 1 &&
-							curve1.getPoint1().equals(curve1.getPoint2())
-				});
-			}
-			for (var j = self ? i + 1 : 0; j < length2; j++) {
-				if (_returnFirst && locations.length)
-					return locations;
-				var curve2 = curves2[j];
-				Curve._getIntersections(
-					values1, values2[j], curve1, curve2, locations,
-					{
-						include: include,
-						excludeStart: self && curve1.getPrevious() === curve2,
-						excludeEnd: self && curve1.getNext() === curve2
-					}
-				);
-			}
-		}
-		locations = [];
-		for (var i = 0, l = arrays.length; i < l; i++) {
-			locations.push.apply(locations, arrays[i]);
-		}
-		return locations;
+			curves2 = !self && path.getCurves();
+		return Curve.getCurvesIntersections(curves1, curves2, include,
+				matrix1, matrix2, _returnFirst);
 	},
 
 	getCrossings: function(path) {
