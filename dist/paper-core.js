@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 6 16:37:05 2017 +0100
+ * Date: Mon Feb 6 16:46:22 2017 +0100
  *
  ***
  *
@@ -7710,12 +7710,11 @@ var PathItem = Item.extend({
 			matrix1 = this._matrix._orNullIfIdentity(),
 			matrix2 = self ? matrix1
 				: (_matrix || path._matrix)._orNullIfIdentity();
-		if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
-			return [];
-		var curves1 = this.getCurves(),
-			curves2 = !self && path.getCurves();
-		return Curve.getCurvesIntersections(curves1, curves2, include,
-				matrix1, matrix2, _returnFirst);
+		return self || this.getBounds(matrix1).touches(path.getBounds(matrix2))
+				? Curve.getCurvesIntersections(
+						this.getCurves(), !self && path.getCurves(), include,
+						matrix1, matrix2, _returnFirst)
+				: [];
 	},
 
 	getCrossings: function(path) {
