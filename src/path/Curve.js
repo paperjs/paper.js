@@ -445,7 +445,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      *     curves
      */
     getIntersections: function(curve) {
-        return Curve._getIntersections(this.getValues(),
+        return Curve.getCurveIntersections(this.getValues(),
                 curve && curve !== this ? curve.getValues() : null,
                 this, curve, [], {});
     },
@@ -2022,189 +2022,258 @@ new function() { // Scope for intersection using bezier fat-line clipping
         }
     }
 
-    return { statics: /** @lends Curve */{
-        _getIntersections: function(v1, v2, c1, c2, locations, param) {
-            if (!v2) {
-                // If v2 is not provided, search for a self-intersection on v1.
-                return Curve._getLoopIntersection(v1, c1, locations, param);
-            }
-            // Avoid checking curves if completely out of control bounds.
-            var epsilon = /*#=*/Numerical.EPSILON,
-                c1x0 = v1[0], c1y0 = v1[1],
-                c1x1 = v1[2], c1y1 = v1[3],
-                c1x2 = v1[4], c1y2 = v1[5],
-                c1x3 = v1[6], c1y3 = v1[7],
-                c2x0 = v2[0], c2y0 = v2[1],
-                c2x1 = v2[2], c2y1 = v2[3],
-                c2x2 = v2[4], c2y2 = v2[5],
-                c2x3 = v2[6], c2y3 = v2[7],
-                min = Math.min,
-                max = Math.max;
-            if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
-                    min(c2x0, c2x1, c2x2, c2x3) &&
-                    min(c1x0, c1x1, c1x2, c1x3) - epsilon <
-                    max(c2x0, c2x1, c2x2, c2x3) &&
-                    max(c1y0, c1y1, c1y2, c1y3) + epsilon >
-                    min(c2y0, c2y1, c2y2, c2y3) &&
-                    min(c1y0, c1y1, c1y2, c1y3) - epsilon <
-                    max(c2y0, c2y1, c2y2, c2y3)))
-                return locations;
-            // Now detect and handle overlaps:
-            var overlaps = Curve.getOverlaps(v1, v2);
-            if (overlaps) {
-                for (var i = 0; i < 2; i++) {
-                    var overlap = overlaps[i];
-                    addLocation(locations, param,
-                        v1, c1, overlap[0], null,
-                        v2, c2, overlap[1], null, true);
-                }
-                return locations;
-            }
-
-            var straight1 = Curve.isStraight(v1),
-                straight2 = Curve.isStraight(v2),
-                straight = straight1 && straight2,
-                before = locations.length;
-            // Determine the correct intersection method based on whether one or
-            // curves are straight lines:
-            (straight
-                ? addLineIntersection
-                : straight1 || straight2
-                    ? addCurveLineIntersections
-                    : addCurveIntersections)(
-                        v1, v2, c1, c2, locations, param,
-                        // Define the defaults for these parameters of
-                        // addCurveIntersections():
-                        // tMin, tMax, uMin, uMax, flip, recursion, calls
-                        0, 1, 0, 1, 0, 0, 0);
-            // We're done if we handle lines and found one intersection already:
-            // #805#issuecomment-148503018
-            if (straight && locations.length > before)
-                return locations;
-            // Handle the special case where the first curve's start- or end-
-            // point overlaps with the second curve's start or end-point.
-            var c1p0 = new Point(c1x0, c1y0),
-                c1p3 = new Point(c1x3, c1y3),
-                c2p0 = new Point(c2x0, c2y0),
-                c2p3 = new Point(c2x3, c2y3);
-            if (c1p0.isClose(c2p0, epsilon))
-                addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
-            if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
-                addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
-            if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
-                addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
-            if (c1p3.isClose(c2p3, epsilon))
-                addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
+    function getCurveIntersections(v1, v2, c1, c2, locations, param) {
+        if (!v2) {
+            // If v2 is not provided, search for a self-intersection on v1.
+            return getLoopIntersection(v1, c1, locations, param);
+        }
+        // Avoid checking curves if completely out of control bounds.
+        var epsilon = /*#=*/Numerical.EPSILON,
+            c1x0 = v1[0], c1y0 = v1[1],
+            c1x1 = v1[2], c1y1 = v1[3],
+            c1x2 = v1[4], c1y2 = v1[5],
+            c1x3 = v1[6], c1y3 = v1[7],
+            c2x0 = v2[0], c2y0 = v2[1],
+            c2x1 = v2[2], c2y1 = v2[3],
+            c2x2 = v2[4], c2y2 = v2[5],
+            c2x3 = v2[6], c2y3 = v2[7],
+            min = Math.min,
+            max = Math.max;
+        if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
+                min(c2x0, c2x1, c2x2, c2x3) &&
+                min(c1x0, c1x1, c1x2, c1x3) - epsilon <
+                max(c2x0, c2x1, c2x2, c2x3) &&
+                max(c1y0, c1y1, c1y2, c1y3) + epsilon >
+                min(c2y0, c2y1, c2y2, c2y3) &&
+                min(c1y0, c1y1, c1y2, c1y3) - epsilon <
+                max(c2y0, c2y1, c2y2, c2y3)))
             return locations;
-        },
-
-        _getLoopIntersection: function(v1, c1, locations, param) {
-            var info = Curve.classify(v1);
-            if (info.type === 'loop') {
-                var roots = info.roots;
+        // Now detect and handle overlaps:
+        var overlaps = getOverlaps(v1, v2);
+        if (overlaps) {
+            for (var i = 0; i < 2; i++) {
+                var overlap = overlaps[i];
                 addLocation(locations, param,
-                    v1, c1, roots[0], null,
-                    v1, c1, roots[1], null);
+                    v1, c1, overlap[0], null,
+                    v2, c2, overlap[1], null, true);
             }
-          return locations;
-        },
+            return locations;
+        }
 
-        /**
-         * Code to detect overlaps of intersecting based on work by
-         * @iconexperience in #648
-         */
-        getOverlaps: function(v1, v2) {
-            var abs = Math.abs,
-                timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
-                geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-                straight1 = Curve.isStraight(v1),
-                straight2 = Curve.isStraight(v2),
-                straightBoth = straight1 && straight2;
+        var straight1 = Curve.isStraight(v1),
+            straight2 = Curve.isStraight(v2),
+            straight = straight1 && straight2,
+            before = locations.length;
+        // Determine the correct intersection method based on whether one or
+        // curves are straight lines:
+        (straight
+            ? addLineIntersection
+            : straight1 || straight2
+                ? addCurveLineIntersections
+                : addCurveIntersections)(
+                    v1, v2, c1, c2, locations, param,
+                    // Define the defaults for these parameters of
+                    // addCurveIntersections():
+                    // tMin, tMax, uMin, uMax, flip, recursion, calls
+                    0, 1, 0, 1, 0, 0, 0);
+        // We're done if we handle lines and found one intersection already:
+        // #805#issuecomment-148503018
+        if (straight && locations.length > before)
+            return locations;
+        // Handle the special case where the first curve's start- or end-point
+        // overlaps with the second curve's start or end-point.
+        var c1p0 = new Point(c1x0, c1y0),
+            c1p3 = new Point(c1x3, c1y3),
+            c2p0 = new Point(c2x0, c2y0),
+            c2p3 = new Point(c2x3, c2y3);
+        if (c1p0.isClose(c2p0, epsilon))
+            addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
+        if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
+            addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
+        if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
+            addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
+        if (c1p3.isClose(c2p3, epsilon))
+            addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
+        return locations;
+    }
 
-            // Linear curves can only overlap if they are collinear. Instead of
-            // using the #isCollinear() check, we pick the longer of the two
-            // curves treated as lines, and see how far the starting and end
-            // points of the other line are from this line (assumed as an
-            // infinite line). But even if the curves are not straight, they
-            // might just have tiny handles within the geometric epsilon
-            // distance, so we have to check for that too.
+    function getLoopIntersection(v1, c1, locations, param) {
+        var info = Curve.classify(v1);
+        if (info.type === 'loop') {
+            var roots = info.roots;
+            addLocation(locations, param,
+                v1, c1, roots[0], null,
+                v1, c1, roots[1], null);
+        }
+      return locations;
+    }
 
-            function getSquaredLineLength(v) {
-                var x = v[6] - v[0],
-                    y = v[7] - v[1];
-                return x * x + y * y;
+    function getCurvesIntersections(curves1, curves2, include, matrix1, matrix2,
+            _returnFirst) {
+        var self = !curves2;
+        if (self)
+            curves2 = curves1;
+        var length1 = curves1.length,
+            length2 = curves2.length,
+            values2 = [],
+            arrays = [],
+            locations,
+            current;
+        // Cache values for curves2 as we re-iterate them for each in curves1.
+        for (var i = 0; i < length2; i++)
+            values2[i] = curves2[i].getValues(matrix2);
+        for (var i = 0; i < length1; i++) {
+            var curve1 = curves1[i],
+                values1 = self ? values2[i] : curve1.getValues(matrix1),
+                path1 = curve1.getPath();
+            // NOTE: Due to the nature of getCurveIntersections(), we use
+            // separate location arrays per path1, to make sure the circularity
+            // checks are not getting confused by locations on separate paths.
+            // The separate arrays are then flattened in the end.
+            if (path1 !== current) {
+                current = path1;
+                locations = [];
+                arrays.push(locations);
             }
-
-            var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
-                l1 = flip ? v2 : v1,
-                l2 = flip ? v1 : v2,
-                line = new Line(l1[0], l1[1], l1[6], l1[7]);
-            // See if the starting and end point of curve two are very close to
-            // the picked line. Note that the curve for the picked line might
-            // not actually be a line, so we have to perform more checks after.
-            if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
-                line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
-                // If not both curves are straight, check against both of their
-                // handles, and treat them as straight if they are very close.
-                if (!straightBoth &&
-                    line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
-                    line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
-                    line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
-                    line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
-                    straight1 = straight2 = straightBoth = true;
-                }
-            } else if (straightBoth) {
-                // If both curves are straight and not very close to each other,
-                // there can't be a solution.
-                return null;
+            if (self) {
+                // First check for self-intersections within the same curve.
+                getLoopIntersection(values1, curve1, locations, {
+                    include: include,
+                    // Only possible if there is only one closed curve:
+                    excludeStart: length1 === 1 &&
+                            curve1.getPoint1().equals(curve1.getPoint2())
+                });
             }
-            if (straight1 ^ straight2) {
-                // If one curve is straight, the other curve must be straight,
-                // too, otherwise they cannot overlap.
-                return null;
-            }
-
-            var v = [v1, v2],
-                pairs = [];
-            // Iterate through all end points:
-            // First p1 of curve 1 & 2, then p2 of curve 1 & 2.
-            for (var i = 0; i < 4 && pairs.length < 2; i++) {
-                var i1 = i & 1,  // 0, 1, 0, 1
-                    i2 = i1 ^ 1, // 1, 0, 1, 0
-                    t1 = i >> 1, // 0, 0, 1, 1
-                    t2 = Curve.getTimeOf(v[i1], new Point(
-                        v[i2][t1 ? 6 : 0],
-                        v[i2][t1 ? 7 : 1]));
-                if (t2 != null) {  // If point is on curve
-                    var pair = i1 ? [t1, t2] : [t2, t1];
-                    // Filter out tiny overlaps.
-                    if (!pairs.length ||
-                        abs(pair[0] - pairs[0][0]) > timeEpsilon &&
-                        abs(pair[1] - pairs[0][1]) > timeEpsilon) {
-                        pairs.push(pair);
+            // Check for intersections with other curves.
+            // For self-intersection, we can start at i + 1 instead of 0.
+            for (var j = self ? i + 1 : 0; j < length2; j++) {
+                // There might be already one location from the above
+                // self-intersection check:
+                if (_returnFirst && locations.length)
+                    return locations;
+                var curve2 = curves2[j];
+                // Avoid end point intersections on consecutive curves when
+                // self-intersecting.
+                getCurveIntersections(
+                    values1, values2[j], curve1, curve2, locations,
+                    {
+                        include: include,
+                        // Do not compare indices to determine connection, since
+                        // one array of curves can contain curves from separate
+                        // sup-paths of a compound path.
+                        excludeStart: self && curve1.getPrevious() === curve2,
+                        excludeEnd: self && curve1.getNext() === curve2
                     }
-                }
-                // We checked 3 points but found no match, curves can't overlap.
-                if (i > 2 && !pairs.length)
-                    break;
+                );
             }
-            if (pairs.length !== 2) {
-                pairs = null;
-            } else if (!straightBoth) {
-                // Straight pairs don't need further checks. If we found
-                // 2 pairs, the end points on v1 & v2 should be the same.
-                var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
-                    o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
-                // Check if handles of the overlapping curves are the same too.
-                if (abs(o2[2] - o1[2]) > geomEpsilon ||
-                    abs(o2[3] - o1[3]) > geomEpsilon ||
-                    abs(o2[4] - o1[4]) > geomEpsilon ||
-                    abs(o2[5] - o1[5]) > geomEpsilon)
-                    pairs = null;
-            }
-            return pairs;
-        },
+        }
+        // Flatten the list of location arrays to one array and return it.
+        locations = [];
+        for (var i = 0, l = arrays.length; i < l; i++) {
+            locations.push.apply(locations, arrays[i]);
+        }
+        return locations;
+    }
 
+    /**
+     * Code to detect overlaps of intersecting based on work by
+     * @iconexperience in #648
+     */
+    function getOverlaps(v1, v2) {
+        var abs = Math.abs,
+            timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            straight1 = Curve.isStraight(v1),
+            straight2 = Curve.isStraight(v2),
+            straightBoth = straight1 && straight2;
+
+        // Linear curves can only overlap if they are collinear. Instead of
+        // using the #isCollinear() check, we pick the longer of the two curves
+        // treated as lines, and see how far the starting and end points of the
+        // other line are from this line (assumed as an infinite line). But even
+        // if the curves are not straight, they might just have tiny handles
+        // within geometric epsilon distance, so we have to check for that too.
+
+        function getSquaredLineLength(v) {
+            var x = v[6] - v[0],
+                y = v[7] - v[1];
+            return x * x + y * y;
+        }
+
+        var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
+            l1 = flip ? v2 : v1,
+            l2 = flip ? v1 : v2,
+            line = new Line(l1[0], l1[1], l1[6], l1[7]);
+        // See if the starting and end point of curve two are very close to the
+        // picked line. Note that the curve for the picked line might not
+        // actually be a line, so we have to perform more checks after.
+        if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
+            line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
+            // If not both curves are straight, check against both of their
+            // handles, and treat them as straight if they are very close.
+            if (!straightBoth &&
+                line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
+                line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
+                line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
+                line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
+                straight1 = straight2 = straightBoth = true;
+            }
+        } else if (straightBoth) {
+            // If both curves are straight and not very close to each other,
+            // there can't be a solution.
+            return null;
+        }
+        if (straight1 ^ straight2) {
+            // If one curve is straight, the other curve must be straight too,
+            // otherwise they cannot overlap.
+            return null;
+        }
+
+        var v = [v1, v2],
+            pairs = [];
+        // Iterate through all end points:
+        // First p1 of curve 1 & 2, then p2 of curve 1 & 2.
+        for (var i = 0; i < 4 && pairs.length < 2; i++) {
+            var i1 = i & 1,  // 0, 1, 0, 1
+                i2 = i1 ^ 1, // 1, 0, 1, 0
+                t1 = i >> 1, // 0, 0, 1, 1
+                t2 = Curve.getTimeOf(v[i1], new Point(
+                    v[i2][t1 ? 6 : 0],
+                    v[i2][t1 ? 7 : 1]));
+            if (t2 != null) {  // If point is on curve
+                var pair = i1 ? [t1, t2] : [t2, t1];
+                // Filter out tiny overlaps.
+                if (!pairs.length ||
+                    abs(pair[0] - pairs[0][0]) > timeEpsilon &&
+                    abs(pair[1] - pairs[0][1]) > timeEpsilon) {
+                    pairs.push(pair);
+                }
+            }
+            // We checked 3 points but found no match, curves can't overlap.
+            if (i > 2 && !pairs.length)
+                break;
+        }
+        if (pairs.length !== 2) {
+            pairs = null;
+        } else if (!straightBoth) {
+            // Straight pairs don't need further checks. If we found
+            // 2 pairs, the end points on v1 & v2 should be the same.
+            var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
+                o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
+            // Check if handles of the overlapping curves are the same too.
+            if (abs(o2[2] - o1[2]) > geomEpsilon ||
+                abs(o2[3] - o1[3]) > geomEpsilon ||
+                abs(o2[4] - o1[4]) > geomEpsilon ||
+                abs(o2[5] - o1[5]) > geomEpsilon)
+                pairs = null;
+        }
+        return pairs;
+    }
+
+    return { statics: /** @lends Curve */{
+        getCurveIntersections: getCurveIntersections,
+        getCurvesIntersections: getCurvesIntersections,
+        getOverlaps: getOverlaps,
         // Exposed for use in boolean offsetting
         getCurveLineIntersections: getCurveLineIntersections
     }};

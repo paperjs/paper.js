@@ -333,67 +333,9 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         if (!self && !this.getBounds(matrix1).touches(path.getBounds(matrix2)))
             return [];
         var curves1 = this.getCurves(),
-            curves2 = self ? curves1 : path.getCurves(),
-            length1 = curves1.length,
-            length2 = self ? length1 : curves2.length,
-            values2 = [],
-            arrays = [],
-            locations,
-            current;
-        // Cache values for curves2 as we re-iterate them for each in curves1.
-        for (var i = 0; i < length2; i++)
-            values2[i] = curves2[i].getValues(matrix2);
-        for (var i = 0; i < length1; i++) {
-            var curve1 = curves1[i],
-                values1 = self ? values2[i] : curve1.getValues(matrix1),
-                path1 = curve1.getPath();
-            // NOTE: Due to the nature of Curve._getIntersections(), we need to
-            // use separate location arrays per path1, to make sure the
-            // circularity checks are not getting confused by locations on
-            // separate paths. We are flattening the separate arrays at the end.
-            if (path1 !== current) {
-                current = path1;
-                locations = [];
-                arrays.push(locations);
-            }
-            if (self) {
-                // First check for self-intersections within the same curve.
-                Curve._getLoopIntersection(values1, curve1, locations, {
-                    include: include,
-                    // Only possible if there is only one closed curve:
-                    excludeStart: length1 === 1 &&
-                            curve1.getPoint1().equals(curve1.getPoint2())
-                });
-            }
-            // Check for intersections with other curves. For self intersection,
-            // we can start at i + 1 instead of 0
-            for (var j = self ? i + 1 : 0; j < length2; j++) {
-                // There might be already one location from the above
-                // self-intersection check:
-                if (_returnFirst && locations.length)
-                    return locations;
-                var curve2 = curves2[j];
-                // Avoid end point intersections on consecutive curves when
-                // self intersecting.
-                Curve._getIntersections(
-                    values1, values2[j], curve1, curve2, locations,
-                    {
-                        include: include,
-                        // Do not compare indices here to determine connection,
-                        // since one array of curves can contain curves from
-                        // separate sup-paths of a compound path.
-                        excludeStart: self && curve1.getPrevious() === curve2,
-                        excludeEnd: self && curve1.getNext() === curve2
-                    }
-                );
-            }
-        }
-        // Now flatten the list of location arrays to one array and return it.
-        locations = [];
-        for (var i = 0, l = arrays.length; i < l; i++) {
-            locations.push.apply(locations, arrays[i]);
-        }
-        return locations;
+            curves2 = !self && path.getCurves();
+        return Curve.getCurvesIntersections(curves1, curves2, include,
+                matrix1, matrix2, _returnFirst);
     },
 
     /**
