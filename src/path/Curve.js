@@ -2161,8 +2161,8 @@ new function() { // Scope for intersection using bezier fat-line clipping
                         // Do not compare indices to determine connection, since
                         // one array of curves can contain curves from separate
                         // sup-paths of a compound path.
-                        excludeStart: self && curve1.getPrevious() === curve2,
-                        excludeEnd: self && curve1.getNext() === curve2
+                        excludeStart: curve1.getPrevious() === curve2,
+                        excludeEnd: curve1.getNext() === curve2
                     }
                 );
             }
