@@ -182,10 +182,6 @@ var Line = Base.extend(/** @lends Line# */{
             return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
         },
 
-        getDistance: function(px, py, vx, vy, x, y, asVector) {
-            return Math.abs(Line.getSignedDistance(px, py, vx, vy, x, y, asVector));
-        },
-
         getSignedDistance: function(px, py, vx, vy, x, y, asVector) {
             if (!asVector) {
                 vx -= px;
@@ -195,6 +191,11 @@ var Line = Base.extend(/** @lends Line# */{
             return vx === 0 ? vy > 0 ? x - px : px - x
                  : vy === 0 ? vx < 0 ? y - py : py - y
                  : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
+        },
+
+        getDistance: function(px, py, vx, vy, x, y, asVector) {
+            return Math.abs(
+                    Line.getSignedDistance(px, py, vx, vy, x, y, asVector));
         }
     }
 });

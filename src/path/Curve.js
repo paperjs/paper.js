@@ -2203,19 +2203,22 @@ new function() { // Scope for intersection using bezier fat-line clipping
         var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
             l1 = flip ? v2 : v1,
             l2 = flip ? v1 : v2,
+            // Get l1 start and end point values for faster referencing.
+            x1 = l1[0], y1 = l1[1],
+            x2 = l1[6], y2 = l1[7],
             getDistance = Line.getDistance;
         // See if the starting and end point of curve two are very close to the
         // picked line. Note that the curve for the picked line might not
         // actually be a line, so we have to perform more checks after.
-        if (getDistance(l1[0], l1[1], l1[6], l1[7], l2[0], l2[1]) < geomEpsilon &&
-            getDistance(l1[0], l1[1], l1[6], l1[7], l2[6], l2[7]) < geomEpsilon) {
+        if (getDistance(x1, y1, x2, y2, l2[0], l2[1]) < geomEpsilon &&
+            getDistance(x1, y1, x2, y2, l2[6], l2[7]) < geomEpsilon) {
             // If not both curves are straight, check against both of their
             // handles, and treat them as straight if they are very close.
             if (!straightBoth &&
-                getDistance(l1[0], l1[1], l1[6], l1[7], l1[2], l1[3]) < geomEpsilon &&
-                getDistance(l1[0], l1[1], l1[6], l1[7], l1[4], l1[5]) < geomEpsilon &&
-                getDistance(l1[0], l1[1], l1[6], l1[7], l2[2], l2[3]) < geomEpsilon &&
-                getDistance(l1[0], l1[1], l1[6], l1[7], l2[4], l2[5]) < geomEpsilon) {
+                getDistance(x1, y1, x2, y2, l1[2], l1[3]) < geomEpsilon &&
+                getDistance(x1, y1, x2, y2, l1[4], l1[5]) < geomEpsilon &&
+                getDistance(x1, y1, x2, y2, l2[2], l2[3]) < geomEpsilon &&
+                getDistance(x1, y1, x2, y2, l2[4], l2[5]) < geomEpsilon) {
                 straight1 = straight2 = straightBoth = true;
             }
         } else if (straightBoth) {
