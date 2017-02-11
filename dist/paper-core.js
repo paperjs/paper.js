@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 11 21:19:37 2017 +0100
+ * Date: Sat Feb 11 21:25:42 2017 +0100
  *
  ***
  *
@@ -2609,10 +2609,6 @@ var Line = Base.extend({
 			return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
 		},
 
-		getDistance: function(px, py, vx, vy, x, y, asVector) {
-			return Math.abs(Line.getSignedDistance(px, py, vx, vy, x, y, asVector));
-		},
-
 		getSignedDistance: function(px, py, vx, vy, x, y, asVector) {
 			if (!asVector) {
 				vx -= px;
@@ -2621,6 +2617,11 @@ var Line = Base.extend({
 			return vx === 0 ? vy > 0 ? x - px : px - x
 				 : vy === 0 ? vx < 0 ? y - py : py - y
 				 : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
+		},
+
+		getDistance: function(px, py, vx, vy, x, y, asVector) {
+			return Math.abs(
+					Line.getSignedDistance(px, py, vx, vy, x, y, asVector));
 		}
 	}
 });
@@ -7141,14 +7142,16 @@ new function() {
 		var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
 			l1 = flip ? v2 : v1,
 			l2 = flip ? v1 : v2,
+			x1 = l1[0], y1 = l1[1],
+			x2 = l1[6], y2 = l1[7],
 			getDistance = Line.getDistance;
-		if (getDistance(l1[0], l1[1], l1[6], l1[7], l2[0], l2[1]) < geomEpsilon &&
-			getDistance(l1[0], l1[1], l1[6], l1[7], l2[6], l2[7]) < geomEpsilon) {
+		if (getDistance(x1, y1, x2, y2, l2[0], l2[1]) < geomEpsilon &&
+			getDistance(x1, y1, x2, y2, l2[6], l2[7]) < geomEpsilon) {
 			if (!straightBoth &&
-				getDistance(l1[0], l1[1], l1[6], l1[7], l1[2], l1[3]) < geomEpsilon &&
-				getDistance(l1[0], l1[1], l1[6], l1[7], l1[4], l1[5]) < geomEpsilon &&
-				getDistance(l1[0], l1[1], l1[6], l1[7], l2[2], l2[3]) < geomEpsilon &&
-				getDistance(l1[0], l1[1], l1[6], l1[7], l2[4], l2[5]) < geomEpsilon) {
+				getDistance(x1, y1, x2, y2, l1[2], l1[3]) < geomEpsilon &&
+				getDistance(x1, y1, x2, y2, l1[4], l1[5]) < geomEpsilon &&
+				getDistance(x1, y1, x2, y2, l2[2], l2[3]) < geomEpsilon &&
+				getDistance(x1, y1, x2, y2, l2[4], l2[5]) < geomEpsilon) {
 				straight1 = straight2 = straightBoth = true;
 			}
 		} else if (straightBoth) {
