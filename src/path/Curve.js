@@ -2180,13 +2180,6 @@ new function() { // Scope for intersection using bezier fat-line clipping
      * @iconexperience in #648
      */
     function getOverlaps(v1, v2) {
-        var abs = Math.abs,
-            timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
-            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            straight1 = Curve.isStraight(v1),
-            straight2 = Curve.isStraight(v2),
-            straightBoth = straight1 && straight2;
-
         // Linear curves can only overlap if they are collinear. Instead of
         // using the #isCollinear() check, we pick the longer of the two curves
         // treated as lines, and see how far the starting and end points of the
@@ -2200,25 +2193,31 @@ new function() { // Scope for intersection using bezier fat-line clipping
             return x * x + y * y;
         }
 
-        var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
+        var abs = Math.abs,
+            getDistance = Line.getDistance,
+            timeEpsilon = /*#=*/Numerical.CURVETIME_EPSILON,
+            geomEpsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            straight1 = Curve.isStraight(v1),
+            straight2 = Curve.isStraight(v2),
+            straightBoth = straight1 && straight2,
+            flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
             l1 = flip ? v2 : v1,
             l2 = flip ? v1 : v2,
             // Get l1 start and end point values for faster referencing.
-            x1 = l1[0], y1 = l1[1],
-            x2 = l1[6], y2 = l1[7],
-            getDistance = Line.getDistance;
+            px = l1[0], py = l1[1],
+            vx = l1[6] - px, vy = l1[7] - py;
         // See if the starting and end point of curve two are very close to the
         // picked line. Note that the curve for the picked line might not
         // actually be a line, so we have to perform more checks after.
-        if (getDistance(x1, y1, x2, y2, l2[0], l2[1]) < geomEpsilon &&
-            getDistance(x1, y1, x2, y2, l2[6], l2[7]) < geomEpsilon) {
+        if (getDistance(px, py, vx, vy, l2[0], l2[1], true) < geomEpsilon &&
+            getDistance(px, py, vx, vy, l2[6], l2[7], true) < geomEpsilon) {
             // If not both curves are straight, check against both of their
             // handles, and treat them as straight if they are very close.
             if (!straightBoth &&
-                getDistance(x1, y1, x2, y2, l1[2], l1[3]) < geomEpsilon &&
-                getDistance(x1, y1, x2, y2, l1[4], l1[5]) < geomEpsilon &&
-                getDistance(x1, y1, x2, y2, l2[2], l2[3]) < geomEpsilon &&
-                getDistance(x1, y1, x2, y2, l2[4], l2[5]) < geomEpsilon) {
+                getDistance(px, py, vx, vy, l1[2], l1[3], true) < geomEpsilon &&
+                getDistance(px, py, vx, vy, l1[4], l1[5], true) < geomEpsilon &&
+                getDistance(px, py, vx, vy, l2[2], l2[3], true) < geomEpsilon &&
+                getDistance(px, py, vx, vy, l2[4], l2[5], true) < geomEpsilon) {
                 straight1 = straight2 = straightBoth = true;
             }
         } else if (straightBoth) {
