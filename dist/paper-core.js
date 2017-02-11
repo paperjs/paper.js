@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Feb 6 18:36:00 2017 +0100
+ * Date: Sat Feb 11 21:18:31 2017 +0100
  *
  ***
  *
@@ -2607,6 +2607,10 @@ var Line = Base.extend({
 					ccw = 0;
 			}
 			return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
+		},
+
+		getDistance: function(px, py, vx, vy, x, y, asVector) {
+			return Math.abs(Line.getSignedDistance(px, py, vx, vy, x, y, asVector));
 		},
 
 		getSignedDistance: function(px, py, vx, vy, x, y, asVector) {
@@ -7137,14 +7141,14 @@ new function() {
 		var flip = getSquaredLineLength(v1) < getSquaredLineLength(v2),
 			l1 = flip ? v2 : v1,
 			l2 = flip ? v1 : v2,
-			line = new Line(l1[0], l1[1], l1[6], l1[7]);
-		if (line.getDistance(new Point(l2[0], l2[1])) < geomEpsilon &&
-			line.getDistance(new Point(l2[6], l2[7])) < geomEpsilon) {
+			getDistance = Line.getDistance;
+		if (getDistance(l1[0], l1[1], l1[6], l1[7], l2[0], l2[1]) < geomEpsilon &&
+			getDistance(l1[0], l1[1], l1[6], l1[7], l2[6], l2[7]) < geomEpsilon) {
 			if (!straightBoth &&
-				line.getDistance(new Point(l1[2], l1[3])) < geomEpsilon &&
-				line.getDistance(new Point(l1[4], l1[5])) < geomEpsilon &&
-				line.getDistance(new Point(l2[2], l2[3])) < geomEpsilon &&
-				line.getDistance(new Point(l2[4], l2[5])) < geomEpsilon) {
+				getDistance(l1[0], l1[1], l1[6], l1[7], l1[2], l1[3]) < geomEpsilon &&
+				getDistance(l1[0], l1[1], l1[6], l1[7], l1[4], l1[5]) < geomEpsilon &&
+				getDistance(l1[0], l1[1], l1[6], l1[7], l2[2], l2[3]) < geomEpsilon &&
+				getDistance(l1[0], l1[1], l1[6], l1[7], l2[4], l2[5]) < geomEpsilon) {
 				straight1 = straight2 = straightBoth = true;
 			}
 		} else if (straightBoth) {
