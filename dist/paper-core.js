@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 11 21:18:31 2017 +0100
+ * Date: Sat Feb 11 21:19:37 2017 +0100
  *
  ***
  *
@@ -7111,8 +7111,8 @@ new function() {
 					values1, values2[j], curve1, curve2, locations,
 					{
 						include: include,
-						excludeStart: self && curve1.getPrevious() === curve2,
-						excludeEnd: self && curve1.getNext() === curve2
+						excludeStart: curve1.getPrevious() === curve2,
+						excludeEnd: curve1.getNext() === curve2
 					}
 				);
 			}
