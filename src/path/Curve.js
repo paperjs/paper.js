@@ -437,22 +437,6 @@ var Curve = Base.extend(/** @lends Curve# */{
         return Curve.getLength(this.getValues(), from, to);
     },
 
-    /**
-     * Returns all intersections between two {@link Curve} objects as an array
-     * of {@link CurveLocation} objects.
-     *
-     * @param {Curve} curve the other curve to find the intersections with (if
-     *     the curve itself or `null` is passed, the self intersection of the
-     *     curve is returned, if it exists)
-     * @return {CurveLocation[]} the locations of all intersections between the
-     *     curves
-     */
-    getIntersections: function(curve) {
-        return Curve.getCurveIntersections(this.getValues(),
-                curve && curve !== this ? curve.getValues() : null,
-                this, curve, []);
-    },
-
     // TODO: adjustThroughPoint
 
     /**
@@ -654,6 +638,7 @@ statics: /** @lends Curve */{
      * @return {Number[][]} an array of curve value arrays of the resulting
      *     monotone curve. If the original curve was already monotone, an array
      *     only containing its values are returned.
+     * @private
      */
     getMonoCurves: function(v, dir) {
         var curves = [],
@@ -1724,7 +1709,7 @@ new function() { // Scope for methods that require private functions
         }
     }};
 },
-new function() { // Scope for intersection using bezier fat-line clipping
+new function() { // Scope for bezier intersection using fat-line clipping
 
     function addLocation(locations, include, v1, c1, t1, p1, v2, c2, t2, p2,
             overlap) {
@@ -2255,7 +2240,23 @@ new function() { // Scope for intersection using bezier fat-line clipping
         return pairs;
     }
 
-    return {
+    return /** @lends Curve# */{
+        /**
+         * Returns all intersections between two {@link Curve} objects as an
+         * array of {@link CurveLocation} objects.
+         *
+         * @param {Curve} curve the other curve to find the intersections with
+         *     (if the curve itself or `null` is passed, the self intersection
+         *     of the curve is returned, if it exists)
+         * @return {CurveLocation[]} the locations of all intersections between
+         *     the curves
+         */
+        getIntersections: function(curve) {
+            return getCurveIntersections(this.getValues(),
+                    curve && curve !== this ? curve.getValues() : null,
+                    this, curve, []);
+        },
+
         statics: /** @lends Curve */{
             getCurveIntersections: getCurveIntersections,
             getCurvesIntersections: getCurvesIntersections,
