@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 12 15:47:01 2017 +0100
+ * Date: Sun Feb 12 15:52:56 2017 +0100
  *
  ***
  *
@@ -6992,9 +6992,6 @@ new function() {
 	}
 
 	function getCurveIntersections(v1, v2, c1, c2, locations, include) {
-		if (!v2) {
-			return getLoopIntersection(v1, c1, locations, include);
-		}
 		var epsilon = 1e-12,
 			c1x0 = v1[0], c1y0 = v1[1],
 			c1x1 = v1[2], c1y1 = v1[3],
@@ -7093,8 +7090,7 @@ new function() {
 			for (var j = self ? i + 1 : 0; j < length2; j++) {
 				if (_returnFirst && locations.length)
 					return locations;
-				var curve2 = curves2[j];
-				getCurveIntersections(values1, values2[j], curve1, curve2,
+				getCurveIntersections(values1, values2[j], curve1, curves2[j],
 						locations, include);
 			}
 		}
@@ -7177,9 +7173,10 @@ new function() {
 
 	return {
 		getIntersections: function(curve) {
-			return getCurveIntersections(this.getValues(),
-					curve && curve !== this ? curve.getValues() : null,
-					this, curve, []);
+			var v1 = this.getValues(),
+				v2 = curve && curve !== this && curve.getValues();
+			return v2 ? getCurveIntersections(v1, v2, this, curve, [])
+					  : getLoopIntersection(v1, this, []);
 		},
 
 		statics: {
