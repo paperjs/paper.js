@@ -872,47 +872,6 @@
 </div>
 
 	
-<div id="getintersections-curve" class="member">
-<div class="member-link">
-<a name="getintersections-curve" href="#getintersections-curve"><tt><b>getIntersections</b>(curve)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Returns all intersections between two <a href="../classes/Curve.html"><tt>Curve</tt></a> objects as an array of <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a> objects.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>curve:</tt> 
-<a href="../classes/Curve.html"><tt>Curve</tt></a>
-&mdash;&nbsp;the other curve to find the intersections with (if  the curve itself or <code>null</code> is passed, the self intersection of the  curve is returned, if it exists)
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt>Array of <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the locations of all intersections between the  curves
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
 <div id="divideat-location" class="member">
 <div class="member-link">
 <a name="divideat-location" href="#divideat-location"><tt><b>divideAt</b>(location)</tt></a>
@@ -2264,39 +2223,24 @@
 </div>
 </div>
 
-
-		
-	</div>
-
-
-	<div class="reference-members">
-		<h2>Static Methods</h2>
-		
-			
-<div id="getmonocurves-v" class="member">
+	
+<div id="getintersections-curve" class="member">
 <div class="member-link">
-<a name="getmonocurves-v" href="#getmonocurves-v"><tt><b>Curve.getMonoCurves</b>(v[, dir])</tt></a>
+<a name="getintersections-curve" href="#getintersections-curve"><tt><b>getIntersections</b>(curve)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Splits the specified curve values into curves that are monotone in the specified coordinate direction.</p>
+	<p>Returns all intersections between two <a href="../classes/Curve.html"><tt>Curve</tt></a> objects as an array of <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a> objects.</p>
     
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>v:</tt> 
-Array of <tt>Number</tt>s
-&mdash;&nbsp;the curve values, as returned by  <tt>Curve#getValues</tt>()
+<tt>curve:</tt> 
+<a href="../classes/Curve.html"><tt>Curve</tt></a>
+&mdash;&nbsp;the other curve to find the intersections with  (if the curve itself or <code>null</code> is passed, the self intersection  of the curve is returned, if it exists)
 
-</li>
-	
-	<li>
-<tt>dir:</tt> 
-<tt>Number</tt>
-&mdash;&nbsp;the direction in which the curves should be  monotone, <code>0</code>: monotone in x-direction, <code>1</code>: monotone in y-direction
-&mdash;&nbsp;optional, default: <tt>0</tt>
 </li>
 	
 </ul>
@@ -2306,7 +2250,7 @@ Array of <tt>Number</tt>s
 		<h4>Returns:</h4>
 		
 			<li>
-<tt>Array of <tt>Number[]</tt> objects[]</tt>&nbsp;&mdash;&nbsp;an array of curve value arrays of the resulting  monotone curve. If the original curve was already monotone, an array  only containing its values are returned.
+<tt>Array of <a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the locations of all intersections between  the curves
 </li>
 
 		
@@ -2319,8 +2263,11 @@ Array of <tt>Number</tt>s
 </div>
 </div>
 </div>
+
+
 		
 	</div>
+
 
 
 

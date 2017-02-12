@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 12 15:27:59 2017 +0100
+ * Date: Sun Feb 12 15:42:12 2017 +0100
  *
  ***
  *
@@ -6074,12 +6074,6 @@ var Curve = Base.extend({
 		return Curve.getLength(this.getValues(), from, to);
 	},
 
-	getIntersections: function(curve) {
-		return Curve.getCurveIntersections(this.getValues(),
-				curve && curve !== this ? curve.getValues() : null,
-				this, curve, []);
-	},
-
 	divideAt: function(location) {
 		return this.divideAtTime(location && location.curve === this
 				? location.time : this.getTimeAt(location));
@@ -7182,6 +7176,12 @@ new function() {
 	}
 
 	return {
+		getIntersections: function(curve) {
+			return getCurveIntersections(this.getValues(),
+					curve && curve !== this ? curve.getValues() : null,
+					this, curve, []);
+		},
+
 		statics: {
 			getCurveIntersections: getCurveIntersections,
 			getCurvesIntersections: getCurvesIntersections,
