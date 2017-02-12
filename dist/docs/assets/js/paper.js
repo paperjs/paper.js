@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 12 12:15:59 2017 +0100
+ * Date: Sun Feb 12 15:27:59 2017 +0100
  *
  ***
  *
@@ -6077,7 +6077,7 @@ var Curve = Base.extend({
 	getIntersections: function(curve) {
 		return Curve.getCurveIntersections(this.getValues(),
 				curve && curve !== this ? curve.getValues() : null,
-				this, curve, [], {});
+				this, curve, []);
 	},
 
 	divideAt: function(location) {
@@ -6799,10 +6799,10 @@ new function() {
 },
 new function() {
 
-	function addLocation(locations, param, v1, c1, t1, p1, v2, c2, t2, p2,
+	function addLocation(locations, include, v1, c1, t1, p1, v2, c2, t2, p2,
 			overlap) {
-		var excludeStart = !overlap && param.excludeStart,
-			excludeEnd = !overlap && param.excludeEnd,
+		var excludeStart = !overlap && c1.getPrevious() === c2,
+			excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2,
 			tMin = 1e-8,
 			tMax = 1 - tMin;
 		if (t1 == null)
@@ -6819,8 +6819,7 @@ new function() {
 						p2 || Curve.getPoint(v2, t2), overlap),
 					flip = loc1.getPath() === loc2.getPath()
 						&& loc1.getIndex() > loc2.getIndex(),
-					loc = flip ? loc2 : loc1,
-					include = param.include;
+					loc = flip ? loc2 : loc1;
 				loc1._intersection = loc2;
 				loc2._intersection = loc1;
 				if (!include || include(loc)) {
@@ -6830,8 +6829,8 @@ new function() {
 		}
 	}
 
-	function addCurveIntersections(v1, v2, c1, c2, locations, param, tMin, tMax,
-			uMin, uMax, flip, recursion, calls) {
+	function addCurveIntersections(v1, v2, c1, c2, locations, include,
+			tMin, tMax, uMin, uMax, flip, recursion, calls) {
 		if (++recursion >= 48 || ++calls > 4096)
 			return calls;
 		var fatLineEpsilon = 1e-9,
@@ -6864,7 +6863,7 @@ new function() {
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
 			v2 = c2.getValues();
-			addLocation(locations, param,
+			addLocation(locations, include,
 					flip ? v2 : v1, flip ? c2 : c1, flip ? u : t, null,
 					flip ? v1 : v2, flip ? c1 : c2, flip ? t : u, null);
 		} else {
@@ -6874,29 +6873,29 @@ new function() {
 					var parts = Curve.subdivide(v1, 0.5),
 						t = (tMinNew + tMaxNew) / 2;
 					calls = addCurveIntersections(
-							v2, parts[0], c2, c1, locations, param,
+							v2, parts[0], c2, c1, locations, include,
 							uMin, uMax, tMinNew, t, !flip, recursion, calls);
 					calls = addCurveIntersections(
-							v2, parts[1], c2, c1, locations, param,
+							v2, parts[1], c2, c1, locations, include,
 							uMin, uMax, t, tMaxNew, !flip, recursion, calls);
 				} else {
 					var parts = Curve.subdivide(v2, 0.5),
 						u = (uMin + uMax) / 2;
 					calls = addCurveIntersections(
-							parts[0], v1, c2, c1, locations, param,
+							parts[0], v1, c2, c1, locations, include,
 							uMin, u, tMinNew, tMaxNew, !flip, recursion, calls);
 					calls = addCurveIntersections(
-							parts[1], v1, c2, c1, locations, param,
+							parts[1], v1, c2, c1, locations, include,
 							u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				}
 			} else {
 				if (uMax - uMin >= fatLineEpsilon) {
 					calls = addCurveIntersections(
-						v2, v1, c2, c1, locations, param,
+						v2, v1, c2, c1, locations, include,
 						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				} else {
 					calls = addCurveIntersections(
-						v1, v2, c1, c2, locations, param,
+						v1, v2, c1, c2, locations, include,
 						tMinNew, tMaxNew, uMin, uMax, flip, recursion, calls);
 				}
 			}
@@ -6969,7 +6968,7 @@ new function() {
 		return roots;
 	}
 
-	function addCurveLineIntersections(v1, v2, c1, c2, locations, param) {
+	function addCurveLineIntersections(v1, v2, c1, c2, locations, include) {
 		var flip = Curve.isStraight(v1),
 			vc = flip ? v2 : v1,
 			vl = flip ? v1 : v2,
@@ -6981,30 +6980,26 @@ new function() {
 				pc = Curve.getPoint(vc, tc),
 				tl = Curve.getTimeOf(vl, pc);
 			if (tl !== null) {
-				var pl = Curve.getPoint(vl, tl),
-					t1 = flip ? tl : tc,
-					t2 = flip ? tc : tl;
-				if (!param.excludeEnd || t2 > Numerical.CURVETIME_EPSILON) {
-					addLocation(locations, param,
-							v1, c1, t1, flip ? pl : pc,
-							v2, c2, t2, flip ? pc : pl);
-				}
+				var pl = Curve.getPoint(vl, tl);
+				addLocation(locations, include,
+						v1, c1, flip ? tl : tc, flip ? pl : pc,
+						v2, c2, flip ? tc : tl, flip ? pc : pl);
 			}
 		}
 	}
 
-	function addLineIntersection(v1, v2, c1, c2, locations, param) {
+	function addLineIntersection(v1, v2, c1, c2, locations, include) {
 		var pt = Line.intersect(
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
 		if (pt) {
-			addLocation(locations, param, v1, c1, null, pt, v2, c2, null, pt);
+			addLocation(locations, include, v1, c1, null, pt, v2, c2, null, pt);
 		}
 	}
 
-	function getCurveIntersections(v1, v2, c1, c2, locations, param) {
+	function getCurveIntersections(v1, v2, c1, c2, locations, include) {
 		if (!v2) {
-			return getLoopIntersection(v1, c1, locations, param);
+			return getLoopIntersection(v1, c1, locations, include);
 		}
 		var epsilon = 1e-12,
 			c1x0 = v1[0], c1y0 = v1[1],
@@ -7030,7 +7025,7 @@ new function() {
 		if (overlaps) {
 			for (var i = 0; i < 2; i++) {
 				var overlap = overlaps[i];
-				addLocation(locations, param,
+				addLocation(locations, include,
 					v1, c1, overlap[0], null,
 					v2, c2, overlap[1], null, true);
 			}
@@ -7046,7 +7041,7 @@ new function() {
 			: straight1 || straight2
 				? addCurveLineIntersections
 				: addCurveIntersections)(
-					v1, v2, c1, c2, locations, param,
+					v1, v2, c1, c2, locations, include,
 					0, 1, 0, 1, 0, 0, 0);
 		if (straight && locations.length > before)
 			return locations;
@@ -7055,21 +7050,21 @@ new function() {
 			c2p0 = new Point(c2x0, c2y0),
 			c2p3 = new Point(c2x3, c2y3);
 		if (c1p0.isClose(c2p0, epsilon))
-			addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
-		if (!param.excludeStart && c1p0.isClose(c2p3, epsilon))
-			addLocation(locations, param, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
-		if (!param.excludeEnd && c1p3.isClose(c2p0, epsilon))
-			addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
+			addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
+		if (c1p0.isClose(c2p3, epsilon))
+			addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
+		if (c1p3.isClose(c2p0, epsilon))
+			addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
 		if (c1p3.isClose(c2p3, epsilon))
-			addLocation(locations, param, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
+			addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
 		return locations;
 	}
 
-	function getLoopIntersection(v1, c1, locations, param) {
+	function getLoopIntersection(v1, c1, locations, include) {
 		var info = Curve.classify(v1);
 		if (info.type === 'loop') {
 			var roots = info.roots;
-			addLocation(locations, param,
+			addLocation(locations, include,
 				v1, c1, roots[0], null,
 				v1, c1, roots[1], null);
 		}
@@ -7099,24 +7094,14 @@ new function() {
 				arrays.push(locations);
 			}
 			if (self) {
-				getLoopIntersection(values1, curve1, locations, {
-					include: include,
-					excludeStart: length1 === 1 &&
-							curve1.getPoint1().equals(curve1.getPoint2())
-				});
+				getLoopIntersection(values1, curve1, locations, include);
 			}
 			for (var j = self ? i + 1 : 0; j < length2; j++) {
 				if (_returnFirst && locations.length)
 					return locations;
 				var curve2 = curves2[j];
-				getCurveIntersections(
-					values1, values2[j], curve1, curve2, locations,
-					{
-						include: include,
-						excludeStart: curve1.getPrevious() === curve2,
-						excludeEnd: curve1.getNext() === curve2
-					}
-				);
+				getCurveIntersections(values1, values2[j], curve1, curve2,
+						locations, include);
 			}
 		}
 		locations = [];
@@ -7196,12 +7181,14 @@ new function() {
 		return pairs;
 	}
 
-	return { statics: {
-		getCurveIntersections: getCurveIntersections,
-		getCurvesIntersections: getCurvesIntersections,
-		getOverlaps: getOverlaps,
-		getCurveLineIntersections: getCurveLineIntersections
-	}};
+	return {
+		statics: {
+			getCurveIntersections: getCurveIntersections,
+			getCurvesIntersections: getCurvesIntersections,
+			getOverlaps: getOverlaps,
+			getCurveLineIntersections: getCurveLineIntersections
+		}
+	};
 });
 
 var CurveLocation = Base.extend({
