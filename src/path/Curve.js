@@ -2005,10 +2005,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function getCurveIntersections(v1, v2, c1, c2, locations, include) {
-        if (!v2) {
-            // If v2 is not provided, search for a self-intersection on v1.
-            return getLoopIntersection(v1, c1, locations, include);
-        }
         // Avoid checking curves if completely out of control bounds.
         var epsilon = /*#=*/Numerical.EPSILON,
             c1x0 = v1[0], c1y0 = v1[1],
@@ -2128,10 +2124,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 // self-intersection check:
                 if (_returnFirst && locations.length)
                     return locations;
-                var curve2 = curves2[j];
-                // Avoid end point intersections on consecutive curves when
-                // self-intersecting.
-                getCurveIntersections(values1, values2[j], curve1, curve2,
+                getCurveIntersections(values1, values2[j], curve1, curves2[j],
                         locations, include);
             }
         }
@@ -2252,9 +2245,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
          *     the curves
          */
         getIntersections: function(curve) {
-            return getCurveIntersections(this.getValues(),
-                    curve && curve !== this ? curve.getValues() : null,
-                    this, curve, []);
+            var v1 = this.getValues(),
+                v2 = curve && curve !== this && curve.getValues();
+            return v2 ? getCurveIntersections(v1, v2, this, curve, [])
+                      : getLoopIntersection(v1, this, []);
         },
 
         statics: /** @lends Curve */{
