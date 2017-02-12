@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 12 15:42:12 2017 +0100
+ * Date: Sun Feb 12 15:47:01 2017 +0100
  *
  ***
  *
@@ -7065,7 +7065,7 @@ new function() {
 	  return locations;
 	}
 
-	function getCurvesIntersections(curves1, curves2, include, matrix1, matrix2,
+	function getIntersections(curves1, curves2, include, matrix1, matrix2,
 			_returnFirst) {
 		var self = !curves2;
 		if (self)
@@ -7183,9 +7183,8 @@ new function() {
 		},
 
 		statics: {
-			getCurveIntersections: getCurveIntersections,
-			getCurvesIntersections: getCurvesIntersections,
 			getOverlaps: getOverlaps,
+			getIntersections: getIntersections,
 			getCurveLineIntersections: getCurveLineIntersections
 		}
 	};
@@ -7706,7 +7705,7 @@ var PathItem = Item.extend({
 			matrix2 = self ? matrix1
 				: (_matrix || path._matrix)._orNullIfIdentity();
 		return self || this.getBounds(matrix1).touches(path.getBounds(matrix2))
-				? Curve.getCurvesIntersections(
+				? Curve.getIntersections(
 						this.getCurves(), !self && path.getCurves(), include,
 						matrix1, matrix2, _returnFirst)
 				: [];
