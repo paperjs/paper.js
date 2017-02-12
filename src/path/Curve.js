@@ -2090,7 +2090,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
       return locations;
     }
 
-    function getCurvesIntersections(curves1, curves2, include, matrix1, matrix2,
+    function getIntersections(curves1, curves2, include, matrix1, matrix2,
             _returnFirst) {
         var self = !curves2;
         if (self)
@@ -2258,10 +2258,9 @@ new function() { // Scope for bezier intersection using fat-line clipping
         },
 
         statics: /** @lends Curve */{
-            getCurveIntersections: getCurveIntersections,
-            getCurvesIntersections: getCurvesIntersections,
             getOverlaps: getOverlaps,
             // Exposed for use in boolean offsetting
+            getIntersections: getIntersections,
             getCurveLineIntersections: getCurveLineIntersections
         }
     };

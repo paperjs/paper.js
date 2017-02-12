@@ -331,7 +331,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
         // First check the bounds of the two paths. If they don't intersect,
         // we don't need to iterate through their curves.
         return self || this.getBounds(matrix1).touches(path.getBounds(matrix2))
-                ? Curve.getCurvesIntersections(
+                ? Curve.getIntersections(
                         this.getCurves(), !self && path.getCurves(), include,
                         matrix1, matrix2, _returnFirst)
                 : [];
