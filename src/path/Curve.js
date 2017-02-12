@@ -26,6 +26,9 @@
  */
 var Curve = Base.extend(/** @lends Curve# */{
     _class: 'Curve',
+    // Enforce creation of beans, as some bean getters have hidden parameters.
+    // See #getValues() below.
+    beans: true,
 
     /**
      * Creates a new curve object.
@@ -381,8 +384,8 @@ var Curve = Base.extend(/** @lends Curve# */{
         for (var i = 0; i < 8; i += 2)
             points.push(new Point(coords[i], coords[i + 1]));
         return points;
-    },
-
+    }
+}, /** @lends Curve# */{
     /**
      * The approximated length of the curve.
      *
