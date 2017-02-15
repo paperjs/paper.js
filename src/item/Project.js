@@ -405,9 +405,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item
-     *     class and its sub-classes: {@values Group, Layer, Path,
-     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.class {Function} only hit-test against a specific item
+     *     class, or any of its sub-classes, by providing the constructor
+     *     function against which an `instanceof` check is performed:
+     *     {@values  Group, Layer, Path, CompoundPath, Shape, Raster,
+     *     SymbolItem, PointText, ...}
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
