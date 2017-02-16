@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 15 16:11:33 2017 +0100
+ * Date: Thu Feb 16 14:05:05 2017 +0100
  *
  ***
  *
@@ -6375,7 +6375,7 @@ statics: {
 				for (var i = 0; i < count; i++) {
 					var t = roots[i],
 						u = 1 - t;
-					if (tMin < t && t < tMax)
+					if (tMin <= t && t <= tMax)
 						add(u * u * u * v0
 							+ 3 * u * u * t * v1
 							+ 3 * u * t * t * v2
@@ -6827,7 +6827,7 @@ new function() {
 			tMin, tMax, uMin, uMax, flip, recursion, calls) {
 		if (++recursion >= 48 || ++calls > 4096)
 			return calls;
-		var fatLineEpsilon = 1e-9,
+		var epsilon = 1e-12,
 			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
 			d1 = getSignedDistance(q0x, q0y, q3x, q3y, v2[2], v2[3]),
@@ -6852,7 +6852,7 @@ new function() {
 			return calls;
 		var tMinNew = tMin + (tMax - tMin) * tMinClip,
 			tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-		if (Math.max(uMax - uMin, tMaxNew - tMinNew) < fatLineEpsilon) {
+		if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			v1 = c1.getValues();
@@ -6883,7 +6883,7 @@ new function() {
 							u, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
 				}
 			} else {
-				if (uMax - uMin >= fatLineEpsilon) {
+				if (uMax - uMin >= epsilon) {
 					calls = addCurveIntersections(
 						v2, v1, c2, c1, locations, include,
 						uMin, uMax, tMinNew, tMaxNew, !flip, recursion, calls);
@@ -6993,25 +6993,18 @@ new function() {
 
 	function getCurveIntersections(v1, v2, c1, c2, locations, include) {
 		var epsilon = 1e-12,
-			c1x0 = v1[0], c1y0 = v1[1],
-			c1x1 = v1[2], c1y1 = v1[3],
-			c1x2 = v1[4], c1y2 = v1[5],
-			c1x3 = v1[6], c1y3 = v1[7],
-			c2x0 = v2[0], c2y0 = v2[1],
-			c2x1 = v2[2], c2y1 = v2[3],
-			c2x2 = v2[4], c2y2 = v2[5],
-			c2x3 = v2[6], c2y3 = v2[7],
 			min = Math.min,
 			max = Math.max;
-		if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
-				min(c2x0, c2x1, c2x2, c2x3) &&
-				min(c1x0, c1x1, c1x2, c1x3) - epsilon <
-				max(c2x0, c2x1, c2x2, c2x3) &&
-				max(c1y0, c1y1, c1y2, c1y3) + epsilon >
-				min(c2y0, c2y1, c2y2, c2y3) &&
-				min(c1y0, c1y1, c1y2, c1y3) - epsilon <
-				max(c2y0, c2y1, c2y2, c2y3)))
+		if (!(  max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
+				min(v2[0], v2[2], v2[4], v2[6]) &&
+				min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
+				max(v2[0], v2[2], v2[4], v2[6]) &&
+				max(v1[1], v1[3], v1[5], v1[7]) + epsilon >
+				min(v2[1], v2[3], v2[5], v2[7]) &&
+				min(v1[1], v1[3], v1[5], v1[7]) - epsilon <
+				max(v2[1], v2[3], v2[5], v2[7])))
 			return locations;
+
 		var overlaps = getOverlaps(v1, v2);
 		if (overlaps) {
 			for (var i = 0; i < 2; i++) {
@@ -7025,8 +7018,7 @@ new function() {
 
 		var straight1 = Curve.isStraight(v1),
 			straight2 = Curve.isStraight(v2),
-			straight = straight1 && straight2,
-			before = locations.length;
+			straight = straight1 && straight2;
 		(straight
 			? addLineIntersection
 			: straight1 || straight2
@@ -7034,20 +7026,6 @@ new function() {
 				: addCurveIntersections)(
 					v1, v2, c1, c2, locations, include,
 					0, 1, 0, 1, 0, 0, 0);
-		if (straight && locations.length > before)
-			return locations;
-		var c1p0 = new Point(c1x0, c1y0),
-			c1p3 = new Point(c1x3, c1y3),
-			c2p0 = new Point(c2x0, c2y0),
-			c2p3 = new Point(c2x3, c2y3);
-		if (c1p0.isClose(c2p0, epsilon))
-			addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
-		if (c1p0.isClose(c2p3, epsilon))
-			addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
-		if (c1p3.isClose(c2p0, epsilon))
-			addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
-		if (c1p3.isClose(c2p3, epsilon))
-			addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
 		return locations;
 	}
 
@@ -7191,7 +7169,7 @@ var CurveLocation = Base.extend({
 	_class: 'CurveLocation',
 
 	initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
-		if (time > 0.99999999) {
+		if (time >= 0.99999999) {
 			var next = curve.getNext();
 			if (next) {
 				time = 0;
@@ -7391,17 +7369,17 @@ var CurveLocation = Base.extend({
 			t2 = inter.getTime(),
 			tMin = 1e-8,
 			tMax = 1 - tMin,
-			t1Inside = t1 > tMin && t1 < tMax,
-			t2Inside = t2 > tMin && t2 < tMax;
+			t1Inside = t1 >= tMin && t1 <= tMax,
+			t2Inside = t2 >= tMin && t2 <= tMax;
 		if (t1Inside && t2Inside)
 			return !this.isTouching();
 		var c2 = this.getCurve(),
-			c1 = t1 <= tMin ? c2.getPrevious() : c2,
+			c1 = t1 < tMin ? c2.getPrevious() : c2,
 			c4 = inter.getCurve(),
-			c3 = t2 <= tMin ? c4.getPrevious() : c4;
-		if (t1 >= tMax)
+			c3 = t2 < tMin ? c4.getPrevious() : c4;
+		if (t1 > tMax)
 			c2 = c2.getNext();
-		if (t2 >= tMax)
+		if (t2 > tMax)
 			c4 = c4.getNext();
 		if (!c1 || !c2 || !c3 || !c4)
 			return false;
@@ -8219,7 +8197,7 @@ var Path = PathItem.extend({
 			time = loc && loc.time,
 			tMin = 1e-8,
 			tMax = 1 - tMin;
-		if (time >= tMax) {
+		if (time > tMax) {
 			index++;
 			time = 0;
 		}
@@ -9943,7 +9921,7 @@ PathItem.inject(new function() {
 							|| clearLookup && clearLookup[getId(curve)];
 					renormalizeLocs = [];
 					prevTime = null;
-				} else if (prevTime > tMin) {
+				} else if (prevTime >= tMin) {
 					loc._time /= prevTime;
 				}
 				prevCurve = curve;
