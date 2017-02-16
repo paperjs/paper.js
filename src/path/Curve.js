@@ -2007,25 +2007,18 @@ new function() { // Scope for bezier intersection using fat-line clipping
     function getCurveIntersections(v1, v2, c1, c2, locations, include) {
         // Avoid checking curves if completely out of control bounds.
         var epsilon = /*#=*/Numerical.EPSILON,
-            c1x0 = v1[0], c1y0 = v1[1],
-            c1x1 = v1[2], c1y1 = v1[3],
-            c1x2 = v1[4], c1y2 = v1[5],
-            c1x3 = v1[6], c1y3 = v1[7],
-            c2x0 = v2[0], c2y0 = v2[1],
-            c2x1 = v2[2], c2y1 = v2[3],
-            c2x2 = v2[4], c2y2 = v2[5],
-            c2x3 = v2[6], c2y3 = v2[7],
             min = Math.min,
             max = Math.max;
-        if (!(  max(c1x0, c1x1, c1x2, c1x3) + epsilon >
-                min(c2x0, c2x1, c2x2, c2x3) &&
-                min(c1x0, c1x1, c1x2, c1x3) - epsilon <
-                max(c2x0, c2x1, c2x2, c2x3) &&
-                max(c1y0, c1y1, c1y2, c1y3) + epsilon >
-                min(c2y0, c2y1, c2y2, c2y3) &&
-                min(c1y0, c1y1, c1y2, c1y3) - epsilon <
-                max(c2y0, c2y1, c2y2, c2y3)))
+        if (!(  max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
+                min(v2[0], v2[2], v2[4], v2[6]) &&
+                min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
+                max(v2[0], v2[2], v2[4], v2[6]) &&
+                max(v1[1], v1[3], v1[5], v1[7]) + epsilon >
+                min(v2[1], v2[3], v2[5], v2[7]) &&
+                min(v1[1], v1[3], v1[5], v1[7]) - epsilon <
+                max(v2[1], v2[3], v2[5], v2[7])))
             return locations;
+
         // Now detect and handle overlaps:
         var overlaps = getOverlaps(v1, v2);
         if (overlaps) {
@@ -2040,8 +2033,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
 
         var straight1 = Curve.isStraight(v1),
             straight2 = Curve.isStraight(v2),
-            straight = straight1 && straight2,
-            before = locations.length;
+            straight = straight1 && straight2;
         // Determine the correct intersection method based on whether one or
         // curves are straight lines:
         (straight
@@ -2054,24 +2046,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     // addCurveIntersections():
                     // tMin, tMax, uMin, uMax, flip, recursion, calls
                     0, 1, 0, 1, 0, 0, 0);
-        // We're done if we handle lines and found one intersection already:
-        // #805#issuecomment-148503018
-        if (straight && locations.length > before)
-            return locations;
-        // Handle the special case where the first curve's start- or end-point
-        // overlaps with the second curve's start or end-point.
-        var c1p0 = new Point(c1x0, c1y0),
-            c1p3 = new Point(c1x3, c1y3),
-            c2p0 = new Point(c2x0, c2y0),
-            c2p3 = new Point(c2x3, c2y3);
-        if (c1p0.isClose(c2p0, epsilon))
-            addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 0, c2p0);
-        if (c1p0.isClose(c2p3, epsilon))
-            addLocation(locations, include, v1, c1, 0, c1p0, v2, c2, 1, c2p3);
-        if (c1p3.isClose(c2p0, epsilon))
-            addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 0, c2p0);
-        if (c1p3.isClose(c2p3, epsilon))
-            addLocation(locations, include, v1, c1, 1, c1p3, v2, c2, 1, c2p3);
         return locations;
     }
 
