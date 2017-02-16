@@ -41,7 +41,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
         // Merge intersections very close to the end of a curve with the
         // beginning of the next curve.
-        if (time > /*#=*/(1 - Numerical.CURVETIME_EPSILON)) {
+        if (time >= /*#=*/(1 - Numerical.CURVETIME_EPSILON)) {
             var next = curve.getNext();
             if (next) {
                 time = 0;
@@ -402,8 +402,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin,
             // t*Inside specifies if the found intersection is inside the curve.
-            t1Inside = t1 > tMin && t1 < tMax,
-            t2Inside = t2 > tMin && t2 < tMax;
+            t1Inside = t1 >= tMin && t1 <= tMax,
+            t2Inside = t2 >= tMin && t2 <= tMax;
         // If the intersection is in the middle of both paths, it is either a
         // tangent or a crossing, no need for the detailed corner check below:
         if (t1Inside && t2Inside)
@@ -416,13 +416,13 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         //   both values point to the same curve, and the curve-time is to be
         //   handled accordingly further down.
         var c2 = this.getCurve(),
-            c1 = t1 <= tMin ? c2.getPrevious() : c2,
+            c1 = t1 < tMin ? c2.getPrevious() : c2,
             c4 = inter.getCurve(),
-            c3 = t2 <= tMin ? c4.getPrevious() : c4;
+            c3 = t2 < tMin ? c4.getPrevious() : c4;
         // If t1 / t2 are at the end, then step to the next curve.
-        if (t1 >= tMax)
+        if (t1 > tMax)
             c2 = c2.getNext();
-        if (t2 >= tMax)
+        if (t2 > tMax)
             c4 = c4.getNext();
         if (!c1 || !c2 || !c3 || !c4)
             return false;

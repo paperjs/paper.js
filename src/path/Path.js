@@ -1043,7 +1043,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             time = loc && loc.time,
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
-        if (time >= tMax) {
+        if (time > tMax) {
             // time == 1 is the same location as time == 0 and index++
             index++;
             time = 0;

@@ -890,7 +890,7 @@ statics: /** @lends Curve */{
                     var t = roots[i],
                         u = 1 - t;
                     // Test for good roots and only add to bounds if good.
-                    if (tMin < t && t < tMax)
+                    if (tMin <= t && t <= tMax)
                     // Calculate bezier polynomial at t.
                         add(u * u * u * v0
                             + 3 * u * u * t * v1
@@ -1725,7 +1725,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             t1 = Curve.getTimeOf(v1, p1);
         // Check t1 and t2 against correct bounds, based on excludeStart/End:
         // - excludeStart means the start of c1 connects to the end of c2
-        // - endConneted means the end of c1 connects to the start of c2
+        // - excludeEnd means the end of c1 connects to the start of c2
         // - If either c1 or c2 are at the end of the path, exclude their end,
         //   which connects back to the beginning, but only if it's not part of
         //   a found overlap. The normal intersection will already be found at

@@ -371,7 +371,7 @@ PathItem.inject(new function() {
                     // renormalization within the curve.
                     renormalizeLocs = [];
                     prevTime = null;
-                } else if (prevTime > tMin) {
+                } else if (prevTime >= tMin) {
                     // Rescale curve-time when we are splitting the same curve
                     // multiple times, if splitting was done previously.
                     loc._time /= prevTime;
