@@ -154,7 +154,6 @@ test('#1073', function() {
     testIntersections(path1.getIntersections(path2), [
         { point: { x: 426.61172, y: 448 }, index: 0, time: 0.27769, crossing: true },
         { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: true },
-        { point: { x: 343.68011, y: 469.7389 }, index: 1, time: 0.77843, crossing: true },
         { point: { x: 336.40125, y: 463.59875 }, index: 2, time: 0.00608, crossing: true }
     ]);
 });
@@ -230,11 +229,8 @@ test('#1239', function() {
     testIntersections(p1.getIntersections(p2), [
         { point: { x: 956.28999, y: 351.925 }, index: 1, time: 0.000577, crossing: true},
         { point: { x: 956.28948, y: 352.2327 }, index: 1, time: 0.003804, crossing: true},
-        { point: { x: 939.50932, y: 415.17952 }, index: 1, time: 0.701801, crossing: true},
         { point: { x: 922.9625, y: 437.995 }, index: 2, time: 0, crossing: false},
-        { point: { x: 911.15, y: 427.245 }, index: 3, time: 0, crossing: false},
-        { point: { x: 932.08099, y: 394.02288 }, index: 3, time: 0.477224, crossing: true},
-        { point: { x: 940.28956, y: 352.18697 }, index: 3, time: 0.996218, crossing: true}
+        { point: { x: 911.15, y: 427.245 }, index: 3, time: 0, crossing: false}
     ]);
 });
 
