@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 21 22:10:08 2017 +0100
+ * Date: Tue Feb 21 22:19:38 2017 +0100
  *
  ***
  *
@@ -6112,11 +6112,12 @@ var Curve = Base.extend({
 	},
 
 	splitAt: function(location) {
-		return this._path ? this._path.splitAt(location) : null;
+		var path = this._path;
+		return path ? path.splitAt(location) : null;
 	},
 
-	splitAtTime: function(t) {
-		return this.splitAt(this.getLocationAtTime(t));
+	splitAtTime: function(time) {
+		return this.splitAt(this.getLocationAtTime(time));
 	},
 
 	divide: function(offset, isTime) {
@@ -7225,7 +7226,7 @@ var CurveLocation = Base.extend({
 		var path = this._path,
 			that = this;
 		if (path && path._version !== this._version) {
-			this._time = this._offset = this._curve = null;
+			this._time = this._offset = this._curveOffset = this._curve = null;
 		}
 
 		function trySegment(segment) {
@@ -7283,9 +7284,14 @@ var CurveLocation = Base.extend({
 	},
 
 	getCurveOffset: function() {
-		var curve = this.getCurve(),
-			time = this.getTime();
-		return time != null && curve && curve.getPartLength(0, time);
+		var offset = this._curveOffset;
+		if (offset == null) {
+			var curve = this.getCurve(),
+				time = this.getTime();
+			this._curveOffset = offset = time != null && curve
+					&& curve.getPartLength(0, time);
+		}
+		return offset;
 	},
 
 	getIntersection: function() {
@@ -7298,16 +7304,35 @@ var CurveLocation = Base.extend({
 
 	divide: function() {
 		var curve = this.getCurve(),
-			res = null;
-		if (curve && (res = curve.divideAtTime(this.getTime()))) {
+			res = curve && curve.divideAtTime(this.getTime());
+		if (res) {
 			this._setSegment(res._segment1);
 		}
 		return res;
 	},
 
 	split: function() {
-		var curve = this.getCurve();
-		return curve ? curve.splitAtTime(this.getTime()) : null;
+		var curve = this.getCurve(),
+			path = curve._path,
+			res = curve && curve.splitAtTime(this.getTime());
+		if (res) {
+			this._setSegment(path.getLastSegment());
+		}
+		return  res;
+	},
+
+	getOffsetTo: function(loc) {
+		var offset = null,
+			path = this.getPath();
+		if (path && path === loc.getPath()) {
+			var offset1 = this.getOffset(),
+				offset2 = loc.getOffset();
+			offset = offset2 - offset1;
+			if (offset < 0 && path._closed) {
+				offset = path.getLength() - offset2 + offset1;
+			}
+		}
+		return offset;
 	},
 
 	equals: function(loc, _ignoreOther) {
