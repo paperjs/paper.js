@@ -121,7 +121,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         if (path && path._version !== this._version) {
             // If the path's segments have changed, clear the cached time and
             // offset values and force re-fetching of the correct curve.
-            this._time = this._offset = this._curve = null;
+            this._time = this._offset = this._curveOffset = this._curve = null;
         }
 
         // If path is out of sync, access current curve objects through segment1
@@ -232,9 +232,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @type Number
      */
     getCurveOffset: function() {
-        var curve = this.getCurve(),
-            time = this.getTime();
-        return time != null && curve && curve.getPartLength(0, time);
+        var offset = this._curveOffset;
+        if (offset == null) {
+            var curve = this.getCurve(),
+                time = this.getTime();
+            this._curveOffset = offset = time != null && curve
+                    && curve.getPartLength(0, time);
+        }
+        return offset;
     },
 
     /**
