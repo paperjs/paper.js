@@ -355,7 +355,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
             // as it should in the known use cases.
             // The ideal implementation would deal with it in a way outlined in:
             // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-            return inter._overlap || inter.isCrossing();
+            return inter.hasOverlap() || inter.isCrossing();
         });
     },
 

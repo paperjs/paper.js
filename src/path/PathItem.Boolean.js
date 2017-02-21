@@ -148,7 +148,10 @@ PathItem.inject(new function() {
         } else {
             // When there are no crossings, the result can be determined through
             // a much faster call to reorientPaths():
-            paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
+            paths = reorientPaths(
+                    // Make sure reorientPaths() never works on original
+                    // _children arrays by calling paths1.slice()
+                    paths2 ? paths1.concat(paths2) : paths1.slice(),
                     function(w) {
                         return !!operator[w];
                     });
@@ -357,6 +360,7 @@ PathItem.inject(new function() {
                 // be changed to the scaled value after splitting previously.
                 // See CurveLocation#getCurve(), #resolveCrossings()
                 time = loc._time,
+                origTime = time,
                 exclude = include && !include(loc),
                 // Retrieve curve after calling include(), because it may cause
                 // a change in the cached location values, see above.
@@ -371,12 +375,12 @@ PathItem.inject(new function() {
                     // renormalization within the curve.
                     renormalizeLocs = [];
                     prevTime = null;
+                    prevCurve = curve;
                 } else if (prevTime >= tMin) {
                     // Rescale curve-time when we are splitting the same curve
                     // multiple times, if splitting was done previously.
-                    loc._time /= prevTime;
+                    time /= prevTime;
                 }
-                prevCurve = curve;
             }
             if (exclude) {
                 // Store excluded locations for later renormalization, in case
@@ -387,8 +391,7 @@ PathItem.inject(new function() {
             } else if (include) {
                 results.unshift(loc);
             }
-            prevTime = time;
-            time = loc._time;
+            prevTime = origTime;
             if (time < tMin) {
                 segment = curve._segment1;
             } else if (time > tMax) {
@@ -1121,7 +1124,7 @@ PathItem.inject(new function() {
             var hasOverlaps = false,
                 hasCrossings = false,
                 intersections = this.getIntersections(null, function(inter) {
-                    return inter._overlap && (hasOverlaps = true) ||
+                    return inter.hasOverlap() && (hasOverlaps = true) ||
                             inter.isCrossing() && (hasCrossings = true);
                 }),
                 // We only need to keep track of curves that need clearing
@@ -1132,7 +1135,7 @@ PathItem.inject(new function() {
                 // First divide in all overlaps, and then remove the inside of
                 // the resulting overlap ranges.
                 var overlaps = divideLocations(intersections, function(inter) {
-                    return inter._overlap;
+                    return inter.hasOverlap();
                 }, clearCurves);
                 for (var i = overlaps.length - 1; i >= 0; i--) {
                     var seg = overlaps[i]._segment,
@@ -1160,20 +1163,23 @@ PathItem.inject(new function() {
                     // Check both involved curves to see if they're still valid,
                     // meaning they are still part of their paths.
                     var curve1 = inter.getCurve(),
-                        // Do not call getCurve() on the other intersection yet,
-                        // as it too is in the intersections array and will be
-                        // divided later. But do check if its current curve is
-                        // still valid. This is required by some very rare edge
+                        seg1 = inter.getSegment(),
+                        // Do not call getCurve() and getSegment() on the other
+                        // intersection yet, as it too is in the intersections
+                        // array and will be divided later. But check if its
+                        // current curve is valid, as required by some rare edge
                         // cases, related to intersections on the same curve.
-                        curve2 = inter._intersection._curve,
-                        seg = inter._segment;
-                    if (curve1 && curve2 && curve1._path && curve2._path) {
+                        other = inter._intersection,
+                        curve2 = other._curve,
+                        seg2 = other._segment;
+                    if (curve1 && curve2 && curve1._path && curve2._path)
                         return true;
-                    } else if (seg) {
-                        // Remove all intersections that were involved in the
-                        // handling of overlaps, to not confuse tracePaths().
-                        seg._intersection = null;
-                    }
+                    // Remove all intersections that were involved in the
+                    // handling of overlaps, to not confuse tracePaths().
+                    if (seg1)
+                        seg1._intersection = null;
+                    if (seg2)
+                        seg2._intersection = null;
                 }, clearCurves);
                 if (clearCurves)
                     clearCurveHandles(clearCurves);

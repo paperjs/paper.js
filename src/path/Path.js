@@ -1199,10 +1199,9 @@ var Path = PathItem.extend(/** @lends Path# */{
                 this._add([segments[0]]);
             path.remove();
         }
-        // Close the resulting path and merge first and last segment if they
-        // touch, meaning the touched at path ends. Also do this if no path
-        // argument was provided, in which cases the path is joined with itself
-        // only if its ends touch.
+        // If the first and last segment touch, close the resulting path and
+        // merge the end segments. Also do this if no path argument was provided
+        // in which cases the path is joined with itself only if its ends touch.
         var first = this.getFirstSegment(),
             last = this.getLastSegment();
         if (first !== last && first._point.isClose(last._point, epsilon)) {
