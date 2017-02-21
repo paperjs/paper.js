@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 16 14:05:05 2017 +0100
+ * Date: Tue Feb 21 22:05:38 2017 +0100
  *
  ***
  *
@@ -7202,10 +7202,10 @@ var CurveLocation = Base.extend({
 	},
 
 	getSegment: function() {
-		var curve = this.getCurve(),
-			segment = this._segment;
+		var segment = this._segment;
 		if (!segment) {
-			var time = this.getTime();
+			var curve = this.getCurve(),
+				time = this.getTime();
 			if (time === 0) {
 				segment = curve._segment1;
 			} else if (time === 1) {
@@ -7225,14 +7225,13 @@ var CurveLocation = Base.extend({
 		var path = this._path,
 			that = this;
 		if (path && path._version !== this._version) {
-			this._time = this._curve = this._offset = null;
+			this._time = this._offset = this._curve = null;
 		}
 
 		function trySegment(segment) {
 			var curve = segment && segment.getCurve();
 			if (curve && (that._time = curve.getTimeOf(that._point)) != null) {
 				that._setCurve(curve);
-				that._segment = segment;
 				return curve;
 			}
 		}
@@ -7240,7 +7239,6 @@ var CurveLocation = Base.extend({
 		return this._curve
 			|| trySegment(this._segment)
 			|| trySegment(this._segment1)
-			|| trySegment(this._segment1.getNext())
 			|| trySegment(this._segment2.getPrevious());
 	},
 
@@ -7688,7 +7686,7 @@ var PathItem = Item.extend({
 
 	getCrossings: function(path) {
 		return this.getIntersections(path, function(inter) {
-			return inter._overlap || inter.isCrossing();
+			return inter.hasOverlap() || inter.isCrossing();
 		});
 	},
 
@@ -9786,7 +9784,8 @@ PathItem.inject(new function() {
 			}
 			paths = tracePaths(segments, operator);
 		} else {
-			paths = reorientPaths(paths2 ? paths1.concat(paths2) : paths1,
+			paths = reorientPaths(
+					paths2 ? paths1.concat(paths2) : paths1.slice(),
 					function(w) {
 						return !!operator[w];
 					});
@@ -9912,6 +9911,7 @@ PathItem.inject(new function() {
 		for (var i = locations.length - 1; i >= 0; i--) {
 			var loc = locations[i],
 				time = loc._time,
+				origTime = time,
 				exclude = include && !include(loc),
 				curve = loc._curve,
 				segment;
@@ -9921,10 +9921,10 @@ PathItem.inject(new function() {
 							|| clearLookup && clearLookup[getId(curve)];
 					renormalizeLocs = [];
 					prevTime = null;
+					prevCurve = curve;
 				} else if (prevTime >= tMin) {
-					loc._time /= prevTime;
+					time /= prevTime;
 				}
-				prevCurve = curve;
 			}
 			if (exclude) {
 				if (renormalizeLocs)
@@ -9933,8 +9933,7 @@ PathItem.inject(new function() {
 			} else if (include) {
 				results.unshift(loc);
 			}
-			prevTime = time;
-			time = loc._time;
+			prevTime = origTime;
 			if (time < tMin) {
 				segment = curve._segment1;
 			} else if (time > tMax) {
@@ -10384,14 +10383,14 @@ PathItem.inject(new function() {
 			var hasOverlaps = false,
 				hasCrossings = false,
 				intersections = this.getIntersections(null, function(inter) {
-					return inter._overlap && (hasOverlaps = true) ||
+					return inter.hasOverlap() && (hasOverlaps = true) ||
 							inter.isCrossing() && (hasCrossings = true);
 				}),
 				clearCurves = hasOverlaps && hasCrossings && [];
 			intersections = CurveLocation.expand(intersections);
 			if (hasOverlaps) {
 				var overlaps = divideLocations(intersections, function(inter) {
-					return inter._overlap;
+					return inter.hasOverlap();
 				}, clearCurves);
 				for (var i = overlaps.length - 1; i >= 0; i--) {
 					var seg = overlaps[i]._segment,
@@ -10411,13 +10410,16 @@ PathItem.inject(new function() {
 			if (hasCrossings) {
 				divideLocations(intersections, hasOverlaps && function(inter) {
 					var curve1 = inter.getCurve(),
-						curve2 = inter._intersection._curve,
-						seg = inter._segment;
-					if (curve1 && curve2 && curve1._path && curve2._path) {
+						seg1 = inter.getSegment(),
+						other = inter._intersection,
+						curve2 = other._curve,
+						seg2 = other._segment;
+					if (curve1 && curve2 && curve1._path && curve2._path)
 						return true;
-					} else if (seg) {
-						seg._intersection = null;
-					}
+					if (seg1)
+						seg1._intersection = null;
+					if (seg2)
+						seg2._intersection = null;
 				}, clearCurves);
 				if (clearCurves)
 					clearCurveHandles(clearCurves);
