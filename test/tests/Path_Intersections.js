@@ -235,6 +235,7 @@ test('#1233', function() {
     p.scale(100);
     testIntersections(p.getIntersections(), [
         { point: { x: 366.12645, y: 320.20927 }, index: 1, time: 0, crossing: false },
+        { point: { x: 366.07584, y: 320.28024 }, index: 1, time: 0.00027, crossing: true },
         { point: { x: 366.02122, y: 320.3568 }, index: 1, time: 0.00057, crossing: true },
         { point: { x: 300.67554, y: 391.76337 }, index: 1, time: 0.30838, crossing: true }
     ]);
