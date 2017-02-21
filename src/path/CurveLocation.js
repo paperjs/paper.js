@@ -289,17 +289,23 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     divide: function() {
         var curve = this.getCurve(),
-            res = null;
+            res = curve && curve.divideAtTime(this.getTime());
         // Change to the newly inserted segment, also adjusts _time.
-        if (curve && (res = curve.divideAtTime(this.getTime()))) {
+        if (res) {
             this._setSegment(res._segment1);
         }
         return res;
     },
 
     split: function() {
-        var curve = this.getCurve();
-        return curve ? curve.splitAtTime(this.getTime()) : null;
+        var curve = this.getCurve(),
+            path = curve._path,
+            res = curve && curve.splitAtTime(this.getTime());
+        if (res) {
+            // Set the segment to the end-segment of the path after splitting.
+            this._setSegment(path.getLastSegment());
+        }
+        return  res;
     },
 
     /**

@@ -525,7 +525,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @see Path#splitAt(offset)
      */
     splitAt: function(location) {
-        return this._path ? this._path.splitAt(location) : null;
+        var path = this._path;
+        return path ? path.splitAt(location) : null;
     },
 
     /**
@@ -538,8 +539,8 @@ var Curve = Base.extend(/** @lends Curve# */{
      * @return {Path} the newly created path after splitting, if any
      * @see Path#splitAt(offset)
      */
-    splitAtTime: function(t) {
-        return this.splitAt(this.getLocationAtTime(t));
+    splitAtTime: function(time) {
+        return this.splitAt(this.getLocationAtTime(time));
     },
 
     // TODO: Remove in 1.0.0? (deprecated January 2016):
