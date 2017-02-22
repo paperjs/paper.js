@@ -2402,7 +2402,9 @@ new function() { // PostScript-style drawing commands
         arcTo: function(/* to, clockwise | through, to
                 | to, radius, rotation, clockwise, large */) {
             // Get the start point:
-            var current = getCurrentSegment(this),
+            var abs = Math.abs,
+                sqrt = Math.sqrt,
+                current = getCurrentSegment(this),
                 from = current._point,
                 to = Point.read(arguments),
                 through,
@@ -2441,7 +2443,6 @@ new function() { // PostScript-style drawing commands
                     pt = from.subtract(middle).rotate(-rotation),
                     x = pt.x,
                     y = pt.y,
-                    abs = Math.abs,
                     rx = abs(radius.width),
                     ry = abs(radius.height),
                     rxSq = rx * rx,
@@ -2449,7 +2450,7 @@ new function() { // PostScript-style drawing commands
                     xSq = x * x,
                     ySq = y * y;
                 // "...ensure radii are large enough"
-                var factor = Math.sqrt(xSq / rxSq + ySq / rySq);
+                var factor = sqrt(xSq / rxSq + ySq / rySq);
                 if (factor > 1) {
                     rx *= factor;
                     ry *= factor;
@@ -2466,8 +2467,7 @@ new function() { // PostScript-style drawing commands
                 center = new Point(rx * y / ry, -ry * x / rx)
                         // "...where the + sign is chosen if fA != fS,
                         // and the - sign is chosen if fA = fS."
-                        .multiply((large === clockwise ? -1 : 1)
-                            * Math.sqrt(factor))
+                        .multiply((large === clockwise ? -1 : 1) * sqrt(factor))
                         .rotate(rotation).add(middle);
                 // Now create a matrix that maps the unit circle to the ellipse,
                 // for easier construction below.
@@ -2514,7 +2514,7 @@ new function() { // PostScript-style drawing commands
                     // If the center is lying on the line, we might have gotten
                     // the wrong sign for extent above. Use the sign of the side
                     // of the through point.
-                    extent = throughSide * Math.abs(extent);
+                    extent = throughSide * abs(extent);
                 } else if (throughSide === centerSide) {
                     // If the center is on the same side of the line (from, to)
                     // as the through point, we're extending bellow 180 degrees
@@ -2522,8 +2522,12 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            var ext = Math.abs(extent),
-                count = ext >= 360 ? 4 : Math.ceil(ext / 90),
+            var epsilon = /*#=*/Numerical.EPSILON,
+                ext = abs(extent),
+                // Calculate the amount of segments required to approximate over
+                // `extend` degrees (extend / 90), but prevent ceil() from
+                // rounding up small imprecisions by subtracting epsilon first.
+                count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
                 inc = extent / count,
                 half = inc * Math.PI / 360,
                 z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
