@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Feb 21 23:09:30 2017 +0100
+ * Date: Wed Feb 22 13:58:27 2017 +0100
  *
  ***
  *
@@ -6825,8 +6825,9 @@ new function() {
 
 	function addCurveIntersections(v1, v2, c1, c2, tMin, tMax, uMin, uMax,
 			locations, include, recursion, calls, flip) {
-		var straight1 = Curve.isStraight(v1),
-			straight2 = Curve.isStraight(v2);
+		var abort = ++recursion >= 48 || ++calls > 256,
+			straight1 = abort || Curve.isStraight(v1),
+			straight2 = abort || Curve.isStraight(v2);
 		if (straight1 || straight2) {
 			return (straight1 && straight2
 				? addLineIntersection
@@ -6835,8 +6836,6 @@ new function() {
 						flip ? c2 : c1, flip ? c1 : c2,
 						locations, include, recursion);
 		}
-		if (++recursion >= 48 || ++calls > 256)
-			return calls;
 		var epsilon = 1e-12,
 			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
@@ -9019,7 +9018,9 @@ new function() {
 		},
 
 		arcTo: function() {
-			var current = getCurrentSegment(this),
+			var abs = Math.abs,
+				sqrt = Math.sqrt,
+				current = getCurrentSegment(this),
 				from = current._point,
 				to = Point.read(arguments),
 				through,
@@ -9045,14 +9046,13 @@ new function() {
 					pt = from.subtract(middle).rotate(-rotation),
 					x = pt.x,
 					y = pt.y,
-					abs = Math.abs,
 					rx = abs(radius.width),
 					ry = abs(radius.height),
 					rxSq = rx * rx,
 					rySq = ry * ry,
 					xSq = x * x,
 					ySq = y * y;
-				var factor = Math.sqrt(xSq / rxSq + ySq / rySq);
+				var factor = sqrt(xSq / rxSq + ySq / rySq);
 				if (factor > 1) {
 					rx *= factor;
 					ry *= factor;
@@ -9067,8 +9067,7 @@ new function() {
 					throw new Error(
 							'Cannot create an arc with the given arguments');
 				center = new Point(rx * y / ry, -ry * x / rx)
-						.multiply((large === clockwise ? -1 : 1)
-							* Math.sqrt(factor))
+						.multiply((large === clockwise ? -1 : 1) * sqrt(factor))
 						.rotate(rotation).add(middle);
 				matrix = new Matrix().translate(center).rotate(rotation)
 						.scale(rx, ry);
@@ -9097,13 +9096,14 @@ new function() {
 				extent = vector.getDirectedAngle(to.subtract(center));
 				var centerSide = line.getSide(center);
 				if (centerSide === 0) {
-					extent = throughSide * Math.abs(extent);
+					extent = throughSide * abs(extent);
 				} else if (throughSide === centerSide) {
 					extent += extent < 0 ? 360 : -360;
 				}
 			}
-			var ext = Math.abs(extent),
-				count = ext >= 360 ? 4 : Math.ceil(ext / 90),
+			var epsilon = 1e-12,
+				ext = abs(extent),
+				count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
 				inc = extent / count,
 				half = inc * Math.PI / 360,
 				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
