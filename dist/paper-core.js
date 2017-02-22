@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 22 13:58:27 2017 +0100
+ * Date: Wed Feb 22 14:01:23 2017 +0100
  *
  ***
  *
@@ -6825,9 +6825,8 @@ new function() {
 
 	function addCurveIntersections(v1, v2, c1, c2, tMin, tMax, uMin, uMax,
 			locations, include, recursion, calls, flip) {
-		var abort = ++recursion >= 48 || ++calls > 256,
-			straight1 = abort || Curve.isStraight(v1),
-			straight2 = abort || Curve.isStraight(v2);
+		var straight1 = Curve.isStraight(v1),
+			straight2 = Curve.isStraight(v2);
 		if (straight1 || straight2) {
 			return (straight1 && straight2
 				? addLineIntersection
@@ -6836,6 +6835,8 @@ new function() {
 						flip ? c2 : c1, flip ? c1 : c2,
 						locations, include, recursion);
 		}
+		if (++recursion >= 48 || ++calls > 256)
+			return calls;
 		var epsilon = 1e-12,
 			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
 			getSignedDistance = Line.getSignedDistance,
