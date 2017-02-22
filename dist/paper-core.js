@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 22 17:29:23 2017 +0100
+ * Date: Wed Feb 22 17:41:51 2017 +0100
  *
  ***
  *
@@ -2601,7 +2601,7 @@ var Line = Base.extend({
 			var v2x = x - px,
 				v2y = y - py,
 				ccw = v2x * vy - v2y * vx;
-			if (ccw === 0 && !isInfinite) {
+			if (!isInfinite && Numerical.isZero(ccw)) {
 				ccw = (v2x * vx + v2x * vx) / (vx * vx + vy * vy);
 				if (ccw >= 0 && ccw <= 1)
 					ccw = 0;
