@@ -1673,7 +1673,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             if (strokeRadius > 0) {
                 join = style.getStrokeJoin();
                 cap = style.getStrokeCap();
-                miterLimit = strokeRadius * style.getMiterLimit();
+                miterLimit = style.getMiterLimit();
                 // Add the stroke radius to tolerance padding, taking
                 // #strokeScaling into account through _getStrokeMatrix().
                 strokePadding = strokePadding.add(
@@ -1723,21 +1723,22 @@ var Path = PathItem.extend(/** @lends Path# */{
         function checkSegmentStroke(segment) {
             // Handle joins / caps that are not round specificelly, by
             // hit-testing their polygon areas.
-            if (join !== 'round' || cap !== 'round') {
+            var isJoin = closed || segment._index > 0
+                    && segment._index < numSegments - 1;
+            if ((isJoin ? join : cap) === 'round') {
+                // Round join / cap is easy to handle.
+                return isCloseEnough(segment._point, strokePadding);
+            } else {
                 // Create an 'internal' path without id and outside the scene
                 // graph to run the hit-test on it.
                 area = new Path({ internal: true, closed: true });
-                if (closed || segment._index > 0
-                        && segment._index < numSegments - 1) {
-                    // It's a join. See that it's not a round one (one of
-                    // the handles has to be zero too for this!)
-                    if (join !== 'round' && (segment._handleIn.isZero()
-                            || segment._handleOut.isZero()))
-                        // _addBevelJoin() handles both 'bevel' and 'miter'!
-                        Path._addBevelJoin(segment, join, strokeRadius,
-                               miterLimit, null, strokeMatrix, addToArea, true);
-                } else if (cap !== 'round') {
-                    // It's a cap
+                if (isJoin) {
+                    // It's a join. See that it's not a round one (collinear
+                    // handles).
+                    // _addBevelJoin() handles both 'bevel' and 'miter' joins.
+                    Path._addBevelJoin(segment, join, strokeRadius,
+                           miterLimit, null, strokeMatrix, addToArea, true);
+                } else if (cap === 'square') {
                     Path._addSquareCap(segment, cap, strokeRadius, null,
                             strokeMatrix, addToArea, true);
                 }
@@ -1752,8 +1753,6 @@ var Path = PathItem.extend(/** @lends Path# */{
                             && isCloseEnough(loc.getPoint(), tolerancePadding);
                 }
             }
-            // Fallback scenario is a round join / cap.
-            return isCloseEnough(segment._point, strokePadding);
         }
 
         // If we're asked to query for segments, ends or handles, do all that
@@ -1790,7 +1789,8 @@ var Path = PathItem.extend(/** @lends Path# */{
             if (!loc && join === 'miter' && numSegments > 1) {
                 for (var i = 0; i < numSegments; i++) {
                     var segment = segments[i];
-                    if (point.getDistance(segment._point) <= miterLimit
+                    if (point.getDistance(segment._point)
+                            <= miterLimit * strokeRadius
                             && checkSegmentStroke(segment)) {
                         loc = segment.getLocation();
                         break;
@@ -2695,7 +2695,7 @@ statics: {
         var strokeRadius = strokeWidth / 2,
             join = style.getStrokeJoin(),
             cap = style.getStrokeCap(),
-            miterLimit = strokeRadius * style.getMiterLimit(),
+            miterLimit = style.getMiterLimit(),
             // Create a rectangle of padding size, used for union with bounds
             // further down
             joinBounds = new Rectangle(new Size(strokePadding));
@@ -2720,6 +2720,7 @@ statics: {
                     && handleIn.isCollinear(handleOut)) {
                 addRound(segment);
             } else {
+                    // _addBevelJoin() handles both 'bevel' and 'miter' joins.
                 Path._addBevelJoin(segment, join, strokeRadius, miterLimit,
                         matrix, strokeMatrix, addPoint);
             }
@@ -2729,6 +2730,7 @@ statics: {
             if (cap === 'round') {
                 addRound(segment);
             } else {
+                // _addSquareCap() handles both 'square' and 'butt' caps.
                 Path._addSquareCap(segment, cap, strokeRadius, matrix,
                         strokeMatrix, addPoint);
             }
@@ -2806,10 +2808,9 @@ statics: {
             normal1 = normal1.negate();
             normal2 = normal2.negate();
         }
-        if (isArea) {
+        if (isArea)
             addPoint(point);
-            addPoint(point.add(normal1));
-        }
+        addPoint(point.add(normal1));
         if (join === 'miter') {
             // Intersect the two lines
             var corner = new Line(point.add(normal1),
@@ -2819,15 +2820,11 @@ statics: {
                 ), true);
             // See if we actually get a bevel point and if its distance is below
             // the miterLimit. If not, make a normal bevel.
-            if (corner && point.getDistance(corner) <= miterLimit) {
+            if (corner && point.getDistance(corner) <= miterLimit * radius) {
                 addPoint(corner);
-                if (!isArea)
-                    return;
             }
         }
         // Produce a normal bevel
-        if (!isArea)
-            addPoint(point.add(normal1));
         addPoint(point.add(normal2));
     },
 
@@ -2839,18 +2836,17 @@ statics: {
         // Style#strokeScaling.
         var point = segment._point.transform(matrix),
             loc = segment.getLocation(),
-            // NOTE: normal is normalized, so multiply instead of normalize.
             normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
-        if (isArea) {
-            addPoint(point.subtract(normal));
-            addPoint(point.add(normal));
-        }
         // For square caps, we need to step away from point in the direction of
         // the tangent, which is the rotated normal.
         // Checking loc.getTime() for 0 is to see whether this is the first
         // or the last segment of the open path, in order to determine in which
         // direction to move the point.
         if (cap === 'square') {
+            if (isArea) {
+                addPoint(point.subtract(normal));
+                addPoint(point.add(normal));
+            }
             point = point.add(normal.rotate(
                     loc.getTime() === 0 ? -90 : 90));
         }
