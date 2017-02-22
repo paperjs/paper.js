@@ -167,7 +167,7 @@ var Line = Base.extend(/** @lends Line# */{
                 v2y = y - py,
                 // ccw = v2.cross(v1);
                 ccw = v2x * vy - v2y * vx;
-            if (ccw === 0 && !isInfinite) {
+            if (!isInfinite && Numerical.isZero(ccw)) {
                 // If the point is on the infinite line, check if it's on the
                 // finite line too: Project v2 onto v1 and determine ccw based
                 // on which side of the finite line the point lies. Calculate
