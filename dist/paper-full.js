@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 22 13:58:27 2017 +0100
+ * Date: Wed Feb 22 17:05:23 2017 +0100
  *
  ***
  *
@@ -7336,20 +7336,6 @@ var CurveLocation = Base.extend({
 			this._setSegment(path.getLastSegment());
 		}
 		return  res;
-	},
-
-	getOffsetTo: function(loc) {
-		var offset = null,
-			path = this.getPath();
-		if (path && path === loc.getPath()) {
-			var offset1 = this.getOffset(),
-				offset2 = loc.getOffset();
-			offset = offset2 - offset1;
-			if (offset < 0 && path._closed) {
-				offset = path.getLength() - offset2 + offset1;
-			}
-		}
-		return offset;
 	},
 
 	equals: function(loc, _ignoreOther) {
