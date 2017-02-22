@@ -1758,8 +1758,15 @@ new function() { // Scope for bezier intersection using fat-line clipping
 
     function addCurveIntersections(v1, v2, c1, c2, tMin, tMax, uMin, uMax,
             locations, include, recursion, calls, flip) {
-        var straight1 = Curve.isStraight(v1),
-            straight2 = Curve.isStraight(v2);
+        // Avoid deeper recursion, by counting the total amount of recursions,
+        // as well as the total amount of calls, to avoid massive call-trees as
+        // suggested by @iconexperience in #904#issuecomment-225283430.
+        // See also: #565 #899 #1074
+        var abort = ++recursion >= 48 || ++calls > 256,
+            // Consider both curves as straight if we need to abort and see if
+            // their lines intersect.
+            straight1 = abort || Curve.isStraight(v1),
+            straight2 = abort || Curve.isStraight(v2);
         if (straight1 || straight2) {
             return (straight1 && straight2
                 ? addLineIntersection
@@ -1768,12 +1775,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
                         flip ? c2 : c1, flip ? c1 : c2,
                         locations, include, recursion);
         }
-        // Avoid deeper recursion, by counting the total amount of recursions,
-        // as well as the total amount of calls, to avoid massive call-trees as
-        // suggested by @iconexperience in #904#issuecomment-225283430.
-        // See also: #565 #899 #1074
-        if (++recursion >= 48 || ++calls > 256)
-            return calls;
         // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
         // parameters in fat-line clipping code.
         var epsilon = /*#=*/Numerical.EPSILON,
