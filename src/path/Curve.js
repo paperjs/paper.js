@@ -2212,8 +2212,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
         if (pairs.length !== 2) {
             pairs = null;
         } else if (!straightBoth) {
-            // Straight pairs don't need further checks. If we found
-            // 2 pairs, the end points on v1 & v2 should be the same.
+            // Straight pairs don't need further checks. If we found 2 pairs,
+            // the end points on v1 & v2 should be the same.
             var o1 = Curve.getPart(v1, pairs[0][0], pairs[1][0]),
                 o2 = Curve.getPart(v2, pairs[0][1], pairs[1][1]);
             // Check if handles of the overlapping curves are the same too.

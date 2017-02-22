@@ -290,7 +290,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         return this._distance;
     },
 
-    // DOCS: divide(), split(), getOffsetTo(loc)
+    // DOCS: divide(), split()
 
     divide: function() {
         var curve = this.getCurve(),
@@ -311,21 +311,6 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             this._setSegment(path.getLastSegment());
         }
         return  res;
-    },
-
-    getOffsetTo: function(loc) {
-        var offset = null,
-            path = this.getPath();
-        if (path && path === loc.getPath()) {
-            var offset1 = this.getOffset(),
-                offset2 = loc.getOffset();
-            offset = offset2 - offset1;
-            if (offset < 0 && path._closed) {
-                // Wrap around the end of the path back to the beginning.
-                offset = path.getLength() - offset2 + offset1;
-            }
-        }
-        return offset;
     },
 
     /**
