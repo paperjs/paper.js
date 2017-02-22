@@ -1029,10 +1029,7 @@ statics: /** @lends Curve */{
      * @return {Boolean} {@true if the curve is longer than the given epsilon}
      */
     hasLength: function(epsilon) {
-        var seg1 = this._segment1,
-            seg2 = this._segment2;
-        return (!seg1._point.equals(seg2._point)
-                    || seg1.hasHandles() || seg2.hasHandles())
+        return (!this.getPoint1().equals(this.getPoint2()) || this.hasHandles())
                 && this.getLength() > (epsilon || 0);
     },
 
