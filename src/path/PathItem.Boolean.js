@@ -658,17 +658,6 @@ PathItem.inject(new function() {
                 // it now to treat the path as closed:
                 if (vClose && (res = handleCurve(vClose)))
                     return res;
-                if (onPath && !windingL && !windingR) {
-                    // If the point is on the path and the windings canceled
-                    // each other, we treat the point as if it was inside the
-                    // path. A point inside a path has a winding of [+1,-1]
-                    // for clockwise and [-1,+1] for counter-clockwise paths.
-                    // If the ray is cast in y direction (dir == 1), the
-                    // windings always have opposite sign.
-                    var add = path.isClockwise(closed) ^ dir ? 1 : -1;
-                    windingL += add;
-                    windingR += add;
-                }
                 vClose = null;
             }
         }
