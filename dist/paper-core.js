@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 26 00:22:49 2017 +0100
+ * Date: Sun Feb 26 00:45:22 2017 +0100
  *
  ***
  *
@@ -10001,7 +10001,7 @@ PathItem.inject(new function() {
 			pv = [point.x, point.y],
 			pa = pv[ia],
 			po = pv[io],
-			windingEpsilon = 1e-8,
+			windingEpsilon = 1e-9,
 			qualityEpsilon = 1e-6,
 			paL = pa - windingEpsilon,
 			paR = pa + windingEpsilon,
