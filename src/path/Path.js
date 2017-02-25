@@ -1733,11 +1733,12 @@ var Path = PathItem.extend(/** @lends Path# */{
                 // graph to run the hit-test on it.
                 area = new Path({ internal: true, closed: true });
                 if (isJoin) {
-                    // It's a join. See that it's not a round one (collinear
-                    // handles).
-                    // _addBevelJoin() handles both 'bevel' and 'miter' joins.
-                    Path._addBevelJoin(segment, join, strokeRadius,
-                           miterLimit, null, strokeMatrix, addToArea, true);
+                    // Only add bevels to segments that aren't smooth.
+                    if (!segment.isSmooth()) {
+                        // _addBevelJoin() handles both 'bevel' and 'miter'.
+                        Path._addBevelJoin(segment, join, strokeRadius,
+                               miterLimit, null, strokeMatrix, addToArea, true);
+                    }
                 } else if (cap === 'square') {
                     Path._addSquareCap(segment, cap, strokeRadius, null,
                             strokeMatrix, addToArea, true);
@@ -2714,10 +2715,7 @@ statics: {
         function addJoin(segment, join) {
             // When both handles are set in a segment and they are collinear,
             // the join setting is ignored and round is always used.
-            var handleIn = segment._handleIn,
-                handleOut = segment._handleOut;
-            if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
-                    && handleIn.isCollinear(handleOut)) {
+            if (join === 'round' || segment.isSmooth()) {
                 addRound(segment);
             } else {
                     // _addBevelJoin() handles both 'bevel' and 'miter' joins.

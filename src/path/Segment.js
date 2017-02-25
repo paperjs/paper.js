@@ -244,6 +244,20 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     /**
+     * Checks if the segment connects two curves smoothly, meaning that its two
+     * handles are collinear and segment does not form a corner.
+     *
+     * @return {Boolean} {@true if the segment is smooth}
+     * @see Point#isCollinear()
+     */
+    isSmooth: function() {
+        var handleIn = this._handleIn,
+            handleOut = this._handleOut;
+        return !handleIn.isZero() && !handleOut.isZero()
+                && handleIn.isCollinear(handleOut);
+    },
+
+    /**
      * Clears the segment's handles by setting their coordinates to zero,
      * turning the segment into a corner.
      */
