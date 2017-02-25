@@ -473,7 +473,7 @@ PathItem.inject(new function() {
             pa = pv[ia], // the point's abscissa
             po = pv[io], // the point's ordinate
             // Use separate epsilons for winding contribution code.
-            windingEpsilon = 1e-8,
+            windingEpsilon = 1e-9,
             qualityEpsilon = 1e-6,
             paL = pa - windingEpsilon,
             paR = pa + windingEpsilon,
