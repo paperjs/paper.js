@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Feb 22 17:41:51 2017 +0100
+ * Date: Sat Feb 25 15:45:58 2017 +0100
  *
  ***
  *
@@ -5551,6 +5551,13 @@ var Segment = Base.extend({
 		return !this._handleIn.isZero() || !this._handleOut.isZero();
 	},
 
+	isSmooth: function() {
+		var handleIn = this._handleIn,
+			handleOut = this._handleOut;
+		return !handleIn.isZero() && !handleOut.isZero()
+				&& handleIn.isCollinear(handleOut);
+	},
+
 	clearHandles: function() {
 		this._handleIn._set(0, 0);
 		this._handleOut._set(0, 0);
@@ -8628,7 +8635,7 @@ var Path = PathItem.extend({
 			if (strokeRadius > 0) {
 				join = style.getStrokeJoin();
 				cap = style.getStrokeCap();
-				miterLimit = strokeRadius * style.getMiterLimit();
+				miterLimit = style.getMiterLimit();
 				strokePadding = strokePadding.add(
 					Path._getStrokePadding(strokeRadius, strokeMatrix));
 			} else {
@@ -8667,15 +8674,18 @@ var Path = PathItem.extend({
 		}
 
 		function checkSegmentStroke(segment) {
-			if (join !== 'round' || cap !== 'round') {
+			var isJoin = closed || segment._index > 0
+					&& segment._index < numSegments - 1;
+			if ((isJoin ? join : cap) === 'round') {
+				return isCloseEnough(segment._point, strokePadding);
+			} else {
 				area = new Path({ internal: true, closed: true });
-				if (closed || segment._index > 0
-						&& segment._index < numSegments - 1) {
-					if (join !== 'round' && (segment._handleIn.isZero()
-							|| segment._handleOut.isZero()))
+				if (isJoin) {
+					if (!segment.isSmooth()) {
 						Path._addBevelJoin(segment, join, strokeRadius,
 							   miterLimit, null, strokeMatrix, addToArea, true);
-				} else if (cap !== 'round') {
+					}
+				} else if (cap === 'square') {
 					Path._addSquareCap(segment, cap, strokeRadius, null,
 							strokeMatrix, addToArea, true);
 				}
@@ -8686,7 +8696,6 @@ var Path = PathItem.extend({
 							&& isCloseEnough(loc.getPoint(), tolerancePadding);
 				}
 			}
-			return isCloseEnough(segment._point, strokePadding);
 		}
 
 		if (options.ends && !options.segments && !closed) {
@@ -8712,7 +8721,8 @@ var Path = PathItem.extend({
 			if (!loc && join === 'miter' && numSegments > 1) {
 				for (var i = 0; i < numSegments; i++) {
 					var segment = segments[i];
-					if (point.getDistance(segment._point) <= miterLimit
+					if (point.getDistance(segment._point)
+							<= miterLimit * strokeRadius
 							&& checkSegmentStroke(segment)) {
 						loc = segment.getLocation();
 						break;
@@ -9223,7 +9233,7 @@ statics: {
 		var strokeRadius = strokeWidth / 2,
 			join = style.getStrokeJoin(),
 			cap = style.getStrokeCap(),
-			miterLimit = strokeRadius * style.getMiterLimit(),
+			miterLimit = style.getMiterLimit(),
 			joinBounds = new Rectangle(new Size(strokePadding));
 
 		function addPoint(point) {
@@ -9236,10 +9246,7 @@ statics: {
 		}
 
 		function addJoin(segment, join) {
-			var handleIn = segment._handleIn,
-				handleOut = segment._handleOut;
-			if (join === 'round' || !handleIn.isZero() && !handleOut.isZero()
-					&& handleIn.isCollinear(handleOut)) {
+			if (join === 'round' || segment.isSmooth()) {
 				addRound(segment);
 			} else {
 				Path._addBevelJoin(segment, join, strokeRadius, miterLimit,
@@ -9298,24 +9305,19 @@ statics: {
 			normal1 = normal1.negate();
 			normal2 = normal2.negate();
 		}
-		if (isArea) {
+		if (isArea)
 			addPoint(point);
-			addPoint(point.add(normal1));
-		}
+		addPoint(point.add(normal1));
 		if (join === 'miter') {
 			var corner = new Line(point.add(normal1),
 					new Point(-normal1.y, normal1.x), true
 				).intersect(new Line(point.add(normal2),
 					new Point(-normal2.y, normal2.x), true
 				), true);
-			if (corner && point.getDistance(corner) <= miterLimit) {
+			if (corner && point.getDistance(corner) <= miterLimit * radius) {
 				addPoint(corner);
-				if (!isArea)
-					return;
 			}
 		}
-		if (!isArea)
-			addPoint(point.add(normal1));
 		addPoint(point.add(normal2));
 	},
 
@@ -9324,11 +9326,11 @@ statics: {
 		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
 			normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
-		if (isArea) {
-			addPoint(point.subtract(normal));
-			addPoint(point.add(normal));
-		}
 		if (cap === 'square') {
+			if (isArea) {
+				addPoint(point.subtract(normal));
+				addPoint(point.add(normal));
+			}
 			point = point.add(normal.rotate(
 					loc.getTime() === 0 ? -90 : 90));
 		}
