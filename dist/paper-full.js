@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Feb 25 15:45:58 2017 +0100
+ * Date: Sun Feb 26 00:22:49 2017 +0100
  *
  ***
  *
@@ -10133,11 +10133,6 @@ PathItem.inject(new function() {
 			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
-				if (onPath && !windingL && !windingR) {
-					var add = path.isClockwise(closed) ^ dir ? 1 : -1;
-					windingL += add;
-					windingR += add;
-				}
 				vClose = null;
 			}
 		}
@@ -10205,6 +10200,7 @@ PathItem.inject(new function() {
 
 	function tracePaths(segments, operator) {
 		var paths = [],
+			branches = [],
 			starts;
 
 		function isValid(seg) {
@@ -10232,10 +10228,10 @@ PathItem.inject(new function() {
 			}
 		}
 
-		function getIntersections(segment, collectStarts) {
+		function getCrossingSegments(segment, collectStarts) {
 			var inter = segment._intersection,
 				start = inter,
-				inters = [];
+				crossings = [];
 			if (collectStarts)
 				starts = [segment];
 
@@ -10248,7 +10244,7 @@ PathItem.inject(new function() {
 					if (other !== segment && (isStart(other) || isStart(next)
 						|| next && (isValid(other) && (isValid(next)
 							|| nextInter && isValid(nextInter._segment))))) {
-						inters.push(inter);
+						crossings.push(other);
 					}
 					if (collectStarts)
 						starts.push(other);
@@ -10262,7 +10258,7 @@ PathItem.inject(new function() {
 					inter = inter._prev;
 				collect(inter, start);
 			}
-			return inters;
+			return crossings;
 		}
 
 		segments.sort(function(seg1, seg2) {
@@ -10287,7 +10283,6 @@ PathItem.inject(new function() {
 				path = null,
 				finished = false,
 				closed = true,
-				branches = [],
 				branch,
 				visited,
 				handleIn;
@@ -10304,9 +10299,8 @@ PathItem.inject(new function() {
 			}
 			while (valid) {
 				var first = !path,
-					intersections = getIntersections(seg, first),
-					inter = intersections.shift(),
-					other = inter && inter._segment,
+					crossings = getCrossingSegments(seg, first),
+					other = crossings.shift(),
 					finished = !first && (isStart(seg) || isStart(other)),
 					cross = !finished && other;
 				if (first) {
@@ -10324,10 +10318,11 @@ PathItem.inject(new function() {
 					branch = null;
 				}
 				if (!branch) {
+					if (cross)
+						crossings.push(seg);
 					branch = {
 						start: path._segments.length,
-						segment: seg,
-						intersections: intersections,
+						crossings: crossings,
 						visited: visited = [],
 						handleIn: handleIn
 					};
@@ -10339,16 +10334,19 @@ PathItem.inject(new function() {
 					for (var j = 0, k = visited.length; j < k; j++) {
 						visited[j]._visited = false;
 					}
-					if (inter = branch.intersections.shift()) {
-						seg = inter._segment;
-						visited.length = 0;
-					} else {
-						if (!(branch = branches.pop()) ||
-							!isValid(seg = branch.segment))
-							break;
-						visited = branch.visited;
-					}
-					handleIn = branch.handleIn;
+					visited.length = 0;
+					do {
+						seg = branch && branch.crossings.shift();
+						if (!seg) {
+							branch = branches.pop();
+							if (branch) {
+								visited = branch.visited;
+								handleIn = branch.handleIn;
+							}
+						}
+					} while (branch && !isValid(seg));
+					if (!seg)
+						break;
 				}
 				var next = seg.getNext();
 				path.add(new Segment(seg._point, handleIn,
@@ -10366,6 +10364,7 @@ PathItem.inject(new function() {
 				if (path.getArea() !== 0) {
 					paths.push(path);
 				}
+				branches = [];
 			}
 		}
 		return paths;
