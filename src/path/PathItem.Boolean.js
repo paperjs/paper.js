@@ -765,6 +765,7 @@ PathItem.inject(new function() {
      */
     function tracePaths(segments, operator) {
         var paths = [],
+            branches = [],
             starts;
 
         function isValid(seg) {
@@ -800,10 +801,10 @@ PathItem.inject(new function() {
         // If there are multiple possible intersections, find the ones that's
         // either connecting back to start or are not visited yet, and will be
         // part of the boolean result:
-        function getIntersections(segment, collectStarts) {
+        function getCrossingSegments(segment, collectStarts) {
             var inter = segment._intersection,
                 start = inter,
-                inters = [];
+                crossings = [];
             if (collectStarts)
                 starts = [segment];
 
@@ -821,7 +822,7 @@ PathItem.inject(new function() {
                             // If the next segment isn't valid, its intersection
                             // to which we may switch might be, so check that.
                             || nextInter && isValid(nextInter._segment))))) {
-                        inters.push(inter);
+                        crossings.push(other);
                     }
                     if (collectStarts)
                         starts.push(other);
@@ -837,7 +838,7 @@ PathItem.inject(new function() {
                     inter = inter._prev;
                 collect(inter, start);
             }
-            return inters;
+            return crossings;
         }
 
         // Sort segments to give non-ambiguous segments the preference as
@@ -873,7 +874,6 @@ PathItem.inject(new function() {
                 path = null,
                 finished = false,
                 closed = true,
-                branches = [],
                 branch,
                 visited,
                 handleIn;
@@ -897,12 +897,11 @@ PathItem.inject(new function() {
             // visited, or that are not going to be part of the result).
             while (valid) {
                 // For each segment we encounter, see if there are multiple
-                // intersections, and if so, pick the best one:
+                // crossings, and if so, pick the best one:
                 var first = !path,
-                    intersections = getIntersections(seg, first),
-                    inter = intersections.shift(),
-                    // Get the other segment on the intersection.
-                    other = inter && inter._segment,
+                    crossings = getCrossingSegments(seg, first),
+                    // Get the other segment of the first found crossing.
+                    other = crossings.shift(),
                     finished = !first && (isStart(seg) || isStart(other)),
                     cross = !finished && other;
                 if (first) {
@@ -926,10 +925,13 @@ PathItem.inject(new function() {
                     branch = null;
                 }
                 if (!branch) {
+                    // Add the branch's root segment as the last segment to try,
+                    // to see if we get to a solution without crossing.
+                    if (cross)
+                        crossings.push(seg);
                     branch = {
                         start: path._segments.length,
-                        segment: seg,
-                        intersections: intersections,
+                        crossings: crossings,
                         visited: visited = [],
                         handleIn: handleIn
                     };
@@ -946,21 +948,26 @@ PathItem.inject(new function() {
                     for (var j = 0, k = visited.length; j < k; j++) {
                         visited[j]._visited = false;
                     }
-                    // Go back to the segment at which the crossing happened,
-                    // and try other crossings first.
-                    if (inter = branch.intersections.shift()) {
-                        seg = inter._segment;
-                        visited.length = 0;
-                    } else {
-                        // If there are no crossings left, try not crossing:
-                        // Restore the previous branch and keep adding to it,
-                        // but stop once we run out of branches to try.
-                        if (!(branch = branches.pop()) ||
-                            !isValid(seg = branch.segment))
-                            break;
-                        visited = branch.visited;
-                    }
-                    handleIn = branch.handleIn;
+                    visited.length = 0;
+                    // Go back to the branch's root segment at which the
+                    // crossing happened, and try other crossings.
+                    // NOTE: This also tries the root segment without crossing,
+                    // because it is added to the list of crossings when the
+                    // branch is created above.
+                    do {
+                        seg = branch && branch.crossings.shift();
+                        if (!seg) {
+                            // If there are no segments left, try previous
+                            // branches until we find one that works.
+                            branch = branches.pop();
+                            if (branch) {
+                                visited = branch.visited;
+                                handleIn = branch.handleIn;
+                            }
+                        }
+                    } while (branch && !isValid(seg));
+                    if (!seg)
+                        break;
                 }
                 // Add the segment to the path, and mark it as visited.
                 // But first we need to look ahead. If we encounter the end of
@@ -987,6 +994,8 @@ PathItem.inject(new function() {
                 if (path.getArea() !== 0) {
                     paths.push(path);
                 }
+                // Clear branches.
+                branches = [];
             }
         }
         return paths;
