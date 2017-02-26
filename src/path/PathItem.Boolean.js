@@ -754,7 +754,6 @@ PathItem.inject(new function() {
      */
     function tracePaths(segments, operator) {
         var paths = [],
-            branches = [],
             starts;
 
         function isValid(seg) {
@@ -863,6 +862,7 @@ PathItem.inject(new function() {
                 path = null,
                 finished = false,
                 closed = true,
+                branches = [],
                 branch,
                 visited,
                 handleIn;
@@ -928,8 +928,8 @@ PathItem.inject(new function() {
                 if (cross)
                     seg = other;
                 // If an invalid segment is encountered, go back to the last
-                // crossing and try the other direction by not crossing at the
-                // intersection.
+                // crossing and try other possible crossings, as well as not
+                // crossing at the branch's root.
                 if (!isValid(seg)) {
                     // Remove the already added segments, and mark them as not
                     // visited so they become available again as options.
@@ -938,11 +938,10 @@ PathItem.inject(new function() {
                         visited[j]._visited = false;
                     }
                     visited.length = 0;
-                    // Go back to the branch's root segment at which the
-                    // crossing happened, and try other crossings.
-                    // NOTE: This also tries the root segment without crossing,
-                    // because it is added to the list of crossings when the
-                    // branch is created above.
+                    // Go back to the branch's root segment where the crossing
+                    // happened, and try other crossings. Note that this also
+                    // tests the root segment without crossing as it is added to
+                    // the list of crossings when the branch is created above.
                     do {
                         seg = branch && branch.crossings.shift();
                         if (!seg) {
@@ -983,8 +982,6 @@ PathItem.inject(new function() {
                 if (path.getArea() !== 0) {
                     paths.push(path);
                 }
-                // Clear branches.
-                branches = [];
             }
         }
         return paths;
