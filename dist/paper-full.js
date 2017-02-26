@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 26 01:03:35 2017 +0100
+ * Date: Sun Feb 26 01:11:33 2017 +0100
  *
  ***
  *
@@ -10200,7 +10200,6 @@ PathItem.inject(new function() {
 
 	function tracePaths(segments, operator) {
 		var paths = [],
-			branches = [],
 			starts;
 
 		function isValid(seg) {
@@ -10283,6 +10282,7 @@ PathItem.inject(new function() {
 				path = null,
 				finished = false,
 				closed = true,
+				branches = [],
 				branch,
 				visited,
 				handleIn;
@@ -10364,7 +10364,6 @@ PathItem.inject(new function() {
 				if (path.getArea() !== 0) {
 					paths.push(path);
 				}
-				branches = [];
 			}
 		}
 		return paths;
