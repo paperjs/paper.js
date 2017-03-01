@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Feb 26 01:11:33 2017 +0100
+ * Date: Wed Mar 1 12:33:05 2017 +0100
  *
  ***
  *
@@ -10032,7 +10032,7 @@ PathItem.inject(new function() {
 			var t =   po === o0 ? 0
 					: po === o3 ? 1
 					: paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-					? 0.5
+					? 1
 					: Curve.solveCubic(v, io, po, roots, 0, 1) === 1
 						? roots[0]
 						: 0.5,
@@ -10054,18 +10054,19 @@ PathItem.inject(new function() {
 					quality /= 2;
 			} else {
 				if (winding !== windingPrev) {
-					if (a3Prev < paR) {
+					if (a0 < paL) {
 						windingL += winding;
-					} else if (a3Prev > paL) {
+					} else if (a0 > paR) {
 						windingR += winding;
 					}
-				} else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-					if (a3Prev < paL) {
+				} else if (a0 != a3Prev) {
+					if (a3Prev < paR && a > paR) {
 						windingR += winding;
-					} else if (a3Prev > paR) {
+						onPath = true;
+					} else if (a3Prev > paL && a < paL) {
 						windingL += winding;
+						onPath = true;
 					}
-					onPath = true;
 				}
 				quality = 0;
 			}
