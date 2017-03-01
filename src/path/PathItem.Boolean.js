@@ -515,7 +515,7 @@ PathItem.inject(new function() {
             var t =   po === o0 ? 0
                     : po === o3 ? 1
                     : paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-                    ? 0.5
+                    ? 1
                     : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
                         ? roots[0]
                         : 0.5,
