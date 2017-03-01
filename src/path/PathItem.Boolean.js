@@ -550,20 +550,21 @@ PathItem.inject(new function() {
                         windingR += winding;
                     }
                 } else if (a0 != a3Prev) {
-                    // A horizontal curve is between current and previous
-                    // non-horizontal curve
+                    // Handle a horizontal curve  between the current and
+                    // previous non-horizontal curve. See
+                    // #1261#issuecomment-282726147 for a detailed explanation:
                     if (a3Prev < paR && a > paR) {
-                        // Right winding was not added before, so add it now
+                        // Right winding was not added before, so add it now.
                         windingR += winding;
                         onPath = true;
                     } else if (a3Prev > paL && a < paL) {
-                        // Left winding was not added before, so add it now
+                        // Left winding was not added before, so add it now.
                         windingL += winding;
                         onPath = true;
                     }
-                    // TODO: Determine how to handle quality when curve is crossed
-                    // at starting point. Do we always need to set to 0?
                 }
+                // TODO: Determine how to handle quality when curve is crossed
+                // at starting point. Do we always need to set to 0?
                 quality = 0;
             }
             vPrev = v;
