@@ -515,7 +515,7 @@ PathItem.inject(new function() {
             var t =   po === o0 ? 0
                     : po === o3 ? 1
                     : paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
-                    ? 0.5
+                    ? 1
                     : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
                         ? roots[0]
                         : 0.5,
@@ -544,25 +544,26 @@ PathItem.inject(new function() {
                 if (winding !== windingPrev) {
                     // Curve is crossed at starting point and winding changes
                     // from previous curve. Cancel winding from previous curve.
-                    if (a3Prev < paR) {
+                    if (a0 < paL) {
                         windingL += winding;
-                    } else if (a3Prev > paL) {
+                    } else if (a0 > paR) {
                         windingR += winding;
                     }
-                } else if (a3Prev < paL && a > paL || a3Prev > paR && a < paR) {
-                    // Point is on a horizontal curve between the previous non-
-                    // horizontal and the current curve.
-                    if (a3Prev < paL) {
-                        // Left winding was added before, now add right winding.
+                } else if (a0 != a3Prev) {
+                    // A horizontal curve is between current and previous
+                    // non-horizontal curve
+                    if (a3Prev < paR && a > paR) {
+                        // Right winding was not added before, so add it now
                         windingR += winding;
-                    } else if (a3Prev > paR) {
-                        // Right winding was added before, now add left winding.
+                        onPath = true;
+                    } else if (a3Prev > paL && a < paL) {
+                        // Left winding was not added before, so add it now
                         windingL += winding;
+                        onPath = true;
                     }
-                    onPath = true;
+                    // TODO: Determine how to handle quality when curve is crossed
+                    // at starting point. Do we always need to set to 0?
                 }
-                // TODO: Determine how to handle quality when curve is crossed
-                // at starting point. Do we always need to set to 0?
                 quality = 0;
             }
             vPrev = v;
