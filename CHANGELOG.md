@@ -3,20 +3,19 @@
 ## `0.10.3` (Unreleased)
 
 ### Changed
-- Loosely couple Node.js / Electron code to Canvas module, and treat its absence
-  like a headless web worker context in the browser (#1103).
-- Split `PathItem#resolveCrossings()` into `#resolveCrossings()` and
-  `#reorient()` (#973).
+- Node.js: Loosely couple Node.js / Electron code to `Canvas` module, and treat
+  its absence like a headless web worker context in the browser (#1103).
+- Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
 - Clean up handling of `Item#_set()`, `#set()` and `#initialize()`:
-    - `#_set()` is for actually setting internal properties, e.g. on `Point`,
+    - Use `#_set()` for actually setting internal properties, e.g. on `Point`,
       `Size`, so that derived classes can reuse other parts without having to
       override each individual function (e.g. in `SegmentPoint`)
-    - `#set()` is a shortcut to `#initialize()` on all basic types, to offer the
-       same amount of flexibility when setting values, accepting object literals
-       as well as lists of value arguments.
-- Add support for shorter `h` / `v` commands for horizontal / vertical lines in
-  SVG output.
-- Implement new and shorter segments array notation:
+    - Define `#set()` as a shortcut to `#initialize()` on all basic types, to
+      offer the same amount of flexibility when setting values, accepting object
+      literals as well as lists of value arguments.
+- SVG Export: Add support for shorter `h` / `v` commands for horizontal /
+  vertical lines in SVG output.
+- JSON Import / Export: Implement new and shorter segments array notation:
     - Close paths by including `true` as the last entry
     - Allow nested segment arrays to be passed to `PathItem.create()` as well as
       the `CompoundPath` constructor to create all sub-paths.
@@ -24,6 +23,8 @@
   implement additional decomposed properties such as `#scaling` and `#rotation`.
 - Reduce various internal epsilon values for general improved precision while
   maintaining reliability.
+- Split `PathItem#resolveCrossings()` into `#resolveCrossings()` and
+  `#reorient()` (#973).
 
 ### Added
 - Add `PathItem#compare()` as a way to compare the geometry of two paths to see
@@ -31,10 +32,6 @@
   segments or use different amounts of curves to describe the same shape.
 - Implement `Curve#hasLength()` as an optimized check for curve-length (#1109).
 - Implement `Path#divideAt()`, similar to `Curve#divideAt()`.
-- Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
-- Bring back caching of `Item#rotation` and `#scaling`, but only allow matrix
-  decomposition-based properties on items with `#applyMatrix = false`
-  (#1004, #1177).
 - Implement `Curve#classify()` to determine the type of cubic Bézier curve via
   discriminant classification, based on an approach described by Loop and Blinn,
   and use it to simplify curve self-intersection handling (#773, #1074, #1235).
@@ -43,6 +40,9 @@
 - Expose `Curve. getCurveLineIntersections()` for use in curve offsetting.
 - Add `Line.getDistance()` and use it in `Curve.getOverlaps()` (#1253).
 - Implement `Segment#isSmooth()` and use it in handling of stroke-joins.
+- Bring back caching of `Item#rotation` and `#scaling`, but only allow matrix
+  decomposition-based properties on items with `#applyMatrix = false`
+  (#1004, #1177).
 
 ### Fixed
 - Many improvements to boolean operations:
@@ -85,7 +85,7 @@
 - Docs: Improve description of option.class value in `Project#hitTest()` (#632).
 
 ### Removed
-- Remove `Numerical.TOLERANCE = 1e-6` as there is no internal use for it\
+- Remove `Numerical.TOLERANCE = 1e-6` as there is no internal use for it
   anymore.
 
 ## `0.10.2`
