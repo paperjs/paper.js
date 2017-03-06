@@ -1759,18 +1759,19 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
         // See also: #565 #899 #1074
-        var abort = ++recursion >= 48 || ++calls > 256,
-            // Consider both curves as straight if we need to abort and see if
+        var abort = ++recursion >= 48 || ++calls > 4096,
+            // If we need to abort, consider both curves as straight and see if
             // their lines intersect.
             straight1 = abort || Curve.isStraight(v1),
             straight2 = abort || Curve.isStraight(v2);
         if (straight1 || straight2) {
-            return (straight1 && straight2
+            (straight1 && straight2
                 ? addLineIntersection
                 : addCurveLineIntersections)(
                         flip ? v2 : v1, flip ? v1 : v2,
                         flip ? c2 : c1, flip ? c1 : c2,
                         locations, include, recursion);
+            return calls;
         }
         // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
         // parameters in fat-line clipping code.
