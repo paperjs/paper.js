@@ -1759,7 +1759,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
         // See also: #565 #899 #1074
-        var abort = ++recursion >= 48 || ++calls > 4096,
+        var abort = ++calls > 4096 || ++recursion >= 48,
             // If we need to abort, consider both curves as straight and see if
             // their lines intersect.
             straight1 = abort || Curve.isStraight(v1),
