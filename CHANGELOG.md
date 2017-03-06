@@ -5,11 +5,88 @@
 ### Changed
 - Loosely couple Node.js / Electron code to Canvas module, and treat its absence
   like a headless web worker context in the browser (#1103).
+- Split `PathItem#resolveCrossings()` into `#resolveCrossings()` and
+  `#reorient()` (#973).
+- Clean up handling of `Item#_set()`, `#set()` and `#initialize()`:
+    - `#_set()` is for actually setting internal properties, e.g. on `Point`,
+      `Size`, so that derived classes can reuse other parts without having to
+      override each individual function (e.g. in `SegmentPoint`)
+    - `#set()` is a shortcut to `#initialize()` on all basic types, to offer the
+       same amount of flexibility when setting values, accepting object literals
+       as well as lists of value arguments.
+- Add support for shorter `h` / `v` commands for horizontal / vertical lines in
+  SVG output.
+- Implement new and shorter segments array notation:
+    - Close paths by including `true` as the last entry
+    - Allow nested segment arrays to be passed to `PathItem.create()` as well as
+      the `CompoundPath` constructor to create all sub-paths.
+- Reflect `View#zoom` and `View#center` through matrix decomposition, and
+  implement additional decomposed properties such as `#scaling` and `#rotation`.
+- Reduce various internal epsilon values for general improved precision while
+  maintaining reliability.
+
+### Added
+- Add `PathItem#compare()` as a way to compare the geometry of two paths to see
+  if they describe the same shape, handling cases where paths start in different
+  segments or use different amounts of curves to describe the same shape.
+- Implement `Curve#hasLength()` as an optimized check for curve-length (#1109).
+- Implement `Path#divideAt()`, similar to `Curve#divideAt()`.
+- Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
+- Bring back caching of `Item#rotation` and `#scaling`, but only allow matrix
+  decomposition-based properties on items with `#applyMatrix = false`
+  (#1004, #1177).
+- Implement `Curve#classify()` to determine the type of cubic Bézier curve via
+  discriminant classification, based on an approach described by Loop and Blinn,
+  and use it to simplify curve self-intersection handling (#773, #1074, #1235).
+- Add `Curve.getPeaks()` as a fast way to retrieve points that are often similar
+  to the more costly curvature extrema for use in curve offsetting.
+- Expose `Curve. getCurveLineIntersections()` for use in curve offsetting.
+- Add `Line.getDistance()` and use it in `Curve.getOverlaps()` (#1253).
+- Implement `Segment#isSmooth()` and use it in handling of stroke-joins.
 
 ### Fixed
+- Many improvements to boolean operations:
+    - Improve performance of boolean operations when there no actual crossings
+      between the paths, but paths may be contained within each other.
+    - Improve path tracing approach by implementing a branching structure and
+      sorting segments according to their reliability as starting points for
+      traces (#1073).
+    - Improve calculation and reliability of winding contributions.
+    - Improve code that resolves crossings and reorients compound-paths based
+      on how the sub-paths are nested.
+    - Fix issue where unite operation wrongly fills inner path (#1075).
+    - Better handle cases where one `Path` is open and the other closed (#1089).
+    - Solve `null` exceptions during complex boolean operations (#1091).
+    - Improve bidirectional curve-time rescaling in `divideLocations()` (#1191).
+    - Improve handling of intersections between touching curves (#1165).
+    - Improve reliability of `Curve#getIntersections()` (#1174).
+    - Fix `getOverlaps()` to always return overlaps in correct sequence (#1223).
+    - Improve handling of multiple crossings on the same curve.
+    - Improve and optimize fat-line clipping algorithm by checking if subdivided
+      curves are straight and falling back on line-line / line-curve approach if
+      they are.
+- Improve tangent direction handling in `CurveLocation#isCrossing()`, by finding
+  unambiguous vectors, taking inception points and "peaks" into account
+  (#1073, #1074).
 - Prevent `Path#getStrokeBounds(matrix)` from accidentally modifying segments
   (#1102).
-- Compatibility with JSPM (#1104).
+- Improve compatibility with JSPM (#1104).
+- SVG Import: Correctly handle multiple sequential move commands (#1134).
+- SVG Export: Properly handle generated IDs (#1138).
+- SVG Export: Support multiple gradient offsets at 0 (#1241).
+- Fix imprecision in `Numerical.findRoot()` (#1149).
+- PaperScript: Prevent invalid JavaScript in assignment operators (#1151).
+- Hit Tests: Improve handling of SymbolItem in#hitTestAll() (#1199).
+- Hit Tests: Fix stroke hit-testing for rounded shape items (#1207).
+- Fix matrix cloning for groups with `#applyMatrix = false` ( #1225).
+- Correctly handle offset in `Curve#divideAt(offset)` (#1230).
+- Fix `Line#getSide()` imprecisions when points are on the line.
+- Docs: Fix documentation of `Project#hitTestAll()` (#536).
+- Docs: Improve description of option.class value in `Project#hitTest()` (#632).
+
+### Removed
+- Remove `Numerical.TOLERANCE = 1e-6` as there is no internal use for it\
+  anymore.
 
 ## `0.10.2`
 
