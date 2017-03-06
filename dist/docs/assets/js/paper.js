@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 1 12:37:08 2017 +0100
+ * Date: Mon Mar 6 10:13:14 2017 +0100
  *
  ***
  *
@@ -6829,16 +6829,17 @@ new function() {
 
 	function addCurveIntersections(v1, v2, c1, c2, tMin, tMax, uMin, uMax,
 			locations, include, recursion, calls, flip) {
-		var abort = ++recursion >= 48 || ++calls > 256,
+		var abort = ++recursion >= 48 || ++calls > 4096,
 			straight1 = abort || Curve.isStraight(v1),
 			straight2 = abort || Curve.isStraight(v2);
 		if (straight1 || straight2) {
-			return (straight1 && straight2
+			(straight1 && straight2
 				? addLineIntersection
 				: addCurveLineIntersections)(
 						flip ? v2 : v1, flip ? v1 : v2,
 						flip ? c2 : c1, flip ? c1 : c2,
 						locations, include, recursion);
+			return calls;
 		}
 		var epsilon = 1e-12,
 			q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
