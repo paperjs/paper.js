@@ -747,7 +747,8 @@ var Point = Base.extend(/** @lends Point# */{
      * @return {Boolean} {@true if both x and y are 0}
      */
     isZero: function() {
-        return Numerical.isZero(this.x) && Numerical.isZero(this.y);
+        var isZero = Numerical.isZero;
+        return isZero(this.x) && isZero(this.y);
     },
 
     /**
