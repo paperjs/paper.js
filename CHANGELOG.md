@@ -63,9 +63,6 @@
     - Improve reliability of `Curve#getIntersections()` (#1174).
     - Fix `getOverlaps()` to always return overlaps in correct sequence (#1223).
     - Improve handling of multiple crossings on the same curve.
-    - Improve and optimize fat-line clipping algorithm by checking if subdivided
-      curves are straight and falling back on line-line / line-curve approach if
-      they are.
 - Improve tangent direction handling in `CurveLocation#isCrossing()`, by finding
   unambiguous vectors, taking inception points and "peaks" into account
   (#1073, #1074).
