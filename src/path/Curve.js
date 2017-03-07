@@ -957,27 +957,29 @@ statics: /** @lends Curve */{
      */
 }), Base.each({ // Injection scope for tests both as instance and static methods
     // NOTE: Curve#isStraight is documented further down.
-    isStraight: function(p1, h1, h2, p2, epsilon) {
+    isStraight: function(p1, h1, h2, p2) {
         if (h1.isZero() && h2.isZero()) {
             // No handles.
             return true;
         } else {
-            var l = new Line(p1, p2),
-                v = l.getVector(),
-                e = epsilon || /*#=*/Numerical.GEOMETRIC_EPSILON;
+            var v = p2.subtract(p1);
             if (v.isZero()) {
                 // Zero-length line, with some handles defined.
                 return false;
-            } else if (l.getDistance(p1.add(h1)) < e
-                    && l.getDistance(p2.add(h2)) < e) {
-                // Collinear handles: Instead of v.isCollinear(h1) checks, we
+            } else if (v.isCollinear(h1) && v.isCollinear(h2)) {
+                // Collinear handles: In addition to v.isCollinear(h) checks, we
                 // need to measure the distance to the line, in order to be able
                 // to use the same epsilon as in Curve#getTimeOf(), see #1066.
-                // Project them onto line to see if they are within its range:
-                var div = v.dot(v),
-                    s1 = v.dot(h1) / div,
-                    s2 = v.dot(h2) / div;
-                return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
+                var l = new Line(p1, p2),
+                    epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON;
+                if (l.getDistance(p1.add(h1)) < epsilon &&
+                    l.getDistance(p2.add(h2)) < epsilon) {
+                    // Project handles onto line to see if they are in range:
+                    var div = v.dot(v),
+                        s1 = v.dot(h1) / div,
+                        s2 = v.dot(h2) / div;
+                    return s1 >= 0 && s1 <= 1 && s2 <= 0 && s2 >= -1;
+                }
             }
         }
         return false;
@@ -1046,9 +1048,6 @@ statics: /** @lends Curve */{
      *
      * @name Curve#isStraight
      * @function
-     * @param {Number} [epsilon=Numerical.GEOMETRIC_EPSILON] the epsilon against
-     *     which to compare the distance of the curve handles from the line
-     *     that connects the curve's start and end point
      * @return {Boolean} {@true if the curve is straight}
      */
 
@@ -1767,19 +1766,11 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
         // See also: #565 #899 #1074
-
-        function hasNoHandles(v) {
-            var isZero = Numerical.isZero;
-            return  isZero(v[2] - v[0]) && isZero(v[3] - v[1]) &&
-                    isZero(v[4] - v[6]) && isZero(v[5] - v[7]);
-        }
-
-        var abort = ++calls > 4096 || recursion >= 48,
-            check = recursion ? hasNoHandles : Curve.isStraight,
+        var abort = ++calls > 4096 || recursion > 40,
             // If we need to abort, consider both curves as straight and see if
             // their lines intersect.
-            straight1 = abort || check(v1),
-            straight2 = abort || check(v2);
+            straight1 = abort || Curve.isStraight(v1),
+            straight2 = abort || Curve.isStraight(v2);
         if (straight1 || straight2) {
             (straight1 && straight2
                 ? addLineIntersection
