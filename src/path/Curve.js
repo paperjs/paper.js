@@ -2020,10 +2020,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
             min = Math.min,
             max = Math.max;
 
-        function getPoint(v, i) {
-            return new Point(v[i], v[i + 1]);
-        }
-
         if (max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
             min(v2[0], v2[2], v2[4], v2[6]) &&
             min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
@@ -2045,8 +2041,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 var straight1 = Curve.isStraight(v1),
                     straight2 = Curve.isStraight(v2),
                     straight = straight1 && straight2,
-                    flip = straight1 && !straight2,
-                    before = locations.length;
+                    flip = straight1 && !straight2;
                 // Determine the correct intersection method based on whether
                 // one or curves are straight lines:
                 (straight
@@ -2061,21 +2056,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             // addCurveIntersections():
                             // recursion, calls, tMin, tMax, uMin, uMax
                             0, 0, 0, 1, 0, 1);
-                // We're done if we handle lines and found one intersection
-                // already: #805#issuecomment-148503018
-                if (straight && locations.length > before)
-                    return locations;
-
-                // Handle the special case where the first curve's start- / end-
-                // point overlaps with the second curve's start- / end-point.
-                for (var i = 0; i < 4; i++) {
-                    var t1 = i >> 1, // 0, 0, 1, 1
-                        t2 = i & 1, // 0, 1, 0, 1
-                        p1 = getPoint(v1, t1 * 6),
-                        p2 = getPoint(v2, t2 * 6);
-                    if (p1.isClose(p2, epsilon))
-                        addLocation(locations, include, c1, t1, p1, c2, t2, p2);
-                }
             }
         }
         return locations;
