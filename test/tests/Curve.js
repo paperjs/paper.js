@@ -282,6 +282,9 @@ test('Curve#isStraight()', function() {
     equals(function() {
         return new Curve([100, 100], null, [-50, -50], [100, 100]).isStraight();
     }, false);
+    equals(function() { // #1269
+        return new Curve([100, 300], [ 20, -20 ],  [ -10, 10 ], [200, 200]).isStraight();
+    }, true);
 });
 
 test('Curve#isLinear()', function() {
