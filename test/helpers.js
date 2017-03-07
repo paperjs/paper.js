@@ -189,11 +189,11 @@ var comparePixels = function(actual, expected, message, options) {
                 })
             ]
         }),
-        actual = rasterize(actual, group, resolution),
-        expected = rasterize(expected, group, resolution);
-    if (!actual || !expected) {
+        actualRaster = rasterize(actual, group, resolution),
+        expectedRaster = rasterize(expected, group, resolution);
+    if (!actualRaster || !expectedRaster) {
         QUnit.push(false, null, null, 'Unable to compare rasterized items: ' +
-                (!actual ? 'actual' : 'expected') + ' item is null',
+                (!actualRaster ? 'actual' : 'expected') + ' item is null',
                 QUnit.stack(2));
     } else {
         // Use resemble.js to compare the two rasterized items.
@@ -208,8 +208,8 @@ var comparePixels = function(actual, expected, message, options) {
                 transparency: 1
             });
         }
-        resemble(actual.getImageData())
-            .compareTo(expected.getImageData())
+        resemble(actualRaster.getImageData())
+            .compareTo(expectedRaster.getImageData())
             .ignoreAntialiasing()
             // When working with imageData, this call is synchronous:
             .onComplete(function(data) { result = data; });
@@ -218,7 +218,16 @@ var comparePixels = function(actual, expected, message, options) {
             fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
             identical = result ? 100 - result.misMatchPercentage : 0,
             ok = Math.abs(100 - identical) <= tolerance,
-            text = identical.toFixed(fixed) + '% identical';
+            text = identical.toFixed(fixed) + '% identical',
+            detail = text;
+        if (!ok) {
+            console.log(actual, expected);
+        }
+        if (!ok &&
+                actual instanceof PathItem && expected instanceof PathItem) {
+            detail += '\nExpected:\n' + expected.pathData +
+                    '\nActual:\n' + actual.pathData;
+        }
         QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
         if (!ok && result && !isNode) {
             // Get the right entry for this unit test and assertion, and
@@ -227,10 +236,10 @@ var comparePixels = function(actual, expected, message, options) {
                     .querySelector('li:nth-child(' + (index) + ')'),
                 bounds = result.diffBounds;
             entry.querySelector('.test-expected td').innerHTML =
-                    getImageTag(expected);
+                    getImageTag(expectedRaster);
             entry.querySelector('.test-actual td').innerHTML =
-                    getImageTag(actual);
-            entry.querySelector('.test-diff td').innerHTML = '<pre>' + text
+                    getImageTag(actualRaster);
+            entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
                     + '</pre><br>'
                     + '<img src="' + result.getImageDataUrl() + '">';
         }
