@@ -27,6 +27,7 @@
   `#reorient()` (#973).
 
 ### Added
+- Implement `Path#divideAt(location)`, in analogy to `Curve#divideAt(location)`.
 - Add `PathItem#compare()` as a way to compare the geometry of two paths to see
   if they describe the same shape, handling cases where paths start in different
   segments or use different amounts of curves to describe the same shape.
