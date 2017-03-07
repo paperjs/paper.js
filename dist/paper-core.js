@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Mar 7 20:01:05 2017 +0100
+ * Date: Tue Mar 7 20:15:59 2017 +0100
  *
  ***
  *
@@ -6822,14 +6822,11 @@ new function() {
 				var loc1 = new CurveLocation(c1, t1,
 						p1 || c1.getPointAtTime(t1), overlap),
 					loc2 = new CurveLocation(c2, t2,
-						p2 || c2.getPointAtTime(t2), overlap),
-					flip = loc1.getPath() === loc2.getPath()
-						&& loc1.getIndex() > loc2.getIndex(),
-					loc = flip ? loc2 : loc1;
+						p2 || c2.getPointAtTime(t2), overlap);
 				loc1._intersection = loc2;
 				loc2._intersection = loc1;
-				if (!include || include(loc)) {
-					CurveLocation.insert(locations, loc, true);
+				if (!include || include(loc1)) {
+					CurveLocation.insert(locations, loc1, true);
 				}
 			}
 		}
@@ -7009,10 +7006,6 @@ new function() {
 			min = Math.min,
 			max = Math.max;
 
-		function getPoint(v, i) {
-			return new Point(v[i], v[i + 1]);
-		}
-
 		if (max(v1[0], v1[2], v1[4], v1[6]) + epsilon >
 			min(v2[0], v2[2], v2[4], v2[6]) &&
 			min(v1[0], v1[2], v1[4], v1[6]) - epsilon <
@@ -7033,8 +7026,7 @@ new function() {
 				var straight1 = Curve.isStraight(v1),
 					straight2 = Curve.isStraight(v2),
 					straight = straight1 && straight2,
-					flip = straight1 && !straight2,
-					before = locations.length;
+					flip = straight1 && !straight2;
 				(straight
 					? addLineIntersection
 					: straight1 || straight2
@@ -7044,17 +7036,6 @@ new function() {
 							flip ? c2 : c1, flip ? c1 : c2,
 							locations, include, flip,
 							0, 0, 0, 1, 0, 1);
-				if (straight && locations.length > before)
-					return locations;
-
-				for (var i = 0; i < 4; i++) {
-					var t1 = i >> 1,
-						t2 = i & 1,
-						p1 = getPoint(v1, t1 * 6),
-						p2 = getPoint(v2, t2 * 6);
-					if (p1.isClose(p2, epsilon))
-						addLocation(locations, include, c1, t1, p1, c2, t2, p2);
-				}
 			}
 		}
 		return locations;
