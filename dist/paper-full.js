@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Mar 7 11:45:13 2017 +0100
+ * Date: Tue Mar 7 12:34:59 2017 +0100
  *
  ***
  *
@@ -1404,7 +1404,8 @@ var Point = Base.extend({
 	},
 
 	isZero: function() {
-		return Numerical.isZero(this.x) && Numerical.isZero(this.y);
+		var isZero = Numerical.isZero;
+		return isZero(this.x) && isZero(this.y);
 	},
 
 	isNaN: function() {
@@ -1621,7 +1622,8 @@ var Size = Base.extend({
 	},
 
 	isZero: function() {
-		return Numerical.isZero(this.width) && Numerical.isZero(this.height);
+		var isZero = Numerical.isZero;
+		return isZero(this.width) && isZero(this.height);
 	},
 
 	isNaN: function() {
@@ -5852,7 +5854,8 @@ var SegmentPoint = Point.extend({
 	},
 
 	isZero: function() {
-		return Numerical.isZero(this._x) && Numerical.isZero(this._y);
+		var isZero = Numerical.isZero;
+		return isZero(this._x) && isZero(this._y);
 	},
 
 	isSelected: function() {
