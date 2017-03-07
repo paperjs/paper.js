@@ -1743,18 +1743,12 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 var loc1 = new CurveLocation(c1, t1,
                         p1 || c1.getPointAtTime(t1), overlap),
                     loc2 = new CurveLocation(c2, t2,
-                        p2 || c2.getPointAtTime(t2), overlap),
-                    // For self-intersections, detect the case where the second
-                    // curve wrapped around, and flip them so they can get
-                    // matched to a potentially already existing intersection.
-                    flip = loc1.getPath() === loc2.getPath()
-                        && loc1.getIndex() > loc2.getIndex(),
-                    loc = flip ? loc2 : loc1;
+                        p2 || c2.getPointAtTime(t2), overlap);
                 // Link the two locations to each other.
                 loc1._intersection = loc2;
                 loc2._intersection = loc1;
-                if (!include || include(loc)) {
-                    CurveLocation.insert(locations, loc, true);
+                if (!include || include(loc1)) {
+                    CurveLocation.insert(locations, loc1, true);
                 }
             }
         }
