@@ -1760,30 +1760,17 @@ new function() { // Scope for bezier intersection using fat-line clipping
         }
     }
 
-    function addCurveIntersections(v1, v2, c1, c2, tMin, tMax, uMin, uMax,
-            locations, include, recursion, calls, flip) {
+    function addCurveIntersections(v1, v2, c1, c2, locations, include, flip,
+            recursion, calls, tMin, tMax, uMin, uMax) {
         // Avoid deeper recursion, by counting the total amount of recursions,
         // as well as the total amount of calls, to avoid massive call-trees as
         // suggested by @iconexperience in #904#issuecomment-225283430.
         // See also: #565 #899 #1074
-        var abort = ++calls > 4096 || recursion > 40,
-            // If we need to abort, consider both curves as straight and see if
-            // their lines intersect.
-            straight1 = abort || Curve.isStraight(v1),
-            straight2 = abort || Curve.isStraight(v2);
-        if (straight1 || straight2) {
-            (straight1 && straight2
-                ? addLineIntersection
-                : addCurveLineIntersections)(
-                        flip ? v2 : v1, flip ? v1 : v2,
-                        flip ? c2 : c1, flip ? c1 : c2,
-                        locations, include, recursion,
-                        flip ? straight2 : straight1);
+        if (++calls >= 4096 || ++recursion >= 40)
             return calls;
-        }
         // Use an epsilon smaller than CURVETIME_EPSILON to compare curve-time
         // parameters in fat-line clipping code.
-        var epsilon = /*#=*/Numerical.EPSILON,
+        var fatLineEpsilon = 1e-9,
             // Let P be the first curve and Q be the second
             q0x = v2[0], q0y = v2[1], q3x = v2[6], q3y = v2[7],
             getSignedDistance = Line.getSignedDistance,
@@ -1820,7 +1807,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // original parameter range for v2.
         var tMinNew = tMin + (tMax - tMin) * tMinClip,
             tMaxNew = tMin + (tMax - tMin) * tMaxClip;
-        if (Math.max(uMax - uMin, tMaxNew - tMinNew) < epsilon) {
+        if (Math.max(uMax - uMin, tMaxNew - tMinNew) < fatLineEpsilon) {
             // We have isolated the intersection with sufficient precision
             var t = (tMinNew + tMaxNew) / 2,
                 u = (uMin + uMax) / 2;
@@ -1828,7 +1815,6 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     flip ? c2 : c1, flip ? u : t, null,
                     flip ? c1 : c2, flip ? t : u, null);
         } else {
-            recursion++;
             // Apply the result of the clipping to curve 1:
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
             if (tMaxClip - tMinClip > 0.8) {
@@ -1837,32 +1823,32 @@ new function() { // Scope for bezier intersection using fat-line clipping
                     var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
-                            v2, parts[0], c2, c1, uMin, uMax, tMinNew, t,
-                            locations, include, recursion, calls, !flip);
+                            v2, parts[0], c2, c1, locations, include, !flip,
+                            recursion, calls, uMin, uMax, tMinNew, t);
                     calls = addCurveIntersections(
-                            v2, parts[1], c2, c1, uMin, uMax, t, tMaxNew,
-                            locations, include, recursion, calls, !flip);
+                            v2, parts[1], c2, c1, locations, include, !flip,
+                            recursion, calls, uMin, uMax, t, tMaxNew);
                 } else {
                     var parts = Curve.subdivide(v2, 0.5),
                         u = (uMin + uMax) / 2;
                     calls = addCurveIntersections(
-                            parts[0], v1, c2, c1,  uMin, u, tMinNew, tMaxNew,
-                            locations, include, recursion, calls, !flip);
+                            parts[0], v1, c2, c1, locations, include, !flip,
+                            recursion, calls, uMin, u, tMinNew, tMaxNew);
                     calls = addCurveIntersections(
-                            parts[1], v1, c2, c1, u, uMax, tMinNew, tMaxNew,
-                            locations, include, recursion, calls, !flip);
+                            parts[1], v1, c2, c1, locations, include, !flip,
+                            recursion, calls, u, uMax, tMinNew, tMaxNew);
                 }
             } else { // Iterate
-                if (uMax - uMin >= epsilon) {
+                if (uMax - uMin >= fatLineEpsilon) {
                     calls = addCurveIntersections(
-                            v2, v1, c2, c1, uMin, uMax, tMinNew, tMaxNew,
-                            locations, include, recursion, calls, !flip);
+                            v2, v1, c2, c1, locations, include, !flip,
+                            recursion, calls, uMin, uMax, tMinNew, tMaxNew);
                 } else {
                     // The interval on the other curve is already tight enough,
                     // therefore we keep iterating on the same curve.
                     calls = addCurveIntersections(
-                            v1, v2, c1, c2, tMinNew, tMaxNew, uMin, uMax,
-                            locations, include, recursion, calls, flip);
+                            v1, v2, c1, c2, locations, include, flip,
+                            recursion, calls, tMinNew, tMaxNew, uMin, uMax);
                 }
             }
         }
@@ -1993,28 +1979,28 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function addCurveLineIntersections(v1, v2, c1, c2, locations, include,
-            recursion, straight1) {
-        var flip = straight1,
-            vc = flip ? v2 : v1,
-            vl = flip ? v1 : v2,
-            x1 = vl[0], y1 = vl[1],
-            x2 = vl[6], y2 = vl[7],
-            roots = getCurveLineIntersections(vc, x1, y1, x2 - x1, y2 - y1);
+            flip) {
+        // addCurveLineIntersections() is called so that v1 is always the curve
+        // and v2 the line. flip indicates whether the curves need to be flipped
+        // in the call to addLocation().
+        var x1 = v2[0], y1 = v2[1],
+            x2 = v2[6], y2 = v2[7],
+            roots = getCurveLineIntersections(v1, x1, y1, x2 - x1, y2 - y1);
         // NOTE: count could be -1 for infinite solutions, but that should only
         // happen with lines, in which case we should not be here.
         for (var i = 0, l = roots.length; i < l; i++) {
             // For each found solution on the rotated curve, get the point on
             // the real curve and with that the location on the line.
-            var tc = roots[i],
-                pc = Curve.getPoint(vc, tc),
-                tl = Curve.getTimeOf(vl, pc);
-            if (tl !== null) {
-                var pl = Curve.getPoint(vl, tl);
+            var t1 = roots[i],
+                p1 = Curve.getPoint(v1, t1),
+                t2 = Curve.getTimeOf(v2, p1);
+            if (t2 !== null) {
+                var p2 = Curve.getPoint(v2, t2);
                 // Only use the time values if there was no recursion, and let
                 // addLocation() figure out the actual time values otherwise.
                 addLocation(locations, include,
-                        c1, recursion ? null : flip ? tl : tc, flip ? pl : pc,
-                        c2, recursion ? null : flip ? tc : tl, flip ? pc : pl);
+                        flip ? c2 : c1, flip ? t2 : t1, flip ? p2 : p1,
+                        flip ? c1 : c2, flip ? t1 : t2, flip ? p1 : p2);
             }
         }
     }
@@ -2056,9 +2042,29 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             c2, overlap[1], null, true);
                 }
             } else {
-                addCurveIntersections(
-                        v1, v2, c1, c2, 0, 1, 0, 1, // tMin, tMax, uMin, uMax
-                        locations, include, 0, 0, 0); // recursion, calls, flip
+                var straight1 = Curve.isStraight(v1),
+                    straight2 = Curve.isStraight(v2),
+                    straight = straight1 && straight2,
+                    flip = straight1 && !straight2,
+                    before = locations.length;
+                // Determine the correct intersection method based on whether
+                // one or curves are straight lines:
+                (straight
+                    ? addLineIntersection
+                    : straight1 || straight2
+                        ? addCurveLineIntersections
+                        : addCurveIntersections)(
+                            flip ? v2 : v1, flip ? v1 : v2,
+                            flip ? c2 : c1, flip ? c1 : c2,
+                            locations, include, flip,
+                            // Define the defaults for these parameters of
+                            // addCurveIntersections():
+                            // recursion, calls, tMin, tMax, uMin, uMax
+                            0, 0, 0, 1, 0, 1);
+                // We're done if we handle lines and found one intersection
+                // already: #805#issuecomment-148503018
+                if (straight && locations.length > before)
+                    return locations;
 
                 // Handle the special case where the first curve's start- / end-
                 // point overlaps with the second curve's start- / end-point.
