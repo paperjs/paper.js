@@ -512,13 +512,17 @@ PathItem.inject(new function() {
                 // Bail out without updating vPrev at the end of the call.
                 return;
             }
+            // Determine the curve-time value corresponding to the point.
             var t =   po === o0 ? 0
                     : po === o3 ? 1
+                    // If the abscissa is outside the curve, we can use any
+                    // value except 0 (requires special handling). Use 1, as it
+                    // does not require additional calculations for the point.
                     : paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
                     ? 1
-                    : Curve.solveCubic(v, io, po, roots, 0, 1) === 1
+                    : Curve.solveCubic(v, io, po, roots, 0, 1) > 0
                         ? roots[0]
-                        : 0.5,
+                        : 1,
                 a =   t === 0 ? a0
                     : t === 1 ? a3
                     : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
