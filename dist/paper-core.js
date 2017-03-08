@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 15:47:54 2017 +0100
+ * Date: Wed Mar 8 15:55:51 2017 +0100
  *
  ***
  *
@@ -10027,9 +10027,9 @@ PathItem.inject(new function() {
 					: po === o3 ? 1
 					: paL > max(a0, a1, a2, a3) || paR < min(a0, a1, a2, a3)
 					? 1
-					: Curve.solveCubic(v, io, po, roots, 0, 1) === 1
+					: Curve.solveCubic(v, io, po, roots, 0, 1) > 0
 						? roots[0]
-						: 0.5,
+						: 1,
 				a =   t === 0 ? a0
 					: t === 1 ? a3
 					: Curve.getPoint(v, t)[dir ? 'y' : 'x'],
