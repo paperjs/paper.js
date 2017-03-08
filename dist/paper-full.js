@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 23:01:12 2017 +0100
+ * Date: Wed Mar 8 23:42:03 2017 +0100
  *
  ***
  *
@@ -12710,7 +12710,8 @@ new function() {
 					dblClick = hitItem === clickItem
 						&& (Date.now() - clickTime < 300);
 					downItem = clickItem = hitItem;
-					dragItem = !prevented && hitItem;
+					dragItem = !prevented && hitItem &&
+							hitItem.responds('mousedrag') && hitItem;
 					downPoint = point;
 				} else if (mouse.up) {
 					if (!prevented && hitItem === downItem) {
