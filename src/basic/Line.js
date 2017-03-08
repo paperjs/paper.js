@@ -108,9 +108,17 @@ var Line = Base.extend(/** @lends Line# */{
      * @return {Number}
      */
     getDistance: function(point) {
-        return Math.abs(Line.getSignedDistance(
-                this._px, this._py, this._vx, this._vy,
-                point.x, point.y, true));
+        return Math.abs(this.getSignedDistance(point));
+    },
+
+    // DOCS: document Line#getSignedDistance(point)
+    /**
+     * @param {Point} point
+     * @return {Number}
+     */
+    getSignedDistance: function(point) {
+        return Line.getSignedDistance(this._px, this._py, this._vx, this._vy,
+                point.x, point.y, true);
     },
 
     isCollinear: function(line) {
