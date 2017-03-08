@@ -37,6 +37,7 @@
     "canvas",
     "svg",
     "paper",
-    "paper.js"
+    "paper.js",
+    "paperjs"
   ]
 }
