@@ -1840,9 +1840,11 @@ new function() { // Injection scope for hit-test functions shared with project
      *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
      *     segment points of open path items
-     * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.position {Boolean} hit-test the {@link Item#position} of
+     *     of items, which depends on the setting of {@link Item#pivot}
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have {@link
      *     Item#guide} set to `true`
@@ -1931,32 +1933,39 @@ new function() { // Injection scope for hit-test functions shared with project
             return hit;
         }
 
-        function checkBounds(type, part) {
-            var pt = bounds['get' + part]();
+        function checkPoint(type, part) {
+            var pt = part ? bounds['get' + part]() : that.getPosition();
             // Since there are transformations, we cannot simply use a numerical
             // tolerance value. Instead, we divide by a padding size, see above.
             if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
-                return new HitResult(type, that,
-                        { name: Base.hyphenate(part), point: pt });
+                return new HitResult(type, that, {
+                    name: part ? Base.hyphenate(part) : type,
+                    point: pt
+                });
             }
         }
 
+        var checkPosition = options.position,
+            checkCenter = options.center,
+            checkBounds = options.bounds;
         // Ignore top level layers by checking for _parent:
-        if (checkSelf && (options.center || options.bounds) && this._parent) {
-            // Don't get the transformed bounds, check against transformed
-            // points instead
-            bounds = this.getInternalBounds();
-            if (options.center) {
-                res = checkBounds('center', 'Center');
+        if (checkSelf && this._parent
+                && (checkPosition || checkCenter || checkBounds)) {
+            if (checkCenter || checkBounds) {
+                // Get the internal, untransformed bounds, as we check against
+                // transformed points.
+                bounds = this.getInternalBounds();
             }
-            if (!res && options.bounds) {
-                // TODO: Move these into a private scope
+            res = checkPosition && checkPoint('position') ||
+                    checkCenter && checkPoint('center', 'Center');
+            if (!res && checkBounds) {
+                // TODO: Move these into a static property on Rectangle?
                 var points = [
                     'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
                     'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
                 ];
                 for (var i = 0; i < 8 && !res; i++) {
-                    res = checkBounds('bounds', points[i]);
+                    res = checkPoint('bounds', points[i]);
                 }
             }
             res = filter(res);

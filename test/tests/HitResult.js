@@ -21,6 +21,7 @@ test('Hit-testing options', function() {
         segments: true,
         handles: false,
         ends: false,
+        position: false,
         center: false,
         bounds: false,
         guides: false,
@@ -128,31 +129,46 @@ test('hitting path segments', function() {
     });
 });
 
-test('hitting the center of a path', function() {
+test('hitting the center and position of a path', function() {
     var path = new Path([0, 0], [100, 100], [200, 0]);
     path.closed = true;
+    var center = path.bounds.center,
+        position = path.position,
+        positionResult = {
+            type: 'position', item: path, point: position
+        },
+        centerResult = {
+            type: 'center', item: path, point: center
+        };
 
-    testHitResult(paper.project.hitTest(path.position, {
+    testHitResult(paper.project.hitTest(position, {
         center: true
-    }), {
-        type: 'center',
-        item: path,
-        point: path.position
-    });
-});
+    }), centerResult);
 
-test('hitting the center of a path with tolerance', function() {
-    var path = new Path([0, 0], [100, 100], [200, 0]);
-    path.closed = true;
     var offset = new Point(1, 1);
-
-    testHitResult(paper.project.hitTest(path.position.add(offset), {
+    testHitResult(paper.project.hitTest(position.add(offset), {
         tolerance: offset.length,
         center: true
+    }), centerResult, 'position with tolerance');
+
+    testHitResult(paper.project.hitTest(position, {
+        position: true
+    }), positionResult);
+
+    testHitResult(paper.project.hitTest(center, {
+        position: true
+    }), positionResult);
+
+    path.pivot = [100, 100];
+
+    testHitResult(paper.project.hitTest(center, {
+        position: true
+    }), null, 'with pivot, the position should not be in the center');
+
+    testHitResult(paper.project.hitTest(path.position, {
+        position: true
     }), {
-        type: 'center',
-        item: path,
-        point: path.position
+        type: 'position', item: path, point: path.position
     });
 });
 

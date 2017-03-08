@@ -424,9 +424,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
      *     segment points of open path items
-     * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.position {Boolean} hit-test the {@link Item#position} of
+     *     of items, which depends on the setting of {@link Item#pivot}
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have {@link
      *     Item#guide} set to `true`
