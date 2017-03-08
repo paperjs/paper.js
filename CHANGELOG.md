@@ -3,9 +3,9 @@
 ## `0.10.3` (Unreleased)
 
 ### Changed
+- Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
 - Node.js: Loosely couple Node.js / Electron code to `Canvas` module, and treat
   its absence like a headless web worker context in the browser (#1103).
-- Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
 - Clean up handling of `Item#_set()`, `#set()` and `#initialize()`:
     - Use `#_set()` for actually setting internal properties, e.g. on `Point`,
       `Size`, so that derived classes can reuse other parts without having to
@@ -32,7 +32,6 @@
   if they describe the same shape, handling cases where paths start in different
   segments or use different amounts of curves to describe the same shape.
 - Implement `Curve#hasLength()` as an optimized check for curve-length (#1109).
-- Implement `Path#divideAt()`, similar to `Curve#divideAt()`.
 - Implement `Curve#classify()` to determine the type of cubic Bézier curve via
   discriminant classification, based on an approach described by Loop and Blinn,
   and use it to simplify curve self-intersection handling (#773, #1074, #1235).
@@ -64,8 +63,8 @@
     - Fix `getOverlaps()` to always return overlaps in correct sequence (#1223).
     - Improve handling of multiple crossings on the same curve.
 - Improve tangent direction handling in `CurveLocation#isCrossing()`, by finding
-  unambiguous vectors, taking inception points and "peaks" into account
-  (#1073, #1074).
+  unambiguous vectors, taking the curve's loop, cusp, inflection, and "peak"
+  points into account (#1073, #1074).
 - Prevent `Path#getStrokeBounds(matrix)` from accidentally modifying segments
   (#1102).
 - Improve compatibility with JSPM (#1104).
@@ -80,7 +79,8 @@
 - Correctly handle offset in `Curve#divideAt(offset)` (#1230).
 - Fix `Line#getSide()` imprecisions when points are on the line.
 - Docs: Fix documentation of `Project#hitTestAll()` (#536).
-- Docs: Improve description of option.class value in `Project#hitTest()` (#632).
+- Docs: Improve description of `option.class` value in `Project#hitTest()`
+  (#632).
 
 ### Removed
 - Remove `Numerical.TOLERANCE = 1e-6` as there is no internal use for it
