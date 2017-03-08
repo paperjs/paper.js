@@ -1721,7 +1721,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
 
         function checkSegmentStroke(segment) {
-            // Handle joins / caps that are not round specificelly, by
+            // Handle joins / caps that are not round specifically, by
             // hit-testing their polygon areas.
             var isJoin = closed || segment._index > 0
                     && segment._index < numSegments - 1;
@@ -2834,19 +2834,20 @@ statics: {
         // Style#strokeScaling.
         var point = segment._point.transform(matrix),
             loc = segment.getLocation(),
-            normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
+            // Checking loc.getTime() for 0 is to see whether this is the first
+            // or the last segment of the open path, in order to determine in
+            // which direction to flip the normal.
+            normal = loc.getNormal()
+                    .multiply(loc.getTime() === 0 ? radius : -radius)
+                    .transform(strokeMatrix);
         // For square caps, we need to step away from point in the direction of
         // the tangent, which is the rotated normal.
-        // Checking loc.getTime() for 0 is to see whether this is the first
-        // or the last segment of the open path, in order to determine in which
-        // direction to move the point.
         if (cap === 'square') {
             if (isArea) {
                 addPoint(point.subtract(normal));
                 addPoint(point.add(normal));
             }
-            point = point.add(normal.rotate(
-                    loc.getTime() === 0 ? -90 : 90));
+            point = point.add(normal.rotate(-90));
         }
         addPoint(point.add(normal));
         addPoint(point.subtract(normal));
