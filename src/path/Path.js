@@ -2523,7 +2523,7 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            var epsilon = /*#=*/Numerical.EPSILON,
+            var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
                 ext = abs(extent),
                 // Calculate the amount of segments required to approximate over
                 // `extend` degrees (extend / 90), but prevent ceil() from
