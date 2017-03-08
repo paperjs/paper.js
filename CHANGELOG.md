@@ -1,6 +1,6 @@
 # Change Log
 
-## `0.10.3` (Unreleased)
+## `0.10.3`
 
 ### Changed
 - Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
