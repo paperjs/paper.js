@@ -1399,8 +1399,10 @@ new function() { // Injection scope for event handling on the browser
                         && (Date.now() - clickTime < 300);
                     downItem = clickItem = hitItem;
                     // Only start dragging if the mousedown event has not
-                    // prevented the default.
-                    dragItem = !prevented && hitItem;
+                    // prevented the default, and if the hitItem actually
+                    // responds to mousedrag events.
+                    dragItem = !prevented && hitItem &&
+                            hitItem.responds('mousedrag') && hitItem;
                     downPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on the hit-item,
