@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 10:48:03 2017 +0100
+ * Date: Wed Mar 8 13:41:23 2017 +0100
  *
  ***
  *
@@ -9315,14 +9315,15 @@ statics: {
 			addPoint, isArea) {
 		var point = segment._point.transform(matrix),
 			loc = segment.getLocation(),
-			normal = loc.getNormal().multiply(radius).transform(strokeMatrix);
+			normal = loc.getNormal()
+					.multiply(loc.getTime() === 0 ? radius : -radius)
+					.transform(strokeMatrix);
 		if (cap === 'square') {
 			if (isArea) {
 				addPoint(point.subtract(normal));
 				addPoint(point.add(normal));
 			}
-			point = point.add(normal.rotate(
-					loc.getTime() === 0 ? -90 : 90));
+			point = point.add(normal.rotate(-90));
 		}
 		addPoint(point.add(normal));
 		addPoint(point.subtract(normal));
