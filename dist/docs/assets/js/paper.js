@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 13:41:23 2017 +0100
+ * Date: Wed Mar 8 14:13:19 2017 +0100
  *
  ***
  *
@@ -2552,9 +2552,12 @@ var Line = Base.extend({
 	},
 
 	getDistance: function(point) {
-		return Math.abs(Line.getSignedDistance(
-				this._px, this._py, this._vx, this._vy,
-				point.x, point.y, true));
+		return Math.abs(this.getSignedDistance(point));
+	},
+
+	getSignedDistance: function(point) {
+		return Line.getSignedDistance(this._px, this._py, this._vx, this._vy,
+				point.x, point.y, true);
 	},
 
 	isCollinear: function(line) {
@@ -9084,7 +9087,7 @@ new function() {
 					extent += extent < 0 ? 360 : -360;
 				}
 			}
-			var epsilon = 1e-12,
+			var epsilon = 1e-7,
 				ext = abs(extent),
 				count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
 				inc = extent / count,
