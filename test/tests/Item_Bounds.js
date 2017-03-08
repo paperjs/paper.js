@@ -730,8 +730,24 @@ test('symbolItem.bounds with strokeScaling disabled', function() {
     var placed = symbol.place([100, 100]);
     equals(placed.bounds, new Rectangle(85, 85, 30, 30), 'placed.bounds');
     placed.scale(4, 2);
-    equals(placed.bounds, new Rectangle(55, 75, 90, 50), 'placed.bounds after scaling');
+    equals(placed.bounds, new Rectangle(55, 75, 90, 50),
+            'placed.bounds after scaling');
     path.strokeScaling = true;
-    equals(placed.bounds, new Rectangle(40, 70, 120, 60), 'placed.bounds after scaling, strokeScaling enabled');
+    equals(placed.bounds, new Rectangle(40, 70, 120, 60),
+            'placed.bounds after scaling, strokeScaling enabled');
 });
 
+test('item.visible and item.parents.bounds (#1248)', function() {
+    var item = new Path.Rectangle({
+       point: [0, 0],
+       size: [50, 100],
+       fillColor: 'red',
+       visible: false,
+    });
+    equals(item.bounds, new Rectangle(0, 0, 50, 100), 'item.bounds');
+    equals(item.parent.bounds, new Rectangle(0, 0, 0, 0),
+            'item.parent.bounds with item.visible = false');
+    item.visible = true;
+    equals(item.parent.bounds, item.bounds,
+            'item.parent.bounds with item.visible = true');
+})

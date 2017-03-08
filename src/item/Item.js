@@ -407,16 +407,20 @@ new function() { // Injection scope for various item event handlers
     // call _changed() if a property was modified.
     function(name) {
         var part = Base.capitalize(name),
-            name = '_' + name;
+            key = '_' + name,
+            flags = {
+                // #locked does not change appearance, all others do:
+                locked: /*#=*/ChangeFlag.ATTRIBUTE,
+                // #visible changes apperance
+                visible: /*#=*/(Change.ATTRIBUTE | Change.GEOMETRY)
+            };
         this['get' + part] = function() {
-            return this[name];
+            return this[key];
         };
         this['set' + part] = function(value) {
-            if (value != this[name]) {
-                this[name] = value;
-                // #locked does not change appearance, all others do:
-                this._changed(name === '_locked'
-                        ? /*#=*/ChangeFlag.ATTRIBUTE : /*#=*/Change.ATTRIBUTE);
+            if (value != this[key]) {
+                this[key] = value;
+                this._changed(flags[name] || /*#=*/Change.ATTRIBUTE);
             }
         };
     },
