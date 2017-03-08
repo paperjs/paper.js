@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 15:55:51 2017 +0100
+ * Date: Wed Mar 8 16:21:34 2017 +0100
  *
  ***
  *
@@ -3069,15 +3069,18 @@ new function() {
 }, Base.each(['locked', 'visible', 'blendMode', 'opacity', 'guide'],
 	function(name) {
 		var part = Base.capitalize(name),
-			name = '_' + name;
+			key = '_' + name,
+			flags = {
+				locked: 128,
+				visible: 137
+			};
 		this['get' + part] = function() {
-			return this[name];
+			return this[key];
 		};
 		this['set' + part] = function(value) {
-			if (value != this[name]) {
-				this[name] = value;
-				this._changed(name === '_locked'
-						? 128 : 129);
+			if (value != this[key]) {
+				this[key] = value;
+				this._changed(flags[name] || 129);
 			}
 		};
 	},
