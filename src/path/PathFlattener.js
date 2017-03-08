@@ -11,22 +11,22 @@
  */
 
 /**
- * @name PathIterator
+ * @name PathFlattener
  * @class
  * @private
  */
-var PathIterator = Base.extend({
-    _class: 'PathIterator',
+var PathFlattener = Base.extend({
+    _class: 'PathFlattener',
 
     /**
-     * Creates a path iterator for the given path. The iterator converts curves
-     * into a sequence of straight lines by the use of curve-subdivision with an
-     * allowed maximum error to create a lookup table that maps curve-time to
-     * path offsets, and can be used for efficient iteration over the full
-     * length of the path, and getting points / tangents / normals and curvature
-     * in path offset space.
+     * Creates a path flattener for the given path. The flattener converts
+     * curves into a sequence of straight lines by the use of curve-subdivision
+     * with an allowed maximum error to create a lookup table that maps curve-
+     * time to path offsets, and can be used for efficient iteration over the
+     * full length of the path, and getting points / tangents / normals and
+     * curvature in path offset space.
      *
-     * @param {Path} path the path to create the iterator for
+     * @param {Path} path the path to create the flattener for
      * @param {Number} [flatness=0.25] the maximum error allowed for the
      *     straight lines to deviate from the original curves
      * @param {Number} [maxRecursion=32] the maximum amount of recursion in
@@ -37,7 +37,7 @@ var PathIterator = Base.extend({
      *     translation
      * @param {Matrix} [matrix] the matrix by which to transform the path's
      *     coordinates without modifying the actual path.
-     * @return {PathIterator} the newly created path iterator
+     * @return {PathFlattener} the newly created path flattener
      */
     initialize: function(path, flatness, maxRecursion, ignoreStraight, matrix) {
         // Instead of relying on path.curves, we only use segments here and
@@ -100,32 +100,35 @@ var PathIterator = Base.extend({
         this.parts = parts;
         this.length = length;
         // Keep a current index from the part where we last where in
-        // _get(), to optimise for iterator-like usage of iterator.
+        // _get(), to optimise for iterator-like usage of flattener.
         this.index = 0;
     },
 
     _get: function(offset) {
         // Make sure we're not beyond the requested offset already. Search the
         // start position backwards from where to then process the loop below.
-        var i, j = this.index;
+        var parts = this.parts,
+            length = parts.length,
+            start,
+            i, j = this.index;
         for (;;) {
             i = j;
-            if (j === 0 || this.parts[--j].offset < offset)
+            if (!j || parts[--j].offset < offset)
                 break;
         }
         // Find the part that succeeds the given offset, then interpolate
         // with the previous part
-        for (var l = this.parts.length; i < l; i++) {
-            var part = this.parts[i];
+        for (; i < length; i++) {
+            var part = parts[i];
             if (part.offset >= offset) {
                 // Found the right part, remember current position
                 this.index = i;
                 // Now get the previous part so we can linearly interpolate
                 // the curve parameter
-                var prev = this.parts[i - 1];
-                // Make sure we only use the previous parameter value if its
-                // for the same curve, by checking index. Use 0 otherwise.
-                var prevTime = prev && prev.index === part.index ? prev.time : 0,
+                var prev = parts[i - 1],
+                    // Make sure we only use the previous parameter value if its
+                    // for the same curve, by checking index. Use 0 otherwise.
+                    prevTime = prev && prev.index === part.index ? prev.time : 0,
                     prevOffset = prev ? prev.offset : 0;
                 return {
                     index: part.index,
@@ -136,9 +139,8 @@ var PathIterator = Base.extend({
             }
         }
         // If we're still here, return last one
-        var part = this.parts[this.parts.length - 1];
         return {
-            index: part.index,
+            index: parts[length - 1].index,
             time: 1
         };
     },

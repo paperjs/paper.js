@@ -35,6 +35,10 @@
 /*#*/ include('Path_Constructors.js');
 /*#*/ include('Path_Intersections.js');
 /*#*/ include('Path_Boolean.js');
+
+/*#*/ include('CompoundPath.js');
+
+/*#*/ include('PathItem.js');
 /*#*/ include('PathItem_Contains.js');
 
 /*#*/ include('Shape.js');
@@ -43,8 +47,6 @@
 /*#*/ include('CurveLocation.js');
 
 /*#*/ include('Style.js');
-
-/*#*/ include('CompoundPath.js');
 
 /*#*/ include('SymbolItem.js');
 

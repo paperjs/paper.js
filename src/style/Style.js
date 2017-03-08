@@ -126,14 +126,15 @@ var Style = Base.extend(new function() {
         _class: 'Style',
         beans: true,
 
-        initialize: function Style(style, owner, project) {
+        initialize: function Style(style, _owner, _project) {
             // We keep values in a separate object that we can iterate over.
             this._values = {};
-            this._owner = owner;
-            this._project = owner && owner._project || project || paper.project;
+            this._owner = _owner;
+            this._project = _owner && _owner._project || _project
+                    || paper.project;
             // Use different defaults based on the owner
-            this._defaults = !owner || owner instanceof Group ? groupDefaults
-                    : owner instanceof TextItem ? textDefaults
+            this._defaults = !_owner || _owner instanceof Group ? groupDefaults
+                    : _owner instanceof TextItem ? textDefaults
                     : itemDefaults;
             if (style)
                 this.set(style);
@@ -202,7 +203,7 @@ var Style = Base.extend(new function() {
             // If the owner has children, walk through all of them and see if
             // they all have the same style.
             // If true is passed for _dontMerge, don't merge children styles
-            if (key in this._defaults && (!children || children.length === 0
+            if (key in this._defaults && (!children || !children.length
                     || _dontMerge || owner instanceof CompoundPath)) {
                 var value = this._values[key];
                 if (value === undefined) {
@@ -223,7 +224,7 @@ var Style = Base.extend(new function() {
             } else if (children) {
                 for (var i = 0, l = children.length; i < l; i++) {
                     var childValue = children[i]._style[get]();
-                    if (i === 0) {
+                    if (!i) {
                         value = childValue;
                     } else if (!Base.equals(value, childValue)) {
                         // If there is another child with a different
@@ -263,6 +264,7 @@ var Style = Base.extend(new function() {
     return fields;
 }, /** @lends Style# */{
     set: function(style) {
+        this._values = {}; // Reset already set styles.
         // If the passed style object is also a Style, clone its clonable
         // fields rather than simply copying them.
         var isStyle = style instanceof Style,
@@ -281,8 +283,26 @@ var Style = Base.extend(new function() {
     },
 
     equals: function(style) {
+        // Since we're dealing with defaults, loop through style values in both
+        // objects and compare with default fall-back. But in the secondary pass
+        // only check against keys that weren't already in the first object:
+        function compare(style1, style2, secondary) {
+            var values1 = style1._values,
+                values2 = style2._values,
+                defaults2 = style2._defaults;
+            for (var key in values1) {
+                var value1 = values1[key],
+                    value2 = values2[key];
+                if (!(secondary && key in values2) && !Base.equals(value1,
+                        value2 === undefined ? defaults2[key] : value2))
+                    return false;
+            }
+            return true;
+        }
+
         return style === this || style && this._class === style._class
-                && Base.equals(this._values, style._values)
+                && compare(this, style)
+                && compare(style, this, true)
                 || false;
     },
 

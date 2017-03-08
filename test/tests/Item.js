@@ -31,7 +31,6 @@ test('copyTo(project)', function() {
 test('copyTo(layer)', function() {
     var project = paper.project;
     var path = new Path();
-
     var layer = new Layer();
     var copy = path.copyTo(layer);
     equals(function() {
@@ -190,106 +189,137 @@ test('item.addChildren() / item.removeChildren()', function() {
 
 test('item.lastChild / item.firstChild', function() {
     var project = paper.project;
-    var path = new Path();
-    var secondPath = new Path();
+    var path1 = new Path();
+    var path2 = new Path();
     equals(function() {
-        return project.activeLayer.firstChild == path;
+        return project.activeLayer.firstChild == path1;
     }, true);
     equals(function() {
-        return project.activeLayer.lastChild == secondPath;
+        return project.activeLayer.lastChild == path2;
     }, true);
 });
 
 test('item.nextSibling / item.previousSibling', function() {
-    var firstPath = new Path();
-    var secondPath = new Path();
+    var path1 = new Path();
+    var path2 = new Path();
     equals(function() {
-        return firstPath.previousSibling == null;
+        return path1.previousSibling == null;
     }, true);
     equals(function() {
-        return firstPath.nextSibling == secondPath;
+        return path1.nextSibling == path2;
     }, true);
     equals(function() {
-        return secondPath.previousSibling == firstPath;
+        return path2.previousSibling == path1;
     }, true);
     equals(function() {
-        return secondPath.nextSibling == null;
+        return path2.nextSibling == null;
     }, true);
 });
 
 test('item.replaceWith(other)', function() {
     var project = paper.project;
-    var path = new Path();
-    var secondPath = new Path();
-    var thirdPath = new Path();
+    var path1 = new Path();
+    var path2 = new Path();
+    var path3 = new Path();
     equals(function() {
         return project.activeLayer.children.length;
     }, 3);
-    path.replaceWith(secondPath);
+    equals(function() {
+        return path1.replaceWith(path2) == path2;
+    }, true);
     equals(function() {
         return project.activeLayer.children.length;
     }, 2);
     equals(function() {
-        return path.parent == null;
+        return path1.parent == null;
     }, true);
     equals(function() {
-        return secondPath.previousSibling == null;
+        return path2.previousSibling == null;
     }, true);
     equals(function() {
-        return secondPath.nextSibling == thirdPath;
+        return path2.nextSibling == path3;
+    }, true);
+});
+
+test('item.replaceWith(item)', function() {
+    var item = new Path();
+    equals(function() {
+        return item.replaceWith(item) == null;
+    }, true);
+    equals(function() {
+        return item.getParent() != null;
     }, true);
 });
 
 test('item.insertChild(0, child)', function() {
     var project = paper.project;
-    var path = new Path();
-    var secondPath = new Path();
-    project.activeLayer.insertChild(0, secondPath);
+    var path1 = new Path();
+    var path2 = new Path();
+    project.activeLayer.insertChild(0, path2);
     equals(function() {
-        return secondPath.index < path.index;
+        return path2.index < path1.index;
     }, true);
 });
 
 test('item.insertAbove(other)', function() {
-    var project = paper.project;
-    var path = new Path();
-    var secondPath = new Path();
-    path.insertAbove(secondPath);
+    var path1 = new Path();
+    var path2 = new Path();
     equals(function() {
-        return project.activeLayer.lastChild == path;
+        return path2.index > path1.index;
+    }, true);
+    equals(function() {
+        return path1.insertAbove(path2) == path1;
+    }, true);
+    equals(function() {
+        return path2.index < path1.index;
+    }, true);
+    equals(function() {
+        return paper.project.activeLayer.lastChild == path1;
     }, true);
 });
 
 test('item.insertBelow(other)', function() {
-    var project = paper.project;
-    var firstPath = new Path();
-    var secondPath = new Path();
+    var path1 = new Path();
+    var path2 = new Path();
     equals(function() {
-        return secondPath.index > firstPath.index;
+        return path2.index > path1.index;
     }, true);
-    secondPath.insertBelow(firstPath);
     equals(function() {
-        return secondPath.index < firstPath.index;
+        return path2.insertBelow(path1) == path2;
+    }, true);
+    equals(function() {
+        return path2.index < path1.index;
+    }, true);
+    equals(function() {
+        return paper.project.activeLayer.lastChild == path1;
+    }, true);
+});
+
+test('item.insertAbove(item)', function() {
+    var path = new Path();
+    equals(function() {
+        return path.insertAbove(path) == null;
+    }, true);
+    equals(function() {
+        return path.insertBelow(path) == null;
     }, true);
 });
 
 test('item.sendToBack()', function() {
-    var project = paper.project;
-    var firstPath = new Path();
-    var secondPath = new Path();
-    secondPath.sendToBack();
+    var path1 = new Path();
+    var path2 = new Path();
+    path2.sendToBack();
     equals(function() {
-        return secondPath.index === 0;
+        return path2.index === 0;
     }, true);
 });
 
 test('item.bringToFront()', function() {
-    var project = paper.project;
-    var firstPath = new Path();
-    var secondPath = new Path();
-    firstPath.bringToFront();
+    var path1 = new Path();
+    var path2 = new Path();
+    path1.bringToFront();
     equals(function() {
-        return firstPath.index == 1;
+        return path1.index == 1;
     }, true);
 });
 
@@ -320,7 +350,6 @@ test('item.isDescendant(other) / item.isAncestor(other)', function() {
 });
 
 test('item.addChildren(items)', function() {
-    var project = paper.project;
     var path1 = new Path(),
         path2 = new Path(),
         path3 = new Path(),
@@ -350,18 +379,17 @@ test('item.addChildren(items)', function() {
 });
 
 test('item.isGroupedWith(other)', function() {
-    var project = paper.project;
     var path = new Path();
-    var secondPath = new Path();
+    var path2 = new Path();
     var group = new Group([path]);
-    var secondGroup = new Group([secondPath]);
+    var secondGroup = new Group([path2]);
 
     equals(function() {
-        return path.isGroupedWith(secondPath);
+        return path.isGroupedWith(path2);
     }, false);
     secondGroup.addChild(path);
     equals(function() {
-        return path.isGroupedWith(secondPath);
+        return path.isGroupedWith(path2);
     }, true);
     equals(function() {
         return path.isGroupedWith(group);
@@ -380,19 +408,19 @@ test('item.isGroupedWith(other)', function() {
     }, false);
     paper.project.activeLayer.addChild(path);
     equals(function() {
-        return path.isGroupedWith(secondPath);
+        return path.isGroupedWith(path2);
     }, false);
-    paper.project.activeLayer.addChild(secondPath);
+    paper.project.activeLayer.addChild(path2);
     equals(function() {
-        return path.isGroupedWith(secondPath);
+        return path.isGroupedWith(path2);
     }, false);
 });
 
 test('reverseChildren()', function() {
     var project = paper.project;
     var path = new Path();
-    var secondPath = new Path();
-    var thirdPath = new Path();
+    var path2 = new Path();
+    var path3 = new Path();
     equals(function() {
         return project.activeLayer.firstChild == path;
     }, true);
@@ -401,7 +429,7 @@ test('reverseChildren()', function() {
         return project.activeLayer.firstChild == path;
     }, false);
     equals(function() {
-        return project.activeLayer.firstChild == thirdPath;
+        return project.activeLayer.firstChild == path3;
     }, true);
     equals(function() {
         return project.activeLayer.lastChild == path;
@@ -409,7 +437,6 @@ test('reverseChildren()', function() {
 });
 
 test('Check item#project when moving items across projects', function() {
-    var project = paper.project;
     var doc1 = new Project();
     var path = new Path();
     var group = new Group();
@@ -760,9 +787,10 @@ test('Item#applyMatrix', function() {
 
     var path = new Path.Rectangle({
         size: [100, 100],
-        position: [0, 0],
-        applyMatrix: false
+        position: [0, 0]
     });
+
+    path.applyMatrix = false;
 
     equals(path.matrix, new Matrix(),
             'path.matrix before scaling');

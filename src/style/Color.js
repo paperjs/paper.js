@@ -483,8 +483,7 @@ var Color = Base.extend(new function() {
          */
         initialize: function Color(arg) {
             // We are storing color internally as an array of components
-            var slice = Array.prototype.slice,
-                args = arguments,
+            var args = arguments,
                 reading = this.__read,
                 read = 0,
                 type,
@@ -512,7 +511,7 @@ var Color = Base.extend(new function() {
                     if (reading)
                         read = 1; // Will be increased below
                     // Shift type out of the arguments, and process normally.
-                    args = slice.call(args, 1);
+                    args = Base.slice(args, 1);
                     argType = typeof arg;
                 }
             }
@@ -543,7 +542,7 @@ var Color = Base.extend(new function() {
                             : 1;
                     }
                     if (values.length > length)
-                        values = slice.call(values, 0, length);
+                        values = Base.slice(values, 0, length);
                 } else if (argType === 'string') {
                     type = 'rgb';
                     components = fromCSS(arg);
@@ -589,7 +588,7 @@ var Color = Base.extend(new function() {
                             // Allow implicit definition of gradients through
                             // stops / radial properties. Conversion happens
                             // here on the fly:
-                            if (value == null && i === 0 && type === 'gradient'
+                            if (value == null && !i && type === 'gradient'
                                     && 'stops' in arg) {
                                 value = {
                                     stops: arg.stops,
@@ -625,10 +624,17 @@ var Color = Base.extend(new function() {
             this._alpha = alpha;
             if (reading)
                 this.__read = read;
+            return this;
         },
 
-        // Have #_set point to #initialize, as used by Base.importJSON()
-        _set: '#initialize',
+        /**
+         * Sets the color to the passed values. Note that any sequence of
+         * parameters that is supported by the various {@link Color()}
+         * constructors also work for calls of `set()`.
+         *
+         * @function
+         */
+        set: '#initialize',
 
         _serialize: function(options, dictionary) {
             var components = this.getComponents();
@@ -763,7 +769,7 @@ var Color = Base.extend(new function() {
                     : color;
             return col === this || col && this._class === col._class
                     && this._type === col._type
-                    && this._alpha === col._alpha
+                    && this.getAlpha() === col.getAlpha()
                     && Base.equals(this._components, col._components)
                     || false;
         },
@@ -857,12 +863,14 @@ var Color = Base.extend(new function() {
                         destination.x, destination.y);
             }
             for (var i = 0, l = stops.length; i < l; i++) {
-                var stop = stops[i];
+                var stop = stops[i],
+                    offset = stop._offset;
                 // Use the defined offset, and fall back to automatic linear
                 // calculation.
                 // NOTE: that if _offset is 0 for the first entry, the fall-back
                 // will be so too.
-                canvasGradient.addColorStop(stop._offset || i / (l - 1),
+                canvasGradient.addColorStop(
+                        offset == null ? i / (l - 1) : offset,
                         stop._color.toCanvasStyle());
             }
             return this._canvasStyle = canvasGradient;

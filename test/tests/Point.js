@@ -46,6 +46,8 @@ test('new Point("10, 20")', function() {
     equals(new Point('10, 20'), new Point(10, 20));
     equals(new Point('10,20'), new Point(10, 20));
     equals(new Point('10 20'), new Point(10, 20));
+    // Make sure it's integer values from the string:
+    equals(new Point('10 20').add(10), new Point(20, 30));
 });
 
 test('normalize(length)', function() {
@@ -86,12 +88,12 @@ test('set angle', function() {
 
 test('set angle & length', function() {
     var point1 = new Point();
-    point1.length = Math.sqrt(2);
+    point1.length = Math.SQRT2;
     point1.angle = -45;
 
     var point2 = new Point();
     point2.angle = -45;
-    point2.length = Math.sqrt(2);
+    point2.length = Math.SQRT2;
 
     equals(point2, point1);
 });

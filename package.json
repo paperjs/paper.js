@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -15,9 +15,8 @@
   ],
   "main": "dist/paper-full.js",
   "scripts": {
-    "prepublish": "gulp build minify docs",
-    "precommit": "gulp jshint",
-    "prepush": "gulp test",
+    "precommit": "gulp jshint --branch develop",
+    "prepush": "gulp test --branch develop",
     "build": "gulp build",
     "dist": "gulp dist",
     "zip": "gulp zip",
@@ -28,13 +27,14 @@
   },
   "files": [
     "AUTHORS.md",
+    "CHANGELOG.md",
     "dist/",
     "examples/",
     "LICENSE.txt",
     "README.md"
   ],
   "engines": {
-    "node": ">=4.0.0 <7.0.0"
+    "node": ">=4.0.0 <8.0.0"
   },
   "dependencies": {
     "jsdom": "^9.4.0",
@@ -46,14 +46,13 @@
   "devDependencies": {
     "acorn": "~0.5.0",
     "del": "^2.2.1",
-    "extend": "^3.0.0",
     "gulp": "^3.9.1",
     "gulp-bump": "^2.2.0",
     "gulp-cached": "^1.1.0",
     "gulp-git-streamed": "^1.8.0",
     "gulp-jshint": "^2.0.0",
     "gulp-prepro": "^2.4.0",
-    "gulp-qunits": "^2.1.0",
+    "gulp-qunits": "^2.1.1",
     "gulp-rename": "^1.2.2",
     "gulp-shell": "^0.5.2",
     "gulp-symlink": "^2.1.4",
@@ -67,17 +66,19 @@
     "jshint": "^2.9.2",
     "jshint-summary": "^0.4.0",
     "merge-stream": "^1.0.0",
+    "minimist": "^1.2.0",
     "prepro": "^2.4.0",
     "qunitjs": "^1.23.0",
     "require-dir": "^0.3.0",
     "resemblejs": "^2.2.1",
     "run-sequence": "^1.2.2",
     "stats.js": "0.16.0",
-    "straps": "^1.9.0"
+    "straps": "^2.1.0"
   },
   "browser": {
     "canvas": false,
     "jsdom": false,
+    "jsdom/lib/jsdom/living/generated/utils": false,
     "source-map-support": false,
     "./dist/node/window.js": false,
     "./dist/node/extend.js": false

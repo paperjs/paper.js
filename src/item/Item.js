@@ -79,7 +79,9 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         clipMask: false,
         selected: false,
         data: {}
-    }
+    },
+    // Prioritize `applyMatrix` over `matrix`:
+    _prioritize: ['applyMatrix']
 },
 new function() { // Injection scope for various item event handlers
     var handlers = ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onClick',
@@ -157,13 +159,12 @@ new function() { // Injection scope for various item event handlers
             this._setProject(project);
         } else {
             (hasProps && props.parent || project)
-                    ._insertItem(undefined, this, true, true);
+                    ._insertItem(undefined, this, true); // _created = true
         }
         // Filter out Item.NO_INSERT before _set(), for performance reasons.
         if (hasProps && props !== Item.NO_INSERT) {
-            // Filter out internal, insert, parent and project properties as
-            // these were handled above.
-            Base.filter(this, props, {
+            this.set(props, {
+                // Filter out these properties as they were handled above:
                 internal: true, insert: true, project: true, parent: true
             });
         }
@@ -239,10 +240,12 @@ new function() { // Injection scope for various item event handlers
     },
 
     /**
-     * Sets those properties of the passed object literal on this item to
-     * the values defined in the object literal, if the item has property of the
+     * Sets the properties of the passed object literal on this item to the
+     * values defined in the object literal, if the item has property of the
      * given name (or a setter defined for it).
      *
+     * @name Item#set
+     * @function
      * @param {Object} props
      * @return {Item} the item itself
      *
@@ -260,11 +263,6 @@ new function() { // Injection scope for various item event handlers
      *     selected: true
      * });
      */
-    set: function(props) {
-        if (props)
-            this._set(props);
-        return this;
-    },
 
     /**
      * The unique id of the item.
@@ -400,7 +398,7 @@ new function() { // Injection scope for various item event handlers
     },
 
     setStyle: function(style) {
-        // Don't access _style directly so Path#getStyle() can be overriden for
+        // Don't access _style directly so Path#getStyle() can be overridden for
         // CompoundPaths.
         this.getStyle().set(style);
     }
@@ -779,13 +777,11 @@ new function() { // Injection scope for various item event handlers
      * @type Point
      * @default null
      */
-    getPivot: function(_dontLink) {
+    getPivot: function() {
         var pivot = this._pivot;
-        if (pivot) {
-            var ctor = _dontLink ? Point : LinkedPoint;
-            pivot = new ctor(pivot.x, pivot.y, this, 'setPivot');
-        }
-        return pivot;
+        return pivot
+                ? new LinkedPoint(pivot.x, pivot.y, this, 'setPivot')
+                : null;
     },
 
     setPivot: function(/* point */) {
@@ -831,7 +827,7 @@ new function() { // Injection scope for various item event handlers
         // If we're returning '#bounds', create a LinkedRectangle that uses
         // the setBounds() setter to update the Item whenever the bounds are
         // changed:
-        return arguments.length === 0
+        return !arguments.length
                 ? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
                         bounds.height, this, 'setBounds')
                 : bounds;
@@ -852,7 +848,7 @@ new function() { // Injection scope for various item event handlers
             // Restore to the last revertible matrix stored in _backup, and get
             // the bounds again. That way, we can prevent collapsing to 0-size.
             if (!_matrix.isInvertible()) {
-                _matrix.initialize(_matrix._backup
+                _matrix.set(_matrix._backup
                         || new Matrix().translate(_matrix.getTranslation()));
                 bounds = this.getBounds();
             }
@@ -880,7 +876,7 @@ new function() { // Injection scope for various item event handlers
         var children = this._children;
         // TODO: What to return if nothing is defined, e.g. empty Groups?
         // Scriptographer behaves weirdly then too.
-        if (!children || children.length === 0)
+        if (!children || !children.length)
             return new Rectangle();
         // Call _updateBoundsCache() even when the group only holds empty /
         // invisible items), so future changes in these items will cause right
@@ -1059,48 +1055,72 @@ new function() { // Injection scope for various item event handlers
     beans: true,
 
     _decompose: function() {
-        return this._decomposed || (this._decomposed = this._matrix.decompose());
+        // Only decompose if the item isn't directly baking transformations into
+        // its content.
+        return this._applyMatrix
+            ? null
+            : this._decomposed || (this._decomposed = this._matrix.decompose());
     },
 
     /**
      * The current rotation angle of the item, as described by its
      * {@link #matrix}.
+     * Please note that this only returns meaningful values for items with
+     * {@link #applyMatrix} set to `false`, meaning they do not directly bake
+     * transformations into their content.
      *
      * @bean
      * @type Number
      */
     getRotation: function() {
         var decomposed = this._decompose();
-        return decomposed && decomposed.rotation;
+        // Return 0 if matrix wasn't decomposed, e.g. on items with #applyMatrix
+        return decomposed ? decomposed.rotation : 0;
     },
 
     setRotation: function(rotation) {
         var current = this.getRotation();
         if (current != null && rotation != null) {
+            // Preserve the cached _decomposed values over rotation, and only
+            // update the rotation property on it.
+            var decomposed = this._decomposed;
             this.rotate(rotation - current);
+            if (decomposed) {
+                decomposed.rotation = rotation;
+                this._decomposed = decomposed;
+            }
         }
     },
 
     /**
      * The current scale factor of the item, as described by its
      * {@link #matrix}.
+     * Please note that this only returns meaningful values for items with
+     * {@link #applyMatrix} set to `false`, meaning they do not directly bake
+     * transformations into their content.
      *
      * @bean
      * @type Point
      */
-    getScaling: function(_dontLink) {
+    getScaling: function() {
         var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling,
-            ctor = _dontLink ? Point : LinkedPoint;
-        return scaling && new ctor(scaling.x, scaling.y, this, 'setScaling');
+            s = decomposed && decomposed.scaling;
+        // Return [1, 1] if matrix wasn't decomposed, e.g. with #applyMatrix.
+        return new LinkedPoint(s ? s.x : 1, s ? s.y : 1, this, 'setScaling');
     },
 
     setScaling: function(/* scaling */) {
         var current = this.getScaling(),
             // Clone existing points since we're caching internally.
             scaling = Point.read(arguments, 0, { clone: true, readNull: true });
-        if (current && scaling) {
+        if (current && scaling && !current.equals(scaling)) {
+            // See #setRotation() for preservation of _decomposed.
+            var decomposed = this._decomposed;
             this.scale(scaling.x / current.x, scaling.y / current.y);
+            if (decomposed) {
+                decomposed.scaling = scaling;
+                this._decomposed = decomposed;
+            }
         }
     },
 
@@ -1279,7 +1299,7 @@ new function() { // Injection scope for various item event handlers
      * console.log(path.parent == project.activeLayer); // true
      *
      * var group = new Group();
-     * group.parent = path;
+     * path.parent = group;
      *
      * // Now the parent of the path has become the group:
      * console.log(path.parent == group); // true
@@ -1374,9 +1394,9 @@ new function() { // Injection scope for various item event handlers
         return this._children;
     },
 
-    setChildren: function(items, _preserve) {
+    setChildren: function(items) {
         this.removeChildren();
-        this.addChildren(items, _preserve);
+        this.addChildren(items);
     },
 
     /**
@@ -1565,7 +1585,7 @@ new function() { // Injection scope for various item event handlers
         }
         // Use Matrix#initialize to easily copy over values.
         if (!excludeMatrix)
-            this._matrix.initialize(source._matrix);
+            this._matrix.set(source._matrix, true);
         // We can't just set _applyMatrix as many item types won't allow it,
         // e.g. creating a Shape in Path#toShape().
         // Using the setter instead takes care of it.
@@ -1742,20 +1762,14 @@ new function() { // Injection scope for hit-test functions shared with project
     function hitTestAll(/* point, options */) {
         var point = Point.read(arguments),
             options = HitResult.getOptions(arguments),
-            callback = options.match,
-            results = [];
-        options = Base.set({}, options, {
-            match: function(hit) {
-                if (!callback || callback(hit))
-                    results.push(hit);
-            }
-        });
-        this._hitTest(point, options);
-        return results;
+            all = [];
+        this._hitTest(point, Base.set({ all: all }, options));
+        return all;
     }
 
     function hitTestChildren(point, options, viewMatrix, _exclude) {
         // NOTE: _exclude is only used in Group#_hitTestChildren()
+        // to exclude #clipItem
         var children = this._children;
         if (children) {
             // Loop backwards, so items that get drawn last are tested first.
@@ -1763,7 +1777,9 @@ new function() { // Injection scope for hit-test functions shared with project
                 var child = children[i];
                 var res = child !== _exclude && child._hitTest(point, options,
                         viewMatrix);
-                if (res)
+                // Only return the found result if we're not asked to collect
+                // all matches through hitTestAll()
+                if (res && !options.all)
                     return res;
             }
         }
@@ -1798,9 +1814,11 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item
-     *     class and its sub-classes: {@values Group, Layer, Path,
-     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.class {Function} only hit-test against a specific item
+     *     class, or any of its sub-classes, by providing the constructor
+     *     function against which an `instanceof` check is performed:
+     *     {@values  Group, Layer, Path, CompoundPath, Shape, Raster,
+     *     SymbolItem, PointText, ...}
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
@@ -1865,15 +1883,16 @@ new function() { // Injection scope for hit-test functions shared with project
                     // If this is the first one in the recursion, factor in the
                     // zoom of the view and the globalMatrix of the item.
                     : this.getGlobalMatrix().prepend(this.getView()._matrix),
-            strokeMatrix = this.getStrokeScaling()
-                    ? null
-                    : viewMatrix.inverted()._shiftless(),
             // Calculate the transformed padding as 2D size that describes the
             // transformed tolerance circle / ellipse. Make sure it's never 0
-            // since we're using it for division.
-            tolerance = Math.max(options.tolerance, /*#=*/Numerical.TOLERANCE),
+            // since we're using it for division (see checkBounds()).
+            tolerance = Math.max(options.tolerance, /*#=*/Numerical.EPSILON),
+            // Hit-tests are performed in the item's local coordinate space.
+            // To calculate the correct 2D padding for tolerance, we therefore
+            // need to apply the inverted item matrix.
             tolerancePadding = options._tolerancePadding = new Size(
-                    Path._getStrokePadding(tolerance, strokeMatrix));
+                    Path._getStrokePadding(tolerance,
+                        matrix.inverted()._shiftless()));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
@@ -1891,13 +1910,18 @@ new function() { // Injection scope for hit-test functions shared with project
                 // class-names.
                 || options.type && options.type !== Base.hyphenate(this._class)
                 || options.class && !(this instanceof options.class)),
-            callback = options.match,
+            match = options.match,
             that = this,
             bounds,
             res;
 
-        function match(hit) {
-            return !callback || hit && callback(hit) ? hit : null;
+        function filter(hit) {
+            if (hit && match && !match(hit))
+                hit = null;
+            // If we're collecting all matches, add it to options.all
+            if (hit && options.all)
+                options.all.push(hit);
+            return hit;
         }
 
         function checkBounds(type, part) {
@@ -1928,16 +1952,19 @@ new function() { // Injection scope for hit-test functions shared with project
                     res = checkBounds('bounds', points[i]);
                 }
             }
-            res = match(res);
+            res = filter(res);
         }
 
         if (!res) {
             res = this._hitTestChildren(point, options, viewMatrix)
-                // NOTE: We don't call callback on _hitTestChildren()
-                // because that's already called internally.
+                // NOTE: We don't call match on _hitTestChildren() because
+                // it is already called internally.
                 || checkSelf
-                    && match(this._hitTestSelf(point, options, viewMatrix,
-                        strokeMatrix))
+                    && filter(this._hitTestSelf(point, options, viewMatrix,
+                        // If the item has a non-scaling stroke, we need to
+                        // apply the inverted viewMatrix to stroke dimensions.
+                        this.getStrokeScaling() ? null
+                            : viewMatrix.inverted()._shiftless()))
                 || null;
         }
         // Transform the point back to the outer coordinate system.
@@ -2288,8 +2315,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item to be added as a child
      * @return {Item} the added item, or `null` if adding was not possible
      */
-    addChild: function(item, _preserve) {
-        return this.insertChild(undefined, item, _preserve);
+    addChild: function(item) {
+        return this.insertChild(undefined, item);
     },
 
     /**
@@ -2301,8 +2328,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item to be inserted as a child
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertChild: function(index, item, _preserve) {
-        var res = item ? this.insertChildren(index, [item], _preserve) : null;
+    insertChild: function(index, item) {
+        var res = item ? this.insertChildren(index, [item]) : null;
         return res && res[0];
     },
 
@@ -2314,8 +2341,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item[]} items the items to be added as children
      * @return {Item[]} the added items, or `null` if adding was not possible
      */
-    addChildren: function(items, _preserve) {
-        return this.insertChildren(this._children.length, items, _preserve);
+    addChildren: function(items) {
+        return this.insertChildren(this._children.length, items);
     },
 
     /**
@@ -2328,24 +2355,19 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return {Item[]} the inserted items, or `null` if inserted was not
      *     possible
      */
-    insertChildren: function(index, items, _preserve, _proto) {
-        // CompoundPath#insertChildren() requires _preserve and _type:
-        // _preserve avoids changing of the children's path orientation
-        // _proto enforces the prototype of the inserted items, as used by
-        // CompoundPath#insertChildren()
+    insertChildren: function(index, items) {
         var children = this._children;
         if (children && items && items.length > 0) {
-            // We need to clone items because it might be
-            // an Item#children array. Also, we're removing elements if they
-            // don't match _type. Use Array.prototype.slice because items can be
-            // an arguments object.
-            items = Array.prototype.slice.apply(items);
+            // We need to clone items because it may be an Item#children array.
+            // Also, we're removing elements if they don't match _type.
+            // Use Base.slice() because items can be an arguments object.
+            items = Base.slice(items);
             // Remove the items from their parents first, since they might be
             // inserted into their own parents, affecting indices.
-            // Use the loop also to filter out wrong _type.
+            // Use the loop also to filter invalid items.
             for (var i = items.length - 1; i >= 0; i--) {
                 var item = items[i];
-                if (!item || _proto && !(item instanceof _proto)) {
+                if (!item) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
@@ -2390,18 +2412,16 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} offset the offset at which the item should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    _insertAt: function(item, offset, _preserve) {
-        var res = this;
-        if (res !== item) {
-            var owner = item && item._getOwner();
-            if (owner) {
-                // Notify parent of change. Don't notify item itself yet,
-                // as we're doing so when adding it to the new owner below.
-                res._remove(false, true);
-                owner._insertItem(item._index + offset, res, _preserve);
-            } else {
-                res = null;
-            }
+    _insertAt: function(item, offset) {
+        var owner = item && item._getOwner(),
+            // Only insert if the item is not the same as `this`, and if it
+            // actually has an owner into which we can insert.
+            res = item !== this && owner ? this : null;
+        if (res) {
+            // Notify parent of change. Don't notify item itself yet,
+            // as we're doing so when adding it to the new owner below.
+            res._remove(false, true);
+            owner._insertItem(item._index + offset, res);
         }
         return res;
     },
@@ -2412,8 +2432,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item above which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertAbove: function(item, _preserve) {
-        return this._insertAt(item, 1, _preserve);
+    insertAbove: function(item) {
+        return this._insertAt(item, 1);
     },
 
     /**
@@ -2422,8 +2442,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Item} item the item below which it should be inserted
      * @return {Item} the inserted item, or `null` if inserting was not possible
      */
-    insertBelow: function(item, _preserve) {
-        return this._insertAt(item, 0, _preserve);
+    insertBelow: function(item) {
+        return this._insertAt(item, 0);
     },
 
     /**
@@ -2559,6 +2579,9 @@ new function() { // Injection scope for hit-test functions shared with project
             project = this._project,
             index = this._index;
         if (owner) {
+            // Handle named children separately from index:
+            if (this._name)
+                this._removeNamed();
             // Handle index separately from owner: There are situations where
             // the item is already removed from its list through Base.splice()
             // and index set to undefined, but the owner is still set,
@@ -2570,9 +2593,6 @@ new function() { // Injection scope for hit-test functions shared with project
                             || this.getPreviousSibling();
                 Base.splice(owner._children, null, index, 1);
             }
-            // Handle named children separately from index:
-            if (this._name)
-                this._removeNamed();
             this._installEvents(false);
             // Notify self of the insertion change. We only need this
             // notification if we're tracking changes for now.
@@ -2673,7 +2693,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * @return Boolean
      */
     isEmpty: function() {
-        return !this._children || this._children.length === 0;
+        var children = this._children;
+        return !children || !children.length;
     },
 
     /**
@@ -3949,9 +3970,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#on
      * @function
-     * @param {Object} object an object literal containing one or more of the
-     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
-     *     click, doubleclick, mousemove, mouseenter, mouseleave}
+     * @param {Object} object an object containing one or more of the following
+     *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
+     *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      *
      * @example {@paperscript}
@@ -4018,9 +4039,9 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#off
      * @function
-     * @param {Object} object an object literal containing one or more of the
-     *     following properties: {@values frame, mousedown, mouseup, mousedrag,
-     *     click, doubleclick, mousemove, mouseenter, mouseleave}
+     * @param {Object} object an object containing one or more of the following
+     *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
+     *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
      */
 
@@ -4315,7 +4336,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // bounds corners, and draw the corners.
                 ctx.beginPath();
                 for (var i = 0; i < 8; i++) {
-                    ctx[i === 0 ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
+                    ctx[!i ? 'moveTo' : 'lineTo'](coords[i], coords[++i]);
                 }
                 ctx.closePath();
                 ctx.stroke();

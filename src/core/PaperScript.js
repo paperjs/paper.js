@@ -251,9 +251,13 @@ Base.exports.PaperScript = function() {
                         if (/^.=$/.test(node.operator)
                                 && node.left.type !== 'Literal') {
                             var left = getCode(node.left),
-                                right = getCode(node.right);
-                            replaceCode(node, left + ' = __$__(' + left + ', "'
-                                    + node.operator[0] + '", ' + right + ')');
+                                right = getCode(node.right),
+                                exp = left + ' = __$__(' + left + ', "'
+                                    + node.operator[0] + '", ' + right + ')';
+                            // If the original expression is wrapped in
+                            // parenthesis, do the same with the replacement:
+                            replaceCode(node, /^\(.*\)$/.test(getCode(node))
+                                    ? '(' + exp + ')' : exp);
                         }
                     }
                 }
@@ -347,7 +351,7 @@ Base.exports.PaperScript = function() {
             }
             if (/^(inline|both)$/.test(sourceMaps)) {
                 code += "\n//# sourceMappingURL=data:application/json;base64,"
-                        + window.btoa(unescape(encodeURIComponent(
+                        + self.btoa(unescape(encodeURIComponent(
                             JSON.stringify(map))));
             }
             code += "\n//# sourceURL=" + (url || 'paperscript');

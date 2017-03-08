@@ -31,10 +31,10 @@ gulp.task('publish', function() {
 });
 
 gulp.task('publish:version', function() {
-    // Since we're executing this on the develop branch but we don't wan the
-    // version suffixed, reset the version value again.
+    // Reset the version value since we're executing this on the develop branch,
+    // but we don't wan the published version suffixed with '-develop'.
     options.resetVersion();
-    return gulp.src([ 'package.json', 'component.json' ])
+    return gulp.src([ 'package.json' ])
         .pipe(bump({ version: options.version }))
         .pipe(gulp.dest('.'));
 });
@@ -44,6 +44,7 @@ gulp.task('publish:dist', ['dist']);
 gulp.task('publish:commit', function() {
     var message = 'Release version ' + options.version;
     return gulp.src('.')
+        .pipe(git.checkout('develop'))
         .pipe(git.add())
         .pipe(git.commit(message))
         .pipe(git.tag('v' + options.version, message));
@@ -54,12 +55,12 @@ gulp.task('publish:release', function() {
         .pipe(git.checkout('master'))
         .pipe(git.merge('develop', { args: '-X theirs' }))
         .pipe(git.push('origin', ['master', 'develop'], { args: '--tags' }))
-        .pipe(shell('npm publish'))
-        .pipe(git.checkout('develop'));
+        .pipe(shell('npm publish'));
 });
 
 gulp.task('publish:load', ['load'], function() {
     return gulp.src('dist')
+        .pipe(git.checkout('develop'))
         .pipe(git.add())
         .pipe(git.commit('Switch back to load.js versions on develop branch.'))
         .pipe(git.push('origin', 'develop'));

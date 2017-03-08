@@ -46,7 +46,8 @@ var SegmentPoint = Point.extend({
             this.setSelected(true);
     },
 
-    set: function(x, y) {
+    // See Point#_set() for an explanation of #_set():
+    _set: function(x, y) {
         this._x = x;
         this._y = y;
         this._owner._changed(this);
@@ -72,10 +73,11 @@ var SegmentPoint = Point.extend({
     },
 
     isZero: function() {
+        var isZero = Numerical.isZero;
         // Provide our own version of Point#isZero() that does not use the x / y
         // accessors but the internal properties directly, for performance
         // reasons, since it is used a lot internally.
-        return Numerical.isZero(this._x) && Numerical.isZero(this._y);
+        return isZero(this._x) && isZero(this._y);
     },
 
     isSelected: function() {

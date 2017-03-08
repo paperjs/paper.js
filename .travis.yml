@@ -1,6 +1,8 @@
 language: node_js
+# Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 - stable
+- '6'
 - '5'
 - '4'
 sudo: false
@@ -32,7 +34,7 @@ install:
 before_script:
 - travis/setup-git.sh
 - npm set progress=false
-- which gulp || npm install -g gulp
+- which gulp || npm install -g gulp-cli
 - npm install
 script:
 - gulp jshint

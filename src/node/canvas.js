@@ -10,16 +10,29 @@
  * All rights reserved.
  */
 
-var Canvas = require('canvas'),
-    idlUtils = require('jsdom/lib/jsdom/living/generated/utils');
-
 // Add some useful extensions to HTMLCanvasElement:
 // - HTMLCanvasElement#type, so we can switch to a PDF canvas
 // - Various Node Canvas methods, routed through from HTMLCanvasElement:
 //   toBuffer, pngStream, createPNGStream, jpgStream, createJPGStream
 
 module.exports = function(window) {
-    var HTMLCanvasElement = window.HTMLCanvasElement;
+    var Canvas;
+    try {
+        Canvas = require('canvas');
+    } catch(e) {
+        // Remove `self.window`, so we still have the global `self` reference,
+        // but no `window` object:
+        // - On the browser, this corresponds to a worker context.
+        // - On Node.js, it basically means the canvas is missing or not working
+        //   which can be treated the same way.
+        delete window.window;
+        console.info(
+                'Unable to load Canvas module. Running in a headless context.');
+        return;
+    }
+
+    var idlUtils = require('jsdom/lib/jsdom/living/generated/utils'),
+        HTMLCanvasElement = window.HTMLCanvasElement;
 
     // Add fake HTMLCanvasElement#type property:
     Object.defineProperty(HTMLCanvasElement.prototype, 'type', {

@@ -27,7 +27,7 @@ var document = jsdom.jsdom('<html><body></body></html>', {
     }),
     window = document.defaultView;
 
-require('./canvas')(window);
+require('./canvas.js')(window);
 
 // Define XMLSerializer and DOMParser shims, to emulate browser behavior.
 // Effort to bring this to jsdom: https://github.com/tmpvar/jsdom/issues/1368
@@ -45,7 +45,7 @@ XMLSerializer.prototype.serializeToString = function(node) {
         var tagName = tagNames[i];
         text = text.replace(
             new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
-            function(all, start) {
+            function(match, start) {
                 return start + tagName;
             });
     }

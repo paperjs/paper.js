@@ -135,7 +135,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @return Boolean
      */
     isEmpty: function() {
-        return this._children.length === 0;
+        return !this._children.length;
     },
 
     /**
@@ -192,7 +192,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     setCurrentStyle: function(style) {
         // TODO: Style selected items with the style:
-        this._currentStyle.initialize(style);
+        this._currentStyle.set(style);
     },
 
     /**
@@ -378,13 +378,13 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     // Project#_insertItem() and Item#_insertItem() are helper functions called
     // in Item#copyTo(), and through _getOwner() in the various Item#insert*()
     // methods. They are called the same to facilitate so duck-typing.
-    _insertItem: function(index, item, _preserve, _created) {
+    _insertItem: function(index, item, _created) {
         item = this.insertLayer(index, item)
                 // Anything else than layers needs to be added to a layer first.
                 // If none exists yet, create one now, then add the item to it.
                 || (this._activeLayer || this._insertItem(undefined,
-                        new Layer(Item.NO_INSERT), true, true))
-                        .insertChild(index, item, _preserve);
+                        new Layer(Item.NO_INSERT), true)) // _created = true
+                        .insertChild(index, item);
         // If a layer was newly created, also activate it.
         if (_created && item.activate)
             item.activate();
@@ -405,9 +405,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *
      * @option [options.tolerance={@link PaperScope#settings}.hitTolerance]
      *     {Number} the tolerance of the hit-test
-     * @option options.class {Function} only hit-test again a certain item
-     *     class and its sub-classes: {@values Group, Layer, Path,
-     *     CompoundPath, Shape, Raster, SymbolItem, PointText, ...}
+     * @option options.class {Function} only hit-test against a specific item
+     *     class, or any of its sub-classes, by providing the constructor
+     *     function against which an `instanceof` check is performed:
+     *     {@values  Group, Layer, Path, CompoundPath, Shape, Raster,
+     *     SymbolItem, PointText, ...}
      * @option options.match {Function} a match function to be called for each
      *     found hit result: Return `true` to return the result, `false` to keep
      *     searching
@@ -446,7 +448,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * The options object allows you to control the specifics of the hit-
      * test. See {@link #hitTest(point[, options])} for a list of all options.
      *
-     * @name Item#hitTestAll
+     * @name Project#hitTestAll
      * @function
      * @param {Point} point the point where the hit-test should be performed
      * @param {Object} [options={ fill: true, stroke: true, segments: true,

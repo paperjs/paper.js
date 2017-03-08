@@ -12,7 +12,7 @@
 
 QUnit.module('Path');
 
-test('path.length', function() {
+test('Path#length', function() {
     var path = new Path([
         new Segment([121, 334], [-19, 38], [30.7666015625, -61.53369140625]),
         new Segment([248, 320], [-42, -74], [42, 74])
@@ -27,7 +27,7 @@ test('path.length', function() {
     }, 0.2255849553116685);
 });
 
-test('path.area', function() {
+test('Path#area', function() {
     var rect = new Path.Rectangle({
         point: [0, 0],
         size: [10, 10]
@@ -47,17 +47,47 @@ test('path.area', function() {
     }, Math.PI * 100, null, { tolerance: 0.1 });
 });
 
-test('curve.getTimeAt() with straight curve', function() {
-    var path = new Path();
-    path.moveTo(100, 100);
-    path.lineTo(500, 500);
-    var curve = path.curves[0];
-    var length = curve.length;
-    var t = curve.getTimeAt(length / 3);
-    equals(t, 0.3869631475722452);
+test('Path#equals(path)', function() {
+    var path1 = new Path({
+        segments: [
+            [1, 1],
+            [2, 2],
+            [3, 3],
+        ]
+    });
+
+    var path2 = new Path({
+        segments: [
+            [1, 1],
+            [2, 2],
+            [3, 3],
+        ]
+    });
+
+    equals(function() {
+        return path1.equals(path2);
+    }, true);
+
+    path2.strokeWidth = path1.strokeWidth;
+
+    equals(function() {
+        return path1.equals(path2);
+    }, true);
+
+    path1.strokeWidth = path2.strokeWidth;
+
+    equals(function() {
+        return path1.equals(path2);
+    }, true);
+
+    path1.strokeWidth = path2.strokeWidth = 10;
+
+    equals(function() {
+        return path1.equals(path2);
+    }, true);
 });
 
-test('path1.join(path2)', function() {
+test('Path#join(path)', function() {
     var path1 = new Path();
     path1.add(0, 0);
     path1.add(10, 0);
@@ -106,7 +136,7 @@ test('path1.join(path2)', function() {
     equals(function() { return path1.closed; }, true);
 });
 
-test('path1.join(path2, tolerance)', function() {
+test('Path#join(path, tolerance)', function() {
     var path1 = new Path();
     path1.add(0, 0);
     path1.add(10, 0);
@@ -123,7 +153,7 @@ test('path1.join(path2, tolerance)', function() {
     }, 3);
 });
 
-test('path.remove()', function() {
+test('Path#remove()', function() {
     var path = new Path();
     path.add(0, 0);
     path.add(10, 0);
@@ -152,7 +182,7 @@ test('path.remove()', function() {
     }, 0);
 });
 
-test('path.removeSegments()', function() {
+test('Path#removeSegments()', function() {
     var path = new Path();
     path.add(0, 0);
     path.add(10, 0);
@@ -296,13 +326,13 @@ test('After selecting a segment, Path#selected should return true', function() {
     }, true);
 });
 
-test('Path#reverse', function() {
+test('Path#reverse()', function() {
     var path = new Path.Circle([100, 100], 30);
     path.reverse();
     equals(path.segments.toString(), '{ point: { x: 100, y: 130 }, handleIn: { x: -16.56854, y: 0 }, handleOut: { x: 16.56854, y: 0 } },{ point: { x: 130, y: 100 }, handleIn: { x: 0, y: 16.56854 }, handleOut: { x: 0, y: -16.56854 } },{ point: { x: 100, y: 70 }, handleIn: { x: 16.56854, y: 0 }, handleOut: { x: -16.56854, y: 0 } },{ point: { x: 70, y: 100 }, handleIn: { x: 0, y: -16.56854 }, handleOut: { x: 0, y: 16.56854 } }');
 });
 
-test('Path#reverse should adjust segment indices', function() {
+test('Path#reverse() should adjust segment indices', function() {
     var path = new Path([[0, 0], [10, 10], [20, 20]]);
     path.reverse();
     equals(path.segments[0].index, 0);
@@ -327,7 +357,7 @@ test('Simplifying a path with three segments of the same position should not thr
     }, 1);
 });
 
-test('Path#interpolate', function() {
+test('Path#interpolate(from, to, factor)', function() {
     var path = new Path(),
         path0 = new Path.Circle({
             center: [0, 0],
@@ -355,7 +385,7 @@ test('Path#interpolate', function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Path Curves
 
-test('path.curves synchronisation', function() {
+test('Path#curves synchronisation', function() {
     var path = new Path();
 
     path.add(new Point(100, 100));
@@ -395,15 +425,14 @@ test('path.curves synchronisation', function() {
     equals(path.curves.length, 0, 'curves.length');
 });
 
-test('path.curves on closed paths', function() {
+test('Path#curves on closed paths', function() {
     var path = new Path.Circle(new Point(100, 100) , 100);
     equals(path.curves.toString(), "{ point1: { x: 0, y: 100 }, handle1: { x: 0, y: -55.22847 }, handle2: { x: -55.22847, y: 0 }, point2: { x: 100, y: 0 } },{ point1: { x: 100, y: 0 }, handle1: { x: 55.22847, y: 0 }, handle2: { x: 0, y: -55.22847 }, point2: { x: 200, y: 100 } },{ point1: { x: 200, y: 100 }, handle1: { x: 0, y: 55.22847 }, handle2: { x: 55.22847, y: 0 }, point2: { x: 100, y: 200 } },{ point1: { x: 100, y: 200 }, handle1: { x: -55.22847, y: 0 }, handle2: { x: 0, y: 55.22847 }, point2: { x: 0, y: 100 } }");
     path.removeSegments(0, 1);
     equals(path.curves.toString(), "{ point1: { x: 100, y: 0 }, handle1: { x: 55.22847, y: 0 }, handle2: { x: 0, y: -55.22847 }, point2: { x: 200, y: 100 } },{ point1: { x: 200, y: 100 }, handle1: { x: 0, y: 55.22847 }, handle2: { x: 55.22847, y: 0 }, point2: { x: 100, y: 200 } },{ point1: { x: 100, y: 200 }, handle1: { x: -55.22847, y: 0 }, handle2: { x: -55.22847, y: 0 }, point2: { x: 100, y: 0 } }");
 });
 
-
-test('path.flatten(maxDistance)', function() {
+test('Path#flatten(maxDistance)', function() {
     var path = new Path.Circle(new Size(80, 50), 35);
 
     // Convert its curves to points, with a flatness of 5:
@@ -422,7 +451,7 @@ test('path.flatten(maxDistance)', function() {
     }, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
 });
 
-test('Curve list after removing a segment - 1', function() {
+test('Path#curves after removing a segment - 1', function() {
     var path = new paper.Path([0, 0], [1, 1], [2, 2]);
     var prevCurves = path.curves.slice();
 
@@ -451,7 +480,7 @@ test('Curve list after removing a segment - 1', function() {
     }, true, 'The removed curve should not stay linked to the path.');
 });
 
-test('Curve list after removing a segment - 2', function() {
+test('Path#curves after removing a segment - 2', function() {
     var path = new paper.Path([0, 0], [1, 1], [2, 2]);
 
     equals(function() {
@@ -532,21 +561,21 @@ test('Splitting a path with one curve in the middle result in two paths of the s
 ////////////////////////////////////////////////////////////////////////////////
 // Path Drawing Commands
 
-test('path.lineTo(point);', function() {
+test('Path#lineTo(point);', function() {
     var path = new Path();
     path.moveTo([50, 50]);
     path.lineTo([100, 100]);
     equals(path.segments.toString(), '{ point: { x: 50, y: 50 } },{ point: { x: 100, y: 100 } }');
 });
 
-test('path.arcTo(from, through, to);', function() {
+test('Path#arcTo(from, through, to);', function() {
     var path = new Path();
     path.moveTo([0, 20]);
     path.arcTo([75, 75], [100, 0]);
     equals(path.segments.toString(), '{ point: { x: 0, y: 20 }, handleOut: { x: -2.62559, y: 23.01251 } },{ point: { x: 30.89325, y: 74.75812 }, handleIn: { x: -21.05455, y: -9.65273 }, handleOut: { x: 21.05455, y: 9.65273 } },{ point: { x: 92.54397, y: 62.42797 }, handleIn: { x: -15.72238, y: 17.00811 }, handleOut: { x: 15.72238, y: -17.00811 } },{ point: { x: 100, y: 0 }, handleIn: { x: 11.27458, y: 20.23247 } }');
 });
 
-test('path.arcTo(from, through, to); where from, through and to all share the same y position and through lies in between from and to', function() {
+test('Path#arcTo(from, through, to); where from, through and to all share the same y position and through lies in between from and to', function() {
     var path = new Path();
     path.strokeColor = 'black';
 
@@ -555,7 +584,7 @@ test('path.arcTo(from, through, to); where from, through and to all share the sa
     equals(path.lastSegment.point.toString(), '{ x: 100, y: 75 }', 'We expect the last segment point to be at the position where we wanted to draw the arc to.');
 });
 
-test('path.arcTo(from, through, to); where from, through and to all share the same y position and through lies to the right of to', function() {
+test('Path#arcTo(from, through, to); where from, through and to all share the same y position and through lies to the right of to', function() {
     var path = new Path();
     path.strokeColor = 'black';
 
@@ -569,7 +598,7 @@ test('path.arcTo(from, through, to); where from, through and to all share the sa
     equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
 
-test('path.arcTo(from, through, to); where from, through and to all share the same y position and through lies to the left of to', function() {
+test('Path#arcTo(from, through, to); where from, through and to all share the same y position and through lies to the left of to', function() {
     var path = new Path();
     path.strokeColor = 'black';
 

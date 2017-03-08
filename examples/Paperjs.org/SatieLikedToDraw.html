@@ -128,7 +128,7 @@
                 sum += data[j];
             }
             var avg = sum / (255 * (end - start));
-            bands[i] = Math.sqrt(avg / Math.sqrt(2));
+            bands[i] = Math.sqrt(avg / Math.SQRT2);
         }
         return bands;
     }

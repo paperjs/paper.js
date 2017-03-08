@@ -78,18 +78,20 @@ Base.inject(/** @lends Base# */{
     },
 
     /**
-     * #_set() is part of the mechanism for constructors which take one object
+     * #set() is part of the mechanism for constructors which take one object
      * literal describing all the properties to be set on the created instance.
+     * Through {@link Base.filter()} it supports `_filtered`
+     * handling as required by the {@link Base.readNamed()} mechanism.
      *
      * @param {Object} props an object describing the properties to set
-     * @param {Object} [exclude] a lookup table listing properties to exclude
-     * @param {Boolean} [dontCheck=false] whether to perform a
-     * Base.isPlainObject() check on props or not
-     * @return {Boolean} {@true if the object is a plain object}
+     * @param {Object} [exclude] an object that can define any properties as
+     *     `true` that should be excluded
+     * @return {Object} a reference to `this`, for chainability.
      */
-    _set: function(props) {
-        if (props && Base.isPlainObject(props))
-            return Base.filter(this, props);
+    set: function(props, exclude) {
+        if (props)
+            Base.filter(this, props, exclude, this._prioritize);
+        return this;
     },
 
     statics: /** @lends Base */{
@@ -167,13 +169,13 @@ Base.inject(/** @lends Base# */{
          * @param {Array} list the list to read from, either an arguments object
          *     or a normal array
          * @param {Number} start the index at which to start reading in the list
-         * @param {Number} length the amount of elements that can be read
          * @param {Object} options `options.readNull` controls whether null is
          *     returned or converted. `options.clone` controls whether passed
          *     objects should be cloned if they are already provided in the
          *     required type
+         * @param {Number} length the amount of elements that can be read
          */
-        read: function(list, start, options, length) {
+        read: function(list, start, options, amount) {
             // See if it's called directly on Base, and if so, read value and
             // return without object conversion.
             if (this === Base) {
@@ -183,24 +185,29 @@ Base.inject(/** @lends Base# */{
             }
             var proto = this.prototype,
                 readIndex = proto._readIndex,
-                index = start || readIndex && list.__index || 0;
-            if (!length)
-                length = list.length - index;
-            var obj = list[index];
+                begin = start || readIndex && list.__index || 0,
+                length = list.length,
+                obj = list[begin];
+            amount = amount || length - begin;
+            // When read() is called on a sub-class of which the object is
+            // already an instance, or when there is only one value in the list
+            // and it's null or undefined, return the obj.
             if (obj instanceof this
-                || options && options.readNull && obj == null && length <= 1) {
+                || options && options.readNull && obj == null && amount <= 1) {
                 if (readIndex)
-                    list.__index = index + 1;
+                    list.__index = begin + 1;
                 return obj && options && options.clone ? obj.clone() : obj;
             }
-            obj = Base.create(this.prototype);
+            // Otherwise, create a new object and read through its initialize
+            // function.
+            obj = Base.create(proto);
             if (readIndex)
                 obj.__read = true;
-            obj = obj.initialize.apply(obj, index > 0 || length < list.length
-                ? Array.prototype.slice.call(list, index, index + length)
-                : list) || obj;
+            obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
+                    ? Base.slice(list, begin, begin + amount)
+                    : list) || obj;
             if (readIndex) {
-                list.__index = index + obj.__read;
+                list.__index = begin + obj.__read;
                 obj.__read = undefined;
             }
             return obj;
@@ -236,11 +243,14 @@ Base.inject(/** @lends Base# */{
          *     returned or converted. `options.clone` controls whether passed
          *     objects should be cloned if they are already provided in the
          *     required type
+         * @param {Number} amount the amount of elements that should be read
          */
-        readAll: function(list, start, options) {
+        readList: function(list, start, options, amount) {
             var res = [],
-                entry;
-            for (var i = start || 0, l = list.length; i < l; i++) {
+                entry,
+                begin = start || 0,
+                end = amount ? begin + amount : list.length;
+            for (var i = begin; i < end; i++) {
                 res.push(Array.isArray(entry = list[i])
                         ? this.read(entry, 0, options)
                         : this.read(list, i, options, 1));
@@ -256,28 +266,33 @@ Base.inject(/** @lends Base# */{
          * various Path.Constructors.
          *
          * @param {Array} list the list to read from, either an arguments object
-         * or a normal array
-         * @param {Number} start the index at which to start reading in the list
+         *     or a normal array
          * @param {String} name the property name to read from
+         * @param {Number} start the index at which to start reading in the list
+         * @param {Object} options `options.readNull` controls whether null is
+         *     returned or converted. `options.clone` controls whether passed
+         *     objects should be cloned if they are already provided in the
+         *     required type
+         * @param {Number} amount the amount of elements that can be read
          */
-        readNamed: function(list, name, start, options, length) {
+        readNamed: function(list, name, start, options, amount) {
             var value = this.getNamed(list, name),
                 hasObject = value !== undefined;
             if (hasObject) {
-                // Create a _filtered object that inherits from argument 0, and
+                // Create a _filtered object that inherits from list[0], and
                 // override all fields that were already read with undefined.
                 var filtered = list._filtered;
                 if (!filtered) {
                     filtered = list._filtered = Base.create(list[0]);
-                    // Point _filtering to the original so Base#_set() can
+                    // Point _unfiltered to the original so Base#_set() can
                     // execute hasOwnProperty on it.
-                    filtered._filtering = list[0];
+                    filtered._unfiltered = list[0];
                 }
                 // delete wouldn't work since the masked parent's value would
                 // shine through.
                 filtered[name] = undefined;
             }
-            return this.read(hasObject ? [value] : list, start, options, length);
+            return this.read(hasObject ? [value] : list, start, options, amount);
         },
 
         /**
@@ -306,17 +321,25 @@ Base.inject(/** @lends Base# */{
 
         /**
          * Copies all properties from `source` over to `dest`, supporting
-         * _filtered handling as required by Base.readNamed() mechanism, as well
-         * as an optional exclude` object that lists properties to exclude.
+         * `_filtered` handling as required by {@link Base.readNamed()}
+         * mechanism, as well as a way to exclude and prioritize properties.
+         *
+         * @param {Object} dest the destination that is to receive the
+         *     properties
+         * @param {Object} source the source from where to retrieve the
+         *     properties to be copied
+         * @param {Object} [exclude] an object that can define any properties
+         *     as `true` that should be excluded when copying
+         * @param {String[]} [prioritize] a list of keys that should be
+         *     prioritized when copying, if they are defined in `source`,
+         *     processed in the order of appearance
          */
-        filter: function(dest, source, exclude) {
-            // If source is a filtering object, we need to get the keys from the
-            // the original object (it's parent / prototype). See _filtered
-            // inheritance trick in the argument reading code.
-            var keys = Object.keys(source._filtering || source);
-            for (var i = 0, l = keys.length; i < l; i++) {
-                var key = keys[i];
-                if (!(exclude && exclude[key])) {
+        filter: function(dest, source, exclude, prioritize) {
+            var processed;
+
+            function handleKey(key) {
+                if (!(exclude && key in exclude) &&
+                    !(processed && key in processed)) {
                     // Due to the _filtered inheritance trick, undefined is used
                     // to mask already consumed named arguments.
                     var value = source[key];
@@ -324,6 +347,25 @@ Base.inject(/** @lends Base# */{
                         dest[key] = value;
                 }
             }
+
+            // If there are prioritized keys, process them first.
+            if (prioritize) {
+                var keys = {};
+                for (var i = 0, key, l = prioritize.length; i < l; i++) {
+                    if ((key = prioritize[i]) in source) {
+                        handleKey(key);
+                        keys[key] = true;
+                    }
+                }
+                // Now reference the processed keys as processed, so that
+                // handleKey() will not set them again below.
+                processed = keys;
+            }
+
+            // If source is a filtered object, we get the keys from the
+            // the original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            Object.keys(source._unfiltered || source).forEach(handleKey);
             return dest;
         },
 
@@ -332,7 +374,7 @@ Base.inject(/** @lends Base# */{
          * many argument reading methods.
          */
         isPlainValue: function(obj, asString) {
-            return this.isPlainObject(obj) || Array.isArray(obj)
+            return Base.isPlainObject(obj) || Array.isArray(obj)
                     || asString && typeof obj === 'string';
         },
 
@@ -513,9 +555,9 @@ Base.inject(/** @lends Base# */{
                             if (Base.isPlainObject(arg))
                                 arg.insert = false;
                         }
-                        // When reusing an object, initialize it through #_set()
+                        // When reusing an object, initialize it through #set()
                         // instead of the constructor function:
-                        (useTarget ? obj._set : ctor).apply(obj, args);
+                        (useTarget ? obj.set : ctor).apply(obj, args);
                         // Clear target to only use it once.
                         if (useTarget)
                             target = null;
@@ -571,13 +613,13 @@ Base.inject(/** @lends Base# */{
          * Camelizes the passed hyphenated string: caps-lock -> capsLock
          */
         camelize: function(str) {
-            return str.replace(/-(.)/g, function(all, chr) {
+            return str.replace(/-(.)/g, function(match, chr) {
                 return chr.toUpperCase();
             });
         },
 
         /**
-         * Converst camelized strings to hyphenated ones: CapsLock -> caps-lock
+         * Converts camelized strings to hyphenated ones: CapsLock -> caps-lock
          */
         hyphenate: function(str) {
             return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();

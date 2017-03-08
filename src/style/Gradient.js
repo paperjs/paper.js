@@ -68,10 +68,16 @@ var Gradient = Base.extend(/** @lends Gradient# */{
     initialize: function Gradient(stops, radial) {
         // Use UID here since Gradients are exported through dictionary.add().
         this._id = UID.get();
-        if (stops && this._set(stops))
+        if (stops && Base.isPlainObject(stops)) {
+            this.set(stops);
+            // Erase arguments since we used the passed object instead.
             stops = radial = null;
-        if (!this._stops)
+        }
+        // As these values might already have been set in the _set() call above,
+        // only initialize them if that hasn't happened yet.
+        if (this._stops == null) {
             this.setStops(stops || ['white', 'black']);
+        }
         if (this._radial == null) {
             // Support old string type argument and new radial boolean.
             this.setRadial(typeof radial === 'string' && radial === 'radial'
@@ -114,7 +120,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
         var index = this._owners ? this._owners.indexOf(color) : -1;
         if (index != -1) {
             this._owners.splice(index, 1);
-            if (this._owners.length === 0)
+            if (!this._owners.length)
                 this._owners = undefined;
         }
     },
@@ -151,7 +157,7 @@ var Gradient = Base.extend(/** @lends Gradient# */{
             for (var i = 0, l = _stops.length; i < l; i++)
                 _stops[i]._owner = undefined;
         }
-        _stops = this._stops = GradientStop.readAll(stops, 0, { clone: true });
+        _stops = this._stops = GradientStop.readList(stops, 0, { clone: true });
         // Now assign this gradient as the new gradients' owner.
         for (var i = 0, l = _stops.length; i < l; i++)
             _stops[i]._owner = this;

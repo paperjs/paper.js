@@ -40,8 +40,8 @@ var PointText = TextItem.extend(/** @lends PointText# */{
      * literal.
      *
      * @name PointText#initialize
-     * @param {Object} object an object literal containing properties
-     * describing the path's attributes
+     * @param {Object} object an object containing properties describing the
+     *     path's attributes
      * @return {PointText} the newly created point text
      *
      * @example {@paperscript}

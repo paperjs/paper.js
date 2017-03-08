@@ -73,6 +73,7 @@ var Numerical = new function() {
     }
 
     function getDiscriminant(a, b, c) {
+        // d = b^2 - a * c  computed accurately enough by a tricky scheme.
         // Ported from @hkrish's polysolve.c
         function split(v) {
             var x = v * 134217729,
@@ -111,7 +112,6 @@ var Numerical = new function() {
     }
 
     return /** @lends Numerical */{
-        TOLERANCE: 1e-6,
         /**
          * A very small absolute value used to check if a value is very close to
          * zero. The value should be large enough to offset any floating point
@@ -141,26 +141,17 @@ var Numerical = new function() {
          * cannot be smaller, because errors add up to around 2e-7 in the bezier
          * fat-line clipping code as a result of recursive sub-division.
          */
-        CURVETIME_EPSILON: 4e-7, // NOTE: 2e-7 doesn't work in some edge-cases
+        CURVETIME_EPSILON: 1e-8,
         /**
          * The epsilon to be used when performing "geometric" checks, such as
          * distances between points and lines.
          */
-        GEOMETRIC_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
-        /**
-         * The epsilon to be used when performing winding contribution checks.
-         */
-        WINDING_EPSILON: 2e-7, // NOTE: 1e-7 doesn't work in some edge-cases
+        GEOMETRIC_EPSILON: 1e-7,
         /**
          * The epsilon to be used when performing "trigonometric" checks, such
          * as examining cross products to check for collinearity.
          */
-        TRIGONOMETRIC_EPSILON: 1e-7,
-        /**
-         * The epsilon to be used when comparing curve-time parameters in the
-         * fat-line clipping code.
-         */
-        CLIPPING_EPSILON: 1e-9,
+        TRIGONOMETRIC_EPSILON: 1e-8,
         /**
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.
@@ -216,8 +207,10 @@ var Numerical = new function() {
                     nx = x - dx;
                 // See if we can trust the Newton-Raphson result. If not we use
                 // bisection to find another candidate for Newton's method.
-                if (abs(dx) < tolerance)
-                    return nx;
+                if (abs(dx) < tolerance) {
+                    x = nx;
+                    break;
+                }
                 // Update the root-bounding interval and test for containment of
                 // the candidate. If candidate is outside the root-bounding
                 // interval, use bisection instead.
@@ -234,7 +227,8 @@ var Numerical = new function() {
             }
             // Return the best result even though we haven't gotten close
             // enough to the root... (In paper.js this never seems to happen).
-            return x;
+            // But make sure, that it actually is within the given range [a, b]
+            return clamp(x, a, b);
         },
 
         /**

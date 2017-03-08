@@ -12,7 +12,7 @@
 
 QUnit.module('Compound Path');
 
-test('moveTo / lineTo', function() {
+test('moveTo() / lineTo()', function() {
     var path = new CompoundPath();
 
     var lists = [
@@ -23,7 +23,7 @@ test('moveTo / lineTo', function() {
     for (var i = 0; i < lists.length; i++) {
         var list = lists[i];
         for (var j = 0; j < list.length; j++) {
-            path[j === 0 ? 'moveTo' : 'lineTo'](list[j]);
+            path[!j ? 'moveTo' : 'lineTo'](list[j]);
         }
     }
 
@@ -34,10 +34,10 @@ test('moveTo / lineTo', function() {
     }, 2);
 });
 
-test('clockwise', function() {
-    var path1 = new Path.Rectangle([200, 200], [100, 100]);
+test('CompoundPath#reorient()', function() {
+    var path1 = new Path.Rectangle([300, 300], [100, 100]);
     var path2 = new Path.Rectangle([50, 50], [200, 200]);
-    var path3 = new Path.Rectangle([0, 0], [400, 400]);
+    var path3 = new Path.Rectangle([0, 0], [500, 500]);
 
     equals(function() {
         return path1.clockwise;
@@ -49,7 +49,9 @@ test('clockwise', function() {
         return path3.clockwise;
     }, true);
 
-    var compound = new CompoundPath(path1, path2, path3);
+    var compound = new CompoundPath({
+        children: [path1, path2, path3],
+    }).reorient();
 
     equals(function() {
         return compound.lastChild == path3;
@@ -59,29 +61,10 @@ test('clockwise', function() {
     }, true);
     equals(function() {
         return path1.clockwise;
-    }, true);
-    equals(function() {
-        return path2.clockwise;
-    }, false);
-    equals(function() {
-        return path3.clockwise;
-    }, false);
-});
-
-test('Cloning with non-standard clockwise settings', function() {
-    var path1 = new Path.Rectangle([200, 200], [100, 100]);
-    var path2 = new Path.Rectangle([50, 50], [200, 200]);
-    var path3 = new Path.Rectangle([0, 0], [400, 400]);
-    path1.clockwise = false;
-    path2.clockwise = true;
-    path3.clockwise = true;
-    var compound = new CompoundPath(path1, path2, path3);
-    equals(function() {
-        return path1.clockwise;
     }, false);
     equals(function() {
         return path2.clockwise;
-    }, true);
+    }, false);
     equals(function() {
         return path3.clockwise;
     }, true);

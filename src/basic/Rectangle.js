@@ -77,77 +77,92 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      */
     initialize: function Rectangle(arg0, arg1, arg2, arg3) {
         var type = typeof arg0,
-            read = 0;
+            read;
         if (type === 'number') {
             // new Rectangle(x, y, width, height)
-            this.x = arg0;
-            this.y = arg1;
-            this.width = arg2;
-            this.height = arg3;
+            this._set(arg0, arg1, arg2, arg3);
             read = 4;
         } else if (type === 'undefined' || arg0 === null) {
             // new Rectangle(), new Rectangle(null)
-            this.x = this.y = this.width = this.height = 0;
+            this._set(0, 0, 0, 0);
             read = arg0 === null ? 1 : 0;
         } else if (arguments.length === 1) {
             // This can either be an array, or an object literal.
             if (Array.isArray(arg0)) {
-                this.x = arg0[0];
-                this.y = arg0[1];
-                this.width = arg0[2];
-                this.height = arg0[3];
+                this._set.apply(this, arg0);
                 read = 1;
             } else if (arg0.x !== undefined || arg0.width !== undefined) {
                 // Another rectangle or a simple object literal
                 // describing one. Use duck typing, and 0 as defaults.
-                this.x = arg0.x || 0;
-                this.y = arg0.y || 0;
-                this.width = arg0.width || 0;
-                this.height = arg0.height || 0;
+                this._set(arg0.x || 0, arg0.y || 0,
+                        arg0.width || 0, arg0.height || 0);
                 read = 1;
             } else if (arg0.from === undefined && arg0.to === undefined) {
-                // Use #_set to support whatever property the rectangle can
-                // take, but handle from/to separately below.
-                this.x = this.y = this.width = this.height = 0;
-                this._set(arg0);
+                // Use Base.filter() to support whatever property the rectangle
+                // can take, but handle from/to separately below.
+                this._set(0, 0, 0, 0);
+                Base.filter(this, arg0);
                 read = 1;
             }
         }
-        if (!read) {
+        if (read === undefined) {
             // Read a point argument and look at the next value to see whether
             // it's a size or a point, then read accordingly.
             // We're supporting both reading from a normal arguments list and
             // covering the Rectangle({ from: , to: }) constructor, through
             // Point.readNamed().
-            var point = Point.readNamed(arguments, 'from'),
-                next = Base.peek(arguments);
-            this.x = point.x;
-            this.y = point.y;
-            if (next && next.x !== undefined || Base.hasNamed(arguments, 'to')) {
+            var frm = Point.readNamed(arguments, 'from'),
+                next = Base.peek(arguments),
+                x = frm.x,
+                y = frm.y,
+                width,
+                height;
+            if (next && next.x !== undefined
+                    || Base.hasNamed(arguments, 'to')) {
                 // new Rectangle(from, to)
                 // Read above why we can use readNamed() to cover both cases.
                 var to = Point.readNamed(arguments, 'to');
-                this.width = to.x - point.x;
-                this.height = to.y - point.y;
+                width = to.x - x;
+                height = to.y - y;
                 // Check if horizontal or vertical order needs to be reversed.
-                if (this.width < 0) {
-                    this.x = to.x;
-                    this.width = -this.width;
+                if (width < 0) {
+                    x = to.x;
+                    width = -width;
                 }
-                if (this.height < 0) {
-                    this.y = to.y;
-                    this.height = -this.height;
+                if (height < 0) {
+                    y = to.y;
+                    height = -height;
                 }
             } else {
                 // new Rectangle(point, size)
                 var size = Size.read(arguments);
-                this.width = size.width;
-                this.height = size.height;
+                width = size.width;
+                height = size.height;
             }
+            this._set(x, y, width, height);
             read = arguments.__index;
         }
         if (this.__read)
             this.__read = read;
+        return this;
+    },
+
+    /**
+     * Sets the rectangle to the passed values. Note that any sequence of
+     * parameters that is supported by the various {@link Rectangle()}
+     * constructors also work for calls of `set()`.
+     *
+     * @function
+     */
+    set: '#initialize',
+
+    // See Point#_set() for an explanation of #_set():
+    _set: function(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        return this;
     },
 
     /**
@@ -177,17 +192,6 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @name Rectangle#height
      * @type Number
      */
-
-    /**
-     * @ignore
-     */
-    set: function(x, y, width, height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        return this;
-    },
 
     /**
      * Returns a copy of the rectangle.
@@ -842,12 +846,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 var LinkedRectangle = Rectangle.extend({
     // Have LinkedRectangle appear as a normal Rectangle in debugging
     initialize: function Rectangle(x, y, width, height, owner, setter) {
-        this.set(x, y, width, height, true);
+        this._set(x, y, width, height, true);
         this._owner = owner;
         this._setter = setter;
     },
 
-    set: function(x, y, width, height, _dontNotify) {
+    // See Point#_set() for an explanation of #_set():
+    _set: function(x, y, width, height, _dontNotify) {
         this._x = x;
         this._y = y;
         this._width = width;

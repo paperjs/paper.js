@@ -12,6 +12,36 @@
 
 QUnit.module('Curve');
 
+function testClassify(curve, expeced, message) {
+    var info = curve.classify();
+    if (expeced.type) {
+        equals(info.type, expeced.type,
+                'info.type == \'' + expeced.type + '\'');
+    }
+    if (expeced.roots !== undefined) {
+        equals(info.roots, expeced.roots,
+                'info.roots == ' + (expeced.roots ? '[' + expeced.roots + ']'
+                        : expeced.roots));
+    }
+}
+
+test('Curve#classify()', function() {
+    var point = new Curve([100, 100], null, null, [100, 100]);
+    var line = new Curve([100, 100], null, null, [200, 200]);
+    var cusp = new Curve([100, 200], [100, -100], [-100, -100], [200, 200]);
+    var loop = new Curve([100, 200], [150, -100], [-150, -100], [200, 200]);
+    var single = new Curve([100, 100], [50, 0], [-27, -46], [200, 200]);
+    var double = new Curve([100, 200], [100, -100], [-40, -80], [200, 200]);
+    var arch = new Curve([100, 100], [50, 0], [0, -50], [200, 200]);
+    testClassify(point, { type: 'line', roots: null });
+    testClassify(line, { type: 'line', roots: null });
+    testClassify(cusp, { type: 'cusp', roots: [ 0.5 ] });
+    testClassify(loop, { type: 'loop', roots: [ 0.17267316464601132, 0.8273268353539888 ] });
+    testClassify(single, { type: 'serpentine', roots: [ 0.870967741935484 ] });
+    testClassify(double, { type: 'serpentine', roots: [ 0.15047207654837885, 0.7384168123405099 ] });
+    testClassify(arch, { type: 'arch', roots: null });
+});
+
 test('Curve#getPointAtTime()', function() {
     var curve = new Path.Circle({
         center: [100, 100],
@@ -182,6 +212,35 @@ test('Curve#getTimeAt()', function() {
             'Should return null when offset is out of range.');
 });
 
+test('Curve#getTimeAt() with straight curve', function() {
+    var path = new Path();
+    path.moveTo(100, 100);
+    path.lineTo(500, 500);
+    var curve = path.firstCurve;
+    var length = curve.length;
+    var t = curve.getTimeAt(length / 3);
+    equals(t, 0.3869631475722452);
+});
+
+test('Curve#getTimeAt() with straight curve', function() {
+    // #1000:
+    var curve = new Curve([
+        1584.4999999999998, 1053.2499999999995,
+        1584.4999999999998,1053.2499999999995,
+        1520.5,1053.2499999999995,
+        1520.5,1053.2499999999995
+    ]);
+    var offset = 63.999999999999716;
+    equals(function() { return offset < curve.length; }, true);
+    equals(function() { return curve.getTimeAt(offset); }, 1);
+});
+
+test('Curve#getTimeAt() with offset at end of curve', function() {
+    // #1149:
+    var curve = [-7500, 0, -7500, 4142.135623730952, -4142.135623730952, 7500, 0, 7500];
+    equals(Curve.getTimeAt(curve, 11782.625235553916), 1);
+});
+
 test('Curve#getLocationAt()', function() {
     var curve = new Path([
         [[0, 0], [0, 0], [100, 0]],
@@ -223,6 +282,9 @@ test('Curve#isStraight()', function() {
     equals(function() {
         return new Curve([100, 100], null, [-50, -50], [100, 100]).isStraight();
     }, false);
+    equals(function() { // #1269
+        return new Curve([100, 300], [ 20, -20 ],  [ -10, 10 ], [200, 200]).isStraight();
+    }, true);
 });
 
 test('Curve#isLinear()', function() {
@@ -238,7 +300,7 @@ test('Curve#isLinear()', function() {
 });
 
 test('Curve#getTimeOf()', function() {
-    // For issue #708:
+    // #708:
     var path = new Path.Rectangle({
         center: new Point(300, 100),
         size: new Point(100, 100),
@@ -265,19 +327,6 @@ test('Curve#getTimeOf()', function() {
     }
 });
 
-test('Curve#getTimeAt() with straight curve', function() {
-    // #1000:
-    var curve = new Curve([
-        1584.4999999999998, 1053.2499999999995,
-        1584.4999999999998,1053.2499999999995,
-        1520.5,1053.2499999999995,
-        1520.5,1053.2499999999995
-    ]);
-    var offset = 63.999999999999716;
-    equals(function() { return offset < curve.length; }, true);
-    equals(function() { return curve.getTimeAt(offset); }, 1);
-});
-
 test('Curve#getPartLength() with straight curve', function() {
     var curve = new Curve([0, 0, 0, 0, 64, 0, 64, 0]);
     equals(function() { return curve.getPartLength(0.0, 0.25); }, 10);
@@ -285,4 +334,16 @@ test('Curve#getPartLength() with straight curve', function() {
     equals(function() { return curve.getPartLength(0.25, 0.75); }, 44);
     equals(function() { return curve.getPartLength(0.5, 0.75); }, 22);
     equals(function() { return curve.getPartLength(0.75, 1); }, 10);
+});
+
+test('Curve#divideAt(offset)', function() {
+    var point1 = new Point(0, 0);
+    var point2 = new Point(100, 0);
+    var middle = point1.add(point2).divide(2);
+    equals(function() {
+        return new Curve(point1, point2).divideAt(50).point1;
+    }, middle);
+    equals(function() {
+        return new Curve(point1, point2).divideAtTime(0.5).point1;
+    }, middle);
 });

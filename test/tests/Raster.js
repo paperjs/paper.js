@@ -133,7 +133,8 @@ test('Raster#getSubCanvas', function(assert) {
             255, 255, 255, 255
         ];
         equals(function() {
-            return Base.equals(Array.prototype.slice.call(ctx.getImageData(0, 0, 1, 2).data), expected);
+            return Base.equals(Base.slice(ctx.getImageData(0, 0, 1, 2).data),
+                    expected);
         }, true);
         done();
     };

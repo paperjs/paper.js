@@ -56,7 +56,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
         // -1 so first event is 0:
         this._moveCount = -1;
         this._downCount = -1;
-        this._set(props);
+        this.set(props);
     },
 
     /**

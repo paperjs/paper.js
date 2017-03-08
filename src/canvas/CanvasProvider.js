@@ -33,7 +33,7 @@ var CanvasProvider = {
         var ctx = canvas.getContext('2d');
         if (!ctx) {
             throw new Error('Canvas ' + canvas +
-                    ' is unable toprovide a 2D context.');
+                    ' is unable to provide a 2D context.');
         }
         // If they are not the same size, we don't need to clear them
         // using clearRect and visa versa.

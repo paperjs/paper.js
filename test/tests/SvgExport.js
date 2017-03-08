@@ -191,4 +191,25 @@ if (!isNode) {
             tolerance: 1e-2
         });
     });
+
+    test('Export SVG with clipping defs', function(assert) {
+        var group = new Group({
+            children: [
+                new Path.Circle({
+                    center: [150, 150],
+                    radius: 50
+                }),
+                new Path.Rectangle({
+                    point: [100, 100],
+                    size: [100, 100],
+                    fillColor: 'green'
+                })
+            ],
+            clipped: true
+        });
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
 }

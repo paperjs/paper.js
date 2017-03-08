@@ -126,7 +126,7 @@
         var upVector = vector.normalize(lengthSize).rotate(45 * sign);
         var downVector = upVector.rotate(-90 * sign);
         var lengthVector = vector.normalize(
-                vector.length / 2 - lengthSize * Math.sqrt(2));
+                vector.length / 2 - lengthSize * Math.SQRT2);
         var line = new Path();
         line.add(from + awayVector);
         line.lineBy(upVector);
