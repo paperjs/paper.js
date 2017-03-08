@@ -893,14 +893,14 @@ new function() { // Injection scope for various item event handlers
      * Private method that deals with the calling of _getBounds, recursive
      * matrix concatenation and handles all the complicated caching mechanisms.
      */
-    _getCachedBounds: function(matrix, options) {
+    _getCachedBounds: function(matrix, options, noInternal) {
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
         matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix for internal, untransformed
         // bounds.
-        var internal = options.internal,
+        var internal = options.internal && !noInternal,
             cacheItem = options.cacheItem,
             _matrix = internal ? null : this._matrix._orNullIfIdentity(),
             // Create a key for caching, reflecting all bounds options.
@@ -923,7 +923,7 @@ new function() { // Injection scope for various item event handlers
             var cached = this._bounds[cacheKey] = {
                 rect: bounds.clone(),
                 // Mark as internal, so Item#transform() won't transform it
-                internal: options.internal
+                internal: internal
             };
         }
         return bounds;
@@ -1010,8 +1010,11 @@ new function() { // Injection scope for various item event handlers
             for (var i = 0, l = items.length; i < l; i++) {
                 var item = items[i];
                 if (item._visible && !item.isEmpty()) {
+                    // Pass true for noInternal, since even when getting
+                    // internal bounds for this item, we need to apply the
+                    // matrices to its children.
                     var rect = item._getCachedBounds(
-                        matrix && matrix.appended(item._matrix), options);
+                        matrix && matrix.appended(item._matrix), options, true);
                     x1 = Math.min(rect.x, x1);
                     y1 = Math.min(rect.y, y1);
                     x2 = Math.max(rect.x + rect.width, x2);

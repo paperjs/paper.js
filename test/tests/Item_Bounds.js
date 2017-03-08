@@ -741,8 +741,7 @@ test('item.visible and item.parents.bounds (#1248)', function() {
     var item = new Path.Rectangle({
        point: [0, 0],
        size: [50, 100],
-       fillColor: 'red',
-       visible: false,
+       visible: false
     });
     equals(item.bounds, new Rectangle(0, 0, 50, 100), 'item.bounds');
     equals(item.parent.bounds, new Rectangle(0, 0, 0, 0),
@@ -750,4 +749,22 @@ test('item.visible and item.parents.bounds (#1248)', function() {
     item.visible = true;
     equals(item.parent.bounds, item.bounds,
             'item.parent.bounds with item.visible = true');
-})
+});
+
+test('group.internalBounds with child and child.applyMatrix = false (#1250)', function() {
+    var item1 = Shape.Rectangle({
+        point: [100, 100],
+        size: [200, 200]
+    });
+    var item2 = new Path.Rectangle({
+        point: [0, 0],
+        size: [100, 100]
+    });
+    var group = new Group([item1, item2]);
+    equals(item1.bounds, new Rectangle(100, 100, 200, 200), 'item.bounds');
+    equals(group.internalBounds, new Rectangle(0, 0, 300, 300),
+            'group.internalBounds before scaling item1');
+    item1.scale(0.5);
+    equals(group.internalBounds, new Rectangle(0, 0, 250, 250),
+            'group.internalBounds after scaling item1');
+});
