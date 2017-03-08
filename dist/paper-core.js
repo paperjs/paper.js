@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 16:21:34 2017 +0100
+ * Date: Wed Mar 8 17:14:42 2017 +0100
  *
  ***
  *
@@ -3257,9 +3257,9 @@ new function() {
 		return Item._getBounds(children, matrix, options);
 	},
 
-	_getCachedBounds: function(matrix, options) {
+	_getCachedBounds: function(matrix, options, noInternal) {
 		matrix = matrix && matrix._orNullIfIdentity();
-		var internal = options.internal,
+		var internal = options.internal && !noInternal,
 			cacheItem = options.cacheItem,
 			_matrix = internal ? null : this._matrix._orNullIfIdentity(),
 			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix)) && [
@@ -3276,7 +3276,7 @@ new function() {
 				this._bounds = {};
 			var cached = this._bounds[cacheKey] = {
 				rect: bounds.clone(),
-				internal: options.internal
+				internal: internal
 			};
 		}
 		return bounds;
@@ -3330,7 +3330,7 @@ new function() {
 				var item = items[i];
 				if (item._visible && !item.isEmpty()) {
 					var rect = item._getCachedBounds(
-						matrix && matrix.appended(item._matrix), options);
+						matrix && matrix.appended(item._matrix), options, true);
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
