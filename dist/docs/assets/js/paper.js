@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 17:14:42 2017 +0100
+ * Date: Wed Mar 8 23:01:12 2017 +0100
  *
  ***
  *
@@ -3722,26 +3722,33 @@ new function() {
 			return hit;
 		}
 
-		function checkBounds(type, part) {
-			var pt = bounds['get' + part]();
+		function checkPoint(type, part) {
+			var pt = part ? bounds['get' + part]() : that.getPosition();
 			if (point.subtract(pt).divide(tolerancePadding).length <= 1) {
-				return new HitResult(type, that,
-						{ name: Base.hyphenate(part), point: pt });
+				return new HitResult(type, that, {
+					name: part ? Base.hyphenate(part) : type,
+					point: pt
+				});
 			}
 		}
 
-		if (checkSelf && (options.center || options.bounds) && this._parent) {
-			bounds = this.getInternalBounds();
-			if (options.center) {
-				res = checkBounds('center', 'Center');
+		var checkPosition = options.position,
+			checkCenter = options.center,
+			checkBounds = options.bounds;
+		if (checkSelf && this._parent
+				&& (checkPosition || checkCenter || checkBounds)) {
+			if (checkCenter || checkBounds) {
+				bounds = this.getInternalBounds();
 			}
-			if (!res && options.bounds) {
+			res = checkPosition && checkPoint('position') ||
+					checkCenter && checkPoint('center', 'Center');
+			if (!res && checkBounds) {
 				var points = [
 					'TopLeft', 'TopRight', 'BottomLeft', 'BottomRight',
 					'LeftCenter', 'TopCenter', 'RightCenter', 'BottomCenter'
 				];
 				for (var i = 0; i < 8 && !res; i++) {
-					res = checkBounds('bounds', points[i]);
+					res = checkPoint('bounds', points[i]);
 				}
 			}
 			res = filter(res);
@@ -5458,6 +5465,7 @@ var HitResult = Base.extend({
 				segments: !options,
 				handles: false,
 				ends: false,
+				position: false,
 				center: false,
 				bounds: false,
 				guides: false,
