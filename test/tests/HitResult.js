@@ -854,4 +854,18 @@ test('hit-testing scaled items with different settings of view.zoom and item.str
     testItem(Path, 2, true);
 });
 
+test('hit-testing items scaled to 0', function() {
+    var item = new Shape.Rectangle({
+        point: [0, 0],
+        size: [100, 100],
+        fillColor: 'red',
+        selected: true
+    });
+
+    item.scale(0);
+
+    testHitResult(project.hitTest(item.position), null,
+            'should not throw an exception.');
+});
+
 // TODO: project.hitTest(point, {type: AnItemType});

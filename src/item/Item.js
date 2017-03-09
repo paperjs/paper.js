@@ -1901,7 +1901,7 @@ new function() { // Injection scope for hit-test functions shared with project
             // need to apply the inverted item matrix.
             tolerancePadding = options._tolerancePadding = new Size(
                     Path._getStrokePadding(tolerance,
-                        matrix.inverted()._shiftless()));
+                        matrix._shiftless().invert()));
         // Transform point to local coordinates.
         point = matrix._inverseTransform(point);
         // If the matrix is non-reversible, point will now be `null`:
@@ -1980,7 +1980,7 @@ new function() { // Injection scope for hit-test functions shared with project
                         // If the item has a non-scaling stroke, we need to
                         // apply the inverted viewMatrix to stroke dimensions.
                         this.getStrokeScaling() ? null
-                            : viewMatrix.inverted()._shiftless()))
+                            : viewMatrix._shiftless().invert()))
                 || null;
         }
         // Transform the point back to the outer coordinate system.
