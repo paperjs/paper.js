@@ -69,9 +69,9 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
      * Called by various setters whenever a value changes
      */
     _changed: function() {
-        // Loop through the gradients that use this stop and notify them about
-        // the change, so they can notify their gradient colors, which in turn
-        // will notify the items they are used in:
+        // Notify the graident that uses this stop about the change, so it can
+        // notify its gradient colors, which in turn will notify the items they
+        // are used in:
         if (this._owner)
             this._owner._changed(/*#=*/Change.STYLE);
     },

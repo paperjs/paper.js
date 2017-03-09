@@ -3358,18 +3358,19 @@ new function() { // Injection scope for hit-test functions shared with project
         if (matrix && matrix.isIdentity())
             matrix = null;
         var _matrix = this._matrix,
+            transform = matrix && !matrix.isIdentity(),
             applyMatrix = (_applyMatrix || this._applyMatrix)
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || matrix)
+                    && ((!_matrix.isIdentity() || transform)
                         // Even if it's an identity matrix, we still need to
                         // recursively apply the matrix to children.
                         || _applyMatrix && _applyRecursively && this._children);
         // Bail out if there is nothing to do.
-        if (!matrix && !applyMatrix)
+        if (!transform && !applyMatrix)
             return this;
         // Simply prepend the internal matrix with the passed one:
-        if (matrix) {
+        if (transform) {
             // Keep a backup of the last valid state before the matrix becomes
             // non-invertible. This is then used again in setBounds to restore.
             if (!matrix.isInvertible() && _matrix.isInvertible())
@@ -3380,28 +3381,39 @@ new function() { // Injection scope for hit-test functions shared with project
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, SymbolItem, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix = applyMatrix && this._transformContent(_matrix,
-                    _applyRecursively, _setApplyMatrix)) {
-            // When the _matrix could be applied, we also need to transform
-            // color styles (only gradients so far) and pivot point:
-            var pivot = this._pivot,
-                style = this._style,
-                // pass true for _dontMerge so we don't recursively transform
+        if (applyMatrix) {
+            if (this._transformContent(_matrix, _applyRecursively,
+                    _setApplyMatrix)) {
+                var pivot = this._pivot;
+                if (pivot)
+                    _matrix._transformPoint(pivot, pivot, true);
+                // Reset the internal matrix to the identity transformation if
+                // it was possible to apply it.
+                _matrix.reset(true);
+                // Set the internal _applyMatrix flag to true if we're told to
+                // do so
+                if (_setApplyMatrix && this._canApplyMatrix)
+                    this._applyMatrix = true;
+            } else {
+                applyMatrix = transform = false;
+            }
+        }
+        if (transform) {
+            // When a new matrix was applied, we also need to transform gradient
+            // color points. These always need transforming, regardless of
+            // #applyMatrix, as they are defined in the parent's coordinate
+            // system.
+            // TODO: Introduce options to control whether fills should be
+            // transformed or not.
+            var style = this._style,
+                // Pass true for _dontMerge so we don't recursively transform
                 // styles on groups' children.
                 fillColor = style.getFillColor(true),
                 strokeColor = style.getStrokeColor(true);
-            if (pivot)
-                _matrix._transformPoint(pivot, pivot, true);
             if (fillColor)
-                fillColor.transform(_matrix);
+                fillColor.transform(matrix);
             if (strokeColor)
-                strokeColor.transform(_matrix);
-            // Reset the internal matrix to the identity transformation if it
-            // was possible to apply it.
-            _matrix.reset(true);
-            // Set the internal _applyMatrix flag to true if we're told to do so
-            if (_setApplyMatrix && this._canApplyMatrix)
-                this._applyMatrix = true;
+                strokeColor.transform(matrix);
         }
         // Calling _changed will clear _bounds and _position, but depending
         // on matrix we can calculate and set them again, so preserve them.
@@ -4094,12 +4106,13 @@ new function() { // Injection scope for hit-test functions shared with project
     _setStyles: function(ctx, param, viewMatrix) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
-        var style = this._style;
+        var style = this._style,
+            matrix = this._matrix;
         if (style.hasFill()) {
-            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
         }
         if (style.hasStroke()) {
-            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
+            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
             ctx.lineWidth = style.getStrokeWidth();
             var strokeJoin = style.getStrokeJoin(),
                 strokeCap = style.getStrokeCap(),
@@ -4245,8 +4258,8 @@ new function() { // Injection scope for hit-test functions shared with project
             // on the temporary canvas.
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
-        // Apply globalMatrix when drawing into temporary canvas.
         if (transform) {
+            // Apply viewMatrix when drawing into temporary canvas.
             (direct ? matrix : viewMatrix).applyToContext(ctx);
         }
         if (clip) {

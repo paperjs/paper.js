@@ -28,8 +28,8 @@ var Shape = Item.extend(/** @lends Shape# */{
         radius: null
     },
 
-    initialize: function Shape(props) {
-        this._initialize(props);
+    initialize: function Shape(props, point) {
+        this._initialize(props, point);
     },
 
     _equals: function(item) {
@@ -386,11 +386,11 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
     function createShape(type, point, size, radius, args) {
-        var item = new Shape(Base.getNamed(args));
+        var item = new Shape(Base.getNamed(args), point);
         item._type = type;
         item._size = size;
         item._radius = radius;
-        return item.translate(point);
+        return item;
     }
 
     return /** @lends Shape */{

@@ -389,13 +389,6 @@ new function() {
                                 .translate(bounds.getPoint())
                                 .scale(bounds.getSize()));
                         }
-                        if (item instanceof Shape) {
-                            // When applying gradient colors to shapes, we need
-                            // to offset the shape's initial position to get the
-                            // same results as SVG.
-                            color.transform(new Matrix().translate(
-                                item.getPosition(true).negate()));
-                        }
                     }
                 }
             }
