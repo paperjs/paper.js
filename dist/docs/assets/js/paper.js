@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 8 23:49:45 2017 +0100
+ * Date: Thu Mar 9 12:42:11 2017 +0100
  *
  ***
  *
@@ -3697,7 +3697,7 @@ new function() {
 			tolerance = Math.max(options.tolerance, 1e-12),
 			tolerancePadding = options._tolerancePadding = new Size(
 					Path._getStrokePadding(tolerance,
-						matrix.inverted()._shiftless()));
+						matrix._shiftless().invert()));
 		point = matrix._inverseTransform(point);
 		if (!point || !this._children &&
 			!this.getBounds({ internal: true, stroke: true, handle: true })
@@ -3759,7 +3759,7 @@ new function() {
 				|| checkSelf
 					&& filter(this._hitTestSelf(point, options, viewMatrix,
 						this.getStrokeScaling() ? null
-							: viewMatrix.inverted()._shiftless()))
+							: viewMatrix._shiftless().invert()))
 				|| null;
 		}
 		if (res && res.point) {
