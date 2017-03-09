@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 9 12:42:11 2017 +0100
+ * Date: Thu Mar 9 14:31:41 2017 +0100
  *
  ***
  *
@@ -731,7 +731,6 @@ var PaperScope = Base.extend({
 		this.project = null;
 		this.projects = [];
 		this.tools = [];
-		this.palettes = [];
 		this._id = PaperScope._id++;
 		PaperScope._scopes[this._id] = this;
 		var proto = PaperScope.prototype;
@@ -818,14 +817,11 @@ var PaperScope = Base.extend({
 
 	clear: function() {
 		var projects = this.projects,
-			tools = this.tools,
-			palettes = this.palettes;
+			tools = this.tools;
 		for (var i = projects.length - 1; i >= 0; i--)
 			projects[i].remove();
 		for (var i = tools.length - 1; i >= 0; i--)
 			tools[i].remove();
-		for (var i = palettes.length - 1; i >= 0; i--)
-			palettes[i].remove();
 	},
 
 	remove: function() {
@@ -4198,31 +4194,38 @@ new function() {
 		if (matrix && matrix.isIdentity())
 			matrix = null;
 		var _matrix = this._matrix,
+			transform = matrix && !matrix.isIdentity(),
 			applyMatrix = (_applyMatrix || this._applyMatrix)
-					&& ((!_matrix.isIdentity() || matrix)
+					&& ((!_matrix.isIdentity() || transform)
 						|| _applyMatrix && _applyRecursively && this._children);
-		if (!matrix && !applyMatrix)
+		if (!transform && !applyMatrix)
 			return this;
-		if (matrix) {
+		if (transform) {
 			if (!matrix.isInvertible() && _matrix.isInvertible())
 				_matrix._backup = _matrix.getValues();
 			_matrix.prepend(matrix);
 		}
-		if (applyMatrix = applyMatrix && this._transformContent(_matrix,
-					_applyRecursively, _setApplyMatrix)) {
-			var pivot = this._pivot,
-				style = this._style,
+		if (applyMatrix) {
+			if (this._transformContent(_matrix, _applyRecursively,
+					_setApplyMatrix)) {
+				var pivot = this._pivot;
+				if (pivot)
+					_matrix._transformPoint(pivot, pivot, true);
+				_matrix.reset(true);
+				if (_setApplyMatrix && this._canApplyMatrix)
+					this._applyMatrix = true;
+			} else {
+				applyMatrix = transform = false;
+			}
+		}
+		if (transform) {
+			var style = this._style,
 				fillColor = style.getFillColor(true),
 				strokeColor = style.getStrokeColor(true);
-			if (pivot)
-				_matrix._transformPoint(pivot, pivot, true);
 			if (fillColor)
-				fillColor.transform(_matrix);
+				fillColor.transform(matrix);
 			if (strokeColor)
-				strokeColor.transform(_matrix);
-			_matrix.reset(true);
-			if (_setApplyMatrix && this._canApplyMatrix)
-				this._applyMatrix = true;
+				strokeColor.transform(matrix);
 		}
 		var bounds = this._bounds,
 			position = this._position;
@@ -4291,12 +4294,13 @@ new function() {
 }), {
 
 	_setStyles: function(ctx, param, viewMatrix) {
-		var style = this._style;
+		var style = this._style,
+			matrix = this._matrix;
 		if (style.hasFill()) {
-			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx);
+			ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
 		}
 		if (style.hasStroke()) {
-			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx);
+			ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
 			ctx.lineWidth = style.getStrokeWidth();
 			var strokeJoin = style.getStrokeJoin(),
 				strokeCap = style.getStrokeCap(),
@@ -4625,8 +4629,8 @@ var Shape = Item.extend({
 		radius: null
 	},
 
-	initialize: function Shape(props) {
-		this._initialize(props);
+	initialize: function Shape(props, point) {
+		this._initialize(props, point);
 	},
 
 	_equals: function(item) {
@@ -4900,11 +4904,11 @@ new function() {
 
 statics: new function() {
 	function createShape(type, point, size, radius, args) {
-		var item = new Shape(Base.getNamed(args));
+		var item = new Shape(Base.getNamed(args), point);
 		item._type = type;
 		item._size = size;
 		item._radius = radius;
-		return item.translate(point);
+		return item;
 	}
 
 	return {
@@ -11393,7 +11397,7 @@ var Color = Base.extend(new function() {
 						+ components.join(',') + ')';
 		},
 
-		toCanvasStyle: function(ctx) {
+		toCanvasStyle: function(ctx, matrix) {
 			if (this._canvasStyle)
 				return this._canvasStyle;
 			if (this._type !== 'gradient')
@@ -11403,10 +11407,17 @@ var Color = Base.extend(new function() {
 				stops = gradient._stops,
 				origin = components[1],
 				destination = components[2],
+				highlight = components[3],
+				inverse = matrix && matrix.inverted(),
 				canvasGradient;
+			if (inverse) {
+				origin = inverse._transformPoint(origin);
+				destination = inverse._transformPoint(destination);
+				if (highlight)
+					highlight = inverse._transformPoint(highlight);
+			}
 			if (gradient._radial) {
-				var radius = destination.getDistance(origin),
-					highlight = components[3];
+				var radius = destination.getDistance(origin);
 				if (highlight) {
 					var vector = highlight.subtract(origin);
 					if (vector.getLength() > radius)
@@ -14372,10 +14383,6 @@ new function() {
 							color.transform(new Matrix()
 								.translate(bounds.getPoint())
 								.scale(bounds.getSize()));
-						}
-						if (item instanceof Shape) {
-							color.transform(new Matrix().translate(
-								item.getPosition(true).negate()));
 						}
 					}
 				}
