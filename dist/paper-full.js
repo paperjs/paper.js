@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 10 23:56:06 2017 +0100
+ * Date: Sat Mar 11 00:27:03 2017 +0100
  *
  ***
  *
@@ -15992,7 +15992,7 @@ Base.exports.PaperScript = function() {
 
 	var unaryOperators = {
 		'-': '__negate',
-		'+': null
+		'+': '__self'
 	};
 
 	var fields = Base.each(
@@ -16000,7 +16000,11 @@ Base.exports.PaperScript = function() {
 		function(name) {
 			this['__' + name] = '#' + name;
 		},
-		{}
+		{
+			__self: function() {
+				return this;
+			}
+		}
 	);
 	Point.inject(fields);
 	Size.inject(fields);
@@ -16025,7 +16029,7 @@ Base.exports.PaperScript = function() {
 
 	function $__(operator, value) {
 		var handler = unaryOperators[operator];
-		if (handler && value && value[handler])
+		if (value && value[handler])
 			return value[handler]();
 		switch (operator) {
 		case '+': return +value;
