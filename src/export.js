@@ -45,7 +45,7 @@ if (typeof define === 'function' && define.amd) {
     // define() inside the built library (from inlined Acorn / Esprima) that
     // apparently confuse the require.js optimizer.
     define('paper', paper);
-} else if (typeof module === 'object' && module) { // could be `null`
+} else if (module && typeof module === 'object') { // could be `null`
     // Support CommonJS module
     // NOTE: Do not check typeof module.exports === 'object' since it will be
     // the Base constructor function after straps.js is included.

@@ -18,9 +18,16 @@ Base.exports.PaperScript = function() {
     // Locally turn of exports and define for inlined acorn.
     // Just declaring the local vars is enough, as they will be undefined.
     var exports, define,
-        // The scope into which the library is loaded.
-        scope = this;
+        acorn = this.acorn;
+    // Try importing an outside version of acorn first, and fall back on the
+    // internal v0.5, which is kept at that version of small size, for now.
+    if (typeof require !== 'undefined') {
+        try { acorn = require('acorn'); } catch(e) {}
+    }
+    if (!acorn) {
 /*#*/ include('../../node_modules/acorn/acorn.min.js', { exports: false });
+        acorn = this.acorn;
+    }
 
     // Operators to overload
 
@@ -90,7 +97,7 @@ Base.exports.PaperScript = function() {
     // AST Helpers
 
     function parse(code, options) {
-        return scope.acorn.parse(code, options);
+        return acorn.parse(code, options);
     }
 
     /**
@@ -146,7 +153,7 @@ Base.exports.PaperScript = function() {
         // Returns the code between two nodes, e.g. an operator and white-space.
         function getBetween(left, right) {
             return code.substring(getOffset(left.range[1]),
-                    getOffset(right.range[0]));
+                    getOffset(right.range[0]) - 1);
         }
 
         // Replaces the node's code with a new version and keeps insertions
@@ -342,7 +349,7 @@ Base.exports.PaperScript = function() {
             };
         }
         // Now do the parsing magic
-        walkAST(parse(code, { ranges: true }));
+        walkAST(parse(code, { ranges: true, preserveParens: true }));
         if (map) {
             if (offsetCode) {
                 // Adjust the line offset of the resulting code if required.
