@@ -19,8 +19,7 @@ Base.exports.PaperScript = function() {
     var global = this,
         // See if there is a global Acorn in the browser already.
         acorn = global.acorn;
-    // Also try importing an outside version of Acorn, and fall back on the
-    // internal v0.5.0, which is kept at that version of small size, for now.
+    // Also try importing an outside version of Acorn.
     if (!acorn && typeof require !== 'undefined') {
         try { acorn = require('acorn'); } catch(e) {}
     }
@@ -57,7 +56,7 @@ Base.exports.PaperScript = function() {
 
     var unaryOperators = {
         '-': '__negate',
-        '+': null
+        '+': '__self'
     };
 
     // Inject underscored math methods as aliases to Point, Size and Color.
@@ -68,7 +67,12 @@ Base.exports.PaperScript = function() {
             // classes using Straps.js' #inject()
             this['__' + name] = '#' + name;
         },
-        {}
+        {
+            // Needed for '+' unary operator:
+            __self: function() {
+                return this;
+            }
+        }
     );
     Point.inject(fields);
     Size.inject(fields);
@@ -99,7 +103,7 @@ Base.exports.PaperScript = function() {
     // Unary Operator Handler
     function $__(operator, value) {
         var handler = unaryOperators[operator];
-        if (handler && value && value[handler])
+        if (value && value[handler])
             return value[handler]();
         switch (operator) {
         case '+': return +value;
