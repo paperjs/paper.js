@@ -20,7 +20,7 @@ Base.exports.PaperScript = function() {
     var exports, define,
         // The scope into which the library is loaded.
         scope = this;
-/*#*/ include('../../node_modules/acorn/acorn.min.js', { exports: false });
+/*#*/ include('../../node_modules/acorn/dist/acorn.js', { exports: false });
 
     // Operators to overload
 
@@ -195,20 +195,16 @@ Base.exports.PaperScript = function() {
                             + arg + ')');
                 }
                 break;
-            case 'BinaryExpression': // a + b, a - b, a / b, a * b, a == b, ...
+             case 'BinaryExpression': // a + b, a - b, a / b, a * b, a == b, ...
                 if (node.operator in binaryOperators
                         && node.left.type !== 'Literal') {
                     var left = getCode(node.left),
                         right = getCode(node.right),
                         between = getBetween(node.left, node.right),
                         operator = node.operator;
-                    replaceCode(node, '__$__(' + left + ','
-                            // To preserve line-breaks, get the code in between
-                            // left & right, and replace the occurrence of the
-                            // operator with its string counterpart:
-                            + between.replace(new RegExp('\\' + operator),
-                                '"' + operator + '"')
-                            + ', ' + right + ')');
+                        var string = 
+                             '__$__(' + left+ ',' + '"' + operator + '"' + ', ' + right + ')';
+                        replaceCode(node, string);
                 }
                 break;
             case 'UpdateExpression': // a++, a--, ++a, --a

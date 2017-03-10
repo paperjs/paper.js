@@ -15,7 +15,7 @@ var gulp = require('gulp'),
     fs = require('fs'),
     uglify = require('gulp-uglify');
 
-var acornPath = 'node_modules/acorn/';
+var acornPath = 'node_modules/acorn/dist';
 
 var uglifyOptions = {
     output: {
@@ -39,7 +39,7 @@ gulp.task('minify', ['build'], function() {
 gulp.task('minify:acorn', function() {
     // Only compress acorn if the compressed file doesn't exist yet.
     try {
-        fs.accessSync(acornPath + 'acorn.min.js');
+        fs.accessSync(acornPath + 'acorn.js');
     } catch(e) {
         return gulp.src(acornPath + 'acorn.js')
             .pipe(uglify(uglifyOptions))
