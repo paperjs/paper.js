@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 10 11:43:55 2017 +0100
+ * Date: Fri Mar 10 15:41:35 2017 +0100
  *
  ***
  *
@@ -14671,7 +14671,7 @@ if (paper.agent.node)
 
 if (typeof define === 'function' && define.amd) {
 	define('paper', paper);
-} else if (typeof module === 'object' && module) {
+} else if (module && typeof module === 'object') {
 	module.exports = paper;
 }
 
