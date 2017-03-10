@@ -52,8 +52,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      *
      * @name Matrix#initialize
      * @param {Number} a the a property of the transform
-     * @param {Number} c the c property of the transform
      * @param {Number} b the b property of the transform
+     * @param {Number} c the c property of the transform
      * @param {Number} d the d property of the transform
      * @param {Number} tx the tx property of the transform
      * @param {Number} ty the ty property of the transform
