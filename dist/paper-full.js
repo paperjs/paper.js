@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 9 14:31:41 2017 +0100
+ * Date: Fri Mar 10 11:43:55 2017 +0100
  *
  ***
  *
@@ -3977,8 +3977,12 @@ new function() {
 
 	moveBelow: '#insertBelow',
 
+	addTo: function(owner) {
+		return owner._insertItem(undefined, this);
+	},
+
 	copyTo: function(owner) {
-		return owner._insertItem(undefined, this.clone(false));
+		return this.clone(false).addTo(owner);
 	},
 
 	reduce: function(options) {
