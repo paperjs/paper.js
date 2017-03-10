@@ -2522,17 +2522,27 @@ new function() { // Injection scope for hit-test functions shared with project
     moveBelow: '#insertBelow',
 
     /**
-     * When passed a project, copies the item to the project,
-     * or duplicates it within the same project. When passed an item,
-     * copies the item into the specified item.
+     * Adds it to the specified owner, which can be either a {@link Item} or a
+     * {@link Project}.
+     *
+     * @param {Project|Layer|Group|CompoundPath} owner the item or project to
+     * add the item to
+     * @return {Item} the item itself, if it was successfully added
+     */
+    addTo: function(owner) {
+        return owner._insertItem(undefined, this);
+    },
+
+    /**
+     * Clones the item and adds it to the specified owner, which can be either
+     * a {@link Item} or a {@link Project}.
      *
      * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * copy the item to
-     * @return {Item} the new copy of the item
+     * @return {Item} the new copy of the item, if it was successfully added
      */
     copyTo: function(owner) {
-        // Pass false for insert, since we're inserting at a specific location.
-        return owner._insertItem(undefined, this.clone(false));
+        return this.clone(false).addTo(owner);
     },
 
     /**
