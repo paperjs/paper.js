@@ -264,8 +264,7 @@ var Style = Base.extend(new function() {
     return fields;
 }, /** @lends Style# */{
     set: function(style) {
-        this._values = {}; // Reset already set styles.
-        // If the passed style object is also a Style, clone its clonable
+        // If the passed style object is also a Style, clone its cloneable
         // fields rather than simply copying them.
         var isStyle = style instanceof Style,
             // Use the other stlyle's _values object for iteration
