@@ -37,8 +37,10 @@ Base.exports.PaperScript = function() {
 
     function parse(code, options) {
         // NOTE: When using load.js, Acorn will end up in global.acorn and will
-        // not be immediately available, so we need to check for it here again:
-        return (acorn || global.acorn).parse(code, options);
+        // not be immediately available, so we need to check for it here again.
+        // We also give global.acorn the preference over the bundled one, so
+        // people can load their own preferred version in sketch.paperjs.org
+        return (global.acorn || acorn).parse(code, options);
     }
 
     // Operators to overload
