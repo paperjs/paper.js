@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Mar 11 16:26:18 2017 +0100
+ * Date: Sat Mar 11 20:53:35 2017 +0100
  *
  ***
  *
@@ -15976,7 +15976,7 @@ Base.exports.PaperScript = function() {
 	}
 
 	function parse(code, options) {
-		return (acorn || global.acorn).parse(code, options);
+		return (global.acorn || acorn).parse(code, options);
 	}
 
 	var binaryOperators = {
