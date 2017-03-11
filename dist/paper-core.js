@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Mar 11 00:27:03 2017 +0100
+ * Date: Sat Mar 11 16:26:18 2017 +0100
  *
  ***
  *
@@ -11821,7 +11821,6 @@ var Style = Base.extend(new function() {
 	return fields;
 }, {
 	set: function(style) {
-		this._values = {};
 		var isStyle = style instanceof Style,
 			values = isStyle ? style._values : style;
 		if (values) {
