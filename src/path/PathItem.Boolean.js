@@ -49,16 +49,11 @@ PathItem.inject(new function() {
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
-     * remove empty curves, #resolveCrossings() to resolve self-intersection
-     * make sure all paths have correct winding direction.
+     * remove empty curves.
      */
     function preparePath(path, resolve) {
-        var res = path.clone(false).reduce({ simplify: true })
+        return path.clone(false).reduce({ simplify: true })
                 .transform(null, true, true);
-        return resolve
-                ? res.resolveCrossings().reorient(
-                    res.getFillRule() === 'nonzero', true)
-                : res;
     }
 
     function createResult(ctor, paths, reduce, path1, path2, options) {
@@ -100,10 +95,13 @@ PathItem.inject(new function() {
         if (_path2 && (operator.subtract || operator.exclude)
                 ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at crossings on both paths. Note that for self-
-        // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(
-                CurveLocation.expand(_path1.getCrossings(_path2))),
+        // Split curves in intersections and self-intersections on both paths.
+        var intersections = divideLocations(CurveLocation.expand(
+                Curve.getIntersections(
+                    // Note that for self-intersection, path2 is null.
+                    _path1.getCurves().concat(_path2 ? _path2.getCurves() : [])
+                )
+            )),
             paths1 = _path1._children || [_path1],
             paths2 = _path2 && (_path2._children || [_path2]),
             segments = [],
@@ -121,18 +119,18 @@ PathItem.inject(new function() {
             }
         }
 
-        if (crossings.length) {
+        if (intersections.length) {
             // Collect all segments and curves of both involved operands.
             collect(paths1);
             if (paths2)
                 collect(paths2);
             // Propagate the winding contribution. Winding contribution of
-            // curves does not change between two crossings.
+            // curves does not change between two intersections.
             // First, propagate winding contributions for curve chains starting
-            // in all crossings:
-            for (var i = 0, l = crossings.length; i < l; i++) {
-                propagateWinding(crossings[i]._segment, _path1, _path2, curves,
-                        operator);
+            // in all intersections:
+            for (var i = 0, l = intersections.length; i < l; i++) {
+                propagateWinding(intersections[i]._segment, _path1, _path2,
+                        curves, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
@@ -146,8 +144,8 @@ PathItem.inject(new function() {
             }
             paths = tracePaths(segments, operator);
         } else {
-            // When there are no crossings, the result can be determined through
-            // a much faster call to reorientPaths():
+            // When there are no intersections, the result can be determined
+            // through a much faster call to reorientPaths():
             paths = reorientPaths(
                     // Make sure reorientPaths() never works on original
                     // _children arrays by calling paths1.slice()
@@ -358,7 +356,7 @@ PathItem.inject(new function() {
             var loc = locations[i],
                 // Retrieve curve-time before calling include(), because it may
                 // be changed to the scaled value after splitting previously.
-                // See CurveLocation#getCurve(), #resolveCrossings()
+                // See CurveLocation#getCurve()
                 time = loc._time,
                 origTime = time,
                 exclude = include && !include(loc),
@@ -1099,120 +1097,6 @@ PathItem.inject(new function() {
                     this.subtract(path, options),
                     this.intersect(path, options)
                 ], true, this, path, options);
-        },
-
-        /*
-         * Resolves all crossings of a path item by splitting the path or
-         * compound-path in each self-intersection and tracing the result.
-         * If possible, the existing path / compound-path is modified if the
-         * amount of resulting paths allows so, otherwise a new path /
-         * compound-path is created, replacing the current one.
-         *
-         * @return {PahtItem} the resulting path item
-         */
-        resolveCrossings: function() {
-            var children = this._children,
-                // Support both path and compound-path items
-                paths = children || [this];
-
-            function hasOverlap(seg) {
-                var inter = seg && seg._intersection;
-                return inter && inter._overlap;
-            }
-
-            // First collect all overlaps and crossings while taking not of the
-            // existence of both.
-            var hasOverlaps = false,
-                hasCrossings = false,
-                intersections = this.getIntersections(null, function(inter) {
-                    return inter.hasOverlap() && (hasOverlaps = true) ||
-                            inter.isCrossing() && (hasCrossings = true);
-                }),
-                // We only need to keep track of curves that need clearing
-                // outside of divideLocations() if two calls are necessary.
-                clearCurves = hasOverlaps && hasCrossings && [];
-            intersections = CurveLocation.expand(intersections);
-            if (hasOverlaps) {
-                // First divide in all overlaps, and then remove the inside of
-                // the resulting overlap ranges.
-                var overlaps = divideLocations(intersections, function(inter) {
-                    return inter.hasOverlap();
-                }, clearCurves);
-                for (var i = overlaps.length - 1; i >= 0; i--) {
-                    var seg = overlaps[i]._segment,
-                        prev = seg.getPrevious(),
-                        next = seg.getNext();
-                    if (hasOverlap(prev) && hasOverlap(next)) {
-                        seg.remove();
-                        prev._handleOut._set(0, 0);
-                        next._handleIn._set(0, 0);
-                        // If the curve that is left has no length, remove it
-                        // altogether. Check for paths with only one segment
-                        // before removal, since `prev.getCurve() == null`.
-                        if (prev !== seg && !prev.getCurve().hasLength()) {
-                            // Transfer handleIn when removing segment:
-                            next._handleIn.set(prev._handleIn);
-                            prev.remove();
-                        }
-                    }
-                }
-            }
-            if (hasCrossings) {
-                // Divide any remaining intersections that are still part of
-                // valid paths after the removal of overlaps.
-                divideLocations(intersections, hasOverlaps && function(inter) {
-                    // Check both involved curves to see if they're still valid,
-                    // meaning they are still part of their paths.
-                    var curve1 = inter.getCurve(),
-                        seg1 = inter.getSegment(),
-                        // Do not call getCurve() and getSegment() on the other
-                        // intersection yet, as it too is in the intersections
-                        // array and will be divided later. But check if its
-                        // current curve is valid, as required by some rare edge
-                        // cases, related to intersections on the same curve.
-                        other = inter._intersection,
-                        curve2 = other._curve,
-                        seg2 = other._segment;
-                    if (curve1 && curve2 && curve1._path && curve2._path)
-                        return true;
-                    // Remove all intersections that were involved in the
-                    // handling of overlaps, to not confuse tracePaths().
-                    if (seg1)
-                        seg1._intersection = null;
-                    if (seg2)
-                        seg2._intersection = null;
-                }, clearCurves);
-                if (clearCurves)
-                    clearCurveHandles(clearCurves);
-                // Finally resolve self-intersections through tracePaths()
-                paths = tracePaths(Base.each(paths, function(path) {
-                    this.push.apply(this, path._segments);
-                }, []));
-            }
-            // Determine how to return the paths: First try to recycle the
-            // current path / compound-path, if the amount of paths does not
-            // require a conversion.
-            var length = paths.length,
-                item;
-            if (length > 1 && children) {
-                if (paths !== children)
-                    this.setChildren(paths);
-                item = this;
-            } else if (length === 1 && !children) {
-                if (paths[0] !== this)
-                    this.setSegments(paths[0].removeSegments());
-                item = this;
-            }
-            // Otherwise create a new compound-path and see if we can reduce it,
-            // and attempt to replace this item with it.
-            if (!item) {
-                item = new CompoundPath(Item.NO_INSERT);
-                item.addChildren(paths);
-                item = item.reduce();
-                item.copyAttributes(this);
-                this.replaceWith(item);
-            }
-            return item;
         },
 
         /**
