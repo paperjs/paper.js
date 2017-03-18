@@ -39,6 +39,8 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @param {Point} [point]
      */
     initialize: function CurveLocation(curve, time, point, _overlap, _distance) {
+        // NOTE: Only required for boolean-debug branch.
+        this._id = UID.get(CurveLocation);
         // Merge intersections very close to the end of a curve with the
         // beginning of the next curve.
         if (time >= /*#=*/(1 - Numerical.CURVETIME_EPSILON)) {
