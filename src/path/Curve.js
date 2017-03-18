@@ -2055,8 +2055,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 // point overlaps with the second curve's start- / end-point,
                 // but only if haven't found a line-line intersection already:
                 // #805#issuecomment-148503018
-
-                if (!(straight && locations.length > before)) {
+                if (!straight || locations.length === before) {
                     for (var i = 0; i < 4; i++) {
                         var t1 = i >> 1, // 0, 0, 1, 1
                             t2 = i & 1,  // 0, 1, 0, 1
