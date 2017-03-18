@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Mar 12 11:11:14 2017 +0100
+ * Date: Sat Mar 18 16:35:34 2017 +0100
  *
  ***
  *
@@ -1927,19 +1927,12 @@ var Rectangle = Base.extend({
 	},
 
 	intersects: function() {
-		var rect = Rectangle.read(arguments);
-		return rect.x + rect.width > this.x
-				&& rect.y + rect.height > this.y
-				&& rect.x < this.x + this.width
-				&& rect.y < this.y + this.height;
-	},
-
-	touches: function() {
-		var rect = Rectangle.read(arguments);
-		return rect.x + rect.width >= this.x
-				&& rect.y + rect.height >= this.y
-				&& rect.x <= this.x + this.width
-				&& rect.y <= this.y + this.height;
+		var rect = Rectangle.read(arguments),
+			epsilon = Base.read(arguments) || 0;
+		return rect.x + rect.width > this.x - epsilon
+				&& rect.y + rect.height > this.y - epsilon
+				&& rect.x < this.x + this.width + epsilon
+				&& rect.y < this.y + this.height + epsilon;
 	},
 
 	intersect: function() {
@@ -7048,7 +7041,8 @@ new function() {
 				var straight1 = Curve.isStraight(v1),
 					straight2 = Curve.isStraight(v2),
 					straight = straight1 && straight2,
-					flip = straight1 && !straight2;
+					flip = straight1 && !straight2,
+					before = locations.length;
 				(straight
 					? addLineIntersection
 					: straight1 || straight2
@@ -7058,6 +7052,23 @@ new function() {
 							flip ? c2 : c1, flip ? c1 : c2,
 							locations, include, flip,
 							0, 0, 0, 1, 0, 1);
+
+				if (!(straight && locations.length > before)) {
+					for (var i = 0; i < 4; i++) {
+						var t1 = i >> 1,
+							t2 = i & 1,
+							i1 = t1 * 6,
+							i2 = t2 * 6,
+							p1 = new Point(v1[i1], v1[i1 + 1]),
+							p2 = new Point(v2[i2], v2[i2 + 1]);
+						console.log(t1, t2);
+						if (p1.isClose(p2, epsilon)) {
+							addLocation(locations, include,
+									c1, t1, p1,
+									c2, t2, p2);
+						}
+					}
+				}
 			}
 		}
 		return locations;
@@ -7721,7 +7732,8 @@ var PathItem = Item.extend({
 			matrix1 = this._matrix._orNullIfIdentity(),
 			matrix2 = self ? matrix1
 				: (_matrix || path._matrix)._orNullIfIdentity();
-		return self || this.getBounds(matrix1).touches(path.getBounds(matrix2))
+		return self || this.getBounds(matrix1).intersects(
+				path.getBounds(matrix2), 1e-12)
 				? Curve.getIntersections(
 						this.getCurves(), !self && path.getCurves(), include,
 						matrix1, matrix2, _returnFirst)

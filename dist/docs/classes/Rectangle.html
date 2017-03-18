@@ -1169,11 +1169,11 @@ function onMouseMove(event) {
 	
 <div id="intersects-rect" class="member">
 <div class="member-link">
-<a name="intersects-rect" href="#intersects-rect"><tt><b>intersects</b>(rect)</tt></a>
+<a name="intersects-rect" href="#intersects-rect"><tt><b>intersects</b>(rect[, epsilon])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Tests if the interior of this rectangle intersects the interior of another rectangle. Rectangles just touching each other are considered as non-intersecting.</p>
+	<p>Tests if the interior of this rectangle intersects the interior of another rectangle. Rectangles just touching each other are considered as non-intersecting, except if a <code>epsilon</code> value is specified by which this rectangle&rsquo;s dimensions are increased before comparing.</p>
     
 	
 <ul class="member-list">
@@ -1186,6 +1186,13 @@ function onMouseMove(event) {
 
 </li>
 	
+	<li>
+<tt>epsilon:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the epsilon against which to compare the  rectangle&rsquo;s dimensions
+&mdash;&nbsp;optional, default: <tt>0</tt>
+</li>
+	
 </ul>
 
 	
@@ -1193,7 +1200,7 @@ function onMouseMove(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle and the specified rectangle intersect each other, <tt>false</tt> otherwise
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the rectangle and the specified rectangle  intersect each other, <tt>false</tt> otherwise
 </li>
 
 		
