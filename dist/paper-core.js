@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Mar 18 16:42:55 2017 +0100
+ * Date: Sat Mar 18 16:46:55 2017 +0100
  *
  ***
  *
@@ -7052,8 +7052,7 @@ new function() {
 							flip ? c2 : c1, flip ? c1 : c2,
 							locations, include, flip,
 							0, 0, 0, 1, 0, 1);
-
-				if (!(straight && locations.length > before)) {
+				if (!straight || locations.length === before) {
 					for (var i = 0; i < 4; i++) {
 						var t1 = i >> 1,
 							t2 = i & 1,
