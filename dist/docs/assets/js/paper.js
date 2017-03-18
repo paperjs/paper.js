@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Mar 18 16:35:34 2017 +0100
+ * Date: Sat Mar 18 16:42:55 2017 +0100
  *
  ***
  *
@@ -7061,7 +7061,6 @@ new function() {
 							i2 = t2 * 6,
 							p1 = new Point(v1[i1], v1[i1 + 1]),
 							p2 = new Point(v2[i2], v2[i2 + 1]);
-						console.log(t1, t2);
 						if (p1.isClose(p2, epsilon)) {
 							addLocation(locations, include,
 									c1, t1, p1,
