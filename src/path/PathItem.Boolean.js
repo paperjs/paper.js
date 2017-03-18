@@ -830,6 +830,7 @@ PathItem.inject(new function() {
                 nx1 = inter && inter._next,
                 nx2 = nx1 && nx1._next,
                 nx3 = nx2 && nx2._next,
+                wind = seg._winding,
                 intersections = {
                     'ix': inter,
                     'nx¹': nx1,
@@ -837,7 +838,9 @@ PathItem.inject(new function() {
                     'nx³': nx3
                 };
             if (windingOnly) {
-                label += (seg._winding && seg._winding.winding);
+                if (wind) {
+                    label += wind.winding + ', (' + wind.windingL + ', ' + wind.windingR + ')';
+                }
             } else {
                 label += '   id: ' + path._id + '.' + seg._index
                         + (other ? ' -> ' + other._path._id + '.' + other._index
@@ -846,7 +849,7 @@ PathItem.inject(new function() {
                         + '   pt: ' + seg._point
                         + '   vd: ' + (isValid(seg) || starts && isStart(seg))
                         + '   ov: ' + !!(inter && inter.hasOverlap())
-                        + '   wi: ' + (seg._winding && seg._winding.winding);
+                        + '   wi: ' + (wind && wind.winding);
                 for (var key in intersections) {
                     var ix = intersections[key],
                         s = ix && ix._segment;
