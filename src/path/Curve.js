@@ -2035,7 +2035,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
                 var straight1 = Curve.isStraight(v1),
                     straight2 = Curve.isStraight(v2),
                     straight = straight1 && straight2,
-                    flip = straight1 && !straight2;
+                    flip = straight1 && !straight2,
+                    before = locations.length;
                 // Determine the correct intersection method based on whether
                 // one or curves are straight lines:
                 (straight
@@ -2050,6 +2051,26 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             // addCurveIntersections():
                             // recursion, calls, tMin, tMax, uMin, uMax
                             0, 0, 0, 1, 0, 1);
+                // Handle the special case where the first curve's start- / end-
+                // point overlaps with the second curve's start- / end-point,
+                // but only if haven't found a line-line intersection already:
+                // #805#issuecomment-148503018
+
+                if (!(straight && locations.length > before)) {
+                    for (var i = 0; i < 4; i++) {
+                        var t1 = i >> 1, // 0, 0, 1, 1
+                            t2 = i & 1,  // 0, 1, 0, 1
+                            i1 = t1 * 6,
+                            i2 = t2 * 6,
+                            p1 = new Point(v1[i1], v1[i1 + 1]),
+                            p2 = new Point(v2[i2], v2[i2 + 1]);
+                        if (p1.isClose(p2, epsilon)) {
+                            addLocation(locations, include,
+                                    c1, t1, p1,
+                                    c2, t2, p2);
+                        }
+                    }
+                }
             }
         }
         return locations;

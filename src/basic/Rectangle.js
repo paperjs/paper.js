@@ -599,12 +599,15 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 
     /**
      * Tests if the interior of this rectangle intersects the interior of
-     * another rectangle. Rectangles just touching each other are considered
-     * as non-intersecting.
+     * another rectangle. Rectangles just touching each other are considered as
+     * non-intersecting, except if a `epsilon` value is specified by which this
+     * rectangle's dimensions are increased before comparing.
      *
      * @param {Rectangle} rect the specified rectangle
+     * @param {Number} [epsilon=0] the epsilon against which to compare the
+     *     rectangle's dimensions
      * @return {Boolean} {@true if the rectangle and the specified rectangle
-     * intersect each other}
+     *     intersect each other}
      *
      * @example {@paperscript}
      * // Checking whether the bounding box of one item intersects with
@@ -641,20 +644,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *     }
      * }
      */
-    intersects: function(/* rect */) {
-        var rect = Rectangle.read(arguments);
-        return rect.x + rect.width > this.x
-                && rect.y + rect.height > this.y
-                && rect.x < this.x + this.width
-                && rect.y < this.y + this.height;
-    },
-
-    touches: function(/* rect */) {
-        var rect = Rectangle.read(arguments);
-        return rect.x + rect.width >= this.x
-                && rect.y + rect.height >= this.y
-                && rect.x <= this.x + this.width
-                && rect.y <= this.y + this.height;
+    intersects: function(/* rect, epsilon */) {
+        var rect = Rectangle.read(arguments),
+            epsilon = Base.read(arguments) || 0;
+        return rect.x + rect.width > this.x - epsilon
+                && rect.y + rect.height > this.y - epsilon
+                && rect.x < this.x + this.width + epsilon
+                && rect.y < this.y + this.height + epsilon;
     },
 
     /**
