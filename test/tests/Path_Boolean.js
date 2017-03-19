@@ -405,20 +405,19 @@ test('#870', function() {
 });
 
 test('#875', function() {
-    var p1 = new Path({
-        segments: [
-            [158.7, 389.3, 0, 0, -4.95, 4.95],
-            [158.7, 407.2, -4.95, -4.95, 4.95, 4.95],
-            [176.6, 407.2, -4.95, 4.95, 4.95, -4.95],
-            [176.6, 389.3, 4.95, 4.95, -4.95, -4.95],
-            [158.7, 389.3, 4.95, -4.95, 0, 0]
-        ],
-        closed: true
+    var path1 = new Path.Circle({
+        center: [165, 400],
+        radius: 15,
+        clockwise: false
     });
-    var p2 = new Path.Circle(260, 320, 100);
+    var path2 = new Path.Circle({
+        center: [260, 320],
+        radius: 100,
+        clockwise: true
+    });
 
-    compareBoolean(function() { return p1.subtract(p2); },
-        'M158.7,407.2c4.95,4.95 12.95,4.95 17.9,0c4.95,-4.95 4.95,-12.95 0,-17.9c-4.95,-4.95 -12.95,-4.95 -17.9,0c-4.95,4.95 -4.95,12.95 0,17.9z');
+    compareBoolean(function() { return path1.subtract(path2); },
+        'M165,415c8.28427,0 15,-6.71573 15,-15c0,-8.28427 -6.71573,-15 -15,-15c-8.28427,0 -15,6.71573 -15,15c0,8.28427 6.71573,15 15,15z');
 });
 
 test('#877', function() {

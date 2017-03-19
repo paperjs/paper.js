@@ -275,9 +275,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                     : {};
         // See #1116#issuecomment-243794824 for an explanation of the
         // winding.onPath check here.
-        return winding.onPath || !!(this.getFillRule() === 'evenodd'
-                ? winding.windingL & 1 || winding.windingR & 1
-                : winding.winding);
+        return !!(winding.winding || winding.onPath);
 /*#*/ } // !__options.nativeContains && __options.booleanOperations
     },
 

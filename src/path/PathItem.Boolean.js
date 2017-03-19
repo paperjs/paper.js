@@ -537,11 +537,12 @@ PathItem.inject(new function() {
             qualityEpsilon = 1e-6,
             paL = pa - windingEpsilon,
             paR = pa + windingEpsilon,
-            windingL = 0,
-            windingR = 0,
+            winding,
+            windings = [],
             onPath = false,
             quality = 1,
             roots = [],
+            prevOwner,
             vPrev,
             vClose;
 
@@ -586,15 +587,15 @@ PathItem.inject(new function() {
                 a =   t === 0 ? a0
                     : t === 1 ? a3
                     : Curve.getPoint(v, t)[dir ? 'y' : 'x'],
-                winding = o0 > o3 ? 1 : -1,
-                windingPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
+                wind = o0 > o3 ? 1 : -1,
+                windPrev = vPrev[io] > vPrev[io + 6] ? 1 : -1,
                 a3Prev = vPrev[ia + 6];
             if (po !== o0) {
                 // Standard case, curve is not crossed at its starting point.
                 if (a < paL) {
-                    windingL += winding;
+                    winding.l += wind;
                 } else if (a > paR) {
-                    windingR += winding;
+                    winding.r += wind;
                 } else {
                     onPath = true;
                 }
@@ -605,13 +606,13 @@ PathItem.inject(new function() {
                 if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
                     quality /= 2;
             } else {
-                if (winding !== windingPrev) {
+                if (wind !== windPrev) {
                     // Curve is crossed at starting point and winding changes
                     // from previous curve. Cancel winding from previous curve.
                     if (a0 < paL) {
-                        windingL += winding;
+                        winding.l += wind;
                     } else if (a0 > paR) {
-                        windingR += winding;
+                        winding.r += wind;
                     }
                 } else if (a0 != a3Prev) {
                     // Handle a horizontal curve  between the current and
@@ -619,11 +620,11 @@ PathItem.inject(new function() {
                     // #1261#issuecomment-282726147 for a detailed explanation:
                     if (a3Prev < paR && a > paR) {
                         // Right winding was not added before, so add it now.
-                        windingR += winding;
+                        winding.r += wind;
                         onPath = true;
                     } else if (a3Prev > paL && a < paL) {
                         // Left winding was not added before, so add it now.
-                        windingL += winding;
+                        winding.l += wind;
                         onPath = true;
                     }
                 }
@@ -675,6 +676,14 @@ PathItem.inject(new function() {
                 v = curve.getValues(),
                 res;
             if (!i || curves[i - 1]._path !== path) {
+                var parent = path._parent,
+                    owner = parent instanceof CompoundPath ? parent : path;
+                if (owner !== prevOwner) {
+                    windings.push(winding = {
+                        l: 0, r: 0, rule: owner.getFillRule()
+                    });
+                    prevOwner = owner;
+                }
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
@@ -729,8 +738,27 @@ PathItem.inject(new function() {
         }
         // Use the unsigned winding contributions when determining which areas
         // are part of the boolean result.
+        var windingL = 0,
+            windingR = 0;
+        for (var i = 0; i < windings.length; i++) {
+            var winding = windings[i],
+                l = winding.l,
+                r = winding.r;
+            if  (winding.rule === 'evenodd') {
+                l = l & 1;
+                r = r & 1;
+            } else {
+                l = l ? 1 : 0;
+                r = r ? 1 : 0;
+                // l = l < 0 ? -1 : l > 0 ? 1 : 0;
+                // r = r < 0 ? -1 : r > 0 ? 1 : 0;
+            }
+            windingL += l;
+            windingR += r;
+        }
         windingL = abs(windingL);
         windingR = abs(windingR);
+        console.log(JSON.stringify(windings), windingL, windingR);
         // Return the calculated winding contributions along with a quality
         // value indicating how reliable the value really is.
         return {
@@ -775,6 +803,7 @@ PathItem.inject(new function() {
                     var curve = entry.curve,
                         path = curve._path,
                         parent = path._parent,
+                        operand = parent instanceof CompoundPath ? parent : path,
                         t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
                         pt = curve.getPointAtTime(t),
                         // Determine the direction in which to check the winding
@@ -783,15 +812,13 @@ PathItem.inject(new function() {
                         // than 45°, cast the ray vertically, else horizontally.
                         dir = abs(curve.getTangentAtTime(t).normalize().y)
                             < Math.SQRT1_2 ? 1 : 0;
-                    if (parent instanceof CompoundPath)
-                        path = parent;
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
                     var wind = !(operator.subtract && path2 && (
-                            path === path1 &&
+                            operand === path1 &&
                                 path2._getWinding(pt, dir, true).winding ||
-                            path === path2 &&
+                            operand === path2 &&
                                 !path1._getWinding(pt, dir, true).winding))
                             ? getWinding(pt, curves, dir, true)
                             : windingZero;
