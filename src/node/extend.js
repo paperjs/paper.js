@@ -57,8 +57,8 @@ module.exports = function(paper) {
     paper.PaperScope.inject({
         createCanvas: function(width, height, type) {
             // Do not use CanvasProvider.getCanvas(), since we may be changing
-            // the underlying node-canvas and don't want to release it after
-            // back into the pool.
+            // the underlying node-canvas when requesting PDF support, and don't
+            // want to release it after back into the pool.
             var canvas = paper.document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
