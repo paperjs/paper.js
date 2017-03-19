@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Mar 19 14:50:59 2017 +0100
+ * Date: Sun Mar 19 16:03:29 2017 +0100
  *
  ***
  *
@@ -32,8 +32,7 @@
 
 var paper = function(self, undefined) {
 
-self = self || require('./node/window.js');
-
+self = self || require('./node/self.js');
 var window = self.window,
 	document = self.document;
 
