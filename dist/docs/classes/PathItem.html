@@ -5439,6 +5439,8 @@ function onMouseDown(event) {
 	<p>Exports the item with its content and child items as an SVG DOM.</p>
     <ul class="member-list">
 <h4>Options:</h4>
+<li><tt>options.bounds: <tt>String</tt>⟋<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the bounds of the area  to export, either as a string (<tt>&lsquo;view&rsquo;</tt>, <tt>content&rsquo;</tt>), or a  <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a> object: <code>&#39;view&#39;</code> uses the view bounds,  <code>&#39;content&#39;</code> uses the stroke bounds of all content &mdash;&nbsp;default: <tt>&lsquo;view&rsquo;</tt></li>
+<li><tt>options.matrix: <a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt> &mdash; the matrix with which  to transform the exported content: If <code>options.bounds</code> is set to  <code>&#39;view&#39;</code>, <code>paper.view.matrix</code> is used, for all other settings of  <code>options.bounds</code> the identity matrix is used. &mdash;&nbsp;default: <tt>paper.view.matrix</tt></li>
 <li><tt>options.asString: <tt>Boolean</tt></tt> &mdash; whether a SVG node or a  <code>String</code> is to be returned &mdash;&nbsp;default: <tt>false</tt></li>
 <li><tt>options.precision: <tt>Number</tt></tt> &mdash; the amount of fractional digits in  numbers used in SVG data &mdash;&nbsp;default: <tt>5</tt></li>
 <li><tt>options.matchShapes: <tt>Boolean</tt></tt> &mdash; whether path items should  tried to be converted to SVG shape items (rect, circle, ellipse,  line, polyline, polygon), if their geometries match &mdash;&nbsp;default: <tt>false</tt></li>
