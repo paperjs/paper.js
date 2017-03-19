@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Mar 19 14:18:55 2017 +0100
+ * Date: Sun Mar 19 14:38:24 2017 +0100
  *
  ***
  *
@@ -5370,7 +5370,7 @@ var SymbolItem = Item.extend({
 		return item._getCachedBounds(item._matrix.prepended(matrix), options);
 	},
 
-	_hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+	_hitTestSelf: function(point, options, viewMatrix) {
 		var res = this._definition._item._hitTest(point, options, viewMatrix);
 		if (res)
 			res.item = this;
