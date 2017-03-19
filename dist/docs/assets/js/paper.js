@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Mar 18 16:46:55 2017 +0100
+ * Date: Sun Mar 19 14:18:55 2017 +0100
  *
  ***
  *
@@ -10184,8 +10184,7 @@ PathItem.inject(new function() {
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
 		var offsets = [0.5, 0.25, 0.75],
-			windingZero = { winding: 0, quality: 0 },
-			winding = windingZero,
+			winding = { winding: 0, quality: -1 },
 			tMin = 1e-8,
 			tMax = 1 - tMin;
 		for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
@@ -10197,19 +10196,18 @@ PathItem.inject(new function() {
 					var curve = entry.curve,
 						path = curve._path,
 						parent = path._parent,
+						operand = parent instanceof CompoundPath ? parent : path,
 						t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
 						pt = curve.getPointAtTime(t),
-						dir = abs(curve.getTangentAtTime(t).normalize().y)
-							< Math.SQRT1_2 ? 1 : 0;
-					if (parent instanceof CompoundPath)
-						path = parent;
+						dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2
+							? 1 : 0;
 					var wind = !(operator.subtract && path2 && (
-							path === path1 &&
+							operand === path1 &&
 								path2._getWinding(pt, dir, true).winding ||
-							path === path2 &&
+							operand === path2 &&
 								!path1._getWinding(pt, dir, true).winding))
 							? getWinding(pt, curves, dir, true)
-							: windingZero;
+							: { winding: 0, quality: 1 };
 					if (wind.quality > winding.quality)
 						winding = wind;
 					break;
