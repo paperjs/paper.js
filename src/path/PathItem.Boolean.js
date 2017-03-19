@@ -545,16 +545,16 @@ PathItem.inject(new function() {
                 if (a > pa - qualityEpsilon && a < pa + qualityEpsilon)
                     quality /= 2;
             } else {
+                // Curve is crossed at starting point.
                 if (winding !== windingPrev) {
-                    // Curve is crossed at starting point and winding changes
-                    // from previous curve. Cancel winding from previous curve.
+                    // Winding changes from previous curve, cancel its winding.
                     if (a0 < paL) {
                         windingL += winding;
                     } else if (a0 > paR) {
                         windingR += winding;
                     }
                 } else if (a0 != a3Prev) {
-                    // Handle a horizontal curve  between the current and
+                    // Handle a horizontal curve between the current and
                     // previous non-horizontal curve. See
                     // #1261#issuecomment-282726147 for a detailed explanation:
                     if (a3Prev < paR && a > paR) {
@@ -702,8 +702,7 @@ PathItem.inject(new function() {
         // sufficient quality is found, use it. Otherwise use the winding with
         // the best quality.
         var offsets = [0.5, 0.25, 0.75],
-            windingZero = { winding: 0, quality: 0 },
-            winding = windingZero,
+            winding = { winding: 0, quality: -1 },
             tMin = /*#=*/Numerical.CURVETIME_EPSILON,
             tMax = 1 - tMin;
         for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
@@ -715,26 +714,25 @@ PathItem.inject(new function() {
                     var curve = entry.curve,
                         path = curve._path,
                         parent = path._parent,
+                        operand = parent instanceof CompoundPath ? parent : path,
                         t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
                         pt = curve.getPointAtTime(t),
                         // Determine the direction in which to check the winding
                         // from the point (horizontal or vertical), based on the
                         // curve's direction at that point. If tangent is less
                         // than 45°, cast the ray vertically, else horizontally.
-                        dir = abs(curve.getTangentAtTime(t).normalize().y)
-                            < Math.SQRT1_2 ? 1 : 0;
-                    if (parent instanceof CompoundPath)
-                        path = parent;
+                        dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2
+                            ? 1 : 0;
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
                     var wind = !(operator.subtract && path2 && (
-                            path === path1 &&
+                            operand === path1 &&
                                 path2._getWinding(pt, dir, true).winding ||
-                            path === path2 &&
+                            operand === path2 &&
                                 !path1._getWinding(pt, dir, true).winding))
                             ? getWinding(pt, curves, dir, true)
-                            : windingZero;
+                            : { winding: 0, quality: 1 };
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
