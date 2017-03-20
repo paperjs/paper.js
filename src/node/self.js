@@ -13,11 +13,28 @@
 // Node.js emulation layer of browser environment, based on jsdom with node-
 // canvas integration.
 
-var self;
+var path = require('path');
+// Determine the name by which name the module was required (either 'paper',
+// 'paper-jsdom' or 'paper-jsdom-canvas'), and use this to determine if error
+// exceptions should be thrown or if loading should fail silently.
+var parent = module.parent.parent,
+    requireName = parent && path.basename(path.dirname(parent.filename));
+requireName = /^paper/.test(requireName) ? requireName : 'paper';
+
+var jsdom,
+    self;
 
 try {
-    var jsdom = require('jsdom');
+    jsdom = require('jsdom');
+} catch(e) {
+    // Check the required module's name to see if it contains jsdom, and only
+    // complain about its lack if the module requires it.
+    if (/\bjsdom\b/.test(requireName)) {
+        throw new Error('Unable to load jsdom module.');
+    }
+}
 
+if (jsdom) {
     // Create our document and window objects through jsdom.
     /* global document:true, window:true */
     var document = jsdom.jsdom('<html><body></body></html>', {
@@ -29,39 +46,9 @@ try {
         }
     });
     self = document.defaultView;
-
-    require('./canvas.js')(self);
-
-    // Define XMLSerializer shim, to emulate browser behavior.
-    // Effort to bring XMLSerializer to jsdom:
-    // https://github.com/tmpvar/jsdom/issues/1368
-    /*jshint -W082 */
-    function XMLSerializer() {
-    }
-
-    XMLSerializer.prototype.serializeToString = function(node) {
-        if (!node)
-            return '';
-        // Fix a jsdom issue where all SVG tagNames are lowercased:
-        // https://github.com/tmpvar/jsdom/issues/620
-        var text = node.outerHTML,
-            tagNames = ['linearGradient', 'radialGradient', 'clipPath',
-                'textPath'];
-        for (var i = 0, l = tagNames.length; i < l; i++) {
-            var tagName = tagNames[i];
-            text = text.replace(
-                new RegExp('(<|</)' + tagName.toLowerCase() + '\\b', 'g'),
-                function(match, start) {
-                    return start + tagName;
-                });
-        }
-        return text;
-    };
-
-    self.XMLSerializer = XMLSerializer;
-} catch(e) {
-    console.info(
-            'JSDom module not found, running in a headless context without DOM.');
+    require('./canvas.js')(self, requireName);
+    require('./xml.js')(self);
+} else {
     self = {
         navigator: {
             userAgent: 'Node.js (' + process.platform + '; U; rv:' +

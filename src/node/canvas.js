@@ -15,7 +15,7 @@
 // - Various Node Canvas methods, routed through from HTMLCanvasElement:
 //   toBuffer, pngStream, createPNGStream, jpgStream, createJPGStream
 
-module.exports = function(self) {
+module.exports = function(self, requireName) {
     var Canvas;
     try {
         Canvas = require('canvas');
@@ -26,13 +26,16 @@ module.exports = function(self) {
         // - On Node.js, it basically means the canvas is missing or not working
         //   which can be treated the same way.
         delete self.window;
-        console.info(
-                'Canvas module not found, running in a headless context.');
+        // Check the required module's name to see if it contains canvas, and
+        // only complain about its lack if the module requires it.
+        if (/\bcanvas\b/.test(requireName)) {
+            throw new Error('Unable to load canvas module.');
+        }
         return;
     }
 
-    var idlUtils = require('jsdom/lib/jsdom/living/generated/utils'),
-        HTMLCanvasElement = self.HTMLCanvasElement;
+    var HTMLCanvasElement = self.HTMLCanvasElement,
+        idlUtils = require('jsdom/lib/jsdom/living/generated/utils');
 
     // Add fake HTMLCanvasElement#type property:
     Object.defineProperty(HTMLCanvasElement.prototype, 'type', {
