@@ -207,7 +207,6 @@ test('path.bounds & path.strokeBounds with stroke styles', function() {
     }
 
     var path = makePath();
-    path.fullySelected = true;
     path.strokeColor = 'black';
     path.strokeCap = 'butt';
     path.strokeJoin = 'round';

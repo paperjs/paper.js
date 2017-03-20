@@ -36,12 +36,10 @@
   "engines": {
     "node": ">=4.0.0 <8.0.0"
   },
-  "dependencies": {
+  "optionalDependencies": {
+    "canvas": "^1.3.5",
     "jsdom": "^9.4.0",
     "source-map-support": "^0.4.0"
-  },
-  "optionalDependencies": {
-    "canvas": "^1.3.5"
   },
   "devDependencies": {
     "acorn": "~0.5.0",
@@ -80,7 +78,7 @@
     "jsdom": false,
     "jsdom/lib/jsdom/living/generated/utils": false,
     "source-map-support": false,
-    "./dist/node/window.js": false,
+    "./dist/node/self.js": false,
     "./dist/node/extend.js": false
   },
   "keywords": [

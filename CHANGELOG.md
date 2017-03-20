@@ -77,6 +77,8 @@
 - Hit Tests: Fix stroke hit-testing for rounded shape items (#1207).
 - Fix matrix cloning for groups with `#applyMatrix = false` ( #1225).
 - Correctly handle offset in `Curve#divideAt(offset)` (#1230).
+- Fix issue with `Curve#isStraight()` where handles were checked incorrectly
+  for collinearity (#1269). 
 - Fix `Line#getSide()` imprecisions when points are on the line.
 - Docs: Fix documentation of `Project#hitTestAll()` (#536).
 - Docs: Improve description of `option.class` value in `Project#hitTest()`

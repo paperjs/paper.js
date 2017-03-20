@@ -78,7 +78,7 @@ And from there onwards, you should be able to use Bower like this:
 
     bower search paperjs
 
-### Installing Paper.js for Node.js through NPM
+### Installing Paper.js for Node.js
 
 NPM is used to install Paper.js for use in Node.js. But before installing, you
 need the Cairo Graphics library installed, see: <http://cairographics.org/>.
@@ -125,6 +125,17 @@ You should now be able to install the Paper.js module from NPM:
 
     npm install paper
 
+### Installing Paper.js for Electron
+
+[Node-Canvas](https://github.com/Automattic/node-canvas) is a native dependency.
+In order to build it for use in Electron, which is likely to use a different
+version of V8 than the Node binary installed in your system, you need to
+manually specify the location of Electron’s headers. Follow these steps to do
+so:
+
+[Electron — Using Native Node
+Modules](https://electron.atom.io/docs/tutorial/using-native-node-modules/)
+ 
 ## Development
 
 The main Paper.js source tree is hosted on

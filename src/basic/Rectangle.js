@@ -267,23 +267,34 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
         return new ctor(this.width, this.height, this, 'setSize');
     },
 
+    // properties to keep track of fix-width / height: They are on by default,
+    // and switched off once properties are used that change the outside of the
+    // rectangle, so combinations of: left / top / right / bottom.
+    _fw: 1,
+    _fh: 1,
+
     setSize: function(/* size */) {
-        var size = Size.read(arguments);
-        // Keep track of how dimensions were specified through this._fix*
+        var size = Size.read(arguments),
+            sx = this._sx,
+            sy = this._sy,
+            w = size.width,
+            h = size.height;
+        // Keep track of how dimensions were specified through this._s*
         // attributes.
-        // _fixX / Y can either be 0 (l), 0.5 (center) or 1 (r), and is used as
-        // direct factors to calculate the x / y adujstments from the size
-        // differences.
-        // _fixW / H is either 0 (off) or 1 (on), and is used to protect
-        // widht / height values against changes.
-        if (this._fixX)
-            this.x += (this.width - size.width) * this._fixX;
-        if (this._fixY)
-            this.y += (this.height - size.height) * this._fixY;
-        this.width = size.width;
-        this.height = size.height;
-        this._fixW = 1;
-        this._fixH = 1;
+        // _sx / _sy can either be 0 (left), 0.5 (center) or 1 (right), and is
+        // used as direct factors to calculate the x / y adjustments from the
+        // size differences.
+        // _fw / _fh can either be 0 (off) or 1 (on), and is used to protect
+        // width / height values against changes.
+        if (sx) {
+            this.x += (this.width - w) * sx;
+        }
+        if (sy) {
+            this.y += (this.height - h) * sy;
+        }
+        this.width = w;
+        this.height = h;
+        this._fw = this._fh = 1;
     },
 
     /**
@@ -300,10 +311,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     setLeft: function(left) {
-        if (!this._fixW)
-            this.width -= left - this.x;
+        if (!this._fw) {
+            var amount = left - this.x;
+            this.width -= this._sx === 0.5 ? amount * 2 : amount;
+        }
         this.x = left;
-        this._fixX = 0;
+        this._sx = this._fw = 0;
     },
 
     /**
@@ -318,10 +331,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     setTop: function(top) {
-        if (!this._fixH)
-            this.height -= top - this.y;
+        if (!this._fh) {
+            var amount = top - this.y;
+            this.height -= this._sy === 0.5 ? amount * 2 : amount;
+        }
         this.y = top;
-        this._fixY = 0;
+        this._sy = this._fh = 0;
     },
 
     /**
@@ -336,14 +351,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     setRight: function(right) {
-        // Turn _fixW off if we specify two _fixX values
-        if (this._fixX !== undefined && this._fixX !== 1)
-            this._fixW = 0;
-        if (this._fixW)
-            this.x = right - this.width;
-        else
-            this.width = right - this.x;
-        this._fixX = 1;
+        if (!this._fw) {
+            var amount = right - this.x;
+            this.width = this._sx === 0.5 ? amount * 2 : amount;
+        }
+        this.x = right - this.width;
+        this._sx = 1;
+        this._fw = 0;
     },
 
     /**
@@ -358,14 +372,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     setBottom: function(bottom) {
-        // Turn _fixH off if we specify two _fixY values
-        if (this._fixY !== undefined && this._fixY !== 1)
-            this._fixH = 0;
-        if (this._fixH)
-            this.y = bottom - this.height;
-        else
-            this.height = bottom - this.y;
-        this._fixY = 1;
+        if (!this._fh) {
+            var amount = bottom - this.y;
+            this.height = this._sy === 0.5 ? amount * 2 : amount;
+        }
+        this.y = bottom - this.height;
+        this._sy = 1;
+        this._fh = 0;
     },
 
     /**
@@ -376,12 +389,22 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @ignore
      */
     getCenterX: function() {
-        return this.x + this.width * 0.5;
+        return this.x + this.width / 2;
     },
 
     setCenterX: function(x) {
-        this.x = x - this.width * 0.5;
-        this._fixX = 0.5;
+        // If we're asked to fix the width or if _sx is already in center mode,
+        // just keep moving the center.
+        if (this._fw || this._sx === 0.5) {
+            this.x = x - this.width / 2;
+        } else {
+            if (this._sx) {
+                this.x += (x - this.x) * 2 * this._sx;
+            }
+            this.width = (x - this.x) * 2;
+        }
+        this._sx = 0.5;
+        this._fw = 0;
     },
 
     /**
@@ -392,12 +415,22 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @ignore
      */
     getCenterY: function() {
-        return this.y + this.height * 0.5;
+        return this.y + this.height / 2;
     },
 
     setCenterY: function(y) {
-        this.y = y - this.height * 0.5;
-        this._fixY = 0.5;
+        // If we're asked to fix the height or if _sy is already in center mode,
+        // just keep moving the center.
+        if (this._fh || this._sy === 0.5) {
+            this.y = y - this.height / 2;
+        } else {
+            if (this._sy) {
+                this.y += (y - this.y) * 2 * this._sy;
+            }
+            this.height = (y - this.y) * 2;
+        }
+        this._sy = 0.5;
+        this._fh = 0;
     },
 
     /**
@@ -599,12 +632,15 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 
     /**
      * Tests if the interior of this rectangle intersects the interior of
-     * another rectangle. Rectangles just touching each other are considered
-     * as non-intersecting.
+     * another rectangle. Rectangles just touching each other are considered as
+     * non-intersecting, except if a `epsilon` value is specified by which this
+     * rectangle's dimensions are increased before comparing.
      *
      * @param {Rectangle} rect the specified rectangle
+     * @param {Number} [epsilon=0] the epsilon against which to compare the
+     *     rectangle's dimensions
      * @return {Boolean} {@true if the rectangle and the specified rectangle
-     * intersect each other}
+     *     intersect each other}
      *
      * @example {@paperscript}
      * // Checking whether the bounding box of one item intersects with
@@ -641,20 +677,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      *     }
      * }
      */
-    intersects: function(/* rect */) {
-        var rect = Rectangle.read(arguments);
-        return rect.x + rect.width > this.x
-                && rect.y + rect.height > this.y
-                && rect.x < this.x + this.width
-                && rect.y < this.y + this.height;
-    },
-
-    touches: function(/* rect */) {
-        var rect = Rectangle.read(arguments);
-        return rect.x + rect.width >= this.x
-                && rect.y + rect.height >= this.y
-                && rect.x <= this.x + this.width
-                && rect.y <= this.y + this.height;
+    intersects: function(/* rect, epsilon */) {
+        var rect = Rectangle.read(arguments),
+            epsilon = Base.read(arguments) || 0;
+        return rect.x + rect.width > this.x - epsilon
+                && rect.y + rect.height > this.y - epsilon
+                && rect.x < this.x + this.width + epsilon
+                && rect.y < this.y + this.height + epsilon;
     },
 
     /**
