@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Mar 19 22:51:34 2017 +0100
+ * Date: Mon Mar 20 01:02:12 2017 +0100
  *
  ***
  *
@@ -10057,7 +10057,10 @@ PathItem.inject(new function() {
 			paR = pa + windingEpsilon,
 			windingL = 0,
 			windingR = 0,
+			pathWindingL = 0,
+			pathWindingR = 0,
 			onPath = false,
+			onAnyPath = false,
 			quality = 1,
 			roots = [],
 			vPrev,
@@ -10094,9 +10097,9 @@ PathItem.inject(new function() {
 				a3Prev = vPrev[ia + 6];
 			if (po !== o0) {
 				if (a < paL) {
-					windingL += winding;
+					pathWindingL += winding;
 				} else if (a > paR) {
-					windingR += winding;
+					pathWindingR += winding;
 				} else {
 					onPath = true;
 				}
@@ -10105,16 +10108,16 @@ PathItem.inject(new function() {
 			} else {
 				if (winding !== windingPrev) {
 					if (a0 < paL) {
-						windingL += winding;
+						pathWindingL += winding;
 					} else if (a0 > paR) {
-						windingR += winding;
+						pathWindingR += winding;
 					}
 				} else if (a0 != a3Prev) {
 					if (a3Prev < paR && a > paR) {
-						windingR += winding;
+						pathWindingR += winding;
 						onPath = true;
 					} else if (a3Prev > paL && a < paL) {
-						windingL += winding;
+						pathWindingL += winding;
 						onPath = true;
 					}
 				}
@@ -10123,7 +10126,7 @@ PathItem.inject(new function() {
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-					&& getWinding(point, curves, dir ? 0 : 1, closed, true);
+					&& getWinding(point, curves, !dir, closed, true);
 		}
 
 		function handleCurve(v) {
@@ -10184,6 +10187,17 @@ PathItem.inject(new function() {
 			if (i + 1 === l || curves[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
+				if (onPath && !pathWindingL && !pathWindingR) {
+					pathWindingL = pathWindingR = path.isClockwise(closed) ^ dir
+							? 1 : -1;
+				}
+				windingL += pathWindingL;
+				windingR += pathWindingR;
+				pathWindingL = pathWindingR = 0;
+				if (onPath) {
+					onAnyPath = true;
+					onPath = false;
+				}
 				vClose = null;
 			}
 		}
@@ -10194,7 +10208,7 @@ PathItem.inject(new function() {
 			windingL: windingL,
 			windingR: windingR,
 			quality: quality,
-			onPath: onPath
+			onPath: onAnyPath
 		};
 	}
 
@@ -10226,8 +10240,7 @@ PathItem.inject(new function() {
 						operand = parent instanceof CompoundPath ? parent : path,
 						t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
 						pt = curve.getPointAtTime(t),
-						dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2
-							? 1 : 0;
+						dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2;
 					var wind = !(operator.subtract && path2 && (
 							operand === path1 &&
 								path2._getWinding(pt, dir, true).winding ||
