@@ -634,8 +634,8 @@ statics: /** @lends Curve */{
      *
      * @param {Number[]} v the curve values, as returned by
      *     {@link Curve#getValues()}
-     * @param {Number} [dir=0] the direction in which the curves should be
-     *     monotone, `0`: monotone in x-direction, `1`: monotone in y-direction
+     * @param {Boolean} [dir=false] the direction in which the curves should be
+     *     monotone, `false`: in x-direction, `true`: in y-direction
      * @return {Number[][]} an array of curve value arrays of the resulting
      *     monotone curve. If the original curve was already monotone, an array
      *     only containing its values are returned.
