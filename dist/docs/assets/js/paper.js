@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 20 01:02:12 2017 +0100
+ * Date: Mon Mar 20 12:38:52 2017 +0100
  *
  ***
  *
@@ -16416,8 +16416,9 @@ paper = new (PaperScope.inject(Base.exports, {
 	PlacedSymbol: SymbolItem
 }))();
 
-if (paper.agent.node)
+if (paper.agent.node) {
 	require('./node/extend.js')(paper);
+}
 
 if (typeof define === 'function' && define.amd) {
 	define('paper', paper);
