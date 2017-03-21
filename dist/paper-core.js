@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 20 12:38:52 2017 +0100
+ * Date: Tue Mar 21 11:55:42 2017 +0100
  *
  ***
  *
@@ -3929,12 +3929,15 @@ new function() {
 		var children = this._children;
 		if (children && items && items.length > 0) {
 			items = Base.slice(items);
+			var inserted = {};
 			for (var i = items.length - 1; i >= 0; i--) {
-				var item = items[i];
-				if (!item) {
+				var item = items[i],
+					id = item && item._id;
+				if (!item || inserted[id]) {
 					items.splice(i, 1);
 				} else {
 					item._remove(false, true);
+					inserted[id] = true;
 				}
 			}
 			Base.splice(children, items, index, 0);
@@ -3948,7 +3951,7 @@ new function() {
 				if (name)
 					item.setName(name);
 				if (notifySelf)
-					this._changed(5);
+					item._changed(5);
 			}
 			this._changed(11);
 		} else {
