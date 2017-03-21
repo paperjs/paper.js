@@ -114,7 +114,9 @@ test('group.insertChildren(0, otherGroup.children)', function() {
 
 test('group.addChildren()', function() {
     var group = new Group();
-    var children = [new Path(), new Path()];
+    var path1 = new Path();
+    var path2 = new Path();
+    var children = [path1, path2];
     group.addChildren(children);
     equals(group.children.length, 2,
             'group.children.length after adding 2 children');
@@ -128,4 +130,8 @@ test('group.addChildren()', function() {
     equals(group.children.length, 2,
             'calling group.addChildren() with an array with 3 entries, ' +
             'of which 2 are valid, group.children.length should be 2');
-});
+    children = [path1, path1, path2];
+    group.addChildren(children);
+    equals(group.children.length, 2,
+            'adding the same item twice should only add it once.');
+})

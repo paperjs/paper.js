@@ -2389,14 +2389,19 @@ new function() { // Injection scope for hit-test functions shared with project
             // Remove the items from their parents first, since they might be
             // inserted into their own parents, affecting indices.
             // Use the loop also to filter invalid items.
+            var inserted = {};
             for (var i = items.length - 1; i >= 0; i--) {
-                var item = items[i];
-                if (!item) {
+                var item = items[i],
+                    id = item && item._id;
+                // If an item was inserted already, it must be included multiple
+                // times in the items array. Only insert once.
+                if (!item || inserted[id]) {
                     items.splice(i, 1);
                 } else {
                     // Notify parent of change. Don't notify item itself yet,
                     // as we're doing so when adding it to the new owner below.
                     item._remove(false, true);
+                    inserted[id] = true;
                 }
             }
             Base.splice(children, items, index, 0);
@@ -2413,7 +2418,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 if (name)
                     item.setName(name);
                 if (notifySelf)
-                    this._changed(/*#=*/Change.INSERTION);
+                    item._changed(/*#=*/Change.INSERTION);
             }
             this._changed(/*#=*/Change.CHILDREN);
         } else {
