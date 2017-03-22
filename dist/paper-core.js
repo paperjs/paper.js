@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 22 23:45:11 2017 +0100
+ * Date: Thu Mar 23 00:14:03 2017 +0100
  *
  ***
  *
@@ -9878,10 +9878,10 @@ PathItem.inject(new function() {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getCrossings(_path2),
-			added = {},
-			paths = [],
+			subtract = operation === 'subtract',
 			divide = operation === 'divide',
-			subtract = operation === 'subtract';
+			added = {},
+			paths = [];
 
 		function addPath(path) {
 			if (!added[path._id] && (divide ||
@@ -14547,17 +14547,19 @@ new function() {
 	}
 
 	function applyAttributes(item, node, isRoot) {
-		var parent = node.parentNode,
-			styles = {
-				node: DomElement.getStyles(node) || {},
-				parent: !isRoot && !/^defs$/i.test(parent.tagName)
-						&& DomElement.getStyles(parent) || {}
-			};
-		Base.each(attributes, function(apply, name) {
-			var value = getAttribute(node, name, styles);
-			item = value !== undefined && apply(item, value, name, node, styles)
-					|| item;
-		});
+		if (node.style) {
+			var parent = node.parentNode,
+				styles = {
+					node: DomElement.getStyles(node) || {},
+					parent: !isRoot && !/^defs$/i.test(parent.tagName)
+							&& DomElement.getStyles(parent) || {}
+				};
+			Base.each(attributes, function(apply, name) {
+				var value = getAttribute(node, name, styles);
+				item = value !== undefined
+						&& apply(item, value, name, node, styles) || item;
+			});
+		}
 		return item;
 	}
 
@@ -14582,8 +14584,8 @@ new function() {
 			parent,
 			next;
 		if (isRoot && isElement) {
-			rootSize = getSize(node, null, null, true)
-					|| paper.getView().getSize();
+			rootSize = paper.getView().getSize();
+			rootSize = getSize(node, null, null, true) || rootSize;
 			container = SvgElement.create('svg', {
 				style: 'stroke-width: 1px; stroke-miterlimit: 10'
 			});
