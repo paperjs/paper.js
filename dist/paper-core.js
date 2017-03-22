@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 22 15:03:11 2017 +0100
+ * Date: Wed Mar 22 23:26:26 2017 +0100
  *
  ***
  *
@@ -9805,11 +9805,10 @@ PathItem.inject(new function() {
 				: res;
 	}
 
-	function createResult(ctor, paths, reduce, path1, path2, options) {
-		var result = new ctor(Item.NO_INSERT);
+	function createResult(paths, simplify, path1, path2, options) {
+		var result = new CompoundPath(Item.NO_INSERT);
 		result.addChildren(paths, true);
-		if (reduce)
-			result = result.reduce({ simplify: true });
+		result = result.reduce({ simplify: simplify });
 		if (!(options && options.insert == false)) {
 			result.insertAbove(path2 && path1.isSibling(path2)
 					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
@@ -9872,7 +9871,7 @@ PathItem.inject(new function() {
 					});
 		}
 
-		return createResult(CompoundPath, paths, true, path1, path2, options);
+		return createResult(paths, true, path1, path2, options);
 	}
 
 	function splitBoolean(path1, path2, subtract) {
@@ -9900,7 +9899,7 @@ PathItem.inject(new function() {
 			}
 		}
 		addPath(_path1);
-		return createResult(CompoundPath, paths, true, path1, path2);
+		return createResult(paths, false, path1, path2);
 	}
 
 	function linkIntersections(from, to) {
@@ -10458,7 +10457,7 @@ PathItem.inject(new function() {
 		},
 
 		divide: function(path, options) {
-			return createResult(Group, [
+			return createResult([
 					this.subtract(path, options),
 					this.intersect(path, options)
 				], true, this, path, options);
