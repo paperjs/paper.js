@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 22 14:42:11 2017 +0100
+ * Date: Wed Mar 22 15:03:11 2017 +0100
  *
  ***
  *
@@ -9818,10 +9818,10 @@ PathItem.inject(new function() {
 		return result;
 	}
 
-	function computeBoolean(path1, path2, operation, options) {
-		if (options && options.stroke &&
+	function traceBoolean(path1, path2, operation, options) {
+		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
-			return computeStrokeBoolean(path1, path2, operation === 'subtract');
+			return splitBoolean(path1, path2, operation === 'subtract');
 		var _path1 = preparePath(path1, true),
 			_path2 = path2 && path1 !== path2 && preparePath(path2, true),
 			operator = operators[operation];
@@ -9875,7 +9875,7 @@ PathItem.inject(new function() {
 		return createResult(CompoundPath, paths, true, path1, path2, options);
 	}
 
-	function computeStrokeBoolean(path1, path2, subtract) {
+	function splitBoolean(path1, path2, subtract) {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getCrossings(_path2),
@@ -9900,7 +9900,7 @@ PathItem.inject(new function() {
 			}
 		}
 		addPath(_path1);
-		return createResult(Group, paths, false, path1, path2);
+		return createResult(CompoundPath, paths, true, path1, path2);
 	}
 
 	function linkIntersections(from, to) {
@@ -10442,19 +10442,19 @@ PathItem.inject(new function() {
 		},
 
 		unite: function(path, options) {
-			return computeBoolean(this, path, 'unite', options);
+			return traceBoolean(this, path, 'unite', options);
 		},
 
 		intersect: function(path, options) {
-			return computeBoolean(this, path, 'intersect', options);
+			return traceBoolean(this, path, 'intersect', options);
 		},
 
 		subtract: function(path, options) {
-			return computeBoolean(this, path, 'subtract', options);
+			return traceBoolean(this, path, 'subtract', options);
 		},
 
 		exclude: function(path, options) {
-			return computeBoolean(this, path, 'exclude', options);
+			return traceBoolean(this, path, 'exclude', options);
 		},
 
 		divide: function(path, options) {
