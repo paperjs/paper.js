@@ -915,8 +915,8 @@ test('#1221', function() {
 
     var division = line.divide(rect4, { trace: false });
     equals(function() { return division.children.length; }, 2);
-    compareBoolean(function() { return division.children[0]; }, 'M400,400v200');
-    compareBoolean(function() { return division.children[1]; }, 'M400,300v100');
+    compareBoolean(function() { return division.children[0]; }, 'M400,300v100');
+    compareBoolean(function() { return division.children[1]; }, 'M400,400v200');
 });
 
 test('#1239 / #1073', function() {

@@ -82,7 +82,7 @@ PathItem.inject(new function() {
         // based boolean operations (options.split = true).
         if (options && (options.trace == false || options.stroke) &&
                 /^(subtract|intersect)$/.test(operation))
-            return splitBoolean(path1, path2, operation === 'subtract');
+            return splitBoolean(path1, path2, operation);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // NOTE: The result paths might not belong to the same type i.e.
@@ -159,19 +159,21 @@ PathItem.inject(new function() {
         return createResult(paths, true, path1, path2, options);
     }
 
-    function splitBoolean(path1, path2, subtract) {
+    function splitBoolean(path1, path2, operation) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getCrossings(_path2),
             added = {},
-            paths = [];
+            paths = [],
+            divide = operation === 'divide',
+            subtract = operation === 'subtract';
 
         function addPath(path) {
             // Simple see if the point halfway across the open path is inside
             // path2, and include / exclude the path based on the operator.
-            if (!added[path._id] &&
+            if (!added[path._id] && (divide ||
                     _path2.contains(path.getPointAt(path.getLength() / 2))
-                    ^ subtract) {
+                        ^ subtract)) {
                 paths.unshift(path);
                 return added[path._id] = true;
             }
@@ -1051,8 +1053,11 @@ PathItem.inject(new function() {
          * @option [options.insert=true] {Boolean} whether the resulting item
          *     should be inserted back into the scene graph, above both paths
          *     involved in the operation
-         * @option [options.stroke=false] {Boolean} whether the operation should
-         *     be performed on the stroke or on the fill of the first path
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, keeping the parts of
+         *     the curves that intersect with the area of the second path.
          *
          * @param {PathItem} path the path to intersect with
          * @param {Object} [options] the boolean operation options
@@ -1069,8 +1074,11 @@ PathItem.inject(new function() {
          * @option [options.insert=true] {Boolean} whether the resulting item
          *     should be inserted back into the scene graph, above both paths
          *     involved in the operation
-         * @option [options.stroke=false] {Boolean} whether the operation should
-         *     be performed on the stroke or on the fill of the first path
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, removing the parts of
+         *     the curves that intersect with the area of the second path.
          *
          * @param {PathItem} path the path to subtract
          * @param {Object} [options] the boolean operation options
@@ -1090,7 +1098,7 @@ PathItem.inject(new function() {
          *
          * @param {PathItem} path the path to exclude the intersection of
          * @param {Object} [options] the boolean operation options
-         * @return {PathItem} the resulting group item
+         * @return {PathItem} the resulting path item
          */
         exclude: function(path, options) {
             return traceBoolean(this, path, 'exclude', options);
@@ -1105,18 +1113,22 @@ PathItem.inject(new function() {
          * @option [options.insert=true] {Boolean} whether the resulting item
          *     should be inserted back into the scene graph, above both paths
          *     involved in the operation
-         * @option [options.stroke=false] {Boolean} whether the operation should
-         *     be performed on the stroke or on the fill of the first path
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections.
          *
          * @param {PathItem} path the path to divide by
          * @param {Object} [options] the boolean operation options
-         * @return {Group} the resulting group item
+         * @return {PathItem} the resulting path item
          */
         divide: function(path, options) {
-            return createResult([
-                    this.subtract(path, options),
-                    this.intersect(path, options)
-                ], true, this, path, options);
+            return options && (options.trace == false || options.stroke)
+                    ? splitBoolean(this, path, 'divide')
+                    : createResult([
+                        this.subtract(path, options),
+                        this.intersect(path, options)
+                    ], true, this, path, options);
         },
 
         /*
