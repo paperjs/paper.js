@@ -164,15 +164,17 @@ PathItem.inject(new function() {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getCrossings(_path2),
+            added = {},
             paths = [];
 
         function addPath(path) {
             // Simple see if the point halfway across the open path is inside
             // path2, and include / exclude the path based on the operator.
-            if (_path2.contains(path.getPointAt(path.getLength() / 2))
+            if (!added[path._id] &&
+                    _path2.contains(path.getPointAt(path.getLength() / 2))
                     ^ subtract) {
                 paths.unshift(path);
-                return true;
+                return added[path._id] = true;
             }
         }
 
@@ -190,7 +192,7 @@ PathItem.inject(new function() {
                 _path1.getLastSegment().setHandleOut(0, 0);
             }
         }
-        // At the end, check what's left from our path after all the splitting.
+        // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
         return createResult(Group, paths, false, path1, path2);
     }

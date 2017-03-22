@@ -287,7 +287,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         for (var id in selectionItems) {
             var item = selectionItems[id],
                 selection = item._selection;
-            if (selection & /*#=*/ItemSelection.ITEM && item.isInserted()) {
+            if ((selection & /*#=*/ItemSelection.ITEM) && item.isInserted()) {
                 items.push(item);
             } else if (!selection) {
                 this._updateSelection(item);
