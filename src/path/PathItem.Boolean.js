@@ -1040,6 +1040,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to unite with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .unite(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         unite: function(path, options) {
             return traceBoolean(this, path, 'unite', options);
@@ -1058,6 +1063,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to intersect with
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .intersect(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         intersect: function(path, options) {
             return traceBoolean(this, path, 'intersect', options);
@@ -1076,6 +1086,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to subtract
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .subtract(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         subtract: function(path, options) {
             return traceBoolean(this, path, 'subtract', options);
@@ -1092,6 +1107,11 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to exclude the intersection of
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting group item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .exclude(new Path.Circle([50, 50], 25));
+         * result.fillColor = 'red';
          */
         exclude: function(path, options) {
             return traceBoolean(this, path, 'exclude', options);
@@ -1112,6 +1132,12 @@ PathItem.inject(new function() {
          * @param {PathItem} path the path to divide by
          * @param {Object} [options] the boolean operation options
          * @return {Group} the resulting group item
+         *
+         * @example {@paperscript}
+         * var result = new Path.RegularPolygon([50, 50], 3, 40)
+         *     .divide(new Path.Circle([50, 50], 25));
+         * result.children[0].fillColor = 'red';
+         * result.children[1].fillColor = 'blue';
          */
         divide: function(path, options) {
             return createResult(Group, [
