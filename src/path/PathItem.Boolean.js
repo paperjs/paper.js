@@ -78,12 +78,12 @@ PathItem.inject(new function() {
         return result;
     }
 
-    function computeBoolean(path1, path2, operation, options) {
+    function traceBoolean(path1, path2, operation, options) {
         // Only support subtract and intersect operations when computing stroke
-        // based boolean operations.
-        if (options && options.stroke &&
+        // based boolean operations (options.split = true).
+        if (options && (options.trace == false || options.stroke) &&
                 /^(subtract|intersect)$/.test(operation))
-            return computeStrokeBoolean(path1, path2, operation === 'subtract');
+            return splitBoolean(path1, path2, operation === 'subtract');
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // NOTE: The result paths might not belong to the same type i.e.
@@ -160,7 +160,7 @@ PathItem.inject(new function() {
         return createResult(CompoundPath, paths, true, path1, path2, options);
     }
 
-    function computeStrokeBoolean(path1, path2, subtract) {
+    function splitBoolean(path1, path2, subtract) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getCrossings(_path2),
@@ -194,7 +194,7 @@ PathItem.inject(new function() {
         }
         // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
-        return createResult(Group, paths, false, path1, path2);
+        return createResult(CompoundPath, paths, true, path1, path2);
     }
 
     /*
@@ -1042,7 +1042,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         unite: function(path, options) {
-            return computeBoolean(this, path, 'unite', options);
+            return traceBoolean(this, path, 'unite', options);
         },
 
         /**
@@ -1060,7 +1060,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         intersect: function(path, options) {
-            return computeBoolean(this, path, 'intersect', options);
+            return traceBoolean(this, path, 'intersect', options);
         },
 
         /**
@@ -1078,7 +1078,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting path item
          */
         subtract: function(path, options) {
-            return computeBoolean(this, path, 'subtract', options);
+            return traceBoolean(this, path, 'subtract', options);
         },
 
         /**
@@ -1094,7 +1094,7 @@ PathItem.inject(new function() {
          * @return {PathItem} the resulting group item
          */
         exclude: function(path, options) {
-            return computeBoolean(this, path, 'exclude', options);
+            return traceBoolean(this, path, 'exclude', options);
         },
 
         /**

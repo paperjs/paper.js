@@ -177,7 +177,7 @@ test('#719', function() {
     compareBoolean(result, expected);
 });
 
-test('#757 (path1.intersect(pat2, { stroke: true }))', function() {
+test('#757 (path1.intersect(pat2, { trace: false }))', function() {
     var rect = new Path.Rectangle({
         from: [100, 250],
         to: [350, 350]
@@ -194,7 +194,7 @@ test('#757 (path1.intersect(pat2, { stroke: true }))', function() {
         ]
     });
 
-    var res = line.intersect(rect, { stroke: true });
+    var res = line.intersect(rect, { trace: false });
 
     var children = res.removeChildren();
     var first = children[0];
@@ -862,6 +862,61 @@ test('#1123', function() {
     var p2 = new Path.Rectangle(120, 120, 60, 60);
     compareBoolean(function() { return p1.subtract(p2).subtract(p2); },
         'M100,200v-100h100v100zM180,180v-60h-60v60z');
+});
+
+test('#1221', function() {
+    var rect1 = new Path.Rectangle({
+        point: [100, 100],
+        size: [200, 200]
+    });
+
+    var circle = new Path.Circle({
+        center: [100, 100],
+        radius: 100
+    });
+
+    compareBoolean(function() { return rect1.subtract(circle, { trace: false }); },
+        'M200,100h100v200h-200v-100');
+    compareBoolean(function() { return rect1.subtract(circle, { trace: true }); },
+        'M100,300v-100c55.22847,0 100,-44.77153 100,-100h100v200z');
+
+
+    var blob = PathItem.create("M534,273C171.7,111,60.5,117.1,30,158c-40.5,54.3,31.5,210.2,111,222c60.8,9,88-71.9,159-66c81.6,6.8,99.6,118.3,179,128c33.8,4.1,83.1-9.7,150-90")
+    var rect2 = new Path.Rectangle({
+        point: [150, 100],
+        size: [300, 300]
+    });
+
+    compareBoolean(function() { return blob.subtract(rect2, { trace: false }); },
+        'M534,273c-29.65069,-13.2581 -57.61955,-25.39031 -84,-36.46967M150,138.13156c-71.67127,-11.53613 -105.25987,0.10217 -120,19.86844c-40.5,54.3 31.5,210.2 111,222c3.08303,0.45637 6.07967,0.68158 9,0.69867M409.85616,400c18.87105,20.95032 39.82014,38.41763 69.14384,42c33.8,4.1 83.1,-9.7 150,-90');
+    compareBoolean(function() { return blob.subtract(rect2, { trace: true }); },
+        'M629,352c-66.9,80.3 -116.2,94.1 -150,90c-29.3237,-3.58237 -50.27279,-21.04968 -69.14384,-42h40.14384v-163.46967c26.38045,11.07937 54.34931,23.21157 84,36.46967M141,380c-79.5,-11.8 -151.5,-167.7 -111,-222c14.74013,-19.76627 48.32873,-31.40457 120,-19.86844v242.56712c-2.92033,-0.01709 -5.91697,-0.24231 -9,-0.69867z');
+
+    var rect3 = new Path.Rectangle({
+        point: [150, 100],
+        size: [300, 150]
+    });
+
+    compareBoolean(function() { return blob.subtract(rect3, { trace: false }); },
+        'M534,273c-29.65069,-13.2581 -57.61955,-25.39031 -84,-36.46967M150,138.13156c-71.67127,-11.53613 -105.25987,0.10217 -120,19.86844c-40.5,54.3 31.5,210.2 111,222c60.8,9 88,-71.9 159,-66c81.6,6.8 99.6,118.3 179,128c33.8,4.1 83.1,-9.7 150,-90');
+    compareBoolean(function() { return blob.subtract(rect3, { trace: true }); },
+        'M629,352c-66.9,80.3 -116.2,94.1 -150,90c-79.4,-9.7 -97.4,-121.2 -179,-128c-71,-5.9 -98.2,75 -159,66c-79.5,-11.8 -151.5,-167.7 -111,-222c14.74013,-19.76627 48.32873,-31.40457 120,-19.86844v111.86844h300v-13.46967c26.38045,11.07937 54.34931,23.21157 84,36.46967');
+
+
+    var rect4 = new Path.Rectangle({
+        point: [200, 200],
+        size: [400, 200]
+    });
+
+    var line = new Path.Line({
+        from: [400, 300],
+        to: [400, 600]
+    });
+
+    var division = line.divide(rect4, { trace: false });
+    equals(function() { return division.children.length; }, 2);
+    compareBoolean(function() { return division.children[0]; }, 'M400,400v200');
+    compareBoolean(function() { return division.children[1]; }, 'M400,300v100');
 });
 
 test('#1239 / #1073', function() {

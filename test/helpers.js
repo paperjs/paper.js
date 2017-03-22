@@ -144,9 +144,15 @@ var comparePixels = function(actual, expected, message, options) {
     function rasterize(item, group, resolution) {
         var raster = null;
         if (group) {
+            var parent = item.parent,
+                index = item.index;
             group.addChild(item);
             raster = group.rasterize(resolution, false);
-            item.remove();
+            if (parent) {
+                parent.insertChild(index, item);
+            } else {
+                item.remove();
+            }
         }
         return raster;
     }
@@ -471,8 +477,9 @@ var compareBoolean = function(actual, expected, message, options) {
     }
     var style = {
         strokeColor: 'black',
-        fillColor: expected &&
-                (expected.closed || expected.children && 'yellow') || null
+        fillColor: expected && (expected.closed
+            || expected.firstChild && expected.firstChild.closed && 'yellow')
+            || null
     };
     if (actual)
         actual.style = style;
