@@ -163,10 +163,10 @@ PathItem.inject(new function() {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getCrossings(_path2),
-            added = {},
-            paths = [],
+            subtract = operation === 'subtract',
             divide = operation === 'divide',
-            subtract = operation === 'subtract';
+            added = {},
+            paths = [];
 
         function addPath(path) {
             // Simple see if the point halfway across the open path is inside
