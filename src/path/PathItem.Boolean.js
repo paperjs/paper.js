@@ -1077,8 +1077,8 @@ PathItem.inject(new function() {
          * @param {Object} [options] the boolean operation options
          * @return {PathItem} the resulting path item
          */
-        subtract: function(path) {
-            return computeBoolean(this, path, 'subtract');
+        subtract: function(path, options) {
+            return computeBoolean(this, path, 'subtract', options);
         },
 
         /**
