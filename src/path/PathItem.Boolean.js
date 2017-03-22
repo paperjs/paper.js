@@ -61,12 +61,11 @@ PathItem.inject(new function() {
                 : res;
     }
 
-    function createResult(ctor, paths, reduce, path1, path2, options) {
-        var result = new ctor(Item.NO_INSERT);
+    function createResult(paths, simplify, path1, path2, options) {
+        var result = new CompoundPath(Item.NO_INSERT);
         result.addChildren(paths, true);
         // See if the item can be reduced to just a simple Path.
-        if (reduce)
-            result = result.reduce({ simplify: true });
+        result = result.reduce({ simplify: simplify });
         if (!(options && options.insert == false)) {
             // Insert the resulting path above whichever of the two paths appear
             // further up in the stack.
@@ -157,7 +156,7 @@ PathItem.inject(new function() {
                     });
         }
 
-        return createResult(CompoundPath, paths, true, path1, path2, options);
+        return createResult(paths, true, path1, path2, options);
     }
 
     function splitBoolean(path1, path2, subtract) {
@@ -194,7 +193,7 @@ PathItem.inject(new function() {
         }
         // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
-        return createResult(CompoundPath, paths, true, path1, path2);
+        return createResult(paths, false, path1, path2);
     }
 
     /*
@@ -1114,7 +1113,7 @@ PathItem.inject(new function() {
          * @return {Group} the resulting group item
          */
         divide: function(path, options) {
-            return createResult(Group, [
+            return createResult([
                     this.subtract(path, options),
                     this.intersect(path, options)
                 ], true, this, path, options);

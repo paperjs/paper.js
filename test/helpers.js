@@ -475,17 +475,34 @@ var compareBoolean = function(actual, expected, message, options) {
             message = getFunctionMessage(actual);
         actual = actual();
     }
-    var style = {
-        strokeColor: 'black',
-        fillColor: expected && (expected.closed
-            || expected.firstChild && expected.firstChild.closed && 'yellow')
-            || null
-    };
-    if (actual)
+    var parent,
+        index,
+        style = {
+            strokeColor: 'black',
+            fillColor: expected && (expected.closed
+                || expected.firstChild && expected.firstChild.closed && 'yellow')
+                || null
+        };
+    if (actual) {
+        parent = actual.parent;
+        index = actual.index;
+        // Remove it from parent already now, in case we're comparing children
+        // of compound-paths, so we can apply styling to them.
+        if (parent && parent instanceof CompoundPath) {
+            actual.remove();
+        } else {
+            parent = null;
+        }
         actual.style = style;
-    if (expected)
+    }
+    if (expected) {
         expected.style = style;
+    }
     equals(actual, expected, message, Base.set({ rasterize: true }, options));
+    if (parent) {
+        // Insert it back.
+        parent.insertChild(index, actual);
+    }
 };
 
 var createSVG = function(str, attrs) {
