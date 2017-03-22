@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Mar 21 11:55:42 2017 +0100
+ * Date: Wed Mar 22 14:24:40 2017 +0100
  *
  ***
  *
@@ -2764,7 +2764,7 @@ var Project = PaperScopeItem.extend({
 		for (var id in selectionItems) {
 			var item = selectionItems[id],
 				selection = item._selection;
-			if (selection & 1 && item.isInserted()) {
+			if ((selection & 1) && item.isInserted()) {
 				items.push(item);
 			} else if (!selection) {
 				this._updateSelection(item);
@@ -9879,13 +9879,15 @@ PathItem.inject(new function() {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getCrossings(_path2),
+			added = {},
 			paths = [];
 
 		function addPath(path) {
-			if (_path2.contains(path.getPointAt(path.getLength() / 2))
+			if (!added[path._id] &&
+					_path2.contains(path.getPointAt(path.getLength() / 2))
 					^ subtract) {
 				paths.unshift(path);
-				return true;
+				return added[path._id] = true;
 			}
 		}
 
@@ -10447,8 +10449,8 @@ PathItem.inject(new function() {
 			return computeBoolean(this, path, 'intersect', options);
 		},
 
-		subtract: function(path) {
-			return computeBoolean(this, path, 'subtract');
+		subtract: function(path, options) {
+			return computeBoolean(this, path, 'subtract', options);
 		},
 
 		exclude: function(path, options) {
