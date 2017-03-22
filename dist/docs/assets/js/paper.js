@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 22 14:24:40 2017 +0100
+ * Date: Wed Mar 22 14:42:11 2017 +0100
  *
  ***
  *
@@ -521,7 +521,7 @@ Base.inject({
 
 		exportJSON: function(obj, options) {
 			var json = Base.serialize(obj, options);
-			return options && options.asString === false
+			return options && options.asString == false
 					? json
 					: JSON.stringify(json);
 		},
@@ -650,7 +650,7 @@ var Emitter = {
 		if (setTarget)
 			event.currentTarget = this;
 		for (var i = 0, l = handlers.length; i < l; i++) {
-			if (handlers[i].apply(this, args) === false) {
+			if (handlers[i].apply(this, args) == false) {
 				if (event && event.stop)
 					event.stop();
 				break;
@@ -2991,7 +2991,7 @@ new function() {
 			matrix.translate(point);
 		matrix._owner = this;
 		this._style = new Style(project._currentStyle, this, project);
-		if (internal || hasProps && props.insert === false
+		if (internal || hasProps && props.insert == false
 			|| !settings.insertItems && !(hasProps && props.insert === true)) {
 			this._setProject(project);
 		} else {
@@ -9447,7 +9447,7 @@ Path.inject({ statics: new function() {
 
 	function createPath(segments, closed, args) {
 		var props = Base.getNamed(args),
-			path = new Path(props && props.insert === false && Item.NO_INSERT);
+			path = new Path(props && props.insert == false && Item.NO_INSERT);
 		path._add(segments);
 		path._closed = closed;
 		return path.set(props);
@@ -9530,7 +9530,7 @@ Path.inject({ statics: new function() {
 				through = Point.readNamed(arguments, 'through'),
 				to = Point.readNamed(arguments, 'to'),
 				props = Base.getNamed(arguments),
-				path = new Path(props && props.insert === false
+				path = new Path(props && props.insert == false
 						&& Item.NO_INSERT);
 			path.moveTo(from);
 			path.arcTo(through, to);
@@ -9810,7 +9810,7 @@ PathItem.inject(new function() {
 		result.addChildren(paths, true);
 		if (reduce)
 			result = result.reduce({ simplify: true });
-		if (!(options && options.insert === false)) {
+		if (!(options && options.insert == false)) {
 			result.insertAbove(path2 && path1.isSibling(path2)
 					&& path1.getIndex() < path2.getIndex() ? path2 : path1);
 		}
@@ -13848,7 +13848,7 @@ new function() {
 		attrs.y -= size.height / 2;
 		attrs.width = size.width;
 		attrs.height = size.height;
-		attrs.href = options.embedImages === false && image && image.src
+		attrs.href = options.embedImages == false && image && image.src
 				|| item.toDataURL();
 		return SvgElement.create('image', attrs, formatter);
 	}
