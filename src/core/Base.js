@@ -528,7 +528,7 @@ Base.inject(/** @lends Base# */{
 
         exportJSON: function(obj, options) {
             var json = Base.serialize(obj, options);
-            return options && options.asString === false
+            return options && options.asString == false
                     ? json
                     : JSON.stringify(json);
         },

@@ -95,7 +95,7 @@ new function() {
         attrs.y -= size.height / 2;
         attrs.width = size.width;
         attrs.height = size.height;
-        attrs.href = options.embedImages === false && image && image.src
+        attrs.href = options.embedImages == false && image && image.src
                 || item.toDataURL();
         return SvgElement.create('image', attrs, formatter);
     }

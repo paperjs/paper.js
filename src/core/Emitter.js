@@ -90,7 +90,7 @@ var Emitter = {
         if (setTarget)
             event.currentTarget = this;
         for (var i = 0, l = handlers.length; i < l; i++) {
-            if (handlers[i].apply(this, args) === false) {
+            if (handlers[i].apply(this, args) == false) {
                 // If the handler returns false, prevent the default behavior
                 // and stop propagation of the event by calling stop()
                 if (event && event.stop)

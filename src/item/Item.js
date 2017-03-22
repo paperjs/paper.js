@@ -154,7 +154,7 @@ new function() { // Injection scope for various item event handlers
         this._style = new Style(project._currentStyle, this, project);
         // Do not add to the project if it's an internal path,  or if
         // props.insert  or settings.isnertItems is false.
-        if (internal || hasProps && props.insert === false
+        if (internal || hasProps && props.insert == false
             || !settings.insertItems && !(hasProps && props.insert === true)) {
             this._setProject(project);
         } else {

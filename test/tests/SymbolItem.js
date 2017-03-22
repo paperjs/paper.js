@@ -97,7 +97,7 @@ test('SymbolDefinition item selection', function() {
     path.selected = true;
     var definition = new SymbolDefinition(path);
     equals(function() {
-        return definition.item.selected === false;
+        return definition.item.selected == false;
     }, true);
     equals(function() {
         return paper.project.selectedItems.length === 0;

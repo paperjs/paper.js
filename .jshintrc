@@ -7,6 +7,7 @@
   "supernew": true,
   "laxbreak": true,
   "eqeqeq": false,
+  "-W041": false,
   "eqnull": true,
   "loopfunc": true,
   "boss": true,

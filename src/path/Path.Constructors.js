@@ -22,7 +22,7 @@ Path.inject({ statics: new function() {
 
     function createPath(segments, closed, args) {
         var props = Base.getNamed(args),
-            path = new Path(props && props.insert === false && Item.NO_INSERT);
+            path = new Path(props && props.insert == false && Item.NO_INSERT);
         path._add(segments);
         // No need to use setter for _closed since _add() called _changed().
         path._closed = closed;
@@ -335,7 +335,7 @@ Path.inject({ statics: new function() {
                 to = Point.readNamed(arguments, 'to'),
                 props = Base.getNamed(arguments),
                 // See createPath() for an explanation of the following sequence
-                path = new Path(props && props.insert === false
+                path = new Path(props && props.insert == false
                         && Item.NO_INSERT);
             path.moveTo(from);
             path.arcTo(through, to);
