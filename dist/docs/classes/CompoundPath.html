@@ -6760,7 +6760,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, keeping the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -6812,7 +6812,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, removing the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -6890,7 +6890,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting group item
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
 </li>
 
 		
@@ -6915,7 +6915,7 @@ function onMouseDown(event) {
     <ul class="member-list">
 <h4>Options:</h4>
 <li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; whether the operation should  be performed on the stroke or on the fill of the first path &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections. &mdash;&nbsp;default: <tt>true</tt></li>
 </ul>
 	
 <ul class="member-list">
@@ -6942,7 +6942,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Group.html"><tt>Group</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting group item
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
 </li>
 
 		

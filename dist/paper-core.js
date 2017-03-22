@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Mar 22 23:26:26 2017 +0100
+ * Date: Wed Mar 22 23:45:11 2017 +0100
  *
  ***
  *
@@ -9820,7 +9820,7 @@ PathItem.inject(new function() {
 	function traceBoolean(path1, path2, operation, options) {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
-			return splitBoolean(path1, path2, operation === 'subtract');
+			return splitBoolean(path1, path2, operation);
 		var _path1 = preparePath(path1, true),
 			_path2 = path2 && path1 !== path2 && preparePath(path2, true),
 			operator = operators[operation];
@@ -9874,17 +9874,19 @@ PathItem.inject(new function() {
 		return createResult(paths, true, path1, path2, options);
 	}
 
-	function splitBoolean(path1, path2, subtract) {
+	function splitBoolean(path1, path2, operation) {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
 			crossings = _path1.getCrossings(_path2),
 			added = {},
-			paths = [];
+			paths = [],
+			divide = operation === 'divide',
+			subtract = operation === 'subtract';
 
 		function addPath(path) {
-			if (!added[path._id] &&
+			if (!added[path._id] && (divide ||
 					_path2.contains(path.getPointAt(path.getLength() / 2))
-					^ subtract) {
+						^ subtract)) {
 				paths.unshift(path);
 				return added[path._id] = true;
 			}
@@ -10457,10 +10459,12 @@ PathItem.inject(new function() {
 		},
 
 		divide: function(path, options) {
-			return createResult([
-					this.subtract(path, options),
-					this.intersect(path, options)
-				], true, this, path, options);
+			return options && (options.trace == false || options.stroke)
+					? splitBoolean(this, path, 'divide')
+					: createResult([
+						this.subtract(path, options),
+						this.intersect(path, options)
+					], true, this, path, options);
 		},
 
 		resolveCrossings: function() {
