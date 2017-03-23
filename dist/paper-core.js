@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Mar 23 00:14:03 2017 +0100
+ * Date: Thu Mar 23 13:13:32 2017 +0100
  *
  ***
  *
@@ -4764,6 +4764,10 @@ var Shape = Item.extend({
 
 	toShape: '#clone',
 
+	_asPathItem: function() {
+		return this.toPath(false);
+	},
+
 	_draw: function(ctx, param, viewMatrix, strokeMatrix) {
 		var style = this._style,
 			hasFill = style.hasFill(),
@@ -6851,23 +6855,17 @@ new function() {
 },
 new function() {
 
-	function addLocation(locations, include, c1, t1, p1, c2, t2, p2, overlap) {
+	function addLocation(locations, include, c1, t1, c2, t2, overlap) {
 		var excludeStart = !overlap && c1.getPrevious() === c2,
 			excludeEnd = !overlap && c1 !== c2 && c1.getNext() === c2,
 			tMin = 1e-8,
 			tMax = 1 - tMin;
-		if (t1 == null)
-			t1 = c1.getTimeOf(p1);
 		if (t1 !== null && t1 >= (excludeStart ? tMin : 0) &&
 			t1 <= (excludeEnd ? tMax : 1)) {
-			if (t2 == null)
-				t2 = c2.getTimeOf(p2);
 			if (t2 !== null && t2 >= (excludeEnd ? tMin : 0) &&
 				t2 <= (excludeStart ? tMax : 1)) {
-				var loc1 = new CurveLocation(c1, t1,
-						p1 || c1.getPointAtTime(t1), overlap),
-					loc2 = new CurveLocation(c2, t2,
-						p2 || c2.getPointAtTime(t2), overlap);
+				var loc1 = new CurveLocation(c1, t1, null, overlap),
+					loc2 = new CurveLocation(c2, t2, null, overlap);
 				loc1._intersection = loc2;
 				loc2._intersection = loc1;
 				if (!include || include(loc1)) {
@@ -6910,8 +6908,8 @@ new function() {
 			var t = (tMinNew + tMaxNew) / 2,
 				u = (uMin + uMax) / 2;
 			addLocation(locations, include,
-					flip ? c2 : c1, flip ? u : t, null,
-					flip ? c1 : c2, flip ? t : u, null);
+					flip ? c2 : c1, flip ? u : t,
+					flip ? c1 : c2, flip ? t : u);
 		} else {
 			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
 			if (tMaxClip - tMinClip > 0.8) {
@@ -7029,10 +7027,9 @@ new function() {
 				p1 = Curve.getPoint(v1, t1),
 				t2 = Curve.getTimeOf(v2, p1);
 			if (t2 !== null) {
-				var p2 = Curve.getPoint(v2, t2);
 				addLocation(locations, include,
-						flip ? c2 : c1, flip ? t2 : t1, flip ? p2 : p1,
-						flip ? c1 : c2, flip ? t1 : t2, flip ? p1 : p2);
+						flip ? c2 : c1, flip ? t2 : t1,
+						flip ? c1 : c2, flip ? t1 : t2);
 			}
 		}
 	}
@@ -7042,7 +7039,9 @@ new function() {
 				v1[0], v1[1], v1[6], v1[7],
 				v2[0], v2[1], v2[6], v2[7]);
 		if (pt) {
-			addLocation(locations, include, c1, null, pt, c2, null, pt);
+			addLocation(locations, include,
+					c1, Curve.getTimeOf(v1, pt),
+					c2, Curve.getTimeOf(v2, pt));
 		}
 	}
 
@@ -7064,8 +7063,8 @@ new function() {
 				for (var i = 0; i < 2; i++) {
 					var overlap = overlaps[i];
 					addLocation(locations, include,
-							c1, overlap[0], null,
-							c2, overlap[1], null, true);
+							c1, overlap[0],
+							c2, overlap[1], true);
 				}
 			} else {
 				var straight1 = Curve.isStraight(v1),
@@ -7092,8 +7091,8 @@ new function() {
 							p2 = new Point(v2[i2], v2[i2 + 1]);
 						if (p1.isClose(p2, epsilon)) {
 							addLocation(locations, include,
-									c1, t1, p1,
-									c2, t2, p2);
+									c1, t1,
+									c2, t2);
 						}
 					}
 				}
@@ -7107,8 +7106,8 @@ new function() {
 		if (info.type === 'loop') {
 			var roots = info.roots;
 			addLocation(locations, include,
-					c1, roots[0], null,
-					c1, roots[1], null);
+					c1, roots[0],
+					c1, roots[1]);
 		}
 	  return locations;
 	}
