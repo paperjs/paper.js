@@ -111,6 +111,49 @@ test('circle and square (existing segments overlaps on curves)', function() {
     ]);
 });
 
+test('intersecting paths with applyMatrix = true / false', function() {
+    function test(ctor, applyMatrix) {
+        var name = ctor.name.toLowerCase();
+
+        var item1 = new ctor.Rectangle({
+            point: [0, 0],
+            size: [200, 200],
+            applyMatrix: applyMatrix
+        });
+
+        var offset = new Point(200, 200);
+
+        item1.translate(offset);
+
+        var item2 = new ctor.Rectangle({
+            point: [100, 100],
+            size: [200, 200],
+            applyMatrix: applyMatrix
+        });
+
+        if (!applyMatrix)
+            offset = new Point(0, 0);
+
+        if (ctor === Path) {
+            testIntersections(item1.getIntersections(item2), [{
+                point: new Point(0, 100).add(offset), index: 0, time: 0.5,
+                crossing: true
+            }, {
+                point: new Point(100, 0).add(offset), index: 1, time: 0.5,
+                crossing: true
+            }]);
+        }
+
+        equals(item1.intersects(item2), true,
+                name + '1.intersects(' + name + '2);');
+    }
+
+    test(Path, true);
+    test(Path, false);
+    // Also tests #intersects() on Shape
+    test(Shape, false);
+});
+
 test('#904', function() {
     var path1 = new Path([
             [347.65684372173973, 270.4315945523045, 0, 0, 22.844385382059784, -25.115215946843847],

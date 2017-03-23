@@ -187,6 +187,10 @@ var Shape = Item.extend(/** @lends Shape# */{
 
     toShape: '#clone',
 
+    _asPathItem: function() {
+        return this.toPath(false);
+    },
+
     _draw: function(ctx, param, viewMatrix, strokeMatrix) {
         var style = this._style,
             hasFill = style.hasFill(),
