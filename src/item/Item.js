@@ -2200,7 +2200,7 @@ new function() { // Injection scope for hit-test functions shared with project
                             // need to perform further checks, otherwise perform
                             // a proper #intersects() check:
                             || param.overlapping && (bounds.contains(rect)
-                                || param.path.intersects(child, childMatrix))))
+                                || param.path.intersects(child))))
                         add = false;
                 }
                 if (add && child.matches(options)) {

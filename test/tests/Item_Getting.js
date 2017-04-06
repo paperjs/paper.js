@@ -238,6 +238,18 @@ test('Project#getItems() overlapping', function() {
         });
         return matches.length == 0;
     }, true);
+
+    var shape = new Shape.Rectangle({
+        point: [20, 20],
+        size: [40, 40]
+    });
+    equals(function() {
+        var matches = project.getItems({
+            class: Shape,
+            overlapping: [0, 0, 21, 21]
+        });
+        return matches.length == 1;
+    }, true);
 });
 
 test('Project#getItems() inside', function() {
