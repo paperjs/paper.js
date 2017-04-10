@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Apr 10 09:21:08 2017 +0200
+ * Date: Mon Apr 10 09:30:52 2017 +0200
  *
  ***
  *
@@ -9449,7 +9449,7 @@ Path.inject({ statics: new function() {
 			path = new Path(props && props.insert == false && Item.NO_INSERT);
 		path._add(segments);
 		path._closed = closed;
-		return path.set(props, {insert: true});
+		return path.set(props, { insert: true });
 	}
 
 	function createEllipse(center, radius, args) {
