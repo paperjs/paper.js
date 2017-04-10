@@ -28,7 +28,7 @@ Path.inject({ statics: new function() {
         path._closed = closed;
         // Set named arguments at the end, since some depend on geometry to be
         // defined (e.g. #clockwise)
-        return path.set(props);
+        return path.set(props, {insert: true});
     }
 
     function createEllipse(center, radius, args) {

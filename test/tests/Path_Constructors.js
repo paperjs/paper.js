@@ -130,3 +130,8 @@ test('new Path.Line({ from: from, to: to })', function() {
     });
     equals(path.segments.toString(), '{ point: { x: 20, y: 20 } },{ point: { x: 40, y: 40 } }');
 });
+
+test('new Path.Line({insert: false, from:[50, 50], to:[100, 100]})', function() {
+    var path = new Path.Line({insert: false, from:[50, 50], to:[100, 100]});
+    equals(path.insert === false, false);
+});
