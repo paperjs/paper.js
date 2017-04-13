@@ -103,7 +103,7 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getDefinition()} instead.
+     * @deprecated use {@link #definition} instead.
      */
     getSymbol: '#getDefinition',
     setSymbol: '#setDefinition',

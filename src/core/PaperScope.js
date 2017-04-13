@@ -123,10 +123,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *
      * @option [settings.insertItems=true] {Boolean} controls whether newly
      *     created items are automatically inserted into the scene graph, by
-     *     adding them to {@link Project#getActiveLayer()}
+     *     adding them to {@link Project#activeLayer}
      * @option [settings.applyMatrix=true] {Boolean} controls what value newly
-     *     created items have their {@link Item#getApplyMatrix()} property set
-     *     to (Note that not all items can set this to `false`)
+     *     created items have their {@link Item#applyMatrix} property set to
+     *     (Note that not all items can set this to `false`)
      * @option [settings.handleSize=4] {Number} the size of the curve handles
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-

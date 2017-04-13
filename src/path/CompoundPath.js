@@ -181,7 +181,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The first Segment contained within the compound-path, a short-cut to
-     * calling {@link Path#getFirstSegment()} on {@link Item#getFirstChild()}.
+     * calling {@link Path#firstSegment} on {@link Item#firstChild}.
      *
      * @bean
      * @type Segment
@@ -193,7 +193,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The last Segment contained within the compound-path, a short-cut to
-     * calling {@link Path#getLastSegment()} on {@link Item#getLastChild()}.
+     * calling {@link Path#lastChild} on {@link Item#lastChild}.
      *
      * @bean
      * @type Segment
@@ -220,7 +220,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The first Curve contained within the compound-path, a short-cut to
-     * calling {@link Path#getFirstCurve()} on {@link Item#getFirstChild()}.
+     * calling {@link Path#firstCurve} on {@link Item#firstChild}.
      *
      * @bean
      * @type Curve
@@ -232,7 +232,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The last Curve contained within the compound-path, a short-cut to
-     * calling {@link Path#getLastCurve()} on {@link Item#getLastChild()}.
+     * calling {@link Path#lastCurve} on {@link Item#lastChild}.
      *
      * @bean
      * @type Curve
@@ -244,7 +244,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The area that the compound-path's geometry is covering, calculated by
-     * getting th e{@link Path#getArea()} of each sub-path and it adding up.
+     * getting the {@link Path#area} of each sub-path and it adding up.
      * Note that self-intersecting paths and sub-paths of different orientation
      * can result in areas that cancel each other out.
      *
@@ -261,7 +261,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The total length of all sub-paths in this compound-path, calculated by
-     * getting the {@link Path#getLength()} of each sub-path and it adding up.
+     * getting the {@link Path#length} of each sub-path and it adding up.
      *
      * @bean
      * @type Number

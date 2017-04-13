@@ -158,7 +158,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @bean
      * @private
-     * @deprecated use {@link #getStyle()} instead.
+     * @deprecated use {@link #style} instead.
      */
     getCharacterStyle: '#getStyle',
     setCharacterStyle: '#setStyle',
@@ -166,7 +166,7 @@ var TextItem = Item.extend(/** @lends TextItem# */{
     /**
      * @bean
      * @private
-     * @deprecated use {@link #getStyle()} instead.
+     * @deprecated use {@link #style} instead.
      */
     getParagraphStyle: '#getStyle',
     setParagraphStyle: '#setStyle'

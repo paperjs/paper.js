@@ -632,8 +632,7 @@ statics: /** @lends Curve */{
      * Splits the specified curve values into curves that are monotone in the
      * specified coordinate direction.
      *
-     * @param {Number[]} v the curve values, as returned by
-     *     {@link Curve#getValues()}
+     * @param {Number[]} v the curve values, as returned by {@link Curve#values}
      * @param {Boolean} [dir=false] the direction in which the curves should be
      *     monotone, `false`: in x-direction, `true`: in y-direction
      * @return {Number[][]} an array of curve value arrays of the resulting

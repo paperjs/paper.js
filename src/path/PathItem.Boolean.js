@@ -453,8 +453,8 @@ PathItem.inject(new function() {
      * @param {Point} point the location for which to determine the winding
      *     contribution
      * @param {Curve[]} curves the curves that describe the shape against which
-     *     to check, as returned by {@link Path#getCurves()} or
-     *     {@link CompoundPath#getCurves()}
+     *     to check, as returned by {@link Path#curves} or
+     *     {@link CompoundPath#curves}
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
      * @param {Boolean} [closed=false] determines how areas should be closed

@@ -219,7 +219,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * @private
      * @bean
-     * @deprecated use {@link #getResolution()} instead.
+     * @deprecated use {@link #resolution} instead.
      */
     getPpi: '#getResolution',
 
