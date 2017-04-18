@@ -383,9 +383,14 @@ new function() {
             var onExport = options.onExport;
             if (onExport)
                 node = onExport(item, node, options) || node;
-            var data = JSON.stringify(item._data);
-            if (data && data !== '{}' && data !== 'null')
-                node.setAttribute('data-paper-data', data);
+            // `item._data` may contain data that can not be serialized to JSON
+            // To avoid TypeError: Converting circular structure to JSON(…), added option `excludeData`
+            if(!options.excludeData){
+                var data = JSON.stringify(item._data);
+                if (data && data !== '{}' && data !== 'null')
+                    node.setAttribute('data-paper-data', data);
+            }
+
         }
         return node && applyStyle(item, node, isRoot);
     }
