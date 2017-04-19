@@ -103,7 +103,7 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getDefinition()} instead.
+     * @deprecated use {@link #definition} instead.
      */
     getSymbol: '#getDefinition',
     setSymbol: '#setDefinition',
@@ -118,7 +118,7 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
         return item._getCachedBounds(item._matrix.prepended(matrix), options);
     },
 
-    _hitTestSelf: function(point, options, viewMatrix, strokeMatrix) {
+    _hitTestSelf: function(point, options, viewMatrix) {
         var res = this._definition._item._hitTest(point, options, viewMatrix);
         // TODO: When the symbol's definition is a path, should hitResult
         // contain information like HitResult#curve?

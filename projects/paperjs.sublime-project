@@ -15,6 +15,9 @@
       "folder_exclude_patterns": ["jsdoc"]
     },
     {
+      "path": "../packages",
+    },
+    {
       "path": "../travis",
     },
     {

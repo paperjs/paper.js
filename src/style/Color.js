@@ -834,7 +834,7 @@ var Color = Base.extend(new function() {
                         + components.join(',') + ')';
         },
 
-        toCanvasStyle: function(ctx) {
+        toCanvasStyle: function(ctx, matrix) {
             if (this._canvasStyle)
                 return this._canvasStyle;
             // Normal colors are simply represented by their CSS string.
@@ -846,10 +846,20 @@ var Color = Base.extend(new function() {
                 stops = gradient._stops,
                 origin = components[1],
                 destination = components[2],
+                highlight = components[3],
+                inverse = matrix && matrix.inverted(),
                 canvasGradient;
+            // If the item's content is transformed by a matrix, we need to
+            // inverse transform the gradient points, as they are defined in
+            // item's parent coordinate system.
+            if (inverse) {
+                origin = inverse._transformPoint(origin);
+                destination = inverse._transformPoint(destination);
+                if (highlight)
+                    highlight = inverse._transformPoint(highlight);
+            }
             if (gradient._radial) {
-                var radius = destination.getDistance(origin),
-                    highlight = components[3];
+                var radius = destination.getDistance(origin);
                 if (highlight) {
                     var vector = highlight.subtract(origin);
                     if (vector.getLength() > radius)

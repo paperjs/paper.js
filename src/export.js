@@ -35,8 +35,9 @@ paper = new (PaperScope.inject(Base.exports, {
 // If we're on node, require some additional functionality now before finishing:
 // - PaperScript support in require() with sourceMaps
 // - exportFrames / exportImage on CanvasView
-if (paper.agent.node)
+if (paper.agent.node) {
     require('./node/extend.js')(paper);
+}
 
 // https://github.com/umdjs/umd
 if (typeof define === 'function' && define.amd) {

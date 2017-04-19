@@ -1,6 +1,55 @@
 # Change Log
 
-## `0.10.3` (Unreleased)
+## `0.10.4`
+
+### Changed
+- Separate `paper` module on NPM into: `paper`, `paper-jsdom` and
+ `paper-jsdom-canvas` (#1252):
+    - `paper` is the main library, and can be used directly in a browser
+      context, e.g. a web browser or worker.
+    - `paper-jsdom` is a shim module for Node.js, offering headless use with SVG
+      importing / exporting.
+    - `paper-jsdom-canvas` is a shim module for Node.js, offering rendering
+      through Node Canvas.
+
+### Added
+- PaperScript: Support newer, external versions of Acorn.js for PaperScript
+  parsing, opening the doors to ES 2015 (#1183, #1275).
+- Hit Tests: Implement `options.position` to hit `Item#position` (#1249).
+- Split `Item#copyTo()` into `#addTo()` and `#copyTo()`.
+
+### Fixed
+- Intersections: Bring back special handling of curve end-points (#1284).
+- Intersections: Correctly handle `Item#applyMatrix = false` (#1289).
+- Boolean: Bring back on-path winding handling (#1281).
+- Boolean: Pass on options in `PathItem#subtract(path, options)` (#1221).
+- Boolean: Implement `options.trace` as a way to perform boolean operations on
+  the strokes / traces instead of the fills / areas of the involved paths
+  (#1221).
+- Boolean: Always return `CompoundPath items (#1221).
+- Style: Fix handling of gradient matrices when `Item#applyMatrix = false`
+  (#1238).
+- Style: Prevent cleaning pre-existing styles when setting `Item#style` to an
+  object (#1277).
+- Mouse Events: Only handle dragItem if the hitItem responds to `mousedrag`
+  events (#1247, #1286).
+- Bounds: Clear parent's bounds cache when item's visibility changes (#1248).
+- Bounds: Fix calculation of internal bounds with children and
+  `Item#applyMatrix = false` (#1250).
+- Hit-Tests: Fix issue with non-invertible matrices ( #1271).
+- SVG Import: Improve handling of sizes in percent (#1242).
+- Rectangle: Improve handling of dimension properties, dealing better with
+  `left` / `top` / `right` / `bottom` / `center` values (#1147).
+- Scene Graph: Do not allow inserting same item as child multiple times.
+- Path: Fix handling of `insert = false` in `new Path.Constructor()`
+  initialization (#1305).
+- PaperScript: Fix positive unary operator.
+- Docs: Fix parameter sequence in Matrix constructor (#1273).
+- Docs: Add documentation for options.bound and options.matrix in `#exportSVG()`
+  (#1254).
+- Docs: Fix wrong `@link` references to bean properties.
+
+## `0.10.3`
 
 ### Changed
 - Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
@@ -77,6 +126,8 @@
 - Hit Tests: Fix stroke hit-testing for rounded shape items (#1207).
 - Fix matrix cloning for groups with `#applyMatrix = false` ( #1225).
 - Correctly handle offset in `Curve#divideAt(offset)` (#1230).
+- Fix issue with `Curve#isStraight()` where handles were checked incorrectly
+  for collinearity (#1269). 
 - Fix `Line#getSide()` imprecisions when points are on the line.
 - Docs: Fix documentation of `Project#hitTestAll()` (#536).
 - Docs: Improve description of `option.class` value in `Project#hitTest()`

@@ -11,11 +11,15 @@
  */
 
 var gulp = require('gulp'),
-    bump = require('gulp-bump'),
+    jsonEditor = require('gulp-json-editor'),
     git = require('gulp-git-streamed'),
     run = require('run-sequence'),
     shell = require('gulp-shell'),
     options = require('../utils/options.js');
+
+var jsonOptions = {
+    end_with_newline: true
+};
 
 gulp.task('publish', function() {
     if (options.branch !== 'develop') {
@@ -23,6 +27,7 @@ gulp.task('publish', function() {
     }
     return run(
         'publish:version',
+        'publish:packages',
         'publish:dist',
         'publish:commit',
         'publish:release',
@@ -34,9 +39,23 @@ gulp.task('publish:version', function() {
     // Reset the version value since we're executing this on the develop branch,
     // but we don't wan the published version suffixed with '-develop'.
     options.resetVersion();
-    return gulp.src([ 'package.json' ])
-        .pipe(bump({ version: options.version }))
+    return gulp.src(['package.json'])
+        .pipe(jsonEditor({
+            version: options.version
+        }, jsonOptions))
         .pipe(gulp.dest('.'));
+});
+
+gulp.task('publish:packages', function() {
+    options.resetVersion(); // See 'publish:version'
+    return gulp.src(['packages/**/*.json'])
+        .pipe(jsonEditor({
+            version: options.version,
+            dependencies: {
+                paper: options.version
+            }
+        }, jsonOptions))
+        .pipe(gulp.dest('packages'));
 });
 
 gulp.task('publish:dist', ['dist']);

@@ -268,7 +268,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
 
     /**
      * @bean
-     * @deprecated use {@link #getSymbolDefinitions()} instead.
+     * @deprecated use {@link #symbolDefinitions} instead.
      */
     getSymbols: 'getSymbolDefinitions',
 
@@ -287,7 +287,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         for (var id in selectionItems) {
             var item = selectionItems[id],
                 selection = item._selection;
-            if (selection & /*#=*/ItemSelection.ITEM && item.isInserted()) {
+            if ((selection & /*#=*/ItemSelection.ITEM) && item.isInserted()) {
                 items.push(item);
             } else if (!selection) {
                 this._updateSelection(item);
@@ -424,9 +424,11 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     Segment#handleIn} / {@link Segment#handleOut}) of path segments.
      * @option options.ends {Boolean} only hit-test for the first or last
      *     segment points of open path items
-     * @option options.bounds {Boolean} hit-test the corners and side-centers of
-     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.position {Boolean} hit-test the {@link Item#position} of
+     *     of items, which depends on the setting of {@link Item#pivot}
      * @option options.center {Boolean} hit-test the {@link Rectangle#center} of
+     *     the bounding rectangle of items ({@link Item#bounds})
+     * @option options.bounds {Boolean} hit-test the corners and side-centers of
      *     the bounding rectangle of items ({@link Item#bounds})
      * @option options.guides {Boolean} hit-test items that have {@link
      *     Item#guide} set to `true`
@@ -758,6 +760,14 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * @name Project#exportSVG
      * @function
      *
+     * @option [options.bounds='view'] {String|Rectangle} the bounds of the area
+     *     to export, either as a string ({@values 'view', content'}), or a
+     *     {@link Rectangle} object: `'view'` uses the view bounds,
+     *     `'content'` uses the stroke bounds of all content
+     * @option [options.matrix=paper.view.matrix] {Matrix} the matrix with which
+     *     to transform the exported content: If `options.bounds` is set to
+     *     `'view'`, `paper.view.matrix` is used, for all other settings of
+     *     `options.bounds` the identity matrix is used.
      * @option [options.asString=false] {Boolean} whether a SVG node or a
      *     `String` is to be returned
      * @option [options.precision=5] {Number} the amount of fractional digits in

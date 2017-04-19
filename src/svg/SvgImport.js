@@ -389,13 +389,6 @@ new function() {
                                 .translate(bounds.getPoint())
                                 .scale(bounds.getSize()));
                         }
-                        if (item instanceof Shape) {
-                            // When applying gradient colors to shapes, we need
-                            // to offset the shape's initial position to get the
-                            // same results as SVG.
-                            color.transform(new Matrix().translate(
-                                item.getPosition(true).negate()));
-                        }
                     }
                 }
             }
@@ -528,23 +521,25 @@ new function() {
      * @param {Item} item the item to apply the style and attributes to
      */
     function applyAttributes(item, node, isRoot) {
-        // SVG attributes can be set both as styles and direct node attributes,
-        // so we need to handle both.
-        var parent = node.parentNode,
-            styles = {
-                node: DomElement.getStyles(node) || {},
-                // Do not check for inheritance if this is root, since we want
-                // the default SVG settings to stick. Also detect defs parents,
-                // of which children need to explicitly inherit their styles.
-                parent: !isRoot && !/^defs$/i.test(parent.tagName)
-                        && DomElement.getStyles(parent) || {}
-            };
-        Base.each(attributes, function(apply, name) {
-            var value = getAttribute(node, name, styles);
-            // 'clip-path' attribute returns a new item, support it here:
-            item = value !== undefined && apply(item, value, name, node, styles)
-                    || item;
-        });
+        if (node.style) {
+            // SVG attributes can be set both as styles and direct node
+            // attributes, so we need to handle both.
+            var parent = node.parentNode,
+                styles = {
+                    node: DomElement.getStyles(node) || {},
+                    // Do not check for inheritance if this is root, to make the
+                    // default SVG settings stick. Also detect defs parents, of
+                    // which children need to explicitly inherit their styles.
+                    parent: !isRoot && !/^defs$/i.test(parent.tagName)
+                            && DomElement.getStyles(parent) || {}
+                };
+            Base.each(attributes, function(apply, name) {
+                var value = getAttribute(node, name, styles);
+                // 'clip-path' attribute returns a new item, support it here:
+                item = value !== undefined
+                        && apply(item, value, name, node, styles) || item;
+            });
+        }
         return item;
     }
 
@@ -578,9 +573,10 @@ new function() {
             parent,
             next;
         if (isRoot && isElement) {
-            // Set rootSize root element size, fall-back to view size.
-            rootSize = getSize(node, null, null, true)
-                    || paper.getView().getSize();
+            // Set rootSize to view size, as getSize() may refer to it (#1242).
+            rootSize = paper.getView().getSize();
+            // Now set rootSize to the root element size, and fall-back to view.
+            rootSize = getSize(node, null, null, true) || rootSize;
             // We need to move the SVG node to the current document, so default
             // styles are correctly inherited! For this we create and insert a
             // temporary SVG container which is removed again at the end. This

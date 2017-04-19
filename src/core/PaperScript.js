@@ -15,12 +15,33 @@
  * @namespace
  */
 Base.exports.PaperScript = function() {
-    // Locally turn of exports and define for inlined acorn.
-    // Just declaring the local vars is enough, as they will be undefined.
-    var exports, define,
-        // The scope into which the library is loaded.
-        scope = this;
-/*#*/ include('../../node_modules/acorn/acorn.min.js', { exports: false });
+    // `this` == global scope, as the function is called with `.call(this);`
+    var global = this,
+        // See if there is a global Acorn in the browser already.
+        acorn = global.acorn;
+    // Also try importing an outside version of Acorn.
+    if (!acorn && typeof require !== 'undefined') {
+        try { acorn = require('acorn'); } catch(e) {}
+    }
+    // If no Acorn was found, load the bundled version.
+    if (!acorn) {
+        // Provide our own local exports and module object so that Acorn gets
+        // assigned to it and ends up in the local acorn object.
+        var exports, module;
+        acorn = exports = module = {};
+/*#*/ include('../../node_modules/acorn/acorn.js', { exports: false });
+        // Clear object again if it wasn't loaded here; for load.js, see below.
+        if (!acorn.version)
+            acorn = null;
+    }
+
+    function parse(code, options) {
+        // NOTE: When using load.js, Acorn will end up in global.acorn and will
+        // not be immediately available, so we need to check for it here again.
+        // We also give global.acorn the preference over the bundled one, so
+        // people can load their own preferred version in sketch.paperjs.org
+        return (global.acorn || acorn).parse(code, options);
+    }
 
     // Operators to overload
 
@@ -37,7 +58,7 @@ Base.exports.PaperScript = function() {
 
     var unaryOperators = {
         '-': '__negate',
-        '+': null
+        '+': '__self'
     };
 
     // Inject underscored math methods as aliases to Point, Size and Color.
@@ -48,7 +69,12 @@ Base.exports.PaperScript = function() {
             // classes using Straps.js' #inject()
             this['__' + name] = '#' + name;
         },
-        {}
+        {
+            // Needed for '+' unary operator:
+            __self: function() {
+                return this;
+            }
+        }
     );
     Point.inject(fields);
     Size.inject(fields);
@@ -79,7 +105,7 @@ Base.exports.PaperScript = function() {
     // Unary Operator Handler
     function $__(operator, value) {
         var handler = unaryOperators[operator];
-        if (handler && value && value[handler])
+        if (value && value[handler])
             return value[handler]();
         switch (operator) {
         case '+': return +value;
@@ -88,10 +114,6 @@ Base.exports.PaperScript = function() {
     }
 
     // AST Helpers
-
-    function parse(code, options) {
-        return scope.acorn.parse(code, options);
-    }
 
     /**
      * Compiles PaperScript code into JavaScript code.
@@ -146,7 +168,7 @@ Base.exports.PaperScript = function() {
         // Returns the code between two nodes, e.g. an operator and white-space.
         function getBetween(left, right) {
             return code.substring(getOffset(left.range[1]),
-                    getOffset(right.range[0]));
+                    getOffset(right.range[0]) - 1);
         }
 
         // Replaces the node's code with a new version and keeps insertions
@@ -342,7 +364,7 @@ Base.exports.PaperScript = function() {
             };
         }
         // Now do the parsing magic
-        walkAST(parse(code, { ranges: true }));
+        walkAST(parse(code, { ranges: true, preserveParens: true }));
         if (map) {
             if (offsetCode) {
                 // Adjust the line offset of the resulting code if required.

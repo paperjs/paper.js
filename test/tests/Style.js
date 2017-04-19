@@ -57,24 +57,38 @@ test('setting Project#currentStyle to an object', function() {
 
 test('setting Path#style to an object', function() {
     var path = new Path();
+    path.strokeWidth = 10;
     path.style = {
         fillColor: 'red',
         strokeColor: 'green'
     };
     equals(path.fillColor, new Color('red'), 'path.fillColor');
     equals(path.strokeColor, new Color('green'), 'path.strokeColor');
+    equals(path.strokeWidth, 10,
+            'path.strokeWidth, set outside object should not be cleared');
+    equals(path.style.fillColor, new Color('red'), 'path.style.fillColor');
+    equals(path.style.strokeColor, new Color('green'), 'path.style.strokeColor');
+    equals(path.style.strokeWidth, 10,
+            'path.style.strokeWidth, set outside object should not be cleared');
 });
 
 test('setting Group#style to an object', function() {
     var group = new Group();
     var path = new Path();
     group.addChild(path);
+    group.strokeWidth = 10;
     group.style = {
         fillColor: 'red',
         strokeColor: 'green'
     };
     equals(path.fillColor, new Color('red'), 'path.fillColor');
     equals(path.strokeColor, new Color('green'), 'path.strokeColor');
+    equals(path.strokeWidth, 10,
+            'path.strokeWidth, set outside object should not be cleared');
+    equals(path.style.fillColor, new Color('red'), 'path.style.fillColor');
+    equals(path.style.strokeColor, new Color('green'), 'path.style.strokeColor');
+    equals(path.style.strokeWidth, 10,
+            'path.style.strokeWidth, set outside object should not be cleared');
 });
 
 test('getting Group#fillColor', function() {

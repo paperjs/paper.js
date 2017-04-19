@@ -12,14 +12,20 @@
 
 QUnit.module('Path Intersections');
 
+function createPath(curve) {
+    return new Path([curve.segment1, curve.segment2]);
+}
+
 function testIntersections(intersections, results) {
     equals(intersections.length, results.length, 'intersections.length');
-    for (var i = 0; i < results.length; i++) {
+    for (var i = 0, l = Math.min(results.length, intersections.length); i < l; i++) {
         var inter = intersections[i];
         var values = results[i];
         var name = 'intersections[' + i + ']';
-        equals(inter.point, new Point(values.point), name + '.point');
-        equals(inter.index, values.index, name + '.index');
+        if (values.point != null)
+            equals(inter.point, new Point(values.point), name + '.point');
+        if (values.index != null)
+            equals(inter.index, values.index, name + '.index');
         if (values.time != null)
             equals(inter.time, values.time, name + '.time');
         if (values.crossing != null)
@@ -30,9 +36,9 @@ function testIntersections(intersections, results) {
 test('#565', function() {
     var curve1 = new Curve(new Point(421.75945, 416.40481), new Point(-181.49299, -224.94946), new Point(44.52004, -194.13319), new Point(397.47615, 331.34712));
     var curve2 = new Curve(new Point(360.09446, 350.97254), new Point(-58.58867, -218.45806), new Point(-109.55091, -220.99561), new Point(527.83582, 416.79948));
-    var path1 = new Path([curve1.segment1, curve1.segment2]);
-    var path2 = new Path([curve2.segment1, curve2.segment2]);
-    testIntersections(curve1.getIntersections(curve2), [
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 354.13635, y: 220.81369 }, index: 0, time: 0.46725, crossing: true },
         { point: { x: 390.24772, y: 224.27351 }, index: 0, time: 0.71605, crossing: true }
     ]);
@@ -40,9 +46,9 @@ test('#565', function() {
     // Alternative pair of curves that has the same issue
     var curve1 = new Curve(new Point(484.9026237381622, 404.11001967731863), new Point(-265.1185871567577, -204.00749347172678), new Point(-176.7118886578828, 111.96015905588865), new Point(438.8191690435633, 429.0297837462276));
     var curve2 = new Curve(new Point(388.25280445162207, 490.95032326877117), new Point(-194.0586572047323, -50.77360603027046), new Point(-184.71034923568368, -260.5346686206758), new Point(498.41401199810207, 455.55853731930256)); var path1 = new Path([curve1.segment1, curve1.segment2]);
-    var path1 = new Path([curve1.segment1, curve1.segment2]);
-    var path2 = new Path([curve2.segment1, curve2.segment2]);
-    testIntersections(curve1.getIntersections(curve2), [
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 335.62744, y: 338.15939 }, index: 0, time: 0.26516, crossing: true }
     ]);
 });
@@ -50,18 +56,18 @@ test('#565', function() {
 test('#568', function() {
     var curve1 = new Curve(new Point(509.05465863179415, 440.1211663847789), new Point(233.6728838738054, -245.8216403145343), new Point(-270.755685120821, 53.14275110140443), new Point(514.079892472364, 481.95262297522277));
     var curve2 = new Curve(new Point(542.1666181180626, 451.06309361290187), new Point(179.91238399408758, 148.68241581134498), new Point(193.42650789767504, -47.97609066590667), new Point(423.66228222381324, 386.3876062911004));
-    var path1 = new Path([curve1.segment1, curve1.segment2]);
-    var path2 = new Path([curve2.segment1, curve2.segment2]);
-    testIntersections(curve1.getIntersections(curve2), [
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 547.96568, y: 396.66339 }, index: 0, time: 0.07024, crossing: true },
         { point: { x: 504.79973, y: 383.37886 }, index: 0, time: 0.48077, crossing: true }
     ]);
 
     var curve1 = new Curve(new Point(0, 0), new Point(20, 40) , new Point (-30, -50), new Point(50, 50));
     var curve2 = new Curve(new Point(50, 50), new Point(20, 100), new Point (-30, -120), new Point(250, 250));
-    var path1 = new Path([curve1.segment1, curve1.segment2]);
-    var path2 = new Path([curve2.segment1, curve2.segment2]);
-    testIntersections(curve1.getIntersections(curve2), [
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 50, y: 50 }, index: 0, time: 1, crossing: false }
     ]);
 });
@@ -71,8 +77,7 @@ test('#570', function() {
     var curve2 = new Curve(new Point(311.16034791674826, 406.2985255840872), new Point(39.997020018940304, -8.347079462067768), new Point(-73.86292504547487, -77.47859270504358), new Point(465, 467));
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
-    var ints = curve1.getIntersections(curve2);
-    testIntersections(curve1.getIntersections(curve2), [
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 311.16035, y: 406.29853 }, index: 0, time: 1, crossing: false }
     ]);
 });
@@ -82,7 +87,7 @@ test('#571', function() {
     var curve2 = new Curve(new Point(420.1235851920127, 275.8351912321666), new Point(-10.77224553077383, -53.21262197949682), new Point(-259.2129470250785, -258.56165821345775), new Point(465, 467));
     var path1 = new Path([curve1.segment1, curve1.segment2]);
     var path2 = new Path([curve2.segment1, curve2.segment2]);
-    testIntersections(curve1.getIntersections(curve2), [
+    testIntersections(path1.getIntersections(path2), [
         { point: { x: 352.39945, y: 330.44135 }, index: 0, time: 0.41159, crossing: true },
         { point: { x: 420.12359, y: 275.83519 }, index: 0, time: 1, crossing: false }
     ]);
@@ -104,6 +109,49 @@ test('circle and square (existing segments overlaps on curves)', function() {
         { point: { x: 190, y: 110 }, index: 2, time: 0, crossing: true },
         { point: { x: 110, y: 190 }, index: 3, time: 0, crossing: true }
     ]);
+});
+
+test('intersecting paths with applyMatrix = true / false', function() {
+    function test(ctor, applyMatrix) {
+        var name = ctor.name.toLowerCase();
+
+        var item1 = new ctor.Rectangle({
+            point: [0, 0],
+            size: [200, 200],
+            applyMatrix: applyMatrix
+        });
+
+        var offset = new Point(200, 200);
+
+        item1.translate(offset);
+
+        var item2 = new ctor.Rectangle({
+            point: [100, 100],
+            size: [200, 200],
+            applyMatrix: applyMatrix
+        });
+
+        if (!applyMatrix)
+            offset = new Point(0, 0);
+
+        if (ctor === Path) {
+            testIntersections(item1.getIntersections(item2), [{
+                point: new Point(0, 100).add(offset), index: 0, time: 0.5,
+                crossing: true
+            }, {
+                point: new Point(100, 0).add(offset), index: 1, time: 0.5,
+                crossing: true
+            }]);
+        }
+
+        equals(item1.intersects(item2), true,
+                name + '1.intersects(' + name + '2);');
+    }
+
+    test(Path, true);
+    test(Path, false);
+    // Also tests #intersects() on Shape
+    test(Shape, false);
 });
 
 test('#904', function() {
@@ -224,7 +272,7 @@ test('#1197', function() {
 });
 
 test('#1233', function() {
-    var p = new Path([
+    var path = new Path([
         [274, 253],
         [274.39360933873525, 252.93741452470064, 0, 0, -0.6159287834059803, 0.8638915013756937],
         [271.7973629022481, 254.56035493761536, 1.0464052751698083, -0.17525065612978258, 0, 0],
@@ -233,8 +281,8 @@ test('#1233', function() {
         [273.5560469948133, 254.11108376712414],
         true
     ]);
-    p.scale(100);
-    testIntersections(p.getIntersections(), [
+    path.scale(100);
+    testIntersections(path.getIntersections(), [
         { point: { x: 366.12645, y: 320.20927 }, index: 1, time: 0, crossing: false },
         { point: { x: 366.07584, y: 320.28024 }, index: 1, time: 0.00027, crossing: true },
         { point: { x: 366.02122, y: 320.3568 }, index: 1, time: 0.00057, crossing: true },
@@ -270,4 +318,28 @@ test('#1270', function() {
         { point: { x: 500.36244, y: 522.99072 }, index: 0, time: 0.03613, crossing: true },
         { point: { x: 463.83556, y: 476.44545 }, index: 0, time: 0.52936, crossing: true }
     ]);
-})
+});
+
+test('#1284', function() {
+    // Sketch 1
+    var curve1 = new Curve([664.0386774947868,382.45193387473927],[0.854973312711149,-17.099466254222136],[-17.09946625422214,-0.8549733127111154],[696.5480661252607,353.03867749478684]);
+    var curve2 = new Curve([664.0386774947868,382.4519338747394],[-0.854973312711093,17.099466254222147],[-17.09946625422214,-0.8549733127111177],[693.4519338747393,414.96132250521316]);
+    var expected = [
+        { point: { x: 664.03868, y: 382.45193 }, time: 0 }
+    ];
+    testIntersections(curve1.getIntersections(curve2), expected);
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), expected);
+
+    // Sketch 2
+    var curve1 = new Curve([725.9613225052132,385.5480661252606],[4.121287844621423,-82.42575689242983],[33.676217018891116,53.91523058931191],[670.1308066286094,179.78451157644233]);
+    var curve2 = new Curve([725.9613225052132,385.54806612526073],[1.752865851700387,-35.057317034006445],[17.232666369345022,25.982789528039472],[702.42903006491,293.5923946244755]);
+    var expected = [
+        { point: { x: 725.96132, y: 385.54807 }, time: 0 }
+    ];
+    testIntersections(curve1.getIntersections(curve2), expected);
+    var path1 = createPath(curve1);
+    var path2 = createPath(curve2);
+    testIntersections(path1.getIntersections(path2), expected);
+});

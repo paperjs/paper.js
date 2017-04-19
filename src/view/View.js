@@ -608,7 +608,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#rotate
      * @function
      * @param {Number} angle the rotation angle
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      * @see Matrix#rotate(angle[, center])
      */
 
@@ -619,7 +619,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#scale
      * @function
      * @param {Number} scale the scale factor
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      */
     /**
      * Scales the view by the given values from its center point, or optionally
@@ -629,7 +629,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {Number} hor the horizontal scale factor
      * @param {Number} ver the vertical scale factor
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      */
 
     /**
@@ -639,7 +639,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#shear
      * @function
      * @param {Point} shear the horziontal and vertical shear factors as a point
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(shear[, center])
      */
     /**
@@ -650,7 +650,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {Number} hor the horizontal shear factor
      * @param {Number} ver the vertical shear factor
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(hor, ver[, center])
      */
 
@@ -661,7 +661,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @name View#skew
      * @function
      * @param {Point} skew the horziontal and vertical skew angles in degrees
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(skew[, center])
      */
     /**
@@ -672,7 +672,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @function
      * @param {Number} hor the horizontal skew angle in degrees
      * @param {Number} ver the vertical sskew angle in degrees
-     * @param {Point} [center={@link View#getCenter()}]
+     * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(hor, ver[, center])
      */
 
@@ -1399,8 +1399,15 @@ new function() { // Injection scope for event handling on the browser
                         && (Date.now() - clickTime < 300);
                     downItem = clickItem = hitItem;
                     // Only start dragging if the mousedown event has not
-                    // prevented the default.
-                    dragItem = !prevented && hitItem;
+                    // prevented the default, and if the hitItem or any of its
+                    // parents actually respond to mousedrag events.
+                    if (!prevented && hitItem) {
+                        var item = hitItem;
+                        while (item && !item.responds('mousedrag'))
+                            item = item._parent;
+                        if (item)
+                            dragItem = hitItem;
+                    }
                     downPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on the hit-item,

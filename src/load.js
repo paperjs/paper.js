@@ -43,7 +43,7 @@ if (typeof window === 'object') {
         include('../node_modules/stats.js/build/stats.min.js');
         include('paper.js');
     }
-} else {
+} else if (typeof require !== 'undefined') {
     // Node.js based loading through Prepro.js:
     var prepro = require('prepro/lib/node'),
         // Load the default browser-based options for further amendments.

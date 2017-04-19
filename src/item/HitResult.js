@@ -127,6 +127,8 @@ var HitResult = Base.extend(/** @lends HitResult# */{
                 // Only first or last segment hits on path (mutually exclusive
                 // with segments: true)
                 ends: false,
+                // Hit test the item position
+                position: false,
                 // Hit test the center of the bounds
                 center: false,
                 // Hit test the corners and side-centers of the bounding box

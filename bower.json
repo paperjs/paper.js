@@ -18,6 +18,7 @@
     "gulpfile.js",
     "gulp",
     "node_modules",
+    "packages",
     "projects",
     "src",
     "test",
@@ -37,6 +38,7 @@
     "canvas",
     "svg",
     "paper",
-    "paper.js"
+    "paper.js",
+    "paperjs"
   ]
 }

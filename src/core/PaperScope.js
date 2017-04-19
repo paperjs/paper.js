@@ -57,7 +57,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         this.project = null;
         this.projects = [];
         this.tools = [];
-        this.palettes = [];
         // Assign a unique id to each scope .
         this._id = PaperScope._id++;
         PaperScope._scopes[this._id] = this;
@@ -124,10 +123,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *
      * @option [settings.insertItems=true] {Boolean} controls whether newly
      *     created items are automatically inserted into the scene graph, by
-     *     adding them to {@link Project#getActiveLayer()}
+     *     adding them to {@link Project#activeLayer}
      * @option [settings.applyMatrix=true] {Boolean} controls what value newly
-     *     created items have their {@link Item#getApplyMatrix()} property set
-     *     to (Note that not all items can set this to `false`)
+     *     created items have their {@link Item#applyMatrix} property set to
+     *     (Note that not all items can set this to `false`)
      * @option [settings.handleSize=4] {Number} the size of the curve handles
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
@@ -277,14 +276,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         // Remove all projects, views and tools.
         // This also removes the installed event handlers.
         var projects = this.projects,
-            tools = this.tools,
-            palettes = this.palettes;
+            tools = this.tools;
         for (var i = projects.length - 1; i >= 0; i--)
             projects[i].remove();
         for (var i = tools.length - 1; i >= 0; i--)
             tools[i].remove();
-        for (var i = palettes.length - 1; i >= 0; i--)
-            palettes[i].remove();
     },
 
     remove: function() {
