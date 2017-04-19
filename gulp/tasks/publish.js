@@ -11,15 +11,17 @@
  */
 
 var gulp = require('gulp'),
-    jsonEditor = require('gulp-json-editor'),
     git = require('gulp-git-streamed'),
+    jsonEditor = require('gulp-json-editor'),
+    merge = require('merge-stream'),
     run = require('run-sequence'),
     shell = require('gulp-shell'),
     options = require('../utils/options.js');
 
-var jsonOptions = {
-    end_with_newline: true
-};
+var packages = ['paper-jsdom', 'paper-jsdom-canvas'],
+    jsonOptions = {
+        end_with_newline: true
+    };
 
 gulp.task('publish', function() {
     if (options.branch !== 'develop') {
@@ -46,16 +48,32 @@ gulp.task('publish:version', function() {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('publish:packages', function() {
-    options.resetVersion(); // See 'publish:version'
-    return gulp.src(['packages/**/*.json'])
-        .pipe(jsonEditor({
-            version: options.version,
-            dependencies: {
-                paper: options.version
-            }
-        }, jsonOptions))
-        .pipe(gulp.dest('packages'));
+gulp.task('publish:packages',
+    packages.map(function(name) {
+        return 'publish:packages:' + name;
+    })
+);
+
+packages.forEach(function(name) {
+    gulp.task('publish:packages:' + name, function() {
+        options.resetVersion(); // See 'publish:version'
+        var message = 'Release version ' + options.version,
+            path = 'packages/' + name,
+            opts = { cwd: path };
+        gulp.src(['package.json'], opts)
+            .pipe(jsonEditor({
+                version: options.version,
+                dependencies: {
+                    paper: options.version
+                }
+            }, jsonOptions))
+            .pipe(gulp.dest(path))
+            .pipe(git.add(opts))
+            .pipe(git.commit(message, opts))
+            .pipe(git.tag('v' + options.version, message, opts))
+            .pipe(git.push('origin', 'master', { args: '--tags', cwd: path }))
+            .pipe(shell('npm publish', opts));
+    });
 });
 
 gulp.task('publish:dist', ['dist']);

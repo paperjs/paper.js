@@ -1,6 +1,6 @@
 # Change Log
 
-## `0.10.4`
+## `0.11.0`
 
 ### Changed
 - Separate `paper` module on NPM into: `paper`, `paper-jsdom` and
@@ -8,9 +8,11 @@
     - `paper` is the main library, and can be used directly in a browser
       context, e.g. a web browser or worker.
     - `paper-jsdom` is a shim module for Node.js, offering headless use with SVG
-      importing / exporting.
-    - `paper-jsdom-canvas` is a shim module for Node.js, offering rendering
-      through Node Canvas.
+      importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
+    - `paper-jsdom-canvas` is a shim module for Node.js, canvas rendering
+      through [Node-Canvas](https://github.com/Automattic/node-canvas) as well
+      as SVG importing and exporting through
+      [jsdom](https://github.com/tmpvar/jsdom).
 
 ### Added
 - PaperScript: Support newer, external versions of Acorn.js for PaperScript

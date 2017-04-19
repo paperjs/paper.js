@@ -1,6 +1,6 @@
 // Please note: When loading paper as a normal module installed in node_modules,
 // you would use this instead:
-// var paper = require('paper');
+// var paper = require('paper-jsdom-canvas');
 var paper = require('../../dist/paper-core.js');
 var path = require('path');
 var fs = require('fs');

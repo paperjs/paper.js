@@ -2,8 +2,8 @@
     path = gulp/jsdoc
     url = https://github.com/paperjs/jsdoc.git
 [submodule "paper-jsdom"]
-	path = packages/paper-jsdom
+    path = packages/paper-jsdom
     url = https://github.com/paperjs/paper-jsdom.git
 [submodule "paper-jsdom-canvas"]
-	path = packages/paper-jsdom-canvas
+    path = packages/paper-jsdom-canvas
     url = https://github.com/paperjs/paper-jsdom-canvas.git
