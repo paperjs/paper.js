@@ -79,6 +79,7 @@ packages.forEach(function(name) {
 gulp.task('publish:dist', ['dist']);
 
 gulp.task('publish:commit', function() {
+    options.resetVersion(); // See 'publish:version'
     var message = 'Release version ' + options.version;
     return gulp.src('.')
         .pipe(git.checkout('develop'))
