@@ -12,7 +12,7 @@
 
 // Add some useful extensions to HTMLCanvasElement:
 // - HTMLCanvasElement#type, so we can switch to a PDF canvas
-// - Various Node Canvas methods, routed through from HTMLCanvasElement:
+// - Various Node-Canvas methods, routed through from HTMLCanvasElement:
 //   toBuffer, pngStream, createPNGStream, jpgStream, createJPGStream
 
 module.exports = function(self, requireName) {

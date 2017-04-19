@@ -14,25 +14,23 @@ and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist) br
 ## Installing Paper.js
 
 The recommended way to install and maintain Paper.js as a dependency in your
-project is through NPM or Bower for browsers, and through NPM for Node.js.
+project is through the [Node.js Package Manager (NPM)](https://www.npmjs.com/)
+for browsers, Node.js or Electron, as well as through Bower for browsers.
 
 If NPM or Bower is already installed, simply type one of these
 commands in your project folder:
 
-    npm install paper
-
-or:
-    
-    bower install paper
+```sh
+npm install paper
+# Or:
+bower install paper
+```
 
 Upon execution, you will find a `paper` folder inside the project's
 `node_modules` / `bower_components` folder.
 
-For more information on how to install NPM and Bower, read the chapter
-[Installing Node.js, NPM and Bower](#installing-nodejs-npm-and-bower).
-
-To learn more about its features for dependence tracking, see
-<http://bower.io/>.
+For more information on how to install Node.js and NPM, read the chapter
+[Installing Node.js and NPM](#installing-nodejs-and-npm).
 
 ### Which Version to Use?
 
@@ -45,48 +43,50 @@ Paper.js, in minified and normal variants:
   support nor Acorn.js. You can use this to shave off some bytes and compilation
   time when working with JavaScript directly.
 
-### Installing Node.js, NPM and Bower
+### Installing Node.js and NPM
 
-Node.js is required by Bower, as well as by Gulp.js, which needs to be installed
-if you intend to build the library or its documentation by yourself.
+Node.js comes with the Node Package Manager (NPM). There are many tutorials
+explaining the different ways to install Node.js on different platforms. It is
+generally not recommended to install Node.js through OS-supplied package
+managers, as the its development cycles move fast and these versions are often
+out-of-date.
 
-There are many tutorials explaining the different ways to install Node.js on
-different platforms. It is generally not recommended to install Node.js through
-OS-supplied package managers, as the its development cycles move fast and these
-versions are often out-of-date.
-
-NVM can be used instead to install and maintain multiple versions of Node.js on
-the same platform, as often required by different projects:
-<http://blog.dynamicprogrammer.com/2014/02/18/installing-node-js-on-mac-osx.html>
+[NVM](https://github.com/creationix/nvm) can be used instead to install and
+maintain multiple versions of Node.js on the same platform, as often required by
+different projects:  
+<https://nodesource.com/blog/installing-node-js-tutorial-using-nvm-on-mac-os-x-and-ubuntu/>
 
 on OSX, [Homebrew](http://brew.sh/) is also a good option if one version of
-Node.js on the platform is enough:
-<http://blog.teamtreehouse.com/install-node-js-npm-mac>
+Node.js that is kept up to date with `brew update` is enough:  
+<http://treehouse.github.io/installation-guides/mac/node-mac.html>
 
 Homebrew is recommended on OSX also if you intend to install Paper.js for
 Node.js, as described in the next paragraph.
 
-For Linux see <http://nodejs.org/download/> to locate 32-bit and 64-bit nodejs
-binaries as well as sources, or use NVM: <http://learn.bevry.me/node/install/>
-
-Once Node.js (with NPM) has been installed you can install bower *globally*
-using the following command:
-
-    npm install -g bower
-
-And from there onwards, you should be able to use Bower like this:
-
-    bower search paperjs
+For Linux, see <http://nodejs.org/download/> to locate 32-bit and 64-bit Node.js
+binaries as well as sources, or use NVM, as described in the paragraph above.
 
 ### Installing Paper.js for Node.js
 
-NPM is used to install Paper.js for use in Node.js. But before installing, you
-need the Cairo Graphics library installed, see: <http://cairographics.org/>.
+Paper.js comes in three different versions on NPM: `paper`, `paper-jsdom` and
+`paper-jsdom-canvas`. Depending on your use case, you need to required a
+different one:
+
+- `paper` is the main library, and can be used directly in a browser
+  context, e.g. a web browser or worker.
+- `paper-jsdom` is a shim module for Node.js, offering headless use with SVG
+  importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
+- `paper-jsdom-canvas` is a shim module for Node.js, offering canvas rendering
+  through [Node-Canvas](https://github.com/Automattic/node-canvas) as well as
+  SVG importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
+
+In order to install `paper-jsdom-canvas`, you need the [Cairo Graphics
+library](http://cairographics.org/) installed in your system:
 
 ##### Installing Cairo and Pango on OSX:
 
-The easiest way to install Cairo is install Homebrew
-<http://mxcl.github.io/homebrew/> then issue the command:
+The easiest way to install Cairo is through [Homebrew](http://brew.sh/), by
+issuing the command:
 
     brew install cairo pango
 
@@ -121,17 +121,18 @@ build from c++ sources:
 
 ##### After Cairo has been installed:
 
-You should now be able to install the Paper.js module from NPM:
+You should now be able to install the Paper.js module with jsdom and Canvas
+rendering from NPM:
 
-    npm install paper
+    npm install paper-jsdom-canvas
 
-### Installing Paper.js for Electron
+### Installing Paper.js with Node-Canvas for Electron
 
 [Node-Canvas](https://github.com/Automattic/node-canvas) is a native dependency.
-In order to build it for use in Electron, which is likely to use a different
-version of V8 than the Node binary installed in your system, you need to
-manually specify the location of Electron’s headers. Follow these steps to do
-so:
+In order to build it for use of `paper-jsdom-canvas` in Electron, which is
+likely to use a different version of V8 than the Node binary installed in your
+system, you need to manually specify the location of Electron’s headers. Follow
+these steps to do so:
 
 [Electron — Using Native Node
 Modules](https://electron.atom.io/docs/tutorial/using-native-node-modules/)
