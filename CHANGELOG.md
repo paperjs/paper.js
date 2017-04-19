@@ -1,6 +1,6 @@
 # Change Log
 
-## `0.10.4`
+## `0.11.0`
 
 ### Changed
 - Separate `paper` module on NPM into: `paper`, `paper-jsdom` and
