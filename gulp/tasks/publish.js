@@ -26,6 +26,7 @@ var packages = ['paper-jsdom', 'paper-jsdom-canvas'],
     sitePath = path.resolve('../paperjs.org'),
     referencePath = sitePath + '/content/08-Reference',
     downloadPath = sitePath + '/content/11-Download',
+    assetPath = sitePath + '/assets/js',
     releaseMessage = null,
     jsonOptions = {
         end_with_newline: true
@@ -115,7 +116,7 @@ gulp.task('publish:website', function() {
 });
 
 gulp.task('publish:website:build',
-    ['publish:website:docs', 'publish:website:zip']);
+    ['publish:website:docs', 'publish:website:zip', 'publish:website:lib']);
 
 gulp.task('publish:website:docs:clean', function() {
     return del([ referencePath + '/*' ], { force: true });
@@ -132,6 +133,12 @@ gulp.task('publish:website:zip', ['publish:version'], function() {
     return gulp.src('dist/paperjs.zip')
         .pipe(rename({ suffix: '-v' + options.version }))
         .pipe(gulp.dest(downloadPath));
+});
+
+gulp.task('publish:website:lib', ['publish:version'], function() {
+    return gulp.src('dist/paper-full.js')
+        .pipe(rename({ basename: 'paper' }))
+        .pipe(gulp.dest(assetPath));
 });
 
 gulp.task('publish:website:push', ['publish:version'], function() {
