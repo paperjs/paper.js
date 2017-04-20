@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Apr 20 18:53:35 2017 +0200
+ * Date: Thu Apr 20 19:14:30 2017 +0200
  *
  ***
  *
@@ -16122,7 +16122,7 @@ Base.exports.PaperScript = function() {
 
 		function getBetween(left, right) {
 			return code.substring(getOffset(left.range[1]),
-					getOffset(right.range[0]) - 1);
+					getOffset(right.range[0]));
 		}
 
 		function replaceCode(node, str) {
