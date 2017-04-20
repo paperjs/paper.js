@@ -1,3 +1,5 @@
+/.nvmrc
 /node_modules/
 /dist/*/
-/.nvmrc
+/dist/*.min.js
+/dist/paperjs.zip
