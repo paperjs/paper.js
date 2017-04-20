@@ -39,9 +39,9 @@ gulp.task('publish', function() {
     return run(
         'publish:json',
         'publish:dist',
+        'publish:packages',
         'publish:commit',
         'publish:release',
-        'publish:packages',
         'publish:website',
         'publish:load'
     );

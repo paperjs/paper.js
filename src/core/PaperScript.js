@@ -168,7 +168,7 @@ Base.exports.PaperScript = function() {
         // Returns the code between two nodes, e.g. an operator and white-space.
         function getBetween(left, right) {
             return code.substring(getOffset(left.range[1]),
-                    getOffset(right.range[0]) - 1);
+                    getOffset(right.range[0]));
         }
 
         // Replaces the node's code with a new version and keeps insertions
