@@ -72,6 +72,10 @@
     "straps": "^2.1.0"
   },
   "browser": {
+    "canvas": false,
+    "jsdom": false,
+    "jsdom/lib/jsdom/living/generated/utils": false,
+    "source-map-support": false,
     "./dist/node/self.js": false,
     "./dist/node/extend.js": false
   },
