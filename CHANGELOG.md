@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.11.1`
+
+### Fixed
+- Bring back deactivation of Node.js modules on browsers. This has most probably
+  broken Webpack bundling in `0.11.0`.
+
 ## `0.11.0`
 
 ### Changed
@@ -9,9 +15,9 @@
       context, e.g. a web browser or worker.
     - `paper-jsdom` is a shim module for Node.js, offering headless use with SVG
       importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
-    - `paper-jsdom-canvas` is a shim module for Node.js, canvas rendering
-      through [Node-Canvas](https://github.com/Automattic/node-canvas) as well
-      as SVG importing and exporting through
+    - `paper-jsdom-canvas` is a shim module for Node.js, offering canvas
+      rendering through [Node-Canvas](https://github.com/Automattic/node-canvas)
+      as well as SVG importing and exporting through
       [jsdom](https://github.com/tmpvar/jsdom).
 
 ### Added

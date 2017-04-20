@@ -28,17 +28,19 @@ gulp.task('docs', ['docs:local', 'build:full'], function() {
 });
 
 Object.keys(docOptions).forEach(function(name) {
-    gulp.task('docs:' + name, ['clean:docs:' + name], shell.task([
-        'java -cp jsrun.jar:lib/* JsRun app/run.js -c=conf/' + name + '.conf ' +
-            '-D="renderMode:' + docOptions[name] + '" ' +
-            '-D="version:' + options.version + '"'
-    ], {
-        cwd: 'gulp/jsdoc'
-    }));
+    gulp.task('docs:' + name, ['clean:docs:' + name], function() {
+        var mode = docOptions[name];
+        return gulp.src('src')
+            .pipe(shell(
+                ['java -cp jsrun.jar:lib/* JsRun app/run.js',
+                ' -c=conf/', name, '.conf ',
+                ' -D="renderMode:', mode, '" ',
+                ' -D="version:', options.version, '"'].join(''),
+                { cwd: 'gulp/jsdoc' })
+            )
+    });
 
     gulp.task('clean:docs:' + name, function() {
-        return del([
-            'dist/' + docOptions[name] + '/**',
-        ]);
+        return del([ 'dist/' + docOptions[name] + '/**' ]);
     });
 });

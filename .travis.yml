@@ -10,7 +10,7 @@ env:
   matrix:
   - CXX=g++-4.9
   global:
-  - secure: QD8wgggmlF0PPOSdQ84JLO9quLMlTDXu3Cg0+UM9yFSyih2ukL/XGn5wxR3B3XmaHfzRqxtrfhjMX6LT7DKFsriolhNVu0kER4zGyrKWK5irxAy2veosyj8qs/R1pXh9qnItlgXrz0fJwpH9o/08q8X+ZjXb0veZ34EMODLbV5zBJXoaHVC6WN62GzInAEEfdB0AEacb44sDIdK++1ujcTFLGnc+LJw8Ck2C/eOWwRhJyiNUrHHTQV3KaM0YtHz+DCz5InC9vWl+BG656AOU5C6PMTvnZ1M3CGfjmXydZoBbDvCQIcB5ylf17tXGoJKevHnmLWm6U3fPVwUwiPiKvisxyNShZw4BEDS7m1b799GnzGOiYsi37aH3G+iAORg1QVqoCAK/yQ77MkkA6a3tlLVHRaInVA6QlFxlbqc8WNlx+fa8lo4L7Y9KPGfr1Bpix/kHQV5JCzKS16Zc7wblTrOvIR/qb8qPfLoxhXi5fUZ3eRuXgR699X1IHJ1LlhkOoBfSiWl88qba01FBLrYSCPeVGb6/N91OFpIlq6eORnzBbc4mtoJSYttvZ45Hu3M5V0KDrGIHr7kNyPThdKr7PVaMXHLCpNrnmBSaxVCU5uhb8Ae3bnLAq/aBxHWZNA8cQ43/s6rS7QqOVJfquXNFYa6V9/QjbU3sJyqIgRzMkAM=
+  - secure: o1fJ/suqcL0aX6PiOmip602dAM6Q6O5oU/BDhSueUOnYknbzWfWGOdsoMun0UYhvvdcXU4sHGH+wm0VeXa2igaxryx36uMxPsXB3mO4sATo/QlWX/r3wLCg2CViXhykE5l2gP45OHh5DJgKWs51cwGLDZ9y9JHlXSP/xIGBNkMGVC7qvyhTfEb0EVvirn9b7Kt8fmD8KYgNDrsmcR3d42f4jitt4Di9LsRyOG+SCXZfI3u831tHo1sgZuGK2rxx2SdEclIblEUCkFHLp0HPjq1+032Cg5D7HNloSCPfoSwcY+rOWHubNXhmXgZHFeSkaVglkdWlDE3NiyjNlYwc4m9zqfCip8jw/jUeSfFVtruncEumGLLBxE/aMBQjAQLTq24juabm3qZNgrNCFeFo+XNyx2Oz1jllGve6Vuu8Qg0wFqE+qlZKnxNbu5/3IOIawOE1uhaOG8oSuvlpQuNrHFIMEfzh2UKPiUHbElUDyoTzHlrhQr7ZSPWPJax4uIPOTscpK4Yks7FBS4I0Vnuhw41f/bVR0kLE9jNAQoUpp47ma9O2Sw9fhOwEiopVrADzARUiy0eNeLx8F2F73L0wyPBOtEL1cfCr5oY+yZ5ZfDYb/L8/GIlbMnljYxVbXesmwd8RFi8X2HUNnEmusjih9oWazVuZpiFfUO0oeu15JTBg=
 addons:
   apt:
     sources:
@@ -26,8 +26,8 @@ addons:
     - libgif-dev
 cache:
   directories:
-  - ~/.assets
-  - ~/.nvm
+  - "~/.assets"
+  - "~/.nvm"
   - node_modules
 install:
 - travis/install-assets.sh
@@ -41,5 +41,4 @@ script:
 - gulp minify
 - gulp test
 - gulp zip
-after_script:
 - '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh'
