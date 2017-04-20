@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.11.1`
+
+### Fixed
+- Bring back deactivation of Node.js modules on browsers. This has most probably
+  broken Webpack bundling in `0.11.0`.
+
 ## `0.11.0`
 
 ### Changed
