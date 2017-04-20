@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.11.2`
+
+### Fixed
+- PaperScript: Fix a parsing error in math operations without white-space
+  (#1314).
+
 ## `0.11.1`
 
 ### Fixed
