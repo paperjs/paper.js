@@ -116,7 +116,7 @@ gulp.task('publish:website', function() {
 });
 
 gulp.task('publish:website:build',
-    ['publish:website:docs', 'publish:website:zip', 'publish:website:lib']);
+    ['publish:website:docs', 'publish:website:zip', 'publish:website:assets']);
 
 gulp.task('publish:website:docs:clean', function() {
     return del([ referencePath + '/*' ], { force: true });
@@ -135,7 +135,10 @@ gulp.task('publish:website:zip', ['publish:version'], function() {
         .pipe(gulp.dest(downloadPath));
 });
 
-gulp.task('publish:website:lib', ['publish:version'], function() {
+gulp.task('publish:website:assets', function() {
+    // Always delete the old asset first, in case it's a symlink which Gulp
+    // doesn't handle well.
+    fs.unlinkSync(assetPath + '/paper.js');
     return gulp.src('dist/paper-full.js')
         .pipe(rename({ basename: 'paper' }))
         .pipe(gulp.dest(assetPath));
