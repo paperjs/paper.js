@@ -6,7 +6,7 @@
   "homepage": "http://paperjs.org",
   "repository": {
     "type": "git",
-    "url": "git://github.com/paperjs/paper.js"
+    "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
   "contributors": [
