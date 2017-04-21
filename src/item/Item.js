@@ -473,7 +473,7 @@ new function() { // Injection scope for various item event handlers
      *     light', 'color-dodge', 'color-burn', 'darken', 'lighten',
      *     'difference', 'exclusion', 'hue', 'saturation', 'luminosity',
      *     'color', 'add', 'subtract', 'average', 'pin-light', 'negation',
-     *     'source- over', 'source-in', 'source-out', 'source-atop',
+     *     'source-over', 'source-in', 'source-out', 'source-atop',
      *     'destination-over', 'destination-in', 'destination-out',
      *     'destination-atop', 'lighter', 'darker', 'copy', 'xor'
      * @default 'normal'
@@ -3449,7 +3449,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // and transform the cached _bounds and _position without having to
         // fully recalculate each time.
         var decomp = bounds && matrix && matrix.decompose();
-        if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
+        if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
             // Transform the old bound by looping through all the cached bounds
             // in _bounds and transform each.
             for (var key in bounds) {

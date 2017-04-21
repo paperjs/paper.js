@@ -671,7 +671,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     /**
      * Attempts to decompose the affine transformation described by this matrix
-     * into `scaling`, `rotation` and `shearing`, and returns an object with
+     * into `scaling`, `rotation` and `skewing`, and returns an object with
      * these properties if it succeeded, `null` otherwise.
      *
      * @return {Object} the decomposed matrix, or `null` if decomposition is not
