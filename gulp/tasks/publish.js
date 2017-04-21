@@ -115,8 +115,18 @@ gulp.task('publish:website', function() {
     }
 });
 
-gulp.task('publish:website:build',
-    ['publish:website:docs', 'publish:website:zip', 'publish:website:assets']);
+gulp.task('publish:website:build', [
+    'publish:website:json', 'publish:website:docs',
+    'publish:website:zip', 'publish:website:assets'
+]);
+
+gulp.task('publish:website:json', ['publish:version'], function() {
+    return gulp.src([sitePath + '/package.json'])
+        .pipe(jsonEditor({
+            version: options.version
+        }, jsonOptions))
+        .pipe(gulp.dest(sitePath));
+});
 
 gulp.task('publish:website:docs:clean', function() {
     return del([ referencePath + '/*' ], { force: true });
