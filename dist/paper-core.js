@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 00:58:54 2017 +0200
+ * Date: Sat Apr 22 01:15:00 2017 +0200
  *
  ***
  *
@@ -4305,7 +4305,7 @@ new function() {
 				&& decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
 				var cache = bounds[key];
-				if (true || cache.nonscaling) {
+				if (cache.nonscaling) {
 					delete bounds[key];
 				} else if (applyMatrix || !cache.internal) {
 					var rect = cache.rect;
