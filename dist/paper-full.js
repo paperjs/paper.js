@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Apr 21 12:54:40 2017 +0200
+ * Date: Sat Apr 22 00:58:54 2017 +0200
  *
  ***
  *
@@ -2262,7 +2262,7 @@ var Matrix = Base.extend({
 		return this.shear(shear, center);
 	},
 
-	append: function(mx) {
+	append: function(mx, _dontNotify) {
 		if (mx) {
 			var a1 = this._a,
 				b1 = this._b,
@@ -2280,12 +2280,13 @@ var Matrix = Base.extend({
 			this._d = b2 * b1 + d2 * d1;
 			this._tx += tx2 * a1 + ty2 * c1;
 			this._ty += tx2 * b1 + ty2 * d1;
-			this._changed();
+			if (!_dontNotify)
+				this._changed();
 		}
 		return this;
 	},
 
-	prepend: function(mx) {
+	prepend: function(mx, _dontNotify) {
 		if (mx) {
 			var a1 = this._a,
 				b1 = this._b,
@@ -2305,7 +2306,8 @@ var Matrix = Base.extend({
 			this._d = c2 * c1 + d2 * d1;
 			this._tx = a2 * tx1 + b2 * ty1 + tx2;
 			this._ty = c2 * tx1 + d2 * ty1 + ty2;
-			this._changed();
+			if (!_dontNotify)
+				this._changed();
 		}
 		return this;
 	},
@@ -3236,11 +3238,11 @@ new function() {
 					this._boundsOptions);
 		if (!opts.stroke || this.getStrokeScaling())
 			opts.cacheItem = this;
-		var bounds = this._getCachedBounds(hasMatrix && matrix, opts);
+		var rect = this._getCachedBounds(hasMatrix && matrix, opts).rect;
 		return !arguments.length
-				? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
-						bounds.height, this, 'setBounds')
-				: bounds;
+				? new LinkedRectangle(rect.x, rect.y, rect.width, rect.height,
+					this, 'setBounds')
+				: rect;
 	},
 
 	setBounds: function() {
@@ -3273,29 +3275,49 @@ new function() {
 		return Item._getBounds(children, matrix, options);
 	},
 
+	_getBoundsCacheKey: function(options, internal) {
+		return [
+			options.stroke ? 1 : 0,
+			options.handle ? 1 : 0,
+			internal ? 1 : 0
+		].join('');
+	},
+
 	_getCachedBounds: function(matrix, options, noInternal) {
 		matrix = matrix && matrix._orNullIfIdentity();
 		var internal = options.internal && !noInternal,
 			cacheItem = options.cacheItem,
 			_matrix = internal ? null : this._matrix._orNullIfIdentity(),
-			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix)) && [
-				options.stroke ? 1 : 0,
-				options.handle ? 1 : 0,
-				internal ? 1 : 0
-			].join('');
+			cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+				&& this._getBoundsCacheKey(options, internal),
+			bounds = this._bounds;
 		Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
-		if (cacheKey && this._bounds && cacheKey in this._bounds)
-			return this._bounds[cacheKey].rect.clone();
-		var bounds = this._getBounds(matrix || _matrix, options);
+		if (cacheKey && bounds && cacheKey in bounds) {
+			var cached = bounds[cacheKey];
+			return {
+				rect: cached.rect.clone(),
+				nonscaling: cached.nonscaling
+			};
+		}
+		var res = this._getBounds(matrix || _matrix, options),
+			rect = res.rect || res,
+			style = this._style,
+			nonscaling = res.nonscaling || style.hasStroke()
+				&& !style.getStrokeScaling();
 		if (cacheKey) {
-			if (!this._bounds)
-				this._bounds = {};
-			var cached = this._bounds[cacheKey] = {
-				rect: bounds.clone(),
+			if (!bounds) {
+				this._bounds = bounds = {};
+			}
+			var cached = bounds[cacheKey] = {
+				rect: rect.clone(),
+				nonscaling: nonscaling,
 				internal: internal
 			};
 		}
-		return bounds;
+		return {
+			rect: rect,
+			nonscaling: nonscaling
+		};
 	},
 
 	_getStrokeMatrix: function(matrix, options) {
@@ -3340,22 +3362,29 @@ new function() {
 			var x1 = Infinity,
 				x2 = -x1,
 				y1 = x1,
-				y2 = x2;
+				y2 = x2,
+				nonscaling = false;
 			options = options || {};
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
 				if (item._visible && !item.isEmpty()) {
-					var rect = item._getCachedBounds(
-						matrix && matrix.appended(item._matrix), options, true);
+					var bounds = item._getCachedBounds(
+						matrix && matrix.appended(item._matrix), options, true),
+						rect = bounds.rect;
 					x1 = Math.min(rect.x, x1);
 					y1 = Math.min(rect.y, y1);
 					x2 = Math.max(rect.x + rect.width, x2);
 					y2 = Math.max(rect.y + rect.height, y2);
+					if (bounds.nonscaling)
+						nonscaling = true;
 				}
 			}
-			return isFinite(x1)
+			return {
+				rect: isFinite(x1)
 					? new Rectangle(x1, y1, x2 - x1, y2 - y1)
-					: new Rectangle();
+					: new Rectangle(),
+				nonscaling: nonscaling
+			};
 		}
 	}
 
@@ -4218,8 +4247,6 @@ new function() {
 
 	transform: function(matrix, _applyMatrix, _applyRecursively,
 			_setApplyMatrix) {
-		if (matrix && matrix.isIdentity())
-			matrix = null;
 		var _matrix = this._matrix,
 			transform = matrix && !matrix.isIdentity(),
 			applyMatrix = (_applyMatrix || this._applyMatrix)
@@ -4230,7 +4257,14 @@ new function() {
 		if (transform) {
 			if (!matrix.isInvertible() && _matrix.isInvertible())
 				_matrix._backup = _matrix.getValues();
-			_matrix.prepend(matrix);
+			_matrix.prepend(matrix, true);
+			var style = this._style,
+				fillColor = style.getFillColor(true),
+				strokeColor = style.getStrokeColor(true);
+			if (fillColor)
+				fillColor.transform(matrix);
+			if (strokeColor)
+				strokeColor.transform(matrix);
 		}
 		if (applyMatrix) {
 			if (this._transformContent(_matrix, _applyRecursively,
@@ -4245,33 +4279,46 @@ new function() {
 				applyMatrix = transform = false;
 			}
 		}
-		if (transform) {
-			var style = this._style,
-				fillColor = style.getFillColor(true),
-				strokeColor = style.getStrokeColor(true);
-			if (fillColor)
-				fillColor.transform(matrix);
-			if (strokeColor)
-				strokeColor.transform(matrix);
-		}
 		var bounds = this._bounds,
-			position = this._position;
-		this._changed(9);
-		var decomp = bounds && matrix && matrix.decompose();
-		if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
+			position = this._position,
+			decomposed = this._decomposed;
+		if (transform || applyMatrix) {
+			this._changed(9);
+		}
+		var decomp = transform && (bounds || decomposed) && matrix.decompose();
+		if (decomposed && decomp) {
+			decomposed.translation = decomposed.translation.add(
+					decomp.translation);
+			decomposed.rotation += decomp.rotation;
+			decomposed.scaling = decomposed.scaling.multiply(decomp.scaling);
+			decomposed.skewing = decomposed.skewing.add(decomp.skewing);
+		}
+		if (decomp || !transform) {
+			this._decomposed = decomposed;
+		}
+		if (!transform) {
+			if (!applyMatrix) {
+				this._bounds = bounds;
+			}
+			this._position = position;
+		} else if (bounds && decomp && decomp.skewing.isZero()
+				&& decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
 				var cache = bounds[key];
-				if (applyMatrix || !cache.internal) {
+				if (true || cache.nonscaling) {
+					delete bounds[key];
+				} else if (applyMatrix || !cache.internal) {
 					var rect = cache.rect;
 					matrix._transformBounds(rect, rect);
 				}
 			}
-			var getter = this._boundsGetter,
-				rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
-			if (rect)
-				this._position = rect.getCenter(true);
 			this._bounds = bounds;
-		} else if (matrix && position) {
+			var cached = bounds[this._getBoundsCacheKey(
+					this._boundsOptions || {})];
+			if (cached) {
+				this._position = cached.rect.getCenter(true);
+			}
+		} else if (position && this._pivot) {
 			this._position = matrix._transformPoint(position, position);
 		}
 		return this;
@@ -11016,10 +11063,10 @@ var PointText = TextItem.extend({
 			x = 0;
 		if (justification !== 'left')
 			x -= width / (justification === 'center' ? 2: 1);
-		var bounds = new Rectangle(x,
+		var rect = new Rectangle(x,
 					numLines ? - 0.75 * leading : 0,
 					width, numLines * leading);
-		return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
+		return matrix ? matrix._transformBounds(rect, rect) : rect;
 	}
 });
 
@@ -13807,9 +13854,9 @@ new function() {
 				if (!Numerical.isZero(scale.x - 1)
 						|| !Numerical.isZero(scale.y - 1))
 					parts.push('scale(' + formatter.point(scale) +')');
-				if (skew && skew.x)
+				if (skew.x)
 					parts.push('skewX(' + formatter.number(skew.x) + ')');
-				if (skew && skew.y)
+				if (skew.y)
 					parts.push('skewY(' + formatter.number(skew.y) + ')');
 				attrs.transform = parts.join(' ');
 			} else {
@@ -14142,6 +14189,7 @@ new function() {
 					? new Rectangle([0, 0], view.getViewSize())
 					: bounds === 'content'
 						? Item._getBounds(children, matrix, { stroke: true })
+							.rect
 						: Rectangle.read([bounds], 0, { readNull: true }),
 				attrs = {
 					version: '1.1',
