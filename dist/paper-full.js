@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 13:52:03 2017 +0200
+ * Date: Sat Apr 22 18:50:53 2017 +0200
  *
  ***
  *
@@ -98,12 +98,13 @@ var Base = new function() {
 						&& (bean = name.match(/^([gs]et|is)(([A-Z])(.*))$/)))
 					beansNames[bean[3].toLowerCase() + bean[4]] = bean[2];
 				if (!res || isFunc || !res.get || typeof res.get !== 'function'
-						|| !Base.isPlainObject(res))
+						|| !Base.isPlainObject(res)) {
 					res = { value: res, writable: true };
+				}
 				if ((describe(dest, name)
 						|| { configurable: true }).configurable) {
 					res.configurable = true;
-					res.enumerable = enumerable;
+					res.enumerable = enumerable != null ? enumerable : !bean;
 				}
 				define(dest, name, res);
 			}
@@ -141,7 +142,7 @@ var Base = new function() {
 					preserve = src.preserve;
 				if (statics !== src)
 					inject(this.prototype, src, src.enumerable, beans, preserve);
-				inject(this, statics, true, beans, preserve);
+				inject(this, statics, null, beans, preserve);
 			}
 			for (var i = 1, l = arguments.length; i < l; i++)
 				this.inject(arguments[i]);
@@ -164,13 +165,15 @@ var Base = new function() {
 			proto = ctor.prototype = proto || create(this.prototype);
 			define(proto, 'constructor',
 					{ value: ctor, writable: true, configurable: true });
-			inject(ctor, this, true);
+			inject(ctor, this);
 			if (arguments.length)
 				this.inject.apply(ctor, arguments);
 			ctor.base = base;
 			return ctor;
 		}
-	}, true).inject({
+	}).inject({
+		enumerable: false,
+
 		initialize: Base,
 
 		set: Base,
@@ -230,6 +233,8 @@ if (typeof module !== 'undefined')
 	module.exports = Base;
 
 Base.inject({
+	enumerable: false,
+
 	toString: function() {
 		return this._id != null
 			?  (this._class || 'Object') + (this._name
@@ -265,336 +270,333 @@ Base.inject({
 		if (props)
 			Base.filter(this, props, exclude, this._prioritize);
 		return this;
+	}
+}, {
+
+beans: false,
+statics: {
+	exports: {},
+
+	extend: function extend() {
+		var res = extend.base.apply(this, arguments),
+			name = res.prototype._class;
+		if (name && !Base.exports[name])
+			Base.exports[name] = res;
+		return res;
 	},
 
-	statics: {
-
-		exports: {
-			enumerable: true
-		},
-
-		extend: function extend() {
-			var res = extend.base.apply(this, arguments),
-				name = res.prototype._class;
-			if (name && !Base.exports[name])
-				Base.exports[name] = res;
-			return res;
-		},
-
-		equals: function(obj1, obj2) {
-			if (obj1 === obj2)
-				return true;
-			if (obj1 && obj1.equals)
-				return obj1.equals(obj2);
-			if (obj2 && obj2.equals)
-				return obj2.equals(obj1);
-			if (obj1 && obj2
-					&& typeof obj1 === 'object' && typeof obj2 === 'object') {
-				if (Array.isArray(obj1) && Array.isArray(obj2)) {
-					var length = obj1.length;
-					if (length !== obj2.length)
+	equals: function(obj1, obj2) {
+		if (obj1 === obj2)
+			return true;
+		if (obj1 && obj1.equals)
+			return obj1.equals(obj2);
+		if (obj2 && obj2.equals)
+			return obj2.equals(obj1);
+		if (obj1 && obj2
+				&& typeof obj1 === 'object' && typeof obj2 === 'object') {
+			if (Array.isArray(obj1) && Array.isArray(obj2)) {
+				var length = obj1.length;
+				if (length !== obj2.length)
+					return false;
+				while (length--) {
+					if (!Base.equals(obj1[length], obj2[length]))
 						return false;
-					while (length--) {
-						if (!Base.equals(obj1[length], obj2[length]))
-							return false;
-					}
-				} else {
-					var keys = Object.keys(obj1),
-						length = keys.length;
-					if (length !== Object.keys(obj2).length)
+				}
+			} else {
+				var keys = Object.keys(obj1),
+					length = keys.length;
+				if (length !== Object.keys(obj2).length)
+					return false;
+				while (length--) {
+					var key = keys[length];
+					if (!(obj2.hasOwnProperty(key)
+							&& Base.equals(obj1[key], obj2[key])))
 						return false;
-					while (length--) {
-						var key = keys[length];
-						if (!(obj2.hasOwnProperty(key)
-								&& Base.equals(obj1[key], obj2[key])))
-							return false;
-					}
-				}
-				return true;
-			}
-			return false;
-		},
-
-		read: function(list, start, options, amount) {
-			if (this === Base) {
-				var value = this.peek(list, start);
-				list.__index++;
-				return value;
-			}
-			var proto = this.prototype,
-				readIndex = proto._readIndex,
-				begin = start || readIndex && list.__index || 0,
-				length = list.length,
-				obj = list[begin];
-			amount = amount || length - begin;
-			if (obj instanceof this
-				|| options && options.readNull && obj == null && amount <= 1) {
-				if (readIndex)
-					list.__index = begin + 1;
-				return obj && options && options.clone ? obj.clone() : obj;
-			}
-			obj = Base.create(proto);
-			if (readIndex)
-				obj.__read = true;
-			obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
-					? Base.slice(list, begin, begin + amount)
-					: list) || obj;
-			if (readIndex) {
-				list.__index = begin + obj.__read;
-				var filtered = obj.__filtered;
-				if (filtered) {
-					list.__filtered = filtered;
-					obj.__filtered = undefined;
-				}
-				obj.__read = undefined;
-			}
-			return obj;
-		},
-
-		peek: function(list, start) {
-			return list[list.__index = start || list.__index || 0];
-		},
-
-		remain: function(list) {
-			return list.length - (list.__index || 0);
-		},
-
-		readList: function(list, start, options, amount) {
-			var res = [],
-				entry,
-				begin = start || 0,
-				end = amount ? begin + amount : list.length;
-			for (var i = begin; i < end; i++) {
-				res.push(Array.isArray(entry = list[i])
-						? this.read(entry, 0, options)
-						: this.read(list, i, options, 1));
-			}
-			return res;
-		},
-
-		readNamed: function(list, name, start, options, amount) {
-			var value = this.getNamed(list, name),
-				hasObject = value !== undefined;
-			if (hasObject) {
-				var filtered = list.__filtered;
-				if (!filtered) {
-					filtered = list.__filtered = Base.create(list[0]);
-					filtered.__unfiltered = list[0];
-				}
-				filtered[name] = undefined;
-			}
-			var l = hasObject ? [value] : list,
-				res = this.read(l, start, options, amount);
-			return res;
-		},
-
-		getNamed: function(list, name) {
-			var arg = list[0];
-			if (list._hasObject === undefined)
-				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
-			if (list._hasObject)
-				return name ? arg[name] : list.__filtered || arg;
-		},
-
-		hasNamed: function(list, name) {
-			return !!this.getNamed(list, name);
-		},
-
-		filter: function(dest, source, exclude, prioritize) {
-			var processed;
-
-			function handleKey(key) {
-				if (!(exclude && key in exclude) &&
-					!(processed && key in processed)) {
-					var value = source[key];
-					if (value !== undefined)
-						dest[key] = value;
 				}
 			}
-
-			if (prioritize) {
-				var keys = {};
-				for (var i = 0, key, l = prioritize.length; i < l; i++) {
-					if ((key = prioritize[i]) in source) {
-						handleKey(key);
-						keys[key] = true;
-					}
-				}
-				processed = keys;
-			}
-
-			Object.keys(source.__unfiltered || source).forEach(handleKey);
-			return dest;
-		},
-
-		isPlainValue: function(obj, asString) {
-			return Base.isPlainObject(obj) || Array.isArray(obj)
-					|| asString && typeof obj === 'string';
-		},
-
-		serialize: function(obj, options, compact, dictionary) {
-			options = options || {};
-
-			var isRoot = !dictionary,
-				res;
-			if (isRoot) {
-				options.formatter = new Formatter(options.precision);
-				dictionary = {
-					length: 0,
-					definitions: {},
-					references: {},
-					add: function(item, create) {
-						var id = '#' + item._id,
-							ref = this.references[id];
-						if (!ref) {
-							this.length++;
-							var res = create.call(item),
-								name = item._class;
-							if (name && res[0] !== name)
-								res.unshift(name);
-							this.definitions[id] = res;
-							ref = this.references[id] = [id];
-						}
-						return ref;
-					}
-				};
-			}
-			if (obj && obj._serialize) {
-				res = obj._serialize(options, dictionary);
-				var name = obj._class;
-				if (name && !obj._compactSerialize && (isRoot || !compact)
-						&& res[0] !== name) {
-					res.unshift(name);
-				}
-			} else if (Array.isArray(obj)) {
-				res = [];
-				for (var i = 0, l = obj.length; i < l; i++)
-					res[i] = Base.serialize(obj[i], options, compact,
-							dictionary);
-			} else if (Base.isPlainObject(obj)) {
-				res = {};
-				var keys = Object.keys(obj);
-				for (var i = 0, l = keys.length; i < l; i++) {
-					var key = keys[i];
-					res[key] = Base.serialize(obj[key], options, compact,
-							dictionary);
-				}
-			} else if (typeof obj === 'number') {
-				res = options.formatter.number(obj, options.precision);
-			} else {
-				res = obj;
-			}
-			return isRoot && dictionary.length > 0
-					? [['dictionary', dictionary.definitions], res]
-					: res;
-		},
-
-		deserialize: function(json, create, _data, _setDictionary, _isRoot) {
-			var res = json,
-				isFirst = !_data,
-				hasDictionary = isFirst && json && json.length
-					&& json[0][0] === 'dictionary';
-			_data = _data || {};
-			if (Array.isArray(json)) {
-				var type = json[0],
-					isDictionary = type === 'dictionary';
-				if (json.length == 1 && /^#/.test(type)) {
-					return _data.dictionary[type];
-				}
-				type = Base.exports[type];
-				res = [];
-				for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
-					res.push(Base.deserialize(json[i], create, _data,
-							isDictionary, hasDictionary));
-				}
-				if (type) {
-					var args = res;
-					if (create) {
-						res = create(type, args, isFirst || _isRoot);
-					} else {
-						res = Base.create(type.prototype);
-						type.apply(res, args);
-					}
-				}
-			} else if (Base.isPlainObject(json)) {
-				res = {};
-				if (_setDictionary)
-					_data.dictionary = res;
-				for (var key in json)
-					res[key] = Base.deserialize(json[key], create, _data);
-			}
-			return hasDictionary ? res[1] : res;
-		},
-
-		exportJSON: function(obj, options) {
-			var json = Base.serialize(obj, options);
-			return options && options.asString == false
-					? json
-					: JSON.stringify(json);
-		},
-
-		importJSON: function(json, target) {
-			return Base.deserialize(
-					typeof json === 'string' ? JSON.parse(json) : json,
-					function(ctor, args, isRoot) {
-						var useTarget = isRoot && target
-								&& target.constructor === ctor,
-							obj = useTarget ? target
-								: Base.create(ctor.prototype);
-						if (args.length === 1 && obj instanceof Item
-								&& (useTarget || !(obj instanceof Layer))) {
-							var arg = args[0];
-							if (Base.isPlainObject(arg))
-								arg.insert = false;
-						}
-						(useTarget ? obj.set : ctor).apply(obj, args);
-						if (useTarget)
-							target = null;
-						return obj;
-					});
-		},
-
-		splice: function(list, items, index, remove) {
-			var amount = items && items.length,
-				append = index === undefined;
-			index = append ? list.length : index;
-			if (index > list.length)
-				index = list.length;
-			for (var i = 0; i < amount; i++)
-				items[i]._index = index + i;
-			if (append) {
-				list.push.apply(list, items);
-				return [];
-			} else {
-				var args = [index, remove];
-				if (items)
-					args.push.apply(args, items);
-				var removed = list.splice.apply(list, args);
-				for (var i = 0, l = removed.length; i < l; i++)
-					removed[i]._index = undefined;
-				for (var i = index + amount, l = list.length; i < l; i++)
-					list[i]._index = i;
-				return removed;
-			}
-		},
-
-		capitalize: function(str) {
-			return str.replace(/\b[a-z]/g, function(match) {
-				return match.toUpperCase();
-			});
-		},
-
-		camelize: function(str) {
-			return str.replace(/-(.)/g, function(match, chr) {
-				return chr.toUpperCase();
-			});
-		},
-
-		hyphenate: function(str) {
-			return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+			return true;
 		}
+		return false;
+	},
+
+	read: function(list, start, options, amount) {
+		if (this === Base) {
+			var value = this.peek(list, start);
+			list.__index++;
+			return value;
+		}
+		var proto = this.prototype,
+			readIndex = proto._readIndex,
+			begin = start || readIndex && list.__index || 0,
+			length = list.length,
+			obj = list[begin];
+		amount = amount || length - begin;
+		if (obj instanceof this
+			|| options && options.readNull && obj == null && amount <= 1) {
+			if (readIndex)
+				list.__index = begin + 1;
+			return obj && options && options.clone ? obj.clone() : obj;
+		}
+		obj = Base.create(proto);
+		if (readIndex)
+			obj.__read = true;
+		obj = obj.initialize.apply(obj, begin > 0 || begin + amount < length
+				? Base.slice(list, begin, begin + amount)
+				: list) || obj;
+		if (readIndex) {
+			list.__index = begin + obj.__read;
+			var filtered = obj.__filtered;
+			if (filtered) {
+				list.__filtered = filtered;
+				obj.__filtered = undefined;
+			}
+			obj.__read = undefined;
+		}
+		return obj;
+	},
+
+	peek: function(list, start) {
+		return list[list.__index = start || list.__index || 0];
+	},
+
+	remain: function(list) {
+		return list.length - (list.__index || 0);
+	},
+
+	readList: function(list, start, options, amount) {
+		var res = [],
+			entry,
+			begin = start || 0,
+			end = amount ? begin + amount : list.length;
+		for (var i = begin; i < end; i++) {
+			res.push(Array.isArray(entry = list[i])
+					? this.read(entry, 0, options)
+					: this.read(list, i, options, 1));
+		}
+		return res;
+	},
+
+	readNamed: function(list, name, start, options, amount) {
+		var value = this.getNamed(list, name),
+			hasObject = value !== undefined;
+		if (hasObject) {
+			var filtered = list.__filtered;
+			if (!filtered) {
+				filtered = list.__filtered = Base.create(list[0]);
+				filtered.__unfiltered = list[0];
+			}
+			filtered[name] = undefined;
+		}
+		var l = hasObject ? [value] : list,
+			res = this.read(l, start, options, amount);
+		return res;
+	},
+
+	getNamed: function(list, name) {
+		var arg = list[0];
+		if (list._hasObject === undefined)
+			list._hasObject = list.length === 1 && Base.isPlainObject(arg);
+		if (list._hasObject)
+			return name ? arg[name] : list.__filtered || arg;
+	},
+
+	hasNamed: function(list, name) {
+		return !!this.getNamed(list, name);
+	},
+
+	filter: function(dest, source, exclude, prioritize) {
+		var processed;
+
+		function handleKey(key) {
+			if (!(exclude && key in exclude) &&
+				!(processed && key in processed)) {
+				var value = source[key];
+				if (value !== undefined)
+					dest[key] = value;
+			}
+		}
+
+		if (prioritize) {
+			var keys = {};
+			for (var i = 0, key, l = prioritize.length; i < l; i++) {
+				if ((key = prioritize[i]) in source) {
+					handleKey(key);
+					keys[key] = true;
+				}
+			}
+			processed = keys;
+		}
+
+		Object.keys(source.__unfiltered || source).forEach(handleKey);
+		return dest;
+	},
+
+	isPlainValue: function(obj, asString) {
+		return Base.isPlainObject(obj) || Array.isArray(obj)
+				|| asString && typeof obj === 'string';
+	},
+
+	serialize: function(obj, options, compact, dictionary) {
+		options = options || {};
+
+		var isRoot = !dictionary,
+			res;
+		if (isRoot) {
+			options.formatter = new Formatter(options.precision);
+			dictionary = {
+				length: 0,
+				definitions: {},
+				references: {},
+				add: function(item, create) {
+					var id = '#' + item._id,
+						ref = this.references[id];
+					if (!ref) {
+						this.length++;
+						var res = create.call(item),
+							name = item._class;
+						if (name && res[0] !== name)
+							res.unshift(name);
+						this.definitions[id] = res;
+						ref = this.references[id] = [id];
+					}
+					return ref;
+				}
+			};
+		}
+		if (obj && obj._serialize) {
+			res = obj._serialize(options, dictionary);
+			var name = obj._class;
+			if (name && !obj._compactSerialize && (isRoot || !compact)
+					&& res[0] !== name) {
+				res.unshift(name);
+			}
+		} else if (Array.isArray(obj)) {
+			res = [];
+			for (var i = 0, l = obj.length; i < l; i++)
+				res[i] = Base.serialize(obj[i], options, compact, dictionary);
+		} else if (Base.isPlainObject(obj)) {
+			res = {};
+			var keys = Object.keys(obj);
+			for (var i = 0, l = keys.length; i < l; i++) {
+				var key = keys[i];
+				res[key] = Base.serialize(obj[key], options, compact,
+						dictionary);
+			}
+		} else if (typeof obj === 'number') {
+			res = options.formatter.number(obj, options.precision);
+		} else {
+			res = obj;
+		}
+		return isRoot && dictionary.length > 0
+				? [['dictionary', dictionary.definitions], res]
+				: res;
+	},
+
+	deserialize: function(json, create, _data, _setDictionary, _isRoot) {
+		var res = json,
+			isFirst = !_data,
+			hasDictionary = isFirst && json && json.length
+				&& json[0][0] === 'dictionary';
+		_data = _data || {};
+		if (Array.isArray(json)) {
+			var type = json[0],
+				isDictionary = type === 'dictionary';
+			if (json.length == 1 && /^#/.test(type)) {
+				return _data.dictionary[type];
+			}
+			type = Base.exports[type];
+			res = [];
+			for (var i = type ? 1 : 0, l = json.length; i < l; i++) {
+				res.push(Base.deserialize(json[i], create, _data,
+						isDictionary, hasDictionary));
+			}
+			if (type) {
+				var args = res;
+				if (create) {
+					res = create(type, args, isFirst || _isRoot);
+				} else {
+					res = Base.create(type.prototype);
+					type.apply(res, args);
+				}
+			}
+		} else if (Base.isPlainObject(json)) {
+			res = {};
+			if (_setDictionary)
+				_data.dictionary = res;
+			for (var key in json)
+				res[key] = Base.deserialize(json[key], create, _data);
+		}
+		return hasDictionary ? res[1] : res;
+	},
+
+	exportJSON: function(obj, options) {
+		var json = Base.serialize(obj, options);
+		return options && options.asString == false
+				? json
+				: JSON.stringify(json);
+	},
+
+	importJSON: function(json, target) {
+		return Base.deserialize(
+				typeof json === 'string' ? JSON.parse(json) : json,
+				function(ctor, args, isRoot) {
+					var useTarget = isRoot && target
+							&& target.constructor === ctor,
+						obj = useTarget ? target
+							: Base.create(ctor.prototype);
+					if (args.length === 1 && obj instanceof Item
+							&& (useTarget || !(obj instanceof Layer))) {
+						var arg = args[0];
+						if (Base.isPlainObject(arg))
+							arg.insert = false;
+					}
+					(useTarget ? obj.set : ctor).apply(obj, args);
+					if (useTarget)
+						target = null;
+					return obj;
+				});
+	},
+
+	splice: function(list, items, index, remove) {
+		var amount = items && items.length,
+			append = index === undefined;
+		index = append ? list.length : index;
+		if (index > list.length)
+			index = list.length;
+		for (var i = 0; i < amount; i++)
+			items[i]._index = index + i;
+		if (append) {
+			list.push.apply(list, items);
+			return [];
+		} else {
+			var args = [index, remove];
+			if (items)
+				args.push.apply(args, items);
+			var removed = list.splice.apply(list, args);
+			for (var i = 0, l = removed.length; i < l; i++)
+				removed[i]._index = undefined;
+			for (var i = index + amount, l = list.length; i < l; i++)
+				list[i]._index = i;
+			return removed;
+		}
+	},
+
+	capitalize: function(str) {
+		return str.replace(/\b[a-z]/g, function(match) {
+			return match.toUpperCase();
+		});
+	},
+
+	camelize: function(str) {
+		return str.replace(/-(.)/g, function(match, chr) {
+			return chr.toUpperCase();
+		});
+	},
+
+	hyphenate: function(str) {
+		return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
 	}
-});
+}});
 
 var Emitter = {
 	on: function(type, func) {
@@ -5529,10 +5531,8 @@ var HitResult = Base.extend({
 	initialize: function HitResult(type, item, values) {
 		this.type = type;
 		this.item = item;
-		if (values) {
-			values.enumerable = true;
+		if (values)
 			this.inject(values);
-		}
 	},
 
 	statics: {
@@ -7052,7 +7052,7 @@ new function() {
 			cos = Math.cos(angle),
 			rv = [],
 			roots = [];
-		for(var i = 0; i < 8; i += 2) {
+		for (var i = 0; i < 8; i += 2) {
 			var x = v[i] - px,
 				y = v[i + 1] - py;
 			rv.push(
@@ -13916,8 +13916,9 @@ new function() {
 			if (length > 2) {
 				type = item._closed ? 'polygon' : 'polyline';
 				var parts = [];
-				for(var i = 0; i < length; i++)
+				for (var i = 0; i < length; i++) {
 					parts.push(formatter.point(segments[i]._point));
+				}
 				attrs.points = parts.join(' ');
 			} else {
 				type = 'line';
@@ -16460,7 +16461,6 @@ Base.exports.PaperScript = function() {
 }.call(this);
 
 paper = new (PaperScope.inject(Base.exports, {
-	enumerable: true,
 	Base: Base,
 	Numerical: Numerical,
 	Key: Key,
