@@ -208,6 +208,14 @@ Base.inject(/** @lends Base# */{
                     : list) || obj;
             if (readIndex) {
                 list.__index = begin + obj.__read;
+                // This is only in use in Rectangle so far: Nested calls to
+                // Base.readNamed() would loose __filtered if it wasn't returned
+                // on the object.
+                var filtered = obj.__filtered;
+                if (filtered) {
+                    list.__filtered = filtered;
+                    obj.__filtered = undefined;
+                }
                 obj.__read = undefined;
             }
             return obj;
@@ -281,18 +289,20 @@ Base.inject(/** @lends Base# */{
             if (hasObject) {
                 // Create a _filtered object that inherits from list[0], and
                 // override all fields that were already read with undefined.
-                var filtered = list._filtered;
+                var filtered = list.__filtered;
                 if (!filtered) {
-                    filtered = list._filtered = Base.create(list[0]);
+                    filtered = list.__filtered = Base.create(list[0]);
                     // Point _unfiltered to the original so Base#_set() can
                     // execute hasOwnProperty on it.
-                    filtered._unfiltered = list[0];
+                    filtered.__unfiltered = list[0];
                 }
                 // delete wouldn't work since the masked parent's value would
                 // shine through.
                 filtered[name] = undefined;
             }
-            return this.read(hasObject ? [value] : list, start, options, amount);
+            var l = hasObject ? [value] : list,
+                res = this.read(l, start, options, amount);
+            return res;
         },
 
         /**
@@ -307,7 +317,7 @@ Base.inject(/** @lends Base# */{
                 list._hasObject = list.length === 1 && Base.isPlainObject(arg);
             if (list._hasObject)
                 // Return the whole arguments object if no name is provided.
-                return name ? arg[name] : list._filtered || arg;
+                return name ? arg[name] : list.__filtered || arg;
         },
 
         /**
@@ -365,7 +375,7 @@ Base.inject(/** @lends Base# */{
             // If source is a filtered object, we get the keys from the
             // the original object (it's parent / prototype). See _filtered
             // inheritance trick in the argument reading code.
-            Object.keys(source._unfiltered || source).forEach(handleKey);
+            Object.keys(source.__unfiltered || source).forEach(handleKey);
             return dest;
         },
 
