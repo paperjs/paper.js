@@ -17,8 +17,6 @@
 // global one in the whole scope.
 
 paper = new (PaperScope.inject(Base.exports, {
-    // Mark fields as enumerable so PaperScope.inject can pick them up
-    enumerable: true,
     Base: Base,
     Numerical: Numerical,
     Key: Key,

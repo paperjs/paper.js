@@ -1955,7 +1955,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             // Calculate the curve values of the rotated curve.
             rv = [],
             roots = [];
-        for(var i = 0; i < 8; i += 2) {
+        for (var i = 0; i < 8; i += 2) {
             var x = v[i] - px,
                 y = v[i + 1] - py;
             rv.push(

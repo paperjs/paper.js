@@ -125,7 +125,7 @@ var Numerical = new function() {
         /**
          * The machine epsilon for a double precision (Javascript Number) is
          * 2.220446049250313e-16. (try this in the js console:
-         *     (function(){for(var e=1;1<1+e/2;)e/=2;return e}())
+         *     (function(){ for (var e = 1; 1 < 1+e/2;) e/=2; return e }())
          *
          * The constant MACHINE_EPSILON here refers to the constants δ and ε
          * such that, the error introduced by addition, multiplication on a

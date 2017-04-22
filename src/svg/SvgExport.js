@@ -115,8 +115,9 @@ new function() {
             if (length > 2) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];
-                for(var i = 0; i < length; i++)
+                for (var i = 0; i < length; i++) {
                     parts.push(formatter.point(segments[i]._point));
+                }
                 attrs.points = parts.join(' ');
             } else {
                 type = 'line';

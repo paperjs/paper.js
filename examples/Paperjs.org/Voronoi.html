@@ -55,7 +55,7 @@
         function removeSmallBits(path) {
             var averageLength = path.length / path.segments.length;
             var min = path.length / 50;
-            for(var i = path.segments.length - 1; i >= 0; i--) {
+            for (var i = path.segments.length - 1; i >= 0; i--) {
                 var segment = path.segments[i];
                 var cur = segment.point;
                 var nextSegment = segment.next;
@@ -69,8 +69,8 @@
         function generateBeeHivePoints(size, loose) {
             var points = [];
             var col = view.size / size;
-            for(var i = -1; i < size.width + 1; i++) {
-                for(var j = -1; j < size.height + 1; j++) {
+            for (var i = -1; i < size.width + 1; i++) {
+                for (var j = -1; j < size.height + 1; j++) {
                     var point = new Point(i, j) / new Point(size) * view.size + col / 2;
                     if (j % 2)
                         point += new Point(col.width / 2, 0);

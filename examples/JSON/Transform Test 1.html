@@ -13,7 +13,7 @@
         var clones = 30;
         var angle = 360 / clones;
 
-        for(var i = 0; i < clones; i++) {
+        for (var i = 0; i < clones; i++) {
             var clonedPath = circlePath.clone();
             clonedPath.rotate(angle * i, circlePath.bounds.topLeft);
         };
