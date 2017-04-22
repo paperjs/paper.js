@@ -36,13 +36,15 @@ gulp.task('publish', function() {
     if (options.branch !== 'develop') {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
+    // publish:website comes before publish:release, so paperjs.zip file is gone
+    // before npm publish:
     return run(
         'publish:json',
         'publish:dist',
         'publish:packages',
         'publish:commit',
-        'publish:release',
         'publish:website',
+        'publish:release',
         'publish:load'
     );
 });
