@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 01:15:00 2017 +0200
+ * Date: Sat Apr 22 12:55:42 2017 +0200
  *
  ***
  *
@@ -3424,8 +3424,18 @@ new function() {
 		var current = this.getScaling(),
 			scaling = Point.read(arguments, 0, { clone: true, readNull: true });
 		if (current && scaling && !current.equals(scaling)) {
-			var decomposed = this._decomposed;
-			this.scale(scaling.x / current.x, scaling.y / current.y);
+			var rotation = this.getRotation(),
+				decomposed = this._decomposed,
+				matrix = new Matrix(),
+				center = this.getPosition(true);
+			matrix.translate(center);
+			if (rotation)
+				matrix.rotate(rotation);
+			matrix.scale(scaling.x / current.x, scaling.y / current.y);
+			if (rotation)
+				matrix.rotate(-rotation);
+			matrix.translate(center.negate());
+			this.transform(matrix);
 			if (decomposed) {
 				decomposed.scaling = scaling;
 				this._decomposed = decomposed;
@@ -4266,43 +4276,22 @@ new function() {
 			if (strokeColor)
 				strokeColor.transform(matrix);
 		}
-		if (applyMatrix) {
-			if (this._transformContent(_matrix, _applyRecursively,
-					_setApplyMatrix)) {
-				var pivot = this._pivot;
-				if (pivot)
-					_matrix._transformPoint(pivot, pivot, true);
-				_matrix.reset(true);
-				if (_setApplyMatrix && this._canApplyMatrix)
-					this._applyMatrix = true;
-			} else {
-				applyMatrix = transform = false;
-			}
+		if (applyMatrix && (applyMatrix = this._transformContent(_matrix,
+				_applyRecursively, _setApplyMatrix))) {
+			var pivot = this._pivot;
+			if (pivot)
+				_matrix._transformPoint(pivot, pivot, true);
+			_matrix.reset(true);
+			if (_setApplyMatrix && this._canApplyMatrix)
+				this._applyMatrix = true;
 		}
 		var bounds = this._bounds,
-			position = this._position,
-			decomposed = this._decomposed;
+			position = this._position;
 		if (transform || applyMatrix) {
 			this._changed(9);
 		}
-		var decomp = transform && (bounds || decomposed) && matrix.decompose();
-		if (decomposed && decomp) {
-			decomposed.translation = decomposed.translation.add(
-					decomp.translation);
-			decomposed.rotation += decomp.rotation;
-			decomposed.scaling = decomposed.scaling.multiply(decomp.scaling);
-			decomposed.skewing = decomposed.skewing.add(decomp.skewing);
-		}
-		if (decomp || !transform) {
-			this._decomposed = decomposed;
-		}
-		if (!transform) {
-			if (!applyMatrix) {
-				this._bounds = bounds;
-			}
-			this._position = position;
-		} else if (bounds && decomp && decomp.skewing.isZero()
-				&& decomp.rotation % 90 === 0) {
+		var decomp = transform && bounds && matrix.decompose();
+		if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
 				var cache = bounds[key];
 				if (cache.nonscaling) {
@@ -4318,7 +4307,7 @@ new function() {
 			if (cached) {
 				this._position = cached.rect.getCenter(true);
 			}
-		} else if (position && this._pivot) {
+		} else if (transform && position && this._pivot) {
 			this._position = matrix._transformPoint(position, position);
 		}
 		return this;
