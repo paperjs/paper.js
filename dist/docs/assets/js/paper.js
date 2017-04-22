@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 12:55:42 2017 +0200
+ * Date: Sat Apr 22 13:52:03 2017 +0200
  *
  ***
  *
@@ -341,6 +341,11 @@ Base.inject({
 					: list) || obj;
 			if (readIndex) {
 				list.__index = begin + obj.__read;
+				var filtered = obj.__filtered;
+				if (filtered) {
+					list.__filtered = filtered;
+					obj.__filtered = undefined;
+				}
 				obj.__read = undefined;
 			}
 			return obj;
@@ -371,14 +376,16 @@ Base.inject({
 			var value = this.getNamed(list, name),
 				hasObject = value !== undefined;
 			if (hasObject) {
-				var filtered = list._filtered;
+				var filtered = list.__filtered;
 				if (!filtered) {
-					filtered = list._filtered = Base.create(list[0]);
-					filtered._unfiltered = list[0];
+					filtered = list.__filtered = Base.create(list[0]);
+					filtered.__unfiltered = list[0];
 				}
 				filtered[name] = undefined;
 			}
-			return this.read(hasObject ? [value] : list, start, options, amount);
+			var l = hasObject ? [value] : list,
+				res = this.read(l, start, options, amount);
+			return res;
 		},
 
 		getNamed: function(list, name) {
@@ -386,7 +393,7 @@ Base.inject({
 			if (list._hasObject === undefined)
 				list._hasObject = list.length === 1 && Base.isPlainObject(arg);
 			if (list._hasObject)
-				return name ? arg[name] : list._filtered || arg;
+				return name ? arg[name] : list.__filtered || arg;
 		},
 
 		hasNamed: function(list, name) {
@@ -416,7 +423,7 @@ Base.inject({
 				processed = keys;
 			}
 
-			Object.keys(source._unfiltered || source).forEach(handleKey);
+			Object.keys(source.__unfiltered || source).forEach(handleKey);
 			return dest;
 		},
 
@@ -1739,6 +1746,9 @@ var Rectangle = Base.extend({
 			}
 			this._set(x, y, width, height);
 			read = arguments.__index;
+			var filtered = arguments.__filtered;
+			if (filtered)
+				this.__filtered = filtered;
 		}
 		if (this.__read)
 			this.__read = read;
