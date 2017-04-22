@@ -694,12 +694,15 @@ test('path.strokeBounds with applyMatrix disabled', function() {
         strokeColor: 'red',
         strokeWidth: 10
     });
-    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30), 'path.strokeBounds, applyMatrix enabled');
+    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30),
+            'path.strokeBounds, applyMatrix enabled');
     path.applyMatrix = false;
-    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30), 'path.strokeBounds, applyMatrix disabled');
+    equals(path.strokeBounds, new Rectangle(5, 5, 30, 30),
+            'path.strokeBounds, applyMatrix disabled');
     path.scale([4, 2], [0, 0]);
     var expected = new Rectangle(20, 10, 120, 60);
-    equals(path.strokeBounds, expected, 'path.strokeBounds after scaling, applyMatrix disabled');
+    equals(path.strokeBounds, expected,
+            'path.strokeBounds after scaling, applyMatrix disabled');
     function testHitResult() {
         // Hit-testing needs to handle applyMatrix disabled with stroke scaling,
         // even when hit-testing on "distorted" stroke joins:
@@ -714,8 +717,27 @@ test('path.strokeBounds with applyMatrix disabled', function() {
     testHitResult();
     path.applyMatrix = true;
     expected = new Rectangle(35, 15, 90, 50);
-    equals(path.strokeBounds, expected, 'path.strokeBounds after scaling, applyMatrix enabled');
+    equals(path.strokeBounds, expected,
+            'path.strokeBounds after scaling, applyMatrix enabled');
     testHitResult();
+});
+
+test('TEST', function() {
+    var path = new Path.Rectangle({
+        applyMatrix: false,
+        point: [10, 10],
+        size: [20, 20],
+        strokeScaling: true,
+        strokeColor: 'red',
+        strokeWidth: 10
+    });
+    path.scale([4, 2], [0, 0]);
+    equals(path.strokeBounds, new Rectangle(20, 10, 120, 60),
+            'path.strokeBounds after scaling, applyMatrix disabled');
+    path.applyMatrix = true;
+    equals(path.strokeBounds, new Rectangle(35, 15, 90, 50),
+            'path.strokeBounds after scaling, applyMatrix enabled');
+
 });
 
 test('symbolItem.bounds with strokeScaling disabled', function() {

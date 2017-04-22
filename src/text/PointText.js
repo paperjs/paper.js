@@ -115,9 +115,9 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             x -= width / (justification === 'center' ? 2: 1);
         // Until we don't have baseline measuring, assume 1 / 4 leading as a
         // rough guess:
-        var bounds = new Rectangle(x,
+        var rect = new Rectangle(x,
                     numLines ? - 0.75 * leading : 0,
                     width, numLines * leading);
-        return matrix ? matrix._transformBounds(bounds, bounds) : bounds;
+        return matrix ? matrix._transformBounds(rect, rect) : rect;
     }
 });

@@ -51,9 +51,9 @@ new function() {
                 if (!Numerical.isZero(scale.x - 1)
                         || !Numerical.isZero(scale.y - 1))
                     parts.push('scale(' + formatter.point(scale) +')');
-                if (skew && skew.x)
+                if (skew.x)
                     parts.push('skewX(' + formatter.number(skew.x) + ')');
-                if (skew && skew.y)
+                if (skew.y)
                     parts.push('skewY(' + formatter.number(skew.y) + ')');
                 attrs.transform = parts.join(' ');
             } else {
@@ -416,6 +416,7 @@ new function() {
                     ? new Rectangle([0, 0], view.getViewSize())
                     : bounds === 'content'
                         ? Item._getBounds(children, matrix, { stroke: true })
+                            .rect
                         : Rectangle.read([bounds], 0, { readNull: true }),
                 attrs = {
                     version: '1.1',

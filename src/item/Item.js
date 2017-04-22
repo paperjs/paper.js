@@ -827,14 +827,14 @@ new function() { // Injection scope for various item event handlers
             opts.cacheItem = this;
         // If we're caching bounds, pass on this item as cacheItem, so
         // the children can setup _boundsCache structures for it.
-        var bounds = this._getCachedBounds(hasMatrix && matrix, opts);
+        var rect = this._getCachedBounds(hasMatrix && matrix, opts).rect;
         // If we're returning '#bounds', create a LinkedRectangle that uses
         // the setBounds() setter to update the Item whenever the bounds are
         // changed:
         return !arguments.length
-                ? new LinkedRectangle(bounds.x, bounds.y, bounds.width,
-                        bounds.height, this, 'setBounds')
-                : bounds;
+                ? new LinkedRectangle(rect.x, rect.y, rect.width, rect.height,
+                    this, 'setBounds')
+                : rect;
     },
 
     setBounds: function(/* rect */) {
@@ -889,6 +889,14 @@ new function() { // Injection scope for various item event handlers
         return Item._getBounds(children, matrix, options);
     },
 
+    _getBoundsCacheKey: function(options, internal) {
+        return [
+            options.stroke ? 1 : 0,
+            options.handle ? 1 : 0,
+            internal ? 1 : 0
+        ].join('');
+    },
+
     /**
      * Private method that deals with the calling of _getBounds, recursive
      * matrix concatenation and handles all the complicated caching mechanisms.
@@ -904,29 +912,43 @@ new function() { // Injection scope for various item event handlers
             cacheItem = options.cacheItem,
             _matrix = internal ? null : this._matrix._orNullIfIdentity(),
             // Create a key for caching, reflecting all bounds options.
-            cacheKey = cacheItem && (!matrix || matrix.equals(_matrix)) && [
-                options.stroke ? 1 : 0,
-                options.handle ? 1 : 0,
-                internal ? 1 : 0
-            ].join('');
+            cacheKey = cacheItem && (!matrix || matrix.equals(_matrix))
+                && this._getBoundsCacheKey(options, internal),
+            bounds = this._bounds;
         // NOTE: This needs to happen before returning cached values, since even
         // then, _boundsCache needs to be kept up-to-date.
         Item._updateBoundsCache(this._parent || this._symbol, cacheItem);
-        if (cacheKey && this._bounds && cacheKey in this._bounds)
-            return this._bounds[cacheKey].rect.clone();
-        var bounds = this._getBounds(matrix || _matrix, options);
+        if (cacheKey && bounds && cacheKey in bounds) {
+            var cached = bounds[cacheKey];
+            return {
+                rect: cached.rect.clone(),
+                nonscaling: cached.nonscaling
+            };
+        }
+        var res = this._getBounds(matrix || _matrix, options),
+            // Support two versions of _getBounds(): One that directly returns a
+            // Rectangle, and one that returns a bounds object with nonscaling.
+            rect = res.rect || res,
+            style = this._style,
+            nonscaling = res.nonscaling || style.hasStroke()
+                && !style.getStrokeScaling();
         // If we can cache the result, update the _bounds cache structure
         // before returning
         if (cacheKey) {
-            if (!this._bounds)
-                this._bounds = {};
-            var cached = this._bounds[cacheKey] = {
-                rect: bounds.clone(),
+            if (!bounds) {
+                this._bounds = bounds = {};
+            }
+            var cached = bounds[cacheKey] = {
+                rect: rect.clone(),
+                nonscaling: nonscaling,
                 // Mark as internal, so Item#transform() won't transform it
                 internal: internal
             };
         }
-        return bounds;
+        return {
+            rect: rect,
+            nonscaling: nonscaling
+        };
     },
 
     /**
@@ -1005,7 +1027,10 @@ new function() { // Injection scope for various item event handlers
             var x1 = Infinity,
                 x2 = -x1,
                 y1 = x1,
-                y2 = x2;
+                y2 = x2,
+                nonscaling = false;
+            // NOTE: As soon as one child-item has non-scaling strokes, the full
+            // bounds need to be considered non-scaling for caching purposes.
             options = options || {};
             for (var i = 0, l = items.length; i < l; i++) {
                 var item = items[i];
@@ -1013,17 +1038,23 @@ new function() { // Injection scope for various item event handlers
                     // Pass true for noInternal, since even when getting
                     // internal bounds for this item, we need to apply the
                     // matrices to its children.
-                    var rect = item._getCachedBounds(
-                        matrix && matrix.appended(item._matrix), options, true);
+                    var bounds = item._getCachedBounds(
+                        matrix && matrix.appended(item._matrix), options, true),
+                        rect = bounds.rect;
                     x1 = Math.min(rect.x, x1);
                     y1 = Math.min(rect.y, y1);
                     x2 = Math.max(rect.x + rect.width, x2);
                     y2 = Math.max(rect.y + rect.height, y2);
+                    if (bounds.nonscaling)
+                        nonscaling = true;
                 }
             }
-            return isFinite(x1)
+            return {
+                rect: isFinite(x1)
                     ? new Rectangle(x1, y1, x2 - x1, y2 - y1)
-                    : new Rectangle();
+                    : new Rectangle(),
+                nonscaling: nonscaling
+            };
         }
     }
 
@@ -1122,8 +1153,22 @@ new function() { // Injection scope for various item event handlers
             scaling = Point.read(arguments, 0, { clone: true, readNull: true });
         if (current && scaling && !current.equals(scaling)) {
             // See #setRotation() for preservation of _decomposed.
-            var decomposed = this._decomposed;
-            this.scale(scaling.x / current.x, scaling.y / current.y);
+            var rotation = this.getRotation(),
+                decomposed = this._decomposed,
+                matrix = new Matrix(),
+                center = this.getPosition(true);
+            // Create a matrix in which the scaling is applied in the non-
+            // rotated state, so it is always applied before the rotation.
+            // TODO: What about skewing? Do we need separately stored values for
+            // these properties, and apply them separately from the matrix?
+            matrix.translate(center);
+            if (rotation)
+                matrix.rotate(rotation);
+            matrix.scale(scaling.x / current.x, scaling.y / current.y);
+            if (rotation)
+                matrix.rotate(-rotation);
+            matrix.translate(center.negate());
+            this.transform(matrix);
             if (decomposed) {
                 decomposed.scaling = scaling;
                 this._decomposed = decomposed;
@@ -3376,11 +3421,9 @@ new function() { // Injection scope for hit-test functions shared with project
     //        'lines'. Default: ['objects', 'children']
     transform: function(matrix, _applyMatrix, _applyRecursively,
             _setApplyMatrix) {
-        // If no matrix is provided, or the matrix is the identity, we might
-        // still have some work to do in case _applyMatrix is true
-        if (matrix && matrix.isIdentity())
-            matrix = null;
         var _matrix = this._matrix,
+            // If no matrix is provided, or the matrix is the identity, we might
+            // still have some work to do in case _applyMatrix is true
             transform = matrix && !matrix.isIdentity(),
             applyMatrix = (_applyMatrix || this._applyMatrix)
                     // Don't apply _matrix if the result of concatenating with
@@ -3398,30 +3441,8 @@ new function() { // Injection scope for hit-test functions shared with project
             // non-invertible. This is then used again in setBounds to restore.
             if (!matrix.isInvertible() && _matrix.isInvertible())
                 _matrix._backup = _matrix.getValues();
-            _matrix.prepend(matrix);
-        }
-        // Call #_transformContent() now, if we need to directly apply the
-        // internal _matrix transformations to the item's content.
-        // Application is not possible on Raster, PointText, SymbolItem, since
-        // the matrix is where the actual transformation state is stored.
-        if (applyMatrix) {
-            if (this._transformContent(_matrix, _applyRecursively,
-                    _setApplyMatrix)) {
-                var pivot = this._pivot;
-                if (pivot)
-                    _matrix._transformPoint(pivot, pivot, true);
-                // Reset the internal matrix to the identity transformation if
-                // it was possible to apply it.
-                _matrix.reset(true);
-                // Set the internal _applyMatrix flag to true if we're told to
-                // do so
-                if (_setApplyMatrix && this._canApplyMatrix)
-                    this._applyMatrix = true;
-            } else {
-                applyMatrix = transform = false;
-            }
-        }
-        if (transform) {
+            // Pass `true` for _dontNotify, as we're handling this after.
+            _matrix.prepend(matrix, true);
             // When a new matrix was applied, we also need to transform gradient
             // color points. These always need transforming, regardless of
             // #applyMatrix, as they are defined in the parent's coordinate
@@ -3438,39 +3459,65 @@ new function() { // Injection scope for hit-test functions shared with project
             if (strokeColor)
                 strokeColor.transform(matrix);
         }
+        // Call #_transformContent() now, if we need to directly apply the
+        // internal _matrix transformations to the item's content.
+        // Application is not possible on Raster, PointText, SymbolItem, since
+        // the matrix is where the actual transformation state is stored.
+        if (applyMatrix && (applyMatrix = this._transformContent(_matrix,
+                _applyRecursively, _setApplyMatrix))) {
+            // Pivot is provided in the parent's coordinate system, so transform
+            // it along too.
+            var pivot = this._pivot;
+            if (pivot)
+                _matrix._transformPoint(pivot, pivot, true);
+            // Reset the internal matrix to the identity transformation if
+            // it was possible to apply it, but do not notify owner of change.
+            _matrix.reset(true);
+            // Set the internal _applyMatrix flag to true if we're told to
+            // do so
+            if (_setApplyMatrix && this._canApplyMatrix)
+                this._applyMatrix = true;
+        }
         // Calling _changed will clear _bounds and _position, but depending
         // on matrix we can calculate and set them again, so preserve them.
         var bounds = this._bounds,
             position = this._position;
-        // We always need to call _changed since we're caching bounds on all
-        // items, including Group.
-        this._changed(/*#=*/Change.GEOMETRY);
+        if (transform || applyMatrix) {
+            this._changed(/*#=*/Change.GEOMETRY);
+        }
         // Detect matrices that contain only translations and scaling
         // and transform the cached _bounds and _position without having to
         // fully recalculate each time.
-        var decomp = bounds && matrix && matrix.decompose();
-        if (decomp && !decomp.shearing && decomp.rotation % 90 === 0) {
-            // Transform the old bound by looping through all the cached bounds
-            // in _bounds and transform each.
+        var decomp = transform && bounds && matrix.decompose();
+        if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
+            // Transform the old bound by looping through all the cached
+            // bounds in _bounds and transform each.
             for (var key in bounds) {
                 var cache = bounds[key];
-                // If these are internal bounds, only transform them if this
-                // item applied its matrix.
-                if (applyMatrix || !cache.internal) {
+                // If any item involved in the determination of these bounds has
+                // non-scaling strokes, delete the cache now as it can't be
+                // preserved through the transformation.
+                if (cache.nonscaling) {
+                    delete bounds[key];
+                } else if (applyMatrix || !cache.internal) {
+                    // If these are internal bounds, only transform them if this
+                    // item applied its matrix.
                     var rect = cache.rect;
                     matrix._transformBounds(rect, rect);
                 }
             }
-            // If we have cached bounds, update _position again as its
-            // center. We need to take into account _boundsGetter here too, in
-            // case another getter is assigned to it, e.g. 'getStrokeBounds'.
-            var getter = this._boundsGetter,
-                rect = bounds[getter && getter.getBounds || getter || 'getBounds'];
-            if (rect)
-                this._position = rect.getCenter(true);
             this._bounds = bounds;
-        } else if (matrix && position) {
-            // Transform position as well.
+            // If we have cached bounds, try to determine _position as its
+            // center. Use _boundsOptions do get the cached default bounds.
+            var cached = bounds[this._getBoundsCacheKey(
+                    this._boundsOptions || {})];
+            if (cached) {
+                this._position = cached.rect.getCenter(true);
+            }
+        } else if (transform && position && this._pivot) {
+            // If the item has a pivot defined, it means that the default
+            // position defined as the center of the bounds won't shift with
+            // arbitrary transformations and we can therefore update _position:
             this._position = matrix._transformPoint(position, position);
         }
         // Allow chaining here, since transform() is related to Matrix functions

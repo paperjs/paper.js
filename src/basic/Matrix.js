@@ -377,7 +377,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to append
      * @return {Matrix} this matrix, modified
      */
-    append: function(mx) {
+    append: function(mx, _dontNotify) {
         if (mx) {
             var a1 = this._a,
                 b1 = this._b,
@@ -395,7 +395,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             this._d = b2 * b1 + d2 * d1;
             this._tx += tx2 * a1 + ty2 * c1;
             this._ty += tx2 * b1 + ty2 * d1;
-            this._changed();
+            if (!_dontNotify)
+                this._changed();
         }
         return this;
     },
@@ -407,7 +408,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to prepend
      * @return {Matrix} this matrix, modified
      */
-    prepend: function(mx) {
+    prepend: function(mx, _dontNotify) {
         if (mx) {
             var a1 = this._a,
                 b1 = this._b,
@@ -427,7 +428,8 @@ var Matrix = Base.extend(/** @lends Matrix# */{
             this._d = c2 * c1 + d2 * d1;
             this._tx = a2 * tx1 + b2 * ty1 + tx2;
             this._ty = c2 * tx1 + d2 * ty1 + ty2;
-            this._changed();
+            if (!_dontNotify)
+                this._changed();
         }
         return this;
     },
@@ -671,7 +673,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
 
     /**
      * Attempts to decompose the affine transformation described by this matrix
-     * into `scaling`, `rotation` and `shearing`, and returns an object with
+     * into `scaling`, `rotation` and `skewing`, and returns an object with
      * these properties if it succeeded, `null` otherwise.
      *
      * @return {Object} the decomposed matrix, or `null` if decomposition is not
