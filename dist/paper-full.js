@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.11.2-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.11.3-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 20:01:34 2017 +0200
+ * Date: Sun Apr 23 17:15:03 2017 +0200
  *
  ***
  *
@@ -778,7 +778,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.11.2-develop",
+	version: "0.11.3-develop",
 
 	getView: function() {
 		var project = this.project;
