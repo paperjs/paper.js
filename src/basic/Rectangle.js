@@ -141,6 +141,12 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
             }
             this._set(x, y, width, height);
             read = arguments.__index;
+            // arguments.__filtered wouldn't survive the function call even if a
+            // previous arguments list was passed through Function#apply().
+            // Return it on the object instead, see Base.read()
+            var filtered = arguments.__filtered;
+            if (filtered)
+                this.__filtered = filtered;
         }
         if (this.__read)
             this.__read = read;

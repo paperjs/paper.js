@@ -41,4 +41,4 @@ script:
 - gulp minify
 - gulp test
 - gulp zip
-- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh'
+- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh || true'

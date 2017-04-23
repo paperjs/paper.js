@@ -120,7 +120,7 @@
     function getEqualizerBands(data) {
         var bands = [];
         var amount = Math.sqrt(data.length) / 2;
-        for(var i = 0; i < amount; i++) {
+        for (var i = 0; i < amount; i++) {
             var start = Math.pow(2, i) - 1;
             var end = start * 2 + 1;
             var sum = 0;

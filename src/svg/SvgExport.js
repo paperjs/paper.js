@@ -51,9 +51,9 @@ new function() {
                 if (!Numerical.isZero(scale.x - 1)
                         || !Numerical.isZero(scale.y - 1))
                     parts.push('scale(' + formatter.point(scale) +')');
-                if (skew && skew.x)
+                if (skew.x)
                     parts.push('skewX(' + formatter.number(skew.x) + ')');
-                if (skew && skew.y)
+                if (skew.y)
                     parts.push('skewY(' + formatter.number(skew.y) + ')');
                 attrs.transform = parts.join(' ');
             } else {
@@ -115,8 +115,9 @@ new function() {
             if (length > 2) {
                 type = item._closed ? 'polygon' : 'polyline';
                 var parts = [];
-                for(var i = 0; i < length; i++)
+                for (var i = 0; i < length; i++) {
                     parts.push(formatter.point(segments[i]._point));
+                }
                 attrs.points = parts.join(' ');
             } else {
                 type = 'line';
@@ -416,6 +417,7 @@ new function() {
                     ? new Rectangle([0, 0], view.getViewSize())
                     : bounds === 'content'
                         ? Item._getBounds(children, matrix, { stroke: true })
+                            .rect
                         : Rectangle.read([bounds], 0, { readNull: true }),
                 attrs = {
                     version: '1.1',

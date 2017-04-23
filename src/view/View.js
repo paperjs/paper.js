@@ -1271,12 +1271,11 @@ new function() { // Injection scope for event handling on the browser
                     point, prevPoint)
             // Next handle the hit-item, if it's different from the drag-item
             // and not a descendant of it (in which case it would already have
-            // received an event in the call above). Use fallbacks to translate
-            // mousedrag to mousemove, since drag is handled above.
+            // received an event in the call above).
             || hitItem && hitItem !== dragItem
                 && !hitItem.isDescendant(dragItem)
-                && emitMouseEvent(hitItem, null, fallbacks[type] || type, event,
-                    point, prevPoint, dragItem)
+                && emitMouseEvent(hitItem, null, type, event, point, prevPoint,
+                    dragItem)
             // Lastly handle the mouse events on the view, if we're still here.
             || emitMouseEvent(view, dragItem || hitItem || view, type, event,
                     point, prevPoint));

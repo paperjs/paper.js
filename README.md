@@ -51,17 +51,17 @@ generally not recommended to install Node.js through OS-supplied package
 managers, as the its development cycles move fast and these versions are often
 out-of-date.
 
+On macOS, [Homebrew](http://brew.sh/) is a good option if one version of
+Node.js that is kept up to date with `brew upgrade` is enough:  
+<http://treehouse.github.io/installation-guides/mac/node-mac.html>
+
 [NVM](https://github.com/creationix/nvm) can be used instead to install and
 maintain multiple versions of Node.js on the same platform, as often required by
 different projects:  
 <https://nodesource.com/blog/installing-node-js-tutorial-using-nvm-on-mac-os-x-and-ubuntu/>
 
-on OSX, [Homebrew](http://brew.sh/) is also a good option if one version of
-Node.js that is kept up to date with `brew update` is enough:  
-<http://treehouse.github.io/installation-guides/mac/node-mac.html>
-
-Homebrew is recommended on OSX also if you intend to install Paper.js for
-Node.js, as described in the next paragraph.
+Homebrew is recommended on macOS also if you intend to install Paper.js with
+rendering to the Canvas on Node.js, as described in the next paragraph.
 
 For Linux, see <http://nodejs.org/download/> to locate 32-bit and 64-bit Node.js
 binaries as well as sources, or use NVM, as described in the paragraph above.
@@ -83,14 +83,14 @@ different one:
 In order to install `paper-jsdom-canvas`, you need the [Cairo Graphics
 library](http://cairographics.org/) installed in your system:
 
-##### Installing Cairo and Pango on OSX:
+##### Installing Cairo and Pango on macOS:
 
 The easiest way to install Cairo is through [Homebrew](http://brew.sh/), by
 issuing the command:
 
     brew install cairo pango
 
-Note that currently there is an issue on OSX with Cairo. If the above causes
+Note that currently there is an issue on macOS with Cairo. If the above causes
 errors, the following will most likely fix it:
 
     PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig/ npm install paper

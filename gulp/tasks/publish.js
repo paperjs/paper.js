@@ -36,13 +36,15 @@ gulp.task('publish', function() {
     if (options.branch !== 'develop') {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
+    // publish:website comes before publish:release, so paperjs.zip file is gone
+    // before npm publish:
     return run(
         'publish:json',
         'publish:dist',
         'publish:packages',
         'publish:commit',
-        'publish:release',
         'publish:website',
+        'publish:release',
         'publish:load'
     );
 });
@@ -115,8 +117,18 @@ gulp.task('publish:website', function() {
     }
 });
 
-gulp.task('publish:website:build',
-    ['publish:website:docs', 'publish:website:zip', 'publish:website:lib']);
+gulp.task('publish:website:build', [
+    'publish:website:json', 'publish:website:docs',
+    'publish:website:zip', 'publish:website:assets'
+]);
+
+gulp.task('publish:website:json', ['publish:version'], function() {
+    return gulp.src([sitePath + '/package.json'])
+        .pipe(jsonEditor({
+            version: options.version
+        }, jsonOptions))
+        .pipe(gulp.dest(sitePath));
+});
 
 gulp.task('publish:website:docs:clean', function() {
     return del([ referencePath + '/*' ], { force: true });
@@ -135,7 +147,10 @@ gulp.task('publish:website:zip', ['publish:version'], function() {
         .pipe(gulp.dest(downloadPath));
 });
 
-gulp.task('publish:website:lib', ['publish:version'], function() {
+gulp.task('publish:website:assets', function() {
+    // Always delete the old asset first, in case it's a symlink which Gulp
+    // doesn't handle well.
+    fs.unlinkSync(assetPath + '/paper.js');
     return gulp.src('dist/paper-full.js')
         .pipe(rename({ basename: 'paper' }))
         .pipe(gulp.dest(assetPath));

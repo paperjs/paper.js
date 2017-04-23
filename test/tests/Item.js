@@ -876,3 +876,56 @@ test('Item#pivot', function() {
     equals(path2.pivot, pivot.add(difference),
             'Changing position of an item with applyMatrix = true should change pivot');
 });
+
+test('Item#position with irregular shape, #pivot and rotation', function() {
+    var path1 = new Path([ [0, 0], [200, 100], [0, 100] ]);
+    var path2 = path1.clone();
+    path2.pivot = path2.position;
+    equals(path1.position, new Point(100, 50),
+            'path1.position, before rotation');
+    path1.rotate(45);
+    equals(path1.position, new Point(64.64466, 50),
+            'path1.position, after rotation');
+    equals(path2.position, new Point(100, 50),
+            'path2.position with pivot, before rotation');
+    path2.rotate(45);
+    equals(path2.position, new Point(100, 50),
+            'path2.position with pivot, after rotation');
+});
+
+test('Item#scaling, #rotation', function() {
+    var expected = new Rectangle(100, 50, 100, 200);
+
+    var rect1 = new Path.Rectangle({
+        from: [100, 100],
+        to: [200, 200],
+        applyMatrix: false
+    });
+    var rect2 = rect1.clone();
+
+    rect1.scaling = [2, 1];
+    rect1.rotation = 90;
+    equals(rect1.bounds, expected,
+            'rect1.bounds, setting rect1.scaling before rect1.rotation');
+
+    rect2.rotation = 90;
+    rect2.scaling = [2, 1];
+    equals(rect2.bounds, expected,
+            'rect2.bounds, setting rect2.scaling before rect2.rotation');
+
+    var shape1 = new Shape.Rectangle({
+        from: [100, 100],
+        to: [200, 200]
+    });
+    var shape2 = shape1.clone();
+
+    shape1.scaling = [2, 1];
+    shape1.rotation = 90;
+    equals(shape1.bounds, expected,
+            'shape1.bounds, setting shape1.scaling before shape1.rotation');
+
+    shape2.rotation = 90;
+    shape2.scaling = [2, 1];
+    equals(shape2.bounds, expected,
+            'shape2.bounds, setting shape2.scaling before shape2.rotation');
+});
