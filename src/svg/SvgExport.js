@@ -336,7 +336,7 @@ new function() {
         // Make sure the definitions lookup is created before we use it.
         // This is required by 'clip', where getDefinition() is not called.
         if (!definitions)
-            getDefinition();
+            getDefinition(item, type);
         // Have different id ranges per type
         var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
         // Give the svg node an id, and link to it from the item id.
