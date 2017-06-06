@@ -255,7 +255,22 @@ new function() {
     function exportText(item) {
         var node = SvgElement.create('text', getTransform(item._matrix, true),
                 formatter);
-        node.textContent = item._content;
+
+        item._lines.forEach(function(val, i){
+
+            var line = SvgElement.create('tspan');
+
+            line.setAttribute('dy', i && parseInt(item.style.leading));
+            line.setAttribute('x', getTransform(item._matrix, true).x);
+
+            line.setAttribute('style', 'white-space: pre;');
+
+            line.textContent = val.length ? val : ' ';
+
+            node.appendChild(line);
+
+        });
+
         return node;
     }
 
@@ -298,6 +313,7 @@ new function() {
                 if (type === 'style') {
                     style.push(entry.attribute + ': ' + value);
                 } else {
+
                     attrs[entry.attribute] = value == null ? 'none'
                             : type === 'color' ? value.gradient
                                 // true for noAlpha, see above
@@ -306,6 +322,23 @@ new function() {
                             : type === 'array' ? value.join(',')
                             : type === 'lookup' ? entry.toSVG[value]
                             : value;
+
+                    if(entry.attribute === 'font-weight' && value){
+                        if (value !== 'bold' && value !== 'italic'){
+
+                            var vals = value.split(' ');
+                            attrs['font-weight'] = vals[0];
+                            attrs['font-style'] = vals[1];
+
+                        }
+
+                        if (value === 'italic'){
+                            attrs['font-style'] = value;
+
+                        }
+                    }
+
+
                 }
             }
         });
@@ -432,6 +465,8 @@ new function() {
             }
             var node = SvgElement.create('svg', attrs, formatter),
                 parent = node;
+
+            node.setAttributeNS("http://www.w3.org/XML/1998/namespace", "xml:space","preserve");
             // If the view has a transformation, wrap all layers in a group with
             // that transformation applied to.
             if (matrix && !matrix.isIdentity()) {
