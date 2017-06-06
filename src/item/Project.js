@@ -750,7 +750,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
         // Provide the activeLayer as a possible target for layers, but only if
         // it's empty.
         var layer = this._activeLayer;
-        return Base.importJSON(json, layer && layer.isEmpty() && layer);
+        return Base.importJSON(json, layer && layer.isEmpty());
     },
 
     /**
