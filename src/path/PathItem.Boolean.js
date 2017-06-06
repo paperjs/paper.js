@@ -99,11 +99,19 @@ PathItem.inject(new function() {
         if (_path2 && (operator.subtract || operator.exclude)
                 ^ (_path2.isClockwise() ^ _path1.isClockwise()))
             _path2.reverse();
-        // Split curves at crossings on both paths. Note that for self-
-        // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(
-                CurveLocation.expand(_path1.getCrossings(_path2))),
-            paths1 = _path1._children || [_path1],
+        // Get crossings between paths. Note that for self-intersection, path2
+        // is null and getIntersections() handles it.
+        var crossings = _path1.getCrossings(_path2);
+        // When there are no crossings, and the two paths are not contained
+        // within each other, the result can be known ahead of tracePaths(),
+        // largely simplifying the processing required:
+        if (!crossings.length) {
+            return computeNonCrossingBoolean(_path1, _path2, path1, path2, operation);
+        }
+        // Split curves at crossings on both paths.
+        crossings = divideLocations(CurveLocation.expand(crossings));
+
+        var paths1 = _path1._children || [_path1],
             paths2 = _path2 && (_path2._children || [_path2]),
             segments = [],
             curves = [],
@@ -196,6 +204,129 @@ PathItem.inject(new function() {
         // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
         return createResult(paths, false, path1, path2);
+    }
+    
+    /**
+     * Performs a boolean operation between two paths that do not cross.
+     *
+     * @param _path1 internal clone of path1
+     * @param _path2 internal clone of path2
+     * @param path1
+     * @param path2
+     * @param operation
+     * @returns {*}
+     */
+    function computeNonCrossingBoolean(_path1, _path2, path1, path2, operation) {
+        // collect paths and create an id-path lookup
+        var paths1 = _path1.children ? _path1.removeChildren() : [_path1],
+            paths2 = _path2 ? _path2.children ? _path2.removeChildren() : [_path2] : [],
+            allPaths = paths1.concat(paths2),
+            lookup = Base.each(allPaths, function(path, i) {
+                this[path._id] = {
+                    clockwise: path.isClockwise(),
+                    index: i
+                };
+            }, {});
+
+        // Builds a tree structure from the specified paths. Each node of the
+        // tree is an array of length 2, with the path itself at index 0 and
+        // the paths that it directly contains as an array at index 1.
+        var buildTree = function(paths) {
+            var sortedPaths = paths.length == 1 ?
+                    paths :
+                    paths.sort(function (a, b) {
+                        return Math.abs(b.getArea()) - Math.abs(a.getArea());
+                    }),
+                rootNodes = [];
+            // insert all paths to the tree.
+            for (var i = 0; i < sortedPaths.length; i++) {
+                var path = sortedPaths[i],
+                    interiorPoint = path.getInteriorPoint(),
+                    levelNodes = rootNodes,
+                    containingPathFound;
+                do {
+                    // iterate through all nodes on the level. If the path of
+                    // one node contains the new path, recursively iterate
+                    // through the children of the node.
+                    containingPathFound = false;
+                    for (var j = levelNodes.length - 1; j >= 0; j--) {
+                        if (levelNodes[j][0].contains(interiorPoint)) {
+                            containingPathFound = true;
+                            levelNodes = levelNodes[j][1];
+                            break;
+                        }
+                    }
+                } while (containingPathFound);
+                levelNodes.push([path, []]);
+            }
+            return rootNodes;
+        };
+
+        // Sets the orientation of the paths and alternates the orientation
+        // for all descendant levels.
+        var normalizeOrientation = function(nodes, windingSum, exclNonzero, reverse) {
+            for (var i = nodes.length - 1; i >= 0; i--) {
+                var node = nodes[i],
+                    entry = lookup[node[0]._id],
+                    winding = 0;
+                if (!entry.exclude) {
+                    winding = entry.clockwise ? 1 : -1;
+                    if (exclNonzero && windingSum !== 0 && windingSum + winding !== 0) {
+                        // if the winding sum of the containing path is nonzero
+                        // and the winding sum for the path is nonzero, we
+                        // can exclude the path in case of nonzero fill rule.
+                        entry.exclude = true;
+                    } else {
+                        // alternate orientation
+                        entry.clockwise = reverse ^ (windingSum === 0);
+                        winding = windingSum > 0 ? -1 : 1;
+                    }
+                }
+                normalizeOrientation(node[1], windingSum + winding, exclNonzero, reverse);
+            }
+        };
+
+        // Collects all paths from a tree and returns them as an array
+        var collectResultPaths = function(nodes, paths, acceptWinding, windingSum) {
+            for (var i = 0; i < nodes.length; i++) {
+                var node = nodes[i],
+                    path = node[0],
+                    entry = lookup[path._id],
+                    nodeWindingSum = windingSum;
+                if (!entry.exclude) {
+                    var winding = entry.clockwise ? 1 : -1;
+                    nodeWindingSum += winding;
+                    // Add the path if the winding sum equals the accepted
+                    // winding (=filled) or if the path is anti-clockwise
+                    // and the parent path is a filled path (=hole)
+                    if (nodeWindingSum === acceptWinding
+                        || (windingSum === acceptWinding && winding === -1)) {
+                        path.setClockwise(entry.clockwise);
+                        paths[entry.index] = path;
+                    } else {
+                        entry.exclude = true;
+                    }
+                }
+                // recursively call function for child nodes
+                paths = collectResultPaths(node[1], paths, acceptWinding, nodeWindingSum);
+            }
+            return paths;
+        };
+
+        // build trees for paths and normalize the orientation
+        var rootNodes1 = buildTree(paths1),
+            rootNodes2 = buildTree(paths2);
+        normalizeOrientation(rootNodes1, 0, _path1.getFillRule() === 'nonzero', false);
+        normalizeOrientation(rootNodes2, 0, _path2 && _path2.getFillRule() === 'nonzero', operation == 'subtract');
+        // build tree for all paths
+        var rootNodesAll = buildTree(allPaths);
+        if (operation == 'exclude') {
+            normalizeOrientation(rootNodesAll, 0, false, false);
+        }
+        // collect result paths and create overall result.
+        var resultPaths = collectResultPaths(rootNodesAll, [],
+            operation == 'intersect' ? 2 : 1, 0);
+        return createResult(CompoundPath, resultPaths, true, path1, path2);
     }
 
     /*
