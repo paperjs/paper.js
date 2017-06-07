@@ -555,7 +555,7 @@ new function() { // Injection scope for various item event handlers
         }
     },
 
-    changeSelection: function(flag, selected) {
+    _changeSelection: function(flag, selected) {
         var selection = this._selection;
         this.setSelection(selected ? selection | flag : selection & ~flag);
     },
@@ -602,7 +602,7 @@ new function() { // Injection scope for various item event handlers
             for (var i = 0, l = children.length; i < l; i++)
                 children[i].setSelected(selected);
         }
-        this.changeSelection(/*#=*/ItemSelection.ITEM, selected);
+        this._changeSelection(/*#=*/ItemSelection.ITEM, selected);
     },
 
     isFullySelected: function() {
@@ -624,7 +624,7 @@ new function() { // Injection scope for various item event handlers
             for (var i = 0, l = children.length; i < l; i++)
                 children[i].setFullySelected(selected);
         }
-        this.changeSelection(/*#=*/ItemSelection.ITEM, selected);
+        this._changeSelection(/*#=*/ItemSelection.ITEM, selected);
     },
 
     /**

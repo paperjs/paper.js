@@ -85,7 +85,7 @@ var SegmentPoint = Point.extend({
     },
 
     setSelected: function(selected) {
-        this._owner.changeSelection(this._getSelection(), selected);
+        this._owner._changeSelection(this._getSelection(), selected);
     },
 
     _getSelection: function() {
