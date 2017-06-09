@@ -75,6 +75,7 @@ var Key = new function() {
 
     function getKey(event) {
         var key = event.key || event.keyIdentifier;
+        if (key == null) return '';
         key = /^U\+/.test(key)
                 // Expand keyIdentifier Unicode format.
                 ? String.fromCharCode(parseInt(key.substr(2), 16))
