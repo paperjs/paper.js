@@ -288,7 +288,7 @@ var Segment = Base.extend(/** @lends Segment# */{
         }
     },
 
-    changeSelection: function(flag, selected) {
+    _changeSelection: function(flag, selected) {
         var selection = this._selection;
         this.setSelection(selected ? selection | flag : selection & ~flag);
     },
@@ -313,7 +313,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     setSelected: function(selected) {
-        this.changeSelection(/*#=*/SegmentSelection.ALL, selected);
+        this._changeSelection(/*#=*/SegmentSelection.ALL, selected);
     },
 
     /**

@@ -28,7 +28,7 @@
  *
  * // Only execute onMouseDrag when the mouse
  * // has moved at least 10 points:
- * tool.distanceThreshold = 10;
+ * tool.minDistance = 10;
  *
  * tool.onMouseDown = function(event) {
  *     // Create a new path every time the mouse is clicked

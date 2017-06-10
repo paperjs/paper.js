@@ -1001,7 +1001,7 @@ PathItem.inject(new function() {
             if (finished) {
                 if (closed) {
                     // Carry over the last handleIn to the first segment.
-                    path.firstSegment.setHandleIn(handleIn);
+                    path.getFirstSegment().setHandleIn(handleIn);
                     path.setClosed(closed);
                 }
                 // Only add finished paths that cover an area to the result.

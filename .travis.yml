@@ -2,8 +2,8 @@ language: node_js
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 - stable
+- '7'
 - '6'
-- '5'
 - '4'
 sudo: false
 env:

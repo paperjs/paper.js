@@ -957,8 +957,8 @@ new function() {
 
             setSelected: function(selected) {
                 var owner = this._owner;
-                if (owner.changeSelection) {
-                    owner.changeSelection(/*#=*/ItemSelection.BOUNDS, selected);
+                if (owner._changeSelection) {
+                    owner._changeSelection(/*#=*/ItemSelection.BOUNDS, selected);
                 }
             }
         })

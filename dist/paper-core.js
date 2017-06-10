@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.11.3 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.11.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Apr 22 20:01:34 2017 +0200
+ * Date: Wed Jun 7 16:56:44 2017 +0200
  *
  ***
  *
@@ -778,7 +778,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.11.3",
+	version: "0.11.4",
 
 	getView: function() {
 		var project = this.project;
@@ -1521,7 +1521,7 @@ var LinkedPoint = Point.extend({
 	},
 
 	setSelected: function(selected) {
-		this._owner.changeSelection(this._getSelection(), selected);
+		this._owner._changeSelection(this._getSelection(), selected);
 	},
 
 	_getSelection: function() {
@@ -2097,8 +2097,8 @@ new function() {
 
 			setSelected: function(selected) {
 				var owner = this._owner;
-				if (owner.changeSelection) {
-					owner.changeSelection(2, selected);
+				if (owner._changeSelection) {
+					owner._changeSelection(2, selected);
 				}
 			}
 		})
@@ -3132,7 +3132,7 @@ new function() {
 		}
 	},
 
-	changeSelection: function(flag, selected) {
+	_changeSelection: function(flag, selected) {
 		var selection = this._selection;
 		this.setSelection(selected ? selection | flag : selection & ~flag);
 	},
@@ -3153,7 +3153,7 @@ new function() {
 			for (var i = 0, l = children.length; i < l; i++)
 				children[i].setSelected(selected);
 		}
-		this.changeSelection(1, selected);
+		this._changeSelection(1, selected);
 	},
 
 	isFullySelected: function() {
@@ -3174,7 +3174,7 @@ new function() {
 			for (var i = 0, l = children.length; i < l; i++)
 				children[i].setFullySelected(selected);
 		}
-		this.changeSelection(1, selected);
+		this._changeSelection(1, selected);
 	},
 
 	isClipMask: function() {
@@ -5674,7 +5674,7 @@ var Segment = Base.extend({
 		}
 	},
 
-	changeSelection: function(flag, selected) {
+	_changeSelection: function(flag, selected) {
 		var selection = this._selection;
 		this.setSelection(selected ? selection | flag : selection & ~flag);
 	},
@@ -5684,7 +5684,7 @@ var Segment = Base.extend({
 	},
 
 	setSelected: function(selected) {
-		this.changeSelection(7, selected);
+		this._changeSelection(7, selected);
 	},
 
 	getIndex: function() {
@@ -5958,7 +5958,7 @@ var SegmentPoint = Point.extend({
 	},
 
 	setSelected: function(selected) {
-		this._owner.changeSelection(this._getSelection(), selected);
+		this._owner._changeSelection(this._getSelection(), selected);
 	},
 
 	_getSelection: function() {
@@ -10471,7 +10471,7 @@ PathItem.inject(new function() {
 			}
 			if (finished) {
 				if (closed) {
-					path.firstSegment.setHandleIn(handleIn);
+					path.getFirstSegment().setHandleIn(handleIn);
 					path.setClosed(closed);
 				}
 				if (path.getArea() !== 0) {

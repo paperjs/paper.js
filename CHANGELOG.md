@@ -1,5 +1,25 @@
 # Change Log
 
+## `0.11.4`
+
+### Changed
+- Node.js: Add support for v8, and keep testing v4, v6, v7 in Travis CI.
+
+## `0.11.3`
+
+### Fixed
+- Mouse Events: Fix item-based `doubleclick` events (#1316).
+
+- Overhaul the caching of bounds and matrix decomposition, improving reliability
+  of `Item#rotation` and `#scaling` and fixing situations caused by wrongly
+  caching `Item#position` and `#bounds` values.
+
+- Prevent consumed properties in object literal constructors from being set on
+  the instance.
+
+### Changed
+- Make all functions and accessors enumerable on all Paper.js classes.
+
 ## `0.11.2`
 
 ### Fixed
