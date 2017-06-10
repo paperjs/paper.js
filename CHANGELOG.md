@@ -1,5 +1,10 @@
 # Change Log
 
+## `0.11.4`
+
+### Changed
+- Node.js: Add support for v8, and keep testing v4, v6, v7 in Travis CI.
+
 ## `0.11.3`
 
 ### Fixed
