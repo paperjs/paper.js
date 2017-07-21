@@ -81,8 +81,9 @@ var Key = new function() {
                 // Use short version for arrow keys: ArrowLeft -> Left
                 : /^Arrow[A-Z]/.test(key) ? key.substr(5)
                 // This is far from ideal, but what else can we do?
-                : key === 'Unidentified' ? String.fromCharCode(event.keyCode)
-                : key;
+                : key === 'Unidentified'  || key === undefined
+                    ? String.fromCharCode(event.keyCode)
+                    : key;
         return keyLookup[key] ||
                 // Hyphenate camel-cased special keys, lower-case normal ones:
                 (key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
