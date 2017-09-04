@@ -74,7 +74,9 @@ var Key = new function() {
         });
 
     function getKey(event) {
-        var key = event.key || event.keyIdentifier;
+        // Set key to '' to fix #1302. To handle auto completion triggering
+        // the event but may not set the key.
+        var key = event.key || event.keyIdentifier || '';
         key = /^U\+/.test(key)
                 // Expand keyIdentifier Unicode format.
                 ? String.fromCharCode(parseInt(key.substr(2), 16))
