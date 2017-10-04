@@ -1145,9 +1145,9 @@ PathItem.inject(new function() {
                 // Support both path and compound-path items
                 paths = children || [this];
 
-            function hasOverlap(seg) {
+            function hasOverlap(seg, path) {
                 var inter = seg && seg._intersection;
-                return inter && inter._overlap;
+                return inter && inter._overlap && inter._path === path;
             }
 
             // First collect all overlaps and crossings while taking not of the
@@ -1169,10 +1169,12 @@ PathItem.inject(new function() {
                     return inter.hasOverlap();
                 }, clearCurves);
                 for (var i = overlaps.length - 1; i >= 0; i--) {
-                    var seg = overlaps[i]._segment,
+                    var overlap = overlaps[i],
+                        path = overlap._path,
+                        seg = overlap._segment,
                         prev = seg.getPrevious(),
                         next = seg.getNext();
-                    if (hasOverlap(prev) && hasOverlap(next)) {
+                    if (hasOverlap(prev, path) && hasOverlap(next, path)) {
                         seg.remove();
                         prev._handleOut._set(0, 0);
                         next._handleIn._set(0, 0);
