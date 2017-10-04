@@ -825,21 +825,25 @@ PathItem.inject(new function() {
             function collect(inter, end) {
                 while (inter && inter !== end) {
                     var other = inter._segment,
-                        path = other._path,
-                        next = other.getNext() || path && path.getFirstSegment(),
-                        nextInter = next && next._intersection;
-                    // See if this segment and the next are both not visited
-                    // yet, or are bringing us back to the beginning, and are
-                    // both valid, meaning they are part of the boolean result.
-                    if (other !== segment && (isStart(other) || isStart(next)
-                        || next && (isValid(other) && (isValid(next)
-                            // If the next segment isn't valid, its intersection
-                            // to which we may switch might be, so check that.
-                            || nextInter && isValid(nextInter._segment))))) {
-                        crossings.push(other);
+                        path = other && other._path;
+                    if (path) {
+                        var next = other.getNext() || path.getFirstSegment(),
+                            nextInter = next._intersection;
+                        // See if this segment and the next are not visited yet,
+                        // or are bringing us back to the start, and are both
+                        // valid, meaning they're part of the boolean result.
+                        if (other !== segment && (isStart(other)
+                            || isStart(next)
+                            || next && (isValid(other) && (isValid(next)
+                                // If next segment isn't valid, its intersection
+                                // to which we may switch may be, so check that.
+                                || nextInter && isValid(nextInter._segment))))
+                        ) {
+                            crossings.push(other);
+                        }
+                        if (collectStarts)
+                            starts.push(other);
                     }
-                    if (collectStarts)
-                        starts.push(other);
                     inter = inter._next;
                 }
             }
@@ -970,7 +974,8 @@ PathItem.inject(new function() {
                     // the list of crossings when the branch is created above.
                     do {
                         seg = branch && branch.crossings.shift();
-                        if (!seg) {
+                        if (!seg || !seg._path) {
+                            seg = null;
                             // If there are no segments left, try previous
                             // branches until we find one that works.
                             branch = branches.pop();
