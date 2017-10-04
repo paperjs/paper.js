@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 4 17:52:09 2017 +0200
+ * Date: Wed Oct 4 21:43:56 2017 +0200
  *
  ***
  *
@@ -10350,16 +10350,20 @@ PathItem.inject(new function() {
 			function collect(inter, end) {
 				while (inter && inter !== end) {
 					var other = inter._segment,
-						path = other._path,
-						next = other.getNext() || path && path.getFirstSegment(),
-						nextInter = next && next._intersection;
-					if (other !== segment && (isStart(other) || isStart(next)
-						|| next && (isValid(other) && (isValid(next)
-							|| nextInter && isValid(nextInter._segment))))) {
-						crossings.push(other);
+						path = other && other._path;
+					if (path) {
+						var next = other.getNext() || path.getFirstSegment(),
+							nextInter = next._intersection;
+						if (other !== segment && (isStart(other)
+							|| isStart(next)
+							|| next && (isValid(other) && (isValid(next)
+								|| nextInter && isValid(nextInter._segment))))
+						) {
+							crossings.push(other);
+						}
+						if (collectStarts)
+							starts.push(other);
 					}
-					if (collectStarts)
-						starts.push(other);
 					inter = inter._next;
 				}
 			}
@@ -10450,7 +10454,8 @@ PathItem.inject(new function() {
 					visited.length = 0;
 					do {
 						seg = branch && branch.crossings.shift();
-						if (!seg) {
+						if (!seg || !seg._path) {
+							seg = null;
 							branch = branches.pop();
 							if (branch) {
 								visited = branch.visited;
