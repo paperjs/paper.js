@@ -13083,8 +13083,9 @@ var Key = new function() {
 		key = /^U\+/.test(key)
 				? String.fromCharCode(parseInt(key.substr(2), 16))
 				: /^Arrow[A-Z]/.test(key) ? key.substr(5)
-				: key === 'Unidentified' ? String.fromCharCode(event.keyCode)
-				: key;
+				: key === 'Unidentified'  || key === undefined
+					? String.fromCharCode(event.keyCode)
+					: key;
 		return keyLookup[key] ||
 				(key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
 	}
