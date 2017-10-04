@@ -24,7 +24,7 @@ http.createServer(function(request, response) {
         intersection.translate(250, 0);
         view.update();
     }
-    var stream = canvas.createPNGStream();
+    var stream = canvas.pngStream();
     stream.on('data', function(chunk) {
         response.write(chunk);
     });

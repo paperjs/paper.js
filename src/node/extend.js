@@ -87,12 +87,12 @@ module.exports = function(paper) {
                 fps: 30,
                 prefix: 'frame-',
                 amount: 1,
-                extension: 'png' // options are 'png' or 'jpg'
+                format: 'png' // Supported: 'png' or 'jpeg'
             }, options);
             if (!options.directory)
                 throw new Error('Missing options.directory');
-            if (options.extension && (options.extension !== 'jpg' && options.extension !== 'png'))
-                throw new Error('Unsupported extension. Options are "jpg" or "png"');
+            if (options.format && !/^(jpeg|png)$/.test(options.format))
+                throw new Error('Unsupported format. Use "png" or "jpeg"');
             var view = this,
                 count = 0,
                 frameDuration = 1 / options.fps,
@@ -111,8 +111,9 @@ module.exports = function(paper) {
                     time: frameDuration * count,
                     count: count
                 }));
-                var file = path.join(options.directory, options.prefix +
-                        (paddedStr + count).slice(-padding) + '.' + options.extension);
+                var file = path.join(options.directory,
+                        options.prefix + (paddedStr + count).slice(-padding)
+                            + '.' + options.format);
                 var out = view.exportImage(file, function() {
                     // Once the file has been closed, export the next fame:
                     var then = Date.now();
@@ -143,8 +144,8 @@ module.exports = function(paper) {
         exportImage: function(path, callback) {
             this.update();
             var out = fs.createWriteStream(path),
-                stream = path.substr(-3) === 'jpg' ? this._element.createJPEGStream() : this._element.createPNGStream();
-            // Pipe the png stream to the write stream:
+                format = /\.jp(e?)g$/.test(path) ? 'jpeg' : 'png'
+                stream = this._element[format + 'Stream']();
             stream.pipe(out);
             if (callback) {
                 out.on('close', callback);
