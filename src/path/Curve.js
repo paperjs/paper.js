@@ -341,7 +341,7 @@ var Curve = Base.extend(/** @lends Curve# */{
      */
     isSelected: function() {
         return this.getPoint1().isSelected()
-                && this.getHandle2().isSelected()
+                && this.getHandle1().isSelected()
                 && this.getHandle2().isSelected()
                 && this.getPoint2().isSelected();
     },
