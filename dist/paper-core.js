@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Oct 5 12:09:07 2017 +0200
+ * Date: Thu Oct 5 16:16:29 2017 +0200
  *
  ***
  *
@@ -6133,7 +6133,7 @@ var Curve = Base.extend({
 
 	isSelected: function() {
 		return this.getPoint1().isSelected()
-				&& this.getHandle2().isSelected()
+				&& this.getHandle1().isSelected()
 				&& this.getHandle2().isSelected()
 				&& this.getPoint2().isSelected();
 	},
