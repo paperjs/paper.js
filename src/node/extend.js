@@ -144,7 +144,7 @@ module.exports = function(paper) {
         exportImage: function(path, callback) {
             this.update();
             var out = fs.createWriteStream(path),
-                format = /\.jp(e?)g$/.test(path) ? 'jpeg' : 'png'
+                format = /\.jp(e?)g$/.test(path) ? 'jpeg' : 'png',
                 stream = this._element[format + 'Stream']();
             stream.pipe(out);
             if (callback) {
