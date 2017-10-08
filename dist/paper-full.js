@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.11.4 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.11.5 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 7 16:56:44 2017 +0200
+ * Date: Thu Oct 5 16:16:29 2017 +0200
  *
  ***
  *
@@ -778,7 +778,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.11.4",
+	version: "0.11.5",
 
 	getView: function() {
 		var project = this.project;
@@ -6133,7 +6133,7 @@ var Curve = Base.extend({
 
 	isSelected: function() {
 		return this.getPoint1().isSelected()
-				&& this.getHandle2().isSelected()
+				&& this.getHandle1().isSelected()
 				&& this.getHandle2().isSelected()
 				&& this.getPoint2().isSelected();
 	},
@@ -10350,16 +10350,20 @@ PathItem.inject(new function() {
 			function collect(inter, end) {
 				while (inter && inter !== end) {
 					var other = inter._segment,
-						path = other._path,
-						next = other.getNext() || path && path.getFirstSegment(),
-						nextInter = next && next._intersection;
-					if (other !== segment && (isStart(other) || isStart(next)
-						|| next && (isValid(other) && (isValid(next)
-							|| nextInter && isValid(nextInter._segment))))) {
-						crossings.push(other);
+						path = other && other._path;
+					if (path) {
+						var next = other.getNext() || path.getFirstSegment(),
+							nextInter = next._intersection;
+						if (other !== segment && (isStart(other)
+							|| isStart(next)
+							|| next && (isValid(other) && (isValid(next)
+								|| nextInter && isValid(nextInter._segment))))
+						) {
+							crossings.push(other);
+						}
+						if (collectStarts)
+							starts.push(other);
 					}
-					if (collectStarts)
-						starts.push(other);
 					inter = inter._next;
 				}
 			}
@@ -10450,7 +10454,8 @@ PathItem.inject(new function() {
 					visited.length = 0;
 					do {
 						seg = branch && branch.crossings.shift();
-						if (!seg) {
+						if (!seg || !seg._path) {
+							seg = null;
 							branch = branches.pop();
 							if (branch) {
 								visited = branch.visited;
@@ -10516,9 +10521,9 @@ PathItem.inject(new function() {
 			var children = this._children,
 				paths = children || [this];
 
-			function hasOverlap(seg) {
+			function hasOverlap(seg, path) {
 				var inter = seg && seg._intersection;
-				return inter && inter._overlap;
+				return inter && inter._overlap && inter._path === path;
 			}
 
 			var hasOverlaps = false,
@@ -10534,10 +10539,12 @@ PathItem.inject(new function() {
 					return inter.hasOverlap();
 				}, clearCurves);
 				for (var i = overlaps.length - 1; i >= 0; i--) {
-					var seg = overlaps[i]._segment,
+					var overlap = overlaps[i],
+						path = overlap._path,
+						seg = overlap._segment,
 						prev = seg.getPrevious(),
 						next = seg.getNext();
-					if (hasOverlap(prev) && hasOverlap(next)) {
+					if (hasOverlap(prev, path) && hasOverlap(next, path)) {
 						seg.remove();
 						prev._handleOut._set(0, 0);
 						next._handleIn._set(0, 0);
@@ -13083,8 +13090,9 @@ var Key = new function() {
 		key = /^U\+/.test(key)
 				? String.fromCharCode(parseInt(key.substr(2), 16))
 				: /^Arrow[A-Z]/.test(key) ? key.substr(5)
-				: key === 'Unidentified' ? String.fromCharCode(event.keyCode)
-				: key;
+				: key === 'Unidentified'  || key === undefined
+					? String.fromCharCode(event.keyCode)
+					: key;
 		return keyLookup[key] ||
 				(key.length > 1 ? Base.hyphenate(key) : key.toLowerCase());
 	}

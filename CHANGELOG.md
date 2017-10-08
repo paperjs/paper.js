@@ -1,5 +1,17 @@
 # Change Log
 
+## `0.11.5`
+
+### Fixed
+- Fix `Curve#isSelected()` to correctly reflect the state of `#handle1` (#1378).
+- Key Events: Fix auto-filling issue on Chrome (#1358, #1365).
+- Boolean: Check that overlaps are on the right path (#1321).
+- Boolean: Add better filtering for invalid segments (#1385).
+
+### Added
+
+- Node.js: Add JPEG support to exportFrames() (#1166).
+
 ## `0.11.4`
 
 ### Changed

@@ -13,7 +13,7 @@
 // Add some useful extensions to HTMLCanvasElement:
 // - HTMLCanvasElement#type, so we can switch to a PDF canvas
 // - Various Node-Canvas methods, routed through from HTMLCanvasElement:
-//   toBuffer, pngStream, createPNGStream, jpgStream, createJPGStream
+//   toBuffer, pngStream, createPNGStream, jpegStream, createJPEGStream
 
 module.exports = function(self, requireName) {
     var Canvas;
@@ -55,11 +55,12 @@ module.exports = function(self, requireName) {
     });
 
     // Extend HTMLCanvasElement with useful methods from the underlying Canvas:
-    ['toBuffer', 'pngStream', 'createPNGStream', 'jpgStream', 'createJPGStream']
-        .forEach(function(key) {
-            HTMLCanvasElement.prototype[key] = function() {
-                var canvas = idlUtils.implForWrapper(this)._canvas;
-                return canvas[key].apply(canvas, arguments);
-            };
-        });
+    var methods = ['toBuffer', 'pngStream', 'createPNGStream', 'jpegStream',
+        'createJPEGStream'];
+    methods.forEach(function(key) {
+        HTMLCanvasElement.prototype[key] = function() {
+            var canvas = idlUtils.implForWrapper(this)._canvas;
+            return canvas[key].apply(canvas, arguments);
+        };
+    });
 };

@@ -17,7 +17,7 @@
 // The paper.js version.
 // NOTE: Adjust value here before calling `gulp publish`, which then updates and
 // publishes the various JSON package files automatically.
-var version = '0.11.4';
+var version = '0.11.5';
 
 // If this file is loaded in the browser, we're in load.js mode.
 var load = typeof window === 'object';

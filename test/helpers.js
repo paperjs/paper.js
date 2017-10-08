@@ -226,9 +226,6 @@ var comparePixels = function(actual, expected, message, options) {
             ok = Math.abs(100 - identical) <= tolerance,
             text = identical.toFixed(fixed) + '% identical',
             detail = text;
-        if (!ok) {
-            console.log(actual, expected);
-        }
         if (!ok &&
                 actual instanceof PathItem && expected instanceof PathItem) {
             detail += '\nExpected:\n' + expected.pathData +
