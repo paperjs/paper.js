@@ -280,8 +280,8 @@ The main Paper.js source tree is hosted on GitHub, thus you should create a fork
 of the repository in which you perform development. See
 <http://help.github.com/forking/>.
 
-We prefer that you send a [pull request on GitHub]
-(http://help.github.com/pull-requests/) which will then be merged into the
+We prefer that you send a [pull request on GitHub
+](http://help.github.com/pull-requests/) which will then be merged into the
 official main line repository. You need to sign the Paper.js CLA to be able to
 contribute (see below).
 
@@ -352,10 +352,10 @@ Before we can accept any contributions to Paper.js, you need to sign this
 > defend the project should there be a legal dispute regarding the software at
 > some future time.
 
-For a list of authors and contributors, please see [AUTHORS]
-(https://github.com/paperjs/paper.js/blob/master/AUTHORS.md).
+For a list of authors and contributors, please see [AUTHORS
+](https://github.com/paperjs/paper.js/blob/master/AUTHORS.md).
 
 ## License
 
-Distributed under the MIT license. See [LICENSE]
-(https://github.com/paperjs/paper.js/blob/master/LICENSE.txt) for details.
+Distributed under the MIT license. See [LICENSE
+](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt) for details.
