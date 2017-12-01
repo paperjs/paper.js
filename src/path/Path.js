@@ -2135,7 +2135,7 @@ new function() { // Scope for drawing
     // SegmentPoint objects maybe seem a bit tedious but is worth the benefit in
     // performance.
 
-    function drawHandles(ctx, segments, matrix, size) {
+    function drawHandles(ctx, segments, matrix, size, isFullySelected) {
         var half = size / 2,
             coords = new Array(6),
             pX, pY;
@@ -2147,10 +2147,12 @@ new function() { // Scope for drawing
                 ctx.beginPath();
                 ctx.moveTo(pX, pY);
                 ctx.lineTo(hX, hY);
+                ctx.moveTo(hX - half, hY);
+                ctx.lineTo(hX, hY + half);
+                ctx.lineTo(hX + half, hY);
+                ctx.lineTo(hX, hY - half);
+                ctx.lineTo(hX - half, hY);
                 ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(hX, hY, half, 0, Math.PI * 2, true);
-                ctx.fill();
             }
         }
 
@@ -2160,20 +2162,22 @@ new function() { // Scope for drawing
             segment._transformCoordinates(matrix, coords);
             pX = coords[0];
             pY = coords[1];
-            if (selection & /*#=*/SegmentSelection.HANDLE_IN)
-                drawHandle(2);
-            if (selection & /*#=*/SegmentSelection.HANDLE_OUT)
-                drawHandle(4);
-            // Draw a rectangle at segment.point:
-            ctx.fillRect(pX - half, pY - half, size, size);
-            // If the point is not selected, draw a white square that is 1 px
-            // smaller on all sides:
-            if (!(selection & /*#=*/SegmentSelection.POINT)) {
-                var fillStyle = ctx.fillStyle;
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
-                ctx.fillStyle = fillStyle;
+            // Don't draw handles when the shape is fully selected.
+            if (selection & SegmentSelection.HANDLE_IN && !isFullySelected)
+                drawHandle(SegmentSelection.HANDLE_IN);
+            if (selection & SegmentSelection.HANDLE_OUT && !isFullySelected)
+                drawHandle(SegmentSelection.HANDLE_OUT);
+            // Draw a circle at segment.point:
+            ctx.beginPath();
+            ctx.arc(pX, pY, half, 0, Math.PI * 2, true);
+            ctx.stroke();
+            var fillStyle = ctx.fillStyle;
+            // If the point is not selected, fill the point with semitransparent white:
+            if (!(selection & SegmentSelection.POINT)) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
             }
+            ctx.fill();
+            ctx.fillStyle = fillStyle;
         }
     }
 
