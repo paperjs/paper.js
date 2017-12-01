@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "acorn": "~0.5.0",
-    "canvas": "^1.3.5",
+    "canvas-prebuilt": "^1.6.5-prerelease.1",
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
