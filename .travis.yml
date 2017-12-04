@@ -42,3 +42,14 @@ script:
 - gulp test
 - gulp zip
 - '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh || true'
+before_deploy:
+- npm --no-git-tag-version version 0.11.5.$(date +%Y%m%d%H%M%S) # version number from \src\options.js
+- git config --global user.email $(git log --pretty=format:"%ae" -n1)
+- git config --global user.name $(git log --pretty=format:"%an" -n1)
+deploy:
+- provider: npm
+  on:
+    branch: develop
+  skip_cleanup: true
+  email: $NPM_EMAIL
+  api_key: $NPM_TOKEN
