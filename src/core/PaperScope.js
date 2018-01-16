@@ -52,7 +52,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             applyMatrix: true,
             insertItems: true,
             handleSize: 4,
-            hitTolerance: 0
+            hitTolerance: 0,
+            drawSelectionHandles: true,
+            selectionLineWidth: 1
+
         });
         this.project = null;
         this.projects = [];
@@ -131,6 +134,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
      *     tests, when no value is specified
+     * @option [settings.drawSelectionHandles=true] {Boolean} controls whether
+     *     selected items should show control points in addition to the selection
+     *     outline
+     * @option [settings.selectionLineWidth=0] {Number} the default line width for
+     *     the selection outline, when no value is specified
      */
 
     /**

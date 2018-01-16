@@ -4408,6 +4408,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 half = size / 2;
             ctx.strokeStyle = ctx.fillStyle = color
                     ? color.toCanvasStyle(ctx) : '#009dec';
+            ctx.lineWidth=paper.settings.selectionLineWidth;
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {
