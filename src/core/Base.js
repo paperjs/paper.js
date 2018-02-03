@@ -515,8 +515,7 @@ statics: /** @lends Base */{
                 if (create) {
                     res = create(type, args, isFirst || _isRoot);
                 } else {
-                    res = Base.create(type.prototype);
-                    type.apply(res, args);
+                    res = new type(args);
                 }
             }
         } else if (Base.isPlainObject(json)) {
