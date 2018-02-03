@@ -8,8 +8,10 @@ from [http://paperjs.org/download/](http://paperjs.org/download/)
 - Mainline source code: <https://github.com/paperjs/paper.js>
 - Twitter: [@paperjs](http://twitter.com/paperjs)
 - Latest releases: <http://paperjs.org/download/>
-- Pre-built development versions: [`prebuilt/module`](https://github.com/paperjs/paper.js/tree/prebuilt/module)
-and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist) branches.
+- Pre-built development versions:
+  [`prebuilt/module`](https://github.com/paperjs/paper.js/tree/prebuilt/module)
+  and [`prebuilt/dist`](https://github.com/paperjs/paper.js/tree/prebuilt/dist)
+  branches.
 
 ## Installing Paper.js
 
@@ -280,10 +282,10 @@ The main Paper.js source tree is hosted on GitHub, thus you should create a fork
 of the repository in which you perform development. See
 <http://help.github.com/forking/>.
 
-We prefer that you send a [pull request on GitHub](http://help.github.com/pull-requests/) 
-which will then be merged into the
-official main line repository. You need to sign the Paper.js CLA to be able to
-contribute (see below).
+We prefer that you send a
+[pull request on GitHub](http://help.github.com/pull-requests/) 
+which will then be merged into the official main line repository.
+You need to sign the Paper.js CLA to be able to contribute (see below).
 
 Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 of course is optional).
@@ -358,4 +360,5 @@ For a list of authors and contributors, please see
 ## License
 
 Distributed under the MIT license. See 
-[LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt) for details.
+[LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt)
+fo details.
