@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jan 16 11:03:55 2018 +0100
+ * Date: Sat Feb 3 22:39:57 2018 +0100
  *
  ***
  *
@@ -515,8 +515,7 @@ statics: {
 				if (create) {
 					res = create(type, args, isFirst || _isRoot);
 				} else {
-					res = Base.create(type.prototype);
-					type.apply(res, args);
+					res = new type(args);
 				}
 			}
 		} else if (Base.isPlainObject(json)) {
