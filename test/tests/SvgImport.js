@@ -114,6 +114,18 @@ test('Import SVG polyline', function() {
     equals(imported, path);
 });
 
+test('Import SVG Image', function(assert) {
+    var done = assert.async();
+    var points = '5,5 45,45 5,45 45,5';
+    var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';
+    var imported = paper.project.importSVG(svg);
+    var raster = imported.children[0];
+    raster.on('load', function() {
+        equals(raster.matrix, new Matrix(0.2149, 0, 0, 0.2149, 337.0056, 205.01675));
+        done();
+    });
+});
+
 test('Import complex CompoundPath and clone', function() {
     var svg = '<svg xmlns="http://www.w3.org/2000/svg"><path fill="red" d="M4,14h20v-2H4V14z M15,26h7v-2h-7V26z M15,22h9v-2h-9V22z M15,18h9v-2h-9V18z M4,26h9V16H4V26z M28,10V6H0v22c0,0,0,4,4,4 h25c0,0,3-0.062,3-4V10H28z M4,30c-2,0-2-2-2-2V8h24v20c0,0.921,0.284,1.558,0.676,2H4z"/></svg>';
     var item = paper.project.importSVG(svg);
