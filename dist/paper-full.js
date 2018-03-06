@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Mar 5 21:49:25 2018 +0100
+ * Date: Tue Mar 6 12:47:29 2018 +0100
  *
  ***
  *
@@ -14384,9 +14384,8 @@ new function() {
 			raster.on('load', function() {
 				var size = getSize(node);
 				this.setSize(size);
-				var center = this._matrix._transformPoint(
-						getPoint(node).add(size.divide(2)));
-				this.translate(center);
+				var center = getPoint(node).add(size.divide(2));
+				this._matrix.append(new Matrix(1, 0, 0, 1, center.x, center.y));
 			});
 			return raster;
 		},
