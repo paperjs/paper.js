@@ -223,7 +223,7 @@ new function() {
                 // into account, which will be defined by the time the load
                 // event is called.
                 var center = getPoint(node).add(size.divide(2));
-				this._matrix.append(new Matrix(1, 0, 0, 1, center.x, center.y));
+				this._matrix.append(new Matrix().translate(center));
             });
             return raster;
         },
