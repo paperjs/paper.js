@@ -58,16 +58,20 @@ var Color = Base.extend(new function() {
 
     // TODO: Implement hsv, etc. CSS parsing!
     function fromCSS(string) {
-        var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
-            components;
-        if (match) {
-            // Hex
-            components = [0, 0, 0];
-            for (var i = 0; i < 3; i++) {
-                var value = match[i + 1];
-                components[i] = parseInt(value.length == 1
-                        ? value + value : value, 16) / 255;
-            }
+        var match, components;
+        if (/^#[A-Fa-f0-9]+$/.test( string )) {
+            var base = string.replace(/^#/,'');
+            var size = base.length;
+            components = base.split( size <= 4 ? /(.)/ : /(..)/ );
+            components = components.filter( Boolean )
+                .map( function (x) {
+                    return parseInt( size <= 4 ? x + x : x, 16 ) / 255;
+                } );
+
+            if ( !components[0] ) components[0] = 0;
+            if ( !components[1] ) components[1] = 0;
+            if ( !components[2] ) components[2] = 0;
+            if ( components[3] == undefined ) components[3] = 1;
         } else if (match = string.match(/^rgba?\((.*)\)$/)) {
             // RGB / RGBA
             components = match[1].split(',');
