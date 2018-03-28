@@ -62,6 +62,9 @@ test('Creating Colors', function() {
 
     equals(new Color('#ff0000'), new Color(1, 0, 0),
             'Color from hex code');
+    
+    equals(new Color('#ff000099'), new Color(1, 0, 0, .6),
+            'Color from hex code with alpha');
 
     equals(new Color('rgb(255, 0, 0)'), new Color(1, 0, 0),
             'Color from RGB code');
