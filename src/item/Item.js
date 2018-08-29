@@ -756,9 +756,9 @@ new function() { // Injection scope for various item event handlers
             // If an pivot point is provided, use it to determine position
             // based on the matrix. Otherwise use the center of the bounds.
             var pivot = this._pivot;
-            position = this._position = pivot
+            position = this._position = (pivot
                     ? this._matrix._transformPoint(pivot)
-                    : this.getBounds().getCenter(true);
+                    : this.getBounds().getCenter(true));
         }
         return new ctor(position.x, position.y, this, 'setPosition');
     },

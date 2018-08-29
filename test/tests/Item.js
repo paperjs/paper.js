@@ -630,6 +630,15 @@ test('Renaming item', function() {
     }, true);
 });
 
+test('Caching of item#position', function() {
+    var path = new Path.Circle(new Point(50, 50), 50);
+    equals(path.position.toString(), '{ x: 50, y: 50 }',
+            'Uncached value');
+			
+	equals(path.position.toString(), '{ x: 50, y: 50 }',
+            'Cached value');
+});
+
 test('Changing item#position.x', function() {
     var path = new Path.Circle(new Point(50, 50), 50);
     path.position.x += 5;
