@@ -1012,7 +1012,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.strokeColor = 'black';
      *
      * // Split the path half-way:
-     * var path2 = path.splitAt(path2.length / 2);
+     * var path2 = path.splitAt(path.length / 2);
      *
      * // Give the resulting path a red stroke-color
      * // and move it 20px to the right:
