@@ -57,6 +57,10 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
      * }
      */
     initialize: function SymbolDefinition(item, dontCenter) {
+        this._initialize(item, dontCenter);
+    },
+
+    _initialize: function (item, dontCenter) {
         this._id = UID.get();
         this.project = paper.project;
         if (item)
