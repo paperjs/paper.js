@@ -21,7 +21,7 @@ gulp.task('test:phantom', ['minify:acorn'], function() {
     return gulp.src('index.html', { cwd: 'test' })
         .pipe(qunits({
             checkGlobals: true,
-            timeout: 20
+            timeout: 30
         }));
 });
 
@@ -37,7 +37,7 @@ gulp.task('test:node', ['minify:acorn'], function(callback) {
                 // present and handles the loading transparently.
                 { path: '../dist/paper-full.js', namespace: 'paper' }
             ],
-            timeout: 40
+            timeout: 90
         }));
 });
 
