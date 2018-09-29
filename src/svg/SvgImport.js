@@ -222,9 +222,8 @@ new function() {
                 // half of its size. We also need to take the raster's matrix
                 // into account, which will be defined by the time the load
                 // event is called.
-                var center = this._matrix._transformPoint(
-                        getPoint(node).add(size.divide(2)));
-                this.translate(center);
+                var center = getPoint(node).add(size.divide(2));
+                this._matrix.append(new Matrix().translate(center));
             });
             return raster;
         },

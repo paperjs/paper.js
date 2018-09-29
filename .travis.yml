@@ -2,9 +2,13 @@ language: node_js
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 - stable
-- '7'
-- '6'
-- '4'
+- 8
+# 6.13 and 6.14 causing unreasonable errors in SymbolDefinition.initialize.
+# https://travis-ci.org/paperjs/paper.js/jobs/434854796
+# To avoid these versions, we specify version to 6.12 as temporary solution.
+# See https://github.com/paperjs/paper.js/issues/1523
+- 6.12
+- 4
 sudo: false
 env:
   matrix:
