@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 29 12:29:12 2018 +0900
+ * Date: Sat Sep 29 13:31:38 2018 +0900
  *
  ***
  *
@@ -4098,6 +4098,8 @@ new function() {
 		var owner = this._getOwner(),
 			project = this._project,
 			index = this._index;
+		if (this._style)
+			this._style._dispose();
 		if (owner) {
 			if (this._name)
 				this._removeNamed();
@@ -11857,8 +11859,10 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old && old._owner !== undefined)
+						if (old && old._owner !== undefined) {
 							old._owner = undefined;
+							old._canvasStyle = null;
+						}
 						if (value && value.constructor === Color) {
 							if (value._owner)
 								value = value.clone();
@@ -11960,6 +11964,16 @@ var Style = Base.extend(new function() {
 				&& compare(this, style)
 				&& compare(style, this, true)
 				|| false;
+	},
+
+	_dispose: function() {
+		var color;
+		color = this.getFillColor();
+		if (color) color._canvasStyle = null;
+		color = this.getStrokeColor();
+		if (color) color._canvasStyle = null;
+		color = this.getShadowColor();
+		if (color) color._canvasStyle = null;
 	},
 
 	hasFill: function() {
