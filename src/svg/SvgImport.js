@@ -336,10 +336,12 @@ new function() {
                             new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
                     break;
                 case 'rotate':
-                    matrix.rotate(v[0], v[1], v[2]);
+                    var v2 = (typeof v[1] === 'number' && typeof v[2] !== 'number') ? 0 : v[2];
+                    matrix.rotate(v[0], v[1], v2);
                     break;
                 case 'translate':
-                    matrix.translate(v[0], v[1]);
+                    var v1 = (typeof v[1] === 'number') ? v[1] : 0;
+                    matrix.translate(v[0], v1);
                     break;
                 case 'scale':
                     matrix.scale(v);
