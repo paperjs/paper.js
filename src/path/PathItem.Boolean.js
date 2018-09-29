@@ -750,27 +750,24 @@ PathItem.inject(new function() {
                     // first operand.
                     var wind = null;
                     if (operator.subtract && path2) {
-                        // calculate path winding at point depending on operand
+                        // Calculate path winding at point depending on operand.
                         var pathWinding = operand === path1
                                           ? path2._getWinding(pt, dir, true)
                                           : path1._getWinding(pt, dir, true);
-                        // if curve should be omitted
+                        // Check if curve should be omitted.
                         if (operand === path1 && pathWinding.winding ||
                             operand === path2 && !pathWinding.winding) {
-                            // if quality is not good enough
+                            // Check if quality is not good enough...
                             if (pathWinding.quality < 1) {
-                                // skip this point
+                                // ...and if so, skip this point...
                                 continue;
                             } else {
-                                // omit curve
-                                wind = {winding: 0, quality: 1};
+                                // ...otherwise, omit this curve.
+                                wind = { winding: 0, quality: 1 };
                             }
                         }
                     }
-                    // default case
-                    if (wind === null) {
-                        wind = getWinding(pt, curves, dir, true);
-                    }
+                    wind = wind || getWinding(pt, curves, dir, true);
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
