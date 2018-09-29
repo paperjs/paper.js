@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 29 15:08:19 2018 +0200
+ * Date: Sat Sep 29 16:26:47 2018 +0200
  *
  ***
  *
@@ -14483,10 +14483,10 @@ new function() {
 							new Matrix(v[0], v[1], v[2], v[3], v[4], v[5]));
 					break;
 				case 'rotate':
-					matrix.rotate(v[0], v[1], v[2]);
+					matrix.rotate(v[0], v[1] || 0, v[2] || 0);
 					break;
 				case 'translate':
-					matrix.translate(v[0], v[1]);
+					matrix.translate(v[0], v[1] || 0);
 					break;
 				case 'scale':
 					matrix.scale(v);
