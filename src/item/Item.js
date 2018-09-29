@@ -2662,6 +2662,8 @@ new function() { // Injection scope for hit-test functions shared with project
         var owner = this._getOwner(),
             project = this._project,
             index = this._index;
+        if (this._style)
+            this._style._dispose();
         if (owner) {
             // Handle named children separately from index:
             if (this._name)

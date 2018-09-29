@@ -174,8 +174,10 @@ var Style = Base.extend(new function() {
                     if (isColor) {
                         // The old value may be a native string or other color
                         // description that wasn't coerced to a color object yet
-                        if (old && old._owner !== undefined)
+                        if (old && old._owner !== undefined) {
                             old._owner = undefined;
+                            old._canvasStyle = null;
+                        }
                         if (value && value.constructor === Color) {
                             // Clone color if it already has an owner.
                             // NOTE: If value is not a Color, it is only
@@ -303,6 +305,16 @@ var Style = Base.extend(new function() {
                 && compare(this, style)
                 && compare(style, this, true)
                 || false;
+    },
+
+    _dispose: function() {
+        var color;
+        color = this.getFillColor();
+        if (color) color._canvasStyle = null;
+        color = this.getStrokeColor();
+        if (color) color._canvasStyle = null;
+        color = this.getShadowColor();
+        if (color) color._canvasStyle = null;
     },
 
     // DOCS: Style#hasFill()
