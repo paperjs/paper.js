@@ -290,7 +290,11 @@ You need to sign the Paper.js CLA to be able to contribute (see below).
 Also, in your first contribution, add yourself to the end of `AUTHORS.md` (which
 of course is optional).
 
-In addition to contributing code you can also triage issues which may include reproducing bug reports or asking for vital information, such as version numbers or reproduction instructions. If you would like to start triaging issues, one easy way to get started is to [subscribe to paper.js on CodeTriage](https://www.codetriage.com/paperjs/paper.js).
+In addition to contributing code you can also triage issues which may include
+reproducing bug reports or asking for vital information, such as version numbers
+or reproduction instructions. If you would like to start triaging issues, one
+easy way to get started is to
+[subscribe to paper.js on CodeTriage](https://www.codetriage.com/paperjs/paper.js).
 
 **Get the source (for contributing):**
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 29 14:54:08 2018 +0200
+ * Date: Sat Sep 29 15:08:19 2018 +0200
  *
  ***
  *
@@ -10303,13 +10303,11 @@ PathItem.inject(new function() {
 							if (pathWinding.quality < 1) {
 								continue;
 							} else {
-								wind = {winding: 0, quality: 1};
+								wind = { winding: 0, quality: 1 };
 							}
 						}
 					}
-					if (wind === null) {
-						wind = getWinding(pt, curves, dir, true);
-					}
+					wind = wind || getWinding(pt, curves, dir, true);
 					if (wind.quality > winding.quality)
 						winding = wind;
 					break;
