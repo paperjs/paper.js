@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 29 13:31:38 2018 +0900
+ * Date: Sat Sep 29 14:51:18 2018 +0200
  *
  ***
  *
@@ -10293,13 +10293,23 @@ PathItem.inject(new function() {
 						t = Numerical.clamp(curve.getTimeAt(length), tMin, tMax),
 						pt = curve.getPointAtTime(t),
 						dir = abs(curve.getTangentAtTime(t).y) < Math.SQRT1_2;
-					var wind = !(operator.subtract && path2 && (
-							operand === path1 &&
-								path2._getWinding(pt, dir, true).winding ||
-							operand === path2 &&
-								!path1._getWinding(pt, dir, true).winding))
-							? getWinding(pt, curves, dir, true)
-							: { winding: 0, quality: 1 };
+					var wind = null;
+					if (operator.subtract && path2) {
+						var pathWinding = operand === path1
+										  ? path2._getWinding(pt, dir, true)
+										  : path1._getWinding(pt, dir, true);
+						if (operand === path1 && pathWinding.winding ||
+							operand === path2 && !pathWinding.winding) {
+							if (pathWinding.quality < 1) {
+								continue;
+							} else {
+								wind = {winding: 0, quality: 1};
+							}
+						}
+					}
+					if (wind === null) {
+						wind = getWinding(pt, curves, dir, true);
+					}
 					if (wind.quality > winding.quality)
 						winding = wind;
 					break;
