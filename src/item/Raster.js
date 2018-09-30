@@ -98,6 +98,11 @@ var Raster = Item.extend(/** @lends Raster# */{
             this._size = new Size();
             this._loaded = false;
         }
+        // set smoothing default value
+        if (this._smoothing === undefined)
+        {
+            this._smoothing = true;
+        }
     },
 
     _equals: function(item) {
@@ -419,6 +424,29 @@ var Raster = Item.extend(/** @lends Raster# */{
             image.crossOrigin = crossOrigin;
     },
 
+    /**
+     * Specifies if the raster should be smoothed when scaled up
+     * or if pixels should be visible.
+     *
+     * @bean
+     * @type Boolean
+     * @default true
+     *
+     * @example {@paperscript}
+     * var raster = new Raster({
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
+     *     smoothing: false
+     * });
+     * raster.scale(5);
+     */
+    getSmoothing: function() {
+        return this._smoothing;
+    },
+
+    setSmoothing: function(smoothing) {
+        this._smoothing = smoothing;
+    },
+
     // DOCS: document Raster#getElement
     getElement: function() {
         // Only return the internal element if the content is actually ready.
@@ -732,6 +760,12 @@ var Raster = Item.extend(/** @lends Raster# */{
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = this._opacity;
+
+            // Set context smoothing value according to raster property.
+            // There is no need to restore original value after drawing thanks
+            // to the call to ctx.restore() in Item#draw() after this method call.
+            this._setContextSmoothing(ctx, this._smoothing);
+
             ctx.drawImage(element,
                     -this._size.width / 2, -this._size.height / 2);
         }
@@ -739,5 +773,27 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     _canComposite: function() {
         return true;
+    },
+
+    /**
+     * Set given context smoothing property.
+     * Handle vendor prefixing to improve browser compatibility.
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {Boolean} value
+     * @private
+     */
+    _setContextSmoothing: function(ctx, value) {
+        var keys = [
+            'imageSmoothingEnabled',
+            'mozImageSmoothingEnabled',
+            'webkitImageSmoothingEnabled',
+            'msImageSmoothingEnabled'
+        ];
+        for (var i=0; i<keys.length; i++) {
+            if (keys[i] in ctx) {
+                ctx[keys[i]] = value;
+                return;
+            }
+        }
     }
 });
