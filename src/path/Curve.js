@@ -1148,6 +1148,65 @@ statics: /** @lends Curve */{
     getParameterAt: '#getTimeAt',
 
     /**
+     * Calculates curve-time parameters where the curve is tangent to given
+     * vector.
+     * Note that tangent at start or end are included.
+     *
+     * @param {Point} vector the vector to which the curve must be tangent
+     * @return {Number[]} at most 2 curve-time parameters where the curve is
+     * tangent to vector
+     */
+    getTimesAtVectorTangent: function (/* vector */) {
+        var vector = Point.read(arguments);
+        if (vector.isZero()) {
+            return [];
+        }
+
+        // Algorithm adapted from: https://stackoverflow.com/a/34837312/7615922
+        var values = this.getValues();
+        var p1x = values[ 0 ];
+        var p1y = values[ 1 ];
+        var p2x = values[ 2 ];
+        var p2y = values[ 3 ];
+        var p3x = values[ 4 ];
+        var p3y = values[ 5 ];
+        var p4x = values[ 6 ];
+        var p4y = values[ 7 ];
+        var angle = vector.getAngleInRadians();
+        var tx = Math.cos(angle);
+        var ty = Math.sin(angle);
+        var ax = 3 * p4x - 9 * p3x + 9 * p2x - 3 * p1x;
+        var ay = 3 * p4y - 9 * p3y + 9 * p2y - 3 * p1y;
+        var bx = 6 * p3x - 12 * p2x + 6 * p1x;
+        var by = 6 * p3y - 12 * p2y + 6 * p1y;
+        var cx = 3 * p2x - 3 * p1x;
+        var cy = 3 * p2y - 3 * p1y;
+        var den = 2 * ax * ty - 2 * ay * tx;
+        var times = [];
+        if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
+            var num = ax * cy - ay * cx;
+            var den = ax * by - ay * bx;
+            if (den != 0) {
+                var t = -num / den;
+                if (t >= 0 && t <= 1) times.push(t);
+            }
+        } else {
+            var delta = (bx * bx - 4 * ax * cx) * ty * ty +
+                (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
+                (by * by - 4 * ay * cy) * tx * tx;
+            var k = bx * ty - by * tx;
+            if (delta >= 0 && den != 0) {
+                var d = Math.sqrt(delta);
+                var t0 = -(k + d) / den;
+                var t1 = (-k + d) / den;
+                if (t0 >= 0 && t0 <= 1) times.push(t0);
+                if (t1 >= 0 && t1 <= 1) times.push(t1);
+            }
+        }
+        return times;
+    },
+
+    /**
      * Calculates the curve offset at the specified curve-time parameter on
      * the curve.
      *

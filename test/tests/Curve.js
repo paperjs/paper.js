@@ -347,3 +347,25 @@ test('Curve#divideAt(offset)', function() {
         return new Curve(point1, point2).divideAtTime(0.5).point1;
     }, middle);
 });
+
+test('Curve#getTimesAtVectorTangent()', function() {
+    var curve = new Curve([0, 0], [100, 0], [0, -100], [200, 200]);
+    equals(curve.getTimesAtVectorTangent(), [], 'should return empty array when called without argument');
+    equals(curve.getTimesAtVectorTangent([1, 0]), [0], 'should return tangent at start');
+    equals(curve.getTimesAtVectorTangent([-1, 0]), [0], 'should return the same when called with opposite direction vector');
+    equals(curve.getTimesAtVectorTangent([0, 1]), [1], 'should return tangent at end');
+    equals(curve.getTimesAtVectorTangent([1, 1]), [0.5], 'should return tangent at middle');
+    equals(curve.getTimesAtVectorTangent([1, -1]), [], 'should return empty array when there is no tangent');
+
+    equals(
+        new Curve([0, 0], [100, 0], [500, -500], [-500, -500]).getTimesAtVectorTangent([1, 0]).length,
+        2,
+        'should return 2 values for specific self-intersecting path case'
+    );
+
+    equals(
+        new Curve([0, 0], [100, 0], [0, -100], [0, -100]).getTimesAtVectorTangent([1, 0]).length,
+        2,
+        'should return 2 values for specific parabollic path case'
+    );
+});
