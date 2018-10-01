@@ -202,6 +202,12 @@ var BlendMode = new function() {
             db = max(bb - sb, 0);
         },
 
+        minus: function() {
+            dr = max(sr - br, 0);
+            dg = max(sg - bg, 0);
+            db = max(sb - bb, 0);
+        },
+
         average: function() {
             dr = (br + sr) / 2;
             dg = (bg + sg) / 2;
@@ -212,6 +218,94 @@ var BlendMode = new function() {
             dr = 255 - abs(255 - sr - br);
             dg = 255 - abs(255 - sg - bg);
             db = 255 - abs(255 - sb - bb);
+        },
+
+        divide: function() {
+            dr = min(255, 255 * sr / (br + 1));
+            dg = min(255, 255 * sg / (bg + 1));
+            db = min(255, 255 * sb / (bb + 1));
+        },
+
+        'divide-source': function() {
+            dr = min(255, 255 * br / (sr + 1));
+            dg = min(255, 255 * bg / (sg + 1));
+            db = min(255, 255 * bb / (sb + 1));
+        },
+
+        'hard-mix': function() {
+            dr = sr + br < 255 ? 0 : 255;
+            dg = sg + bg < 255 ? 0 : 255;
+            db = sb + bb < 255 ? 0 : 255;
+        },
+
+        'pegtop-light': function() {
+            dr = (2 * sr * br + sr * sr * (1 - br / 127.5)) / 255;
+            dg = (2 * sg * bg + sg * sg * (1 - bg / 127.5)) / 255;
+            db = (2 * sb * bb + sb * sb * (1 - bb / 127.5)) / 255;
+        },
+
+        'pin-light': function() {
+            dr = sr < 128 ? min(br, 2 * sr) : max(br, 2 * sr - 255);
+            dg = sg < 128 ? min(bg, 2 * sg) : max(bg, 2 * sg - 255);
+            db = sb < 128 ? min(bb, 2 * sb) : max(bb, 2 * sb - 255);
+        },
+
+        'linear-light': function() {
+            dr = 2 * sr + br - 255;
+            dg = 2 * sg + bg - 255;
+            db = 2 * sb + bb - 255;
+        },
+
+        'vivid-light': function() {
+            dr = sr < 128 ? max(0, br == 255 ? 255 : sr > 0 ?
+              255 - (255 - br) * 255 / sr : 0) : min(255, br === 0 ?
+              0 : sr < 255 ? 255 * br / (255 - sr) : 255);
+            dg = sg < 128 ? max(0, bg == 255 ? 255 : sg > 0 ?
+              255 - (255 - bg) * 255 / sg : 0) : min(255, bg === 0 ?
+              0 : sg < 255 ? 255 * bg / (255 - sg) : 255);
+            db = sb < 128 ? max(0, bb == 255 ? 255 : sb > 0 ?
+              255 - (255 - bb) * 255 / sr : 0) : min(255, bb === 0 ?
+              0 : sb < 255 ? 255 * bb / (255 - sb) : 255);
+        },
+
+        'grain-extract': function() {
+            dr = max(0, min(255, 128 + sr - br));
+            dg = max(0, min(255, 128 + sg - bg));
+            db = max(0, min(255, 128 + sb - bb));
+        },
+
+        'grain-merge': function() {
+            dr = max(0, min(255, sr + br - 128));
+            dg = max(0, min(255, sg + bg - 128));
+            db = max(0, min(255, sb + bb - 128));
+        },
+
+        'darken-intensity': function() {
+            var flg = getLum(sr, sg, sb) < getLum(br, bg, bb);
+            dr = flg ? sr : br;
+            dg = flg ? sg : bg;
+            db = flg ? sb : bb;
+        },
+
+        'lighten-intensity': function() {
+            var flg = getLum(sr, sg, sb) > getLum(br, bg, bb);
+            dr = flg ? sr : br;
+            dg = flg ? sg : bg;
+            db = flg ? sb : bb;
+        },
+
+        'divide-intensity': function() {
+            var slm = 255 / (getLum(sr, sg, sb) + 1);
+            dr = min(255, slm * br);
+            dg = min(255, slm * bg);
+            db = min(255, slm * bb);
+        },
+
+        'multiply-intensity': function() {
+            var slm = getLum(sr, sg, sb) / 255;
+            dr = slm * br;
+            dg = slm * bg;
+            db = slm * bb;
         }
     };
 
