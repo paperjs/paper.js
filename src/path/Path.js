@@ -1895,7 +1895,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             return offset;
         }
         return null;
-    }
+    },
 
     /**
      * Calculates the point on the path at the given offset.
@@ -2123,6 +2123,42 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the beginning of the path and {@link Path#length} at the end
      * @return {Number} the normal vector at the given offset
      */
+
+    /**
+     * Calculates path-time parameters where the path is tangent to given vector.
+     * Note that tangent at start or end are included.
+     * Tangent at segment point is returned even if only one of its handles are
+     * collinear with the vector.
+     *
+     * @param {Point} vector the vector to which the path must be tangent
+     * @return {Number[]} path-time parameters where the path is tangent to the vector
+     */
+    getTimesAtVectorTangent: function(/* vector */) {
+        var vector = Point.read(arguments);
+        if (vector.isZero()) {
+            return [];
+        }
+
+        var times = [];
+        var offset = 0;
+        var curves = this.getCurves();
+        var length = this.getLength();
+        for (var i = 0; i < curves.length; i++) {
+            var curve = curves[i];
+            // Calculate curves times at vector tangent...
+            var curveTimes = curve.getTimesAtVectorTangent(vector);
+            for (var j = 0; j < curveTimes.length; j++) {
+                // ...and convert them to path times...
+                var time = (offset + curve.getOffsetAtTime(curveTimes[j])) / length;
+                // ...avoiding duplicates.
+                if (times.indexOf(time) < 0) {
+                    times.push(time);
+                }
+            }
+            offset += curve.length;
+        }
+        return times;
+    }
 }),
 new function() { // Scope for drawing
 
