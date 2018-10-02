@@ -614,9 +614,8 @@ test('Path#arcTo(from, through, to); where from, through and to all share the sa
 
 test('#1493 Path#add with 1000000 segments', function() {
     var path = new Path();
-    for (var i=0; i<1000000; i++)
-    {
-        path.add(new Point(0,0));
+    for (var i = 0; i < 1000000; i++) {
+        path.add(new Point(0, 0));
     }
     path.clone();
     expect(0);

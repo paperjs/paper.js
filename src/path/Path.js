@@ -406,8 +406,9 @@ var Path = PathItem.extend(/** @lends Path# */{
         if (append) {
             // Append them all at the end.
             // Use a loop as it is the best way to handle big arrays (see #1493)
-            for (var i = 0; i < segs.length; i++)
+            for (var i = 0, l = segs.length; i < l; i++) {
                 segments.push(segs[i]);
+            }
         } else {
             // Insert somewhere else
             segments.splice.apply(segments, [index, 0].concat(segs));
