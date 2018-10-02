@@ -496,7 +496,7 @@ new function() {
         // First see if the given attribute is defined.
         var attr = node.attributes[name],
             value = attr && attr.value;
-        if (!value) {
+        if (!value && node.style) {
             // Fallback to using styles. See if there is a style, either set
             // directly on the object or applied to it through CSS rules.
             // We also need to filter out inheritance from their parents.
@@ -520,25 +520,23 @@ new function() {
      * @param {Item} item the item to apply the style and attributes to
      */
     function applyAttributes(item, node, isRoot) {
-        if (node.style) {
-            // SVG attributes can be set both as styles and direct node
-            // attributes, so we need to handle both.
-            var parent = node.parentNode,
-                styles = {
-                    node: DomElement.getStyles(node) || {},
-                    // Do not check for inheritance if this is root, to make the
-                    // default SVG settings stick. Also detect defs parents, of
-                    // which children need to explicitly inherit their styles.
-                    parent: !isRoot && !/^defs$/i.test(parent.tagName)
-                            && DomElement.getStyles(parent) || {}
-                };
-            Base.each(attributes, function(apply, name) {
-                var value = getAttribute(node, name, styles);
-                // 'clip-path' attribute returns a new item, support it here:
-                item = value !== undefined
-                        && apply(item, value, name, node, styles) || item;
-            });
-        }
+        // SVG attributes can be set both as styles and direct node
+        // attributes, so we need to handle both.
+        var parent = node.parentNode,
+            styles = {
+                node: DomElement.getStyles(node) || {},
+                // Do not check for inheritance if this is root, to make the
+                // default SVG settings stick. Also detect defs parents, of
+                // which children need to explicitly inherit their styles.
+                parent: !isRoot && !/^defs$/i.test(parent.tagName)
+                        && DomElement.getStyles(parent) || {}
+            };
+        Base.each(attributes, function(apply, name) {
+            var value = getAttribute(node, name, styles);
+            // 'clip-path' attribute returns a new item, support it here:
+            item = value !== undefined
+                    && apply(item, value, name, node, styles) || item;
+        });
         return item;
     }
 
