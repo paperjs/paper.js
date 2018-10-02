@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Sep 29 16:26:47 2018 +0200
+ * Date: Tue Oct 2 21:11:40 2018 +0200
  *
  ***
  *
@@ -14610,7 +14610,7 @@ new function() {
 	function getAttribute(node, name, styles) {
 		var attr = node.attributes[name],
 			value = attr && attr.value;
-		if (!value) {
+		if (!value && node.style) {
 			var style = Base.camelize(name);
 			value = node.style[style];
 			if (!value && styles.node[style] !== styles.parent[style])
@@ -14622,19 +14622,17 @@ new function() {
 	}
 
 	function applyAttributes(item, node, isRoot) {
-		if (node.style) {
-			var parent = node.parentNode,
-				styles = {
-					node: DomElement.getStyles(node) || {},
-					parent: !isRoot && !/^defs$/i.test(parent.tagName)
-							&& DomElement.getStyles(parent) || {}
-				};
-			Base.each(attributes, function(apply, name) {
-				var value = getAttribute(node, name, styles);
-				item = value !== undefined
-						&& apply(item, value, name, node, styles) || item;
-			});
-		}
+		var parent = node.parentNode,
+			styles = {
+				node: DomElement.getStyles(node) || {},
+				parent: !isRoot && !/^defs$/i.test(parent.tagName)
+						&& DomElement.getStyles(parent) || {}
+			};
+		Base.each(attributes, function(apply, name) {
+			var value = getAttribute(node, name, styles);
+			item = value !== undefined
+					&& apply(item, value, name, node, styles) || item;
+		});
 		return item;
 	}
 
