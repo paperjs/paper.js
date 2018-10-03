@@ -405,14 +405,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         }
         if (append) {
             // Append them all at the end.
-            // Use a loop as the best way to handle big arrays (see #1493).
-            // Set future array length before the loop for better performances.
-            var originalLength = segments.length;
-            var offsetLength = segs.length;
-            segments.length += offsetLength;
-            for (var i = 0; i < offsetLength; i++) {
-                segments[originalLength + i] = segs[i];
-            }
+            Base.push(segments, segs);
         } else {
             // Insert somewhere else
             segments.splice.apply(segments, [index, 0].concat(segs));

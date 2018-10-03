@@ -112,8 +112,8 @@ PathItem.inject(new function() {
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
-                segments.push.apply(segments, path._segments);
-                curves.push.apply(curves, path.getCurves());
+                Base.push(segments, path._segments);
+                Base.push(curves, path.getCurves());
                 // See if all encountered segments in a path are overlaps, to
                 // be able to separately handle fully overlapping paths.
                 path._overlapsOnly = true;
@@ -1236,7 +1236,7 @@ PathItem.inject(new function() {
                     clearCurveHandles(clearCurves);
                 // Finally resolve self-intersections through tracePaths()
                 paths = tracePaths(Base.each(paths, function(path) {
-                    this.push.apply(this, path._segments);
+                    Base.push(this, path._segments);
                 }, []));
             }
             // Determine how to return the paths: First try to recycle the

@@ -2128,7 +2128,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // Flatten the list of location arrays to one array and return it.
         locations = [];
         for (var i = 0, l = arrays.length; i < l; i++) {
-            locations.push.apply(locations, arrays[i]);
+            Base.push(locations, arrays[i]);
         }
         return locations;
     }

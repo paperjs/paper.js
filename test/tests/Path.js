@@ -249,7 +249,6 @@ test('After removing all segments of a selected path, it should still be selecte
     }, true);
 });
 
-
 test('After simplifying a path using #simplify(), the path should stay fullySelected', function() {
     var path = new Path();
     for (var i = 0; i < 30; i++) {
@@ -612,11 +611,12 @@ test('Path#arcTo(from, through, to); where from, through and to all share the sa
     equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
 
-test('#1493 Path#add with 1000000 segments', function() {
-    var path = new Path();
-    for (var i = 0; i < 1000000; i++) {
-        path.add(new Point(0, 0));
+test('Path#add() with a lot of segments (#1493)', function() {
+    var segments = [];
+    for (var i = 0; i < 100000; i++) {
+        segments.push(new Point(0, 0));
     }
+    var path = new Path(segments);
     path.clone();
     expect(0);
 });
