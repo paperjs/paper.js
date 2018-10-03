@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 2 21:11:40 2018 +0200
+ * Date: Wed Oct 3 10:18:15 2018 +0200
  *
  ***
  *
@@ -4529,7 +4529,7 @@ new function() {
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
 			if (positionSelected) {
-				var point = this.getPosition(true),
+				var point = mx._transformPoint(this.getPosition(true)),
 					x = point.x,
 					y = point.y;
 				ctx.beginPath();
@@ -8116,7 +8116,12 @@ var Path = PathItem.extend({
 				this._updateSelection(segment, 0, segment._selection);
 		}
 		if (append) {
-			segments.push.apply(segments, segs);
+			var originalLength = segments.length;
+			var offsetLength = segs.length;
+			segments.length += offsetLength;
+			for (var i = 0; i < offsetLength; i++) {
+				segments[originalLength + i] = segs[i];
+			}
 		} else {
 			segments.splice.apply(segments, [index, 0].concat(segs));
 			for (var i = index + amount, l = segments.length; i < l; i++)
