@@ -30,6 +30,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
     // Prioritize `crossOrigin` over `source`:
     _prioritize: ['crossOrigin'],
+    _smoothing: true,
 
     // TODO: Implement type, width, height.
     // TODO: Have SymbolItem & Raster inherit from a shared class?
@@ -97,11 +98,6 @@ var Raster = Item.extend(/** @lends Raster# */{
         if (!this._size) {
             this._size = new Size();
             this._loaded = false;
-        }
-        // set smoothing default value
-        if (this._smoothing === undefined)
-        {
-            this._smoothing = true;
         }
     },
 
@@ -425,8 +421,8 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     /**
-     * Specifies if the raster should be smoothed when scaled up
-     * or if pixels should be visible.
+     * Specifies if the raster should be smoothed when scaled up or if the
+     * pixels should be scaled up by repeating the nearest neighboring pixels.
      *
      * @bean
      * @type Boolean
@@ -445,6 +441,7 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     setSmoothing: function(smoothing) {
         this._smoothing = smoothing;
+        this._changed(/*#=*/Change.ATTRIBUTE);
     },
 
     // DOCS: document Raster#getElement
@@ -762,9 +759,11 @@ var Raster = Item.extend(/** @lends Raster# */{
             ctx.globalAlpha = this._opacity;
 
             // Set context smoothing value according to raster property.
-            // There is no need to restore original value after drawing thanks
-            // to the call to ctx.restore() in Item#draw() after this method call.
-            this._setContextSmoothing(ctx, this._smoothing);
+            // There's no need to restore original value after drawing due to
+            // the call to ctx.restore() in Item#draw() after this method call.
+            DomElement.setPrefixed(
+                ctx, 'imageSmoothingEnabled', this._smoothing
+            );
 
             ctx.drawImage(element,
                     -this._size.width / 2, -this._size.height / 2);
@@ -773,27 +772,5 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     _canComposite: function() {
         return true;
-    },
-
-    /**
-     * Set given context smoothing property.
-     * Handle vendor prefixing to improve browser compatibility.
-     * @param {CanvasRenderingContext2D} ctx
-     * @param {Boolean} value
-     * @private
-     */
-    _setContextSmoothing: function(ctx, value) {
-        var keys = [
-            'imageSmoothingEnabled',
-            'mozImageSmoothingEnabled',
-            'webkitImageSmoothingEnabled',
-            'msImageSmoothingEnabled'
-        ];
-        for (var i=0; i<keys.length; i++) {
-            if (keys[i] in ctx) {
-                ctx[keys[i]] = value;
-                return;
-            }
-        }
     }
 });
