@@ -56,9 +56,9 @@ var Color = Base.extend(new function() {
         colorCache = {},
         colorCtx;
 
-    // TODO: Implement hsv, etc. CSS parsing!
     function fromCSS(string) {
         var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+            type = 'rgb',
             components;
         if (match) {
             // Hex
@@ -68,12 +68,34 @@ var Color = Base.extend(new function() {
                 components[i] = parseInt(value.length == 1
                         ? value + value : value, 16) / 255;
             }
-        } else if (match = string.match(/^rgba?\((.*)\)$/)) {
-            // RGB / RGBA
-            components = match[1].split(',');
-            for (var i = 0, l = components.length; i < l; i++) {
-                var value = +components[i];
-                components[i] = i < 3 ? value / 255 : value;
+        } else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
+            // RGB / RGBA or HSL / HSLA
+            type = match[1];
+            components = match[2].split(/[,\s]+/g);
+            var isHSL = type === 'hsl';
+            for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
+                var component = components[i];
+                // Use `parseFloat()` instead of `+value` to parse '\d+%' to
+                // float for HSL:
+                var value = parseFloat(component);
+                if (isHSL) {
+                    if (i === 0) {
+                        // handle 'deg', 'turn', 'rad' 'grad':
+                        var unit = component.match(/([a-z]*)$/)[1];
+                        value *= ({
+                            turn: 360,
+                            rad: 180 / Math.PI,
+                            grad: 0.9 // 360 / 400
+                        }[unit] || 1);
+                    } else if (i < 3) {
+                        // Percentages to 0..1
+                        value /= 100;
+                    }
+                } else if (i < 3) {
+                    // RGB color values to 0..1
+                    value /= 255;
+                }
+                components[i] = value;
             }
         } else if (window) {
             // Named
@@ -106,7 +128,7 @@ var Color = Base.extend(new function() {
             // Web-workers can't resolve CSS color names, for now.
             components = [0, 0, 0];
         }
-        return components;
+        return [type, components];
     }
 
     // For hsb-rgb conversion, used to lookup the right parameters in the
@@ -237,36 +259,40 @@ var Color = Base.extend(new function() {
                 // hsb and hsl. Handle this here separately, by testing for
                 // overlaps and skipping conversion if the type is /hs[bl]/
                 hasOverlap = /^(hue|saturation)$/.test(name),
-                // Produce value parser function for the given type / propeprty
-                // name combination.
-                parser = componentParsers[type][index] = name === 'gradient'
-                    ? function(value) {
-                        var current = this._components[0];
-                        value = Gradient.read(Array.isArray(value) ? value
-                                : arguments, 0, { readNull: true });
-                        if (current !== value) {
-                            if (current)
-                                current._removeOwner(this);
-                            if (value)
-                                value._addOwner(this);
+                // Produce value parser function for the given type / property
+                parser = componentParsers[type][index] = type === 'gradient'
+                    ? name === 'gradient'
+                        // gradient property of gradient color:
+                        ? function(value) {
+                            var current = this._components[0];
+                            value = Gradient.read(
+                                Array.isArray(value)
+                                    ? value
+                                    : arguments, 0, { readNull: true }
+                            );
+                            if (current !== value) {
+                                if (current)
+                                    current._removeOwner(this);
+                                if (value)
+                                    value._addOwner(this);
+                            }
+                            return value;
                         }
-                        return value;
-                    }
-                    : type === 'gradient'
-                        ? function(/* value */) {
+                        // all other (point) properties of gradient color:
+                        : function(/* value */) {
                             return Point.read(arguments, 0, {
                                     readNull: name === 'highlight',
                                     clone: true
                             });
                         }
-                        : function(value) {
-                            // NOTE: We don't clamp values here, they're only
-                            // clamped once the actual CSS values are produced.
-                            // Gotta love the fact that isNaN(null) is false,
-                            // while isNaN(undefined) is true.
-                            return value == null || isNaN(value) ? 0 : value;
-                        };
-
+                    // Normal number component properties:
+                    : function(value) {
+                        // NOTE: We don't clamp values here, they're only
+                        // clamped once the actual CSS values are produced.
+                        // Gotta love the fact that isNaN(null) is false,
+                        // while isNaN(undefined) is true.
+                        return value == null || isNaN(value) ? 0 : +value;
+                    };
             this['get' + part] = function() {
                 return this._type === type
                     || hasOverlap && /^hs[bl]$/.test(this._type)
@@ -412,6 +438,25 @@ var Color = Base.extend(new function() {
          * });
          */
         /**
+         * Creates a Color object from a CSS string. All common CSS color string
+         * formats are supported:
+         * - Named colors (e.g. `'red'`, `'fuchsia'`, …)
+         * - Hex strings (`'#ffff00'`, `'#ff0'`, …)
+         * - RGB strings (`'rgb(255, 128, 0)'`, `'rgba(255, 128, 0, 0.5)'`, …)
+         * - HSL strings (`'hsl(180deg, 20%, 50%)'`,
+         *   `'hsla(3.14rad, 20%, 50%, 0.5)'`, …)
+         *
+         * @name Color#initialize
+         * @param {String} color the color's CSS string representation
+         *
+         * @example {@paperscript}
+         * var circle = new Path.Circle({
+         *     center: [80, 50],
+         *     radius: 30,
+         *     fillColor: new Color('rgba(255, 255, 0, 0.5)')
+         * });
+         */
+        /**
          * Creates a gradient Color object.
          *
          * @name Color#initialize
@@ -544,8 +589,9 @@ var Color = Base.extend(new function() {
                     if (values.length > length)
                         values = Base.slice(values, 0, length);
                 } else if (argType === 'string') {
-                    type = 'rgb';
-                    components = fromCSS(arg);
+                    var converted = fromCSS(arg);
+                    type = converted[0];
+                    components = converted[1];
                     if (components.length === 4) {
                         alpha = components[3];
                         components.length--;
