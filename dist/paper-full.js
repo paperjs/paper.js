@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 18:21:26 2018 +0200
+ * Date: Wed Oct 3 18:37:30 2018 +0200
  *
  ***
  *
@@ -5071,6 +5071,10 @@ var Raster = Item.extend({
 			this._size = new Size();
 			this._loaded = false;
 		}
+		if (this._smoothing === undefined)
+		{
+			this._smoothing = true;
+		}
 	},
 
 	_equals: function(item) {
@@ -5256,6 +5260,14 @@ var Raster = Item.extend({
 			image.crossOrigin = crossOrigin;
 	},
 
+	getSmoothing: function() {
+		return this._smoothing;
+	},
+
+	setSmoothing: function(smoothing) {
+		this._smoothing = smoothing;
+	},
+
 	getElement: function() {
 		return this._canvas || this._loaded && this._image;
 	}
@@ -5413,6 +5425,9 @@ var Raster = Item.extend({
 		var element = this.getElement();
 		if (element) {
 			ctx.globalAlpha = this._opacity;
+
+			this._setContextSmoothing(ctx, this._smoothing);
+
 			ctx.drawImage(element,
 					-this._size.width / 2, -this._size.height / 2);
 		}
@@ -5420,6 +5435,21 @@ var Raster = Item.extend({
 
 	_canComposite: function() {
 		return true;
+	},
+
+	_setContextSmoothing: function(ctx, value) {
+		var keys = [
+			'imageSmoothingEnabled',
+			'mozImageSmoothingEnabled',
+			'webkitImageSmoothingEnabled',
+			'msImageSmoothingEnabled'
+		];
+		for (var i=0; i<keys.length; i++) {
+			if (keys[i] in ctx) {
+				ctx[keys[i]] = value;
+				return;
+			}
+		}
 	}
 });
 
