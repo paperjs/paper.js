@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 10:18:15 2018 +0200
+ * Date: Wed Oct 3 10:22:49 2018 +0200
  *
  ***
  *
@@ -12127,8 +12127,14 @@ var DomEvent = {
 			for (var type in events) {
 				var func = events[type],
 					parts = type.split(/[\s,]+/g);
-				for (var i = 0, l = parts.length; i < l; i++)
-					el.addEventListener(parts[i], func, false);
+				for (var i = 0, l = parts.length; i < l; i++) {
+					var name = parts[i];
+					var options = (
+							el === document
+							&& (name === 'touchstart' || name === 'touchmove')
+						) ? { passive: false } : false;
+					el.addEventListener(name, func, options);
+				}
 			}
 		}
 	},
@@ -12884,8 +12890,12 @@ new function() {
 					|| called;
 			}
 
-			if (called && !mouse.move || mouse.down && responds('mouseup'))
+			if (
+				event.cancelable !== false
+				&& (called && !mouse.move || mouse.down && responds('mouseup'))
+			) {
 				event.preventDefault();
+			}
 		},
 
 		_handleKeyEvent: function(type, event, key, character) {
