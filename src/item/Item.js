@@ -4413,7 +4413,7 @@ new function() { // Injection scope for hit-test functions shared with project
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {
-                var point = this.getPosition(true),
+                var point = mx._transformPoint(this.getPosition(true)),
                     x = point.x,
                     y = point.y;
                 ctx.beginPath();
