@@ -1,5 +1,14 @@
 # Change Log
 
+## `Prebuilt`
+
+### Fixed
+- Fix reference error in webpack bundle in node server rendering react application (#1482).
+- Fix memory leak on Gradient Color (#1499, #1511).
+
+### Added
+
+
 ## `0.11.5`
 
 ### Fixed
