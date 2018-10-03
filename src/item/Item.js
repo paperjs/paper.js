@@ -746,21 +746,29 @@ new function() { // Injection scope for various item event handlers
     getPosition: function(_dontLink) {
         // Cache position value.
         // Pass true for _dontLink in getCenter(), so receive back a normal point
-        var position = this._position,
-            ctor = _dontLink ? Point : LinkedPoint;
+        var ctor = _dontLink ? Point : LinkedPoint;
         // Do not cache LinkedPoints directly, since we would not be able to
         // use them to calculate the difference in #setPosition, as when it is
         // modified, it would hold new values already and only then cause the
         // calling of #setPosition.
-        if (!position) {
-            // If an pivot point is provided, use it to determine position
-            // based on the matrix. Otherwise use the center of the bounds.
-            var pivot = this._pivot;
-            position = this._position = pivot
-                    ? this._matrix._transformPoint(pivot)
-                    : this.getBounds().getCenter(true);
+        if (!this._position) {
+            // set position if needed
+            this._position = this._getPositionFromBounds();
         }
-        return new ctor(position.x, position.y, this, 'setPosition');
+        return new ctor(this._position.x, this._position.y, this, 'setPosition');
+    },
+
+    /**
+     * Internal method used to calculate position either from pivot point or bounds.
+     * @param {Rectangle} bounds if provided, these bounds are used instead of
+     * calling getBounds()
+     * @returns {Point} the transformed pivot point or the center of the bounds
+     * @private
+     */
+    _getPositionFromBounds: function(bounds) {
+        return this._pivot
+               ? this._matrix._transformPoint(this._pivot)
+               : (bounds || this.getBounds()).getCenter(true);
     },
 
     setPosition: function(/* point */) {
@@ -3511,10 +3519,10 @@ new function() { // Injection scope for hit-test functions shared with project
             this._bounds = bounds;
             // If we have cached bounds, try to determine _position as its
             // center. Use _boundsOptions do get the cached default bounds.
-            var cached = bounds[this._getBoundsCacheKey(
-                    this._boundsOptions || {})];
+            var cached = bounds[this._getBoundsCacheKey(this._boundsOptions || {})];
             if (cached) {
-                this._position = cached.rect.getCenter(true);
+                // use this method to handle pivot case (see #1503)
+                this._position = this._getPositionFromBounds(cached.rect);
             }
         } else if (transform && position && this._pivot) {
             // If the item has a pivot defined, it means that the default
