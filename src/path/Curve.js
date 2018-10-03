@@ -1686,7 +1686,7 @@ new function() { // Scope for methods that require private functions
          * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
          *
          * @param {Number[]} v the curve values array
-         * @returns {Number[]} the roots of all found peaks
+         * @return {Number[]} the roots of all found peaks
          */
         getPeaks: function(v) {
             var x0 = v[0], y0 = v[1],

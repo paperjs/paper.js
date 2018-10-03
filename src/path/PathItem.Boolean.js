@@ -248,7 +248,7 @@ PathItem.inject(new function() {
      * @param {Boolean} [clockwise] if provided, the orientation of the root
      *     paths will be set to the orientation specified by `clockwise`,
      *     otherwise the orientation of the largest root child is used.
-     * @returns {Item[]} the reoriented paths
+     * @return {Item[]} the reoriented paths
     */
     function reorientPaths(paths, isInside, clockwise) {
         var length = paths && paths.length;

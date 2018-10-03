@@ -930,10 +930,10 @@ test('Item#scaling, #rotation', function() {
             'shape2.bounds, setting shape2.scaling before shape2.rotation');
 });
 
-test('Item#position cache issue with pivot point #1503', function() {
+test('Item#position pivot point and caching (#1503)', function() {
     var item = Path.Rectangle(new Point(0, 0), new Size(20));
     item.pivot = new Point(0, 0);
-    item.getBounds();
+    var bounds = item.bounds;
     item.translate(5, 5);
     equals(item.position, new Point(5, 5));
 });
