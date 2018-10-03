@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 16:45:38 2018 +0200
+ * Date: Wed Oct 3 17:33:24 2018 +0200
  *
  ***
  *
@@ -3218,15 +3218,17 @@ new function() {
 	},
 
 	getPosition: function(_dontLink) {
-		var position = this._position,
-			ctor = _dontLink ? Point : LinkedPoint;
-		if (!position) {
-			var pivot = this._pivot;
-			position = this._position = pivot
-					? this._matrix._transformPoint(pivot)
-					: this.getBounds().getCenter(true);
+		var ctor = _dontLink ? Point : LinkedPoint;
+		if (!this._position) {
+			this._position = this._getPositionFromBounds();
 		}
-		return new ctor(position.x, position.y, this, 'setPosition');
+		return new ctor(this._position.x, this._position.y, this, 'setPosition');
+	},
+
+	_getPositionFromBounds: function(bounds) {
+		return this._pivot
+			   ? this._matrix._transformPoint(this._pivot)
+			   : (bounds || this.getBounds()).getCenter(true);
 	},
 
 	setPosition: function() {
@@ -4329,10 +4331,9 @@ new function() {
 				}
 			}
 			this._bounds = bounds;
-			var cached = bounds[this._getBoundsCacheKey(
-					this._boundsOptions || {})];
+			var cached = bounds[this._getBoundsCacheKey(this._boundsOptions || {})];
 			if (cached) {
-				this._position = cached.rect.getCenter(true);
+				this._position = this._getPositionFromBounds(cached.rect);
 			}
 		} else if (transform && position && this._pivot) {
 			this._position = matrix._transformPoint(position, position);
