@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 17:33:24 2018 +0200
+ * Date: Wed Oct 3 17:57:45 2018 +0200
  *
  ***
  *
@@ -3219,16 +3219,15 @@ new function() {
 
 	getPosition: function(_dontLink) {
 		var ctor = _dontLink ? Point : LinkedPoint;
-		if (!this._position) {
-			this._position = this._getPositionFromBounds();
-		}
-		return new ctor(this._position.x, this._position.y, this, 'setPosition');
+		var position = this._position ||
+			(this._position = this._getPositionFromBounds());
+		return new ctor(position.x, position.y, this, 'setPosition');
 	},
 
 	_getPositionFromBounds: function(bounds) {
 		return this._pivot
-			   ? this._matrix._transformPoint(this._pivot)
-			   : (bounds || this.getBounds()).getCenter(true);
+				? this._matrix._transformPoint(this._pivot)
+				: (bounds || this.getBounds()).getCenter(true);
 	},
 
 	setPosition: function() {
@@ -4331,7 +4330,8 @@ new function() {
 				}
 			}
 			this._bounds = bounds;
-			var cached = bounds[this._getBoundsCacheKey(this._boundsOptions || {})];
+			var cached = bounds[this._getBoundsCacheKey(
+				this._boundsOptions || {})];
 			if (cached) {
 				this._position = this._getPositionFromBounds(cached.rect);
 			}
@@ -12162,9 +12162,9 @@ var DomEvent = {
 				for (var i = 0, l = parts.length; i < l; i++) {
 					var name = parts[i];
 					var options = (
-							el === document
-							&& (name === 'touchstart' || name === 'touchmove')
-						) ? { passive: false } : false;
+						el === document
+						&& (name === 'touchstart' || name === 'touchmove')
+					) ? { passive: false } : false;
 					el.addEventListener(name, func, options);
 				}
 			}
