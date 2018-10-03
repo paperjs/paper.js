@@ -340,6 +340,65 @@ var path = new Path.Rectangle({
 </div>
 	
 		
+<div id="color-color" class="member">
+<div class="member-link">
+<a name="color-color" href="#color-color"><tt><b>Color</b>(color)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a Color object from a CSS string. All common CSS color string formats are supported: - Named colors (e.g. <code>&#39;red&#39;</code>, <code>&#39;fuchsia&#39;</code>, …) - Hex strings (<code>&#39;#ffff00&#39;</code>, <code>&#39;#ff0&#39;</code>, …) - RGB strings (<code>&#39;rgb(255, 128, 0)&#39;</code>, <code>&#39;rgba(255, 128, 0, 0.5)&#39;</code>, …) - HSL strings (<code>&#39;hsl(180deg, 20%, 50%)&#39;</code>,  <code>&#39;hsla(3.14rad, 20%, 50%, 0.5)&#39;</code>, …)</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>color:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the color&rsquo;s CSS string representation
+
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Color.html"><tt>Color</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-7">
+var circle = new Path.Circle({
+    center: [80, 50],
+    radius: 30,
+    fillColor: new Color('rgba(255, 255, 0, 0.5)')
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+	
+		
 <div id="color-gradient-origin-destination" class="member">
 <div class="member-link">
 <a name="color-gradient-origin-destination" href="#color-gradient-origin-destination"><tt><b>Color</b>(gradient, origin, destination[, highlight])</tt></a>
@@ -404,7 +463,7 @@ var path = new Path.Rectangle({
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-7">
+<script type="text/paperscript" canvas="canvas-8">
 // Define two points which we will be using to construct
 // the path and to position the gradient color:
 var topLeft = view.center - [80, 80];
@@ -425,7 +484,7 @@ var gradientColor = new Color(gradient, topLeft, bottomRight);
 // Set the fill color of the path to the gradient color:
 path.fillColor = gradientColor;
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-7"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-8"></canvas></div>
 </div>
 
 
@@ -437,7 +496,7 @@ path.fillColor = gradientColor;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-8">
+<script type="text/paperscript" canvas="canvas-9">
 // Create a circle shaped path at the center of the view
 // with a radius of 80:
 var path = new Path.Circle({
@@ -471,7 +530,7 @@ var gradientColor = new Color(gradient, from, to);
 // Set the fill color of the path to the gradient color:
 path.fillColor = gradientColor;
 </script>
-<div class="canvas"><canvas width="516" height="200" id="canvas-8"></canvas></div>
+<div class="canvas"><canvas width="516" height="200" id="canvas-9"></canvas></div>
 </div>
 
 
@@ -946,7 +1005,7 @@ console.log(color.type); // 'rgb'</code></pre>
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-9">
+<script type="text/paperscript" canvas="canvas-10">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // Fill the circle with red and give it a 20pt green stroke:
@@ -959,7 +1018,7 @@ circle.style = {
 // Make the stroke half transparent:
 circle.strokeColor.alpha = 0.5;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-9"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
 </div>
 
 
@@ -998,14 +1057,14 @@ circle.strokeColor.alpha = 0.5;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-10">
+<script type="text/paperscript" canvas="canvas-11">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'blue';
 
 // Blue + red = purple:
 circle.fillColor.red = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-10"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
 </div>
 
 
@@ -1042,7 +1101,7 @@ circle.fillColor.red = 1;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-11">
+<script type="text/paperscript" canvas="canvas-12">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -1051,7 +1110,7 @@ circle.fillColor = 'red';
 // Red + green = yellow:
 circle.fillColor.green = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-11"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
 </div>
 
 
@@ -1088,7 +1147,7 @@ circle.fillColor.green = 1;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-12">
+<script type="text/paperscript" canvas="canvas-13">
 var circle = new Path.Circle(new Point(80, 50), 30);
 
 // First we set the fill color to red:
@@ -1097,7 +1156,7 @@ circle.fillColor = 'red';
 // Red + blue = purple:
 circle.fillColor.blue = 1;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-12"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
 </div>
 
 
@@ -1164,12 +1223,12 @@ circle.fillColor.blue = 1;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-13">
+<script type="text/paperscript" canvas="canvas-14">
 var circle = new Path.Circle(new Point(80, 50), 30);
 circle.fillColor = 'red';
 circle.fillColor.hue += 30;
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-13"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
 </div>
 
 
@@ -1181,7 +1240,7 @@ circle.fillColor.hue += 30;
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-14">
+<script type="text/paperscript" canvas="canvas-15">
 // Create a rectangle shaped path, using the dimensions
 // of the view:
 var path = new Path.Rectangle(view.bounds);
@@ -1191,7 +1250,7 @@ function onFrame(event) {
  path.fillColor.hue += 0.5;
 }
 </script>
-<div class="canvas"><canvas width="516" height="100" id="canvas-14"></canvas></div>
+<div class="canvas"><canvas width="516" height="100" id="canvas-15"></canvas></div>
 </div>
 
 
@@ -1337,7 +1396,7 @@ function onFrame(event) {
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-15">
+<script type="text/paperscript" canvas="canvas-16">
 var path = new Path.Circle({
  center: view.center,
  radius: view.bounds.height * 0.4
@@ -1358,7 +1417,7 @@ function onMouseMove(event) {
  path.fillColor.highlight = event.point;
 }
 </script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-15"></canvas></div>
+<div class="canvas"><canvas width="516" height="300" id="canvas-16"></canvas></div>
 </div>
 
 

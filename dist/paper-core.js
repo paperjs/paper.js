@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 10:22:49 2018 +0200
+ * Date: Wed Oct 3 16:45:38 2018 +0200
  *
  ***
  *
@@ -556,6 +556,20 @@ statics: {
 				});
 	},
 
+	push: function(list, items) {
+		var itemsLength = items.length;
+		if (itemsLength < 4096) {
+			list.push.apply(list, items);
+		} else {
+			var startLength = list.length;
+			list.length += itemsLength;
+			for (var i = 0; i < itemsLength; i++) {
+				list[startLength + i] = items[i];
+			}
+		}
+		return list;
+	},
+
 	splice: function(list, items, index, remove) {
 		var amount = items && items.length,
 			append = index === undefined;
@@ -565,12 +579,12 @@ statics: {
 		for (var i = 0; i < amount; i++)
 			items[i]._index = index + i;
 		if (append) {
-			list.push.apply(list, items);
+			Base.push(list, items);
 			return [];
 		} else {
 			var args = [index, remove];
 			if (items)
-				args.push.apply(args, items);
+				Base.push(args, items);
 			var removed = list.splice.apply(list, args);
 			for (var i = 0, l = removed.length; i < l; i++)
 				removed[i]._index = undefined;
@@ -7193,7 +7207,7 @@ new function() {
 		}
 		locations = [];
 		for (var i = 0, l = arrays.length; i < l; i++) {
-			locations.push.apply(locations, arrays[i]);
+			Base.push(locations, arrays[i]);
 		}
 		return locations;
 	}
@@ -8116,12 +8130,7 @@ var Path = PathItem.extend({
 				this._updateSelection(segment, 0, segment._selection);
 		}
 		if (append) {
-			var originalLength = segments.length;
-			var offsetLength = segs.length;
-			segments.length += offsetLength;
-			for (var i = 0; i < offsetLength; i++) {
-				segments[originalLength + i] = segs[i];
-			}
+			Base.push(segments, segs);
 		} else {
 			segments.splice.apply(segments, [index, 0].concat(segs));
 			for (var i = index + amount, l = segments.length; i < l; i++)
@@ -9703,8 +9712,9 @@ var CompoundPath = PathItem.extend({
 	getCurves: function() {
 		var children = this._children,
 			curves = [];
-		for (var i = 0, l = children.length; i < l; i++)
-			curves.push.apply(curves, children[i].getCurves());
+		for (var i = 0, l = children.length; i < l; i++) {
+			Base.push(curves, children[i].getCurves());
+		}
 		return curves;
 	},
 
@@ -9890,8 +9900,8 @@ PathItem.inject(new function() {
 		function collect(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
-				segments.push.apply(segments, path._segments);
-				curves.push.apply(curves, path.getCurves());
+				Base.push(segments, path._segments);
+				Base.push(curves, path.getCurves());
 				path._overlapsOnly = true;
 			}
 		}
@@ -10586,7 +10596,7 @@ PathItem.inject(new function() {
 				if (clearCurves)
 					clearCurveHandles(clearCurves);
 				paths = tracePaths(Base.each(paths, function(path) {
-					this.push.apply(this, path._segments);
+					Base.push(this, path._segments);
 				}, []));
 			}
 			var length = paths.length,
@@ -11105,6 +11115,7 @@ var Color = Base.extend(new function() {
 
 	function fromCSS(string) {
 		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+			type = 'rgb',
 			components;
 		if (match) {
 			components = [0, 0, 0];
@@ -11113,11 +11124,28 @@ var Color = Base.extend(new function() {
 				components[i] = parseInt(value.length == 1
 						? value + value : value, 16) / 255;
 			}
-		} else if (match = string.match(/^rgba?\((.*)\)$/)) {
-			components = match[1].split(',');
-			for (var i = 0, l = components.length; i < l; i++) {
-				var value = +components[i];
-				components[i] = i < 3 ? value / 255 : value;
+		} else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
+			type = match[1];
+			components = match[2].split(/[,\s]+/g);
+			var isHSL = type === 'hsl';
+			for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
+				var component = components[i];
+				var value = parseFloat(component);
+				if (isHSL) {
+					if (i === 0) {
+						var unit = component.match(/([a-z]*)$/)[1];
+						value *= ({
+							turn: 360,
+							rad: 180 / Math.PI,
+							grad: 0.9
+						}[unit] || 1);
+					} else if (i < 3) {
+						value /= 100;
+					}
+				} else if (i < 3) {
+					value /= 255;
+				}
+				components[i] = value;
 			}
 		} else if (window) {
 			var cached = colorCache[string];
@@ -11140,7 +11168,7 @@ var Color = Base.extend(new function() {
 		} else {
 			components = [0, 0, 0];
 		}
-		return components;
+		return [type, components];
 	}
 
 	var hsbIndices = [
@@ -11248,30 +11276,32 @@ var Color = Base.extend(new function() {
 		Base.each(properties, function(name, index) {
 			var part = Base.capitalize(name),
 				hasOverlap = /^(hue|saturation)$/.test(name),
-				parser = componentParsers[type][index] = name === 'gradient'
-					? function(value) {
-						var current = this._components[0];
-						value = Gradient.read(Array.isArray(value) ? value
-								: arguments, 0, { readNull: true });
-						if (current !== value) {
-							if (current)
-								current._removeOwner(this);
-							if (value)
-								value._addOwner(this);
+				parser = componentParsers[type][index] = type === 'gradient'
+					? name === 'gradient'
+						? function(value) {
+							var current = this._components[0];
+							value = Gradient.read(
+								Array.isArray(value)
+									? value
+									: arguments, 0, { readNull: true }
+							);
+							if (current !== value) {
+								if (current)
+									current._removeOwner(this);
+								if (value)
+									value._addOwner(this);
+							}
+							return value;
 						}
-						return value;
-					}
-					: type === 'gradient'
-						? function() {
+						: function() {
 							return Point.read(arguments, 0, {
 									readNull: name === 'highlight',
 									clone: true
 							});
 						}
-						: function(value) {
-							return value == null || isNaN(value) ? 0 : value;
-						};
-
+					: function(value) {
+						return value == null || isNaN(value) ? 0 : +value;
+					};
 			this['get' + part] = function() {
 				return this._type === type
 					|| hasOverlap && /^hs[bl]$/.test(this._type)
@@ -11341,8 +11371,9 @@ var Color = Base.extend(new function() {
 					if (values.length > length)
 						values = Base.slice(values, 0, length);
 				} else if (argType === 'string') {
-					type = 'rgb';
-					components = fromCSS(arg);
+					var converted = fromCSS(arg);
+					type = converted[0];
+					components = converted[1];
 					if (components.length === 4) {
 						alpha = components[3];
 						components.length--;
