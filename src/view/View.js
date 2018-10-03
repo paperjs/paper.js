@@ -1440,8 +1440,16 @@ new function() { // Injection scope for event handling on the browser
             //   which can call `preventDefault()` explicitly or return `false`.
             // - If this is a unhandled mousedown event, but the view or tools
             //   respond to mouseup.
-            if (called && !mouse.move || mouse.down && responds('mouseup'))
+            //
+            // Some events are not cancelable anyway (like during a scroll
+            // inertia on mobile) so trying to prevent default in those case
+            // would result in no effect and an error.
+            if (
+                event.cancelable !== false
+                && (called && !mouse.move || mouse.down && responds('mouseup'))
+            ) {
                 event.preventDefault();
+            }
         },
 
         /**
