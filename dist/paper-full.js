@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 17:57:45 2018 +0200
+ * Date: Wed Oct 3 18:21:26 2018 +0200
  *
  ***
  *
@@ -3224,14 +3224,14 @@ new function() {
 		return new ctor(position.x, position.y, this, 'setPosition');
 	},
 
+	setPosition: function() {
+		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
+	},
+
 	_getPositionFromBounds: function(bounds) {
 		return this._pivot
 				? this._matrix._transformPoint(this._pivot)
 				: (bounds || this.getBounds()).getCenter(true);
-	},
-
-	setPosition: function() {
-		this.translate(Point.read(arguments).subtract(this.getPosition(true)));
 	},
 
 	getPivot: function() {
