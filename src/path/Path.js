@@ -2146,7 +2146,7 @@ var Path = PathItem.extend(/** @lends Path# */{
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
             // Calculate curves times at vector tangent...
-            var curveTimes = curve.getTimesAtVectorTangent(vector);
+            var curveTimes = curve.getTimesWithTangent(vector);
             for (var j = 0; j < curveTimes.length; j++) {
                 // ...and convert them to path times...
                 var time = (offset + curve.getOffsetAtTime(curveTimes[j])) / length;
