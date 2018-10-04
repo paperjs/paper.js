@@ -60,6 +60,9 @@ test('Creating Colors', function() {
     equals(new Color('red'), new Color(1, 0, 0),
             'Color from name (red)');
 
+    equals(new Color('transparent'), new Color(0, 0, 0, 0),
+            'Color from name (transparent)');
+
     equals(new Color('#ff0000'), new Color(1, 0, 0),
             'Color from hex string');
 

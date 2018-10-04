@@ -53,7 +53,9 @@ var Color = Base.extend(new function() {
     // Parsers of values for setters, by type and property
     var componentParsers = {},
         // Cache and canvas context for color name lookup
-        colorCache = {},
+        namedColors = {
+            transparent: [0, 0, 0, 0]
+        },
         colorCtx;
 
     function fromCSS(string) {
@@ -97,36 +99,39 @@ var Color = Base.extend(new function() {
                 }
                 components[i] = value;
             }
-        } else if (window) {
-            // Named
-            var cached = colorCache[string];
-            if (!cached) {
-                // Use a canvas to draw to with the given name and then retrieve
-                // RGB values from. Build a cache for all the used colors.
-                if (!colorCtx) {
-                    colorCtx = CanvasProvider.getContext(1, 1);
-                    colorCtx.globalCompositeOperation = 'copy';
-                }
-                // Set the current fillStyle to transparent, so that it will be
-                // transparent instead of the previously set color in case the
-                // new color can not be interpreted.
-                colorCtx.fillStyle = 'rgba(0,0,0,0)';
-                // Set the fillStyle of the context to the passed name and fill
-                // the canvas with it, then retrieve the data for the drawn
-                // pixel:
-                colorCtx.fillStyle = string;
-                colorCtx.fillRect(0, 0, 1, 1);
-                var data = colorCtx.getImageData(0, 0, 1, 1).data;
-                cached = colorCache[string] = [
-                    data[0] / 255,
-                    data[1] / 255,
-                    data[2] / 255
-                ];
-            }
-            components = cached.slice();
         } else {
-            // Web-workers can't resolve CSS color names, for now.
-            components = [0, 0, 0];
+            // Named
+            var color = namedColors[string];
+            if (!color) {
+                if (window) {
+                    // Use a canvas to draw with the given name, then retrieve
+                    // RGB values and build a cache for all the used colors.
+                    if (!colorCtx) {
+                        colorCtx = CanvasProvider.getContext(1, 1);
+                        colorCtx.globalCompositeOperation = 'copy';
+                    }
+                    // Set the current fillStyle to transparent, so that it will be
+                    // transparent instead of the previously set color in case the
+                    // new color can not be interpreted.
+                    colorCtx.fillStyle = 'rgba(0,0,0,0)';
+                    // Set the fillStyle of the context to the passed name and fill
+                    // the canvas with it, then retrieve the data for the drawn
+                    // pixel:
+                    colorCtx.fillStyle = string;
+                    colorCtx.fillRect(0, 0, 1, 1);
+                    var data = colorCtx.getImageData(0, 0, 1, 1).data;
+                    color = namedColors[string] = [
+                        data[0] / 255,
+                        data[1] / 255,
+                        data[2] / 255
+                    ];
+                } else {
+                    // Web-workers can't resolve CSS color names, for now.
+                    // TODO: Find a way to make this work there too?
+                    color = [0, 0, 0];
+                }
+            }
+            components = color.slice();
         }
         return [type, components];
     }
