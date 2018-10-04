@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 3 19:01:02 2018 +0200
+ * Date: Thu Oct 4 17:26:48 2018 +0200
  *
  ***
  *
@@ -11126,7 +11126,9 @@ var Color = Base.extend(new function() {
 	};
 
 	var componentParsers = {},
-		colorCache = {},
+		namedColors = {
+			transparent: [0, 0, 0, 0]
+		},
 		colorCtx;
 
 	function fromCSS(string) {
@@ -11163,26 +11165,28 @@ var Color = Base.extend(new function() {
 				}
 				components[i] = value;
 			}
-		} else if (window) {
-			var cached = colorCache[string];
-			if (!cached) {
-				if (!colorCtx) {
-					colorCtx = CanvasProvider.getContext(1, 1);
-					colorCtx.globalCompositeOperation = 'copy';
-				}
-				colorCtx.fillStyle = 'rgba(0,0,0,0)';
-				colorCtx.fillStyle = string;
-				colorCtx.fillRect(0, 0, 1, 1);
-				var data = colorCtx.getImageData(0, 0, 1, 1).data;
-				cached = colorCache[string] = [
-					data[0] / 255,
-					data[1] / 255,
-					data[2] / 255
-				];
-			}
-			components = cached.slice();
 		} else {
-			components = [0, 0, 0];
+			var color = namedColors[string];
+			if (!color) {
+				if (window) {
+					if (!colorCtx) {
+						colorCtx = CanvasProvider.getContext(1, 1);
+						colorCtx.globalCompositeOperation = 'copy';
+					}
+					colorCtx.fillStyle = 'rgba(0,0,0,0)';
+					colorCtx.fillStyle = string;
+					colorCtx.fillRect(0, 0, 1, 1);
+					var data = colorCtx.getImageData(0, 0, 1, 1).data;
+					color = namedColors[string] = [
+						data[0] / 255,
+						data[1] / 255,
+						data[2] / 255
+					];
+				} else {
+					color = [0, 0, 0];
+				}
+			}
+			components = color.slice();
 		}
 		return [type, components];
 	}
