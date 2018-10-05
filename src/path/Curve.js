@@ -1703,7 +1703,7 @@ new function() { // Scope for methods that require private functions
          * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
          *
          * @param {Number[]} v the curve values array
-         * @returns {Number[]} the roots of all found peaks
+         * @return {Number[]} the roots of all found peaks
          */
         getPeaks: function(v) {
             var x0 = v[0], y0 = v[1],
@@ -2145,7 +2145,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         // Flatten the list of location arrays to one array and return it.
         locations = [];
         for (var i = 0, l = arrays.length; i < l; i++) {
-            locations.push.apply(locations, arrays[i]);
+            Base.push(locations, arrays[i]);
         }
         return locations;
     }

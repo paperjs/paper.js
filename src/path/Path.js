@@ -404,8 +404,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                 this._updateSelection(segment, 0, segment._selection);
         }
         if (append) {
-            // Append them all at the end by using push
-            segments.push.apply(segments, segs);
+            // Append them all at the end.
+            Base.push(segments, segs);
         } else {
             // Insert somewhere else
             segments.splice.apply(segments, [index, 0].concat(segs));
@@ -1012,7 +1012,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.strokeColor = 'black';
      *
      * // Split the path half-way:
-     * var path2 = path.splitAt(path2.length / 2);
+     * var path2 = path.splitAt(path.length / 2);
      *
      * // Give the resulting path a red stroke-color
      * // and move it 20px to the right:

@@ -116,8 +116,7 @@ test('Import SVG polyline', function() {
 
 test('Import SVG Image', function(assert) {
     var done = assert.async();
-    var points = '5,5 45,45 5,45 45,5';
-    var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';
+    var svg = '<?xml version="1.0" encoding="utf-8"?><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><image style="overflow:visible;enable-background:new    ;" width="300" height="67" id="e0" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" transform="matrix(0.2149 0 0 0.2149 304.7706 197.8176)"></image></svg>';
     var imported = paper.project.importSVG(svg);
     var raster = imported.children[0];
     raster.on('load', function() {

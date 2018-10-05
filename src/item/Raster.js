@@ -30,6 +30,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
     // Prioritize `crossOrigin` over `source`:
     _prioritize: ['crossOrigin'],
+    _smoothing: true,
 
     // TODO: Implement type, width, height.
     // TODO: Have SymbolItem & Raster inherit from a shared class?
@@ -419,6 +420,30 @@ var Raster = Item.extend(/** @lends Raster# */{
             image.crossOrigin = crossOrigin;
     },
 
+    /**
+     * Specifies if the raster should be smoothed when scaled up or if the
+     * pixels should be scaled up by repeating the nearest neighboring pixels.
+     *
+     * @bean
+     * @type Boolean
+     * @default true
+     *
+     * @example {@paperscript}
+     * var raster = new Raster({
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
+     *     smoothing: false
+     * });
+     * raster.scale(5);
+     */
+    getSmoothing: function() {
+        return this._smoothing;
+    },
+
+    setSmoothing: function(smoothing) {
+        this._smoothing = smoothing;
+        this._changed(/*#=*/Change.ATTRIBUTE);
+    },
+
     // DOCS: document Raster#getElement
     getElement: function() {
         // Only return the internal element if the content is actually ready.
@@ -732,6 +757,14 @@ var Raster = Item.extend(/** @lends Raster# */{
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = this._opacity;
+
+            // Set context smoothing value according to raster property.
+            // There's no need to restore original value after drawing due to
+            // the call to ctx.restore() in Item#draw() after this method call.
+            DomElement.setPrefixed(
+                ctx, 'imageSmoothingEnabled', this._smoothing
+            );
+
             ctx.drawImage(element,
                     -this._size.width / 2, -this._size.height / 2);
         }

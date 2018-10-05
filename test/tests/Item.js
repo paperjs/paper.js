@@ -929,3 +929,11 @@ test('Item#scaling, #rotation', function() {
     equals(shape2.bounds, expected,
             'shape2.bounds, setting shape2.scaling before shape2.rotation');
 });
+
+test('Item#position pivot point and caching (#1503)', function() {
+    var item = Path.Rectangle(new Point(0, 0), new Size(20));
+    item.pivot = new Point(0, 0);
+    var bounds = item.bounds;
+    item.translate(5, 5);
+    equals(item.position, new Point(5, 5));
+});

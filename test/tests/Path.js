@@ -249,7 +249,6 @@ test('After removing all segments of a selected path, it should still be selecte
     }, true);
 });
 
-
 test('After simplifying a path using #simplify(), the path should stay fullySelected', function() {
     var path = new Path();
     for (var i = 0; i < 30; i++) {
@@ -618,4 +617,14 @@ test('Path#getOffsetsWithTangent()', function() {
     equals(path.getOffsetsWithTangent(), [], 'should return empty array when called without argument');
     equals(path.getOffsetsWithTangent([1, 0]), [0.25 * length, 0.75 * length], 'should not return duplicates when tangent is at segment point');
     equals(path.getOffsetsWithTangent([1, 1]).length, 2, 'should return 2 values when called on a circle with a diagonal vector');
+});
+  
+test('Path#add() with a lot of segments (#1493)', function() {
+    var segments = [];
+    for (var i = 0; i < 100000; i++) {
+        segments.push(new Point(0, 0));
+    }
+    var path = new Path(segments);
+    path.clone();
+    expect(0);
 });
