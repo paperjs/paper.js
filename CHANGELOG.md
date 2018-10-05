@@ -3,11 +3,21 @@
 ## `Prebuilt`
 
 ### Fixed
-- Fix reference error in webpack bundle in node server rendering react application (#1482).
+- Fix reference error in webpack bundle in node server rendering react
+  application (#1482).
 - Fix memory leak on Gradient Color (#1499, #1511).
+- Fix item wrong position (#1478, #1503).
+- Improve performances with lots of items (#1493).
+- Fix errors with events on mobile (#1501).
+- Fix selected position display in a group with matrix not applied.
+- Fix `Project#importSVG()` attributes application (#1416).
 
 ### Added
-
+- `Curve#getTimesWithTangent()` and `Path#getOffsetsWithTangent()` as ways to
+  get curve-times / offsets where path is tangential to a vector.
+- Transparent color support (#1539).
+- `Raster#smoothing` as a way to control if pixels should be blured when a
+  raster is scaled up (#1521).
 
 ## `0.11.5`
 
