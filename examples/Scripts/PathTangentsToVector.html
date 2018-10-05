@@ -41,9 +41,9 @@
             });
 
             // get path times where path is tangent to vector
-            var times = path.getTimesAtVectorTangent(vector);
-            for (var i = 0; i < times.length; i++) {
-                var point = path.getPointAt(times[i] * path.length);
+            var offsets = path.getOffsetsWithTangent(vector);
+            for (var i = 0; i < offsets.length; i++) {
+                var point = path.getPointAt(offsets[i]);
                 // draw a circle around point
                 new Path.Circle({
                     center: point,

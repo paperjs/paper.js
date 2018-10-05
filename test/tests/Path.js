@@ -612,9 +612,10 @@ test('Path#arcTo(from, through, to); where from, through and to all share the sa
     equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
 
-test('Path#getTimesAtVectorTangent()', function(){
-    var path = new Path.Circle(new Point(0,0), 50);
-    equals(path.getTimesAtVectorTangent(), [], 'should return empty array when called without argument');
-    equals(path.getTimesAtVectorTangent([1, 0]), [0.25, 0.75], 'should not return duplicates when tangent is at segment point');
-    equals(path.getTimesAtVectorTangent([1, 1]).length, 2, 'should return 2 values when called on a circle with a diagonal vector');
+test('Path#getOffsetsWithTangent()', function() {
+    var path = new Path.Circle(new Point(0, 0), 50);
+    var length = path.length;
+    equals(path.getOffsetsWithTangent(), [], 'should return empty array when called without argument');
+    equals(path.getOffsetsWithTangent([1, 0]), [0.25 * length, 0.75 * length], 'should not return duplicates when tangent is at segment point');
+    equals(path.getOffsetsWithTangent([1, 1]).length, 2, 'should return 2 values when called on a circle with a diagonal vector');
 });

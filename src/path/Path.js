@@ -2125,39 +2125,39 @@ var Path = PathItem.extend(/** @lends Path# */{
      */
 
     /**
-     * Calculates path-time parameters where the path is tangent to given vector.
+     * Calculates path offsets where the path is tangential to provided tangent.
      * Note that tangent at start or end are included.
-     * Tangent at segment point is returned even if only one of its handles are
-     * collinear with the vector.
+     * Tangent at segment point is returned even if only one of its handles is
+     * collinear with the provided tangent.
      *
-     * @param {Point} vector the vector to which the path must be tangent
-     * @return {Number[]} path-time parameters where the path is tangent to the vector
+     * @param {Point} tangent the tangent to which the path must be tangential
+     * @return {Number[]} path offsets where the path is tangential to the
+     * provided tangent
      */
-    getTimesAtVectorTangent: function(/* vector */) {
-        var vector = Point.read(arguments);
-        if (vector.isZero()) {
+    getOffsetsWithTangent: function(/* tangent */) {
+        var tangent = Point.read(arguments);
+        if (tangent.isZero()) {
             return [];
         }
 
-        var times = [];
-        var offset = 0;
+        var offsets = [];
+        var offsetBeforeCurve = 0;
         var curves = this.getCurves();
-        var length = this.getLength();
         for (var i = 0; i < curves.length; i++) {
             var curve = curves[i];
             // Calculate curves times at vector tangent...
-            var curveTimes = curve.getTimesWithTangent(vector);
+            var curveTimes = curve.getTimesWithTangent(tangent);
             for (var j = 0; j < curveTimes.length; j++) {
-                // ...and convert them to path times...
-                var time = (offset + curve.getOffsetAtTime(curveTimes[j])) / length;
+                // ...and convert them to path offsets...
+                var offset = offsetBeforeCurve + curve.getOffsetAtTime(curveTimes[j]);
                 // ...avoiding duplicates.
-                if (times.indexOf(time) < 0) {
-                    times.push(time);
+                if (offsets.indexOf(offset) < 0) {
+                    offsets.push(offset);
                 }
             }
-            offset += curve.length;
+            offsetBeforeCurve += curve.length;
         }
-        return times;
+        return offsets;
     }
 }),
 new function() { // Scope for drawing
