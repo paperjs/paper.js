@@ -18,6 +18,7 @@
 - Transparent color support (#1539).
 - `Raster#smoothing` as a way to control if pixels should be blured when a
   raster is scaled up (#1521).
+- Hexadecimal with alpha color (#1468).
 
 ## `0.11.5`
 
