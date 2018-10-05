@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 5 09:44:42 2018 +0200
+ * Date: Fri Oct 5 10:01:51 2018 +0200
  *
  ***
  *
@@ -6630,12 +6630,10 @@ statics: {
 	getParameterAt: '#getTimeAt',
 
 	getTimesWithTangent: function () {
-		var vector = Point.read(arguments);
-		if (vector.isZero()) {
-			return [];
-		}
-
-		return Curve.getTimesWithTangent(this.getValues(), vector);
+		var tangent = Point.read(arguments);
+		return tangent.isZero()
+				? []
+				: Curve.getTimesWithTangent(this.getValues(), tangent);
 	},
 
 	getOffsetAtTime: function(t) {
@@ -7307,12 +7305,12 @@ new function() {
 		return pairs;
 	}
 
-	function getTimesWithTangent(v, point) {
+	function getTimesWithTangent(v, tangent) {
 		var x0 = v[0], y0 = v[1],
 			x1 = v[2], y1 = v[3],
 			x2 = v[4], y2 = v[5],
 			x3 = v[6], y3 = v[7],
-			normalized = point.normalize(),
+			normalized = tangent.normalize(),
 			tx = normalized.x,
 			ty = normalized.y,
 			ax = 3 * x3 - 9 * x2 + 9 * x1 - 3 * x0,
@@ -7324,8 +7322,8 @@ new function() {
 			den = 2 * ax * ty - 2 * ay * tx,
 			times = [];
 		if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-			var num = ax * cy - ay * cx;
-			var den = ax * by - ay * bx;
+			var num = ax * cy - ay * cx,
+				den = ax * by - ay * bx;
 			if (den != 0) {
 				var t = -num / den;
 				if (t >= 0 && t <= 1) times.push(t);
@@ -7333,12 +7331,12 @@ new function() {
 		} else {
 			var delta = (bx * bx - 4 * ax * cx) * ty * ty +
 				(-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
-				(by * by - 4 * ay * cy) * tx * tx;
-			var k = bx * ty - by * tx;
+				(by * by - 4 * ay * cy) * tx * tx,
+				k = bx * ty - by * tx;
 			if (delta >= 0 && den != 0) {
-				var d = Math.sqrt(delta);
-				var t0 = -(k + d) / den;
-				var t1 = (-k + d) / den;
+				var d = Math.sqrt(delta),
+					t0 = -(k + d) / den,
+					t1 = (-k + d) / den;
 				if (t0 >= 0 && t0 <= 1) times.push(t0);
 				if (t1 >= 0 && t1 <= 1) times.push(t1);
 			}
@@ -8972,18 +8970,18 @@ var Path = PathItem.extend({
 		}
 
 		var offsets = [];
-		var offsetBeforeCurve = 0;
+		var curveStart = 0;
 		var curves = this.getCurves();
-		for (var i = 0; i < curves.length; i++) {
+		for (var i = 0, l = curves.length; i < l; i++) {
 			var curve = curves[i];
 			var curveTimes = curve.getTimesWithTangent(tangent);
-			for (var j = 0; j < curveTimes.length; j++) {
-				var offset = offsetBeforeCurve + curve.getOffsetAtTime(curveTimes[j]);
+			for (var j = 0, m = curveTimes.length; j < m; j++) {
+				var offset = curveStart + curve.getOffsetAtTime(curveTimes[j]);
 				if (offsets.indexOf(offset) < 0) {
 					offsets.push(offset);
 				}
 			}
-			offsetBeforeCurve += curve.length;
+			curveStart += curve.length;
 		}
 		return offsets;
 	}
