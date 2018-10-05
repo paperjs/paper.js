@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Oct 5 11:45:14 2018 +0200
+ * Date: Fri Oct 5 20:14:20 2018 +0200
  *
  ***
  *
@@ -11204,13 +11204,17 @@ var Color = Base.extend(new function() {
 		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
 			type = 'rgb',
 			components;
-		if (match) {
-			components = [0, 0, 0];
-			for (var i = 0; i < 3; i++) {
-				var value = match[i + 1];
-				components[i] = parseInt(value.length == 1
-						? value + value : value, 16) / 255;
-			}
+		if (/^#[A-Fa-f0-9]+$/.test( string )) {
+			var base = string.replace(/^#/,'');
+			var size = base.length;
+			components = base.split( size <= 4 ? /(.)/ : /(..)/ );
+			components = components.filter(Boolean).map(function(x) {
+				return parseInt(size <= 4 ? x + x : x, 16) / 255;
+			});
+
+			if ( !components[0] ) components[0] = 0;
+			if ( !components[1] ) components[1] = 0;
+			if ( !components[2] ) components[2] = 0;
 		} else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
 			type = match[1];
 			components = match[2].split(/[,\s]+/g);
