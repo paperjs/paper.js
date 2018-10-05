@@ -275,11 +275,16 @@ var BlendMode = new function() {
             var process = modes[mode];
             if (!process)
                 return;
-            var dstData = dstContext.getImageData(offset.x, offset.y,
-                    srcCanvas.width, srcCanvas.height),
-                dst = dstData.data,
-                src = srcContext.getImageData(0, 0,
-                    srcCanvas.width, srcCanvas.height).data;
+            var dstData = CanvasView.catchTaintedCanvasError(function() {
+                    return dstContext.getImageData(offset.x, offset.y,
+                        srcCanvas.width, srcCanvas.height);
+                }),
+                src = CanvasView.catchTaintedCanvasError(function() {
+                    return srcContext.getImageData(0, 0,
+                        srcCanvas.width, srcCanvas.height).data;
+                });
+            if (!dstData || !src) return;
+            var dst = dstData.data;
             for (var i = 0, l = dst.length; i < l; i += 4) {
                 sr = src[i];
                 br = dst[i];

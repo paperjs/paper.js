@@ -505,7 +505,11 @@ var Raster = Item.extend(/** @lends Raster# */{
         if (/^data:/.test(src))
             return src;
         var canvas = this.getCanvas();
-        return canvas ? canvas.toDataURL.apply(canvas, arguments) : null;
+        return canvas
+            ? CanvasView.catchTaintedCanvasError(function() {
+                    return canvas.toDataURL.apply(canvas, arguments);
+              })
+            : null;
     },
 
     /**
@@ -583,9 +587,13 @@ var Raster = Item.extend(/** @lends Raster# */{
         ctx.restore();
         // Get pixel data from the context and calculate the average color value
         // from it, taking alpha into account.
-        var pixels = ctx.getImageData(0.5, 0.5, Math.ceil(width),
-                Math.ceil(height)).data,
-            channels = [0, 0, 0],
+        var pixels = CanvasView.catchTaintedCanvasError(function() {
+                return ctx.getImageData(0.5, 0.5, Math.ceil(width),
+                    Math.ceil(height)).data;
+            });
+        if (!pixels) return null;
+
+        var channels = [0, 0, 0],
             total = 0;
         for (var i = 0, l = pixels.length; i < l; i += 4) {
             var alpha = pixels[i + 3];
@@ -620,9 +628,12 @@ var Raster = Item.extend(/** @lends Raster# */{
      */
     getPixel: function(/* point */) {
         var point = Point.read(arguments);
-        var data = this.getContext().getImageData(point.x, point.y, 1, 1).data;
+        var ctx = this.getContext();
+        var data = CanvasView.catchTaintedCanvasError(function() {
+            return ctx.getImageData(point.x, point.y, 1, 1).data;
+        });
         // Alpha is separate now:
-        return new Color('rgb', [data[0] / 255, data[1] / 255, data[2] / 255],
+        return data && new Color('rgb', [data[0] / 255, data[1] / 255, data[2] / 255],
                 data[3] / 255);
     },
 
@@ -678,8 +689,11 @@ var Raster = Item.extend(/** @lends Raster# */{
         var rect = Rectangle.read(arguments);
         if (rect.isEmpty())
             rect = new Rectangle(this._size);
-        return this.getContext().getImageData(rect.x, rect.y,
-                rect.width, rect.height);
+
+        var ctx = this.getContext();
+        return CanvasView.catchTaintedCanvasError(function() {
+            return ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+        });
     },
 
     // DOCS: document Raster#setImageData
