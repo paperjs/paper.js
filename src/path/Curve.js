@@ -1148,6 +1148,23 @@ statics: /** @lends Curve */{
     getParameterAt: '#getTimeAt',
 
     /**
+     * Calculates the curve-time parameters where the curve is tangential to
+     * provided tangent. Note that tangents at the start or end are included.
+     *
+     * @param {Point} tangent the tangent to which the curve must be tangential
+     * @return {Number[]} at most two curve-time parameters, where the curve is
+     * tangential to the given tangent
+     */
+    getTimesWithTangent: function (/* tangent */) {
+        var vector = Point.read(arguments);
+        if (vector.isZero()) {
+            return [];
+        }
+
+        return Curve.getTimesWithTangent(this.getValues(), vector);
+    },
+
+    /**
      * Calculates the curve offset at the specified curve-time parameter on
      * the curve.
      *
@@ -2230,6 +2247,56 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return pairs;
     }
 
+    /**
+     * Internal method to calculates the curve-time parameters where the curve
+     * is tangential to provided tangent.
+     * Tangents at the start or end are included.
+     *
+     * @param {Number[]} v curve values
+     * @param {Point} point the tangent to which the curve must be tangential
+     * @return {Number[]} at most two curve-time parameters, where the curve is
+     * tangential to the given tangent
+     */
+    function getTimesWithTangent(v, point) {
+        // Algorithm adapted from: https://stackoverflow.com/a/34837312/7615922
+        var x0 = v[0], y0 = v[1],
+            x1 = v[2], y1 = v[3],
+            x2 = v[4], y2 = v[5],
+            x3 = v[6], y3 = v[7],
+            normalized = point.normalize(),
+            tx = normalized.x,
+            ty = normalized.y,
+            ax = 3 * x3 - 9 * x2 + 9 * x1 - 3 * x0,
+            ay = 3 * y3 - 9 * y2 + 9 * y1 - 3 * y0,
+            bx = 6 * x2 - 12 * x1 + 6 * x0,
+            by = 6 * y2 - 12 * y1 + 6 * y0,
+            cx = 3 * x1 - 3 * x0,
+            cy = 3 * y1 - 3 * y0,
+            den = 2 * ax * ty - 2 * ay * tx,
+            times = [];
+        if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
+            var num = ax * cy - ay * cx;
+            var den = ax * by - ay * bx;
+            if (den != 0) {
+                var t = -num / den;
+                if (t >= 0 && t <= 1) times.push(t);
+            }
+        } else {
+            var delta = (bx * bx - 4 * ax * cx) * ty * ty +
+                (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
+                (by * by - 4 * ay * cy) * tx * tx;
+            var k = bx * ty - by * tx;
+            if (delta >= 0 && den != 0) {
+                var d = Math.sqrt(delta);
+                var t0 = -(k + d) / den;
+                var t1 = (-k + d) / den;
+                if (t0 >= 0 && t0 <= 1) times.push(t0);
+                if (t1 >= 0 && t1 <= 1) times.push(t1);
+            }
+        }
+        return times;
+    }
+
     return /** @lends Curve# */{
         /**
          * Returns all intersections between two {@link Curve} objects as an
@@ -2252,7 +2319,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
             getOverlaps: getOverlaps,
             // Exposed for use in boolean offsetting
             getIntersections: getIntersections,
-            getCurveLineIntersections: getCurveLineIntersections
+            getCurveLineIntersections: getCurveLineIntersections,
+            getTimesWithTangent: getTimesWithTangent
         }
     };
 });
