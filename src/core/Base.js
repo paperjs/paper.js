@@ -572,6 +572,27 @@ statics: /** @lends Base */{
     },
 
     /**
+     * Utility function for pushing a large amount of items to an array.
+     */
+    push: function(list, items) {
+        var itemsLength = items.length;
+        // It seems for "small" amounts of items, this performs better,
+        // but once it reaches a certain amount, some browsers start crashing:
+        if (itemsLength < 4096) {
+            list.push.apply(list, items);
+        } else {
+            // Use a loop as the best way to handle big arrays (see #1493).
+            // Set new array length once before the loop for better performance.
+            var startLength = list.length;
+            list.length += itemsLength;
+            for (var i = 0; i < itemsLength; i++) {
+                list[startLength + i] = items[i];
+            }
+        }
+        return list;
+    },
+
+    /**
      * Utility function for adding and removing items from a list of which each
      * entry keeps a reference to its index in the list in the private _index
      * property. Used for PaperScope#projects and Item#children.
@@ -587,14 +608,14 @@ statics: /** @lends Base */{
             items[i]._index = index + i;
         if (append) {
             // Append them all at the end by using push
-            list.push.apply(list, items);
+            Base.push(list, items);
             // Nothing removed, and nothing to adjust above
             return [];
         } else {
             // Insert somewhere else and/or remove
             var args = [index, remove];
             if (items)
-                args.push.apply(args, items);
+                Base.push(args, items);
             var removed = list.splice.apply(list, args);
             // Erase the indices of the removed items
             for (var i = 0, l = removed.length; i < l; i++)

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Path Tangents</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script type="text/javascript" src="../../dist/paper-full.js"></script>
+    <script type="text/paperscript" canvas="canvas">
+
+        // draw path
+        var path = new Path('M185.972,83.103c18.542-27.813,41.083-63.865,72.633-78.412c40.768-18.787,56.519,22.783,48.118,55.174c-7.694,29.634-23.246,56.887-33.519,85.651c-2.092,5.856-12.005,28.226,1.46,28.226c13.623,0,30.341-20.748,38.719-29.609c13.322-14.092,25.403-29.262,36.591-45.092c18.532,0,21.893,16.679,15.512,30.659c-15.041,32.952-45.633,61.693-74.315,82.812c-20.822,15.332-62.421,39.657-85.61,14.639c-26.43-28.497,5.643-88.375,16.151-117.448c15.172-41.98-26.439-5.818-37.874,8.852c-17.928,22.999-16.922,77.719-18.303,106.529c-21.793,21.793-63.141,0.942-66.759-26.731c-2.207-16.876,2.573-34.851,7.098-50.965c4.793-17.07,17.809-38.034,17.809-55.889c0-15.34-20.016,2.606-23.117,5.779c-12.837,13.14-18.843,22.942-21.953,41.102c-3.221,18.811-1.106,85.684-22.392,87.86c-29.787,3.014-51.93-20.085-55.6-48.556c-2.067-16.034,1.385-33.132,5.247-48.637c2.243-9.004,5.006-17.888,8.197-26.599c-4.147-9.616-4.988-20.426-4.988-30.78c0-33.391,44.299-71.678,77.411-65.772c31.311,5.585,6.408,61.28-0.642,76.722c16.999-29.448,43.73-77.256,83.217-77.256C211.992,5.36,197.721,59.599,185.972,83.103z');
+        path.position = view.center;
+        path.fitBounds(view.bounds.scale(0.7));
+        path.fillColor = 'orange';
+
+        // create a marking layer to put temporary items
+        var layer = new Layer();
+        layer.activate();
+
+        // init drawing with a vertical vector
+        drawTangentsToVector(new Point(0, 1));
+
+        function onMouseMove(event) {
+            // draw tangents to vector between view center and mouse pointer
+            drawTangentsToVector(event.point - view.center);
+        }
+
+        function drawTangentsToVector(vector) {
+            // adapt vector length for display
+            vector.length = 50;
+
+            // remove existing marking items
+            layer.removeChildren();
+
+            // draw a line at view center to show vector direction
+            var line = new Path.Line({
+                from: view.center + vector,
+                to: view.center - vector,
+                strokeColor: 'black',
+                strokeWidth: 2
+            });
+
+            // get path times where path is tangent to vector
+            var offsets = path.getOffsetsWithTangent(vector);
+            for (var i = 0; i < offsets.length; i++) {
+                var point = path.getPointAt(offsets[i]);
+                // draw a circle around point
+                new Path.Circle({
+                    center: point,
+                    radius: 5,
+                    strokeColor: 'red'
+                });
+                // draw a line showing tangent
+                new Path.Line({
+                    from: point + vector,
+                    to: point - vector,
+                    strokeColor: 'red'
+                });
+                // draw a line showing point precisely on the path
+                new Path.Line({
+                    from: point + vector.rotate(90).normalize(10),
+                    to: point - vector.rotate(90).normalize(10),
+                    strokeColor: 'red'
+                });
+            }
+        }
+
+    </script>
+</head>
+<body>
+<canvas id='canvas' resize></canvas>
+</body>
+</html>

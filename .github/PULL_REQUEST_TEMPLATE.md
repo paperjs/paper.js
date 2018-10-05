@@ -23,5 +23,4 @@ Please list related issues and discussion by using the following syntax:
 -->
 
 - [ ] New tests added or existing tests modified to cover all changes
-- [ ] Code conforms with the ESLint and Prettier rules (`yarn eslint` passes
-      and `yarn prettier` has been applied)
+- [ ] Code conforms with the JSHint rules (`npm run jshint` passes)

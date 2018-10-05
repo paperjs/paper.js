@@ -60,26 +60,33 @@ test('Creating Colors', function() {
     equals(new Color('red'), new Color(1, 0, 0),
             'Color from name (red)');
 
+    equals(new Color('transparent'), new Color(0, 0, 0, 0),
+            'Color from name (transparent)');
+
     equals(new Color('#ff0000'), new Color(1, 0, 0),
-            'Color from hex code');
-    
+            'Color from hex string');
+
     equals(new Color('#ff000099'), new Color(1, 0, 0, .6),
-            'Color from hex code with alpha');
+        'Color from hex code with alpha');
 
     equals(new Color('rgb(255, 0, 0)'), new Color(1, 0, 0),
-            'Color from RGB code');
+            'Color from rgb() string');
 
     equals(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
-            'Color from RGBA code');
+            'Color from rgba() string');
+
+    equals(new Color('hsl(180deg, 20%, 40%)'),
+            new Color({ hue: 180, saturation: 0.2, lightness: 0.4 }),
+            'Color from hsl() string');
 
     equals(new Color({ red: 1, green: 0, blue: 1}),
-            new Color(1, 0, 1), 'Color from rgb object literal');
+            new Color(1, 0, 1), 'Color from RGB object literal');
 
     equals(new Color({ gray: 0.2 }),
             new Color(0.2), 'Color from gray object literal');
 
     equals(new Color({ hue: 0, saturation: 1, brightness: 1}),
-            new Color(1, 0, 0).convert('hsb'), 'Color from hsb object literal');
+            new Color(1, 0, 0).convert('hsb'), 'Color from HSB object literal');
 
     equals(new Color([1, 0, 0]), new Color(1, 0, 0),
             'RGB Color from array');
