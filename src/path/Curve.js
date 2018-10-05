@@ -1156,12 +1156,10 @@ statics: /** @lends Curve */{
      * tangential to the given tangent
      */
     getTimesWithTangent: function (/* tangent */) {
-        var vector = Point.read(arguments);
-        if (vector.isZero()) {
-            return [];
-        }
-
-        return Curve.getTimesWithTangent(this.getValues(), vector);
+        var tangent = Point.read(arguments);
+        return tangent.isZero()
+                ? []
+                : Curve.getTimesWithTangent(this.getValues(), tangent);
     },
 
     /**
@@ -2253,17 +2251,17 @@ new function() { // Scope for bezier intersection using fat-line clipping
      * Tangents at the start or end are included.
      *
      * @param {Number[]} v curve values
-     * @param {Point} point the tangent to which the curve must be tangential
+     * @param {Point} tangent the tangent to which the curve must be tangential
      * @return {Number[]} at most two curve-time parameters, where the curve is
      * tangential to the given tangent
      */
-    function getTimesWithTangent(v, point) {
+    function getTimesWithTangent(v, tangent) {
         // Algorithm adapted from: https://stackoverflow.com/a/34837312/7615922
         var x0 = v[0], y0 = v[1],
             x1 = v[2], y1 = v[3],
             x2 = v[4], y2 = v[5],
             x3 = v[6], y3 = v[7],
-            normalized = point.normalize(),
+            normalized = tangent.normalize(),
             tx = normalized.x,
             ty = normalized.y,
             ax = 3 * x3 - 9 * x2 + 9 * x1 - 3 * x0,
@@ -2275,8 +2273,8 @@ new function() { // Scope for bezier intersection using fat-line clipping
             den = 2 * ax * ty - 2 * ay * tx,
             times = [];
         if (Math.abs(den) < Numerical.CURVETIME_EPSILON) {
-            var num = ax * cy - ay * cx;
-            var den = ax * by - ay * bx;
+            var num = ax * cy - ay * cx,
+                den = ax * by - ay * bx;
             if (den != 0) {
                 var t = -num / den;
                 if (t >= 0 && t <= 1) times.push(t);
@@ -2284,12 +2282,12 @@ new function() { // Scope for bezier intersection using fat-line clipping
         } else {
             var delta = (bx * bx - 4 * ax * cx) * ty * ty +
                 (-2 * bx * by + 4 * ay * cx + 4 * ax * cy) * tx * ty +
-                (by * by - 4 * ay * cy) * tx * tx;
-            var k = bx * ty - by * tx;
+                (by * by - 4 * ay * cy) * tx * tx,
+                k = bx * ty - by * tx;
             if (delta >= 0 && den != 0) {
-                var d = Math.sqrt(delta);
-                var t0 = -(k + d) / den;
-                var t1 = (-k + d) / den;
+                var d = Math.sqrt(delta),
+                    t0 = -(k + d) / den,
+                    t1 = (-k + d) / den;
                 if (t0 >= 0 && t0 <= 1) times.push(t0);
                 if (t1 >= 0 && t1 <= 1) times.push(t1);
             }
