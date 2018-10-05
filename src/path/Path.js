@@ -2546,7 +2546,7 @@ new function() { // PostScript-style drawing commands
                 }
                 vector = from.subtract(center);
                 extent = vector.getDirectedAngle(to.subtract(center));
-                var centerSide = line.getSide(center);
+                var centerSide = line.getSide(center, true);
                 if (centerSide === 0) {
                     // If the center is lying on the line, we might have gotten
                     // the wrong sign for extent above. Use the sign of the side

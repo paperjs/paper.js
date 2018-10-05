@@ -628,3 +628,13 @@ test('Path#add() with a lot of segments (#1493)', function() {
     path.clone();
     expect(0);
 });
+
+test('Path#arcTo(through, to) is on through point side (#1477)', function() {
+    var p1 = new Point(16, 21.5);
+    var p2 = new Point(22.5, 15);
+    var p3 = new Point(16.000000000000004, 8.5);
+    var path = new Path();
+    path.add(p1);
+    path.arcTo(p2, p3);
+    equals(true, path.segments[1].point.x > p1.x);
+});
