@@ -1155,7 +1155,7 @@ statics: /** @lends Curve */{
      * @return {Number[]} at most two curve-time parameters, where the curve is
      * tangential to the given tangent
      */
-    getTimesWithTangent: function (/* vector */) {
+    getTimesWithTangent: function (/* tangent */) {
         var vector = Point.read(arguments);
         if (vector.isZero()) {
             return [];
@@ -2257,8 +2257,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
      * @return {Number[]} at most two curve-time parameters, where the curve is
      * tangential to the given tangent
      */
-    function getTimesWithTangent(v, point)
-    {
+    function getTimesWithTangent(v, point) {
         // Algorithm adapted from: https://stackoverflow.com/a/34837312/7615922
         var x0 = v[0], y0 = v[1],
             x1 = v[2], y1 = v[3],
