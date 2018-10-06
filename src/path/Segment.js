@@ -23,10 +23,39 @@
  * objects that are connected by this segment.
  */
 var Segment = Base.extend(/** @lends Segment# */{
+    statics: /** @lends Item */{
+        /**
+         * Override Segment.extend() to merge the subclass' _serializeFields with
+         * the parent class' _serializeFields.
+         *
+         * @private
+         */
+        extend: function extend(src) {
+            if (src._serializeFields)
+                src._serializeFields = Base.set({},
+                    this.prototype._serializeFields, src._serializeFields);
+            return extend.base.apply(this, arguments);
+        },
+
+        /**
+         * An object constant that can be passed to Item#initialize() to avoid
+         * insertion into the scene graph.
+         *
+         * @private
+         */
+        NO_INSERT: { insert: false }
+    },
+
     _class: 'Segment',
+    _name: null,
     beans: true,
     // The selection state, a combination of SegmentSelection
     _selection: 0,
+
+    _serializeFields: {
+        name: null,
+        data: {}
+    },
 
     /**
      * Creates a new Segment object.
@@ -126,6 +155,8 @@ var Segment = Base.extend(/** @lends Segment# */{
                     handleIn = arg0.handleIn;
                     handleOut = arg0.handleOut;
                     selection = arg0.selection;
+                    this._name = arg0.name != undefined?arg0.name:'';
+                    this._data = arg0.data;
                 } else {
                     // It doesn't matter if all of these arguments exist.
                     // SegmentPoint() creates points with (0, 0) otherwise.
@@ -149,6 +180,27 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     _serialize: function(options, dictionary) {
+        var props = {},
+            that = this;
+
+        function serialize(fields) {
+            for (var key in fields) {
+                // value is the default value, only serialize if the current
+                // value is different from it.
+                var value = that[key];
+                // Style#leading is a special case, as its default value is
+                // dependent on the fontSize. Handle this here separately.
+                if (!Base.equals(value, key === 'leading'
+                        ? fields.fontSize * 1.2 : fields[key])) {
+                    props[key] = Base.serialize(value, options,
+                            // Do not use compact mode for data
+                            key !== 'data', dictionary);
+                }
+            }
+        }
+
+        // Serialize fields that this Item subclass defines first
+        serialize(this._serializeFields);
         // If it is has no handles, only serialize point, otherwise handles too.
         var point = this._point,
             selection = this._selection,
@@ -184,6 +236,81 @@ var Segment = Base.extend(/** @lends Segment# */{
                 curve._changed();
         }
         path._changed(/*#=*/Change.SEGMENTS);
+    },
+
+    /**
+     * The name of the segment. If the segment has a name, it can be accessed by name
+     * through its parent's children list.
+     *
+     * @bean
+     * @type String
+     *
+     * @example {@paperscript}
+     * var segment = new Segment({
+     *   point: [100, 50],
+     *   handleOut: [80, 100]
+     * });
+
+     * // Set the name of the path:
+     * segment.name = 'topLeftCorner';
+     *
+     * // Create a group and add path to it as a child:
+     * var path = new Path();
+     * path.add(segment);
+     *
+     * // The path can be accessed by name:
+     * path.getSegmentByName('topLeftCorner').handleOut = [80, 80];
+     */
+    getName: function() {
+        return this._name;
+    },
+
+    setName: function(name) {
+        if(this._path && this._path.segments.filter(s => (s.name == name && name != '')).length > 0)
+            throw new Error(
+                'There is already a segment with this name in the path.');
+        this._name = name || undefined;
+        this._changed(/*#=*/ChangeFlag.ATTRIBUTE);
+    },
+
+    /**
+     * A plain javascript object which can be used to store
+     * arbitrary data on the item.
+     *
+     * @bean
+     * @type Object
+     *
+     * @example
+     * var segment = new Segment(100,100);
+     * segment.data.canConnect = true;
+     *
+     * @example
+     * var segment = new Segment();
+     * segment.data = {
+     *     canConnect: true,
+     *     corePoint: false
+     * };
+     * console.log(path.data.canConnect); // true
+     *
+     * @example
+     * var segment = new Segment({
+     *     point: [100, 50],
+     *     handleOut: [80, 100],
+     *     data: {
+     *         canConnect: true,
+     *         corePoint: false
+     *     }
+     * });
+     * console.log(path.data.canConnect); // true
+     */
+    getData: function() {
+        if (!this._data)
+            this._data = {};
+        return this._data;
+    },
+
+    setData: function(data) {
+        this._data = data;
     },
 
     /**
