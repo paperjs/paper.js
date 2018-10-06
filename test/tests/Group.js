@@ -134,4 +134,19 @@ test('group.addChildren()', function() {
     group.addChildren(children);
     equals(group.children.length, 2,
             'adding the same item twice should only add it once.');
-})
+});
+
+test('Group#isEmpty(recursive)', function() {
+    var group = new Group();
+    equals(true, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Group());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Path());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new PointText());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+});
