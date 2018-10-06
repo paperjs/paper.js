@@ -151,3 +151,18 @@ test('group.setSelectedColor() with selected bound and position', function() {
     group2.selectedColor = 'black';
     comparePixels(group1, group2);
 });
+
+test('Group#isEmpty(recursively)', function() {
+    var group = new Group();
+    equals(true, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Group());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Path());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new PointText());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+});

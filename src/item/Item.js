@@ -1072,7 +1072,9 @@ new function() { // Injection scope for various item event handlers
             options = options || {};
             for (var i = 0, l = items.length; i < l; i++) {
                 var item = items[i];
-                if (item._visible && !item.isEmpty()) {
+                // Item is handled if it is visible and not recursively empty.
+                // This avoid errors with nested empty groups (#1467).
+                if (item._visible && !item.isEmpty(true)) {
                     // Pass true for noInternal, since even when getting
                     // internal bounds for this item, we need to apply the
                     // matrices to its children.
@@ -2836,11 +2838,23 @@ new function() { // Injection scope for hit-test functions shared with project
      * no children, a {@link TextItem} with no text content and a {@link Path}
      * with no segments all are considered empty.
      *
-     * @return {Boolean}
+     * @param {Boolean} [recursively=false] whether an item with children should be
+     * considered empty if all its descendants are empty
+     * @return Boolean
      */
-    isEmpty: function() {
+    isEmpty: function(recursively) {
         var children = this._children;
-        return !children || !children.length;
+        var numChildren = children ? children.length : 0;
+        if (recursively) {
+            // In recursive check, item is empty if all its children are empty.
+            for (var i = 0; i < numChildren; i++) {
+                if (!children[i].isEmpty(recursively)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return !numChildren;
     },
 
     /**
