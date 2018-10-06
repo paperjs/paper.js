@@ -620,3 +620,58 @@ test('Path#add() with a lot of segments (#1493)', function() {
     path.clone();
     expect(0);
 });
+
+test('Path#add(); add two segments with the same name', function() {
+    var path = new Path();
+    var segment1 = new Segment({
+        point: [50, 50],
+        name: 'topLeftCorner'
+    }); 
+    var segment2 = new Segment({
+        point: [100, 100],
+        name: 'topLeftCorner'
+    }); 
+    var error = null;
+    try {
+        path.add(segment1, segment2);
+    } catch (e) {
+        error = e;
+    }
+    equals(error != null, true, 'We expect this add() command to throw an error');
+});
+
+test('Path#getSegmentByName();', function() {
+    var path = new Path();
+    var segment = new Segment({
+        point: [50, 50],
+        name: 'topLeftCorner'
+    }); 
+    path.add(segment);
+
+    var error = null;
+    try {
+        path.getSegmentByName('test');
+    } catch (e) {
+        error = e;
+    }
+    equals(error != null, true, 'We expect this getSegmentByName() command to throw an error');
+
+    equals(function() {
+        return path.getSegmentByName('topLeftCorner') == segment;
+    }, 1, 'Getting the segment by name should give us the same segemnt');
+});
+
+test('Path#getSegmentsByData();', function() {
+    var path = new Path();
+    var segment = new Segment({
+        point: [50, 50],
+        data: {
+            corner: true
+        }
+    }); 
+    path.add(segment);
+
+    equals(function() {
+        return path.getSegmentsByData({corner: true})[0] == segment;
+    }, 1, 'Getting the segment by data should give us the same segemnt');
+});
