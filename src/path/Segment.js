@@ -266,7 +266,7 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     setName: function(name) {
-        if(this._path && this._path.segments.filter(s => (s.name == name && name != '')).length > 0)
+        if(this._path && this._path.segments.filter(function(s){ return (s.name == name && name != '');}).length > 0)
             throw new Error(
                 'There is already a segment with this name in the path.');
         this._name = name || undefined;
