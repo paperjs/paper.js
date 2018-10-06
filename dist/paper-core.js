@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 6 17:16:55 2018 +0200
+ * Date: Sat Oct 6 21:57:30 2018 +0200
  *
  ***
  *
@@ -11202,20 +11202,21 @@ var Color = Base.extend(new function() {
 		colorCtx;
 
 	function fromCSS(string) {
-		var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+		var match = string.match(
+				/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
+			) || string.match(
+				/^#([\da-f])([\da-f])([\da-f])$/i
+			),
 			type = 'rgb',
 			components;
-		if (/^#[A-Fa-f0-9]+$/.test( string )) {
-			var base = string.replace(/^#/,'');
-			var size = base.length;
-			components = base.split( size <= 4 ? /(.)/ : /(..)/ );
-			components = components.filter(Boolean).map(function(x) {
-				return parseInt(size <= 4 ? x + x : x, 16) / 255;
-			});
-
-			if ( !components[0] ) components[0] = 0;
-			if ( !components[1] ) components[1] = 0;
-			if ( !components[2] ) components[2] = 0;
+		if (match) {
+			var amount = match[4] ? 4 : 3;
+			components = new Array(amount);
+			for (var i = 0; i < amount; i++) {
+				var value = match[i + 1];
+				components[i] = parseInt(value.length == 1
+						? value + value : value, 16) / 255;
+			}
 		} else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
 			type = match[1];
 			components = match[2].split(/[,\s]+/g);
