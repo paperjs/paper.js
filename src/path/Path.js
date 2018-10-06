@@ -216,6 +216,55 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+     * The Segment by name.
+     *
+     * @bean
+     * @type Segment
+     */
+    getSegmentByName: function(name) {
+        var segments = this._segments.filter(s => s._name == name);
+        if(segments.length == 0)
+            throw new Error(
+                'Segment with name \''+name+'\' not found in the path.');
+        return this._segments.filter(s => s._name == name)[0];
+    },
+
+    /**
+     * The segments by data
+     *
+     * @bean
+     * @type Segment[]
+     */
+    getSegmentsByData: function(options) {
+        if(options !== undefined && typeof options === 'object'){
+            function matchObject(obj1, obj2) {
+                for (var i in obj1) {
+                    if (obj1.hasOwnProperty(i)) {
+                        var val1 = obj1[i],
+                            val2 = obj2[i];
+                        if (Base.isPlainObject(val1) && Base.isPlainObject(val2)) {
+                            if (!matchObject(val1, val2))
+                                return false;
+                        } else if (!Base.equals(val1, val2)) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            var matchedSegments = [];
+            this._segments.forEach(segment => {
+                if(matchObject(options, segment.data)){
+                    matchedSegments.push(segment);
+                }
+            });
+            return matchedSegments;
+        }
+        return this._segments;
+    },
+
+    /**
      * The curves contained within the path.
      *
      * @bean
@@ -382,6 +431,17 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the segments list automatically.
      */
     _add: function(segs, index) {
+        // Make sure all added segments have unique names. 
+        // And prevent adding a segment with a name that already exists in the path.
+        segs = segs.filter((obj, pos, arr) => {
+            if(obj.name === '' || obj.name == null || arr.map(s => s.name).indexOf(obj.name) === pos &&
+                    this._segments.map(s => s.name).indexOf(obj.name) < 0)
+                return true;
+            else
+                throw new Error(
+                    'There is already a segment with the name \''+obj.name+'\' in the path.');
+        });
+        
         // Local short-cuts:
         var segments = this._segments,
             curves = this._curves,
