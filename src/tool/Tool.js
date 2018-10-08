@@ -309,7 +309,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 // so there's always a delta.
                 toolPoint = move ? tool._point : (tool._downPoint || pt);
             if (move) {
-                if (tool._moveCount && pt.equals(toolPoint)) {
+                // After first move event was emitted, tool._moveCount = 0, so
+                // we need to include 0 in this check.
+                if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
                     return false;
                 }
                 if (toolPoint && (minDistance != null || maxDistance != null)) {
