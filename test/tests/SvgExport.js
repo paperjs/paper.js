@@ -181,6 +181,54 @@ test('Export SVG as valid XML (#1922)', function() {
     }, '<tag>');
 });
 
+test('Export SVG with nested groups as clip masks', function() {
+    // A transformed clip mask group with a nested group, and a group that is
+    // clipped itself:
+    var clip = new Group({
+        children: [
+            new Group([
+                new Path.Rectangle({
+                    point: [0, 0],
+                    size: [50, 50],
+                    clipMask: true
+                }),
+                new Path.Circle({ center: [25, 25], radius: 20 })
+            ]),
+            new Group([
+                new Path.Rectangle({ point: [60, 0], size: [10, 10] })
+            ])
+        ],
+        applyMatrix: false
+    });
+    clip.translate(10, 20);
+    clip.clipMask = true;
+    var group = new Group([clip, new Path.Rectangle({
+            point: [0, 0],
+            size: [200, 200],
+            fillColor: 'red'
+        })]),
+        svg = group.exportSVG(),
+        clipPath = svg.getElementsByTagName('clipPath')[0],
+        nodes = clipPath.childNodes;
+    equals(svg.lastChild.getAttribute('clip-path'),
+            'url(#' + clipPath.getAttribute('id') + ')');
+    // <clipPath> only contains the shapes, with the transformations applied,
+    // and without the nested clip item, as on the canvas:
+    equals(function() {
+        return Base.each(nodes, function(node) {
+            this.push(node.nodeName.toLowerCase() + ':'
+                    + node.getAttribute('transform'));
+        }, []);
+    }, ['path:null', 'path:null']);
+    equals(PathItem.create(nodes[0].getAttribute('d')).bounds,
+            new Rectangle(15, 25, 40, 40));
+    equals(PathItem.create(nodes[1].getAttribute('d')).bounds,
+            new Rectangle(70, 20, 10, 10));
+    // The exported clip mask leaves the original items untouched:
+    equals(clip.matrix, new Matrix(1, 0, 0, 1, 10, 20));
+    equals(clip.firstChild.firstChild.clipMask, true);
+});
+
 if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
@@ -305,5 +353,42 @@ if (!isNodeContext) {
 
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer);
+    });
+
+    test('Export SVG with a group as clip mask (#1445, #1590)',
+            function(assert) {
+        var clip = new Group({
+            children: [
+                new Path.Rectangle(new Point(0, 0), new Size(100)),
+                new Path.Rectangle(new Point(150, 0), new Size(100))
+            ],
+            applyMatrix: false
+        });
+        clip.rotate(30);
+        new Group(clip, new Path.Circle({
+            center: [125, 50],
+            radius: 75,
+            fillColor: 'blue'
+        })).clipped = true;
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
+
+    test('Export SVG with a clipped group as clip mask', function(assert) {
+        // SVG with a viewBox imports as a group clipped to the viewBox:
+        var clip = project.importSVG('<svg xmlns="http://www.w3.org/2000/svg"'
+                + ' width="100" height="100" viewBox="0 0 100 100">'
+                + '<circle cx="50" cy="50" r="40"/></svg>');
+        new Group(clip, new Path.Rectangle({
+            point: [0, 0],
+            size: [100, 100],
+            fillColor: 'blue'
+        })).clipped = true;
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
     });
 }
