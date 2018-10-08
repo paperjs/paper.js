@@ -212,4 +212,22 @@ if (!isNode) {
             tolerance: 1e-2
         });
     });
+
+    test('Export SVG with group as clip mask', function(assert) {
+        var r1 = new Path.Rectangle(new Point(0, 0), new Size(100));
+        var r2 = new Path.Rectangle(new Point(150, 0), new Size(100));
+        var c = new Path.Circle(new Point(125, 50), 75);
+
+        c.fillColor = 'blue';
+
+        var clippingGroup = new Group(r1, r2);
+
+        var group = new Group(clippingGroup, c);
+        group.clipped = true;
+
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer, null, {
+            tolerance: 1e-2
+        });
+    });
 }
