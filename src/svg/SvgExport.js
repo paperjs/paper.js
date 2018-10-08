@@ -74,21 +74,48 @@ new function() {
         var node = SvgElement.create('g', attrs, formatter);
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
-            var childNode = exportSVG(child, options);
-            if (childNode) {
-                if (child.isClipMask()) {
-                    var clip = SvgElement.create('clipPath');
-                    clip.appendChild(childNode);
-                    setDefinition(child, clip, 'clip');
-                    SvgElement.set(node, {
-                        'clip-path': 'url(#' + clip.id + ')'
-                    });
-                } else {
+            if (child.isClipMask()) {
+                var clip = exportClip(child, options);
+                setDefinition(child, clip, 'clip');
+                SvgElement.set(node, {
+                    'clip-path': 'url(#' + clip.id + ')'
+                });
+            } else {
+                var childNode = exportSVG(child, options);
+                if (childNode)
                     node.appendChild(childNode);
-                }
             }
         }
         return node;
+    }
+
+    function exportClip(item, options) {
+        var clip = SvgElement.create('clipPath');
+
+        function addItem(item) {
+            if (item instanceof Group) {
+                var children = item._children;
+                for (var i = 0, l = children.length; i < l; i++) {
+                    // As in Group#_draw(), leave out the clip items of nested
+                    // groups, which clips with all of their clipped content:
+                    if (!children[i]._clipMask)
+                        addItem(children[i]);
+                }
+            } else {
+                var node = exportSVG(item, options);
+                if (node)
+                    clip.appendChild(node);
+            }
+        }
+
+        // <clipPath> can only contain shapes, so flatten groups and apply
+        // their transformations to their content, on a copy:
+        if (item instanceof Group) {
+            item = item.clone({ insert: false });
+            item.matrix.apply(true, true);
+        }
+        addItem(item);
+        return clip;
     }
 
     function exportRaster(item, options) {

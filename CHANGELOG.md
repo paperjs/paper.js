@@ -110,6 +110,9 @@
   (#1644, #1920, #1925, #2001, #2029).
 - Support SVG 2's plain `href` attribute in `#importSVG()`, besides
   `xlink:href`, for `<use>`, `<image>` and gradient links.
+- Fix `#exportSVG()` of groups used as clip masks, which were exported as
+  groups inside `<clipPath>`, where only shapes are allowed, so browsers
+  clipped everything away (#1445, #1590).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.
