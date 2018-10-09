@@ -937,3 +937,11 @@ test('Item#position pivot point and caching (#1503)', function() {
     item.translate(5, 5);
     equals(item.position, new Point(5, 5));
 });
+
+test('Children global matrices are cleared after parent transformation', function() {
+    var item = Path.Rectangle(new Point(0, 0), new Size(100));
+    var group = new Group({ children: [item], applyMatrix: false });
+    equals(item.localToGlobal(item.getPointAt(0)), new Point(0, 100));
+    group.translate(100, 0);
+    equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
+});
