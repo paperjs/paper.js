@@ -533,8 +533,16 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     setZoom: function(zoom) {
-        this.transform(new Matrix().scale(zoom / this.getZoom(),
-            this.getCenter()));
+        // Make sure value does not break execution (#1433).
+        // Max scale value is the result of Math.sqrt(Number.MAX_VALUE),
+        // it ensure that matrix can be inverted when calling getBound().
+        var maxScale = 1.3407807929942596e+154;
+        var scale = zoom / this.getZoom();
+        if (scale === 0) scale = Numerical.EPSILON;
+        else if (scale > maxScale) scale = maxScale;
+        else if (scale < -maxScale) scale = -maxScale;
+
+        this.transform(new Matrix().scale(scale, this.getCenter()));
     },
 
     /**

@@ -62,3 +62,5 @@
 /*#*/ include('SvgExport.js');
 
 /*#*/ include('Numerical.js');
+
+/*#*/ include('View.js');
