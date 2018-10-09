@@ -433,12 +433,39 @@ new function() { // Injection scope for various item event handlers
     // injection scope above.
 
     /**
-     * Specifies whether the item is locked.
+     * Specifies whether the item is locked. When set to `true`, item
+     * interactions with the mouse are disabled.
      *
      * @name Item#locked
      * @type Boolean
      * @default false
-     * @ignore
+     *
+     * @example {@paperscript}
+     * var unlockedItem = new Path.Circle({
+     *     center: view.center - [35, 0],
+     *     radius: 30,
+     *     fillColor: 'springgreen',
+     *     onMouseDown: function() {
+     *         this.fillColor = Color.random();
+     *     }
+     * });
+     *
+     * var lockedItem = new Path.Circle({
+     *     center: view.center + [35, 0],
+     *     radius: 30,
+     *     fillColor: 'crimson',
+     *     locked: true,
+     *     // This event won't be triggered because the item is locked.
+     *     onMouseDown: function() {
+     *         this.fillColor = Color.random();
+     *     }
+     * });
+     *
+     * new PointText({
+     *     content: 'Click on both circles to see which one is locked.',
+     *     point: view.center - [0, 35],
+     *     justification: 'center'
+     * });
      */
 
     /**
