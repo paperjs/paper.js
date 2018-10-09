@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 6 21:57:30 2018 +0200
+ * Date: Tue Oct 9 11:38:52 2018 +0200
  *
  ***
  *
@@ -5420,10 +5420,12 @@ var Raster = Item.extend({
 		}
 	},
 
-	_draw: function(ctx) {
+	_draw: function(ctx, param, viewMatrix) {
 		var element = this.getElement();
 		if (element) {
 			ctx.globalAlpha = this._opacity;
+
+			this._setStyles(ctx, param, viewMatrix);
 
 			DomElement.setPrefixed(
 				ctx, 'imageSmoothingEnabled', this._smoothing
