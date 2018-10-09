@@ -751,12 +751,15 @@ var Raster = Item.extend(/** @lends Raster# */{
         }
     },
 
-    _draw: function(ctx) {
+    _draw: function(ctx, param, viewMatrix) {
         var element = this.getElement();
         if (element) {
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = this._opacity;
+
+            // Call _setStyles() to make sure shadow is drawn (#1437).
+            this._setStyles(ctx, param, viewMatrix);
 
             // Set context smoothing value according to raster property.
             // There's no need to restore original value after drawing due to
