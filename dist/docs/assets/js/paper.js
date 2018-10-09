@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Oct 9 21:44:04 2018 +0200
+ * Date: Tue Oct 9 22:05:22 2018 +0200
  *
  ***
  *
@@ -13526,7 +13526,7 @@ var Tool = PaperScopeItem.extend({
 			var pt = point,
 				toolPoint = move ? tool._point : (tool._downPoint || pt);
 			if (move) {
-				if (tool._moveCount && pt.equals(toolPoint)) {
+				if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
 					return false;
 				}
 				if (toolPoint && (minDistance != null || maxDistance != null)) {
