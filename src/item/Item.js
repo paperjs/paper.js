@@ -1905,6 +1905,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point the point where the hit-test should be performed
+     *     (in global coordinates system).
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: settings.hitTolerance }]
      * @return {HitResult} a hit result object describing what exactly was hit
@@ -1922,6 +1923,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @name Item#hitTestAll
      * @function
      * @param {Point} point the point where the hit-test should be performed
+     *     (in global coordinates system).
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: settings.hitTolerance }]
      * @return {HitResult[]} hit result objects for all hits, describing what
