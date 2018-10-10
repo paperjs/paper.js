@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 10 23:03:38 2018 +0200
+ * Date: Wed Oct 10 23:10:51 2018 +0200
  *
  ***
  *
@@ -16543,11 +16543,13 @@ Base.exports.PaperScript = function() {
 			if (agent.firefox)
 				code = '\n' + code;
 			script.appendChild(document.createTextNode(
-				'paper._execute = function(' + params + ') {' + code + '\n}'
+				'document.__paperscript__ = function(' + params + ') {' +
+					code +
+				'\n}'
 			));
 			head.appendChild(script);
-			func = paper._execute;
-			delete paper._execute;
+			func = document.__paperscript__;
+			delete document.__paperscript__;
 			head.removeChild(script);
 		} else {
 			func = Function(params, code);
@@ -16629,7 +16631,7 @@ Base.exports.PaperScript = function() {
 
 }.call(this);
 
-paper = new (PaperScope.inject(Base.exports, {
+var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
 	Key: Key,

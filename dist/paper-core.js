@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 10 23:03:38 2018 +0200
+ * Date: Wed Oct 10 23:10:51 2018 +0200
  *
  ***
  *
@@ -14931,7 +14931,7 @@ new function() {
 	});
 };
 
-paper = new (PaperScope.inject(Base.exports, {
+var paper = new (PaperScope.inject(Base.exports, {
 	Base: Base,
 	Numerical: Numerical,
 	Key: Key,
