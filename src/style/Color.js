@@ -54,6 +54,8 @@ var Color = Base.extend(new function() {
     var componentParsers = {},
         // Cache and canvas context for color name lookup
         namedColors = {
+            // node-canvas appears to return wrong values for 'transparent'.
+            // Fix it by having it pre-cashed here:
             transparent: [0, 0, 0, 0]
         },
         colorCtx;

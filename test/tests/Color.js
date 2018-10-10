@@ -67,7 +67,7 @@ test('Creating Colors', function() {
             'Color from hex string');
 
     equals(new Color('#FF3300'), new Color(1, 0.2, 0),
-            'Color from hex string');
+            'Color from uppercase hex string');
 
     equals(new Color('#ff000099'), new Color(1, 0, 0, .6),
         'Color from hex code with alpha');

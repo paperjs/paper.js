@@ -84,14 +84,14 @@ var DomElement = new function() {
         },
 
         /**
-         * Checks if element is invisibile (display: none, ...).
+         * Checks if element is invisible (display: none, ...).
          */
         isInvisible: function(el) {
             return DomElement.getSize(el).equals(new Size(0, 0));
         },
 
         /**
-         * Checks if element is visibile in current viewport.
+         * Checks if element is visible in current viewport.
          */
         isInView: function(el) {
             // See if the viewport bounds intersect with the windows rectangle
