@@ -16,7 +16,7 @@
 // NOTE: Do not create local variable `var paper` since it would shield the
 // global one in the whole scope.
 
-paper = new (PaperScope.inject(Base.exports, {
+var paper = new (PaperScope.inject(Base.exports, {
     Base: Base,
     Numerical: Numerical,
     Key: Key,

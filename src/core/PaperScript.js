@@ -481,11 +481,13 @@ Base.exports.PaperScript = function() {
             if (agent.firefox)
                 code = '\n' + code;
             script.appendChild(document.createTextNode(
-                'paper._execute = function(' + params + ') {' + code + '\n}'
+                'document.__paperscript__ = function(' + params + ') {' +
+                    code +
+                '\n}'
             ));
             head.appendChild(script);
-            func = paper._execute;
-            delete paper._execute;
+            func = document.__paperscript__;
+            delete document.__paperscript__;
             head.removeChild(script);
         } else {
             func = Function(params, code);
