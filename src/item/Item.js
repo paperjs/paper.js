@@ -217,7 +217,9 @@ new function() { // Injection scope for various item event handlers
             // Clear cached bounds, position and decomposed matrix whenever
             // geometry changes.
             this._bounds = this._position = this._decomposed = undefined;
-            this._clearGlobalMatrix();
+            // TODO: Introduce a separate flag for matrix changes, so we only
+            // need to clear here when the matrix actually changes.
+            this._globalMatrix = undefined;
         }
         if (cacheParent
                 && (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
@@ -1001,20 +1003,6 @@ new function() { // Injection scope for various item event handlers
         return mx && mx._shiftless();
     },
 
-    /**
-     * Clears cached global matrix for item and all its descendants.
-     * This is used to avoid invalid coodrinates calculation (#1448).
-     */
-    _clearGlobalMatrix: function() {
-        this._globalMatrix = undefined;
-        var children = this.children;
-        if (children) {
-            for (var i = 0, l = children.length; i < l; i++) {
-                children[i]._clearGlobalMatrix();
-            }
-        }
-    },
-
     statics: /** @lends Item */{
         /**
          * Set up a boundsCache structure that keeps track of items that keep
@@ -1254,17 +1242,25 @@ new function() { // Injection scope for various item event handlers
      * @type Matrix
      */
     getGlobalMatrix: function(_dontClone) {
-        var matrix = this._globalMatrix,
-            updateVersion = this._project._updateVersion;
-        // If #_globalMatrix is out of sync, recalculate it now.
-        if (matrix && matrix._updateVersion !== updateVersion)
-            matrix = null;
+        var matrix = this._globalMatrix;
+        if (matrix) {
+            // If there's a cached global matrix for this item, check if all its
+            // parents also have one. If it's missing in any of its parents, it
+            // means the child's cached version isn't valid anymore.
+            var parent = this._parent;
+            while (parent) {
+                if (!parent._globalMatrix) {
+                    matrix = null;
+                    break;
+                }
+                parent = parent._parent;
+            }
+        }
         if (!matrix) {
             matrix = this._globalMatrix = this._matrix.clone();
             var parent = this._parent;
             if (parent)
                 matrix.prepend(parent.getGlobalMatrix(true));
-            matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
     },
@@ -4310,8 +4306,6 @@ new function() { // Injection scope for hit-test functions shared with project
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
         if (param.updateMatrix) {
-            // Update the cached _globalMatrix and keep it versioned.
-            globalMatrix._updateVersion = updateVersion;
             this._globalMatrix = globalMatrix;
         }
 
