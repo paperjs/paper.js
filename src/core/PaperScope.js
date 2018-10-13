@@ -203,8 +203,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * @param {Object} [option] the compilation options
      */
     execute: function(code, options) {
-        paper.PaperScript.execute(code, this, options);
+        var exports = paper.PaperScript.execute(code, this, options);
         View.updateFocus();
+        return exports;
     },
 
     /**
