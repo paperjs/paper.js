@@ -6,7 +6,7 @@
 
 This is the first release in quite a while, and it was made possible thanks to two new people on the team:
 
-A warm welcome to @sasensi and @sapics, the two new and very active maintainers /
+A warm welcome to [@sasensi](https://github.com/sasensi) and [@sapics](https://github.com/sapics), the two new and very active maintainers /
 contributors! :tada:
 
 Their efforts mean that many issues are finally getting proper attention and
