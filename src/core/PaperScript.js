@@ -534,24 +534,25 @@ Base.exports.PaperScript = function() {
         } else {
             func = Function(params, code);
         }
-        var exports = func.apply(scope, args) || {};
+        var exports = func && func.apply(scope, args);
+        var obj = exports || {};
         // Now install the 'global' tool and view handlers, and we're done!
         Base.each(toolHandlers, function(key) {
-            var value = exports[key];
+            var value = obj[key];
             if (value)
                 tool[key] = value;
         });
         if (view) {
-            if (exports.onResize)
-                view.setOnResize(exports.onResize);
+            if (obj.onResize)
+                view.setOnResize(obj.onResize);
             // Emit resize event directly, so any user
             // defined resize handlers are called.
             view.emit('resize', {
                 size: view.size,
                 delta: new Point()
             });
-            if (exports.onFrame)
-                view.setOnFrame(exports.onFrame);
+            if (obj.onFrame)
+                view.setOnFrame(obj.onFrame);
             // Automatically request an update at the end. This is only needed
             // if the script does not actually produce anything yet, and the
             // used canvas contains previous content.
