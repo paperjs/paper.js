@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 16:32:53 2018 +0200
+ * Date: Sat Oct 13 16:44:35 2018 +0200
  *
  ***
  *
@@ -2171,7 +2171,7 @@ var Matrix = Base.extend({
 			if (owner._applyMatrix) {
 				owner.transform(null, true);
 			} else {
-				owner._changed(9);
+				owner._changed(25);
 			}
 		}
 	},
@@ -3060,10 +3060,12 @@ new function() {
 			project = this._project;
 		if (flags & 8) {
 			this._bounds = this._position = this._decomposed = undefined;
+		}
+		if (flags & 16) {
 			this._globalMatrix = undefined;
 		}
 		if (cacheParent
-				&& (flags & 40)) {
+				&& (flags & 72)) {
 			Item._clearBoundsCache(cacheParent);
 		}
 		if (flags & 2) {
@@ -3099,7 +3101,7 @@ new function() {
 				children[name] = this;
 		}
 		this._name = name || undefined;
-		this._changed(128);
+		this._changed(256);
 	},
 
 	getStyle: function() {
@@ -3114,8 +3116,8 @@ new function() {
 		var part = Base.capitalize(name),
 			key = '_' + name,
 			flags = {
-				locked: 128,
-				visible: 137
+				locked: 256,
+				visible: 265
 			};
 		this['get' + part] = function() {
 			return this[key];
@@ -3123,7 +3125,7 @@ new function() {
 		this['set' + part] = function(value) {
 			if (value != this[key]) {
 				this[key] = value;
-				this._changed(flags[name] || 129);
+				this._changed(flags[name] || 257);
 			}
 		};
 	},
@@ -3140,7 +3142,7 @@ new function() {
 			var project = this._project;
 			if (project) {
 				project._updateSelection(this);
-				this._changed(129);
+				this._changed(257);
 			}
 		}
 	},
@@ -3201,9 +3203,9 @@ new function() {
 				this.setFillColor(null);
 				this.setStrokeColor(null);
 			}
-			this._changed(129);
+			this._changed(257);
 			if (this._parent)
-				this._parent._changed(1024);
+				this._parent._changed(2048);
 		}
 	},
 
@@ -4292,13 +4294,13 @@ new function() {
 	transform: function(matrix, _applyMatrix, _applyRecursively,
 			_setApplyMatrix) {
 		var _matrix = this._matrix,
-			transform = matrix && !matrix.isIdentity(),
+			transformMatrix = matrix && !matrix.isIdentity(),
 			applyMatrix = (_applyMatrix || this._applyMatrix)
-					&& ((!_matrix.isIdentity() || transform)
+					&& ((!_matrix.isIdentity() || transformMatrix)
 						|| _applyMatrix && _applyRecursively && this._children);
-		if (!transform && !applyMatrix)
+		if (!transformMatrix && !applyMatrix)
 			return this;
-		if (transform) {
+		if (transformMatrix) {
 			if (!matrix.isInvertible() && _matrix.isInvertible())
 				_matrix._backup = _matrix.getValues();
 			_matrix.prepend(matrix, true);
@@ -4321,10 +4323,10 @@ new function() {
 		}
 		var bounds = this._bounds,
 			position = this._position;
-		if (transform || applyMatrix) {
-			this._changed(9);
+		if (transformMatrix || applyMatrix) {
+			this._changed(25);
 		}
-		var decomp = transform && bounds && matrix.decompose();
+		var decomp = transformMatrix && bounds && matrix.decompose();
 		if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
 			for (var key in bounds) {
 				var cache = bounds[key];
@@ -4341,7 +4343,7 @@ new function() {
 			if (cached) {
 				this._position = this._getPositionFromBounds(cached.rect);
 			}
-		} else if (transform && position && this._pivot) {
+		} else if (transformMatrix && position && this._pivot) {
 			this._position = matrix._transformPoint(position, position);
 		}
 		return this;
@@ -4628,7 +4630,7 @@ var Group = Item.extend({
 
 	_changed: function _changed(flags) {
 		_changed.base.call(this, flags);
-		if (flags & 1026) {
+		if (flags & 2050) {
 			this._clipItem = undefined;
 		}
 	},
@@ -5206,7 +5208,7 @@ var Raster = Item.extend({
 				image ? image.naturalWidth || image.width : 0,
 				image ? image.naturalHeight || image.height : 0);
 		this._context = null;
-		this._changed(521);
+		this._changed(1033);
 	},
 
 	getCanvas: function() {
@@ -5230,7 +5232,7 @@ var Raster = Item.extend({
 			this._context = this.getCanvas().getContext('2d');
 		if (modify) {
 			this._image = null;
-			this._changed(513);
+			this._changed(1025);
 		}
 		return this._context;
 	},
@@ -5271,7 +5273,7 @@ var Raster = Item.extend({
 
 	setSmoothing: function(smoothing) {
 		this._smoothing = smoothing;
-		this._changed(129);
+		this._changed(257);
 	},
 
 	getElement: function() {
@@ -5658,7 +5660,7 @@ var Segment = Base.extend({
 					&& (curve = curves[index]))
 				curve._changed();
 		}
-		path._changed(25);
+		path._changed(41);
 	},
 
 	getPoint: function() {
@@ -5711,7 +5713,7 @@ var Segment = Base.extend({
 		this._selection = selection = selection || 0;
 		if (path && selection !== oldSelection) {
 			path._updateSelection(this, oldSelection, selection);
-			path._changed(129);
+			path._changed(257);
 		}
 	},
 
@@ -8032,13 +8034,13 @@ var Path = PathItem.extend({
 		_changed.base.call(this, flags);
 		if (flags & 8) {
 			this._length = this._area = undefined;
-			if (flags & 16) {
+			if (flags & 32) {
 				this._version++;
 			} else if (this._curves) {
 			   for (var i = 0, l = this._curves.length; i < l; i++)
 					this._curves[i]._changed();
 			}
-		} else if (flags & 32) {
+		} else if (flags & 64) {
 			this._bounds = undefined;
 		}
 	},
@@ -8113,7 +8115,7 @@ var Path = PathItem.extend({
 					this._curves[length - 1] = new Curve(this,
 						this._segments[length - 1], this._segments[0]);
 			}
-			this._changed(25);
+			this._changed(41);
 		}
 	}
 }, {
@@ -8223,7 +8225,7 @@ var Path = PathItem.extend({
 				curves.splice(i, 0, new Curve(this, null, null));
 			this._adjustCurves(start, end);
 		}
-		this._changed(25);
+		this._changed(41);
 		return segs;
 	},
 
@@ -8315,7 +8317,7 @@ var Path = PathItem.extend({
 				removed._curves = curves.slice(1);
 			this._adjustCurves(index, index);
 		}
-		this._changed(25);
+		this._changed(41);
 		return removed;
 	},
 
@@ -11122,7 +11124,7 @@ var TextItem = Item.extend({
 	setContent: function(content) {
 		this._content = '' + content;
 		this._lines = this._content.split(/\r\n|\n|\r/mg);
-		this._changed(265);
+		this._changed(521);
 	},
 
 	isEmpty: function() {
@@ -11562,7 +11564,7 @@ var Color = Base.extend(new function() {
 		_changed: function() {
 			this._canvasStyle = null;
 			if (this._owner)
-				this._owner._changed(65);
+				this._owner._changed(129);
 		},
 
 		_convert: function(type) {
@@ -11893,7 +11895,7 @@ var GradientStop = Base.extend({
 
 	_changed: function() {
 		if (this._owner)
-			this._owner._changed(65);
+			this._owner._changed(129);
 	},
 
 	getOffset: function() {
@@ -11956,11 +11958,11 @@ var Style = Base.extend(new function() {
 		fillColor: new Color()
 	}),
 	flags = {
-		strokeWidth: 97,
-		strokeCap: 97,
-		strokeJoin: 97,
-		strokeScaling: 105,
-		miterLimit: 97,
+		strokeWidth: 193,
+		strokeCap: 193,
+		strokeJoin: 193,
+		strokeScaling: 201,
+		miterLimit: 193,
 		fontFamily: 9,
 		fontWeight: 9,
 		fontSize: 9,
@@ -12019,7 +12021,7 @@ var Style = Base.extend(new function() {
 					}
 					this._values[key] = value;
 					if (owner)
-						owner._changed(flag || 65);
+						owner._changed(flag || 129);
 				}
 			}
 		};
@@ -12546,7 +12548,7 @@ var View = Base.extend(Emitter, {
 	},
 
 	_changed: function() {
-		this._project._changed(2049);
+		this._project._changed(4097);
 		this._bounds = this._decomposed = undefined;
 	},
 
