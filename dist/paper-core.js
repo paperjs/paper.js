@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 10 23:10:51 2018 +0200
+ * Date: Sat Oct 13 21:43:17 2018 +0900
  *
  ***
  *
@@ -4462,8 +4462,10 @@ new function() {
 			mainCtx, itemOffset, prevOffset;
 		if (!direct) {
 			var bounds = this.getStrokeBounds(viewMatrix);
-			if (!bounds.width || !bounds.height)
+			if (!bounds.width || !bounds.height) {
+				matrices.pop();
 				return;
+			}
 			prevOffset = param.offset;
 			itemOffset = param.offset = bounds.getTopLeft().floor();
 			mainCtx = ctx;
