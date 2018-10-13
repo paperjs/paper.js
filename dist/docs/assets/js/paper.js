@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 18:44:25 2018 +0200
+ * Date: Sat Oct 13 18:49:54 2018 +0200
  *
  ***
  *
@@ -16602,21 +16602,22 @@ Base.exports.PaperScript = function() {
 		} else {
 			func = Function(params, code);
 		}
-		var exports = func.apply(scope, args) || {};
+		var exports = func && func.apply(scope, args);
+		var obj = exports || {};
 		Base.each(toolHandlers, function(key) {
-			var value = exports[key];
+			var value = obj[key];
 			if (value)
 				tool[key] = value;
 		});
 		if (view) {
-			if (exports.onResize)
-				view.setOnResize(exports.onResize);
+			if (obj.onResize)
+				view.setOnResize(obj.onResize);
 			view.emit('resize', {
 				size: view.size,
 				delta: new Point()
 			});
-			if (exports.onFrame)
-				view.setOnFrame(exports.onFrame);
+			if (obj.onFrame)
+				view.setOnFrame(obj.onFrame);
 			view.requestUpdate();
 		}
 		return exports;
