@@ -2,23 +2,55 @@
 
 ## `Prebuilt`
 
+### News
+
+This is the first release in quite a while, and it was made possible thanks to two new people on the team:
+
+A warm welcome to [@sasensi](https://github.com/sasensi) and [@sapics](https://github.com/sapics), the two new and very active maintainers /
+contributors! :tada:
+
+Their efforts mean that many issues are finally getting proper attention and
+solid fixes, as we are paving the way for the upcoming release of `1.0.0`. Here the fixes and additions from the past two weeks:
+
 ### Fixed
-- Fix reference error in webpack bundle in node server rendering react
-  application (#1482).
-- Fix memory leak on Gradient Color (#1499, #1511).
-- Fix item wrong position (#1478, #1503).
-- Improve performances with lots of items (#1493).
-- Fix errors with events on mobile (#1501).
-- Fix selected position display in a group with matrix not applied.
-- Fix `Project#importSVG()` attributes application (#1416).
+
+- Prevent `paper` object from polluting the global scope (#1544).
+- Make sure `Path#arcTo()` always passes through the provide through point
+  (#1477).
+- Draw shadows on `Raster` images (#1437)
+- Fix boolean operation edge case (#1506, #1513, #1515).
+- Remove memory leak on gradient colors (#1499).
+- Support alpha channel in CSS colors (#1468, #1539).
+- Improve color CSS string parsing and documentation.
+- Improve caching of item positions (#1503).
+- Always draw selected position in global coordinates system (#1545).
+- Prevent empty `Symbol` items from causing issues with transformations (#1561).
+- Better detect when a cached global matrix is not valid anymore (#1448).
+- Correctly draw selected position when item is in a group with matrix not
+  applied (#1535).
+- Improve handling of huge amounts of segments in paths (#1493).
+- Do not trigger error messages about passive event listeners on Chrome (#1501).
+- Fix errors with event listeners on mobile (#1533).
+- Prevent first mouse drag event from being emitted twice (#1553).
+- Support optional arguments in translate and rotate statements in SVG Import
+  (#1487).
+- Make sure SVG import always applies imported attributes (#1416).
+- Correctly handle `Raster` images positions in SVG import (#1328).
+- Improve documentation for `Shape#toPath()` (#1374).
+- Improve documentation of hit test coordinate system (#1430).
+- Add documentation for `Item#locked` (#1436).
+- Support Webpack bundling in Node.js server (#1482).
+- Travis CI: Get unit tests to run correctly again.
+- Travis CI: Remove Node 4 and add Node 9.
 
 ### Added
-- `Curve#getTimesWithTangent()` and `Path#getOffsetsWithTangent()` as ways to
-  get curve-times / offsets where path is tangential to a vector.
-- Transparent color support (#1539).
-- `Raster#smoothing` as a way to control if pixels should be blured when a
+
+- `Curve#getTimesWithTangent()` and `Path#getOffsetsWithTangent()` as a way to
+  get the curve-times / offsets where the path is tangential to a given vector.
+- `Raster#smoothing` to control if pixels should be blurred or repeated when a
   raster is scaled up (#1521).
-- Hexadecimal with alpha color (#1468).
+- Allow `PaperScript`to export from executed code, supporting `export default`,
+  named exports, as well as `module.exports`.
 
 ## `0.11.5`
 
