@@ -206,3 +206,26 @@ test('Raster#setSmoothing setting does not impact canvas context', function(asse
         done();
     };
 });
+
+test('Tainted canvas error is catched', function(assert) {
+    var done = assert.async();
+    var raster = new Raster('http://assets.paperjs.org/images/marilyn.jpg');
+    raster.onLoad = function() {
+        // remove warnings from tests output
+        var consoleWarn = console.warn;
+        console.warn = function() {};
+
+        // call all methods that produce a tainted canvas error
+        raster.getImageData();
+        raster.getPixel();
+        raster.getAverageColor();
+        raster.toDataURL();
+        raster.exportSVG({asString: true});
+        raster.blendMode = 'negation';
+        raster.view.update();
+
+        console.warn = consoleWarn;
+        done();
+    };
+    expect(0);
+});

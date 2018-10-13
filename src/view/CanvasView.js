@@ -140,5 +140,34 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             project.draw(ctx, this._matrix, this._pixelRatio);
         this._needsUpdate = false;
         return true;
+    },
+
+    statics: /** @lends CanvasView */{
+        /**
+         * Execute callback catching SecurityError and displaying a specific
+         * warning message. This helps handling tainted canvas errors (#1479).
+         * https://developer.mozilla.org/docs/Web/HTML/CORS_enabled_image
+         * @param callback function to execute
+         * @returns {*} callback return value
+         */
+        catchTaintedCanvasError: function(callback) {
+            try {
+                return callback();
+            } catch (e) {
+                // Only catch security errors.
+                if (e.code !== 18) throw e;
+                // Display a warning pointing to problem cause and solution.
+                console.warn('You are seing this error because you tried to ' +
+                    'access canvas image data after drawing an image from an ' +
+                    'external source.\nYour browser prevent you from doing ' +
+                    'this because of CORS, see detailed explanation: ' +
+                    'https://developer.mozilla.org/en-US/docs/Web/HTML/CORS_enabled_image' +
+                    '\nYou can circumvent this isue, if the external source of ' +
+                    'the image allows cross origin access, by using ' +
+                    'Raster.crossOrigin property: ' +
+                    'http://paperjs.org/reference/raster/#crossorigin\n' +
+                    'Original error:', e);
+            }
+        }
     }
 });
