@@ -1247,12 +1247,20 @@ new function() { // Injection scope for various item event handlers
             // If there's a cached global matrix for this item, check if all its
             // parents also have one. If it's missing in any of its parents, it
             // means the child's cached version isn't valid anymore.
+            // For better performance, we also use the occasion of this loop to
+            // clear cached version of items parents.
             var parent = this._parent;
+            var parents = [];
             while (parent) {
                 if (!parent._globalMatrix) {
                     matrix = null;
+                    // Also clear global matrix of item's parents.
+                    for (var i = 0, l = parents.length; i < l; i++) {
+                        parents[i]._globalMatrix = null;
+                    }
                     break;
                 }
+                parents.push(parent);
                 parent = parent._parent;
             }
         }
