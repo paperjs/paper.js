@@ -216,8 +216,8 @@ new function() { // Injection scope for various item event handlers
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
             // Clear cached bounds, position and decomposed matrix whenever
             // geometry changes.
-            this._bounds = this._position = this._decomposed =
-                    this._globalMatrix = undefined;
+            this._bounds = this._position = this._decomposed = undefined;
+            this._clearGlobalMatrix();
         }
         if (cacheParent
                 && (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
@@ -999,6 +999,20 @@ new function() { // Injection scope for various item event handlers
                     : this._parent || this._symbol && this._symbol._item,
             mx = parent ? parent.getViewMatrix().invert() : matrix;
         return mx && mx._shiftless();
+    },
+
+    /**
+     * Clears cached global matrix for item and all its descendants.
+     * This is used to avoid invalid coodrinates calculation (#1448).
+     */
+    _clearGlobalMatrix: function() {
+        this._globalMatrix = undefined;
+        var children = this.children;
+        if (children) {
+            for (var i = 0, l = children.length; i < l; i++) {
+                children[i]._clearGlobalMatrix();
+            }
+        }
     },
 
     statics: /** @lends Item */{
