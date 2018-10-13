@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 16:44:35 2018 +0200
+ * Date: Sat Oct 13 18:34:10 2018 +0200
  *
  ***
  *
@@ -803,8 +803,9 @@ var PaperScope = Base.extend({
 	},
 
 	execute: function(code, options) {
-		paper.PaperScript.execute(code, this, options);
+		var exports = paper.PaperScript.execute(code, this, options);
 		View.updateFocus();
+		return exports;
 	},
 
 	install: function(scope) {

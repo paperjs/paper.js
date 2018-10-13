@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 16:44:35 2018 +0200
+ * Date: Sat Oct 13 18:34:10 2018 +0200
  *
  ***
  *
@@ -803,8 +803,9 @@ var PaperScope = Base.extend({
 	},
 
 	execute: function(code, options) {
-		paper.PaperScript.execute(code, this, options);
+		var exports = paper.PaperScript.execute(code, this, options);
 		View.updateFocus();
+		return exports;
 	},
 
 	install: function(scope) {
@@ -16436,6 +16437,37 @@ Base.exports.PaperScript = function() {
 					}
 				}
 				break;
+			case 'ExportDefaultDeclaration':
+				replaceCode({
+					range: [node.start, node.declaration.start]
+				}, 'module.exports = ');
+				break;
+			case 'ExportNamedDeclaration':
+				var declaration = node.declaration;
+				var specifiers = node.specifiers;
+				if (declaration) {
+					var declarations = declaration.declarations;
+					if (declarations) {
+						declarations.forEach(function(dec) {
+							replaceCode(dec, 'module.exports.' + getCode(dec));
+						});
+						replaceCode({
+							range: [
+								node.start,
+								declaration.start + declaration.kind.length
+							]
+						}, '');
+					}
+				} else if (specifiers) {
+					var exports = specifiers.map(function(specifier) {
+						var name = getCode(specifier);
+						return 'module.exports.' + name + ' = ' + name + '; ';
+					}).join('');
+					if (exports) {
+						replaceCode(node, exports);
+					}
+				}
+				break;
 			}
 		}
 
@@ -16491,7 +16523,11 @@ Base.exports.PaperScript = function() {
 				sourcesContent: [source]
 			};
 		}
-		walkAST(parse(code, { ranges: true, preserveParens: true }));
+		walkAST(parse(code, {
+			ranges: true,
+			preserveParens: true,
+			sourceType: 'module'
+		}));
 		if (map) {
 			if (offsetCode) {
 				code = new Array(offset + 1).join('\n') + code;
@@ -16536,14 +16572,17 @@ Base.exports.PaperScript = function() {
 		expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
 				true);
 		expose(scope);
-		handlers = Base.each(handlers, function(key) {
+		code = 'var module = { exports: {} }; ' + code;
+		var exports = Base.each(handlers, function(key) {
 			if (new RegExp('\\s+' + key + '\\b').test(code)) {
 				params.push(key);
-				this.push(key + ': ' + key);
+				this.push('module.exports.' + key + ' = ' + key + ';');
 			}
 		}, []).join(', ');
-		if (handlers)
-			code += '\nreturn { ' + handlers + ' };';
+		if (exports) {
+			code += '\n' + exports;
+		}
+		code += '\nreturn module.exports;';
 		var agent = paper.agent;
 		if (document && (agent.chrome
 				|| agent.firefox && agent.versionNumber < 40)) {
@@ -16563,24 +16602,24 @@ Base.exports.PaperScript = function() {
 		} else {
 			func = Function(params, code);
 		}
-		var res = func.apply(scope, args) || {};
+		var exports = func.apply(scope, args) || {};
 		Base.each(toolHandlers, function(key) {
-			var value = res[key];
+			var value = exports[key];
 			if (value)
 				tool[key] = value;
 		});
 		if (view) {
-			if (res.onResize)
-				view.setOnResize(res.onResize);
+			if (exports.onResize)
+				view.setOnResize(exports.onResize);
 			view.emit('resize', {
 				size: view.size,
 				delta: new Point()
 			});
-			if (res.onFrame)
-				view.setOnFrame(res.onFrame);
+			if (exports.onFrame)
+				view.setOnFrame(exports.onFrame);
 			view.requestUpdate();
 		}
-		return compiled;
+		return exports;
 	}
 
 	function loadScript(script) {
