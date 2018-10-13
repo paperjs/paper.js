@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 18:34:10 2018 +0200
+ * Date: Sat Oct 13 18:44:25 2018 +0200
  *
  ***
  *
@@ -16578,7 +16578,7 @@ Base.exports.PaperScript = function() {
 				params.push(key);
 				this.push('module.exports.' + key + ' = ' + key + ';');
 			}
-		}, []).join(', ');
+		}, []).join('\n');
 		if (exports) {
 			code += '\n' + exports;
 		}
