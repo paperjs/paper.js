@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 18:49:54 2018 +0200
+ * Date: Sat Oct 13 19:52:38 2018 +0200
  *
  ***
  *
@@ -3485,11 +3485,16 @@ new function() {
 		var matrix = this._globalMatrix;
 		if (matrix) {
 			var parent = this._parent;
+			var parents = [];
 			while (parent) {
 				if (!parent._globalMatrix) {
 					matrix = null;
+					for (var i = 0, l = parents.length; i < l; i++) {
+						parents[i]._globalMatrix = null;
+					}
 					break;
 				}
+				parents.push(parent);
 				parent = parent._parent;
 			}
 		}
