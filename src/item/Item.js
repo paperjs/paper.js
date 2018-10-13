@@ -217,8 +217,8 @@ new function() { // Injection scope for various item event handlers
             // Clear cached bounds, position and decomposed matrix whenever
             // geometry changes.
             this._bounds = this._position = this._decomposed = undefined;
-            // TODO: Introduce a separate flag for matrix changes, so we only
-            // need to clear here when the matrix actually changes.
+        }
+        if (flags & /*#=*/ChangeFlag.MATRIX) {
             this._globalMatrix = undefined;
         }
         if (cacheParent
@@ -413,7 +413,7 @@ new function() { // Injection scope for various item event handlers
             flags = {
                 // #locked does not change appearance, all others do:
                 locked: /*#=*/ChangeFlag.ATTRIBUTE,
-                // #visible changes apperance
+                // #visible changes appearance
                 visible: /*#=*/(Change.ATTRIBUTE | Change.GEOMETRY)
             };
         this['get' + part] = function() {
@@ -3474,19 +3474,19 @@ new function() { // Injection scope for hit-test functions shared with project
         var _matrix = this._matrix,
             // If no matrix is provided, or the matrix is the identity, we might
             // still have some work to do in case _applyMatrix is true
-            transform = matrix && !matrix.isIdentity(),
+            transformMatrix = matrix && !matrix.isIdentity(),
             applyMatrix = (_applyMatrix || this._applyMatrix)
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || transform)
+                    && ((!_matrix.isIdentity() || transformMatrix)
                         // Even if it's an identity matrix, we still need to
                         // recursively apply the matrix to children.
                         || _applyMatrix && _applyRecursively && this._children);
         // Bail out if there is nothing to do.
-        if (!transform && !applyMatrix)
+        if (!transformMatrix && !applyMatrix)
             return this;
         // Simply prepend the internal matrix with the passed one:
-        if (transform) {
+        if (transformMatrix) {
             // Keep a backup of the last valid state before the matrix becomes
             // non-invertible. This is then used again in setBounds to restore.
             if (!matrix.isInvertible() && _matrix.isInvertible())
@@ -3532,13 +3532,13 @@ new function() { // Injection scope for hit-test functions shared with project
         // on matrix we can calculate and set them again, so preserve them.
         var bounds = this._bounds,
             position = this._position;
-        if (transform || applyMatrix) {
-            this._changed(/*#=*/Change.GEOMETRY);
+        if (transformMatrix || applyMatrix) {
+            this._changed(/*#=*/Change.MATRIX);
         }
         // Detect matrices that contain only translations and scaling
         // and transform the cached _bounds and _position without having to
         // fully recalculate each time.
-        var decomp = transform && bounds && matrix.decompose();
+        var decomp = transformMatrix && bounds && matrix.decompose();
         if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
             // Transform the old bound by looping through all the cached
             // bounds in _bounds and transform each.
@@ -3565,7 +3565,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // use this method to handle pivot case (see #1503)
                 this._position = this._getPositionFromBounds(cached.rect);
             }
-        } else if (transform && position && this._pivot) {
+        } else if (transformMatrix && position && this._pivot) {
             // If the item has a pivot defined, it means that the default
             // position defined as the center of the bounds won't shift with
             // arbitrary transformations and we can therefore update _position:
