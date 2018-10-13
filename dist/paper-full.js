@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 15:33:21 2018 +0200
+ * Date: Sat Oct 13 16:30:19 2018 +0200
  *
  ***
  *
@@ -3059,8 +3059,8 @@ new function() {
 			cacheParent = this._parent || symbol,
 			project = this._project;
 		if (flags & 8) {
-			this._bounds = this._position = this._decomposed =
-					this._globalMatrix = undefined;
+			this._bounds = this._position = this._decomposed = undefined;
+			this._globalMatrix = undefined;
 		}
 		if (cacheParent
 				&& (flags & 40)) {
@@ -3479,16 +3479,22 @@ new function() {
 	},
 
 	getGlobalMatrix: function(_dontClone) {
-		var matrix = this._globalMatrix,
-			updateVersion = this._project._updateVersion;
-		if (matrix && matrix._updateVersion !== updateVersion)
-			matrix = null;
+		var matrix = this._globalMatrix;
+		if (matrix) {
+			var parent = this._parent;
+			while (parent) {
+				if (!parent._globalMatrix) {
+					matrix = null;
+					break;
+				}
+				parent = parent._parent;
+			}
+		}
 		if (!matrix) {
 			matrix = this._globalMatrix = this._matrix.clone();
 			var parent = this._parent;
 			if (parent)
 				matrix.prepend(parent.getGlobalMatrix(true));
-			matrix._updateVersion = updateVersion;
 		}
 		return _dontClone ? matrix : matrix.clone();
 	},
@@ -4445,7 +4451,6 @@ new function() {
 
 		matrices.push(globalMatrix);
 		if (param.updateMatrix) {
-			globalMatrix._updateVersion = updateVersion;
 			this._globalMatrix = globalMatrix;
 		}
 
