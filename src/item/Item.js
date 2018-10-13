@@ -4327,8 +4327,12 @@ new function() { // Injection scope for hit-test functions shared with project
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
             var bounds = this.getStrokeBounds(viewMatrix);
-            if (!bounds.width || !bounds.height)
+            if (!bounds.width || !bounds.height) {
+                // Item won't be drawn so its global matrix need to be removed
+                // from the stack (#1561).
+                matrices.pop();
                 return;
+            }
             // Store previous offset and save the main context, so we can
             // draw onto it later.
             prevOffset = param.offset;
