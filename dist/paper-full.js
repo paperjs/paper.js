@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 21:43:17 2018 +0900
+ * Date: Sat Oct 13 15:33:21 2018 +0200
  *
  ***
  *
@@ -9289,7 +9289,7 @@ new function() {
 				}
 				vector = from.subtract(center);
 				extent = vector.getDirectedAngle(to.subtract(center));
-				var centerSide = line.getSide(center);
+				var centerSide = line.getSide(center, true);
 				if (centerSide === 0) {
 					extent = throughSide * abs(extent);
 				} else if (throughSide === centerSide) {
