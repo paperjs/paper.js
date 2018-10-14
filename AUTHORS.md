@@ -14,3 +14,4 @@
 - Andrew Wagenheim <abwagenheim@gmail.com>
 - Scott Kieronski <baroes0239@gmail.com>
 - Samuel Asensi <asensi.samuel@gmail.com>
+- Takahiro Nishino <sapics.dev@gmail.com>

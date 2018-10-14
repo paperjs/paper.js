@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 13 19:58:12 2018 +0200
+ * Date: Mon Oct 15 04:44:22 2018 +0900
  *
  ***
  *
@@ -11222,7 +11222,7 @@ var Color = Base.extend(new function() {
 		var match = string.match(
 				/^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
 			) || string.match(
-				/^#([\da-f])([\da-f])([\da-f])$/i
+				/^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
 			),
 			type = 'rgb',
 			components;
