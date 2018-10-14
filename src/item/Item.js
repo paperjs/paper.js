@@ -4472,9 +4472,7 @@ new function() { // Injection scope for hit-test functions shared with project
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {
-                // Get position in global coordinates system
-                var pos = this.getPosition(true),
-                    point = this.parent ? this.parent.localToGlobal(pos) : pos,
+                var point = mx._transformPoint(this.getPosition(true)),
                     x = point.x,
                     y = point.y;
                 ctx.beginPath();
