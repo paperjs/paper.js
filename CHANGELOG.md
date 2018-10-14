@@ -20,7 +20,7 @@ solid fixes, as we are paving the way for the upcoming release of `1.0.0`. Here 
 - Draw shadows on `Raster` images (#1437)
 - Fix boolean operation edge case (#1506, #1513, #1515).
 - Remove memory leak on gradient colors (#1499).
-- Support alpha channel in CSS colors (#1468, #1539).
+- Support alpha channel in CSS colors (#1468, #1539, #1565).
 - Improve color CSS string parsing and documentation.
 - Improve caching of item positions (#1503).
 - Always draw selected position in global coordinates system (#1545).

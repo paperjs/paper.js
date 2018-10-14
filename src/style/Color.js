@@ -64,7 +64,7 @@ var Color = Base.extend(new function() {
         var match = string.match(
                 /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
             ) || string.match(
-                /^#([\da-f])([\da-f])([\da-f])$/i
+                /^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
             ),
             type = 'rgb',
             components;
