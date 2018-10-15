@@ -1498,7 +1498,31 @@ new function() { // Injection scope for event handling on the browser
              * Loops through all views and sets the focus on the first
              * active one.
              */
-            updateFocus: updateFocus
+            updateFocus: updateFocus,
+
+            /**
+             * Clear all events handling state informations. Made for testing
+             * purpose, to have a way to start with a fresh state before each
+             * test.
+             * @private
+             */
+            _clearState: function() {
+                prevFocus = null;
+                tempFocus = null;
+                dragging = false;
+                mouseDown = false;
+                called = false;
+                wasInView = false;
+                overView = null;
+                downPoint = null;
+                lastPoint = null;
+                downItem = null;
+                overItem = null;
+                dragItem = null;
+                clickItem = null;
+                clickTime = null;
+                dblClick = null;
+            }
         }
     };
 });

@@ -48,11 +48,15 @@ console.error = function() {
     errorHandler.apply(this, arguments);
 };
 
+var currentProject;
+
 QUnit.done(function(details) {
     console.error = errorHandler;
+    // Clear all event listeners after final test.
+    if (currentProject) {
+        currentProject.remove();
+    }
 });
-
-var currentProject;
 
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
@@ -61,9 +65,16 @@ var test = function(testName, expected) {
     return QUnit.test(testName, function(assert) {
         // Since tests can be asynchronous, remove the old project before
         // running the next test.
-        if (currentProject)
+        if (currentProject) {
             currentProject.remove();
-        currentProject = new Project();
+            // This is needed for interactions tests, to make sure that test is
+            // run with a fresh state.
+            View._clearState();
+        }
+
+        // Instantiate project with 100x100 pixels canvas instead of default
+        // 1x1 to make interactions tests simpler by working with integers.
+        currentProject = new Project(CanvasProvider.getCanvas(100, 100));
         expected(assert);
     });
 };
@@ -549,4 +560,64 @@ var compareSVG = function(done, actual, expected, message, options) {
     } else {
         compare();
     }
+};
+
+
+//
+// Interactions helpers
+//
+var MouseEventPolyfill = function(type, params) {
+    var mouseEvent = document.createEvent('MouseEvent');
+    mouseEvent.initMouseEvent(
+        type,
+        params.bubbles,
+        params.cancelable,
+        window,
+        0,
+        params.screenX,
+        params.screenY,
+        params.clientX,
+        params.clientY,
+        params.ctrlKey,
+        params.altKey,
+        params.shiftKey,
+        params.metaKey,
+        params.button,
+        params.relatedTarget
+    );
+    return mouseEvent;
+};
+MouseEventPolyfill.prototype = typeof NativeClasses !== 'undefined'
+    && NativeClasses.Event.prototype || Event.prototype;
+
+var triggerMouseEvent = function(type, point, target) {
+    // Depending on event type, events have to be triggered on different
+    // elements due to the event handling implementation (see `viewEvents`
+    // and `docEvents` in View.js). And we cannot rely on the fact that event
+    // will bubble from canvas to document, since the canvas used in tests is
+    // not inserted in DOM.
+    target = target || (type === 'mousedown' ? view._element : document);
+
+    // If `gulp load` was run, there is a name collision between paper Event /
+    // MouseEvent and native javascript classes. In this case, we need to use
+    // native classes stored in global NativeClasses object instead.
+    var constructor = typeof NativeClasses !== 'undefined'
+        && NativeClasses.MouseEvent || MouseEvent;
+
+    // MouseEvent class does not exist in PhantomJS, so in that case, we need to
+    // use a polyfill method.
+    if (typeof constructor !== 'function') {
+        constructor = MouseEventPolyfill;
+    }
+
+    var event = new constructor(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        clientX: point.x,
+        clientY: point.y,
+        screenX: point.x,
+        screenY: point.y
+    });
+    target.dispatchEvent(event);
 };
