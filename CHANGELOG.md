@@ -4,21 +4,25 @@
 
 ### News
 
-This is the first release in quite a while, and it was made possible thanks to two new people on the team:
+This is the first release in quite a while, and it was made possible thanks to
+two new people on the team:
 
-A warm welcome to [@sasensi](https://github.com/sasensi) and [@sapics](https://github.com/sapics), the two new and very active maintainers /
+A warm welcome to [@sasensi](https://github.com/sasensi) and
+[@sapics](https://github.com/sapics), the two new and very active maintainers /
 contributors! :tada:
 
 Their efforts mean that many issues are finally getting proper attention and
-solid fixes, as we are paving the way for the upcoming release of `1.0.0`. Here the fixes and additions from the past two weeks:
+solid fixes, as we are paving the way for the upcoming release of `1.0.0`. Here
+the fixes and additions from the past two weeks:
 
 ### Fixed
 
 - Prevent `paper` object from polluting the global scope (#1544).
 - Make sure `Path#arcTo()` always passes through the provide through point
   (#1477).
-- Draw shadows on `Raster` images (#1437)
+- Draw shadows on `Raster` images (#1437).
 - Fix boolean operation edge case (#1506, #1513, #1515).
+- Handle closed paths with only one segment in `Path#flatten()` (#1338).
 - Remove memory leak on gradient colors (#1499).
 - Support alpha channel in CSS colors (#1468, #1539, #1565).
 - Improve color CSS string parsing and documentation.
