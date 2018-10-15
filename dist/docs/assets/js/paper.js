@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Oct 14 23:12:03 2018 +0200
+ * Date: Mon Oct 15 10:12:15 2018 +0200
  *
  ***
  *
@@ -4559,7 +4559,9 @@ new function() {
 			if (itemSelected)
 				this._drawSelected(ctx, mx, selectionItems);
 			if (positionSelected) {
-				var point = mx._transformPoint(this.getPosition(true)),
+				var pos = this.getPosition(true),
+					parent = this._parent,
+					point = parent ? parent.localToGlobal(pos) : pos,
 					x = point.x,
 					y = point.y;
 				ctx.beginPath();
