@@ -450,6 +450,13 @@ test('Path#flatten(maxDistance)', function() {
     }, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
 });
 
+test('Path#single segment closed path flatten (#1338)', function() {
+    var p = PathItem.create("m445.26701,223.69688c6.1738,8.7566 -7.05172,14.0468 0,0z");
+    p.strokeColor = "red";
+    p.flatten();
+    expect(0);
+});
+
 test('Path#curves after removing a segment - 1', function() {
     var path = new paper.Path([0, 0], [1, 1], [2, 2]);
     var prevCurves = path.curves.slice();

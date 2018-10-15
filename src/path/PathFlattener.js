@@ -95,7 +95,7 @@ var PathFlattener = Base.extend({
             segment1 = segment2;
         }
         if (path._closed)
-            addCurve(segment2, segments[0]);
+            addCurve(segment2 || segment1, segments[0]);
         this.curves = curves;
         this.parts = parts;
         this.length = length;
