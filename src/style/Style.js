@@ -162,13 +162,19 @@ var Style = Base.extend(new function() {
         //   raw value is stored, and conversion only happens in the getter.
         fields[set] = function(value) {
             var owner = this._owner,
-                children = owner && owner._children;
+                children = owner && owner._children,
+                applyToChildren = children && children.length > 0
+                    && !(owner instanceof CompoundPath);
             // Only unify styles on children of Groups, excluding CompoundPaths.
-            if (children && children.length > 0
-                    && !(owner instanceof CompoundPath)) {
+            if (applyToChildren) {
                 for (var i = 0, l = children.length; i < l; i++)
                     children[i]._style[set](value);
-            } else if (key in this._defaults) {
+            }
+            // Always store selectedColor in item _values to make sure that
+            // group selected bounds and position color is coherent whether it
+            // has children or not when the value is set.
+            if ((key === 'selectedColor' || !applyToChildren)
+                    && key in this._defaults) {
                 var old = this._values[key];
                 if (old !== value) {
                     if (isColor) {

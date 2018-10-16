@@ -140,6 +140,72 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
+/**
+ * Compare 2 image data with resemble.js library.
+ * When comparison fails, expected, actual and compared images are displayed.
+ * @param {ImageData} imageData1 the expected image data
+ * @param {ImageData} imageData2 the actual image data
+ * @param {number} tolerance
+ * @param {string} diffDetail text displayed when comparison fails
+ */
+var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
+    /**
+     * Build an image element from a given image data.
+     * @param {ImageData} imageData
+     * @return {HTMLImageElement}
+     */
+    function image(imageData) {
+        var canvas = CanvasProvider.getCanvas(imageData.width, imageData.height);
+        canvas.getContext('2d').putImageData(imageData, 0, 0);
+        var image = new Image();
+        image.src = canvas.toDataURL();
+        CanvasProvider.release(canvas);
+        return image;
+    }
+
+    tolerance = (tolerance || 1e-4) * 100;
+
+    // Use resemble.js to compare image datas.
+    var id = QUnit.config.current.testId,
+        index = QUnit.config.current.assertions.length + 1,
+        result;
+    if (!resemble._setup) {
+        resemble._setup = true;
+        resemble.outputSettings({
+            errorColor: { red: 255, green: 51, blue: 0 },
+            errorType: 'flat',
+            transparency: 1
+        });
+    }
+    resemble(imageData1)
+    .compareTo(imageData2)
+    .ignoreAntialiasing()
+    // When working with imageData, this call is synchronous:
+    .onComplete(function(data) { result = data; });
+    // Compare with tolerance in percentage...
+    var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
+        identical = result ? 100 - result.misMatchPercentage : 0,
+        ok = Math.abs(100 - identical) <= tolerance,
+        text = identical.toFixed(fixed) + '% identical',
+        detail = text;
+    if (!ok && diffDetail) {
+        detail += diffDetail;
+    }
+    QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
+    if (!ok && result && !isNode) {
+        // Get the right entry for this unit test and assertion, and
+        // replace the results with images
+        var entry = document.getElementById('qunit-test-output-' + id)
+            .querySelector('li:nth-child(' + (index) + ')'),
+            bounds = result.diffBounds;
+        entry.querySelector('.test-expected td').appendChild(image(imageData1));
+        entry.querySelector('.test-actual td').appendChild(image(imageData2));
+        entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
+            + '</pre><br>'
+            + '<img src="' + result.getImageDataUrl() + '">';
+    }
+};
+
 var comparePixels = function(actual, expected, message, options) {
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -155,11 +221,6 @@ var comparePixels = function(actual, expected, message, options) {
             }
         }
         return raster;
-    }
-
-    function getImageTag(raster) {
-        return '<img width="' + raster.width + '" height="' + raster.height
-                + '" src="' + raster.source + '">';
     }
 
     if (!expected) {
@@ -178,8 +239,8 @@ var comparePixels = function(actual, expected, message, options) {
         actualBounds = actual.strokeBounds,
         expecedBounds = expected.strokeBounds,
         bounds = actualBounds.isEmpty()
-                ? expecedBounds
-                : expecedBounds.isEmpty()
+            ? expecedBounds
+            : expecedBounds.isEmpty()
                 ? actualBounds
                 : actualBounds.unite(expecedBounds);
     if (bounds.isEmpty()) {
@@ -199,53 +260,15 @@ var comparePixels = function(actual, expected, message, options) {
         expectedRaster = rasterize(expected, group, resolution);
     if (!actualRaster || !expectedRaster) {
         QUnit.push(false, null, null, 'Unable to compare rasterized items: ' +
-                (!actualRaster ? 'actual' : 'expected') + ' item is null',
-                QUnit.stack(2));
+            (!actualRaster ? 'actual' : 'expected') + ' item is null',
+            QUnit.stack(2));
     } else {
-        // Use resemble.js to compare the two rasterized items.
-        var id = QUnit.config.current.testId,
-            index = QUnit.config.current.assertions.length + 1,
-            result;
-        if (!resemble._setup) {
-            resemble._setup = true;
-            resemble.outputSettings({
-                errorColor: { red: 255, green: 51, blue: 0 },
-                errorType: 'flat',
-                transparency: 1
-            });
-        }
-        resemble(actualRaster.getImageData())
-            .compareTo(expectedRaster.getImageData())
-            .ignoreAntialiasing()
-            // When working with imageData, this call is synchronous:
-            .onComplete(function(data) { result = data; });
-         // Compare with tolerance in percentage...
-        var tolerance = (options.tolerance || 1e-4) * 100,
-            fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
-            identical = result ? 100 - result.misMatchPercentage : 0,
-            ok = Math.abs(100 - identical) <= tolerance,
-            text = identical.toFixed(fixed) + '% identical',
-            detail = text;
-        if (!ok &&
-                actual instanceof PathItem && expected instanceof PathItem) {
-            detail += '\nExpected:\n' + expected.pathData +
-                    '\nActual:\n' + actual.pathData;
-        }
-        QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
-        if (!ok && result && !isNode) {
-            // Get the right entry for this unit test and assertion, and
-            // replace the results with images
-            var entry = document.getElementById('qunit-test-output-' + id)
-                    .querySelector('li:nth-child(' + (index) + ')'),
-                bounds = result.diffBounds;
-            entry.querySelector('.test-expected td').innerHTML =
-                    getImageTag(expectedRaster);
-            entry.querySelector('.test-actual td').innerHTML =
-                    getImageTag(actualRaster);
-            entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
-                    + '</pre><br>'
-                    + '<img src="' + result.getImageDataUrl() + '">';
-        }
+        // Compare the two rasterized items.
+        var detail = actual instanceof PathItem && expected instanceof PathItem
+            ? '\nExpected:\n' + expected.pathData + '\nActual:\n' + actual.pathData
+            : '';
+        compareImageData(actualRaster.getImageData(),
+            expectedRaster.getImageData(), options.tolerance, detail);
     }
 };
 
@@ -281,6 +304,36 @@ var compareItem = function(actual, expected, message, options, properties) {
         compareProperties(actual.style, expected.style, styles,
                 message + ' (#style)', options);
     }
+};
+
+/**
+ * Run each callback in a separated canvas context and compare both outputs.
+ * This can be used to do selection drawing tests as it is not possible with
+ * comparePixels() method which relies on the item.rasterize() method which
+ * ignores selection.
+ * @param width the width of the canvas
+ * @param height the height of the canvas
+ * @param expectedCallback the function producing the expected result
+ * @param actualCallback the function producing the actual result
+ */
+var compareCanvas = function(width, height, expectedCallback, actualCallback) {
+    function getImageData(width, height, callback) {
+        var canvas = CanvasProvider.getCanvas(width, height);
+        var project = new Project(canvas);
+        callback();
+        project.view.update();
+        var imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
+        CanvasProvider.release(canvas);
+        project.remove();
+        return imageData;
+    }
+
+    compareImageData(
+        getImageData(width, height, expectedCallback),
+        getImageData(width, height, actualCallback)
+    );
+
+    currentProject.activate();
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
