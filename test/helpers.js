@@ -34,6 +34,16 @@ if (isNode) {
     });
 }
 
+// Some native javascript classes have name collisions with Paper.js classes.
+// If they have not already been stored in src/load.js, we dot it now.
+if (!isNode && typeof NativeClasses === 'undefined')
+{
+    NativeClasses = {
+        Event: Event,
+        MouseEvent: MouseEvent
+    };
+}
+
 // The unit-tests expect the paper classes to be global.
 paper.install(scope);
 
