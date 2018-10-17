@@ -1506,22 +1506,11 @@ new function() { // Injection scope for event handling on the browser
              * test.
              * @private
              */
-            _clearState: function() {
-                prevFocus = null;
-                tempFocus = null;
-                dragging = false;
-                mouseDown = false;
-                called = false;
-                wasInView = false;
-                overView = null;
-                downPoint = null;
-                lastPoint = null;
-                downItem = null;
-                overItem = null;
-                dragItem = null;
-                clickItem = null;
-                clickTime = null;
-                dblClick = null;
+            _resetState: function() {
+                dragging = mouseDown = called = wasInView = false;
+                prevFocus = tempFocus = overView = downPoint = lastPoint =
+                    downItem = overItem = dragItem = clickItem = clickTime =
+                    dblClick = null;
             }
         }
     };
