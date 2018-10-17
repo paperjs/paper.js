@@ -42,7 +42,7 @@
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^2.8.0",
+    "gulp-git-streamed": "^2.8.1",
     "gulp-jshint": "^2.0.0",
     "gulp-json-editor": "^2.2.1",
     "gulp-prepro": "^2.4.0",
