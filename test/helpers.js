@@ -69,7 +69,7 @@ var test = function(testName, expected) {
             currentProject.remove();
             // This is needed for interactions tests, to make sure that test is
             // run with a fresh state.
-            View._clearState();
+            View._resetState();
         }
 
         // Instantiate project with 100x100 pixels canvas instead of default
