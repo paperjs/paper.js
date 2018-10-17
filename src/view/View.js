@@ -1440,8 +1440,16 @@ new function() { // Injection scope for event handling on the browser
             //   which can call `preventDefault()` explicitly or return `false`.
             // - If this is a unhandled mousedown event, but the view or tools
             //   respond to mouseup.
-            if (called && !mouse.move || mouse.down && responds('mouseup'))
+            //
+            // Some events are not cancelable anyway (like during a scroll
+            // inertia on mobile) so trying to prevent default in those case
+            // would result in no effect and an error.
+            if (
+                event.cancelable !== false
+                && (called && !mouse.move || mouse.down && responds('mouseup'))
+            ) {
                 event.preventDefault();
+            }
         },
 
         /**
@@ -1490,7 +1498,20 @@ new function() { // Injection scope for event handling on the browser
              * Loops through all views and sets the focus on the first
              * active one.
              */
-            updateFocus: updateFocus
+            updateFocus: updateFocus,
+
+            /**
+             * Clear all events handling state informations. Made for testing
+             * purpose, to have a way to start with a fresh state before each
+             * test.
+             * @private
+             */
+            _resetState: function() {
+                dragging = mouseDown = called = wasInView = false;
+                prevFocus = tempFocus = overView = downPoint = lastPoint =
+                    downItem = overItem = dragItem = clickItem = clickTime =
+                    dblClick = null;
+            }
         }
     };
 });

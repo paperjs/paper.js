@@ -53,60 +53,94 @@ var Color = Base.extend(new function() {
     // Parsers of values for setters, by type and property
     var componentParsers = {},
         // Cache and canvas context for color name lookup
-        colorCache = {},
+        namedColors = {
+            // node-canvas appears to return wrong values for 'transparent'.
+            // Fix it by having it pre-cashed here:
+            transparent: [0, 0, 0, 0]
+        },
         colorCtx;
 
-    // TODO: Implement hsv, etc. CSS parsing!
     function fromCSS(string) {
-        var match = string.match(/^#(\w{1,2})(\w{1,2})(\w{1,2})$/),
+        var match = string.match(
+                /^#([\da-f]{2})([\da-f]{2})([\da-f]{2})([\da-f]{2})?$/i
+            ) || string.match(
+                /^#([\da-f])([\da-f])([\da-f])([\da-f])?$/i
+            ),
+            type = 'rgb',
             components;
         if (match) {
-            // Hex
-            components = [0, 0, 0];
-            for (var i = 0; i < 3; i++) {
+            // Hex with optional alpha channel:
+            var amount = match[4] ? 4 : 3;
+            components = new Array(amount);
+            for (var i = 0; i < amount; i++) {
                 var value = match[i + 1];
                 components[i] = parseInt(value.length == 1
                         ? value + value : value, 16) / 255;
             }
-        } else if (match = string.match(/^rgba?\((.*)\)$/)) {
-            // RGB / RGBA
-            components = match[1].split(',');
-            for (var i = 0, l = components.length; i < l; i++) {
-                var value = +components[i];
-                components[i] = i < 3 ? value / 255 : value;
-            }
-        } else if (window) {
-            // Named
-            var cached = colorCache[string];
-            if (!cached) {
-                // Use a canvas to draw to with the given name and then retrieve
-                // RGB values from. Build a cache for all the used colors.
-                if (!colorCtx) {
-                    colorCtx = CanvasProvider.getContext(1, 1);
-                    colorCtx.globalCompositeOperation = 'copy';
+        } else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
+            // RGB / RGBA or HSL / HSLA
+            type = match[1];
+            components = match[2].split(/[,\s]+/g);
+            var isHSL = type === 'hsl';
+            for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
+                var component = components[i];
+                // Use `parseFloat()` instead of `+value` to parse '\d+%' to
+                // float for HSL:
+                var value = parseFloat(component);
+                if (isHSL) {
+                    if (i === 0) {
+                        // handle 'deg', 'turn', 'rad' 'grad':
+                        var unit = component.match(/([a-z]*)$/)[1];
+                        value *= ({
+                            turn: 360,
+                            rad: 180 / Math.PI,
+                            grad: 0.9 // 360 / 400
+                        }[unit] || 1);
+                    } else if (i < 3) {
+                        // Percentages to 0..1
+                        value /= 100;
+                    }
+                } else if (i < 3) {
+                    // RGB color values to 0..1
+                    value /= 255;
                 }
-                // Set the current fillStyle to transparent, so that it will be
-                // transparent instead of the previously set color in case the
-                // new color can not be interpreted.
-                colorCtx.fillStyle = 'rgba(0,0,0,0)';
-                // Set the fillStyle of the context to the passed name and fill
-                // the canvas with it, then retrieve the data for the drawn
-                // pixel:
-                colorCtx.fillStyle = string;
-                colorCtx.fillRect(0, 0, 1, 1);
-                var data = colorCtx.getImageData(0, 0, 1, 1).data;
-                cached = colorCache[string] = [
-                    data[0] / 255,
-                    data[1] / 255,
-                    data[2] / 255
-                ];
+                components[i] = value;
             }
-            components = cached.slice();
         } else {
-            // Web-workers can't resolve CSS color names, for now.
-            components = [0, 0, 0];
+            // Named
+            var color = namedColors[string];
+            if (!color) {
+                if (window) {
+                    // Use a canvas to draw with the given name, then retrieve
+                    // RGB values and build a cache for all the used colors.
+                    if (!colorCtx) {
+                        colorCtx = CanvasProvider.getContext(1, 1);
+                        colorCtx.globalCompositeOperation = 'copy';
+                    }
+                    // Set the current fillStyle to transparent, so that it will be
+                    // transparent instead of the previously set color in case the
+                    // new color can not be interpreted.
+                    colorCtx.fillStyle = 'rgba(0,0,0,0)';
+                    // Set the fillStyle of the context to the passed name and fill
+                    // the canvas with it, then retrieve the data for the drawn
+                    // pixel:
+                    colorCtx.fillStyle = string;
+                    colorCtx.fillRect(0, 0, 1, 1);
+                    var data = colorCtx.getImageData(0, 0, 1, 1).data;
+                    color = namedColors[string] = [
+                        data[0] / 255,
+                        data[1] / 255,
+                        data[2] / 255
+                    ];
+                } else {
+                    // Web-workers can't resolve CSS color names, for now.
+                    // TODO: Find a way to make this work there too?
+                    color = [0, 0, 0];
+                }
+            }
+            components = color.slice();
         }
-        return components;
+        return [type, components];
     }
 
     // For hsb-rgb conversion, used to lookup the right parameters in the
@@ -237,36 +271,40 @@ var Color = Base.extend(new function() {
                 // hsb and hsl. Handle this here separately, by testing for
                 // overlaps and skipping conversion if the type is /hs[bl]/
                 hasOverlap = /^(hue|saturation)$/.test(name),
-                // Produce value parser function for the given type / propeprty
-                // name combination.
-                parser = componentParsers[type][index] = name === 'gradient'
-                    ? function(value) {
-                        var current = this._components[0];
-                        value = Gradient.read(Array.isArray(value) ? value
-                                : arguments, 0, { readNull: true });
-                        if (current !== value) {
-                            if (current)
-                                current._removeOwner(this);
-                            if (value)
-                                value._addOwner(this);
+                // Produce value parser function for the given type / property
+                parser = componentParsers[type][index] = type === 'gradient'
+                    ? name === 'gradient'
+                        // gradient property of gradient color:
+                        ? function(value) {
+                            var current = this._components[0];
+                            value = Gradient.read(
+                                Array.isArray(value)
+                                    ? value
+                                    : arguments, 0, { readNull: true }
+                            );
+                            if (current !== value) {
+                                if (current)
+                                    current._removeOwner(this);
+                                if (value)
+                                    value._addOwner(this);
+                            }
+                            return value;
                         }
-                        return value;
-                    }
-                    : type === 'gradient'
-                        ? function(/* value */) {
+                        // all other (point) properties of gradient color:
+                        : function(/* value */) {
                             return Point.read(arguments, 0, {
                                     readNull: name === 'highlight',
                                     clone: true
                             });
                         }
-                        : function(value) {
-                            // NOTE: We don't clamp values here, they're only
-                            // clamped once the actual CSS values are produced.
-                            // Gotta love the fact that isNaN(null) is false,
-                            // while isNaN(undefined) is true.
-                            return value == null || isNaN(value) ? 0 : value;
-                        };
-
+                    // Normal number component properties:
+                    : function(value) {
+                        // NOTE: We don't clamp values here, they're only
+                        // clamped once the actual CSS values are produced.
+                        // Gotta love the fact that isNaN(null) is false,
+                        // while isNaN(undefined) is true.
+                        return value == null || isNaN(value) ? 0 : +value;
+                    };
             this['get' + part] = function() {
                 return this._type === type
                     || hasOverlap && /^hs[bl]$/.test(this._type)
@@ -412,6 +450,25 @@ var Color = Base.extend(new function() {
          * });
          */
         /**
+         * Creates a Color object from a CSS string. All common CSS color string
+         * formats are supported:
+         * - Named colors (e.g. `'red'`, `'fuchsia'`, …)
+         * - Hex strings (`'#ffff00'`, `'#ff0'`, …)
+         * - RGB strings (`'rgb(255, 128, 0)'`, `'rgba(255, 128, 0, 0.5)'`, …)
+         * - HSL strings (`'hsl(180deg, 20%, 50%)'`,
+         *   `'hsla(3.14rad, 20%, 50%, 0.5)'`, …)
+         *
+         * @name Color#initialize
+         * @param {String} color the color's CSS string representation
+         *
+         * @example {@paperscript}
+         * var circle = new Path.Circle({
+         *     center: [80, 50],
+         *     radius: 30,
+         *     fillColor: new Color('rgba(255, 255, 0, 0.5)')
+         * });
+         */
+        /**
          * Creates a gradient Color object.
          *
          * @name Color#initialize
@@ -544,8 +601,9 @@ var Color = Base.extend(new function() {
                     if (values.length > length)
                         values = Base.slice(values, 0, length);
                 } else if (argType === 'string') {
-                    type = 'rgb';
-                    components = fromCSS(arg);
+                    var converted = fromCSS(arg);
+                    type = converted[0];
+                    components = converted[1];
                     if (components.length === 4) {
                         alpha = components[3];
                         components.length--;

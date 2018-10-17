@@ -23,8 +23,20 @@ var DomEvent = /** @lends DomEvent */{
             for (var type in events) {
                 var func = events[type],
                     parts = type.split(/[\s,]+/g);
-                for (var i = 0, l = parts.length; i < l; i++)
-                    el.addEventListener(parts[i], func, false);
+                for (var i = 0, l = parts.length; i < l; i++) {
+                    var name = parts[i];
+                    // For touchstart/touchmove events on document, we need to
+                    // explicitly declare that the event is not passive (can be
+                    // prevented).  Otherwise chrome browser would ignore
+                    // `event.preventDefault()` calls and omit warnings.
+                    // See #1501 and:
+                    // https://www.chromestatus.com/features/5093566007214080
+                    var options = (
+                        el === document
+                        && (name === 'touchstart' || name === 'touchmove')
+                    ) ? { passive: false } : false;
+                    el.addEventListener(name, func, options);
+                }
             }
         }
     },

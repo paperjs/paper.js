@@ -92,7 +92,7 @@ packages.forEach(function(name) {
     gulp.task('publish:packages:' + name, ['publish:version'], function() {
         var path = 'packages/' + name,
             opts = { cwd: path };
-        gulp.src(['package.json'], opts)
+        return gulp.src(['package.json'], opts)
             .pipe(jsonEditor({
                 version: options.version,
                 dependencies: {

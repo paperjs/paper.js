@@ -404,8 +404,8 @@ var Path = PathItem.extend(/** @lends Path# */{
                 this._updateSelection(segment, 0, segment._selection);
         }
         if (append) {
-            // Append them all at the end by using push
-            segments.push.apply(segments, segs);
+            // Append them all at the end.
+            Base.push(segments, segs);
         } else {
             // Insert somewhere else
             segments.splice.apply(segments, [index, 0].concat(segs));
@@ -1012,7 +1012,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * path.strokeColor = 'black';
      *
      * // Split the path half-way:
-     * var path2 = path.splitAt(path2.length / 2);
+     * var path2 = path.splitAt(path.length / 2);
      *
      * // Give the resulting path a red stroke-color
      * // and move it 20px to the right:
@@ -1895,7 +1895,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             return offset;
         }
         return null;
-    }
+    },
 
     /**
      * Calculates the point on the path at the given offset.
@@ -2123,6 +2123,42 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the beginning of the path and {@link Path#length} at the end
      * @return {Number} the normal vector at the given offset
      */
+
+    /**
+     * Calculates path offsets where the path is tangential to the provided
+     * tangent. Note that tangents at the start or end are included. Tangents at
+     * segment points are returned even if only one of their handles is
+     * collinear with the provided tangent.
+     *
+     * @param {Point} tangent the tangent to which the path must be tangential
+     * @return {Number[]} path offsets where the path is tangential to the
+     * provided tangent
+     */
+    getOffsetsWithTangent: function(/* tangent */) {
+        var tangent = Point.read(arguments);
+        if (tangent.isZero()) {
+            return [];
+        }
+
+        var offsets = [];
+        var curveStart = 0;
+        var curves = this.getCurves();
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var curve = curves[i];
+            // Calculate curves times at vector tangent...
+            var curveTimes = curve.getTimesWithTangent(tangent);
+            for (var j = 0, m = curveTimes.length; j < m; j++) {
+                // ...and convert them to path offsets...
+                var offset = curveStart + curve.getOffsetAtTime(curveTimes[j]);
+                // ...avoiding duplicates.
+                if (offsets.indexOf(offset) < 0) {
+                    offsets.push(offset);
+                }
+            }
+            curveStart += curve.length;
+        }
+        return offsets;
+    }
 }),
 new function() { // Scope for drawing
 
@@ -2510,7 +2546,7 @@ new function() { // PostScript-style drawing commands
                 }
                 vector = from.subtract(center);
                 extent = vector.getDirectedAngle(to.subtract(center));
-                var centerSide = line.getSide(center);
+                var centerSide = line.getSide(center, true);
                 if (centerSide === 0) {
                     // If the center is lying on the line, we might have gotten
                     // the wrong sign for extent above. Use the sign of the side

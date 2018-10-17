@@ -284,6 +284,40 @@ Base.exports.PaperScript = function() {
                     }
                 }
                 break;
+            case 'ExportDefaultDeclaration':
+                // Convert `export default` to `module.exports = ` statements:
+                replaceCode({
+                    range: [node.start, node.declaration.start]
+                }, 'module.exports = ');
+                break;
+            case 'ExportNamedDeclaration':
+                // Convert named exports to `module.exports.NAME = NAME;`
+                // statements both for new declarations and existing specifiers:
+                var declaration = node.declaration;
+                var specifiers = node.specifiers;
+                if (declaration) {
+                    var declarations = declaration.declarations;
+                    if (declarations) {
+                        declarations.forEach(function(dec) {
+                            replaceCode(dec, 'module.exports.' + getCode(dec));
+                        });
+                        replaceCode({
+                            range: [
+                                node.start,
+                                declaration.start + declaration.kind.length
+                            ]
+                        }, '');
+                    }
+                } else if (specifiers) {
+                    var exports = specifiers.map(function(specifier) {
+                        var name = getCode(specifier);
+                        return 'module.exports.' + name + ' = ' + name + '; ';
+                    }).join('');
+                    if (exports) {
+                        replaceCode(node, exports);
+                    }
+                }
+                break;
             }
         }
 
@@ -364,7 +398,11 @@ Base.exports.PaperScript = function() {
             };
         }
         // Now do the parsing magic
-        walkAST(parse(code, { ranges: true, preserveParens: true }));
+        walkAST(parse(code, {
+            ranges: true,
+            preserveParens: true,
+            sourceType: 'module'
+        }));
         if (map) {
             if (offsetCode) {
                 // Adjust the line offset of the resulting code if required.
@@ -404,8 +442,7 @@ Base.exports.PaperScript = function() {
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [option] the compilation options
-     * @return {Object} an object holding the compiled PaperScript translated
-     *     into JavaScript code along with source-maps and other information.
+     * @return the exports defined in the executed code
      */
     function execute(code, scope, options) {
         // Set currently active scope.
@@ -450,21 +487,26 @@ Base.exports.PaperScript = function() {
         expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
                 true);
         expose(scope);
+        // Add a fake `module.exports` object so PaperScripts can export things.
+        code = 'var module = { exports: {} }; ' + code;
         // Finally define the handler variable names as parameters and compose
-        // the string describing the properties for the returned object at the
-        // end of the code execution, so we can retrieve their values from the
-        // function call.
-        handlers = Base.each(handlers, function(key) {
-            // Check for each handler explicitly and only return them if they
+        // the string describing the properties for the returned exports object
+        // at the end of the code execution, so we can retrieve their values
+        // from the function call.
+        var exports = Base.each(handlers, function(key) {
+            // Check for each handler explicitly and only export them if they
             // seem to exist.
             if (new RegExp('\\s+' + key + '\\b').test(code)) {
                 params.push(key);
-                this.push(key + ': ' + key);
+                this.push('module.exports.' + key + ' = ' + key + ';');
             }
-        }, []).join(', ');
-        // We need an additional line that returns the handlers in one object.
-        if (handlers)
-            code += '\nreturn { ' + handlers + ' };';
+        }, []).join('\n');
+        // Add the setting of the exported handlers to the end of the code.
+        if (exports) {
+            code += '\n' + exports;
+        }
+        // End by returning `module.exports` at the end of the generated code:
+        code += '\nreturn module.exports;';
         var agent = paper.agent;
         if (document && (agent.chrome
                 || agent.firefox && agent.versionNumber < 40)) {
@@ -481,39 +523,42 @@ Base.exports.PaperScript = function() {
             if (agent.firefox)
                 code = '\n' + code;
             script.appendChild(document.createTextNode(
-                'paper._execute = function(' + params + ') {' + code + '\n}'
+                'document.__paperscript__ = function(' + params + ') {' +
+                    code +
+                '\n}'
             ));
             head.appendChild(script);
-            func = paper._execute;
-            delete paper._execute;
+            func = document.__paperscript__;
+            delete document.__paperscript__;
             head.removeChild(script);
         } else {
             func = Function(params, code);
         }
-        var res = func.apply(scope, args) || {};
+        var exports = func && func.apply(scope, args);
+        var obj = exports || {};
         // Now install the 'global' tool and view handlers, and we're done!
         Base.each(toolHandlers, function(key) {
-            var value = res[key];
+            var value = obj[key];
             if (value)
                 tool[key] = value;
         });
         if (view) {
-            if (res.onResize)
-                view.setOnResize(res.onResize);
+            if (obj.onResize)
+                view.setOnResize(obj.onResize);
             // Emit resize event directly, so any user
             // defined resize handlers are called.
             view.emit('resize', {
                 size: view.size,
                 delta: new Point()
             });
-            if (res.onFrame)
-                view.setOnFrame(res.onFrame);
+            if (obj.onFrame)
+                view.setOnFrame(obj.onFrame);
             // Automatically request an update at the end. This is only needed
             // if the script does not actually produce anything yet, and the
             // used canvas contains previous content.
             view.requestUpdate();
         }
-        return compiled;
+        return exports;
     }
 
     function loadScript(script) {

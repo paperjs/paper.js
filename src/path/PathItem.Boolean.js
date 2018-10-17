@@ -112,8 +112,8 @@ PathItem.inject(new function() {
         function collect(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
-                segments.push.apply(segments, path._segments);
-                curves.push.apply(curves, path.getCurves());
+                Base.push(segments, path._segments);
+                Base.push(curves, path.getCurves());
                 // See if all encountered segments in a path are overlaps, to
                 // be able to separately handle fully overlapping paths.
                 path._overlapsOnly = true;
@@ -248,7 +248,7 @@ PathItem.inject(new function() {
      * @param {Boolean} [clockwise] if provided, the orientation of the root
      *     paths will be set to the orientation specified by `clockwise`,
      *     otherwise the orientation of the largest root child is used.
-     * @returns {Item[]} the reoriented paths
+     * @return {Item[]} the reoriented paths
     */
     function reorientPaths(paths, isInside, clockwise) {
         var length = paths && paths.length;
@@ -748,13 +748,26 @@ PathItem.inject(new function() {
                     // While subtracting, we need to omit this curve if it is
                     // contributing to the second operand and is outside the
                     // first operand.
-                    var wind = !(operator.subtract && path2 && (
-                            operand === path1 &&
-                                path2._getWinding(pt, dir, true).winding ||
-                            operand === path2 &&
-                                !path1._getWinding(pt, dir, true).winding))
-                            ? getWinding(pt, curves, dir, true)
-                            : { winding: 0, quality: 1 };
+                    var wind = null;
+                    if (operator.subtract && path2) {
+                        // Calculate path winding at point depending on operand.
+                        var pathWinding = operand === path1
+                                          ? path2._getWinding(pt, dir, true)
+                                          : path1._getWinding(pt, dir, true);
+                        // Check if curve should be omitted.
+                        if (operand === path1 && pathWinding.winding ||
+                            operand === path2 && !pathWinding.winding) {
+                            // Check if quality is not good enough...
+                            if (pathWinding.quality < 1) {
+                                // ...and if so, skip this point...
+                                continue;
+                            } else {
+                                // ...otherwise, omit this curve.
+                                wind = { winding: 0, quality: 1 };
+                            }
+                        }
+                    }
+                    wind = wind || getWinding(pt, curves, dir, true);
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
@@ -1223,7 +1236,7 @@ PathItem.inject(new function() {
                     clearCurveHandles(clearCurves);
                 // Finally resolve self-intersections through tracePaths()
                 paths = tracePaths(Base.each(paths, function(path) {
-                    this.push.apply(this, path._segments);
+                    Base.push(this, path._segments);
                 }, []));
             }
             // Determine how to return the paths: First try to recycle the

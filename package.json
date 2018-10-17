@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.11.5",
+  "version": "0.11.7",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -9,10 +9,7 @@
     "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
-  "contributors": [
-    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
-    "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
-  ],
+  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"],
   "main": "dist/paper-full.js",
   "scripts": {
     "precommit": "gulp jshint --branch develop",
@@ -25,14 +22,7 @@
     "jshint": "gulp jshint",
     "test": "gulp test"
   },
-  "files": [
-    "AUTHORS.md",
-    "CHANGELOG.md",
-    "dist/",
-    "examples/",
-    "LICENSE.txt",
-    "README.md"
-  ],
+  "files": ["AUTHORS.md", "CHANGELOG.md", "dist/", "examples/", "LICENSE.txt", "README.md"],
   "engines": {
     "node": ">=4.0.0"
   },
@@ -42,7 +32,7 @@
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^2.4.0",
+    "gulp-git-streamed": "^2.8.0",
     "gulp-jshint": "^2.0.0",
     "gulp-json-editor": "^2.2.1",
     "gulp-prepro": "^2.4.0",
@@ -79,21 +69,5 @@
     "./dist/node/self.js": false,
     "./dist/node/extend.js": false
   },
-  "keywords": [
-    "vector",
-    "graphic",
-    "graphics",
-    "2d",
-    "geometry",
-    "bezier",
-    "curve",
-    "curves",
-    "path",
-    "paths",
-    "canvas",
-    "svg",
-    "paper",
-    "paper.js",
-    "paperjs"
-  ]
+  "keywords": ["vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve", "curves", "path", "paths", "canvas", "svg", "paper", "paper.js", "paperjs"]
 }
