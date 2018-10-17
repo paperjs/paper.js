@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Oct 15 11:04:11 2018 +0200
+ * Date: Wed Oct 17 12:05:56 2018 +0200
  *
  ***
  *
@@ -13074,7 +13074,14 @@ new function() {
 		},
 
 		statics: {
-			updateFocus: updateFocus
+			updateFocus: updateFocus,
+
+			_resetState: function() {
+				dragging = mouseDown = called = wasInView = false;
+				prevFocus = tempFocus = overView = downPoint = lastPoint =
+					downItem = overItem = dragItem = clickItem = clickTime =
+					dblClick = null;
+			}
 		}
 	};
 });
