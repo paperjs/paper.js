@@ -74,7 +74,7 @@ var test = function(testName, expected) {
 
         // Instantiate project with 100x100 pixels canvas instead of default
         // 1x1 to make interactions tests simpler by working with integers.
-        currentProject = new Project(CanvasProvider.getCanvas(100, 100));
+        currentProject = new Project(new Size(100, 100));
         expected(assert);
     });
 };
