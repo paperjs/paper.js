@@ -113,6 +113,12 @@ test('Export SVG path at precision 0', function() {
     equals(path.exportSVG({ precision: 0 }).getAttribute('d'), 'M0,2l1,1');
 });
 
+test('Export SVG viewbox attribute with top left at origin', function() {
+    var path = new Path.Rectangle(new Point(10, 10), new Size(80));
+    var rectangle = new Rectangle(new Point(0, 0), new Size(100));
+    equals(project.exportSVG({ bounds: rectangle }).getAttribute('viewBox'), '0,0,100,100');
+});
+
 if (!isNode) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
