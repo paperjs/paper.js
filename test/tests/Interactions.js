@@ -334,3 +334,14 @@ test('Item#onMouseDrag() is not triggered after mouse up', function(assert) {
     expect(1);
 });
 
+test('Item#onMouseDrag() is not triggered if mouse down was on another item', function(assert) {
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    var item2 = item.clone().translate(10);
+    item2.onMouseDrag = function(event) {
+        throw 'this should not be called';
+    };
+    triggerMouseEvent('mousedown', new Point(5, 5));
+    triggerMouseEvent('mousemove', new Point(11, 11));
+    expect(0);
+});
