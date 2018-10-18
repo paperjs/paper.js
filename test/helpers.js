@@ -176,11 +176,13 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
      * @return {HTMLImageElement}
      */
     function image(imageData) {
-        var canvas = CanvasProvider.getCanvas(imageData.width, imageData.height);
+        var canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
         canvas.getContext('2d').putImageData(imageData, 0, 0);
         var image = new Image();
         image.src = canvas.toDataURL();
-        CanvasProvider.release(canvas);
+        canvas.remove();
         return image;
     }
 
@@ -339,12 +341,14 @@ var compareItem = function(actual, expected, message, options, properties) {
  */
 var compareCanvas = function(width, height, expectedCallback, actualCallback) {
     function getImageData(width, height, callback) {
-        var canvas = CanvasProvider.getCanvas(width, height);
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
         var project = new Project(canvas);
         callback();
         project.view.update();
         var imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
-        CanvasProvider.release(canvas);
+        canvas.remove();
         project.remove();
         return imageData;
     }
