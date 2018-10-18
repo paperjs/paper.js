@@ -1270,7 +1270,7 @@ new function() { // Injection scope for event handling on the browser
             || hitItem && hitItem !== dragItem
                 && !hitItem.isDescendant(dragItem)
                 && emitMouseEvent(hitItem, null, type === 'mousedrag' ?
-                'mousemove' : type, event, point, prevPoint, dragItem)
+                    'mousemove' : type, event, point, prevPoint, dragItem)
             // Lastly handle the mouse events on the view, if we're still here.
             || emitMouseEvent(view, dragItem || hitItem || view, type, event,
                     point, prevPoint));
