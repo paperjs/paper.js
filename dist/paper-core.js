@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Oct 17 16:45:02 2018 +0200
+ * Date: Sat Oct 20 20:06:48 2018 +0900
  *
  ***
  *
@@ -2518,11 +2518,11 @@ var Matrix = Base.extend({
 	},
 
 	getScaling: function() {
-		return (this.decompose() || {}).scaling;
+		return this.decompose().scaling;
 	},
 
 	getRotation: function() {
-		return (this.decompose() || {}).rotation;
+		return this.decompose().rotation;
 	},
 
 	applyToContext: function(ctx) {
@@ -12663,9 +12663,8 @@ var View = Base.extend(Emitter, {
 	},
 
 	getZoom: function() {
-		var decomposed = this._decompose(),
-			scaling = decomposed && decomposed.scaling;
-		return scaling ? (scaling.x + scaling.y) / 2 : 0;
+		var scaling = this._decompose().scaling;
+		return (scaling.x + scaling.y) / 2;
 	},
 
 	setZoom: function(zoom) {
@@ -12674,8 +12673,7 @@ var View = Base.extend(Emitter, {
 	},
 
 	getRotation: function() {
-		var decomposed = this._decompose();
-		return decomposed && decomposed.rotation;
+		return this._decompose().rotation;
 	},
 
 	setRotation: function(rotation) {
@@ -12686,11 +12684,8 @@ var View = Base.extend(Emitter, {
 	},
 
 	getScaling: function() {
-		var decomposed = this._decompose(),
-			scaling = decomposed && decomposed.scaling;
-		return scaling
-				? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
-				: undefined;
+		var scaling = this._decompose().scaling;
+		return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling');
 	},
 
 	setScaling: function() {
