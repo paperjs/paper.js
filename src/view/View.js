@@ -525,11 +525,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @see #getScaling()
      */
     getZoom: function() {
-        var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling;
-        // Use average since it can be non-uniform, and return 0 when it can't
-        // be decomposed.
-        return scaling ? (scaling.x + scaling.y) / 2 : 0;
+        var scaling = this._decompose().scaling;
+        // Use average since it can be non-uniform.
+        return (scaling.x + scaling.y) / 2;
     },
 
     setZoom: function(zoom) {
@@ -545,8 +543,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @type Number
      */
     getRotation: function() {
-        var decomposed = this._decompose();
-        return decomposed && decomposed.rotation;
+        return this._decompose().rotation;
     },
 
     setRotation: function(rotation) {
@@ -565,11 +562,8 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @see #getZoom()
      */
     getScaling: function() {
-        var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling;
-        return scaling
-                ? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
-                : undefined;
+        var scaling = this._decompose().scaling;
+        return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling');
     },
 
     setScaling: function(/* scaling */) {
