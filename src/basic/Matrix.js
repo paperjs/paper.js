@@ -672,12 +672,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     },
 
     /**
-     * Attempts to decompose the affine transformation described by this matrix
-     * into `scaling`, `rotation` and `skewing`, and returns an object with
-     * these properties if it succeeded, `null` otherwise.
+     * Decomposes the affine transformation described by this matrix into
+     * `scaling`, `rotation` and `skewing`, and returns an object with
+     * these properties.
      *
-     * @return {Object} the decomposed matrix, or `null` if decomposition is not
-     *     possible
+     * @return {Object} the decomposed matrix
      */
     decompose: function() {
         // http://dev.w3.org/csswg/css3-2d-transforms/#matrix-decomposition
@@ -795,7 +794,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @see #decompose()
      */
     getScaling: function() {
-        return (this.decompose() || {}).scaling;
+        return this.decompose().scaling;
     },
 
     /**
@@ -806,7 +805,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @see #decompose()
      */
     getRotation: function() {
-        return (this.decompose() || {}).rotation;
+        return this.decompose().rotation;
     },
 
     /**
