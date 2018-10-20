@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Oct 20 20:06:48 2018 +0900
+ * Date: Thu Oct 18 11:18:02 2018 +0200
  *
  ***
  *
@@ -12918,8 +12918,8 @@ new function() {
 					point, prevPoint)
 			|| hitItem && hitItem !== dragItem
 				&& !hitItem.isDescendant(dragItem)
-				&& emitMouseEvent(hitItem, null, type, event, point, prevPoint,
-					dragItem)
+				&& emitMouseEvent(hitItem, null, type === 'mousedrag' ?
+					'mousemove' : type, event, point, prevPoint, dragItem)
 			|| emitMouseEvent(view, dragItem || hitItem || view, type, event,
 					point, prevPoint));
 	}
