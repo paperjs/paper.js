@@ -682,7 +682,13 @@ var Segment = Base.extend(/** @lends Segment# */{
     },
 
     clone: function() {
-        return new Segment(this._point, this._handleIn, this._handleOut);
+        return new Segment({
+            point: this._point,
+            handleIn: this._handleIn,
+            handleOut: this._handleOut,
+            name: this._name,
+            data: this._data
+        });
     },
 
     equals: function(segment) {
