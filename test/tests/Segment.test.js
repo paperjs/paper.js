@@ -47,6 +47,26 @@ describe('Segment', () => {
     )
   })
 
+  test('new Segment(object) with name', () => {
+    const segment = new Segment({
+      point: { x: 10, y: 10 },
+      handleIn: { x: 5, y: 5 },
+      handleOut: { x: 15, y: 15 },
+      name: 'test'
+    })
+    equals(segment.name, 'test')
+  })
+
+  test('new Segment(object) with data', () => {
+    const segment = new Segment({
+      point: { x: 10, y: 10 },
+      handleIn: { x: 5, y: 5 },
+      handleOut: { x: 15, y: 15 },
+      data: { test: true }
+    })
+    equals(segment.data.test, true)
+  })
+
   test('new Segment(point, handleIn, handleOut)', () => {
     const segment = new Segment(
       new Point(10, 10),

@@ -831,6 +831,102 @@ describe('Path', () => {
     expect.assertions(0)
   })
 
+  test('Path#add(); add two segments with the same name', () => {
+    const path = new Path()
+    const segment1 = new Segment({
+      point: [50, 50],
+      name: 'topLeftCorner'
+    })
+    const segment2 = new Segment({
+      point: [100, 100],
+      name: 'topLeftCorner'
+    })
+    let error = null
+    try {
+      path.add(segment1, segment2)
+    } catch (e) {
+      error = e
+    }
+    equals(
+      error != null,
+      true,
+      'We expect this add() command to throw an error'
+    )
+  })
+
+  test('Path#clone(); a cloned segment should have the same name', () => {
+    const segment1 = new Segment({
+      point: [50, 50],
+      name: 'topLeftCorner'
+    })
+    const segment2 = segment1.clone()
+
+    equals(
+      () => segment1.name === segment2.name,
+      1,
+      'The segments should have the same name'
+    )
+  })
+
+  test('Path#getSegmentByName();', () => {
+    const path = new Path()
+    const segment = new Segment({
+      point: [50, 50],
+      name: 'topLeftCorner'
+    })
+    path.add(segment)
+
+    let error = null
+    try {
+      path.getSegmentByName('test')
+    } catch (e) {
+      error = e
+    }
+    equals(
+      error != null,
+      true,
+      'We expect this getSegmentByName() command to throw an error'
+    )
+
+    equals(
+      () => path.getSegmentByName('topLeftCorner') === segment,
+      1,
+      'Getting the segment by name should give us the same segemnt'
+    )
+  })
+
+  test('Path#hasSegmentWithName();', () => {
+    const path = new Path()
+    const segment = new Segment({
+      point: [50, 50],
+      name: 'topLeftCorner'
+    })
+    path.add(segment)
+
+    equals(
+      () => path.hasSegmentWithName('topLeftCorner'),
+      1,
+      'Getting the segment by name should return true is segment exists'
+    )
+  })
+
+  test('Path#getSegmentsByData();', () => {
+    const path = new Path()
+    const segment = new Segment({
+      point: [50, 50],
+      data: {
+        corner: true
+      }
+    })
+    path.add(segment)
+
+    equals(
+      () => path.getSegmentsByData({ corner: true })[0] === segment,
+      1,
+      'Getting the segment by data should give us the same segemnt'
+    )
+  })
+
   test('Path#arcTo(through, to) is on through point side (#1477)', () => {
     const p1 = new Point(16, 21.5)
     const p2 = new Point(22.5, 15)
