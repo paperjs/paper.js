@@ -216,6 +216,16 @@ var Path = PathItem.extend(/** @lends Path# */{
     },
 
     /**
+     * Check is there is a Segment with provided name.
+     *
+     * @return {Boolean}
+     */
+    hasSegmentWithName: function(name) {
+        var segments = this._segments.filter(function(s){ return s._name == name; });
+        return segments.length > 0;
+    },
+
+    /**
      * The Segment by name.
      *
      * @bean
