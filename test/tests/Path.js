@@ -640,6 +640,19 @@ test('Path#add(); add two segments with the same name', function() {
     equals(error != null, true, 'We expect this add() command to throw an error');
 });
 
+test('Path#clone(); a cloned segment should have the same name', function() {
+    var path = new Path();
+    var segment1 = new Segment({
+        point: [50, 50],
+        name: 'topLeftCorner'
+    }); 
+    var segment2 = segment1.clone();
+
+    equals(function() {
+        return segment1.name === segment2.name;
+    }, 1, 'The segments should have the same name');
+});
+
 test('Path#getSegmentByName();', function() {
     var path = new Path();
     var segment = new Segment({
@@ -659,6 +672,19 @@ test('Path#getSegmentByName();', function() {
     equals(function() {
         return path.getSegmentByName('topLeftCorner') == segment;
     }, 1, 'Getting the segment by name should give us the same segemnt');
+});
+
+test('Path#hasSegmentWithName();', function() {
+    var path = new Path();
+    var segment = new Segment({
+        point: [50, 50],
+        name: 'topLeftCorner'
+    }); 
+    path.add(segment);
+
+    equals(function() {
+        return path.hasSegmentWithName('topLeftCorner');
+    }, 1, 'Getting the segment by name should return true is segment exists');
 });
 
 test('Path#getSegmentsByData();', function() {
