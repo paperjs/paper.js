@@ -6,6 +6,10 @@
 
 - Improve `new Raster(size[, position])` constructor (#1621).
 
+### Fixed
+
+- Fix error in `Item#exportSVG()` when `Item#matrix` is not invertible (#1580).
+
 # `0.12.1`
 
 ### Added

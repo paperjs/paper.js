@@ -155,6 +155,17 @@ if (!isNode) {
         compareSVG(assert.async(), svg, project.activeLayer);
     });
 
+    test('Export not invertible item.matrix', function(assert) {
+        var rect = new Shape.Rectangle({
+            point: [100, 100],
+            size: [100, 100],
+            fillColor: 'red',
+            matrix: [1, 1, 1, 1, 1, 1]
+        });
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer);
+    });
+
     test('Export gradients', function(assert) {
         var bounds = new Rectangle(new Size(300, 600));
         var stops = [new Color(1, 1, 0, 0), 'red', 'black'];
