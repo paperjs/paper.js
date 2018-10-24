@@ -29,11 +29,16 @@ new function() {
             // in rotate(). To do so, SVG requries us to inverse transform the
             // translation point by the matrix itself, since they are provided
             // in local coordinates.
-            matrix = matrix._shiftless();
-            var point = matrix._inverseTransform(trans);
+            var point;
+            if (matrix.isInvertible()) {
+                matrix = matrix._shiftless();
+                point = matrix._inverseTransform(trans);
+                trans = null;
+            } else {
+                point = new Point();
+            }
             attrs[center ? 'cx' : 'x'] = point.x;
             attrs[center ? 'cy' : 'y'] = point.y;
-            trans = null;
         }
         if (!matrix.isIdentity()) {
             // See if we can decompose the matrix and can formulate it as a

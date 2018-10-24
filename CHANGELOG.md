@@ -1,5 +1,11 @@
 # Change Log
 
+## `Prebuilt`
+
+### Fixed
+
+- Fix SvgExport error when item.matrix is not invertible (#1580).
+
 ## `0.11.8`
 
 ### News
