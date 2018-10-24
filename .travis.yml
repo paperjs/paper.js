@@ -2,7 +2,7 @@ language: node_js
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 - stable
-- 9
+- 10
 - 8
 # 6.13 and 6.14 causing unreasonable errors in SymbolDefinition.initialize.
 # https://travis-ci.org/paperjs/paper.js/jobs/434854796
