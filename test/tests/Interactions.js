@@ -252,6 +252,24 @@ test('Item#onDoubleClick() is not triggered if time between both clicks is too l
     expect(0);
 });
 
+test('Item#onDoubleClick() is not triggered if time between down and up is too long', function(assert) {
+    var done = assert.async();
+    var item = new Path.Rectangle(new Point(0, 0), new Size(10));
+    item.fillColor = 'red';
+    item.onDoubleClick = function(event) {
+        throw 'this should not be called';
+    };
+    var point = new Point(5, 5);
+    triggerMouseEvent('mousedown', point);
+    setTimeout(function() {
+        triggerMouseEvent('mouseup', point);
+        triggerMouseEvent('mousedown', point);
+        triggerMouseEvent('mouseup', point);
+        done();
+    }, 301);
+    expect(0);
+});
+
 test('Item#onMouseEnter()', function(assert) {
     var done = assert.async();
     var item = new Path.Rectangle(new Point(0, 0), new Size(10));
