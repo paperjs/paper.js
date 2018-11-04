@@ -772,6 +772,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * Rectangle#contains(point)} returns `false` for that point.
      *
      * @param {Point} point
+     * @return {Rectangle} the smallest rectangle that contains both the
+     * original rectangle and the specified point
      */
     include: function(/* point */) {
         var point = Point.read(arguments);
@@ -783,17 +785,18 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     /**
-     * Expands the rectangle by the specified amount in horizontal and
-     * vertical directions.
+     * Returns a new rectangle expanded by the specified amount in horizontal
+     * and vertical directions.
      *
      * @name Rectangle#expand
      * @function
      * @param {Number|Size|Point} amount the amount to expand the rectangle in
      * both directions
+     * @return {Rectangle} the expanded rectangle
      */
     /**
-     * Expands the rectangle by the specified amounts in horizontal and
-     * vertical directions.
+     * Returns a new rectangle expanded by the specified amounts in horizontal
+     * and vertical directions.
      *
      * @name Rectangle#expand
      * @function
@@ -801,6 +804,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * direction
      * @param {Number} ver the amount to expand the rectangle in vertical
      * direction
+     * @return {Rectangle} the expanded rectangle
      */
     expand: function(/* amount */) {
         var amount = Size.read(arguments),
@@ -811,21 +815,23 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
     },
 
     /**
-     * Scales the rectangle by the specified amount from its center.
+     * Returns a new rectangle scaled by the specified amount from its center.
      *
      * @name Rectangle#scale
      * @function
      * @param {Number} amount
+     * @return {Rectangle} the scaled rectangle
      */
     /**
-     * Scales the rectangle in horizontal direction by the specified `hor`
-     * amount and in vertical direction by the specified `ver` amount from its
-     * center.
+     * Returns a new rectangle scaled in horizontal direction by the specified
+     * `hor` amount and in vertical direction by the specified `ver` amount
+     * from its center.
      *
      * @name Rectangle#scale
      * @function
      * @param {Number} hor
      * @param {Number} ver
+     * @return {Rectangle} the scaled rectangle
      */
     scale: function(hor, ver) {
         return this.expand(this.width * hor - this.width,
