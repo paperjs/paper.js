@@ -1,5 +1,13 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Prevent `Item#importJSON()` from overriding `Item#insert()` (#1392).
+
+### Added
+
 ## `0.11.8`
 
 ### News
