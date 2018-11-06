@@ -334,12 +334,13 @@ var compareItem = function(actual, expected, message, options, properties) {
  * This can be used to do selection drawing tests as it is not possible with
  * comparePixels() method which relies on the item.rasterize() method which
  * ignores selection.
- * @param width the width of the canvas
- * @param height the height of the canvas
- * @param expectedCallback the function producing the expected result
- * @param actualCallback the function producing the actual result
+ * @param {number} width the width of the canvas
+ * @param {number} height the height of the canvas
+ * @param {function} expectedCallback the function producing the expected result
+ * @param {function} actualCallback the function producing the actual result
+ * @param {number} tolerance between 0 and 1
  */
-var compareCanvas = function(width, height, expectedCallback, actualCallback) {
+var compareCanvas = function(width, height, expectedCallback, actualCallback, tolerance) {
     function getImageData(width, height, callback) {
         var canvas = document.createElement('canvas');
         canvas.width = width;
@@ -355,7 +356,8 @@ var compareCanvas = function(width, height, expectedCallback, actualCallback) {
 
     compareImageData(
         getImageData(width, height, expectedCallback),
-        getImageData(width, height, actualCallback)
+        getImageData(width, height, actualCallback),
+        tolerance
     );
 
     currentProject.activate();
