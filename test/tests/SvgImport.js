@@ -143,6 +143,21 @@ test('Import SVG without insertion', function() {
     }, true);
 });
 
+test('Import SVG switch', function(assert) {
+    var done = assert.async();
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg"><switch><line x1="0" x2="10" y1="0" y2="10" fill="none"></line></switch></svg>';
+    paper.project.importSVG(svg, {
+        onLoad: function(item) {
+            equals(item.className, 'Group');
+            equals(item.children.length, 1);
+            equals(item.firstChild.className, 'Group');
+            equals(item.firstChild.children.length, 1);
+            equals(item.firstChild.firstChild, new Path([new Point(0, 0), new Point(10, 10)]));
+            done();
+        }
+    });
+});
+
 function importSVG(assert, url, message, options) {
     var done = assert.async();
     project.importSVG(url, {

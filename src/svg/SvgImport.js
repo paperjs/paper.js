@@ -303,7 +303,11 @@ new function() {
                     getPoint(node, 'dx', 'dy')));
             text.setContent(node.textContent.trim() || '');
             return text;
-        }
+        },
+
+        // https://www.w3.org/TR/SVG/struct.html#SwitchElement
+        // Conditional attributes are ignored and all children are rendered.
+        switch: importGroup
     };
 
     // Attributes and Styles
