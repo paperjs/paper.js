@@ -1,5 +1,13 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Fix item with matrix not applied drawing within a clipped group (#1594).
+
+### Added
+
 ## `0.11.8`
 
 ### News

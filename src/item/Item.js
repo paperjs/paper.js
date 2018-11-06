@@ -4389,12 +4389,13 @@ new function() { // Injection scope for hit-test functions shared with project
             // on the temporary canvas.
             ctx.translate(-itemOffset.x, -itemOffset.y);
         }
+        // Draw clip item before applying transformation (see #1594).
+        if (clip) {
+            param.clipItem.draw(ctx, param.extend({ clip: true }));
+        }
         if (transform) {
             // Apply viewMatrix when drawing into temporary canvas.
             (direct ? matrix : viewMatrix).applyToContext(ctx);
-        }
-        if (clip) {
-            param.clipItem.draw(ctx, param.extend({ clip: true }));
         }
         if (strokeMatrix) {
             // Reset the transformation but take HiDPI pixel ratio into account.

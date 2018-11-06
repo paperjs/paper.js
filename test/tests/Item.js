@@ -945,3 +945,23 @@ test('Children global matrices are cleared after parent transformation', functio
     group.translate(100, 0);
     equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
 });
+
+test('Item#draw within a clipped group with matrix not applied', function() {
+    var method = function(blendMode){
+        new Path.Circle(new Point(0, 0), 200);
+        project.activeLayer.clipped = true;
+        var item = new Group(new Path.Rectangle(
+            new Point(0, 0),
+            new Point(200, 200)
+        ));
+        item.applyMatrix = false;
+        item.scaling = [0.5, 0.5];
+        item.fillColor = 'black';
+        item.blendMode = blendMode;
+    };
+    compareCanvas(200, 200,
+        function() {method('normal');},
+        function() {method('add');},
+        0.0004
+    );
+});
