@@ -1125,7 +1125,7 @@ PathItem.inject(new function() {
         /**
          * Splits the geometry of this path along the geometry of the specified
          * path returns the result as a new group item. This is equivalent to
-         * calling {@link #subtract(path)} and {@link #subtract(path)} and
+         * calling {@link #subtract(path)} and {@link #intersect(path)} and
          * putting the results into a new group.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
