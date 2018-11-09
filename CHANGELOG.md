@@ -1,5 +1,13 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Fix drawing with compound path as clip item (#1361).
+
+### Added
+
 ## `0.11.8`
 
 ### News

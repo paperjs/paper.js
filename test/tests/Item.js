@@ -945,3 +945,28 @@ test('Children global matrices are cleared after parent transformation', functio
     group.translate(100, 0);
     equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
 });
+
+test('Item#draw with CompoundPath as clip item', function() {
+    var method = function(invertedOrder){
+        var compound = new CompoundPath({
+            children: [
+                new Path.Circle(new Point(50, 50), 50),
+                new Path.Circle(new Point(100, 50), 50)
+            ],
+            fillRule: 'evenodd'
+        });
+
+        var rectangle = new Shape.Rectangle(new Point(0, 0), new Point(150, 50));
+
+        var group = new Group();
+        group.children = invertedOrder
+            ? [compound, rectangle]
+            : [rectangle, compound];
+        group.fillColor = 'black';
+        group.clipped = true;
+    };
+    compareCanvas(200, 200,
+        function() {method(true);},
+        function() {method(false);}
+    );
+});

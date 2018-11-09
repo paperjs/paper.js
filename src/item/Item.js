@@ -4409,8 +4409,11 @@ new function() { // Injection scope for hit-test functions shared with project
         this._draw(ctx, param, viewMatrix, strokeMatrix);
         ctx.restore();
         matrices.pop();
-        if (param.clip && !param.dontFinish)
-            ctx.clip();
+        if (param.clip && !param.dontFinish) {
+            // We need to pass fill rule to clip method to handle compound path
+            // as clip item case (see #1361).
+            ctx.clip(this.fillRule);
+        }
         // If a temporary canvas was created, composite it onto the main canvas:
         if (!direct) {
             // Use BlendMode.process even for processing normal blendMode with
