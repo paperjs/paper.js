@@ -2471,7 +2471,7 @@ new function() { // PostScript-style drawing commands
                 if (isZero(radius.width) || isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
-                // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+                // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
                 var rotation = Base.read(arguments),
                     clockwise = !!Base.read(arguments),
                     large = !!Base.read(arguments),
