@@ -323,7 +323,7 @@ Base.exports.PaperScript = function() {
 
         // Source-map support:
         // Encodes a Variable Length Quantity as a Base64 string.
-        // See: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps
+        // See: https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
         function encodeVLQ(value) {
             var res = '',
                 base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';

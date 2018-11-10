@@ -25,7 +25,7 @@
  * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
  * @author Jan Boesenberg <development@iconexperience.com>
  * @author Juerg Lehni <juerg@scratchdisk.com>
- * http://hkrish.com/playground/paperjs/booleanStudy.html
+ * https://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
     var min = Math.min,
