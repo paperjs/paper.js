@@ -284,7 +284,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      * @type Number
      * @see Curve#getNearestLocation(point)
-     * @see Path#getNearestLocation(point)
+     * @see PathItem#getNearestLocation(point)
      */
     getDistance: function() {
         return this._distance;
