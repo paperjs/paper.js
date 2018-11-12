@@ -193,7 +193,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The last Segment contained within the compound-path, a short-cut to
-     * calling {@link Path#lastChild} on {@link Item#lastChild}.
+     * calling {@link Path#lastSegment} on {@link Item#lastChild}.
      *
      * @bean
      * @type Segment
