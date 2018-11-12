@@ -159,7 +159,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * it is part of a {@link Path} item.
      *
      * @bean
-     * @type Index
+     * @type Number
      */
     getIndex: function() {
         var curve = this.getCurve();
