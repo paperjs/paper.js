@@ -330,7 +330,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * The Canvas 2D drawing context of the raster.
      *
      * @bean
-     * @type Context
+     * @type CanvasRenderingContext2D
      */
     getContext: function(modify) {
         if (!this._context)
