@@ -1156,7 +1156,7 @@ PathItem.inject(new function() {
          * amount of resulting paths allows so, otherwise a new path /
          * compound-path is created, replacing the current one.
          *
-         * @return {PahtItem} the resulting path item
+         * @return {PathItem} the resulting path item
          */
         resolveCrossings: function() {
             var children = this._children,
@@ -1278,7 +1278,7 @@ PathItem.inject(new function() {
          * @param {Boolean} [clockwise] if provided, the orientation of the root
          *     paths will be set to the orientation specified by `clockwise`,
          *     otherwise the orientation of the largest root child is used.
-         * @return {PahtItem} a reference to the item itself, reoriented
+         * @return {PathItem} a reference to the item itself, reoriented
          */
         reorient: function(nonZero, clockwise) {
             var children = this._children;
