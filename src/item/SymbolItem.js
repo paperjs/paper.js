@@ -31,7 +31,7 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     /**
      * Creates a new symbol item.
      *
-     * @param {Symbol} definition the symbol definition to place
+     * @param {Item} definition the symbol definition to place
      * @param {Point} [point] the center point of the placed symbol
      *
      * @example {@paperscript split=true height=240}

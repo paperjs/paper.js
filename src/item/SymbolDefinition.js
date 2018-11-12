@@ -140,7 +140,7 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
     /**
      * Returns a copy of the symbol.
      *
-     * @return {Symbol}
+     * @return {SymbolDefinition}
      */
     clone: function() {
         return new SymbolDefinition(this._item.clone(false));
@@ -149,7 +149,7 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
     /**
      * Checks whether the symbol's definition is equal to the supplied symbol.
      *
-     * @param {Symbol} symbol
+     * @param {SymbolDefinition} symbol
      * @return {Boolean} {@true if they are equal}
      */
     equals: function(symbol) {
