@@ -161,7 +161,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      *
      * @bean
      * @type Boolean
-     * @see Path#isClosed()
+     * @see Path#closed
      */
     isClosed: function() {
         var children = this._children;

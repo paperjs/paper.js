@@ -522,7 +522,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @bean
      * @type Number
-     * @see #getScaling()
+     * @see #scaling
      */
     getZoom: function() {
         var scaling = this._decompose().scaling;
@@ -559,7 +559,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @bean
      * @type Point
-     * @see #getZoom()
+     * @see #zoom
      */
     getScaling: function() {
         var scaling = this._decompose().scaling;

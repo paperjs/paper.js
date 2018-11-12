@@ -768,7 +768,7 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @param {Number} quadrant the quadrant to check against
      * @return {Boolean} {@true if either x or y are not a number}
-     * @see #getQuadrant()
+     * @see #quadrant
      */
     isInQuadrant: function(q) {
         // Map quadrant to x & y coordinate pairs and multiply with coordinates,

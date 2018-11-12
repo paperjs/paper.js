@@ -102,8 +102,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @bean
      * @type Boolean
-     * @see Path#getArea()
-     * @see CompoundPath#getArea()
+     * @see Path#area
+     * @see CompoundPath#area
      */
     isClockwise: function() {
         return this.getArea() >= 0;

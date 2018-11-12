@@ -234,8 +234,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * Checks if the segment has any curve handles set.
      *
      * @return {Boolean} {@true if the segment has handles set}
-     * @see Segment#getHandleIn()
-     * @see Segment#getHandleOut()
+     * @see Segment#handleIn
+     * @see Segment#handleOut
      * @see Curve#hasHandles()
      * @see Path#hasHandles()
      */
