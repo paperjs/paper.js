@@ -75,7 +75,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
-     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
      * of this path
