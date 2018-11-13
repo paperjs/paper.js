@@ -1,5 +1,13 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Fix empty image drawing (#1320).
+
+### Added
+
 ## `0.11.8`
 
 ### News
