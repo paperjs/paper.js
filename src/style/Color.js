@@ -729,7 +729,7 @@ var Color = Base.extend(new function() {
         },
 
         /**
-         * Converts the color another type.
+         * Converts the color to another type.
          *
          * @param {String} type the color type to convert to. Possible values:
          * {@values 'rgb', 'gray', 'hsb', 'hsl'}
