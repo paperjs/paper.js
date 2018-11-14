@@ -754,7 +754,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _draw: function(ctx, param, viewMatrix) {
         var element = this.getElement();
         // Only draw if image is not empty (#1320).
-        if (element && element.width * element.height > 0) {
+        if (element && element.width > 0 && element.height > 0) {
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = this._opacity;
