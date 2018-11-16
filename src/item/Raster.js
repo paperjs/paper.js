@@ -305,7 +305,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * case `null` is returned instead.
      *
      * @bean
-     * @type HTMLCanvasELement
+     * @type HTMLCanvasElement
      */
     getCanvas: function() {
         if (!this._canvas) {
