@@ -442,7 +442,7 @@ Base.exports.PaperScript = function() {
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [option] the compilation options
-     * @return the exports defined in the executed code
+     * @return {Object} the exports defined in the executed code
      */
     function execute(code, scope, options) {
         // Set currently active scope.

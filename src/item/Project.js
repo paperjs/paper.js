@@ -133,7 +133,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * Checks whether the project has any content or not.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         return !this._children.length;
