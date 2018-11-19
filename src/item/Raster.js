@@ -606,8 +606,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#getPixel
      * @function
-     * @param x the x offset of the pixel in pixel coordinates
-     * @param y the y offset of the pixel in pixel coordinates
+     * @param {Number} x the x offset of the pixel in pixel coordinates
+     * @param {Number} y the y offset of the pixel in pixel coordinates
      * @return {Color} the color of the pixel
      */
     /**
@@ -615,7 +615,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#getPixel
      * @function
-     * @param point the offset of the pixel as a point in pixel coordinates
+     * @param {Point} point the offset of the pixel as a point in pixel coordinates
      * @return {Color} the color of the pixel
      */
     getPixel: function(/* point */) {
@@ -631,17 +631,17 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#setPixel
      * @function
-     * @param x the x offset of the pixel in pixel coordinates
-     * @param y the y offset of the pixel in pixel coordinates
-     * @param color the color that the pixel will be set to
+     * @param {Number} x the x offset of the pixel in pixel coordinates
+     * @param {Number} y the y offset of the pixel in pixel coordinates
+     * @param {Color} color the color that the pixel will be set to
      */
     /**
      * Sets the color of the specified pixel to the specified color.
      *
      * @name Raster#setPixel
      * @function
-     * @param point the offset of the pixel as a point in pixel coordinates
-     * @param color the color that the pixel will be set to
+     * @param {Point} point the offset of the pixel as a point in pixel coordinates
+     * @param {Color} color the color that the pixel will be set to
      */
     setPixel: function(/* point, color */) {
         var point = Point.read(arguments),
