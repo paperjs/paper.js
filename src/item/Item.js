@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -2832,7 +2832,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * no children, a {@link TextItem} with no text content and a {@link Path}
      * with no segments all are considered empty.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         var children = this._children;

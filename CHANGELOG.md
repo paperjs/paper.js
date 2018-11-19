@@ -1,10 +1,13 @@
 # Change Log
 
-## `Prebuilt`
+## Prebuilt version
 
 ### Fixed
 
+- Fix empty image drawing (#1320).
 - Fix SvgExport error when item.matrix is not invertible (#1580).
+
+### Added
 
 ## `0.11.8`
 

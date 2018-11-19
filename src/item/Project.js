@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -133,7 +133,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * Checks whether the project has any content or not.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         return !this._children.length;

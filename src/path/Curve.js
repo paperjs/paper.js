@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -1476,7 +1476,7 @@ new function() { // Scope for methods that require private functions
             // 2: normal, 1st derivative
             // 3: curvature, 1st derivative & 2nd derivative
             // Prevent tangents and normals of length 0:
-            // http://stackoverflow.com/questions/10506868/
+            // https://stackoverflow.com/questions/10506868/
             if (t < tMin) {
                 x = cx;
                 y = cy;
@@ -1698,7 +1698,7 @@ new function() { // Scope for methods that require private functions
          * Peaks are locations sharing some qualities of curvature extrema but
          * are cheaper to compute. They fulfill their purpose here quite well.
          * See:
-         * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
+         * https://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
          *
          * @param {Number[]} v the curve values array
          * @return {Number[]} the roots of all found peaks

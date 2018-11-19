@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -75,7 +75,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
-     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
      * of this path
@@ -2472,7 +2471,7 @@ new function() { // PostScript-style drawing commands
                 if (isZero(radius.width) || isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
-                // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+                // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
                 var rotation = Base.read(arguments),
                     clockwise = !!Base.read(arguments),
                     large = !!Base.read(arguments),

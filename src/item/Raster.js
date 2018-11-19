@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -305,7 +305,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * case `null` is returned instead.
      *
      * @bean
-     * @type HTMLCanvasELement
+     * @type HTMLCanvasElement
      */
     getCanvas: function() {
         if (!this._canvas) {
@@ -330,7 +330,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * The Canvas 2D drawing context of the raster.
      *
      * @bean
-     * @type Context
+     * @type CanvasRenderingContext2D
      */
     getContext: function(modify) {
         if (!this._context)
@@ -753,7 +753,8 @@ var Raster = Item.extend(/** @lends Raster# */{
 
     _draw: function(ctx, param, viewMatrix) {
         var element = this.getElement();
-        if (element) {
+        // Only draw if image is not empty (#1320).
+        if (element && element.width > 0 && element.height > 0) {
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
             ctx.globalAlpha = this._opacity;

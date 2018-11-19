@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -23,7 +23,7 @@
  ***
  *
  * Acorn.js
- * http://marijnhaverbeke.nl/acorn/
+ * https://marijnhaverbeke.nl/acorn/
  *
  * Acorn is a tiny, fast JavaScript parser written in JavaScript,
  * created by Marijn Haverbeke and released under an MIT license.

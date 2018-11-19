@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -159,7 +159,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * it is part of a {@link Path} item.
      *
      * @bean
-     * @type Index
+     * @type Number
      */
     getIndex: function() {
         var curve = this.getCurve();
@@ -284,7 +284,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      * @type Number
      * @see Curve#getNearestLocation(point)
-     * @see Path#getNearestLocation(point)
+     * @see PathItem#getNearestLocation(point)
      */
     getDistance: function() {
         return this._distance;

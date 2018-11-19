@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -729,7 +729,7 @@ var Color = Base.extend(new function() {
         },
 
         /**
-         * Converts the color another type.
+         * Converts the color to another type.
          *
          * @param {String} type the color type to convert to. Possible values:
          * {@values 'rgb', 'gray', 'hsb', 'hsl'}
