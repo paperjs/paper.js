@@ -130,6 +130,7 @@ var Size = Base.extend(/** @lends Size# */{
      * for calls of `set()`.
      *
      * @function
+     * @param {...*} value
      * @return {Size}
      */
     set: '#initialize',
