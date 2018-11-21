@@ -12,8 +12,8 @@
 
 /**
  * @name Line
- *
  * @class The Line object represents..
+ * @private
  */
 var Line = Base.extend(/** @lends Line# */{
     _class: 'Line',
