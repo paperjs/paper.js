@@ -1183,6 +1183,17 @@ var Color = Base.extend(new function() {
             // Export for backward compatibility code below.
             _types: types,
 
+            /**
+             * Creates a random color.
+             *
+             * @return {Color} the randomly created color
+             * @static
+             *
+             * @example {@paperscript}
+             * var circle = new Path.Circle(view.center, 50);
+             * // Set a random color as circle fill color.
+             * circle.fillColor = Color.random();
+             */
             random: function() {
                 var random = Math.random;
                 return new Color(random(), random(), random());
