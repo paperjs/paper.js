@@ -170,6 +170,7 @@ var Point = Base.extend(/** @lends Point# */{
      * for calls of `set()`.
      *
      * @function
+     * @param {...*} value
      * @return {Point}
      */
     set: '#initialize',
