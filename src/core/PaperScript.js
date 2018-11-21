@@ -177,7 +177,7 @@ Base.exports.PaperScript = function() {
             var start = getOffset(node.range[0]),
                 end = getOffset(node.range[1]),
                 insert = 0;
-            // Sort insertions by their offset, so getOffest() can do its thing
+            // Sort insertions by their offset, so getOffset() can do its thing
             for (var i = insertions.length - 1; i >= 0; i--) {
                 if (start > insertions[i][0]) {
                     insert = i + 1;
