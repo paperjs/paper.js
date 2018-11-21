@@ -536,7 +536,7 @@ var Style = Base.extend(new function() {
      *
      * @name Style#dashArray
      * @property
-     * @type Array
+     * @type Number[]
      * @default []
      */
 

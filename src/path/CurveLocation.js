@@ -147,7 +147,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * The path that this locations is situated on.
      *
      * @bean
-     * @type Item
+     * @type Path
      */
     getPath: function() {
         var curve = this.getCurve();

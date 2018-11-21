@@ -554,6 +554,9 @@ var Segment = Base.extend(/** @lends Segment# */{
         return this._path ? !!this._path.removeSegment(this._index) : false;
     },
 
+    /**
+     * @return {Segment}
+     */
     clone: function() {
         return new Segment(this._point, this._handleIn, this._handleOut);
     },

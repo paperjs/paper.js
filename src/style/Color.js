@@ -691,6 +691,7 @@ var Color = Base.extend(new function() {
          * constructors also work for calls of `set()`.
          *
          * @function
+         * @return {Color}
          */
         set: '#initialize',
 

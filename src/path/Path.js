@@ -1214,6 +1214,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Reduces the path by removing curves that have a length of 0,
      * and unnecessary segments between two collinear flat curves.
+     *
+     * @return {Path} the reduced path
      */
     reduce: function(options) {
         var curves = this.getCurves(),

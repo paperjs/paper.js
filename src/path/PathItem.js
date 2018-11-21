@@ -345,6 +345,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * crossing each other, as opposed to simply touching.
      *
      * @param {PathItem} path the other item to find the crossings with
+     * @return {CurveLocation[]} the locations of all crossings between the
+     *     paths
      * @see #getIntersections(path)
      */
     getCrossings: function(path) {

@@ -130,6 +130,7 @@ var Size = Base.extend(/** @lends Size# */{
      * for calls of `set()`.
      *
      * @function
+     * @return {Size}
      */
     set: '#initialize',
 
@@ -158,7 +159,7 @@ var Size = Base.extend(/** @lends Size# */{
      * Checks whether the width and height of the size are equal to those of the
      * supplied size.
      *
-     * @param {Size}
+     * @param {Size} size the size to compare to
      * @return {Boolean}
      *
      * @example
@@ -176,6 +177,7 @@ var Size = Base.extend(/** @lends Size# */{
 
     /**
      * Returns a copy of the size.
+     * @return {Size}
      */
     clone: function() {
         return new Size(this.width, this.height);

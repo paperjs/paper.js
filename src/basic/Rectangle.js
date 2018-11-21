@@ -73,7 +73,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * Creates a new rectangle object from the passed rectangle object.
      *
      * @name Rectangle#initialize
-     * @param {Rectangle} rt
+     * @param {Rectangle} rectangle
      */
     initialize: function Rectangle(arg0, arg1, arg2, arg3) {
         var type = typeof arg0,
@@ -159,6 +159,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * constructors also work for calls of `set()`.
      *
      * @function
+     * @return {Rectangle}
      */
     set: '#initialize',
 
@@ -201,6 +202,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 
     /**
      * Returns a copy of the rectangle.
+     * @return {Rectangle}
      */
     clone: function() {
         return new Rectangle(this.x, this.y, this.width, this.height);

@@ -463,7 +463,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @param {Rectangle} rect the boundaries of the sub image in pixel
      * coordinates
      *
-     * @return {HTMLCanvasELement} the sub image as a Canvas object
+     * @return {HTMLCanvasElement} the sub image as a Canvas object
      */
     getSubCanvas: function(/* rect */) {
         var rect = Rectangle.read(arguments),
@@ -511,7 +511,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * Draws an image on the raster.
      *
-     * @param {HTMLImageELement|HTMLCanvasELement} image
+     * @param {HTMLImageElement|HTMLCanvasElement} image
      * @param {Point} point the offset of the image as a point in pixel
      * coordinates
      */

@@ -1799,6 +1799,7 @@ new function() { // Injection scope for various item event handlers
      * }
      *
      * @param {Point} point the point to check for
+     * @return {Boolean}
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -2345,6 +2346,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * items can have children.
      *
      * @param {String} json the JSON data to import from
+     * @return {Item}
      */
     importJSON: function(json) {
         // Try importing into `this`. If another item is returned, try adding
@@ -2380,7 +2382,8 @@ new function() { // Injection scope for hit-test functions shared with project
      *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
-     * @return {SVGElement} the item converted to an SVG node
+     * @return {SVGElement|String} the item converted to an SVG node or a
+     * `String` depending on `option.asString` value
      */
 
     /**
@@ -2764,6 +2767,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * Replaces this item with the provided new item which will takes its place
      * in the project hierarchy instead.
      *
+     * @param {Item} item the item that will replace this item
      * @return {Boolean} {@true if the item was replaced}
      */
     replaceWith: function(item) {
@@ -3186,7 +3190,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#dashArray
      * @property
-     * @type Array
+     * @type Number[]
      * @default []
      */
 
