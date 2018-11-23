@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- `PaperScript#compile()` with prefix increment/decrement operators (#1611).
 - Fix empty image drawing (#1320).
 
 ### Added

@@ -63,6 +63,8 @@
 
 /*#*/ include('Numerical.js');
 
+/*#*/ include('PaperScript.js');
+
 // There is no need to test interactions in node context.
 if (!isNode) {
     /*#*/ include('Interactions.js');
