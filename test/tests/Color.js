@@ -299,3 +299,11 @@ test('Gradients with applyMatrix', function() {
 
     comparePixels(path, shape);
 });
+
+test('LinkedColor for group colors', function() {
+    var item = new Group(new Path(), new Path());
+    item.strokeColor = 'red';
+    item.strokeColor.hue = 50;
+    item.strokeColor.hue = 100;
+    expect(0);
+});

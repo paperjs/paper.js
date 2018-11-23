@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Fix group color change propagation (#1152).
 - Fix empty image drawing (#1320).
 
 ### Added

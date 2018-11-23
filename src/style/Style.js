@@ -241,6 +241,12 @@ var Style = Base.extend(new function() {
                     }
                 }
             }
+            // Turn group related colors into LinkedColor instances that will
+            // allow calls like `group.fillColor.hue += 10` to be propagated to
+            // children.
+            if (owner instanceof Group && value instanceof Color) {
+                value = new LinkedColor(value, owner, set);
+            }
             return value;
         };
 
