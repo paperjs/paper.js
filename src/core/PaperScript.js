@@ -268,6 +268,11 @@ Base.exports.PaperScript = function() {
                                 str = exp;
                             str = arg + '; ' + str;
                         }
+                        // If this is a prefixed update expression (++a / --a),
+                        // wrap expression in IIFE to avoid several bugs (#1450)
+                        if (node.prefix) {
+                            str = '(function(){return '+str+';})()';
+                        }
                         replaceCode(node, str);
                     } else { // AssignmentExpression
                         if (/^.=$/.test(node.operator)
