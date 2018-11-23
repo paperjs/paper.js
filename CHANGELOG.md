@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Fix arc drawing when `from` and `to` points are equal (#1613).
 - Fix empty image drawing (#1320).
 
 ### Added

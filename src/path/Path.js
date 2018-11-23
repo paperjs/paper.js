@@ -2464,6 +2464,10 @@ new function() { // PostScript-style drawing commands
                 to = Point.read(arguments);
             } else {
                 // #3: arcTo(to, radius, rotation, clockwise, large)
+                // If from and to are equal, arc cannot be drawn (#1613).
+                if (from.equals(to)) {
+                    return;
+                }
                 // Drawing arcs in SVG style:
                 var radius = Size.read(arguments),
                     isZero = Numerical.isZero;
