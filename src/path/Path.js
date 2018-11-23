@@ -2467,9 +2467,10 @@ new function() { // PostScript-style drawing commands
                 // #2: arcTo(through, to)
                 through = to;
                 to = Point.read(arguments);
-            } else {
+            } else if (!from.equals(to)) {
                 // #3: arcTo(to, radius, rotation, clockwise, large)
-                // Drawing arcs in SVG style:
+                // Draw arc in SVG style, but only if `from` and `to` are not
+                // equal (#1613).
                 var radius = Size.read(arguments),
                     isZero = Numerical.isZero;
                 // If rx = 0 or ry = 0 then this arc is treated as a
@@ -2565,47 +2566,49 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-                ext = abs(extent),
-                // Calculate the amount of segments required to approximate over
-                // `extend` degrees (extend / 90), but prevent ceil() from
-                // rounding up small imprecisions by subtracting epsilon first.
-                count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
-                inc = extent / count,
-                half = inc * Math.PI / 360,
-                z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-                segments = [];
-            for (var i = 0; i <= count; i++) {
-                // Explicitly use to point for last segment, since depending
-                // on values the calculation adds imprecision:
-                var pt = to,
-                    out = null;
-                if (i < count) {
-                    out = vector.rotate(90).multiply(z);
-                    if (matrix) {
-                        pt = matrix._transformPoint(vector);
-                        out = matrix._transformPoint(vector.add(out))
-                                .subtract(pt);
+            if (extent) {
+                var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    ext = abs(extent),
+                    // Calculate amount of segments required to approximate over
+                    // `extend` degrees (extend / 90), but prevent ceil() from
+                    // rounding up small imprecisions by subtracting epsilon.
+                    count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+                    inc = extent / count,
+                    half = inc * Math.PI / 360,
+                    z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+                    segments = [];
+                for (var i = 0; i <= count; i++) {
+                    // Explicitly use to point for last segment, since depending
+                    // on values the calculation adds imprecision:
+                    var pt = to,
+                        out = null;
+                    if (i < count) {
+                        out = vector.rotate(90).multiply(z);
+                        if (matrix) {
+                            pt = matrix._transformPoint(vector);
+                            out = matrix._transformPoint(vector.add(out))
+                                    .subtract(pt);
+                        } else {
+                            pt = center.add(vector);
+                        }
+                    }
+                    if (!i) {
+                        // Modify startSegment
+                        current.setHandleOut(out);
                     } else {
-                        pt = center.add(vector);
+                        // Add new Segment
+                        var _in = vector.rotate(-90).multiply(z);
+                        if (matrix) {
+                            _in = matrix._transformPoint(vector.add(_in))
+                                    .subtract(pt);
+                        }
+                        segments.push(new Segment(pt, _in, out));
                     }
+                    vector = vector.rotate(inc);
                 }
-                if (!i) {
-                    // Modify startSegment
-                    current.setHandleOut(out);
-                } else {
-                    // Add new Segment
-                    var _in = vector.rotate(-90).multiply(z);
-                    if (matrix) {
-                        _in = matrix._transformPoint(vector.add(_in))
-                                .subtract(pt);
-                    }
-                    segments.push(new Segment(pt, _in, out));
-                }
-                vector = vector.rotate(inc);
+                // Add all segments at once at the end for higher performance
+                this._add(segments);
             }
-            // Add all segments at once at the end for higher performance
-            this._add(segments);
         },
 
         lineBy: function(/* to */) {

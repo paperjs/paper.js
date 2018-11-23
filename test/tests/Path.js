@@ -645,3 +645,11 @@ test('Path#arcTo(through, to) is on through point side (#1477)', function() {
     path.arcTo(p2, p3);
     equals(true, path.segments[1].point.x > p1.x);
 });
+
+test('Path#arcTo(to, radius, rotation, clockwise, large) when from and to are equal (#1613)', function(){
+    var point = new Point(10,10);
+    var path = new Path();
+    path.moveTo(point);
+    path.arcTo(point, new Size(10), 0, true, true);
+    expect(0);
+});
