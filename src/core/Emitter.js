@@ -68,9 +68,9 @@ var Emitter = {
     },
 
     once: function(type, func) {
-        return this.on(type, function() {
+        return this.on(type, function handler() {
             func.apply(this, arguments);
-            this.off(type, func);
+            this.off(type, handler);
         });
     },
 
