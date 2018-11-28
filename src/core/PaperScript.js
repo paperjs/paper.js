@@ -657,7 +657,9 @@ Base.exports.PaperScript = function() {
         compile: compile,
         execute: execute,
         load: load,
-        parse: parse
+        parse: parse,
+        calculateBinary: __$__,
+        calculateUnary: $__
     };
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
