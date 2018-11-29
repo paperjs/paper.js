@@ -124,7 +124,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      */
     initialize: function Tween(item, from, to, duration, easing, start) {
         this.item = item;
-        var type = typeof easing
+        var type = typeof easing;
         var isFunction = type === 'function';
         this.type = isFunction
             ? type
@@ -229,7 +229,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                 this._setItemProperty(path, resolved);
                 value = this._getItemProperty(path);
                 // Clone the value if possible to prevent future changes.
-                value = value.clone ? value.clone() : value
+                value = value.clone ? value.clone() : value;
                 this._setItemProperty(path, current);
             } else {
                 // We want to get the current state at the time of the call, so
