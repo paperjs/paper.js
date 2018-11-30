@@ -4811,11 +4811,11 @@ new function() { // Injection scope for hit-test functions shared with project
      * @example {@paperscript height=100}
      * // Tween fillColor from red to the path's initial fillColor:
      * var path = new Path.Circle({
-     *     fillColor: 'red',
+     *     fillColor: 'blue',
      *     radius: view.bounds.height * 0.4,
      *     center: view.center
      * })
-     * path.tweenFrom({ fillColor: 'blue' }, { duration: 1000 })
+     * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 })
      */
     tweenFrom: function(state, options) {
         return this.tween(state, null, options);
