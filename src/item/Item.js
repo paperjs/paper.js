@@ -4671,17 +4671,17 @@ new function() { // Injection scope for hit-test functions shared with project
     /**
      * {@grouptitle Tweening Functions}
      *
-     * Tween item between two states
+     * Tween item between two states.
      *
      * @name Item#tween
      *
      * @option options.duration {Number} the duration of the tweening
-     * @option options.easing {Function|String} an easing function or the type
+     * @option [options.easing='linear'] {Function|String} an easing function or the type
      * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
      * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
      * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
      * 'easeOutQuint' 'easeInOutQuint'}
-     * @option options.start {Boolean} Whether to start tweening automatically
+     * @option [options.start=true] {Boolean} whether to start tweening automatically
      *
      * @function
      * @param {Object} from the state at the start of the tweening
@@ -4698,13 +4698,13 @@ new function() { // Injection scope for hit-test functions shared with project
      * path.tween({ fillColor: 'blue' }, { fillColor: 'red' }, 3000)
      */
     /**
-     * Tween item to a state
+     * Tween item to a state.
      *
      * @name Item#tween
      *
      * @function
      * @param  {Object} to the state at the end of the tweening
-     * @param  {Object|Number} options or duration
+     * @param {Object|Number} options the options or the duration
      * @return {Tween}
      *
      * @example {@paperscript height=200}
@@ -4717,7 +4717,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * var delta = { x: path.bounds.width / 2, y: 0 }
      *
-     * path.tweenTo({
+     * path.tween({
      *     'segments[1].point': ['+=', delta],
      *     'segments[2].point.x': '-= 50'
      * }, 3000)
@@ -4725,12 +4725,12 @@ new function() { // Injection scope for hit-test functions shared with project
      * @see Item#tween(from, to, options)
      */
     /**
-     * Tween item
+     * Tween item.
      *
      * @name Item#tween
      *
      * @function
-     * @param  {Object|Number} options options or duration
+     * @param  {Object|Number} options the options or the duration
      * @return {Tween}
      *
      * @see Item#tween(from, to, options)
@@ -4784,7 +4784,7 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      *
-     * Tween item to a state
+     * Tween item to a state.
      *
      * @function
      * @param {Object} state the state at the end of the tweening
@@ -4799,10 +4799,10 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      *
-     * Tween from a state to it's state before the tweening
+     * Tween item from a state to its state before the tweening.
      *
      * @function
-     * @param {Object} state the state at the end of the tweening
+     * @param {Object} state the state at the start of the tweening
      * @param {Object|Number} options the options or the duration
      * @return {Tween}
      *
@@ -4811,7 +4811,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @example {@paperscript height=100}
      * // Tween fillColor from red to the path's initial fillColor:
      * var path = new Path.Circle({
-     *     fillColor: 'blue',
+     *     fillColor: 'red',
      *     radius: view.bounds.height * 0.4,
      *     center: view.center
      * })
