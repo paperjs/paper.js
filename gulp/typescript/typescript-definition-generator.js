@@ -25,40 +25,40 @@ classes.forEach(cls => {
     cls.comment = formatComment(cls.comment, 'class');
 
     // Build a filter for deprecated or inherited methods or properties.
-    const filter = _ => !_.deprecated && _.memberOf == cls.alias && !_.isNamespace;
+    const filter = it => !it.deprecated && it.memberOf == cls.alias && !it.isNamespace;
 
     // Format properties.
     cls.properties = cls.properties
         .filter(filter)
-        .map(_ => ({
-            name: _._name,
-            type: formatType(_.type),
-            static: formatStatic(_.isStatic),
-            readOnly: formatReadOnly(_.readOnly),
-            comment: formatComment(_.comment)
+        .map(it => ({
+            name: it._name,
+            type: formatType(it.type),
+            static: formatStatic(it.isStatic),
+            readOnly: formatReadOnly(it.readOnly),
+            comment: formatComment(it.comment)
         }));
 
     // Format methods.
     const methods = cls.methods
         .filter(filter)
-        .map(_ => {
-            const name = formatMethodName(_._name);
-            const isStaticConstructor = _.isStatic && _.isConstructor;
+        .map(it => {
+            const name = formatMethodName(it._name);
+            const isStaticConstructor = it.isStatic && it.isConstructor;
             return {
                 name: name,
                 // Constructors don't need return type.
-                type: !_.isConstructor
-                    ? formatType(getMethodReturnType(_), true)
+                type: !it.isConstructor
+                    ? formatType(getMethodReturnType(it), true)
                     : '',
-                static: formatStatic(_.isStatic),
+                static: formatStatic(it.isStatic),
                 // This flag is only used below to filter methods.
                 isStaticConstructor: isStaticConstructor,
-                comment: formatComment(_.comment, 'desc', _.isConstructor),
-                params: _._params
-                    ? _._params
+                comment: formatComment(it.comment, 'desc', it.isConstructor),
+                params: it._params
+                    ? it._params
                     // Filter internal parameters (starting with underscore).
-                        .filter(_ => !/^_/.test(_.name))
-                        .map(_ => formatParameter(_, isStaticConstructor && cls))
+                        .filter(it => !/^_/.test(it.name))
+                        .map(it => formatParameter(it, isStaticConstructor && cls))
                         .join(', ')
                     : ''
             };
@@ -72,7 +72,7 @@ classes.forEach(cls => {
     methods.forEach(method => {
         if (method.isStaticConstructor) {
             // Group static constructors by method name.
-            let staticConstructors = cls.staticConstructors.find(_ => _.name === method.name);
+            let staticConstructors = cls.staticConstructors.find(it => it.name === method.name);
             if (!staticConstructors) {
                 staticConstructors = {
                     name: method.name,
@@ -92,11 +92,11 @@ classes.forEach(cls => {
 // Format global vriables.
 globals = globals
 // Filter global variables that make no sense in type definition.
-    .filter(_ => !/^on/.test(_._name) && _._name !== 'paper')
-    .map(_ => ({
-        name: _._name,
-        type: formatType(_.type),
-        comment: formatComment(_.comment)
+    .filter(it => !/^on/.test(it._name) && it._name !== 'paper')
+    .map(it => ({
+        name: it._name,
+        type: formatType(it.type),
+        comment: formatComment(it.comment)
     }));
 
 // Format data trough a mustache template.
@@ -162,7 +162,7 @@ function parseType(type, isMethodReturnType, staticConstructorClass) {
         // `rectangle` parameter type must be mapped to `paper.Rectangle` as it
         // is declared inside a `Path` namespace and would otherwise be wrongly
         // assumed as being the type of `Path.Rectangle` class.
-        if (staticConstructorClass && staticConstructorClass.methods.find(_ => _.isStatic && _.isConstructor && formatMethodName(_._name) === singleType)
+        if (staticConstructorClass && staticConstructorClass.methods.find(it => it.isStatic && it.isConstructor && formatMethodName(it._name) === singleType)
         ) {
             return 'paper.' + type;
         }
@@ -183,19 +183,19 @@ function formatMethodName(methodName) {
     return methodName;
 }
 
-function formatParameter(_, staticConstructorClass) {
+function formatParameter(param, staticConstructorClass) {
     let content = '';
     // Handle rest parameter pattern `...Type`. Parameter name needs to be
     // prefixed with `...` as in ES6. E.g. `...parameter: type[]`.
-    if (_.type.match(/^\.\.\.(.+)$/)) {
+    if (param.type.match(/^\.\.\.(.+)$/)) {
         content += '...';
     }
-    content += formatParameterName(_.name);
+    content += formatParameterName(param.name);
     // Optional parameters are formatted as: `parameter?: type`.
-    if (_.isOptional) {
+    if (param.isOptional) {
         content += '?';
     }
-    content += formatType(_.type, false, staticConstructorClass);
+    content += formatType(param.type, false, staticConstructorClass);
     return content;
 }
 
@@ -213,7 +213,7 @@ function formatComment(comment, descriptionTagName = 'desc', skipReturn = false)
     let content = '';
 
     // Retrieve description tag.
-    const descriptionTag = tags.find(_ => _.title === descriptionTagName);
+    const descriptionTag = tags.find(it => it.title === descriptionTagName);
     if (descriptionTag) {
         // Don't display group titles.
         content += descriptionTag.desc.replace(/\{@grouptitle .+?\}/g, '').trim();
@@ -225,10 +225,10 @@ function formatComment(comment, descriptionTagName = 'desc', skipReturn = false)
     // provided in the signature...
     content += formatCommentTags(tags, 'see');
     content += formatCommentTags(tags, 'option');
-    content += formatCommentTags(tags, 'param', _ => _.name + ' - ' + _.desc);
+    content += formatCommentTags(tags, 'param', it => it.name + ' - ' + it.desc);
 
     if (!skipReturn) {
-        content += formatCommentTags(tags, 'return', _ => _.desc.trim().replace(/^\{|\}$/g, '').replace(/@([a-zA-Z]+)/, '$1'));
+        content += formatCommentTags(tags, 'return', it => it.desc.trim().replace(/^\{|\}$/g, '').replace(/@([a-zA-Z]+)/, '$1'));
     }
 
     // Make sure links are followable (e.g. by IDEs) by removing parameters.
@@ -242,13 +242,13 @@ function formatComment(comment, descriptionTagName = 'desc', skipReturn = false)
 function formatCommentTags(tags, tagName, formatter) {
     let content = '';
     // Default formatter simply outputs description.
-    formatter = formatter || (_ => _.desc);
+    formatter = formatter || (it => it.desc);
     // Only keep tags that have a description.
-    tags = tags.filter(_ => _.desc && _.title === tagName);
+    tags = tags.filter(it => it.desc && it.title === tagName);
     if (tags.length > 0) {
         content += '\n';
         // Display tag as it was in original JSDoc, followed by formatted value.
-        tags.forEach(_ => content += '\n@' + tagName + ' ' + formatter(_));
+        tags.forEach(it => content += '\n@' + tagName + ' ' + formatter(it));
     }
     return content;
 }
@@ -284,8 +284,8 @@ function formatJSDoc(offset, render) {
     return '/** \n' + content + '\n' + indentation + ' */';
 }
 
-function getMethodReturnType(_) {
-    return _.returnType || _.returns.length > 0 && _.returns[0].type;
+function getMethodReturnType(method) {
+    return method.returnType || method.returns.length > 0 && method.returns[0].type;
 }
 
 function sortMethods(methodA, methodB) {
