@@ -13,7 +13,8 @@
 /**
  * @name Tween
  *
- * @class Allows to tween properties of an Item between two values
+ * @class Allows tweening {@link Item} properties between two states for a given
+ * duration. Tween instance is returned by {@link Item#tween(from,to,options)}.
  */
 var Tween = Base.extend(Emitter, /** @lends Tween# */{
     _class: 'Tween',
@@ -96,30 +97,15 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     },
 
     /**
-     * {@grouptitle Event Handling}
+     * Creates a new tween.
      *
-     * Attaches an event handler to the tween.
-     *
-     * @name Tween#on
-     * @function
-     * @param {String} type the type of event (currently only 'update')
-     * @param {Function} function the function to be called when the event
-     *     occurs, receiving an object as its
-     *     sole argument, containing the current progress of the
-     *     tweening and the factor calculated by the easing function
-     * @return {Tween} this tween itself, so calls can be chained
-     */
-    /**
-     * Creates a new tween
-     *
-     * @name Path#initialize
-     * @param {Item} item The Item to be tweened
-     * @param {Object} from State at the start of the tweening
-     * @param {Object} to State at the end of the tweening
-     * @param {Number} duration Duration of the tweening
-     * @param {String|Function} easing Type of the easing function or the easing
-     * function
-     * @param {Boolean} start Whether to start tweening automatically
+     * @param {Item} item the item to tween
+     * @param {Object} from the state at the start of the tweening
+     * @param {Object} to the state at the end of the tweening
+     * @param {Number} duration the duration of the tweening
+     * @param {String|Function} [easing='linear'] the type of the easing
+     *     function or the easing function
+     * @param {Boolean} [start=true] whether to start tweening automatically
      * @return {Tween} the newly created tween
      */
     initialize: function Tween(item, from, to, duration, easing, start) {
@@ -143,7 +129,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         this._from = state && this._getState(from);
         this._to = state && this._getState(to);
         if (start !== false) {
-          this.start();
+            this.start();
         }
     },
 
@@ -158,17 +144,73 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         this.update(progress);
     },
 
+    /**
+     * Set a function that will be executed when tween completes.
+     * @param {Function} function the function to execute when tween completes
+     * @return {Tween}
+     *
+     * @example {@paperscript}
+     * // Tweens chaining:
+     * var item = new Path.Circle({
+     *     center: view.center,
+     *     radius: 50,
+     *     fillColor: 'blue'
+     * });
+     * // Tween color from blue to red.
+     * var tween = item.tweenTo({fillColor: 'red'}, 2000);
+     * // When first tween completes...
+     * tween.then(function(){
+     *     // ...tween color back to blue.
+     *     item.tweenTo({fillColor: 'blue'}, 2000);
+     * });
+     */
     then: function(then) {
         this._then = then;
         return this;
     },
 
+    /**
+     * Start tweening.
+     * @return {Tween}
+     *
+     * @example {@paperscript}
+     * // Manually start tweening.
+     * var item = new Path.Circle({
+     *     center: view.center,
+     *     radius: 50,
+     *     fillColor: 'blue'
+     * });
+     * var tween = item.tweenTo(
+     *     { fillColor: 'red' },
+     *     { duration: 2000, start: false }
+     * );
+     * tween.start();
+     */
     start: function() {
         this._startTime = null;
         this.running = true;
         return this;
     },
 
+    /**
+     * Stop tweening.
+     * @return {Tween}
+     *
+     * @example {@paperscript}
+     * // Stop a tween before it completes.
+     * var item = new Path.Circle({
+     *     center: view.center,
+     *     radius: 50,
+     *     fillColor: 'blue'
+     * });
+     * // Start tweening from blue to red for 2 seconds.
+     * var tween = item.tweenTo({ fillColor: 'red' }, 2000);
+     * // After 1 second...
+     * setTimeout(function(){
+     *     // ...stop tweening.
+     *     tween.stop();
+     * }, 1000);
+     */
     stop: function() {
         this.running = false;
         return this;
@@ -212,6 +254,39 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
             }
         }
         return this;
+    },
+
+    /**
+     * {@grouptitle Event Handlers}
+     *
+     * The function to be called when the tween is updated. It receives an
+     * object as its sole argument, containing the current progress of the
+     * tweening and the factor calculated by the easing function.
+     *
+     * @name Tween#onUpdate
+     * @property
+     * @type Function
+     *
+     * @example {@paperscript}
+     * // Display tween progression values:
+     * var item = new Path.Circle({
+     *     center: view.center,
+     *     radius: 50,
+     *     fillColor: 'blue'
+     * });
+     * var tween = item.tweenTo(
+     *     { fillColor: 'red' },
+     *     { duration: 2000, easing: 'easeInCubic' }
+     * );
+     * var progressText = new PointText(view.center + [60, -10]);
+     * var factorText = new PointText(view.center + [60, 10]);
+     * tween.onUpdate = function(event) {
+     *     progressText.content = 'progress: ' + event.progress.toFixed(2);
+     *     factorText.content = 'factor: ' + event.factor.toFixed(2);
+     * };
+     */
+    _events: {
+        onUpdate: {}
     },
 
     _getState: function(state) {
