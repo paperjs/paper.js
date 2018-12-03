@@ -147,15 +147,19 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *     completes
      * @return {Tween}
      *
-     * @example {@paperscript} // Tweens chaining: var circle = new
-     * Path.Circle({center: view.center, radius: 40, fillColor: 'blue'
+     * @example {@paperscript}
+     * // Tweens chaining:
+     * var circle = new Path.Circle({
+     *     center: view.center,
+     *     radius: 40,
+     *     fillColor: 'blue'
      * });
      * // Tween color from blue to red.
-     * var tween = item.tweenTo({ fillColor: 'red' }, 2000);
+     * var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
      * // When the first tween completes...
      * tween.then(function() {
      *     // ...tween color back to blue.
-     *     item.tweenTo({ fillColor: 'blue' }, 2000);
+     *     circle.tweenTo({ fillColor: 'blue' }, 2000);
      * });
      */
     then: function(then) {
