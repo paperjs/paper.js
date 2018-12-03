@@ -4704,13 +4704,17 @@ new function() { // Injection scope for hit-test functions shared with project
      * // Tween rotation:
      * var path = new Shape.Rectangle({
      *     fillColor: 'red',
-     *     point: view.center,
-     *     size: [50, 50]
+     *     center: [50, view.center.y],
+     *     size: [60, 60]
      * });
      * path.tween({
+     *     rotation: 180,
+     *     'position.x': view.bounds.width - 50,
+     *     'fillColor.hue': '+= 90'
+     * }, {
      *     easing: 'easeInOutCubic',
-     *     rotation: 180
-     * }, 2000);
+     *     duration: 2000
+     * });
      */
     /**
      * Tween item to a state.
