@@ -4695,7 +4695,22 @@ new function() { // Injection scope for hit-test functions shared with project
      *     radius: view.bounds.height * 0.4,
      *     center: view.center
      * });
-     * path.tween({ fillColor: 'blue' }, { fillColor: 'red' }, 3000);
+     * path.tween(
+     *     { fillColor: 'blue' },
+     *     { fillColor: 'red' },
+     *     3000
+     * );
+     * @example {@paperscript height=100}
+     * // Tween rotation:
+     * var path = new Shape.Rectangle({
+     *     fillColor: 'red',
+     *     point: view.center,
+     *     size: [50, 50]
+     * });
+     * path.tween({
+     *     easing: 'easeInOutCubic',
+     *     rotation: 180
+     * }, 2000);
      */
     /**
      * Tween item to a state.
@@ -4771,7 +4786,7 @@ new function() { // Injection scope for hit-test functions shared with project
             ),
             tween = new Tween(this, from, to, duration, easing, start);
         function onFrame(event) {
-            tween.handleFrame(event.time * 1000);
+            tween._handleFrame(event.time * 1000);
             if (!tween.running) {
                 this.off('frame', onFrame);
             }
@@ -4787,14 +4802,14 @@ new function() { // Injection scope for hit-test functions shared with project
      * Tween item to a state.
      *
      * @function
-     * @param {Object} state the state at the end of the tweening
+     * @param {Object} to the state at the end of the tweening
      * @param {Object|Number} options the options or the duration
      * @return {Tween}
      *
      * @see Item#tween(to, options)
      */
-    tweenTo: function(state, options) {
-        return this.tween(null, state, options);
+    tweenTo: function(to, options) {
+        return this.tween(null, to, options);
     },
 
     /**
@@ -4802,7 +4817,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * Tween item from a state to its state before the tweening.
      *
      * @function
-     * @param {Object} state the state at the start of the tweening
+     * @param {Object} from the state at the start of the tweening
      * @param {Object|Number} options the options or the duration
      * @return {Tween}
      *
@@ -4817,7 +4832,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * });
      * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
      */
-    tweenFrom: function(state, options) {
-        return this.tween(state, null, options);
+    tweenFrom: function(from, options) {
+        return this.tween(from, null, options);
     }
 });

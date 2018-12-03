@@ -13,8 +13,16 @@
 /**
  * @name Tween
  *
- * @class Allows tweening {@link Item} properties between two states for a given
- * duration. Tween instance is returned by {@link Item#tween(from,to,options)}.
+ * @class Allows tweening `Object` properties between two states for a given
+ * duration. To tween properties on Paper.js {@link Item} instances,
+ * {@link Item#tween(from, to, options)} can be used, which returns created
+ * tween instance.
+ *
+ * @see Item#tween(from, to, options)
+ * @see Item#tween(to, options)
+ * @see Item#tween(options)
+ * @see Item#tweenTo(to, options)
+ * @see Item#tweenFrom(from, options)
  */
 var Tween = Base.extend(Emitter, /** @lends Tween# */{
     _class: 'Tween',
@@ -99,7 +107,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     /**
      * Creates a new tween.
      *
-     * @param {Item} item the item to tween
+     * @param {Object} object the object to tween the properties on
      * @param {Object} from the state at the start of the tweening
      * @param {Object} to the state at the end of the tweening
      * @param {Number} duration the duration of the tweening
@@ -108,8 +116,8 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      * @param {Boolean} [start=true] whether to start tweening automatically
      * @return {Tween} the newly created tween
      */
-    initialize: function Tween(item, from, to, duration, easing, start) {
-        this.item = item;
+    initialize: function Tween(object, from, to, duration, easing, start) {
+        this.object = object;
         var type = typeof easing;
         var isFunction = type === 'function';
         this.type = isFunction
@@ -133,35 +141,21 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         }
     },
 
-    handleFrame: function(time) {
-        var startTime = this._startTime,
-            progress = startTime
-                ? (time - startTime) / this.duration
-                : 0;
-        if (!startTime) {
-            this._startTime = time;
-        }
-        this.update(progress);
-    },
-
     /**
-     * Set a function that will be executed when tween completes.
-     * @param {Function} function the function to execute when tween completes
+     * Set a function that will be executed when the tween completes.
+     * @param {Function} function the function to execute when the tween
+     *     completes
      * @return {Tween}
      *
-     * @example {@paperscript}
-     * // Tweens chaining:
-     * var item = new Path.Circle({
-     *     center: view.center,
-     *     radius: 50,
-     *     fillColor: 'blue'
+     * @example {@paperscript} // Tweens chaining: var circle = new
+     * Path.Circle({center: view.center, radius: 50, fillColor: 'blue'
      * });
      * // Tween color from blue to red.
-     * var tween = item.tweenTo({fillColor: 'red'}, 2000);
-     * // When first tween completes...
-     * tween.then(function(){
+     * var tween = item.tweenTo({ fillColor: 'red' }, 2000);
+     * // When the first tween completes...
+     * tween.then(function() {
      *     // ...tween color back to blue.
-     *     item.tweenTo({fillColor: 'blue'}, 2000);
+     *     item.tweenTo({ fillColor: 'blue' }, 2000);
      * });
      */
     then: function(then) {
@@ -175,12 +169,12 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *
      * @example {@paperscript}
      * // Manually start tweening.
-     * var item = new Path.Circle({
+     * var circle = new Path.Circle({
      *     center: view.center,
      *     radius: 50,
      *     fillColor: 'blue'
      * });
-     * var tween = item.tweenTo(
+     * var tween = circle.tweenTo(
      *     { fillColor: 'red' },
      *     { duration: 2000, start: false }
      * );
@@ -198,13 +192,13 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *
      * @example {@paperscript}
      * // Stop a tween before it completes.
-     * var item = new Path.Circle({
+     * var circle = new Path.Circle({
      *     center: view.center,
      *     radius: 50,
      *     fillColor: 'blue'
      * });
      * // Start tweening from blue to red for 2 seconds.
-     * var tween = item.tweenTo({ fillColor: 'red' }, 2000);
+     * var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
      * // After 1 second...
      * setTimeout(function(){
      *     // ...stop tweening.
@@ -216,6 +210,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         return this;
     },
 
+    // DOCS: Document Tween#update(progress)
     update: function(progress) {
         if (this.running) {
             if (progress > 1) {
@@ -240,11 +235,12 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                     value = (from && to && from.__add && to.__add)
                         ? to.__subtract(from).__multiply(factor).__add(from)
                         : ((to - from) * factor) + from;
-                this._setItemProperty(this._parsedKeys[key], value);
+                this._setProperty(this._parsedKeys[key], value);
             }
 
             if (!this.running && this._then) {
-                this._then(this.item);
+                // TODO Look into what should be returned.
+                this._then(this.object);
             }
             if (this.responds('update')) {
                 this.emit('update', new Base({
@@ -269,24 +265,44 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *
      * @example {@paperscript}
      * // Display tween progression values:
-     * var item = new Path.Circle({
+     * var circle = new Path.Circle({
      *     center: view.center,
-     *     radius: 50,
+     *     radius: 40,
      *     fillColor: 'blue'
      * });
-     * var tween = item.tweenTo(
+     * var tween = circle.tweenTo(
      *     { fillColor: 'red' },
-     *     { duration: 2000, easing: 'easeInCubic' }
+     *     {
+     *         duration: 2000,
+     *         easing: 'easeInCubic'
+     *     }
      * );
      * var progressText = new PointText(view.center + [60, -10]);
      * var factorText = new PointText(view.center + [60, 10]);
+     *
+     * // Install event using onUpdate() property:
      * tween.onUpdate = function(event) {
      *     progressText.content = 'progress: ' + event.progress.toFixed(2);
-     *     factorText.content = 'factor: ' + event.factor.toFixed(2);
      * };
+     *
+     * // Install event using on('update') method:
+     * tween.on('update', function(event) {
+     *     factorText.content = 'factor: ' + event.factor.toFixed(2);
+     * });
      */
     _events: {
         onUpdate: {}
+    },
+
+    _handleFrame: function(time) {
+        var startTime = this._startTime,
+            progress = startTime
+                ? (time - startTime) / this.duration
+                : 0;
+        if (!startTime) {
+            this._startTime = time;
+        }
+        this.update(progress);
     },
 
     _getState: function(state) {
@@ -295,21 +311,21 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         for (var i = 0, l = keys.length; i < l; i++) {
             var key = keys[i],
                 path = this._parsedKeys[key],
-                current = this._getItemProperty(path),
+                current = this._getProperty(path),
                 value;
             if (state) {
                 var resolved = this._resolveValue(current, state[key]);
                 // Temporarily set the resolved value, so we can retrieve the
                 // coerced value from paper's internal magic.
-                this._setItemProperty(path, resolved);
-                value = this._getItemProperty(path);
+                this._setProperty(path, resolved);
+                value = this._getProperty(path);
                 // Clone the value if possible to prevent future changes.
-                value = value.clone ? value.clone() : value;
-                this._setItemProperty(path, current);
+                value = value && value.clone ? value.clone() : value;
+                this._setProperty(path, current);
             } else {
                 // We want to get the current state at the time of the call, so
                 // we have to clone if possible to prevent future changes.
-                value = current.clone ? current.clone() : current;
+                value = current && current.clone ? current.clone() : current;
             }
             result[key] = value;
         }
@@ -359,16 +375,16 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
         return parsed;
     },
 
-    _getItemProperty: function(path, offset) {
-        var obj = this.item;
+    _getProperty: function(path, offset) {
+        var obj = this.object;
         for (var i = 0, l = path.length - (offset || 0); i < l && obj; i++) {
             obj = obj[path[i]];
         }
         return obj;
     },
 
-    _setItemProperty: function(path, value) {
-        var dest = this._getItemProperty(path, 1);
+    _setProperty: function(path, value) {
+        var dest = this._getProperty(path, 1);
         if (dest) {
             dest[path[path.length - 1]] = value;
         }
