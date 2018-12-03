@@ -115,7 +115,7 @@ const template = fs.readFileSync(__dirname + '/typescript-definition-template.mu
 // Render template.
 const output = mustache.render(template, context);
 // Write output in a file.
-fs.writeFileSync(__dirname + '/../../dist/index.d.ts', output, 'utf8');
+fs.writeFileSync(__dirname + '/../../dist/paper.d.ts', output, 'utf8');
 
 
 //

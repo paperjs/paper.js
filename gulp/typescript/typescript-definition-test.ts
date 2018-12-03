@@ -1,4 +1,4 @@
-/// <reference path="../../dist/index.d.ts" />
+/// <reference path="../../dist/paper.d.ts" />
 
 /**
  * This file is used as a way to test auto-generated typescript definition

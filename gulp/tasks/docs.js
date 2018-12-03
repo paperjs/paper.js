@@ -59,7 +59,7 @@ gulp.task('docs:typescript', function() {
 });
 // First clean eventually existing type definition...
 gulp.task('docs:typescript:clean:before', function() {
-    return del('dist/index.d.ts');
+    return del('dist/paper.d.ts');
 });
 // ...then build the definition...
 gulp.task('docs:typescript:build', function() {
