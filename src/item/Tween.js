@@ -257,19 +257,15 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     },
 
     /**
-     * {@grouptitle Event Handling}
+     * {@grouptitle Event Handlers}
      *
-     * Attaches an event handler to the tween.
+     * The function to be called when the tween is updated. It receives an
+     * object as its sole argument, containing the current progress of the
+     * tweening and the factor calculated by the easing function.
      *
-     * @name Tween#on
-     * @function
-     * @param {String} type the type of event (currently only 'update')
-     * @param {Function} function the function to be called when the event
-     *     occurs, receiving an object as its
-     *     sole argument, containing the current progress of the
-     *     tweening and the factor calculated by the easing function
-     * @return {Tween} this tween itself, so calls can be chained
-     *
+     * @name Tween#onUpdate
+     * @property
+     * @type Function
      *
      * @example {@paperscript}
      * // Display tween progression values:
@@ -284,11 +280,14 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      * );
      * var progressText = new PointText(view.center + [60, -10]);
      * var factorText = new PointText(view.center + [60, 10]);
-     * tween.on('update', function(event) {
+     * tween.onUpdate = function(event) {
      *     progressText.content = 'progress: ' + event.progress.toFixed(2);
      *     factorText.content = 'factor: ' + event.factor.toFixed(2);
-     * });
+     * };
      */
+    _events: {
+        onUpdate: {}
+    },
 
     _getState: function(state) {
         var keys = this._keys,

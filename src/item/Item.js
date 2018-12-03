@@ -4694,8 +4694,8 @@ new function() { // Injection scope for hit-test functions shared with project
      * var path = new Path.Circle({
      *     radius: view.bounds.height * 0.4,
      *     center: view.center
-     * })
-     * path.tween({ fillColor: 'blue' }, { fillColor: 'red' }, 3000)
+     * });
+     * path.tween({ fillColor: 'blue' }, { fillColor: 'red' }, 3000);
      */
     /**
      * Tween item to a state.
@@ -4713,14 +4713,14 @@ new function() { // Injection scope for hit-test functions shared with project
      *     size: [100, 100],
      *     position: view.center,
      *     fillColor: 'red',
-     * })
+     * });
      *
-     * var delta = { x: path.bounds.width / 2, y: 0 }
+     * var delta = { x: path.bounds.width / 2, y: 0 };
      *
      * path.tween({
      *     'segments[1].point': ['+=', delta],
      *     'segments[2].point.x': '-= 50'
-     * }, 3000)
+     * }, 3000);
      *
      * @see Item#tween(from, to, options)
      */
@@ -4741,16 +4741,16 @@ new function() { // Injection scope for hit-test functions shared with project
      *     fillColor: 'blue',
      *     radius: view.bounds.height * 0.4,
      *     center: view.center,
-     * })
+     * });
      * var pathFrom = path.clone({ insert: false })
      * var pathTo = new Path.Rectangle({
      *     position: view.center,
      *     rectangle: path.bounds,
      *     insert: false
-     * })
-     * path.tween(2000).on('update', function(event) {
+     * });
+     * path.tween(2000).onUpdate = function(event) {
      *     path.interpolate(pathFrom, pathTo, event.factor)
-     * })
+     * };
      */
     tween: function(from, to, options) {
         if (!options) {
@@ -4814,8 +4814,8 @@ new function() { // Injection scope for hit-test functions shared with project
      *     fillColor: 'blue',
      *     radius: view.bounds.height * 0.4,
      *     center: view.center
-     * })
-     * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 })
+     * });
+     * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
      */
     tweenFrom: function(state, options) {
         return this.tween(state, null, options);
