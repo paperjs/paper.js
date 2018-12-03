@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -249,9 +249,10 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * Sets up an empty project for us. If a canvas is provided, it also creates
      * a {@link View} for it, both linked to this scope.
      *
-     * @param {HTMLCanvasElement|String} element the HTML canvas element this
-     * scope should be associated with, or an ID string by which to find the
-     * element.
+     * @param {HTMLCanvasElement|String|Size} element the HTML canvas element
+     * this scope should be associated with, or an ID string by which to find
+     * the element, or the size of the canvas to be created for usage in a web
+     * worker.
      */
     setup: function(element) {
         // Make sure this is the active scope, so the created project and view

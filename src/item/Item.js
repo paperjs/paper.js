@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -1799,6 +1799,7 @@ new function() { // Injection scope for various item event handlers
      * }
      *
      * @param {Point} point the point to check for
+     * @return {Boolean}
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -2345,6 +2346,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * items can have children.
      *
      * @param {String} json the JSON data to import from
+     * @return {Item}
      */
     importJSON: function(json) {
         // Try importing into `this`. If another item is returned, try adding
@@ -2380,7 +2382,8 @@ new function() { // Injection scope for hit-test functions shared with project
      *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
-     * @return {SVGElement} the item converted to an SVG node
+     * @return {SVGElement|String} the item converted to an SVG node or a
+     * `String` depending on `option.asString` value
      */
 
     /**
@@ -2764,6 +2767,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * Replaces this item with the provided new item which will takes its place
      * in the project hierarchy instead.
      *
+     * @param {Item} item the item that will replace this item
      * @return {Boolean} {@true if the item was replaced}
      */
     replaceWith: function(item) {
@@ -2832,7 +2836,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * no children, a {@link TextItem} with no text content and a {@link Path}
      * with no segments all are considered empty.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         var children = this._children;
@@ -3186,7 +3190,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#dashArray
      * @property
-     * @type Array
+     * @type Number[]
      * @default []
      */
 
@@ -4663,4 +4667,176 @@ new function() { // Injection scope for hit-test functions shared with project
         }
         return this;
     }
-}));
+}), /** @lends Item# */{
+    /**
+     * {@grouptitle Tweening Functions}
+     *
+     * Tween item between two states.
+     *
+     * @name Item#tween
+     *
+     * @option options.duration {Number} the duration of the tweening
+     * @option [options.easing='linear'] {Function|String} an easing function or the type
+     * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
+     * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
+     * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
+     * 'easeOutQuint' 'easeInOutQuint'}
+     * @option [options.start=true] {Boolean} whether to start tweening automatically
+     *
+     * @function
+     * @param {Object} from the state at the start of the tweening
+     * @param {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @example {@paperscript height=100}
+     * // Tween fillColor:
+     * var path = new Path.Circle({
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center
+     * });
+     * path.tween(
+     *     { fillColor: 'blue' },
+     *     { fillColor: 'red' },
+     *     3000
+     * );
+     * @example {@paperscript height=100}
+     * // Tween rotation:
+     * var path = new Shape.Rectangle({
+     *     fillColor: 'red',
+     *     center: [50, view.center.y],
+     *     size: [60, 60]
+     * });
+     * path.tween({
+     *     rotation: 180,
+     *     'position.x': view.bounds.width - 50,
+     *     'fillColor.hue': '+= 90'
+     * }, {
+     *     easing: 'easeInOutCubic',
+     *     duration: 2000
+     * });
+     */
+    /**
+     * Tween item to a state.
+     *
+     * @name Item#tween
+     *
+     * @function
+     * @param  {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @example {@paperscript height=200}
+     * // Tween a nested property with relative values
+     * var path = new Path.Rectangle({
+     *     size: [100, 100],
+     *     position: view.center,
+     *     fillColor: 'red',
+     * });
+     *
+     * var delta = { x: path.bounds.width / 2, y: 0 };
+     *
+     * path.tween({
+     *     'segments[1].point': ['+=', delta],
+     *     'segments[2].point.x': '-= 50'
+     * }, 3000);
+     *
+     * @see Item#tween(from, to, options)
+     */
+    /**
+     * Tween item.
+     *
+     * @name Item#tween
+     *
+     * @function
+     * @param  {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(from, to, options)
+     *
+     * @example {@paperscript height=100}
+     * // Start an empty tween and just use the update callback:
+     * var path = new Path.Circle({
+     *     fillColor: 'blue',
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center,
+     * });
+     * var pathFrom = path.clone({ insert: false })
+     * var pathTo = new Path.Rectangle({
+     *     position: view.center,
+     *     rectangle: path.bounds,
+     *     insert: false
+     * });
+     * path.tween(2000).onUpdate = function(event) {
+     *     path.interpolate(pathFrom, pathTo, event.factor)
+     * };
+     */
+    tween: function(from, to, options) {
+        if (!options) {
+            // If there are only two or one arguments, shift arguments to the
+            // left by one (omit `from`):
+            options = to;
+            to = from;
+            from = null;
+            if (!options) {
+                options = to;
+                to = null;
+            }
+        }
+        var easing = options && options.easing,
+            start = options && options.start,
+            duration = options != null && (
+                typeof options === 'number' ? options : options.duration
+            ),
+            tween = new Tween(this, from, to, duration, easing, start);
+        function onFrame(event) {
+            tween._handleFrame(event.time * 1000);
+            if (!tween.running) {
+                this.off('frame', onFrame);
+            }
+        }
+        if (duration) {
+            this.on('frame', onFrame);
+        }
+        return tween;
+    },
+
+    /**
+     *
+     * Tween item to a state.
+     *
+     * @function
+     * @param {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(to, options)
+     */
+    tweenTo: function(to, options) {
+        return this.tween(null, to, options);
+    },
+
+    /**
+     *
+     * Tween item from a state to its state before the tweening.
+     *
+     * @function
+     * @param {Object} from the state at the start of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(from, to, options)
+     *
+     * @example {@paperscript height=100}
+     * // Tween fillColor from red to the path's initial fillColor:
+     * var path = new Path.Circle({
+     *     fillColor: 'blue',
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center
+     * });
+     * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
+     */
+    tweenFrom: function(from, options) {
+        return this.tween(from, null, options);
+    }
+});

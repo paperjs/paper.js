@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -31,7 +31,9 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     /**
      * Creates a new symbol item.
      *
-     * @param {Symbol} definition the symbol definition to place
+     * @name SymbolItem#initialize
+     * @param {SymbolDefinition|Item} definition the definition to place or an
+     *     item to place as a symbol
      * @param {Point} [point] the center point of the placed symbol
      *
      * @example {@paperscript split=true height=240}

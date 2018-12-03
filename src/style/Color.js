@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -691,6 +691,7 @@ var Color = Base.extend(new function() {
          * constructors also work for calls of `set()`.
          *
          * @function
+         * @return {Color}
          */
         set: '#initialize',
 
@@ -729,7 +730,7 @@ var Color = Base.extend(new function() {
         },
 
         /**
-         * Converts the color another type.
+         * Converts the color to another type.
          *
          * @param {String} type the color type to convert to. Possible values:
          * {@values 'rgb', 'gray', 'hsb', 'hsl'}
@@ -1183,6 +1184,17 @@ var Color = Base.extend(new function() {
             // Export for backward compatibility code below.
             _types: types,
 
+            /**
+             * Creates a random color.
+             *
+             * @return {Color} the randomly created color
+             * @static
+             *
+             * @example {@paperscript}
+             * var circle = new Path.Circle(view.center, 50);
+             * // Set a random color as circle fill color.
+             * circle.fillColor = Color.random();
+             */
             random: function() {
                 var random = Math.random;
                 return new Color(random(), random(), random());

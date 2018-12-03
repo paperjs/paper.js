@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -161,7 +161,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
      *
      * @bean
      * @type Boolean
-     * @see Path#isClosed()
+     * @see Path#closed
      */
     isClosed: function() {
         var children = this._children;
@@ -193,7 +193,7 @@ var CompoundPath = PathItem.extend(/** @lends CompoundPath# */{
 
     /**
      * The last Segment contained within the compound-path, a short-cut to
-     * calling {@link Path#lastChild} on {@link Item#lastChild}.
+     * calling {@link Path#lastSegment} on {@link Item#lastChild}.
      *
      * @bean
      * @type Segment

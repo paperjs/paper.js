@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -64,4 +64,6 @@
 /*#*/ include('Numerical.js');
 
 // There is no need to test interactions in node context.
-if (!isNode) /*#*/ include('Interactions.js');
+if (!isNode) {
+    /*#*/ include('Interactions.js');
+}

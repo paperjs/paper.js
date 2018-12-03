@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -177,7 +177,7 @@ Base.exports.PaperScript = function() {
             var start = getOffset(node.range[0]),
                 end = getOffset(node.range[1]),
                 insert = 0;
-            // Sort insertions by their offset, so getOffest() can do its thing
+            // Sort insertions by their offset, so getOffset() can do its thing
             for (var i = insertions.length - 1; i >= 0; i--) {
                 if (start > insertions[i][0]) {
                     insert = i + 1;
@@ -323,7 +323,7 @@ Base.exports.PaperScript = function() {
 
         // Source-map support:
         // Encodes a Variable Length Quantity as a Base64 string.
-        // See: http://www.html5rocks.com/en/tutorials/developertools/sourcemaps
+        // See: https://www.html5rocks.com/en/tutorials/developertools/sourcemaps/
         function encodeVLQ(value) {
             var res = '',
                 base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -442,7 +442,7 @@ Base.exports.PaperScript = function() {
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
      * @param {Object} [option] the compilation options
-     * @return the exports defined in the executed code
+     * @return {Object} the exports defined in the executed code
      */
     function execute(code, scope, options) {
         // Set currently active scope.
@@ -657,7 +657,9 @@ Base.exports.PaperScript = function() {
         compile: compile,
         execute: execute,
         load: load,
-        parse: parse
+        parse: parse,
+        calculateBinary: __$__,
+        calculateUnary: $__
     };
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.

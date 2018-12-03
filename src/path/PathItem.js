@@ -3,7 +3,7 @@
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -102,8 +102,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @bean
      * @type Boolean
-     * @see Path#getArea()
-     * @see CompoundPath#getArea()
+     * @see Path#area
+     * @see CompoundPath#area
      */
     isClockwise: function() {
         return this.getArea() >= 0;
@@ -345,6 +345,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * crossing each other, as opposed to simply touching.
      *
      * @param {PathItem} path the other item to find the crossings with
+     * @return {CurveLocation[]} the locations of all crossings between the
+     *     paths
      * @see #getIntersections(path)
      */
     getCrossings: function(path) {
