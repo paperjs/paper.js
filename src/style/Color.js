@@ -1186,9 +1186,10 @@ var Color = Base.extend(new function() {
             _types: types,
 
             /**
-             * Creates a random color.
+             * Returns a color object with random {@link #red}, {@link #green}
+             * and {@link #blue} values between `0` and `1`.
              *
-             * @return {Color} the randomly created color
+             * @return {Color} the newly created color object
              * @static
              *
              * @example {@paperscript}
