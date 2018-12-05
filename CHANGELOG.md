@@ -1,5 +1,11 @@
 # Change Log
 
+## `prebuilt`
+
+### Added
+
+- `new Raster(size[, position])` constructor (#1621).
+
 ## `0.12.0`
 
 ### News

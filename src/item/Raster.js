@@ -36,10 +36,11 @@ var Raster = Item.extend(/** @lends Raster# */{
     // TODO: Have SymbolItem & Raster inherit from a shared class?
     /**
      * Creates a new raster item from the passed argument, and places it in the
-     * active layer. `object` can either be a DOM Image, a Canvas, or a string
+     * active layer. `source` can either be a DOM Image, a Canvas, or a string
      * describing the URL to load the image from, or the ID of a DOM element to
      * get the image from (either a DOM Image or a Canvas).
      *
+     * @name Raster#initialize
      * @param {HTMLImageElement|HTMLCanvasElement|String} [source] the source of
      *     the raster
      * @param {Point} [position] the center position at which the raster item is
@@ -77,17 +78,47 @@ var Raster = Item.extend(/** @lends Raster# */{
      * raster.scale(0.5);
      * raster.rotate(10);
      */
+    /**
+     * Creates a new empty raster of the given size, and places it in the
+     * active layer.
+     *
+     * @name Raster#initialize
+     * @param {Size} size the size of the raster
+     * @param {Point} [position] the center position at which the raster item is
+     *     placed
+     *
+     * @example {@paperscript height=150}
+     * // Creating an empty raster and fill it with random pixels:
+     * var width = 100;
+     * var height = 100;
+     *
+     * // Create an empty raster placed at view center.
+     * var raster = new Raster(new Size(width, height), view.center);
+     *
+     * // For all of its pixels...
+     * for (var i = 0; i < width; i++) {
+     *     for (var j = 0; j < height; j++) {
+     *         // ...set a random color.
+     *         raster.setPixel(i, j, Color.random());
+     *     }
+     * }
+     */
     initialize: function Raster(object, position) {
-        // Support two forms of item initialization: Passing one object literal
-        // describing all the different properties to be set, or an image
-        // (object) and a point where it should be placed (point).
+        // Support three forms of item initialization:
+        // - One object literal describing all the different properties.
+        // - An image (Image|Canvas|String) and an optional position (Point).
+        // - A size (Size) describing the canvas that will be  created and an
+        // optional position (Point).
         // If _initialize can set properties through object literal, we're done.
         // Otherwise we need to check the type of object:
         if (!this._initialize(object,
                 position !== undefined && Point.read(arguments, 1))) {
-            // object can be an image, canvas, URL or DOM-ID:
+            // Object can be an image, canvas, URL, DOM-ID or Size:
             var image = typeof object === 'string'
-                    ? document.getElementById(object) : object;
+                ? document.getElementById(object)
+                : object instanceof Size
+                    ? CanvasProvider.getCanvas(object)
+                    : object;
             if (image) {
                 // #setImage() handles both canvas and image types.
                 this.setImage(image);
@@ -615,7 +646,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#getPixel
      * @function
-     * @param {Point} point the offset of the pixel as a point in pixel coordinates
+     * @param {Point} point the offset of the pixel as a point in pixel
+     *     coordinates
      * @return {Color} the color of the pixel
      */
     getPixel: function(/* point */) {
@@ -640,7 +672,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#setPixel
      * @function
-     * @param {Point} point the offset of the pixel as a point in pixel coordinates
+     * @param {Point} point the offset of the pixel as a point in pixel
+     *     coordinates
      * @param {Color} color the color that the pixel will be set to
      */
     setPixel: function(/* point, color */) {
