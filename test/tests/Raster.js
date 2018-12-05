@@ -206,3 +206,31 @@ test('Raster#setSmoothing setting does not impact canvas context', function(asse
         done();
     };
 });
+
+test('new Raster(size[, position])', function() {
+    // Size only.
+    var raster = new Raster(new Size(100, 100));
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    var raster = new Raster({size:new Size(100, 100)});
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    var raster = new Raster({width:100, height:100});
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    // Size and position.
+    var raster = new Raster(new Size(100, 100), new Point(100, 100));
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+
+    var raster = new Raster({size:new Size(100, 100), position:new Point(100, 100)});
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+
+    var raster = new Raster({width:100, height:100, position:new Point(100, 100)});
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+});
