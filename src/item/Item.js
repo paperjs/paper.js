@@ -4481,11 +4481,28 @@ new function() { // Injection scope for hit-test functions shared with project
             mainCtx, itemOffset, prevOffset;
         if (!direct) {
             // Apply the parent's global matrix to the calculation of correct
-            // bounds, and only cover their part that is visible on the canvas
+            // bounds, and include the item's shadow (#1628).
+            var bounds = this.getStrokeBounds(viewMatrix),
+                style = this._style;
+            // Pass true for _dontMerge, as groups don't draw the shadows of
+            // their children.
+            if (style.getShadowColor(true)) {
+                // Transform the shadow the same way as in _setStyles(), and
+                // cover its blur up to three times the standard deviation,
+                // which is half of shadowBlur in Canvas.
+                var mx = viewMatrix._shiftless(),
+                    blur = mx.transform(
+                            new Point(style.getShadowBlur(true), 0)),
+                    offset = mx.transform(style.getShadowOffset(true));
+                bounds = bounds.unite(
+                    new Rectangle(bounds.getPoint().add(offset),
+                        bounds.getSize()).expand(blur.getLength() * 3));
+            }
+            // Only cover the part of the bounds that is visible on the canvas
             // that we're drawing into (#1644). NOTE: Item#rasterize() doesn't
             // set param.offset, so new Point() turns it into 0, 0.
-            var canvas = ctx.canvas,
-                bounds = this.getStrokeBounds(viewMatrix).intersect(
+            var canvas = ctx.canvas;
+            bounds = bounds.intersect(
                     new Rectangle(new Point(param.offset),
                         new Size(canvas.width, canvas.height)
                             .divide(pixelRatio)));

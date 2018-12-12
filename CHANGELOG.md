@@ -115,6 +115,8 @@
   clipped everything away (#1445, #1590).
 - Keep the lines of multi-line text in `#exportSVG()` and `#importSVG()`, as
   `<tspan>` elements at their own baselines (#988).
+- Fix shadows being cut off on items with a fill, a stroke and an opacity,
+  which are drawn through a temporary canvas (#1628).
 - Docs: Mark the `path` argument of `PathItem#getIntersections()` as optional.
 - Docs: Add `View#onKeyDown`, `View#onKeyUp`, `Point#negate()`,
   `Size#negate()`, `PaperScope#createCanvas()`, `#clear()` and `#remove()`.

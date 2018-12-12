@@ -968,6 +968,131 @@ test('Item#opacity and Item#blendMode on items larger than the view (#1644)', fu
     view.zoom = 1;
 });
 
+test('Item#shadowOffset and Item#shadowBlur with opacity (#1628)', function() {
+    // Items with both a fill and a stroke and an opacity are composited
+    // through a temporary canvas, which needs to include their shadow.
+    function getPixel(point) {
+        var pixelRatio = view.pixelRatio,
+            ctx = view.element.getContext('2d');
+        return Base.slice(ctx.getImageData(point[0] * pixelRatio,
+                point[1] * pixelRatio, 1, 1).data);
+    }
+
+    function testPixels(pixels, name) {
+        view.update();
+        for (var i = 0; i < pixels.length; i++) {
+            var point = pixels[i][0],
+                expected = pixels[i][1],
+                actual = getPixel(point);
+            // Allow for rounding of half-transparent channels:
+            equals(function() {
+                return actual.every(function(value, j) {
+                    return Math.abs(value - expected[j]) <= 1;
+                });
+            }, true, name + ' at ' + point + ': ' + actual + ', expected: '
+                    + expected);
+        }
+    }
+
+    // A square with a hard shadow, offset to the bottom right of it, without
+    // any overlap: The item covers 9..31, the shadow 49..71.
+    var path = new Path.Rectangle({
+        from: [10, 10],
+        to: [30, 30],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 2,
+        shadowColor: 'black',
+        shadowOffset: [40, 40],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[52, 52], [0, 0, 0, 128]],
+        [[60, 60], [0, 0, 0, 128]],
+        [[68, 68], [0, 0, 0, 128]],
+        [[75, 75], [0, 0, 0, 0]]
+    ], 'shadowOffset');
+
+    // The shadow is transformed with the item: Zoomed by 2 around the view's
+    // center, the square from 30 to 40 covers 9..31 in the view again, and
+    // its shadow 49..71.
+    path.remove();
+    path = new Path.Rectangle({
+        from: [30, 30],
+        to: [40, 40],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 1,
+        shadowColor: 'black',
+        shadowOffset: [20, 20],
+        opacity: 0.5
+    });
+    view.zoom = 2;
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[52, 52], [0, 0, 0, 128]],
+        [[60, 60], [0, 0, 0, 128]],
+        [[68, 68], [0, 0, 0, 128]],
+        [[75, 75], [0, 0, 0, 0]]
+    ], 'shadowOffset in a zoomed view');
+    view.zoom = 1;
+    path.remove();
+
+    // A blurred shadow without an offset: Compare it to the shadow that the
+    // canvas draws directly without opacity, composited at half opacity.
+    path = new Path.Rectangle({
+        from: [40, 40],
+        to: [60, 60],
+        fillColor: 'red',
+        strokeColor: 'red',
+        strokeWidth: 2,
+        shadowColor: 'black',
+        shadowBlur: 10
+    });
+    view.update();
+    var points = [[50, 36], [50, 33], [50, 30], [64, 50], [64, 64]],
+        pixels = points.map(function(point) {
+            var pixel = getPixel(point);
+            return [point, [0, 0, 0, Math.round(pixel[3] / 2)]];
+        });
+    equals(function() {
+        return pixels.every(function(pixel) {
+            return pixel[1][3] > 0;
+        });
+    }, true, 'The blurred shadow reaches all tested points');
+    path.opacity = 0.5;
+    testPixels(pixels, 'shadowBlur');
+    path.remove();
+
+    // Groups don't draw shadows themselves, and children with different
+    // shadows don't stop them from drawing:
+    var group = new Group({
+        children: [
+            new Path.Rectangle({
+                from: [10, 10],
+                to: [30, 30],
+                fillColor: 'red',
+                shadowColor: 'black',
+                shadowOffset: [40, 40]
+            }),
+            new Path.Rectangle({
+                from: [10, 40],
+                to: [30, 50],
+                fillColor: 'red',
+                shadowColor: 'black',
+                shadowOffset: [40, 0]
+            })
+        ],
+        opacity: 0.5
+    });
+    testPixels([
+        [[20, 20], [255, 0, 0, 128]],
+        [[20, 45], [255, 0, 0, 128]]
+    ], 'group with different shadows');
+    group.remove();
+});
+
 test('Item#rasterize() with opacity (#1644)', function() {
     // Rasterizing draws into the raster's own canvas, away from the view:
     var group = new Group({
