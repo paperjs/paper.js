@@ -1,5 +1,11 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Fix css color parse (#1629)
+
 ## `0.12.0`
 
 ### News

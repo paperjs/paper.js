@@ -80,7 +80,7 @@ var Color = Base.extend(new function() {
         } else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
             // RGB / RGBA or HSL / HSLA
             type = match[1];
-            components = match[2].split(/[,\s]+/g);
+            components = match[2].trim().split(/[,\s]+/g);
             var isHSL = type === 'hsl';
             for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
                 var component = components[i];
