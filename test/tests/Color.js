@@ -81,6 +81,9 @@ test('Creating Colors', function() {
     equals(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
             'Color from rgba() string');
 
+    equals(new Color('rgba( 255, 0, 0, 0.5 )'), new Color(1, 0, 0, 0.5),
+            'Color from rgba() string 2nd test');
+
     equals(new Color('hsl(180deg, 20%, 40%)'),
             new Color({ hue: 180, saturation: 0.2, lightness: 0.4 }),
             'Color from hsl() string');

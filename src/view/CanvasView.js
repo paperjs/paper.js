@@ -124,7 +124,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
     /**
      * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
+     * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
      * @return {Boolean} {@true if the view was updated}

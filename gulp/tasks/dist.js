@@ -22,6 +22,7 @@ gulp.task('zip', ['clean:zip', 'dist'], function() {
             gulp.src([
                 'dist/paper-full*.js',
                 'dist/paper-core*.js',
+                'dist/paper.d.ts',
                 'dist/node/**/*',
                 'LICENSE.txt',
                 'examples/**/*',

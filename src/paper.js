@@ -102,6 +102,8 @@ var paper = function(self, undefined) {
 /*#*/ include('tool/ToolEvent.js');
 /*#*/ include('tool/Tool.js');
 
+/*#*/ include('anim/Tween.js');
+
 /*#*/ include('net/Http.js');
 
 /*#*/ include('canvas/CanvasProvider.js');

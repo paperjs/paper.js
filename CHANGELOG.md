@@ -5,9 +5,31 @@
 ### Fixed
 
 - Fix arc drawing when `from` and `to` points are equal (#1613).
-- Fix empty image drawing (#1320).
+- Fix css color parse (#1629)
+
+## `0.12.0`
+
+### News
+
+Another release, another new member on the team: Please welcome [@arnoson](https://github.com/arnoson), who has
+worked hard on the all new animation support, exposed through the `Tween` class
+and its various methods on the `Item` class, see below for details:
 
 ### Added
+
+- Add new `Tween` class and related methods on `Item`, to animate and
+  interpolate their various properties, including colors, sub-properties, etc.:
+  `Item#tween(from, to, options)`, `Item#tween(to, options)`,
+  `Item#tween(options)`, `Item#tweenFrom(from, options)`,
+  `Item#tweenTo(to, options)`
+
+### Fixed
+
+- Only draw Raster if image is not empty (#1320).
+- Emit mousedrag events on correct items when covered by other items (#1465).
+- Fix drawing issues of bounds and position with `Group#selectedColor` (#1571).
+- Fix `Item.once()` to actually only emit event once.
+- Various documentation fixes and improvements (#1399).
 
 ## `0.11.8`
 
