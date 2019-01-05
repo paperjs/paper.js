@@ -1,4 +1,4 @@
-Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
 http://scratchdisk.com/ & https://puckey.studio/
 All rights reserved.
 

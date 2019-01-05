@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -73,7 +73,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * Creates a new rectangle object from the passed rectangle object.
      *
      * @name Rectangle#initialize
-     * @param {Rectangle} rt
+     * @param {Rectangle} rectangle
      */
     initialize: function Rectangle(arg0, arg1, arg2, arg3) {
         var type = typeof arg0,
@@ -159,6 +159,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * constructors also work for calls of `set()`.
      *
      * @function
+     * @param {...*} value
+     * @return {Rectangle}
      */
     set: '#initialize',
 
@@ -201,6 +203,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
 
     /**
      * Returns a copy of the rectangle.
+     * @return {Rectangle}
      */
     clone: function() {
         return new Rectangle(this.x, this.y, this.width, this.height);

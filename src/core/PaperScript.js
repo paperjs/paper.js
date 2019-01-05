@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -177,7 +177,7 @@ Base.exports.PaperScript = function() {
             var start = getOffset(node.range[0]),
                 end = getOffset(node.range[1]),
                 insert = 0;
-            // Sort insertions by their offset, so getOffest() can do its thing
+            // Sort insertions by their offset, so getOffset() can do its thing
             for (var i = insertions.length - 1; i >= 0; i--) {
                 if (start > insertions[i][0]) {
                     insert = i + 1;
@@ -657,7 +657,9 @@ Base.exports.PaperScript = function() {
         compile: compile,
         execute: execute,
         load: load,
-        parse: parse
+        parse: parse,
+        calculateBinary: __$__,
+        calculateUnary: $__
     };
 // Pass on `this` as the binding object, so we can reference Acorn both in
 // development and in the built library.
