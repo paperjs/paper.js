@@ -4,7 +4,8 @@
 
 ### Fixed
 
-- Fix css color parse (#1629)
+- Fix css color parse (#1629).
+- Fix SVG imported gradients default values (#1632).
 
 ## `0.12.0`
 

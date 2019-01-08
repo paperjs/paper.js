@@ -176,7 +176,8 @@ if (!isNode) {
         'symbol': {},
         'symbols': {},
         'blendModes': {},
-        'gradients-1': {}
+        'gradients-1': {},
+        'gradients-3': {}
     };
     // TODO: Investigate why Phantom struggles with this file:
     if (!isPhantom)

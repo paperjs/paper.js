@@ -22,11 +22,12 @@ new function() {
     var definitions = {},
         rootSize;
 
-    function getValue(node, name, isString, allowNull, allowPercent) {
+    function getValue(node, name, isString, allowNull, allowPercent,
+                      defaultValue) {
         // Interpret value as number. Never return NaN, but 0 instead.
         // If the value is a sequence of numbers, parseFloat will
         // return the first occurring number, which is enough for now.
-        var value = SvgElement.get(node, name),
+        var value = SvgElement.get(node, name) || defaultValue,
             res = value == null
                 ? allowNull
                     ? null
@@ -43,9 +44,9 @@ new function() {
             : res;
     }
 
-    function getPoint(node, x, y, allowNull, allowPercent) {
-        x = getValue(node, x || 'x', false, allowNull, allowPercent);
-        y = getValue(node, y || 'y', false, allowNull, allowPercent);
+    function getPoint(node, x, y, allowNull, allowPercent, defaultX, defaultY) {
+        x = getValue(node, x || 'x', false, allowNull, allowPercent, defaultX);
+        y = getValue(node, y || 'y', false, allowNull, allowPercent, defaultY);
         return allowNull && (x == null || y == null) ? null
                 : new Point(x, y);
     }
@@ -168,13 +169,16 @@ new function() {
                 'userSpaceOnUse';
         // Allow percentages in all values if scaleToBounds is true:
         if (radial) {
-            origin = getPoint(node, 'cx', 'cy', false, scaleToBounds);
+            origin = getPoint(node, 'cx', 'cy', false, scaleToBounds, '50%',
+                '50%');
             destination = origin.add(
-                    getValue(node, 'r', false, false, scaleToBounds), 0);
+                getValue(node, 'r', false, false, scaleToBounds, '50%'), 0);
             highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds);
         } else {
-            origin = getPoint(node, 'x1', 'y1', false, scaleToBounds);
-            destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
+            origin = getPoint(node, 'x1', 'y1', false, scaleToBounds, '0%',
+                '0%');
+            destination = getPoint(node, 'x2', 'y2', false, scaleToBounds,
+                '100%', '0%');
         }
         var color = applyAttributes(
                 new Color(gradient, origin, destination, highlight), node);
