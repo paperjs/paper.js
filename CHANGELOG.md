@@ -8,7 +8,8 @@
 
 ### Fixed
 
-- Fix error in `Item#exportSVG()` when `Item#matrix` is not invertible (#1580).
+- SVG Export: Fix error when `Item#matrix` is not invertible (#1580).
+- SVG Import: Fix gradient default values (#1632).
 
 # `0.12.1`
 
