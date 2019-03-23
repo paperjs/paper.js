@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.11.5",
+  "version": "0.12.0",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -9,11 +9,9 @@
     "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
-  "contributors": [
-    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
-    "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
-  ],
+  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"],
   "main": "dist/paper-full.js",
+  "types": "dist/paper.d.ts",
   "scripts": {
     "precommit": "gulp jshint --branch develop",
     "prepush": "gulp test --branch develop",
@@ -25,14 +23,7 @@
     "jshint": "gulp jshint",
     "test": "gulp test"
   },
-  "files": [
-    "AUTHORS.md",
-    "CHANGELOG.md",
-    "dist/",
-    "examples/",
-    "LICENSE.txt",
-    "README.md"
-  ],
+  "files": ["AUTHORS.md", "CHANGELOG.md", "dist/", "examples/", "LICENSE.txt", "README.md"],
   "engines": {
     "node": ">=4.0.0"
   },
@@ -42,7 +33,7 @@
     "del": "^2.2.1",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^2.4.0",
+    "gulp-git-streamed": "^2.8.1",
     "gulp-jshint": "^2.0.0",
     "gulp-json-editor": "^2.2.1",
     "gulp-prepro": "^2.4.0",
@@ -62,6 +53,7 @@
     "jshint-summary": "^0.4.0",
     "merge-stream": "^1.0.0",
     "minimist": "^1.2.0",
+    "mustache": "^3.0.1",
     "prepro": "^2.4.0",
     "qunitjs": "^1.23.0",
     "require-dir": "^0.3.0",
@@ -69,7 +61,8 @@
     "run-sequence": "^1.2.2",
     "source-map-support": "^0.4.0",
     "stats.js": "0.16.0",
-    "straps": "^3.0.1"
+    "straps": "^3.0.1",
+    "typescript": "^3.1.6"
   },
   "browser": {
     "canvas": false,
@@ -79,21 +72,5 @@
     "./dist/node/self.js": false,
     "./dist/node/extend.js": false
   },
-  "keywords": [
-    "vector",
-    "graphic",
-    "graphics",
-    "2d",
-    "geometry",
-    "bezier",
-    "curve",
-    "curves",
-    "path",
-    "paths",
-    "canvas",
-    "svg",
-    "paper",
-    "paper.js",
-    "paperjs"
-  ]
+  "keywords": ["vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve", "curves", "path", "paths", "canvas", "svg", "paper", "paper.js", "paperjs"]
 }

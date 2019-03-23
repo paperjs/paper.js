@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -170,6 +170,8 @@ var Point = Base.extend(/** @lends Point# */{
      * for calls of `set()`.
      *
      * @function
+     * @param {...*} value
+     * @return {Point}
      */
     set: '#initialize',
 
@@ -768,7 +770,7 @@ var Point = Base.extend(/** @lends Point# */{
      *
      * @param {Number} quadrant the quadrant to check against
      * @return {Boolean} {@true if either x or y are not a number}
-     * @see #getQuadrant()
+     * @see #quadrant
      */
     isInQuadrant: function(q) {
         // Map quadrant to x & y coordinate pairs and multiply with coordinates,

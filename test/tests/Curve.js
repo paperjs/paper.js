@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -346,4 +346,26 @@ test('Curve#divideAt(offset)', function() {
     equals(function() {
         return new Curve(point1, point2).divideAtTime(0.5).point1;
     }, middle);
+});
+
+test('Curve#getTimesWithTangent()', function() {
+    var curve = new Curve([0, 0], [100, 0], [0, -100], [200, 200]);
+    equals(curve.getTimesWithTangent(), [], 'should return empty array when called without argument');
+    equals(curve.getTimesWithTangent([1, 0]), [0], 'should return tangent at start');
+    equals(curve.getTimesWithTangent([-1, 0]), [0], 'should return the same when called with opposite direction vector');
+    equals(curve.getTimesWithTangent([0, 1]), [1], 'should return tangent at end');
+    equals(curve.getTimesWithTangent([1, 1]), [0.5], 'should return tangent at middle');
+    equals(curve.getTimesWithTangent([1, -1]), [], 'should return empty array when there is no tangent');
+
+    equals(
+        new Curve([0, 0], [100, 0], [500, -500], [-500, -500]).getTimesWithTangent([1, 0]).length,
+        2,
+        'should return 2 values for specific self-intersecting path case'
+    );
+
+    equals(
+        new Curve([0, 0], [100, 0], [0, -100], [0, -100]).getTimesWithTangent([1, 0]).length,
+        2,
+        'should return 2 values for specific parabollic path case'
+    );
 });

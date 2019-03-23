@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -309,7 +309,9 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
                 // so there's always a delta.
                 toolPoint = move ? tool._point : (tool._downPoint || pt);
             if (move) {
-                if (tool._moveCount && pt.equals(toolPoint)) {
+                // After first move event was emitted, tool._moveCount = 0, so
+                // we need to include 0 in this check.
+                if (tool._moveCount >= 0 && pt.equals(toolPoint)) {
                     return false;
                 }
                 if (toolPoint && (minDistance != null || maxDistance != null)) {

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -14,7 +14,7 @@
 // the browser, avoiding the step of having to manually preprocess it after each
 // change. This is very useful during development of the library itself.
 if (typeof window === 'object') {
-     // Browser based loading through Prepro.js:
+    // Browser based loading through Prepro.js:
     if (!window.include) {
         // Get the last script tag and assume it's the one that loaded this file
         // then get its src attribute and figure out the location of our root.
@@ -36,6 +36,13 @@ if (typeof window === 'object') {
         // the code the 2nd time around.
         load(root + 'src/load.js');
     } else {
+        // Some native javascript classes have name collisions with Paper.js
+        // classes. Store them to be able to use them later in tests.
+        NativeClasses = {
+            Event: Event,
+            MouseEvent: MouseEvent
+        };
+
         include('options.js');
         // Load constants.js, required by the on-the-fly preprocessing:
         include('constants.js');

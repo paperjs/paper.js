@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -44,9 +44,10 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * Note that when working with PaperScript, a project is automatically
      * created for us and the {@link PaperScope#project} variable points to it.
      *
-     * @param {HTMLCanvasElement|String} element the HTML canvas element that
-     * should be used as the element for the view, or an ID string by which to
-     * find the element.
+     * @param {HTMLCanvasElement|String|Size} element the HTML canvas element
+     * that should be used as the element for the view, or an ID string by which
+     * to find the element, or the size of the canvas to be created for usage in
+     * a web worker.
      */
     initialize: function Project(element) {
         // Activate straight away by passing true to PaperScopeItem constructor,
@@ -132,7 +133,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
     /**
      * Checks whether the project has any content or not.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         return !this._children.length;
@@ -347,7 +348,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * {@link #layers} list.
      *
      * @param {Number} index the index at which to insert the layer
-     * @param {Item} item the item to be inserted in the project
+     * @param {Layer} layer the layer to be inserted in the project
      * @return {Layer} the added layer, or `null` if adding was not possible
      */
     insertLayer: function(index, layer) {
@@ -744,6 +745,7 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      * {@link Project#clear()} to do so.
      *
      * @param {String} json the JSON data to import from
+     * @return {Item} the imported item
      */
     importJSON: function(json) {
         this.activate();
@@ -780,7 +782,8 @@ var Project = PaperScopeItem.extend(/** @lends Project# */{
      *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
-     * @return {SVGElement} the project converted to an SVG node
+     * @return {SVGElement|String} the project converted to an SVG node or a
+     * `String` depending on `option.asString` value
      */
 
     /**

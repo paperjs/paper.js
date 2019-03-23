@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -522,14 +522,12 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @bean
      * @type Number
-     * @see #getScaling()
+     * @see #scaling
      */
     getZoom: function() {
-        var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling;
-        // Use average since it can be non-uniform, and return 0 when it can't
-        // be decomposed.
-        return scaling ? (scaling.x + scaling.y) / 2 : 0;
+        var scaling = this._decompose().scaling;
+        // Use average since it can be non-uniform.
+        return (scaling.x + scaling.y) / 2;
     },
 
     setZoom: function(zoom) {
@@ -545,8 +543,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @type Number
      */
     getRotation: function() {
-        var decomposed = this._decompose();
-        return decomposed && decomposed.rotation;
+        return this._decompose().rotation;
     },
 
     setRotation: function(rotation) {
@@ -562,14 +559,11 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @bean
      * @type Point
-     * @see #getZoom()
+     * @see #zoom
      */
     getScaling: function() {
-        var decomposed = this._decompose(),
-            scaling = decomposed && decomposed.scaling;
-        return scaling
-                ? new LinkedPoint(scaling.x, scaling.y, this, 'setScaling')
-                : undefined;
+        var scaling = this._decompose().scaling;
+        return new LinkedPoint(scaling.x, scaling.y, this, 'setScaling');
     },
 
     setScaling: function(/* scaling */) {
@@ -1271,11 +1265,12 @@ new function() { // Injection scope for event handling on the browser
                     point, prevPoint)
             // Next handle the hit-item, if it's different from the drag-item
             // and not a descendant of it (in which case it would already have
-            // received an event in the call above).
+            // received an event in the call above). Translate mousedrag to
+            // mousemove, since drag is handled above.
             || hitItem && hitItem !== dragItem
                 && !hitItem.isDescendant(dragItem)
-                && emitMouseEvent(hitItem, null, type, event, point, prevPoint,
-                    dragItem)
+                && emitMouseEvent(hitItem, null, type === 'mousedrag' ?
+                    'mousemove' : type, event, point, prevPoint, dragItem)
             // Lastly handle the mouse events on the view, if we're still here.
             || emitMouseEvent(view, dragItem || hitItem || view, type, event,
                     point, prevPoint));
@@ -1498,7 +1493,20 @@ new function() { // Injection scope for event handling on the browser
              * Loops through all views and sets the focus on the first
              * active one.
              */
-            updateFocus: updateFocus
+            updateFocus: updateFocus,
+
+            /**
+             * Clear all events handling state informations. Made for testing
+             * purpose, to have a way to start with a fresh state before each
+             * test.
+             * @private
+             */
+            _resetState: function() {
+                dragging = mouseDown = called = wasInView = false;
+                prevFocus = tempFocus = overView = downPoint = lastPoint =
+                    downItem = overItem = dragItem = clickItem = clickTime =
+                    dblClick = null;
+            }
         }
     };
 });

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -788,4 +788,13 @@ test('group.internalBounds with child and child.applyMatrix = false (#1250)', fu
     item1.scale(0.5);
     equals(group.internalBounds, new Rectangle(0, 0, 250, 250),
             'group.internalBounds after scaling item1');
+});
+
+test('#1561 item._globalMatrix on item after empty symbol', function(){
+    var symbol = new SymbolItem(new Path());
+    symbol.opacity = 0.5;
+    symbol.skew(10);
+    var item = new Path.Circle(new Point(0,0), 10);
+    view.update();
+    equals(item._globalMatrix, new Matrix());
 });

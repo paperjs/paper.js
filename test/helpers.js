@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -34,6 +34,16 @@ if (isNode) {
     });
 }
 
+// Some native javascript classes have name collisions with Paper.js classes.
+// If they have not already been stored in src/load.js, we dot it now.
+if (!isNode && typeof NativeClasses === 'undefined')
+{
+    NativeClasses = {
+        Event: Event,
+        MouseEvent: MouseEvent
+    };
+}
+
 // The unit-tests expect the paper classes to be global.
 paper.install(scope);
 
@@ -48,11 +58,15 @@ console.error = function() {
     errorHandler.apply(this, arguments);
 };
 
+var currentProject;
+
 QUnit.done(function(details) {
     console.error = errorHandler;
+    // Clear all event listeners after final test.
+    if (currentProject) {
+        currentProject.remove();
+    }
 });
-
-var currentProject;
 
 // NOTE: In order to "export" all methods into the shared Prepro.js scope when
 // using node-qunit, we need to define global functions as:
@@ -61,9 +75,16 @@ var test = function(testName, expected) {
     return QUnit.test(testName, function(assert) {
         // Since tests can be asynchronous, remove the old project before
         // running the next test.
-        if (currentProject)
+        if (currentProject) {
             currentProject.remove();
-        currentProject = new Project();
+            // This is needed for interactions tests, to make sure that test is
+            // run with a fresh state.
+            View._resetState();
+        }
+
+        // Instantiate project with 100x100 pixels canvas instead of default
+        // 1x1 to make interactions tests simpler by working with integers.
+        currentProject = new Project(new Size(100, 100));
         expected(assert);
     });
 };
@@ -140,6 +161,74 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
+/**
+ * Compare 2 image data with resemble.js library.
+ * When comparison fails, expected, actual and compared images are displayed.
+ * @param {ImageData} imageData1 the expected image data
+ * @param {ImageData} imageData2 the actual image data
+ * @param {number} tolerance
+ * @param {string} diffDetail text displayed when comparison fails
+ */
+var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
+    /**
+     * Build an image element from a given image data.
+     * @param {ImageData} imageData
+     * @return {HTMLImageElement}
+     */
+    function image(imageData) {
+        var canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        canvas.getContext('2d').putImageData(imageData, 0, 0);
+        var image = new Image();
+        image.src = canvas.toDataURL();
+        canvas.remove();
+        return image;
+    }
+
+    tolerance = (tolerance || 1e-4) * 100;
+
+    // Use resemble.js to compare image datas.
+    var id = QUnit.config.current.testId,
+        index = QUnit.config.current.assertions.length + 1,
+        result;
+    if (!resemble._setup) {
+        resemble._setup = true;
+        resemble.outputSettings({
+            errorColor: { red: 255, green: 51, blue: 0 },
+            errorType: 'flat',
+            transparency: 1
+        });
+    }
+    resemble(imageData1)
+    .compareTo(imageData2)
+    .ignoreAntialiasing()
+    // When working with imageData, this call is synchronous:
+    .onComplete(function(data) { result = data; });
+    // Compare with tolerance in percentage...
+    var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
+        identical = result ? 100 - result.misMatchPercentage : 0,
+        ok = Math.abs(100 - identical) <= tolerance,
+        text = identical.toFixed(fixed) + '% identical',
+        detail = text;
+    if (!ok && diffDetail) {
+        detail += diffDetail;
+    }
+    QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
+    if (!ok && result && !isNode) {
+        // Get the right entry for this unit test and assertion, and
+        // replace the results with images
+        var entry = document.getElementById('qunit-test-output-' + id)
+            .querySelector('li:nth-child(' + (index) + ')'),
+            bounds = result.diffBounds;
+        entry.querySelector('.test-expected td').appendChild(image(imageData1));
+        entry.querySelector('.test-actual td').appendChild(image(imageData2));
+        entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
+            + '</pre><br>'
+            + '<img src="' + result.getImageDataUrl() + '">';
+    }
+};
+
 var comparePixels = function(actual, expected, message, options) {
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -155,11 +244,6 @@ var comparePixels = function(actual, expected, message, options) {
             }
         }
         return raster;
-    }
-
-    function getImageTag(raster) {
-        return '<img width="' + raster.width + '" height="' + raster.height
-                + '" src="' + raster.source + '">';
     }
 
     if (!expected) {
@@ -178,8 +262,8 @@ var comparePixels = function(actual, expected, message, options) {
         actualBounds = actual.strokeBounds,
         expecedBounds = expected.strokeBounds,
         bounds = actualBounds.isEmpty()
-                ? expecedBounds
-                : expecedBounds.isEmpty()
+            ? expecedBounds
+            : expecedBounds.isEmpty()
                 ? actualBounds
                 : actualBounds.unite(expecedBounds);
     if (bounds.isEmpty()) {
@@ -199,53 +283,15 @@ var comparePixels = function(actual, expected, message, options) {
         expectedRaster = rasterize(expected, group, resolution);
     if (!actualRaster || !expectedRaster) {
         QUnit.push(false, null, null, 'Unable to compare rasterized items: ' +
-                (!actualRaster ? 'actual' : 'expected') + ' item is null',
-                QUnit.stack(2));
+            (!actualRaster ? 'actual' : 'expected') + ' item is null',
+            QUnit.stack(2));
     } else {
-        // Use resemble.js to compare the two rasterized items.
-        var id = QUnit.config.current.testId,
-            index = QUnit.config.current.assertions.length + 1,
-            result;
-        if (!resemble._setup) {
-            resemble._setup = true;
-            resemble.outputSettings({
-                errorColor: { red: 255, green: 51, blue: 0 },
-                errorType: 'flat',
-                transparency: 1
-            });
-        }
-        resemble(actualRaster.getImageData())
-            .compareTo(expectedRaster.getImageData())
-            .ignoreAntialiasing()
-            // When working with imageData, this call is synchronous:
-            .onComplete(function(data) { result = data; });
-         // Compare with tolerance in percentage...
-        var tolerance = (options.tolerance || 1e-4) * 100,
-            fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
-            identical = result ? 100 - result.misMatchPercentage : 0,
-            ok = Math.abs(100 - identical) <= tolerance,
-            text = identical.toFixed(fixed) + '% identical',
-            detail = text;
-        if (!ok &&
-                actual instanceof PathItem && expected instanceof PathItem) {
-            detail += '\nExpected:\n' + expected.pathData +
-                    '\nActual:\n' + actual.pathData;
-        }
-        QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
-        if (!ok && result && !isNode) {
-            // Get the right entry for this unit test and assertion, and
-            // replace the results with images
-            var entry = document.getElementById('qunit-test-output-' + id)
-                    .querySelector('li:nth-child(' + (index) + ')'),
-                bounds = result.diffBounds;
-            entry.querySelector('.test-expected td').innerHTML =
-                    getImageTag(expectedRaster);
-            entry.querySelector('.test-actual td').innerHTML =
-                    getImageTag(actualRaster);
-            entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
-                    + '</pre><br>'
-                    + '<img src="' + result.getImageDataUrl() + '">';
-        }
+        // Compare the two rasterized items.
+        var detail = actual instanceof PathItem && expected instanceof PathItem
+            ? '\nExpected:\n' + expected.pathData + '\nActual:\n' + actual.pathData
+            : '';
+        compareImageData(actualRaster.getImageData(),
+            expectedRaster.getImageData(), options.tolerance, detail);
     }
 };
 
@@ -281,6 +327,40 @@ var compareItem = function(actual, expected, message, options, properties) {
         compareProperties(actual.style, expected.style, styles,
                 message + ' (#style)', options);
     }
+};
+
+/**
+ * Run each callback in a separated canvas context and compare both outputs.
+ * This can be used to do selection drawing tests as it is not possible with
+ * comparePixels() method which relies on the item.rasterize() method which
+ * ignores selection.
+ * @param {number} width the width of the canvas
+ * @param {number} height the height of the canvas
+ * @param {function} expectedCallback the function producing the expected result
+ * @param {function} actualCallback the function producing the actual result
+ * @param {number} tolerance between 0 and 1
+ */
+var compareCanvas = function(width, height, expectedCallback, actualCallback, tolerance) {
+    function getImageData(width, height, callback) {
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var project = new Project(canvas);
+        callback();
+        project.view.update();
+        var imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
+        canvas.remove();
+        project.remove();
+        return imageData;
+    }
+
+    compareImageData(
+        getImageData(width, height, expectedCallback),
+        getImageData(width, height, actualCallback),
+        tolerance
+    );
+
+    currentProject.activate();
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
@@ -549,4 +629,64 @@ var compareSVG = function(done, actual, expected, message, options) {
     } else {
         compare();
     }
+};
+
+
+//
+// Interactions helpers
+//
+var MouseEventPolyfill = function(type, params) {
+    var mouseEvent = document.createEvent('MouseEvent');
+    mouseEvent.initMouseEvent(
+        type,
+        params.bubbles,
+        params.cancelable,
+        window,
+        0,
+        params.screenX,
+        params.screenY,
+        params.clientX,
+        params.clientY,
+        params.ctrlKey,
+        params.altKey,
+        params.shiftKey,
+        params.metaKey,
+        params.button,
+        params.relatedTarget
+    );
+    return mouseEvent;
+};
+MouseEventPolyfill.prototype = typeof NativeClasses !== 'undefined'
+    && NativeClasses.Event.prototype || Event.prototype;
+
+var triggerMouseEvent = function(type, point, target) {
+    // Depending on event type, events have to be triggered on different
+    // elements due to the event handling implementation (see `viewEvents`
+    // and `docEvents` in View.js). And we cannot rely on the fact that event
+    // will bubble from canvas to document, since the canvas used in tests is
+    // not inserted in DOM.
+    target = target || (type === 'mousedown' ? view._element : document);
+
+    // If `gulp load` was run, there is a name collision between paper Event /
+    // MouseEvent and native javascript classes. In this case, we need to use
+    // native classes stored in global NativeClasses object instead.
+    var constructor = typeof NativeClasses !== 'undefined'
+        && NativeClasses.MouseEvent || MouseEvent;
+
+    // MouseEvent class does not exist in PhantomJS, so in that case, we need to
+    // use a polyfill method.
+    if (typeof constructor !== 'function') {
+        constructor = MouseEventPolyfill;
+    }
+
+    var event = new constructor(type, {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        clientX: point.x,
+        clientY: point.y,
+        screenX: point.x,
+        screenY: point.y
+    });
+    target.dispatchEvent(event);
 };

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -450,6 +450,13 @@ test('Path#flatten(maxDistance)', function() {
     }, true, 'The points of the last and before last segments should not be so close, that calling toString on them returns the same string value.');
 });
 
+test('Path#single segment closed path flatten (#1338)', function() {
+    var p = PathItem.create("m445.26701,223.69688c6.1738,8.7566 -7.05172,14.0468 0,0z");
+    p.strokeColor = "red";
+    p.flatten();
+    expect(0);
+});
+
 test('Path#curves after removing a segment - 1', function() {
     var path = new paper.Path([0, 0], [1, 1], [2, 2]);
     var prevCurves = path.curves.slice();
@@ -611,6 +618,14 @@ test('Path#arcTo(from, through, to); where from, through and to all share the sa
     equals(error != null, true, 'We expect this arcTo() command to throw an error');
 });
 
+test('Path#getOffsetsWithTangent()', function() {
+    var path = new Path.Circle(new Point(0, 0), 50);
+    var length = path.length;
+    equals(path.getOffsetsWithTangent(), [], 'should return empty array when called without argument');
+    equals(path.getOffsetsWithTangent([1, 0]), [0.25 * length, 0.75 * length], 'should not return duplicates when tangent is at segment point');
+    equals(path.getOffsetsWithTangent([1, 1]).length, 2, 'should return 2 values when called on a circle with a diagonal vector');
+});
+  
 test('Path#add() with a lot of segments (#1493)', function() {
     var segments = [];
     for (var i = 0; i < 100000; i++) {
@@ -620,7 +635,6 @@ test('Path#add() with a lot of segments (#1493)', function() {
     path.clone();
     expect(0);
 });
-
 test('Path#add(); add two segments with the same name', function() {
     var path = new Path();
     var segment1 = new Segment({
@@ -700,4 +714,14 @@ test('Path#getSegmentsByData();', function() {
     equals(function() {
         return path.getSegmentsByData({corner: true})[0] == segment;
     }, 1, 'Getting the segment by data should give us the same segemnt');
+});
+
+test('Path#arcTo(through, to) is on through point side (#1477)', function() {
+    var p1 = new Point(16, 21.5);
+    var p2 = new Point(22.5, 15);
+    var p3 = new Point(16.000000000000004, 8.5);
+    var path = new Path();
+    path.add(p1);
+    path.arcTo(p2, p3);
+    equals(true, path.segments[1].point.x > p1.x);
 });

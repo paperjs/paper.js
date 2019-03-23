@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -196,23 +196,23 @@ new function() {
                     return importNode(child, options, isRoot);
             }
         },
-        // http://www.w3.org/TR/SVG/struct.html#Groups
+        // https://www.w3.org/TR/SVG/struct.html#Groups
         g: importGroup,
-        // http://www.w3.org/TR/SVG/struct.html#NewDocument
+        // https://www.w3.org/TR/SVG/struct.html#NewDocument
         svg: importGroup,
         clippath: importGroup,
-        // http://www.w3.org/TR/SVG/shapes.html#PolygonElement
+        // https://www.w3.org/TR/SVG/shapes.html#PolygonElement
         polygon: importPoly,
-        // http://www.w3.org/TR/SVG/shapes.html#PolylineElement
+        // https://www.w3.org/TR/SVG/shapes.html#PolylineElement
         polyline: importPoly,
-        // http://www.w3.org/TR/SVG/paths.html
+        // https://www.w3.org/TR/SVG/paths.html
         path: importPath,
-        // http://www.w3.org/TR/SVG/pservers.html#LinearGradients
+        // https://www.w3.org/TR/SVG/pservers.html#LinearGradients
         lineargradient: importGradient,
-        // http://www.w3.org/TR/SVG/pservers.html#RadialGradients
+        // https://www.w3.org/TR/SVG/pservers.html#RadialGradients
         radialgradient: importGradient,
 
-        // http://www.w3.org/TR/SVG/struct.html#ImageElement
+        // https://www.w3.org/TR/SVG/struct.html#ImageElement
         image: function (node) {
             var raster = new Raster(getValue(node, 'href', true));
             raster.on('load', function() {
@@ -228,17 +228,17 @@ new function() {
             return raster;
         },
 
-        // http://www.w3.org/TR/SVG/struct.html#SymbolElement
+        // https://www.w3.org/TR/SVG/struct.html#SymbolElement
         symbol: function(node, type, options, isRoot) {
             return new SymbolDefinition(
                     // Pass true for dontCenter:
                     importGroup(node, type, options, isRoot), true);
         },
 
-        // http://www.w3.org/TR/SVG/struct.html#DefsElement
+        // https://www.w3.org/TR/SVG/struct.html#DefsElement
         defs: importGroup,
 
-        // http://www.w3.org/TR/SVG/struct.html#UseElement
+        // https://www.w3.org/TR/SVG/struct.html#UseElement
         use: function(node) {
             // Note the namespaced xlink:href attribute is just called href
             // as a property on node.
@@ -258,14 +258,14 @@ new function() {
                     : null;
         },
 
-        // http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
+        // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGCircleElement
         circle: function(node) {
             return new Shape.Circle(
                     getPoint(node, 'cx', 'cy'),
                     getValue(node, 'r'));
         },
 
-        // http://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
+        // https://www.w3.org/TR/SVG/shapes.html#InterfaceSVGEllipseElement
         ellipse: function(node) {
             // We only use object literal notation where the default one is not
             // supported (e.g. center / radius fo Shape.Ellipse).
@@ -275,7 +275,7 @@ new function() {
             });
         },
 
-        // http://www.w3.org/TR/SVG/shapes.html#RectElement
+        // https://www.w3.org/TR/SVG/shapes.html#RectElement
         rect: function(node) {
             return new Shape.Rectangle(new Rectangle(
                         getPoint(node),
@@ -283,7 +283,7 @@ new function() {
                     ), getSize(node, 'rx', 'ry'));
             },
 
-        // http://www.w3.org/TR/SVG/shapes.html#LineElement
+        // https://www.w3.org/TR/SVG/shapes.html#LineElement
         line: function(node) {
             return new Path.Line(
                     getPoint(node, 'x1', 'y1'),
@@ -314,7 +314,7 @@ new function() {
 
     function applyTransform(item, value, name, node) {
         if (item.transform) {
-            // http://www.w3.org/TR/SVG/types.html#DataTypeTransformList
+            // https://www.w3.org/TR/SVG/types.html#DataTypeTransformList
             // Parse SVG transform string. First we split at /)\s*/, to separate
             // commands
             var transforms = (node.getAttribute(name) || '').split(/\)\s*/g),
@@ -357,8 +357,8 @@ new function() {
     }
 
     function applyOpacity(item, value, name) {
-        // http://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
-        // http://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
+        // https://www.w3.org/TR/SVG/painting.html#FillOpacityProperty
+        // https://www.w3.org/TR/SVG/painting.html#StrokeOpacityProperty
         var key = name === 'fill-opacity' ? 'getFillColor' : 'getStrokeColor',
             color = item[key] && item[key]();
         if (color)
@@ -400,7 +400,7 @@ new function() {
         },
 
         'clip-path': function(item, value) {
-            // http://www.w3.org/TR/SVG/masking.html#ClipPathProperty
+            // https://www.w3.org/TR/SVG/masking.html#ClipPathProperty
             var clip = getDefinition(value);
             if (clip) {
                 clip = clip.clone();
@@ -432,20 +432,20 @@ new function() {
         },
 
         'stop-color': function(item, value) {
-            // http://www.w3.org/TR/SVG/pservers.html#StopColorProperty
+            // https://www.w3.org/TR/SVG/pservers.html#StopColorProperty
             if (item.setColor)
                 item.setColor(value);
         },
 
         'stop-opacity': function(item, value) {
-            // http://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
+            // https://www.w3.org/TR/SVG/pservers.html#StopOpacityProperty
             // NOTE: It is important that this is applied after stop-color!
             if (item._color)
                 item._color.setAlpha(parseFloat(value));
         },
 
         offset: function(item, value) {
-            // http://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
+            // https://www.w3.org/TR/SVG/pservers.html#StopElementOffsetAttribute
             if (item.setOffset) {
                 var percent = value.match(/(.*)%$/);
                 item.setOffset(percent ? percent[1] / 100 : parseFloat(value));
@@ -453,7 +453,7 @@ new function() {
         },
 
         viewBox: function(item, value, name, node, styles) {
-            // http://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
+            // https://www.w3.org/TR/SVG/coords.html#ViewBoxAttribute
             // TODO: implement preserveAspectRatio attribute
             // viewBox will be applied both to the group that's created for the
             // content in SymbolDefinition#item, and the SymbolItem itself.

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -17,7 +17,7 @@
 // The paper.js version.
 // NOTE: Adjust value here before calling `gulp publish`, which then updates and
 // publishes the various JSON package files automatically.
-var version = '0.11.5';
+var version = '0.12.0';
 
 // If this file is loaded in the browser, we're in load.js mode.
 var load = typeof window === 'object';

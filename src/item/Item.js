@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -216,8 +216,10 @@ new function() { // Injection scope for various item event handlers
         if (flags & /*#=*/ChangeFlag.GEOMETRY) {
             // Clear cached bounds, position and decomposed matrix whenever
             // geometry changes.
-            this._bounds = this._position = this._decomposed =
-                    this._globalMatrix = undefined;
+            this._bounds = this._position = this._decomposed = undefined;
+        }
+        if (flags & /*#=*/ChangeFlag.MATRIX) {
+            this._globalMatrix = undefined;
         }
         if (cacheParent
                 && (flags & /*#=*/(ChangeFlag.GEOMETRY | ChangeFlag.STROKE))) {
@@ -411,7 +413,7 @@ new function() { // Injection scope for various item event handlers
             flags = {
                 // #locked does not change appearance, all others do:
                 locked: /*#=*/ChangeFlag.ATTRIBUTE,
-                // #visible changes apperance
+                // #visible changes appearance
                 visible: /*#=*/(Change.ATTRIBUTE | Change.GEOMETRY)
             };
         this['get' + part] = function() {
@@ -433,12 +435,39 @@ new function() { // Injection scope for various item event handlers
     // injection scope above.
 
     /**
-     * Specifies whether the item is locked.
+     * Specifies whether the item is locked. When set to `true`, item
+     * interactions with the mouse are disabled.
      *
      * @name Item#locked
      * @type Boolean
      * @default false
-     * @ignore
+     *
+     * @example {@paperscript}
+     * var unlockedItem = new Path.Circle({
+     *     center: view.center - [35, 0],
+     *     radius: 30,
+     *     fillColor: 'springgreen',
+     *     onMouseDown: function() {
+     *         this.fillColor = Color.random();
+     *     }
+     * });
+     *
+     * var lockedItem = new Path.Circle({
+     *     center: view.center + [35, 0],
+     *     radius: 30,
+     *     fillColor: 'crimson',
+     *     locked: true,
+     *     // This event won't be triggered because the item is locked.
+     *     onMouseDown: function() {
+     *         this.fillColor = Color.random();
+     *     }
+     * });
+     *
+     * new PointText({
+     *     content: 'Click on both circles to see which one is locked.',
+     *     point: view.center - [0, 35],
+     *     justification: 'center'
+     * });
      */
 
     /**
@@ -473,7 +502,7 @@ new function() { // Injection scope for various item event handlers
      *     light', 'color-dodge', 'color-burn', 'darken', 'lighten',
      *     'difference', 'exclusion', 'hue', 'saturation', 'luminosity',
      *     'color', 'add', 'subtract', 'average', 'pin-light', 'negation',
-     *     'source- over', 'source-in', 'source-out', 'source-atop',
+     *     'source-over', 'source-in', 'source-out', 'source-atop',
      *     'destination-over', 'destination-in', 'destination-out',
      *     'destination-atop', 'lighter', 'darker', 'copy', 'xor'
      * @default 'normal'
@@ -1213,17 +1242,33 @@ new function() { // Injection scope for various item event handlers
      * @type Matrix
      */
     getGlobalMatrix: function(_dontClone) {
-        var matrix = this._globalMatrix,
-            updateVersion = this._project._updateVersion;
-        // If #_globalMatrix is out of sync, recalculate it now.
-        if (matrix && matrix._updateVersion !== updateVersion)
-            matrix = null;
+        var matrix = this._globalMatrix;
+        if (matrix) {
+            // If there's a cached global matrix for this item, check if all its
+            // parents also have one. If it's missing in any of its parents, it
+            // means the child's cached version isn't valid anymore.
+            // For better performance, we also use the occasion of this loop to
+            // clear cached version of items parents.
+            var parent = this._parent;
+            var parents = [];
+            while (parent) {
+                if (!parent._globalMatrix) {
+                    matrix = null;
+                    // Also clear global matrix of item's parents.
+                    for (var i = 0, l = parents.length; i < l; i++) {
+                        parents[i]._globalMatrix = null;
+                    }
+                    break;
+                }
+                parents.push(parent);
+                parent = parent._parent;
+            }
+        }
         if (!matrix) {
             matrix = this._globalMatrix = this._matrix.clone();
             var parent = this._parent;
             if (parent)
                 matrix.prepend(parent.getGlobalMatrix(true));
-            matrix._updateVersion = updateVersion;
         }
         return _dontClone ? matrix : matrix.clone();
     },
@@ -1754,6 +1799,7 @@ new function() { // Injection scope for various item event handlers
      * }
      *
      * @param {Point} point the point to check for
+     * @return {Boolean}
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
@@ -1905,6 +1951,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option options.selected {Boolean} only hit selected items
      *
      * @param {Point} point the point where the hit-test should be performed
+     *     (in global coordinates system).
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: settings.hitTolerance }]
      * @return {HitResult} a hit result object describing what exactly was hit
@@ -1922,6 +1969,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @name Item#hitTestAll
      * @function
      * @param {Point} point the point where the hit-test should be performed
+     *     (in global coordinates system).
      * @param {Object} [options={ fill: true, stroke: true, segments: true,
      *     tolerance: settings.hitTolerance }]
      * @return {HitResult[]} hit result objects for all hits, describing what
@@ -2298,6 +2346,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * items can have children.
      *
      * @param {String} json the JSON data to import from
+     * @return {Item}
      */
     importJSON: function(json) {
         // Try importing into `this`. If another item is returned, try adding
@@ -2333,7 +2382,8 @@ new function() { // Injection scope for hit-test functions shared with project
      *     kept as a link to their external URL.
      *
      * @param {Object} [options] the export options
-     * @return {SVGElement} the item converted to an SVG node
+     * @return {SVGElement|String} the item converted to an SVG node or a
+     * `String` depending on `option.asString` value
      */
 
     /**
@@ -2717,6 +2767,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * Replaces this item with the provided new item which will takes its place
      * in the project hierarchy instead.
      *
+     * @param {Item} item the item that will replace this item
      * @return {Boolean} {@true if the item was replaced}
      */
     replaceWith: function(item) {
@@ -2785,7 +2836,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * no children, a {@link TextItem} with no text content and a {@link Path}
      * with no segments all are considered empty.
      *
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function() {
         var children = this._children;
@@ -3139,7 +3190,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#dashArray
      * @property
-     * @type Array
+     * @type Number[]
      * @default []
      */
 
@@ -3435,19 +3486,19 @@ new function() { // Injection scope for hit-test functions shared with project
         var _matrix = this._matrix,
             // If no matrix is provided, or the matrix is the identity, we might
             // still have some work to do in case _applyMatrix is true
-            transform = matrix && !matrix.isIdentity(),
+            transformMatrix = matrix && !matrix.isIdentity(),
             applyMatrix = (_applyMatrix || this._applyMatrix)
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || transform)
+                    && ((!_matrix.isIdentity() || transformMatrix)
                         // Even if it's an identity matrix, we still need to
                         // recursively apply the matrix to children.
                         || _applyMatrix && _applyRecursively && this._children);
         // Bail out if there is nothing to do.
-        if (!transform && !applyMatrix)
+        if (!transformMatrix && !applyMatrix)
             return this;
         // Simply prepend the internal matrix with the passed one:
-        if (transform) {
+        if (transformMatrix) {
             // Keep a backup of the last valid state before the matrix becomes
             // non-invertible. This is then used again in setBounds to restore.
             if (!matrix.isInvertible() && _matrix.isInvertible())
@@ -3493,13 +3544,13 @@ new function() { // Injection scope for hit-test functions shared with project
         // on matrix we can calculate and set them again, so preserve them.
         var bounds = this._bounds,
             position = this._position;
-        if (transform || applyMatrix) {
-            this._changed(/*#=*/Change.GEOMETRY);
+        if (transformMatrix || applyMatrix) {
+            this._changed(/*#=*/Change.MATRIX);
         }
         // Detect matrices that contain only translations and scaling
         // and transform the cached _bounds and _position without having to
         // fully recalculate each time.
-        var decomp = transform && bounds && matrix.decompose();
+        var decomp = transformMatrix && bounds && matrix.decompose();
         if (decomp && decomp.skewing.isZero() && decomp.rotation % 90 === 0) {
             // Transform the old bound by looping through all the cached
             // bounds in _bounds and transform each.
@@ -3526,7 +3577,7 @@ new function() { // Injection scope for hit-test functions shared with project
                 // use this method to handle pivot case (see #1503)
                 this._position = this._getPositionFromBounds(cached.rect);
             }
-        } else if (transform && position && this._pivot) {
+        } else if (transformMatrix && position && this._pivot) {
             // If the item has a pivot defined, it means that the default
             // position defined as the center of the bounds won't shift with
             // arbitrary transformations and we can therefore update _position:
@@ -4267,8 +4318,6 @@ new function() { // Injection scope for hit-test functions shared with project
         // Only keep track of transformation if told so. See Project#draw()
         matrices.push(globalMatrix);
         if (param.updateMatrix) {
-            // Update the cached _globalMatrix and keep it versioned.
-            globalMatrix._updateVersion = updateVersion;
             this._globalMatrix = globalMatrix;
         }
 
@@ -4298,8 +4347,12 @@ new function() { // Injection scope for hit-test functions shared with project
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
             var bounds = this.getStrokeBounds(viewMatrix);
-            if (!bounds.width || !bounds.height)
+            if (!bounds.width || !bounds.height) {
+                // Item won't be drawn so its global matrix need to be removed
+                // from the stack (#1561).
+                matrices.pop();
                 return;
+            }
             // Store previous offset and save the main context, so we can
             // draw onto it later.
             prevOffset = param.offset;
@@ -4423,7 +4476,11 @@ new function() { // Injection scope for hit-test functions shared with project
             if (itemSelected)
                 this._drawSelected(ctx, mx, selectionItems);
             if (positionSelected) {
-                var point = mx._transformPoint(this.getPosition(true)),
+                // Convert position from the parent's coordinates system to the
+                // global one:
+                var pos = this.getPosition(true),
+                    parent = this._parent,
+                    point = parent ? parent.localToGlobal(pos) : pos,
                     x = point.x,
                     y = point.y;
                 ctx.beginPath();
@@ -4610,4 +4667,176 @@ new function() { // Injection scope for hit-test functions shared with project
         }
         return this;
     }
-}));
+}), /** @lends Item# */{
+    /**
+     * {@grouptitle Tweening Functions}
+     *
+     * Tween item between two states.
+     *
+     * @name Item#tween
+     *
+     * @option options.duration {Number} the duration of the tweening
+     * @option [options.easing='linear'] {Function|String} an easing function or the type
+     * of the easing: {@values 'linear' 'easeInQuad' 'easeOutQuad'
+     * 'easeInOutQuad' 'easeInCubic' 'easeOutCubic' 'easeInOutCubic'
+     * 'easeInQuart' 'easeOutQuart' 'easeInOutQuart' 'easeInQuint'
+     * 'easeOutQuint' 'easeInOutQuint'}
+     * @option [options.start=true] {Boolean} whether to start tweening automatically
+     *
+     * @function
+     * @param {Object} from the state at the start of the tweening
+     * @param {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @example {@paperscript height=100}
+     * // Tween fillColor:
+     * var path = new Path.Circle({
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center
+     * });
+     * path.tween(
+     *     { fillColor: 'blue' },
+     *     { fillColor: 'red' },
+     *     3000
+     * );
+     * @example {@paperscript height=100}
+     * // Tween rotation:
+     * var path = new Shape.Rectangle({
+     *     fillColor: 'red',
+     *     center: [50, view.center.y],
+     *     size: [60, 60]
+     * });
+     * path.tween({
+     *     rotation: 180,
+     *     'position.x': view.bounds.width - 50,
+     *     'fillColor.hue': '+= 90'
+     * }, {
+     *     easing: 'easeInOutCubic',
+     *     duration: 2000
+     * });
+     */
+    /**
+     * Tween item to a state.
+     *
+     * @name Item#tween
+     *
+     * @function
+     * @param  {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @example {@paperscript height=200}
+     * // Tween a nested property with relative values
+     * var path = new Path.Rectangle({
+     *     size: [100, 100],
+     *     position: view.center,
+     *     fillColor: 'red',
+     * });
+     *
+     * var delta = { x: path.bounds.width / 2, y: 0 };
+     *
+     * path.tween({
+     *     'segments[1].point': ['+=', delta],
+     *     'segments[2].point.x': '-= 50'
+     * }, 3000);
+     *
+     * @see Item#tween(from, to, options)
+     */
+    /**
+     * Tween item.
+     *
+     * @name Item#tween
+     *
+     * @function
+     * @param  {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(from, to, options)
+     *
+     * @example {@paperscript height=100}
+     * // Start an empty tween and just use the update callback:
+     * var path = new Path.Circle({
+     *     fillColor: 'blue',
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center,
+     * });
+     * var pathFrom = path.clone({ insert: false })
+     * var pathTo = new Path.Rectangle({
+     *     position: view.center,
+     *     rectangle: path.bounds,
+     *     insert: false
+     * });
+     * path.tween(2000).onUpdate = function(event) {
+     *     path.interpolate(pathFrom, pathTo, event.factor)
+     * };
+     */
+    tween: function(from, to, options) {
+        if (!options) {
+            // If there are only two or one arguments, shift arguments to the
+            // left by one (omit `from`):
+            options = to;
+            to = from;
+            from = null;
+            if (!options) {
+                options = to;
+                to = null;
+            }
+        }
+        var easing = options && options.easing,
+            start = options && options.start,
+            duration = options != null && (
+                typeof options === 'number' ? options : options.duration
+            ),
+            tween = new Tween(this, from, to, duration, easing, start);
+        function onFrame(event) {
+            tween._handleFrame(event.time * 1000);
+            if (!tween.running) {
+                this.off('frame', onFrame);
+            }
+        }
+        if (duration) {
+            this.on('frame', onFrame);
+        }
+        return tween;
+    },
+
+    /**
+     *
+     * Tween item to a state.
+     *
+     * @function
+     * @param {Object} to the state at the end of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(to, options)
+     */
+    tweenTo: function(to, options) {
+        return this.tween(null, to, options);
+    },
+
+    /**
+     *
+     * Tween item from a state to its state before the tweening.
+     *
+     * @function
+     * @param {Object} from the state at the start of the tweening
+     * @param {Object|Number} options the options or the duration
+     * @return {Tween}
+     *
+     * @see Item#tween(from, to, options)
+     *
+     * @example {@paperscript height=100}
+     * // Tween fillColor from red to the path's initial fillColor:
+     * var path = new Path.Circle({
+     *     fillColor: 'blue',
+     *     radius: view.bounds.height * 0.4,
+     *     center: view.center
+     * });
+     * path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
+     */
+    tweenFrom: function(from, options) {
+        return this.tween(from, null, options);
+    }
+});

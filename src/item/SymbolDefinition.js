@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -140,7 +140,7 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
     /**
      * Returns a copy of the symbol.
      *
-     * @return {Symbol}
+     * @return {SymbolDefinition}
      */
     clone: function() {
         return new SymbolDefinition(this._item.clone(false));
@@ -149,7 +149,7 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
     /**
      * Checks whether the symbol's definition is equal to the supplied symbol.
      *
-     * @param {Symbol} symbol
+     * @param {SymbolDefinition} symbol
      * @return {Boolean} {@true if they are equal}
      */
     equals: function(symbol) {

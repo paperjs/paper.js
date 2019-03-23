@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -134,4 +134,24 @@ test('group.addChildren()', function() {
     group.addChildren(children);
     equals(group.children.length, 2,
             'adding the same item twice should only add it once.');
-})
+});
+
+test('group.setSelectedColor() with selected bound and position', function() {
+    compareCanvas(100, 100,
+        function() {
+            // working: set selected color first then add child
+            var group = new Group();
+            group.bounds.selected = true;
+            group.position.selected = true;
+            group.selectedColor = 'black';
+            group.addChild(new Path.Circle([50, 50], 40));
+        }, function() {
+            // failing: add child first then set selected color
+            var group = new Group();
+            group.bounds.selected = true;
+            group.position.selected = true;
+            group.addChild(new Path.Circle([50, 50], 40));
+            group.selectedColor = 'black';
+        }
+    );
+});

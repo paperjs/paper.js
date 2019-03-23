@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -16,7 +16,7 @@
 // NOTE: Do not create local variable `var paper` since it would shield the
 // global one in the whole scope.
 
-paper = new (PaperScope.inject(Base.exports, {
+var paper = new (PaperScope.inject(Base.exports, {
     Base: Base,
     Numerical: Numerical,
     Key: Key,

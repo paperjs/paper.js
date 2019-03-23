@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -62,3 +62,8 @@
 /*#*/ include('SvgExport.js');
 
 /*#*/ include('Numerical.js');
+
+// There is no need to test interactions in node context.
+if (!isNode) {
+    /*#*/ include('Interactions.js');
+}

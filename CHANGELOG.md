@@ -1,5 +1,91 @@
 # Change Log
 
+## Prebuilt version
+
+### Fixed
+
+- Fix css color parse (#1629)
+
+## `0.12.0`
+
+### News
+
+Another release, another new member on the team: Please welcome [@arnoson](https://github.com/arnoson), who has
+worked hard on the all new animation support, exposed through the `Tween` class
+and its various methods on the `Item` class, see below for details:
+
+### Added
+
+- Add new `Tween` class and related methods on `Item`, to animate and
+  interpolate their various properties, including colors, sub-properties, etc.:
+  `Item#tween(from, to, options)`, `Item#tween(to, options)`,
+  `Item#tween(options)`, `Item#tweenFrom(from, options)`,
+  `Item#tweenTo(to, options)`
+
+### Fixed
+
+- Only draw Raster if image is not empty (#1320).
+- Emit mousedrag events on correct items when covered by other items (#1465).
+- Fix drawing issues of bounds and position with `Group#selectedColor` (#1571).
+- Fix `Item.once()` to actually only emit event once.
+- Various documentation fixes and improvements (#1399).
+
+## `0.11.8`
+
+### News
+
+This is the first release in quite a while, and it was made possible thanks to
+two new people on the team:
+
+A warm welcome to [@sasensi](https://github.com/sasensi) and
+[@sapics](https://github.com/sapics), the two new and very active maintainers /
+contributors! :tada:
+
+Their efforts mean that many issues are finally getting proper attention and
+solid fixes, as we are paving the way for the upcoming release of `1.0.0`. Here
+the fixes and additions from the past two weeks:
+
+### Fixed
+
+- Prevent `paper` object from polluting the global scope (#1544).
+- Make sure `Path#arcTo()` always passes through the provide through point
+  (#1477).
+- Draw shadows on `Raster` images (#1437).
+- Fix boolean operation edge case (#1506, #1513, #1515).
+- Handle closed paths with only one segment in `Path#flatten()` (#1338).
+- Remove memory leak on gradient colors (#1499).
+- Support alpha channel in CSS colors (#1468, #1539, #1565).
+- Improve color CSS string parsing and documentation.
+- Improve caching of item positions (#1503).
+- Always draw selected position in global coordinates system (#1545).
+- Prevent empty `Symbol` items from causing issues with transformations (#1561).
+- Better detect when a cached global matrix is not valid anymore (#1448).
+- Correctly draw selected position when item is in a group with matrix not
+  applied (#1535).
+- Improve handling of huge amounts of segments in paths (#1493).
+- Do not trigger error messages about passive event listeners on Chrome (#1501).
+- Fix errors with event listeners on mobile (#1533).
+- Prevent first mouse drag event from being emitted twice (#1553).
+- Support optional arguments in translate and rotate statements in SVG Import
+  (#1487).
+- Make sure SVG import always applies imported attributes (#1416).
+- Correctly handle `Raster` images positions in SVG import (#1328).
+- Improve documentation for `Shape#toPath()` (#1374).
+- Improve documentation of hit test coordinate system (#1430).
+- Add documentation for `Item#locked` (#1436).
+- Support Webpack bundling in Node.js server (#1482).
+- Travis CI: Get unit tests to run correctly again.
+- Travis CI: Remove Node 4 and add Node 9.
+
+### Added
+
+- `Curve#getTimesWithTangent()` and `Path#getOffsetsWithTangent()` as a way to
+  get the curve-times / offsets where the path is tangential to a given vector.
+- `Raster#smoothing` to control if pixels should be blurred or repeated when a
+  raster is scaled up (#1521).
+- Allow `PaperScript`to export from executed code, supporting `export default`,
+  named exports, as well as `module.exports`.
+
 ## `0.11.5`
 
 ### Fixed

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -75,7 +75,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
-     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
      * of this path
@@ -1285,6 +1284,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Reduces the path by removing curves that have a length of 0,
      * and unnecessary segments between two collinear flat curves.
+     *
+     * @return {Path} the reduced path
      */
     reduce: function(options) {
         var curves = this.getCurves(),
@@ -1965,7 +1966,7 @@ var Path = PathItem.extend(/** @lends Path# */{
             return offset;
         }
         return null;
-    }
+    },
 
     /**
      * Calculates the point on the path at the given offset.
@@ -2193,6 +2194,42 @@ var Path = PathItem.extend(/** @lends Path# */{
      * the beginning of the path and {@link Path#length} at the end
      * @return {Number} the normal vector at the given offset
      */
+
+    /**
+     * Calculates path offsets where the path is tangential to the provided
+     * tangent. Note that tangents at the start or end are included. Tangents at
+     * segment points are returned even if only one of their handles is
+     * collinear with the provided tangent.
+     *
+     * @param {Point} tangent the tangent to which the path must be tangential
+     * @return {Number[]} path offsets where the path is tangential to the
+     * provided tangent
+     */
+    getOffsetsWithTangent: function(/* tangent */) {
+        var tangent = Point.read(arguments);
+        if (tangent.isZero()) {
+            return [];
+        }
+
+        var offsets = [];
+        var curveStart = 0;
+        var curves = this.getCurves();
+        for (var i = 0, l = curves.length; i < l; i++) {
+            var curve = curves[i];
+            // Calculate curves times at vector tangent...
+            var curveTimes = curve.getTimesWithTangent(tangent);
+            for (var j = 0, m = curveTimes.length; j < m; j++) {
+                // ...and convert them to path offsets...
+                var offset = curveStart + curve.getOffsetAtTime(curveTimes[j]);
+                // ...avoiding duplicates.
+                if (offsets.indexOf(offset) < 0) {
+                    offsets.push(offset);
+                }
+            }
+            curveStart += curve.length;
+        }
+        return offsets;
+    }
 }),
 new function() { // Scope for drawing
 
@@ -2506,7 +2543,7 @@ new function() { // PostScript-style drawing commands
                 if (isZero(radius.width) || isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
-                // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+                // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
                 var rotation = Base.read(arguments),
                     clockwise = !!Base.read(arguments),
                     large = !!Base.read(arguments),
@@ -2580,7 +2617,7 @@ new function() { // PostScript-style drawing commands
                 }
                 vector = from.subtract(center);
                 extent = vector.getDirectedAngle(to.subtract(center));
-                var centerSide = line.getSide(center);
+                var centerSide = line.getSide(center, true);
                 if (centerSide === 0) {
                     // If the center is lying on the line, we might have gotten
                     // the wrong sign for extent above. Use the sign of the side

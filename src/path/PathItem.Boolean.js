@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -25,7 +25,7 @@
  * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
  * @author Jan Boesenberg <development@iconexperience.com>
  * @author Juerg Lehni <juerg@scratchdisk.com>
- * http://hkrish.com/playground/paperjs/booleanStudy.html
+ * https://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
     var min = Math.min,
@@ -1125,7 +1125,7 @@ PathItem.inject(new function() {
         /**
          * Splits the geometry of this path along the geometry of the specified
          * path returns the result as a new group item. This is equivalent to
-         * calling {@link #subtract(path)} and {@link #subtract(path)} and
+         * calling {@link #subtract(path)} and {@link #intersect(path)} and
          * putting the results into a new group.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
@@ -1156,7 +1156,7 @@ PathItem.inject(new function() {
          * amount of resulting paths allows so, otherwise a new path /
          * compound-path is created, replacing the current one.
          *
-         * @return {PahtItem} the resulting path item
+         * @return {PathItem} the resulting path item
          */
         resolveCrossings: function() {
             var children = this._children,
@@ -1278,7 +1278,7 @@ PathItem.inject(new function() {
          * @param {Boolean} [clockwise] if provided, the orientation of the root
          *     paths will be set to the orientation specified by `clockwise`,
          *     otherwise the orientation of the largest root child is used.
-         * @return {PahtItem} a reference to the item itself, reoriented
+         * @return {PathItem} a reference to the item itself, reoriented
          */
         reorient: function(nonZero, clockwise) {
             var children = this._children;

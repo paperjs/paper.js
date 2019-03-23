@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -49,7 +49,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         this._pixelRatio = 1;
         if (!/^off|false$/.test(PaperScope.getAttribute(canvas, 'hidpi'))) {
             // Hi-DPI Canvas support based on:
-            // http://www.html5rocks.com/en/tutorials/canvas/hidpi/
+            // https://www.html5rocks.com/en/tutorials/canvas/hidpi/
             var deviceRatio = window.devicePixelRatio || 1,
                 backingStoreRatio = DomElement.getPrefixed(ctx,
                         'backingStorePixelRatio') || 1;
@@ -124,7 +124,7 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
 
     /**
      * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
+     * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
      * @return {Boolean} {@true if the view was updated}
