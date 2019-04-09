@@ -253,6 +253,18 @@ new function() {
     }
 
     function exportText(item) {
+        // incase text is multiline create a group
+        if (item._lines.length > 1) {
+			var nodeGroup = SvgElement.create('g');
+			for (var i in item._lines) {
+				var node = SvgElement.create('text', getTransform(item._matrix, true),
+					formatter);
+				node.setAttribute('y', 1*i + parseFloat(node.getAttribute('y')))
+				node.textContent = item._lines[i];
+				nodeGroup.appendChild(node)
+			}
+			return nodeGroup;
+		}
         var node = SvgElement.create('text', getTransform(item._matrix, true),
                 formatter);
         node.textContent = item._content;
