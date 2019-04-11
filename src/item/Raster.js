@@ -680,6 +680,14 @@ var Raster = Item.extend(/** @lends Raster# */{
         ctx.putImageData(imageData, point.x, point.y);
     },
 
+    /**
+     * Clears the image, if it is backed by a canvas.
+     */
+    clear: function() {
+        var size = this._size;
+        this.getContext().clearRect(0, 0, size.width + 1, size.height + 1);
+    },
+
     // DOCS: document Raster#createImageData
     /**
      * {@grouptitle Image Data}
