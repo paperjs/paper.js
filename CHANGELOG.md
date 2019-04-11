@@ -1,10 +1,20 @@
 # Change Log
 
-## Prebuilt version
+## 0.12.1
+
+### Added
+
+- Add TypesSript definition, automatically generated from JSDoc comments
+  (#1612).
+- Support `new Raster(size)` constructor.
+- Expose `Raster#context` accessor.
+- Implement `Raster#clear()` method to clear associated canvas context.
 
 ### Fixed
 
-- Fix css color parse (#1629)
+- Fix parsing of CSS colors with spaces in parentheses (#1629).
+- Improve `Color.random()` documentation.
+- Fix `Tween#then()` documentation.
 
 ## `0.12.0`
 
