@@ -18,6 +18,7 @@
  * @extends Item
  */
 var Raster = Item.extend(/** @lends Raster# */{
+}, /** @lends Raster# */{
     _class: 'Raster',
     _applyMatrix: false,
     _canApplyMatrix: false,
@@ -31,6 +32,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     // Prioritize `crossOrigin` over `source`:
     _prioritize: ['crossOrigin'],
     _smoothing: true,
+    // Enforce creation of beans, as bean getters have hidden parameters.
+    // See  #getContext(modify) below.
+    beans: true,
 
     // TODO: Implement type, width, height.
     // TODO: Have SymbolItem & Raster inherit from a shared class?
