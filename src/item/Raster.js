@@ -81,22 +81,40 @@ var Raster = Item.extend(/** @lends Raster# */{
      * raster.scale(0.5);
      * raster.rotate(10);
      */
-    initialize: function Raster(object, position) {
+    initialize: function Raster(source, position) {
         // Support two forms of item initialization: Passing one object literal
         // describing all the different properties to be set, or an image
         // (object) and a point where it should be placed (point).
         // If _initialize can set properties through object literal, we're done.
         // Otherwise we need to check the type of object:
-        if (!this._initialize(object,
-                position !== undefined && Point.read(arguments, 1))) {
-            // object can be an image, canvas, URL or DOM-ID:
-            var image = typeof object === 'string'
-                    ? document.getElementById(object) : object;
+
+        // source can be an image, canvas, source URL or DOM-ID:
+        var image,
+            type = typeof source,
+            object = type === 'string'
+                ? document.getElementById(source)
+                : type  === 'object'
+                    ? source
+                    : null;
+        if (object && object !== Item.NO_INSERT) {
+            // #setImage() handles both canvas and image types.
+            if (object.getContent || object.naturalHeight != null) {
+                image = object;
+            } else if (object) {
+                // See if the arguments describe the raster size:
+                var size = Size.read(arguments);
+                if (!size.isZero()) {
+                    image = CanvasProvider.getCanvas(size);
+                }
+            }
+        }
+
+        if (!this._initialize(source,
+                position !== undefined && Point.read(arguments))) {
             if (image) {
-                // #setImage() handles both canvas and image types.
                 this.setImage(image);
             } else {
-                this.setSource(object);
+                this.setSource(source);
             }
         }
         if (!this._size) {
