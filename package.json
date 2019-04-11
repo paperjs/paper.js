@@ -13,8 +13,8 @@
   "main": "dist/paper-full.js",
   "types": "dist/paper.d.ts",
   "scripts": {
-    "precommit": "gulp jshint --branch develop",
-    "prepush": "gulp test --branch develop",
+    "precommit": "gulp jshint --ensure-branch develop",
+    "prepush": "gulp test --ensure-branch develop",
     "build": "gulp build",
     "dist": "gulp dist",
     "zip": "gulp zip",
