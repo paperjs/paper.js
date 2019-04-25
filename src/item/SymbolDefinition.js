@@ -60,7 +60,9 @@ var SymbolDefinition = Base.extend(/** @lends SymbolDefinition# */{
         this._id = UID.get();
         this.project = paper.project;
         if (item)
-            this.setItem(item, dontCenter);
+            try {
+                this.setItem(item, dontCenter);
+            } catch(e) {}
     },
 
     _serialize: function(options, dictionary) {
