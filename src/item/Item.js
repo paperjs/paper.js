@@ -1803,8 +1803,12 @@ new function() { // Injection scope for various item event handlers
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
-        return !!this._contains(
-                this._matrix._inverseTransform(Point.read(arguments)));
+        if (this._matrix.isInvertible()) {
+            return !!this._contains(
+                    this._matrix._inverseTransform(Point.read(arguments)));
+        } else {
+            return false;
+        }
     },
 
     _contains: function(point) {
