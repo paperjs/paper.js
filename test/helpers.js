@@ -201,10 +201,10 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
         });
     }
     resemble(imageData1)
-    .compareTo(imageData2)
-    .ignoreAntialiasing()
-    // When working with imageData, this call is synchronous:
-    .onComplete(function(data) { result = data; });
+        .compareTo(imageData2)
+        .ignoreAntialiasing()
+        // When working with imageData, this call is synchronous:
+        .onComplete(function(data) { result = data; });
     // Compare with tolerance in percentage...
     var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
         identical = result ? 100 - result.misMatchPercentage : 0,
@@ -260,12 +260,12 @@ var comparePixels = function(actual, expected, message, options) {
     // bounds of both items before rasterizing.
     var resolution = options.resolution || 72,
         actualBounds = actual.strokeBounds,
-        expecedBounds = expected.strokeBounds,
+        expectedBounds = expected.strokeBounds,
         bounds = actualBounds.isEmpty()
-            ? expecedBounds
-            : expecedBounds.isEmpty()
+            ? expectedBounds
+            : expectedBounds.isEmpty()
                 ? actualBounds
-                : actualBounds.unite(expecedBounds);
+                : actualBounds.unite(expectedBounds);
     if (bounds.isEmpty()) {
         QUnit.equal('empty', 'empty', message);
         return;
@@ -288,10 +288,15 @@ var comparePixels = function(actual, expected, message, options) {
     } else {
         // Compare the two rasterized items.
         var detail = actual instanceof PathItem && expected instanceof PathItem
-            ? '\nExpected:\n' + expected.pathData + '\nActual:\n' + actual.pathData
+            ? '\nExpected:\n' + expected.pathData +
+                '\nActual:\n' + actual.pathData
             : '';
-        compareImageData(actualRaster.getImageData(),
-            expectedRaster.getImageData(), options.tolerance, detail);
+        compareImageData(
+            actualRaster.getImageData(),
+            expectedRaster.getImageData(),
+            options.tolerance,
+            detail
+        );
     }
 };
 
@@ -340,7 +345,8 @@ var compareItem = function(actual, expected, message, options, properties) {
  * @param {function} actualCallback the function producing the actual result
  * @param {number} tolerance between 0 and 1
  */
-var compareCanvas = function(width, height, expectedCallback, actualCallback, tolerance) {
+var compareCanvas = function(width, height, expectedCallback, actualCallback,
+        tolerance) {
     function getImageData(width, height, callback) {
         var canvas = document.createElement('canvas');
         canvas.width = width;
@@ -348,7 +354,8 @@ var compareCanvas = function(width, height, expectedCallback, actualCallback, to
         var project = new Project(canvas);
         callback();
         project.view.update();
-        var imageData = canvas.getContext('2d').getImageData(0, 0, width, height);
+        var context = canvas.getContext('2d');
+        var imageData = context.getImageData(0, 0, width, height);
         canvas.remove();
         project.remove();
         return imageData;
