@@ -722,7 +722,7 @@ test('path.strokeBounds with applyMatrix disabled', function() {
     testHitResult();
 });
 
-test('TEST', function() {
+test('path.strokeBounds with applyMatrix enabled', function() {
     var path = new Path.Rectangle({
         applyMatrix: false,
         point: [10, 10],
