@@ -87,7 +87,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
             user.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
                 function(match, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
                     if (!agent.chrome) {
@@ -105,6 +105,13 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 delete agent.webkit;
             if (agent.atom)
                 delete agent.chrome;
+            // In node context, JSDOM user agent no longer include "node" word,
+            // it is now called "jsdom". So we need to replace it because
+            // `agent.node` is expected to be true in node context.
+            if (agent.jsdom) {
+                agent.node = true;
+                delete agent.jsdom;
+            }
         }
     },
 

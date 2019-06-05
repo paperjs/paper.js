@@ -408,7 +408,10 @@ var Raster = Item.extend(/** @lends Raster# */{
             crossOrigin = this._crossOrigin;
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        image.src = src;
+        // We need to avoid setting image source to null, otherwise an unwanted
+        // error would be thrown in node context.
+        if (src)
+            image.src = src;
         this.setImage(image);
     },
 

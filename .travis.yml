@@ -3,14 +3,10 @@ language: node_js
 node_js:
 # Stable version is temporarily disabled due to a bug in resemblejs package with
 # node v11 (https://github.com/orgs/paperjs/teams/contributors/discussions/8).
-# - stable
+ - stable
+- 11
 - 10
 - 8
-# 6.13 and 6.14 causing unreasonable errors in SymbolDefinition.initialize.
-# https://travis-ci.org/paperjs/paper.js/jobs/434854796
-# To avoid these versions, we specify version to 6.12 as temporary solution.
-# See https://github.com/paperjs/paper.js/issues/1523
-- 6.12
 sudo: false
 env:
   matrix:
