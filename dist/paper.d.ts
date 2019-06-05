@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.0-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.1-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 5 20:03:11 2019 +0200
+ * Date: Thu Jun 6 00:15:23 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -18,7 +18,7 @@ declare module paper {
     /** 
      * The project for which the PaperScript is executed.
      * 
-     * Note that when working with mulitple projects, this does not necessarily
+     * Note that when working with multiple projects, this does not necessarily
      * reflect the currently active project. For this, use
      * {@link PaperScope#project} instead.
      */
@@ -32,7 +32,7 @@ declare module paper {
     /** 
      * The reference to the project's view.
      * 
-     * Note that when working with mulitple projects, this does not necessarily
+     * Note that when working with multiple projects, this does not necessarily
      * reflect the view of the currently active project. For this, use
      * {@link PaperScope#view} instead.
      */
@@ -42,7 +42,7 @@ declare module paper {
      * The reference to the tool object which is automatically created when global
      * tool event handlers are defined.
      * 
-     * Note that when working with mulitple tools, this does not necessarily
+     * Note that when working with multiple tools, this does not necessarily
      * reflect the currently active tool. For this, use {@link PaperScope#tool}
      * instead.
      */

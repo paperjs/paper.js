@@ -4,11 +4,12 @@
 
 ### Added
 
-- Add TypesSript definition, automatically generated from JSDoc comments
+- Add TypesScript definition, automatically generated from JSDoc comments
   (#1612).
 - Support `new Raster(size)` constructor.
 - Expose `Raster#context` accessor.
 - Implement `Raster#clear()` method to clear associated canvas context.
+- Node.js: Add support for Node.js v11 and v12.
 
 ### Fixed
 
@@ -16,13 +17,18 @@
 - Improve `Color.random()` documentation.
 - Fix `Tween#then()` documentation.
 
+### Removed
+
+- Node.js: Remove support for Node.js v6.
+
 ## `0.12.0`
 
 ### News
 
-Another release, another new member on the team: Please welcome [@arnoson](https://github.com/arnoson), who has
-worked hard on the all new animation support, exposed through the `Tween` class
-and its various methods on the `Item` class, see below for details:
+Another release, another new member on the team: Please welcome
+[@arnoson](https://github.com/arnoson), who has worked hard on the all new
+animation support, exposed through the `Tween` class and its various methods on
+the `Item` class, see below for details:
 
 ### Added
 
