@@ -39,7 +39,7 @@
  *
  * The project for which the PaperScript is executed.
  *
- * Note that when working with mulitple projects, this does not necessarily
+ * Note that when working with multiple projects, this does not necessarily
  * reflect the currently active project. For this, use
  * {@link PaperScope#project} instead.
  *
@@ -57,7 +57,7 @@
 /**
  * The reference to the project's view.
  *
- * Note that when working with mulitple projects, this does not necessarily
+ * Note that when working with multiple projects, this does not necessarily
  * reflect the view of the currently active project. For this, use
  * {@link PaperScope#view} instead.
  *
@@ -69,7 +69,7 @@
  * The reference to the tool object which is automatically created when global
  * tool event handlers are defined.
  *
- * Note that when working with mulitple tools, this does not necessarily
+ * Note that when working with multiple tools, this does not necessarily
  * reflect the currently active tool. For this, use {@link PaperScope#tool}
  * instead.
  *
