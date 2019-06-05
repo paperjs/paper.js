@@ -408,6 +408,9 @@ var Raster = Item.extend(/** @lends Raster# */{
             crossOrigin = this._crossOrigin;
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
+        // Prevent setting image source to `null`, as this isn't supported by browsers,
+        // and it would actually throw exceptions in JSDOM.
+        //TODO: Look into fixing this exception in JSDOM
         if (src)
             image.src = src;
         this.setImage(image);
