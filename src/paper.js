@@ -2,7 +2,7 @@
  * Paper.js v*#=*__options.version - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -15,7 +15,7 @@
  *
  * Straps.js - Class inheritance library with support for bean-style accessors
  *
- * Copyright (c) 2006 - 2016 Juerg Lehni
+ * Copyright (c) 2006 - 2019 Juerg Lehni
  * http://scratchdisk.com/
  *
  * Distributed under the MIT license.

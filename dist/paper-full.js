@@ -1,21 +1,21 @@
 /*!
- * Paper.js v0.12.0 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.1 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  *
- * Date: Mon Dec 3 14:19:11 2018 +0100
+ * Date: Thu Jun 6 00:04:28 2019 +0200
  *
  ***
  *
  * Straps.js - Class inheritance library with support for bean-style accessors
  *
- * Copyright (c) 2006 - 2016 Juerg Lehni
+ * Copyright (c) 2006 - 2019 Juerg Lehni
  * http://scratchdisk.com/
  *
  * Distributed under the MIT license.
@@ -771,7 +771,7 @@ var PaperScope = Base.extend({
 			if (platform)
 				agent[platform] = true;
 			user.replace(
-				/(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+				/(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
 				function(match, n, v1, v2, rv) {
 					if (!agent.chrome) {
 						var v = n === 'opera' ? v2 :
@@ -788,10 +788,11 @@ var PaperScope = Base.extend({
 				delete agent.webkit;
 			if (agent.atom)
 				delete agent.chrome;
+			agent.node = agent.jsdom;
 		}
 	},
 
-	version: "0.12.0",
+	version: "0.12.1",
 
 	getView: function() {
 		var project = this.project;
@@ -5099,6 +5100,7 @@ statics: new function() {
 }});
 
 var Raster = Item.extend({
+}, {
 	_class: 'Raster',
 	_applyMatrix: false,
 	_canApplyMatrix: false,
@@ -5109,16 +5111,34 @@ var Raster = Item.extend({
 	},
 	_prioritize: ['crossOrigin'],
 	_smoothing: true,
+	beans: true,
 
-	initialize: function Raster(object, position) {
-		if (!this._initialize(object,
-				position !== undefined && Point.read(arguments, 1))) {
-			var image = typeof object === 'string'
-					? document.getElementById(object) : object;
+	initialize: function Raster(source, position) {
+
+		var image,
+			type = typeof source,
+			object = type === 'string'
+				? document.getElementById(source)
+				: type  === 'object'
+					? source
+					: null;
+		if (object && object !== Item.NO_INSERT) {
+			if (object.getContent || object.naturalHeight != null) {
+				image = object;
+			} else if (object) {
+				var size = Size.read(arguments);
+				if (!size.isZero()) {
+					image = CanvasProvider.getCanvas(size);
+				}
+			}
+		}
+
+		if (!this._initialize(source,
+				position !== undefined && Point.read(arguments))) {
 			if (image) {
 				this.setImage(image);
 			} else {
-				this.setSource(object);
+				this.setSource(source);
 			}
 		}
 		if (!this._size) {
@@ -5270,10 +5290,10 @@ var Raster = Item.extend({
 
 	setCanvas: '#setImage',
 
-	getContext: function(modify) {
+	getContext: function(_change) {
 		if (!this._context)
 			this._context = this.getCanvas().getContext('2d');
-		if (modify) {
+		if (_change) {
 			this._image = null;
 			this._changed(1025);
 		}
@@ -5294,7 +5314,8 @@ var Raster = Item.extend({
 			crossOrigin = this._crossOrigin;
 		if (crossOrigin)
 			image.crossOrigin = crossOrigin;
-		image.src = src;
+		if (src)
+			image.src = src;
 		this.setImage(image);
 	},
 
@@ -5433,6 +5454,11 @@ var Raster = Item.extend({
 		data[2] = components[2] * 255;
 		data[3] = alpha != null ? alpha * 255 : 255;
 		ctx.putImageData(imageData, point.x, point.y);
+	},
+
+	clear: function() {
+		var size = this._size;
+		this.getContext(true).clearRect(0, 0, size.width + 1, size.height + 1);
 	},
 
 	createImageData: function() {
@@ -11273,7 +11299,7 @@ var Color = Base.extend(new function() {
 			}
 		} else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
 			type = match[1];
-			components = match[2].split(/[,\s]+/g);
+			components = match[2].trim().split(/[,\s]+/g);
 			var isHSL = type === 'hsl';
 			for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
 				var component = components[i];
@@ -13165,6 +13191,10 @@ var CanvasView = View.extend({
 			ctx.save();
 			ctx.scale(pixelRatio, pixelRatio);
 		}
+	},
+
+	getContext: function() {
+		return this._context;
 	},
 
 	getPixelSize: function getPixelSize(size) {

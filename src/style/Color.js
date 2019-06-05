@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -80,7 +80,7 @@ var Color = Base.extend(new function() {
         } else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
             // RGB / RGBA or HSL / HSLA
             type = match[1];
-            components = match[2].split(/[,\s]+/g);
+            components = match[2].trim().split(/[,\s]+/g);
             var isHSL = type === 'hsl';
             for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
                 var component = components[i];
@@ -691,6 +691,7 @@ var Color = Base.extend(new function() {
          * constructors also work for calls of `set()`.
          *
          * @function
+         * @param {...*} value
          * @return {Color}
          */
         set: '#initialize',
@@ -1185,9 +1186,10 @@ var Color = Base.extend(new function() {
             _types: types,
 
             /**
-             * Creates a random color.
+             * Returns a color object with random {@link #red}, {@link #green}
+             * and {@link #blue} values between `0` and `1`.
              *
-             * @return {Color} the randomly created color
+             * @return {Color} the newly created color object
              * @static
              *
              * @example {@paperscript}

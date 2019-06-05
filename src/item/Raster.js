@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -18,6 +18,7 @@
  * @extends Item
  */
 var Raster = Item.extend(/** @lends Raster# */{
+}, /** @lends Raster# */{
     _class: 'Raster',
     _applyMatrix: false,
     _canApplyMatrix: false,
@@ -31,6 +32,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     // Prioritize `crossOrigin` over `source`:
     _prioritize: ['crossOrigin'],
     _smoothing: true,
+    // Enforce creation of beans, as bean getters have hidden parameters.
+    // See  #getContext(_change) below.
+    beans: true,
 
     // TODO: Implement type, width, height.
     // TODO: Have SymbolItem & Raster inherit from a shared class?
@@ -77,22 +81,40 @@ var Raster = Item.extend(/** @lends Raster# */{
      * raster.scale(0.5);
      * raster.rotate(10);
      */
-    initialize: function Raster(object, position) {
+    initialize: function Raster(source, position) {
         // Support two forms of item initialization: Passing one object literal
         // describing all the different properties to be set, or an image
         // (object) and a point where it should be placed (point).
         // If _initialize can set properties through object literal, we're done.
         // Otherwise we need to check the type of object:
-        if (!this._initialize(object,
-                position !== undefined && Point.read(arguments, 1))) {
-            // object can be an image, canvas, URL or DOM-ID:
-            var image = typeof object === 'string'
-                    ? document.getElementById(object) : object;
+
+        // source can be an image, canvas, source URL or DOM-ID:
+        var image,
+            type = typeof source,
+            object = type === 'string'
+                ? document.getElementById(source)
+                : type  === 'object'
+                    ? source
+                    : null;
+        if (object && object !== Item.NO_INSERT) {
+            // #setImage() handles both canvas and image types.
+            if (object.getContent || object.naturalHeight != null) {
+                image = object;
+            } else if (object) {
+                // See if the arguments describe the raster size:
+                var size = Size.read(arguments);
+                if (!size.isZero()) {
+                    image = CanvasProvider.getCanvas(size);
+                }
+            }
+        }
+
+        if (!this._initialize(source,
+                position !== undefined && Point.read(arguments))) {
             if (image) {
-                // #setImage() handles both canvas and image types.
                 this.setImage(image);
             } else {
-                this.setSource(object);
+                this.setSource(source);
             }
         }
         if (!this._size) {
@@ -332,13 +354,13 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @bean
      * @type CanvasRenderingContext2D
      */
-    getContext: function(modify) {
+    getContext: function(_change) {
         if (!this._context)
             this._context = this.getCanvas().getContext('2d');
         // Support a hidden parameter that indicates if the context will be used
-        // to modify the Raster object. We can notify such changes ahead since
+        // to change the Raster object. We can notify such changes ahead since
         // they are only used afterwards for redrawing.
-        if (modify) {
+        if (_change) {
             // Also set _image to null since the Raster stops representing it.
             // NOTE: This should theoretically be in our own _changed() handler
             // for ChangeFlag.PIXELS, but since it's only happening in one place
@@ -386,7 +408,11 @@ var Raster = Item.extend(/** @lends Raster# */{
             crossOrigin = this._crossOrigin;
         if (crossOrigin)
             image.crossOrigin = crossOrigin;
-        image.src = src;
+        // Prevent setting image source to `null`, as this isn't supported by
+        // browsers, and it would actually throw exceptions in JSDOM.
+        // TODO: Look into fixing this bug in JSDOM.
+        if (src)
+            image.src = src;
         this.setImage(image);
     },
 
@@ -656,6 +682,14 @@ var Raster = Item.extend(/** @lends Raster# */{
         data[2] = components[2] * 255;
         data[3] = alpha != null ? alpha * 255 : 255;
         ctx.putImageData(imageData, point.x, point.y);
+    },
+
+    /**
+     * Clears the image, if it is backed by a canvas.
+     */
+    clear: function() {
+        var size = this._size;
+        this.getContext(true).clearRect(0, 0, size.width + 1, size.height + 1);
     },
 
     // DOCS: document Raster#createImageData

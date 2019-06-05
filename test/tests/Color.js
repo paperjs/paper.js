@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -80,6 +80,9 @@ test('Creating Colors', function() {
 
     equals(new Color('rgba(255, 0, 0, 0.5)'), new Color(1, 0, 0, 0.5),
             'Color from rgba() string');
+
+    equals(new Color('rgba( 255, 0, 0, 0.5 )'), new Color(1, 0, 0, 0.5),
+            'Color from rgba() string 2nd test');
 
     equals(new Color('hsl(180deg, 20%, 40%)'),
             new Color({ hue: 180, saturation: 0.2, lightness: 0.4 }),

@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -104,6 +104,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * also work for calls of `set()`.
      *
      * @function
+     * @param {...*} value
      * @return {Point}
      */
     set: '#initialize',

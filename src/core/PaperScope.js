@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -87,7 +87,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
             user.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
                 function(match, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
                     if (!agent.chrome) {
@@ -105,6 +105,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 delete agent.webkit;
             if (agent.atom)
                 delete agent.chrome;
+            // In Node.js, the user agent set by JSDOM no longer includes `node`
+            // but `jsdom` instead. Preserve `agent.node`:
+            agent.node = agent.jsdom;
         }
     },
 

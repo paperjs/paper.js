@@ -2,7 +2,7 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
  * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
@@ -147,15 +147,19 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *     completes
      * @return {Tween}
      *
-     * @example {@paperscript} // Tweens chaining: var circle = new
-     * Path.Circle({center: view.center, radius: 40, fillColor: 'blue'
+     * @example {@paperscript}
+     * // Tweens chaining:
+     * var circle = new Path.Circle({
+     *     center: view.center,
+     *     radius: 40,
+     *     fillColor: 'blue'
      * });
      * // Tween color from blue to red.
-     * var tween = item.tweenTo({ fillColor: 'red' }, 2000);
+     * var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
      * // When the first tween completes...
      * tween.then(function() {
      *     // ...tween color back to blue.
-     *     item.tweenTo({ fillColor: 'blue' }, 2000);
+     *     circle.tweenTo({ fillColor: 'blue' }, 2000);
      * });
      */
     then: function(then) {
