@@ -110,7 +110,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // `agent.node` is expected to be true in node context.
             if (agent.jsdom) {
                 agent.node = true;
-                delete agent.jsdom;
             }
         }
     },
