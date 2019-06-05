@@ -88,6 +88,10 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
         }
     },
 
+    getContext: function() {
+        return this._context;
+    },
+
     /**
      * Converts the provide size in any of the units allowed in the browser to
      * pixels.

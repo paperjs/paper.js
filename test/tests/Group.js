@@ -137,21 +137,17 @@ test('group.addChildren()', function() {
 });
 
 test('group.setSelectedColor() with selected bound and position', function() {
-    compareCanvas(100, 100,
-        function() {
-            // working: set selected color first then add child
-            var group = new Group();
-            group.bounds.selected = true;
-            group.position.selected = true;
-            group.selectedColor = 'black';
-            group.addChild(new Path.Circle([50, 50], 40));
-        }, function() {
-            // failing: add child first then set selected color
-            var group = new Group();
-            group.bounds.selected = true;
-            group.position.selected = true;
-            group.addChild(new Path.Circle([50, 50], 40));
-            group.selectedColor = 'black';
-        }
-    );
+    // Working: Set selected color first then add child.
+    var group1 = new Group();
+    group1.bounds.selected = true;
+    group1.position.selected = true;
+    group1.selectedColor = 'black';
+    group1.addChild(new Path.Circle([50, 50], 40));
+    // Failing: Add child first then set selected color.
+    var group2 = new Group();
+    group2.bounds.selected = true;
+    group2.position.selected = true;
+    group2.addChild(new Path.Circle([50, 50], 40));
+    group2.selectedColor = 'black';
+    comparePixels(group1, group2);
 });

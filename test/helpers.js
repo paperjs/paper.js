@@ -345,25 +345,24 @@ var compareItem = function(actual, expected, message, options, properties) {
  * @param {function} actualCallback the function producing the actual result
  * @param {number} tolerance between 0 and 1
  */
-var compareCanvas = function(width, height, expectedCallback, actualCallback,
-        tolerance) {
+var compareCanvas = function(width, height, expected, actual, tolerance) {
     function getImageData(width, height, callback) {
         var canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         var project = new Project(canvas);
+        var view = project.view;
         callback();
-        project.view.update();
-        var context = canvas.getContext('2d');
-        var imageData = context.getImageData(0, 0, width, height);
-        canvas.remove();
+        view.update();
+        var imageData = view.context.getImageData(0, 0, width, height);
         project.remove();
+        canvas.remove();
         return imageData;
     }
 
     compareImageData(
-        getImageData(width, height, expectedCallback),
-        getImageData(width, height, actualCallback),
+        getImageData(width, height, expected),
+        getImageData(width, height, actual),
         tolerance
     );
 
