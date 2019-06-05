@@ -33,7 +33,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     _prioritize: ['crossOrigin'],
     _smoothing: true,
     // Enforce creation of beans, as bean getters have hidden parameters.
-    // See  #getContext(modify) below.
+    // See  #getContext(_change) below.
     beans: true,
 
     // TODO: Implement type, width, height.
@@ -354,13 +354,13 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @bean
      * @type CanvasRenderingContext2D
      */
-    getContext: function(modify) {
+    getContext: function(_change) {
         if (!this._context)
             this._context = this.getCanvas().getContext('2d');
         // Support a hidden parameter that indicates if the context will be used
-        // to modify the Raster object. We can notify such changes ahead since
+        // to change the Raster object. We can notify such changes ahead since
         // they are only used afterwards for redrawing.
-        if (modify) {
+        if (_change) {
             // Also set _image to null since the Raster stops representing it.
             // NOTE: This should theoretically be in our own _changed() handler
             // for ChangeFlag.PIXELS, but since it's only happening in one place
@@ -685,7 +685,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      */
     clear: function() {
         var size = this._size;
-        this.getContext().clearRect(0, 0, size.width + 1, size.height + 1);
+        this.getContext(true).clearRect(0, 0, size.width + 1, size.height + 1);
     },
 
     // DOCS: document Raster#createImageData
