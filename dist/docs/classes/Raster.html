@@ -315,7 +315,7 @@ raster.rotate(10);
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>HTMLCanvasELement</tt>
+			<tt>HTMLCanvasElement</tt>
 		</li>
 	</ul>
     
@@ -327,9 +327,9 @@ raster.rotate(10);
 </div>
 		
 			
-<div id="context-modify" class="member">
+<div id="context" class="member">
 <div class="member-link">
-<a name="context-modify" href="#context-modify"><tt><b>context</b></tt></a>
+<a name="context" href="#context"><tt><b>context</b></tt></a>
 </div>
 <div class="member-description hidden">
 
@@ -341,7 +341,7 @@ raster.rotate(10);
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Context</tt>
+			<tt>CanvasRenderingContext2D</tt>
 		</li>
 	</ul>
     
@@ -615,7 +615,7 @@ raster.on('load', function() {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>HTMLCanvasELement</tt></tt>&nbsp;&mdash;&nbsp;the sub image as a Canvas object
+<tt><tt>HTMLCanvasElement</tt></tt>&nbsp;&mdash;&nbsp;the sub image as a Canvas object
 </li>
 
 		
@@ -714,7 +714,7 @@ raster.on('load', function() {
 	
 	<li>
 <tt>image:</tt> 
-<tt>HTMLImageELement</tt>⟋<tt>HTMLCanvasELement</tt>
+<tt>HTMLImageElement</tt>⟋<tt>HTMLCanvasElement</tt>
 
 
 </li>
@@ -795,14 +795,14 @@ raster.on('load', function() {
 	
 	<li>
 <tt>x:</tt> 
-
+<tt>Number</tt>
 &mdash;&nbsp;the x offset of the pixel in pixel coordinates
 
 </li>
 	
 	<li>
 <tt>y:</tt> 
-
+<tt>Number</tt>
 &mdash;&nbsp;the y offset of the pixel in pixel coordinates
 
 </li>
@@ -843,7 +843,7 @@ raster.on('load', function() {
 	
 	<li>
 <tt>point:</tt> 
-
+<a href="../classes/Point.html"><tt>Point</tt></a>
 &mdash;&nbsp;the offset of the pixel as a point in pixel coordinates
 
 </li>
@@ -884,21 +884,21 @@ raster.on('load', function() {
 	
 	<li>
 <tt>x:</tt> 
-
+<tt>Number</tt>
 &mdash;&nbsp;the x offset of the pixel in pixel coordinates
 
 </li>
 	
 	<li>
 <tt>y:</tt> 
-
+<tt>Number</tt>
 &mdash;&nbsp;the y offset of the pixel in pixel coordinates
 
 </li>
 	
 	<li>
 <tt>color:</tt> 
-
+<a href="../classes/Color.html"><tt>Color</tt></a>
 &mdash;&nbsp;the color that the pixel will be set to
 
 </li>
@@ -929,20 +929,39 @@ raster.on('load', function() {
 	
 	<li>
 <tt>point:</tt> 
-
+<a href="../classes/Point.html"><tt>Point</tt></a>
 &mdash;&nbsp;the offset of the pixel as a point in pixel coordinates
 
 </li>
 	
 	<li>
 <tt>color:</tt> 
-
+<a href="../classes/Color.html"><tt>Color</tt></a>
 &mdash;&nbsp;the color that the pixel will be set to
 
 </li>
 	
 </ul>
 
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="clear" class="member">
+<div class="member-link">
+<a name="clear" href="#clear"><tt><b>clear</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Clears the image, if it is backed by a canvas.</p>
+    
+	
 	
 
 
@@ -2057,16 +2076,6 @@ circle.position.x += 100;
 </div>
 
 	
-<div id="transformcontent" class="member">
-<div class="member-link">
-<a name="transformcontent" href="#transformcontent"><tt><b>transformContent</b></tt></a>
-</div>
-<div class="member-description hidden">
-
-</div>
-</div>
-
-	
 	<h3>Project Hierarchy</h3>
 
 <div id="project" class="member">
@@ -2778,7 +2787,7 @@ path3.strokeJoin = 'bevel';
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Array</tt>
+			Array of <tt>Number</tt>s
 		</li>
 	</ul>
     
@@ -4034,6 +4043,16 @@ raster.scale(5);
 </ul>
 
 	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>
+</li>
+
+		
+	</ul>
+
 
 
 	
@@ -4559,6 +4578,16 @@ function onMouseDown(event) {
 </ul>
 
 	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>
+</li>
+
+		
+	</ul>
+
 
 
 	
@@ -4602,7 +4631,7 @@ function onMouseDown(event) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>SVGElement</tt></tt>&nbsp;&mdash;&nbsp;the item converted to an SVG node
+<tt><tt>SVGElement</tt>⟋<tt>String</tt></tt>&nbsp;&mdash;&nbsp;the item converted to an SVG node or a <code>String</code> depending on <code>option.asString</code> value
 </li>
 
 		
@@ -5020,150 +5049,6 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 </div>
 
 	
-<div id="appendtop-item" class="member">
-<div class="member-link">
-<a name="appendtop-item" href="#appendtop-item"><tt><b>appendTop</b>(item)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Inserts the specified item as a child of this item by appending it to the list of children and moving it above all other children. You can use this function for groups, compound paths and layers.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>item:</tt> 
-<a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item to be appended as a child
-
-</li>
-	
-</ul>
-
-	
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="appendbottom-item" class="member">
-<div class="member-link">
-<a name="appendbottom-item" href="#appendbottom-item"><tt><b>appendBottom</b>(item)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Inserts the specified item as a child of this item by appending it to the list of children and moving it below all other children. You can use this function for groups, compound paths and layers.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>item:</tt> 
-<a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item to be appended as a child
-
-</li>
-	
-</ul>
-
-	
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="moveabove-item" class="member">
-<div class="member-link">
-<a name="moveabove-item" href="#moveabove-item"><tt><b>moveAbove</b>(item)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Moves this item above the specified item.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>item:</tt> 
-<a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item above which it should be moved
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it was moved, <tt>false</tt> otherwise
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="movebelow-item" class="member">
-<div class="member-link">
-<a name="movebelow-item" href="#movebelow-item"><tt><b>moveBelow</b>(item)</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Moves the item below the specified item.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>item:</tt> 
-<a href="../classes/Item.html"><tt>Item</tt></a>
-&mdash;&nbsp;the item below which it should be moved
-
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if it was moved, <tt>false</tt> otherwise
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
 <div id="addto-owner" class="member">
 <div class="member-link">
 <a name="addto-owner" href="#addto-owner"><tt><b>addTo</b>(owner)</tt></a>
@@ -5330,8 +5215,8 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 	
 	<li>
 <tt>item:</tt> 
-
-
+<a href="../classes/Item.html"><tt>Item</tt></a>
+&mdash;&nbsp;the item that will replace this item
 
 </li>
 	
@@ -5469,7 +5354,7 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 		<h4>Returns:</h4>
 		
 			<li>
-<tt></tt>&nbsp;&mdash;&nbsp;Boolean
+<tt><tt>Boolean</tt></tt>
 </li>
 
 		
@@ -7365,14 +7250,409 @@ function onMouseDown(event) {
 </div>
 </div>
 
+	
+<h3>Tweening Functions</h3>
+
+<div id="tween-from-to-options" class="member">
+<div class="member-link">
+<a name="tween-from-to-options" href="#tween-from-to-options"><tt><b>tween</b>(from, to, options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Tween item between two states.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.duration: <tt>Number</tt></tt> &mdash; the duration of the tweening</li>
+<li><tt>options.easing: <tt>Function</tt>⟋<tt>String</tt></tt> &mdash; an easing function or the type of the easing: <tt>&lsquo;linear&rsquo; &lsquo;easeInQuad&rsquo; &lsquo;easeOutQuad&rsquo; &lsquo;easeInOutQuad&rsquo; &lsquo;easeInCubic&rsquo; &lsquo;easeOutCubic&rsquo; &lsquo;easeInOutCubic&rsquo; &lsquo;easeInQuart&rsquo; &lsquo;easeOutQuart&rsquo; &lsquo;easeInOutQuart&rsquo; &lsquo;easeInQuint&rsquo; &lsquo;easeOutQuint&rsquo; &lsquo;easeInOutQuint&rsquo;</tt> &mdash;&nbsp;default: <tt>&lsquo;linear&rsquo;</tt></li>
+<li><tt>options.start: <tt>Boolean</tt></tt> &mdash; whether to start tweening automatically &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>from:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the start of the tweening
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the end of the tweening
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Number</tt>
+&mdash;&nbsp;the options or the duration
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Tween fillColor:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-60">
+var path = new Path.Circle({
+    radius: view.bounds.height * 0.4,
+    center: view.center
+});
+path.tween(
+    { fillColor: 'blue' },
+    { fillColor: 'red' },
+    3000
+);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-60"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Tween rotation:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-61">
+var path = new Shape.Rectangle({
+    fillColor: 'red',
+    center: [50, view.center.y],
+    size: [60, 60]
+});
+path.tween({
+    rotation: 180,
+    'position.x': view.bounds.width - 50,
+    'fillColor.hue': '+= 90'
+}, {
+    easing: 'easeInOutCubic',
+    duration: 2000
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-61"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="tween-to-options" class="member">
+<div class="member-link">
+<a name="tween-to-options" href="#tween-to-options"><tt><b>tween</b>(to, options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Tween item to a state.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>to:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the end of the tweening
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Number</tt>
+&mdash;&nbsp;the options or the duration
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#tween-from-to-options"><tt>item.tween(from, to, options)</tt></a></tt></li>
+		
+	</ul>
+
+	<h4>Example:<span class="description">Tween a nested property with relative values</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-62">
+var path = new Path.Rectangle({
+    size: [100, 100],
+    position: view.center,
+    fillColor: 'red',
+});
+
+var delta = { x: path.bounds.width / 2, y: 0 };
+
+path.tween({
+    'segments[1].point': ['+=', delta],
+    'segments[2].point.x': '-= 50'
+}, 3000);
+</script>
+<div class="canvas"><canvas width="516" height="200" id="canvas-62"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="tween-options" class="member">
+<div class="member-link">
+<a name="tween-options" href="#tween-options"><tt><b>tween</b>(options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Tween item.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Number</tt>
+&mdash;&nbsp;the options or the duration
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#tween-from-to-options"><tt>item.tween(from, to, options)</tt></a></tt></li>
+		
+	</ul>
+
+	<h4>Example:<span class="description">Start an empty tween and just use the update callback:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-63">
+var path = new Path.Circle({
+    fillColor: 'blue',
+    radius: view.bounds.height * 0.4,
+    center: view.center,
+});
+var pathFrom = path.clone({ insert: false })
+var pathTo = new Path.Rectangle({
+    position: view.center,
+    rectangle: path.bounds,
+    insert: false
+});
+path.tween(2000).onUpdate = function(event) {
+    path.interpolate(pathFrom, pathTo, event.factor)
+};
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-63"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="tweento-to-options" class="member">
+<div class="member-link">
+<a name="tweento-to-options" href="#tweento-to-options"><tt><b>tweenTo</b>(to, options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Tween item to a state.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>to:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the end of the tweening
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Number</tt>
+&mdash;&nbsp;the options or the duration
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#tween-to-options"><tt>item.tween(to, options)</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="tweenfrom-from-options" class="member">
+<div class="member-link">
+<a name="tweenfrom-from-options" href="#tweenfrom-from-options"><tt><b>tweenFrom</b>(from, options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Tween item from a state to its state before the tweening.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>from:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the start of the tweening
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Number</tt>
+&mdash;&nbsp;the options or the duration
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#tween-from-to-options"><tt>item.tween(from, to, options)</tt></a></tt></li>
+		
+	</ul>
+
+	<h4>Example:<span class="description">Tween fillColor from red to the path's initial fillColor:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-64">
+var path = new Path.Circle({
+    fillColor: 'blue',
+    radius: view.bounds.height * 0.4,
+    center: view.center
+});
+path.tweenFrom({ fillColor: 'red' }, { duration: 1000 });
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-64"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
 </div>
 
 
 
 <!-- =========================== copyright notice ========================== -->
 <p class="footer">
-Paper.js v0.11.8 (develop)<br>
-Copyright &#169; 2011—2018 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+Paper.js v0.12.0 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
 <div class="content-end"></div>
 
 

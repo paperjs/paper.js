@@ -520,16 +520,38 @@ Array of <tt>Number</tt>s
 		<h2>Methods</h2>
 		
 	
-<div id="set" class="member">
+<div id="set-value" class="member">
 <div class="member-link">
-<a name="set" href="#set"><tt><b>set</b>()</tt></a>
+<a name="set-value" href="#set-value"><tt><b>set</b>(...value)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Sets the matrix to the passed values. Note that any sequence of parameters that is supported by the various <a href="../classes/Matrix.html"><tt>Matrix</tt></a>() constructors also work for calls of <code>set()</code>.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
 	
+	<li>
+<tt>value:</tt> 
+*
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+
+		
+	</ul>
+
 
 
 	
@@ -657,9 +679,9 @@ Array of <tt>Number</tt>s
 </div>
 
 	
-<div id="apply-recursively" class="member">
+<div id="apply" class="member">
 <div class="member-link">
-<a name="apply-recursively" href="#apply-recursively"><tt><b>apply</b>(recursively)</tt></a>
+<a name="apply" href="#apply"><tt><b>apply</b>([recursively])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -673,7 +695,7 @@ Array of <tt>Number</tt>s
 <tt>recursively:</tt> 
 <tt>Boolean</tt>
 &mdash;&nbsp;controls whether to apply transformations recursively on children
-
+&mdash;&nbsp;optional, default: <tt>true</tt>
 </li>
 	
 </ul>
@@ -1328,7 +1350,7 @@ Array of <tt>Number</tt>s
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Returns a new matrix as the result of prepending the specified matrix to this matrix. This is the equivalent of multiplying <code>(specified matrix) s* (this matrix)</code>.</p>
+	<p>Returns a new matrix as the result of prepending the specified matrix to this matrix. This is the equivalent of multiplying <code>(specified matrix) * (this matrix)</code>.</p>
     
 	
 <ul class="member-list">
@@ -1626,6 +1648,16 @@ Array of <tt>Number</tt>s
 </ul>
 
 	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>
+</li>
+
+		
+	</ul>
+
 
 
 	
@@ -1703,8 +1735,8 @@ Array of <tt>Number</tt>s
 
 <!-- =========================== copyright notice ========================== -->
 <p class="footer">
-Paper.js v0.11.8 (develop)<br>
-Copyright &#169; 2011—2018 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+Paper.js v0.12.0 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
 <div class="content-end"></div>
 
 

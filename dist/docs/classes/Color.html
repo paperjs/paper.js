@@ -1442,16 +1442,38 @@ function onMouseMove(event) {
 		<h2>Methods</h2>
 		
 	
-<div id="set" class="member">
+<div id="set-value" class="member">
 <div class="member-link">
-<a name="set" href="#set"><tt><b>set</b>()</tt></a>
+<a name="set-value" href="#set-value"><tt><b>set</b>(...value)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Sets the color to the passed values. Note that any sequence of parameters that is supported by the various <a href="../classes/Color.html"><tt>Color</tt></a>() constructors also work for calls of <code>set()</code>.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
 	
+	<li>
+<tt>value:</tt> 
+*
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Color.html"><tt>Color</tt></a></tt>
+</li>
+
+		
+	</ul>
+
 
 
 	
@@ -1467,7 +1489,7 @@ function onMouseMove(event) {
 </div>
 <div class="member-description hidden">
 <div class="member-text">
-	<p>Converts the color another type.</p>
+	<p>Converts the color to another type.</p>
     
 	
 <ul class="member-list">
@@ -2103,12 +2125,62 @@ console.log(result); // { red: 0, blue: 0, green: 1 }</code></pre>
 	</div>
 
 
+	<div class="reference-members">
+		<h2>Static Methods</h2>
+		
+			
+<div id="random" class="member">
+<div class="member-link">
+<a name="random" href="#random"><tt><b>Color.random</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns a color object with random <a href="../classes/Color.html#red"><tt>red</tt></a>, <a href="../classes/Color.html#green"><tt>green</tt></a> and <a href="../classes/Color.html#blue"><tt>blue</tt></a> values between <code>0</code> and <code>1</code>.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Color.html"><tt>Color</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created color object
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-17">
+var circle = new Path.Circle(view.center, 50);
+// Set a random color as circle fill color.
+circle.fillColor = Color.random();
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-17"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+		
+	</div>
+
 
 
 <!-- =========================== copyright notice ========================== -->
 <p class="footer">
-Paper.js v0.11.8 (develop)<br>
-Copyright &#169; 2011—2018 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+Paper.js v0.12.0 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
 <div class="content-end"></div>
 
 
