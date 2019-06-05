@@ -105,12 +105,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 delete agent.webkit;
             if (agent.atom)
                 delete agent.chrome;
-            // In node context, JSDOM user agent no longer include "node" word,
-            // it is now called "jsdom". So we need to replace it because
-            // `agent.node` is expected to be true in node context.
-            if (agent.jsdom) {
-                agent.node = true;
-            }
+            // In Node.js, the user agent set by JSDOM no longer includes `node`
+            // but `jsdom` instead. Preserve `agent.node`:
+            agent.node = agent.jsdom;
         }
     },
 
