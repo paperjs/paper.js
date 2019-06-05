@@ -2,8 +2,8 @@ language: node_js
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 # Stable version is temporarily disabled due to a bug in resemblejs package with
-# node v11 (https://github.com/orgs/paperjs/teams/contributors/discussions/8).
-- stable
+# node v12 (https://github.com/orgs/paperjs/teams/contributors/discussions/12).
+# - stable
 - 11
 - 10
 - 8
@@ -43,4 +43,4 @@ script:
 - gulp minify
 - gulp test
 - gulp zip
-- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "stable" ] && travis/deploy-prebuilt.sh || true'
+- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "11" ] && travis/deploy-prebuilt.sh || true'
