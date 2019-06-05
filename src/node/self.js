@@ -37,15 +37,25 @@ try {
 if (jsdom) {
     // Create our document and window objects through jsdom.
     /* global document:true, window:true */
-    var document = jsdom.jsdom('<html><body></body></html>', {
-        // Use the current working directory as the document's origin, so
-        // requests to local files work correctly with CORS.
-        url: 'file://' + process.cwd() + '/',
-        features: {
-            FetchExternalResources: ['img', 'script']
-        }
-    });
-    self = document.defaultView;
+    var html = '<html><body></body></html>',
+        options = {
+            // Use the current working directory as the document's origin, so
+            // requests to local files work correctly with CORS.
+            url: 'file://' + process.cwd() + '/',
+            // Old JSDOM:
+            features: {
+                FetchExternalResources: ['img', 'script']
+            },
+            // New JSDOM:
+            resources: 'usable'
+        };
+    if (jsdom.JSDOM) {
+        var dom = new jsdom.JSDOM(html, options);
+        self = dom.window;
+    } else {
+        var document = jsdom.jsdom(html, options);
+        self = document.defaultView;
+    }
     require('./canvas.js')(self, requireName);
     require('./xml.js')(self);
 } else {
