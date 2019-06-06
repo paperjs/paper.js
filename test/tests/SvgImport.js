@@ -181,7 +181,7 @@ function importSVG(assert, url, message, options) {
     });
 }
 
-if (!isNode) {
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     var svgFiles = {
         'butterfly': { tolerance: 1e-2 },
@@ -193,7 +193,8 @@ if (!isNode) {
         'blendModes': {},
         'gradients-1': {},
         'gradients-2': {},
-        'gradients-3': {}
+        'gradients-3': {},
+        'gradients-4': {}
     };
     Base.each(svgFiles, function(options, name) {
         name += '.svg';

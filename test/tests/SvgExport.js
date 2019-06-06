@@ -119,7 +119,7 @@ test('Export SVG viewbox attribute with top left at origin', function() {
     equals(project.exportSVG({ bounds: rectangle }).getAttribute('viewBox'), '0,0,100,100');
 });
 
-if (!isNode) {
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
         var rect = new Shape.Rectangle({
