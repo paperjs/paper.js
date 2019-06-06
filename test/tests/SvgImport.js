@@ -165,8 +165,7 @@ function importSVG(assert, url, message, options) {
         }
     });
 }
-
-if (!isNode) {
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     var svgFiles = {
         'butterfly': { tolerance: 1e-2 },
@@ -176,7 +175,8 @@ if (!isNode) {
         'symbol': {},
         'symbols': {},
         'blendModes': {},
-        'gradients-1': {}
+        'gradients-1': {},
+        'gradients-3': {}
     };
     // TODO: Investigate why Phantom struggles with this file:
     if (!isPhantom)

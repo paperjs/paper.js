@@ -10,11 +10,13 @@
  * All rights reserved.
  */
 
-var isNode = typeof global === 'object',
+// We call our variable `isNodeContext` because resemblejs exposes a global
+// `isNode` function which would override it and break node check.
+var isNodeContext = typeof global === 'object',
     isPhantom = typeof window === 'object' && !!window.callPhantom,
     scope;
 
-if (isNode) {
+if (isNodeContext) {
     scope = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
@@ -36,7 +38,7 @@ if (isNode) {
 
 // Some native javascript classes have name collisions with Paper.js classes.
 // If they have not already been stored in src/load.js, we dot it now.
-if (!isNode && typeof NativeClasses === 'undefined')
+if (!isNodeContext && typeof NativeClasses === 'undefined')
 {
     NativeClasses = {
         Event: Event,
@@ -215,7 +217,7 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
         detail += diffDetail;
     }
     QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
-    if (!ok && result && !isNode) {
+    if (!ok && result && !isNodeContext) {
         // Get the right entry for this unit test and assertion, and
         // replace the results with images
         var entry = document.getElementById('qunit-test-output-' + id)

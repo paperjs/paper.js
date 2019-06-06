@@ -174,7 +174,14 @@ new function() {
             highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds);
         } else {
             origin = getPoint(node, 'x1', 'y1', false, scaleToBounds);
-            destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
+            // As SVG spec states, x2 default value should be `100%`:
+            // https://www.w3.org/TR/SVG11/pservers.html#LinearGradients
+            // so we manually parse each attribute instead of using getPoint().
+            var x2 = node.hasAttribute('x2')
+                ? getValue(node, 'x2', false, false, scaleToBounds)
+                : rootSize.width;
+            var y2 = getValue(node, 'y2', false, false, scaleToBounds);
+            destination = new Point(x2, y2);
         }
         var color = applyAttributes(
                 new Color(gradient, origin, destination, highlight), node);

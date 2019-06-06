@@ -113,7 +113,7 @@ test('Export SVG path at precision 0', function() {
     equals(path.exportSVG({ precision: 0 }).getAttribute('d'), 'M0,2l1,1');
 });
 
-if (!isNode) {
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
         var rect = new Shape.Rectangle({
