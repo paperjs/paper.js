@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 6 00:15:23 2019 +0200
+ * Date: Fri Jun 7 15:06:46 2019 +0200
  *
  ***
  *
@@ -14927,7 +14927,9 @@ new function() {
 					getPoint(node, 'dx', 'dy')));
 			text.setContent(node.textContent.trim() || '');
 			return text;
-		}
+		},
+
+		switch: importGroup
 	};
 
 	function applyTransform(item, value, name, node) {
