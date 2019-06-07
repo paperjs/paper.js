@@ -1,12 +1,18 @@
 # Change Log
 
-## 0.12.1
+# `prebuilt`
+
+### Added
+
+- Improve `new Raster(size[, position])` constructor (#1621).
+
+# `0.12.1`
 
 ### Added
 
 - Add TypesScript definition, automatically generated from JSDoc comments
   (#1612).
-- Support `new Raster(size)` constructor.
+- Support `new Raster(size[, position])` constructor.
 - Expose `Raster#context` accessor.
 - Implement `Raster#clear()` method to clear associated canvas context.
 - Node.js: Add support for Node.js v11 and v12.

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 7 17:19:59 2019 +0200
+ * Date: Wed Dec 5 10:25:56 2018 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5348,7 +5348,7 @@ declare module paper {
 
         /** 
          * Creates a new raster item from the passed argument, and places it in the
-         * active layer. `object` can either be a DOM Image, a Canvas, or a string
+         * active layer. `source` can either be a DOM Image, a Canvas, or a string
          * describing the URL to load the image from, or the ID of a DOM element to
          * get the image from (either a DOM Image or a Canvas).
          * 
@@ -5358,6 +5358,16 @@ declare module paper {
          *     placed
          */
         constructor(source?: HTMLImageElement | HTMLCanvasElement | string, position?: Point)
+
+        /** 
+         * Creates a new empty raster of the given size, and places it in the
+         * active layer.
+         * 
+         * @param size - the size of the raster
+         * @param position - the center position at which the raster item is
+         *     placed
+         */
+        constructor(size: Size, position?: Point)
 
         /** 
          * Extracts a part of the Raster's content as a sub image, and returns it as
@@ -5417,7 +5427,8 @@ declare module paper {
         /** 
          * Gets the color of a pixel in the raster.
          * 
-         * @param point - the offset of the pixel as a point in pixel coordinates
+         * @param point - the offset of the pixel as a point in pixel
+         *     coordinates
          * 
          * @return the color of the pixel
          */
@@ -5435,7 +5446,8 @@ declare module paper {
         /** 
          * Sets the color of the specified pixel to the specified color.
          * 
-         * @param point - the offset of the pixel as a point in pixel coordinates
+         * @param point - the offset of the pixel as a point in pixel
+         *     coordinates
          * @param color - the color that the pixel will be set to
          */
         setPixel(point: Point, color: Color): void

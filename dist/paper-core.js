@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 7 17:19:59 2019 +0200
+ * Date: Wed Dec 5 10:25:56 2018 +0100
  *
  ***
  *
@@ -5111,27 +5111,25 @@ var Raster = Item.extend({
 	beans: true,
 
 	initialize: function Raster(source, position) {
-
-		var image,
-			type = typeof source,
-			object = type === 'string'
-				? document.getElementById(source)
-				: type  === 'object'
-					? source
-					: null;
-		if (object && object !== Item.NO_INSERT) {
-			if (object.getContent || object.naturalHeight != null) {
-				image = object;
-			} else if (object) {
-				var size = Size.read(arguments);
-				if (!size.isZero()) {
-					image = CanvasProvider.getCanvas(size);
-				}
-			}
-		}
-
 		if (!this._initialize(source,
 				position !== undefined && Point.read(arguments))) {
+			var image,
+				type = typeof source,
+				object = type === 'string'
+					? document.getElementById(source)
+					: type  === 'object'
+						? source
+						: null;
+			if (object && object !== Item.NO_INSERT) {
+				if (object.getContent || object.naturalHeight != null) {
+					image = object;
+				} else if (object) {
+					var size = Size.read(arguments);
+					if (!size.isZero()) {
+						image = CanvasProvider.getCanvas(size);
+					}
+				}
+			}
 			if (image) {
 				this.setImage(image);
 			} else {
