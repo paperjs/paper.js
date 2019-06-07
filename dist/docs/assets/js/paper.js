@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 7 15:06:46 2019 +0200
+ * Date: Fri Jun 7 17:19:59 2019 +0200
  *
  ***
  *
@@ -9070,6 +9070,10 @@ var Path = PathItem.extend({
 new function() {
 
 	function drawHandles(ctx, segments, matrix, size) {
+		if (size <= 0) {
+			return;
+		}
+
 		var half = size / 2,
 			coords = new Array(6),
 			pX, pY;
@@ -9099,7 +9103,7 @@ new function() {
 			if (selection & 4)
 				drawHandle(4);
 			ctx.fillRect(pX - half, pY - half, size, size);
-			if (!(selection & 1)) {
+			if (!(selection & 1) && size > 2) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
 				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
