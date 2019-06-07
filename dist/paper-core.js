@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 7 22:30:01 2019 +0200
+ * Date: Wed Oct 24 19:05:32 2018 +0900
  *
  ***
  *
@@ -14330,11 +14330,16 @@ new function() {
 		var attrs = new Base(),
 			trans = matrix.getTranslation();
 		if (coordinates) {
-			matrix = matrix._shiftless();
-			var point = matrix._inverseTransform(trans);
+			var point;
+			if (matrix.isInvertible()) {
+				matrix = matrix._shiftless();
+				point = matrix._inverseTransform(trans);
+				trans = null;
+			} else {
+				point = new Point();
+			}
 			attrs[center ? 'cx' : 'x'] = point.x;
 			attrs[center ? 'cy' : 'y'] = point.y;
-			trans = null;
 		}
 		if (!matrix.isIdentity()) {
 			var decomposed = matrix.decompose();
