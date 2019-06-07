@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Dec 5 10:25:56 2018 +0100
+ * Date: Fri Jun 7 22:30:01 2019 +0200
  *
  ***
  *
@@ -14696,7 +14696,7 @@ new function() {
 			if (rect) {
 				attrs.width = rect.width;
 				attrs.height = rect.height;
-				if (rect.x || rect.y)
+				if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
 					attrs.viewBox = formatter.rectangle(rect);
 			}
 			var node = SvgElement.create('svg', attrs, formatter),
