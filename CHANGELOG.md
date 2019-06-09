@@ -13,6 +13,7 @@
 - Do not ignore `Group#clipItem.matrix` in `Group#internalBounds` (#1427).
 - Correctly calculate bounds with nested empty items (#1467).
 - Fix color change propagation on groups (#1152).
+- Fix `Path#arcTo()` where `from` and `to` points are equal (#1613).
 - SVG Export: Fix error when `Item#matrix` is not invertible (#1580).
 - SVG Export: Include missing viewBox attribute (#1576).
 - SVG Import: Use correct default values for gradients (#1632, #1661).
