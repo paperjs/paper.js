@@ -185,23 +185,30 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
 
     tolerance = (tolerance || 1e-4) * 100;
 
-    // Use resemble.js to compare image datas.
     var id = QUnit.config.current.testId,
         index = QUnit.config.current.assertions.length + 1,
         result;
-    if (!resemble._setup) {
-        resemble._setup = true;
-        resemble.outputSettings({
-            errorColor: { red: 255, green: 51, blue: 0 },
-            errorType: 'flat',
-            transparency: 1
-        });
-    }
-    resemble(imageData1)
-        .compareTo(imageData2)
-        .ignoreAntialiasing()
+    // Compare image-data using resemble.js:
+    resemble.compare(
+        imageData1,
+        imageData2,
+        {
+            output: {
+                errorColor: { red: 255, green: 51, blue: 0 },
+                errorType: 'flat',
+                transparency: 1
+            },
+            ignore: ['antialiasing']
+        },
         // When working with imageData, this call is synchronous:
-        .onComplete(function(data) { result = data; });
+        function (error, data) {
+            if (error) {
+                console.error(error);
+            } else {
+                result = data;
+            }
+        }
+    )
     // Compare with tolerance in percentage...
     var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
         identical = result ? 100 - result.misMatchPercentage : 0,
@@ -668,16 +675,14 @@ var triggerMouseEvent = function(type, point, target) {
     // and `docEvents` in View.js). And we cannot rely on the fact that event
     // will bubble from canvas to document, since the canvas used in tests is
     // not inserted in DOM.
-    target = target || (type === 'mousedown' ? view._element : document);
-
+    target = target || (type === 'mousedown' ? view.element : document);
     // If `gulp load` was run, there is a name collision between paper Event /
     // MouseEvent and native javascript classes. In this case, we need to use
     // native classes stored in global NativeClasses object instead.
     // MouseEvent class does not exist in PhantomJS, so in that case, we need to
     // use a polyfill method.
-    var constructor = nativeClasses.MouseEvent || MouseEventPolyfill;
-
-    var event = new constructor(type, {
+    var MouseEvent = nativeClasses.MouseEvent || MouseEventPolyfill;
+    var event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,
         composed: true,
