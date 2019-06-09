@@ -82,11 +82,15 @@ gulp.task('publish:release', function() {
         .pipe(shell('npm publish'));
 });
 
-gulp.task('publish:packages',
-    packages.map(function(name) {
-        return 'publish:packages:' + name;
-    })
-);
+gulp.task('publish:packages', function() {
+    // Publish packages in series instead of in parallel, to see if this fixes
+    // recent issues with `npm publish`:
+    return run(
+        packages.map(function(name) {
+            return 'publish:packages:' + name;
+        })
+    );
+});
 
 packages.forEach(function(name) {
     gulp.task('publish:packages:' + name, ['publish:version'], function() {
