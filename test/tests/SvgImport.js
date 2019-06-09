@@ -192,11 +192,9 @@ if (!isNode) {
         'symbols': {},
         'blendModes': {},
         'gradients-1': {},
+        'gradients-2': {},
         'gradients-3': {}
     };
-    // TODO: Investigate why Phantom struggles with this file:
-    if (!isPhantom)
-        svgFiles['gradients-2'] = {};
     Base.each(svgFiles, function(options, name) {
         name += '.svg';
         test('Import ' + name, function(assert) {
