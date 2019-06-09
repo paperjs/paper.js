@@ -711,8 +711,9 @@ var Color = Base.extend(new function() {
          */
         _changed: function() {
             this._canvasStyle = null;
-            if (this._owner)
-                this._owner._changed(/*#=*/Change.STYLE);
+            if (this._owner) {
+                this._owner[this._setter](this);
+            }
         },
 
         /**
@@ -1200,6 +1201,20 @@ var Color = Base.extend(new function() {
             random: function() {
                 var random = Math.random;
                 return new Color(random(), random(), random());
+            },
+
+            _setOwner: function(color, owner, setter) {
+                if (color) {
+                    // Clone color if owner changes:
+                    if (color._owner && owner && color._owner !== owner) {
+                        color = color.clone();
+                    }
+                    if (!color._owner ^ !owner) {
+                        color._owner = owner || null;
+                        color._setter = setter || null;
+                    }
+                }
+                return color;
             }
         }
     });

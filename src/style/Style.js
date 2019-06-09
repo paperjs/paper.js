@@ -180,17 +180,14 @@ var Style = Base.extend(new function() {
                     if (isColor) {
                         // The old value may be a native string or other color
                         // description that wasn't coerced to a color object yet
-                        if (old && old._owner !== undefined) {
-                            old._owner = undefined;
+                        if (old) {
+                            Color._setOwner(old, null);
                             old._canvasStyle = null;
                         }
                         if (value && value.constructor === Color) {
-                            // Clone color if it already has an owner.
                             // NOTE: If value is not a Color, it is only
                             // converted and cloned in the getter further down.
-                            if (value._owner)
-                                value = value.clone();
-                            value._owner = owner;
+                            value = Color._setOwner(value, owner, set);
                         }
                     }
                     // NOTE: We do not convert the values to Colors in the
@@ -216,8 +213,10 @@ var Style = Base.extend(new function() {
                 var value = this._values[key];
                 if (value === undefined) {
                     value = this._defaults[key];
-                    if (value && value.clone)
+                    // Clone defaults if available:
+                    if (value && value.clone) {
                         value = value.clone();
+                    }
                 } else {
                     var ctor = isColor ? Color : isPoint ? Point : null;
                     if (ctor && !(value && value.constructor === ctor)) {
@@ -225,8 +224,6 @@ var Style = Base.extend(new function() {
                         // conversion.
                         this._values[key] = value = ctor.read([value], 0,
                                 { readNull: true, clone: true });
-                        if (value && isColor)
-                            value._owner = owner;
                     }
                 }
             } else if (children) {
@@ -241,11 +238,10 @@ var Style = Base.extend(new function() {
                     }
                 }
             }
-            // Turn group related colors into LinkedColor instances that will
-            // allow calls like `group.fillColor.hue += 10` to be propagated to
-            // children.
-            if (owner instanceof Group && value instanceof Color) {
-                value = new LinkedColor(value, owner, set);
+            if (value && isColor) {
+                // Color._setOwner() may clone the color if it already has a
+                // different owner (e.g. resulting from `childValue` above):
+                value = Color._setOwner(value, owner, set);
             }
             return value;
         };

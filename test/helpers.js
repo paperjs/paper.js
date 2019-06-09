@@ -106,7 +106,7 @@ var equals = function(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof window.Element && 'Element' // handle DOM Elements
+            || expected instanceof window.Element && 'Element' // DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
@@ -456,7 +456,7 @@ var comparators = {
             equals(actual.components, expected.components,
                     message + ' (#components)', options);
         } else {
-            QUnit.strictEqual(actual, expected, message);
+            QUnit.push(expected.equals(actual), actual, expected, message);
         }
     },
 

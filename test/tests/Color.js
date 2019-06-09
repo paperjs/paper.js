@@ -303,10 +303,10 @@ test('Gradients with applyMatrix', function() {
     comparePixels(path, shape);
 });
 
-test('LinkedColor for group colors', function() {
+test('Modifying group.strokeColor for multiple children', function() {
     var item = new Group(new Path(), new Path());
     item.strokeColor = 'red';
+    var strokeColor = item.strokeColor;
     item.strokeColor.hue = 50;
-    item.strokeColor.hue = 100;
-    expect(0);
+    equals(function() { return item.strokeColor !== undefined; }, true);
 });
