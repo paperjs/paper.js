@@ -35,10 +35,10 @@ if (isNode) {
 }
 
 // Some native javascript classes have name collisions with Paper.js classes.
-// Store them before `paper.install()` to be able to use them later in tests.
-var nativeClasses = {
-    Event: Event,
-    MouseEvent: MouseEvent
+// If they have not already been stored in `src/load.js`, do it now:
+var nativeClasses = this.nativeClasses || {
+    Event: this.Event || {},
+    MouseEvent: this.MouseEvent || {}
 };
 
 // The unit-tests expect the paper classes to be global.
@@ -678,10 +678,12 @@ var triggerMouseEvent = function(type, point, target) {
     target = target || (type === 'mousedown' ? view.element : document);
     // If `gulp load` was run, there is a name collision between paper Event /
     // MouseEvent and native javascript classes. In this case, we need to use
-    // native classes stored in global NativeClasses object instead.
+    // native classes stored in the nativeClasses object instead.
     // MouseEvent class does not exist in PhantomJS, so in that case, we need to
-    // use a polyfill method.
-    var MouseEvent = nativeClasses.MouseEvent || MouseEventPolyfill;
+    // use a polyfill method, see: https://stackoverflow.com/questions/42929639
+    var MouseEvent = typeof nativeClasses.MouseEvent === 'function'
+        ? nativeClasses.MouseEvent
+        : MouseEventPolyfill;
     var event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,

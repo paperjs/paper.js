@@ -36,6 +36,12 @@ if (typeof window === 'object') {
         // the code the 2nd time around.
         load(root + 'src/load.js');
     } else {
+        // Some native javascript classes have name collisions with Paper.js
+        // classes. Store them to be able to use them later in tests.
+        this.nativeClasses = {
+            Event: window.Event,
+            MouseEvent: window.MouseEvent
+        };
         include('options.js');
         // Load constants.js, required by the on-the-fly preprocessing:
         include('constants.js');
