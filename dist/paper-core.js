@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 19:29:07 2019 +0200
+ * Date: Wed Oct 17 10:11:35 2018 +0200
  *
  ***
  *
@@ -4720,7 +4720,7 @@ var Group = Item.extend({
 		var clipItem = this._getClipItem();
 		return clipItem
 			? clipItem._getCachedBounds(
-				matrix && matrix.appended(clipItem._matrix),
+				matrix && matrix.appended(clipItem._matrix) || clipItem._matrix,
 				Base.set({}, options, { stroke: false }))
 			: _getBounds.base.call(this, matrix, options);
 	},
