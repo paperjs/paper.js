@@ -17,6 +17,7 @@
 - SVG Import: Use correct default values for gradients (#1632, #1661).
 - SVG Import: Add basic `<switch/>` support (#1597).
 - JSON Import: Prevent `Item#insert()` method from being overridden (#1392).
+- PaperScript: Fix issues with increment/decrement operators (#1450, #1611).
 
 # `0.12.1`
 

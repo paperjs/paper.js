@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 18:01:42 2019 +0200
+ * Date: Sun Jun 9 19:29:07 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -3304,9 +3304,9 @@ declare module paper {
          *     mapping, in case the code that's passed in has already been mingled.
          * 
          * @param code - the PaperScript code
-         * @param option - the compilation options
+         * @param options - the compilation options
          */
-        execute(code: string, option?: object): void
+        execute(code: string, options?: object): void
 
         /** 
          * Injects the paper scope into any other given scope. Can be used for
@@ -3357,12 +3357,12 @@ declare module paper {
          *     mapping, in case the code that's passed in has already been mingled.
          * 
          * @param code - the PaperScript code
-         * @param option - the compilation options
+         * @param options - the compilation options
          * 
          * @return an object holding the compiled PaperScript translated
          *     into JavaScript code along with source-maps and other information.
          */
-        static compile(code: string, option?: object): object
+        static compile(code: string, options?: object): object
 
         /** 
          * Compiles the PaperScript code into a compiled function and executes it.
@@ -3378,11 +3378,11 @@ declare module paper {
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
-         * @param option - the compilation options
+         * @param options - the compilation options
          * 
          * @return the exports defined in the executed code
          */
-        static execute(code: string, scope: PaperScope, option?: object): object
+        static execute(code: string, scope: PaperScope, options?: object): object
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note

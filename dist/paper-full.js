@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 18:01:42 2019 +0200
+ * Date: Sun Jun 9 19:29:07 2019 +0200
  *
  ***
  *
@@ -16784,9 +16784,13 @@ Base.exports.PaperScript = function() {
 							exp = '__$__(' + arg + ', "' + node.operator[0]
 									+ '", 1)',
 							str = arg + ' = ' + exp;
-						if (!node.prefix
-								&& (parentType === 'AssignmentExpression'
-									|| parentType === 'VariableDeclarator')) {
+						if (node.prefix) {
+							str = '(' + str + ')';
+						} else if (
+							parentType === 'AssignmentExpression' ||
+							parentType === 'VariableDeclarator' ||
+							parentType === 'BinaryExpression'
+						) {
 							if (getCode(parent.left || parent.id) === arg)
 								str = exp;
 							str = arg + '; ' + str;
