@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Nov 5 18:11:13 2018 +0100
+ * Date: Fri Nov 9 10:26:54 2018 +0100
  *
  ***
  *
@@ -4530,8 +4530,9 @@ new function() {
 		this._draw(ctx, param, viewMatrix, strokeMatrix);
 		ctx.restore();
 		matrices.pop();
-		if (param.clip && !param.dontFinish)
-			ctx.clip();
+		if (param.clip && !param.dontFinish) {
+			ctx.clip(this.getFillRule());
+		}
 		if (!direct) {
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					itemOffset.subtract(prevOffset).multiply(pixelRatio));

@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Fix drawing with compound path as clip item (#1361).
 - SVG Export: Fix error when `Item#matrix` is not invertible (#1580).
 - SVG Import: Fix gradient default values (#1632).
 - JSON Import: Prevent overriding `Item#insert()` (#1392).
