@@ -2174,11 +2174,11 @@ new function() { // Scope for drawing
 
     function drawHandles(ctx, segments, matrix, size) {
         // Only draw if size is not null or negative.
-        if (size <= 0) {
-            return;
-        }
+        if (size <= 0) return;
 
         var half = size / 2,
+            miniSize = size - 2,
+            miniHalf = half - 1,
             coords = new Array(6),
             pX, pY;
 
@@ -2208,12 +2208,12 @@ new function() { // Scope for drawing
                 drawHandle(4);
             // Draw a rectangle at segment.point:
             ctx.fillRect(pX - half, pY - half, size, size);
-            // If the point is not selected, draw a white square that is 1 px
-            // smaller on all sides. Only draw it if size is big enough (#1327).
-            if (!(selection & /*#=*/SegmentSelection.POINT) && size > 2) {
+            // If the point is not selected, draw a white square that is 1px
+            // smaller on all sides, but only draw it if size is big enough.
+            if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+                ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
                 ctx.fillStyle = fillStyle;
             }
         }
