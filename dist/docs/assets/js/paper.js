@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 17:56:46 2019 +0200
+ * Date: Sun Jun 9 18:01:42 2019 +0200
  *
  ***
  *
@@ -11813,7 +11813,7 @@ var Color = Base.extend(new function() {
 					if (color._owner && owner && color._owner !== owner) {
 						color = color.clone();
 					}
-					if (!color._owner !== !owner) {
+					if (!color._owner ^ !owner) {
 						color._owner = owner || null;
 						color._setter = setter || null;
 					}
