@@ -1,6 +1,6 @@
 # Change Log
 
-# `prebuilt`
+## `prebuilt`
 
 ### Added
 
@@ -21,7 +21,7 @@
 - JSON Import: Prevent `Item#insert()` method from being overridden (#1392).
 - PaperScript: Fix issues with increment/decrement operators (#1450, #1611).
 
-# `0.12.1`
+## `0.12.1`
 
 ### Added
 
