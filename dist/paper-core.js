@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 16:54:15 2019 +0200
+ * Date: Sun Jun 9 17:56:46 2019 +0200
  *
  ***
  *
@@ -11645,8 +11645,9 @@ var Color = Base.extend(new function() {
 
 		_changed: function() {
 			this._canvasStyle = null;
-			if (this._owner)
-				this._owner._changed(129);
+			if (this._owner) {
+				this._owner[this._setter](this);
+			}
 		},
 
 		_convert: function(type) {
@@ -11802,6 +11803,19 @@ var Color = Base.extend(new function() {
 			random: function() {
 				var random = Math.random;
 				return new Color(random(), random(), random());
+			},
+
+			_setOwner: function(color, owner, setter) {
+				if (color) {
+					if (color._owner && owner && color._owner !== owner) {
+						color = color.clone();
+					}
+					if (!color._owner !== !owner) {
+						color._owner = owner || null;
+						color._setter = setter || null;
+					}
+				}
+				return color;
 			}
 		}
 	});
@@ -11840,6 +11854,18 @@ new function() {
 		};
 	}, {
 	});
+});
+
+var LinkedColor = Color.extend({
+	initialize: function Color(color, item, setter) {
+		paper.Color.apply(this, [color]);
+		this._item = item;
+		this._setter = setter;
+	},
+
+	_changed: function(){
+		this._item[this._setter](this);
+	}
 });
 
 var Gradient = Base.extend({
@@ -11997,10 +12023,9 @@ var GradientStop = Base.extend({
 	},
 
 	setColor: function() {
-		var color = Color.read(arguments, 0, { clone: true });
-		if (color)
-			color._owner = this;
-		this._color = color;
+		Color._setOwner(this._color, null);
+		this._color = Color._setOwner(Color.read(arguments, 0), this,
+				'setColor');
 		this._changed();
 	},
 
@@ -12094,14 +12119,12 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old && old._owner !== undefined) {
-							old._owner = undefined;
+						if (old) {
+							Color._setOwner(old, null);
 							old._canvasStyle = null;
 						}
 						if (value && value.constructor === Color) {
-							if (value._owner)
-								value = value.clone();
-							value._owner = owner;
+							value = Color._setOwner(value, owner, set);
 						}
 					}
 					this._values[key] = value;
@@ -12120,15 +12143,14 @@ var Style = Base.extend(new function() {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
-					if (value && value.clone)
+					if (value && value.clone) {
 						value = value.clone();
+					}
 				} else {
 					var ctor = isColor ? Color : isPoint ? Point : null;
 					if (ctor && !(value && value.constructor === ctor)) {
 						this._values[key] = value = ctor.read([value], 0,
 								{ readNull: true, clone: true });
-						if (value && isColor)
-							value._owner = owner;
 					}
 				}
 			} else if (children) {
@@ -12140,6 +12162,9 @@ var Style = Base.extend(new function() {
 						return undefined;
 					}
 				}
+			}
+			if (value && isColor) {
+				value = Color._setOwner(value, owner, set);
 			}
 			return value;
 		};
