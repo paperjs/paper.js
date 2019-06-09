@@ -192,15 +192,17 @@ if (!isNodeContext) {
         'symbols': {},
         'blendModes': {},
         'gradients-1': {},
-        'gradients-2': {},
+        'gradients-2': !isPhantomContext && {},
         'gradients-3': {},
         'gradients-4': {}
     };
     Base.each(svgFiles, function(options, name) {
-        name += '.svg';
-        test('Import ' + name, function(assert) {
-            importSVG(assert, 'assets/' + name, null, options);
-        });
+        if (options) {
+            name += '.svg';
+            test('Import ' + name, function(assert) {
+                importSVG(assert, 'assets/' + name, null, options);
+            });
+        }
     });
 
     test('Import inexistent file', function(assert) {
