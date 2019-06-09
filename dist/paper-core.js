@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Nov 9 10:26:54 2018 +0100
+ * Date: Sun Jun 9 16:54:15 2019 +0200
  *
  ***
  *
@@ -549,7 +549,7 @@ statics: {
 						if (Base.isPlainObject(arg)) {
 							arg.insert = false;
 							if (useTarget) {
-								args = args.concat([{ insert: true }])
+								args = args.concat([{ insert: true }]);
 							}
 						}
 					}
@@ -9079,11 +9079,11 @@ var Path = PathItem.extend({
 new function() {
 
 	function drawHandles(ctx, segments, matrix, size) {
-		if (size <= 0) {
-			return;
-		}
+		if (size <= 0) return;
 
 		var half = size / 2,
+			miniSize = size - 2,
+			miniHalf = half - 1,
 			coords = new Array(6),
 			pX, pY;
 
@@ -9112,10 +9112,10 @@ new function() {
 			if (selection & 4)
 				drawHandle(4);
 			ctx.fillRect(pX - half, pY - half, size, size);
-			if (!(selection & 1) && size > 2) {
+			if (miniSize > 0 && !(selection & 1)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
 				ctx.fillStyle = fillStyle;
 			}
 		}

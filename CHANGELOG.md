@@ -8,10 +8,14 @@
 
 ### Fixed
 
-- Fix drawing with compound path as clip item (#1361).
+- Fix drawing with compound-paths as clip-items (#1361).
+- Fix drawing of path selection with small handle size (#1327).
+- Correctly calculate bounds with nested empty items (#1467).
 - SVG Export: Fix error when `Item#matrix` is not invertible (#1580).
-- SVG Import: Fix gradient default values (#1632).
-- JSON Import: Prevent overriding `Item#insert()` (#1392).
+- SVG Export: Include missing viewBox attribute (#1576).
+- SVG Import: Use correct default values for gradients (#1632, #1661).
+- SVG Import: Add basic `<switch/>` support (#1597).
+- JSON Import: Prevent `Item#insert()` method from being overridden (#1392).
 
 # `0.12.1`
 
