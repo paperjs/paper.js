@@ -203,7 +203,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
-     * @param {Object} [option] the compilation options
+     * @param {Object} [options] the compilation options
      */
     execute: function(code, options) {
 /*#*/   if (__options.paperScript) {
