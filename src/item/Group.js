@@ -171,8 +171,7 @@ var Group = Item.extend(/** @lends Group# */{
     _getBounds: function _getBounds(matrix, options) {
         var clipItem = this._getClipItem();
         return clipItem
-            ? clipItem._getCachedBounds(
-                matrix && matrix.appended(clipItem._matrix) || clipItem._matrix,
+            ? clipItem._getCachedBounds(clipItem._matrix.prepended(matrix),
                 Base.set({}, options, { stroke: false }))
             : _getBounds.base.call(this, matrix, options);
     },

@@ -10,6 +10,7 @@
 
 - Fix drawing with compound-paths as clip-items (#1361).
 - Fix drawing of path selection with small handle size (#1327).
+- Do not ignore `Group#clipItem.matrix` in `Group#internalBounds` (#1427).
 - Correctly calculate bounds with nested empty items (#1467).
 - Fix color change propagation on groups (#1152).
 - SVG Export: Fix error when `Item#matrix` is not invertible (#1580).

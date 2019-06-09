@@ -167,15 +167,25 @@ test('Group#isEmpty(recursively)', function() {
     equals(true, group.isEmpty(true));
 });
 
-test('group.getInternalBounds() with clip item without matrix applied', function() {
-    var point = new Point(100, 100);
-    var translation = new Point(100, 100);
-    var item = new Path.Circle({ center: point, radius: 50, fillColor: 'orange' });
-    var clip = new Path.Rectangle({ from: point.subtract(translation), to: point.add(translation) });
-    clip.applyMatrix = false;
-    clip.translate(translation);
-    var group = new Group(clip, item);
-    group.clipped = true;
-
-    equals(group.getInternalBounds(), new Rectangle(point, point.add(translation.multiply(2))));
-});
+test(
+    'group.internalBounds with clip item without clip.applyMatrix = false',
+    function() {
+        var point = new Point(100, 100);
+        var translation = new Point(100, 100);
+        var item = new Path.Circle({
+            center: point,
+            radius: 50,
+            fillColor: 'orange'
+        });
+        var clip = new Path.Rectangle({
+            from: point.subtract(translation),
+            to: point.add(translation)
+        });
+        clip.applyMatrix = false;
+        clip.translate(translation);
+        var group = new Group(clip, item);
+        group.clipped = true;
+        var expected = new Rectangle(point, point.add(translation.multiply(2)));
+        equals(group.internalBounds, expected);
+    }
+);
