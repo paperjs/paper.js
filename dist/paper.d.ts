@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 14:57:02 2019 +0200
+ * Date: Sat Oct 6 15:37:44 2018 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2259,8 +2259,13 @@ declare module paper {
          * content is differs from type to type. For example, a {@link Group} with
          * no children, a {@link TextItem} with no text content and a {@link Path}
          * with no segments all are considered empty.
+         * 
+         * @param recursively - whether an item with children should be
+         * considered empty if all its descendants are empty
+         * 
+         * @return Boolean
          */
-        isEmpty(): boolean
+        isEmpty(recursively?: boolean): void
 
         /** 
          * Checks whether the item has a fill.

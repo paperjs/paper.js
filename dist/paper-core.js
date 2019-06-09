@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 9 14:57:02 2019 +0200
+ * Date: Sat Oct 6 15:37:44 2018 +0200
  *
  ***
  *
@@ -3394,7 +3394,7 @@ new function() {
 			options = options || {};
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
-				if (item._visible && !item.isEmpty()) {
+				if (item._visible && !item.isEmpty(true)) {
 					var bounds = item._getCachedBounds(
 						matrix && matrix.appended(item._matrix), options, true),
 						rect = bounds.rect;
@@ -4183,9 +4183,18 @@ new function() {
 		}
 	},
 
-	isEmpty: function() {
+	isEmpty: function(recursively) {
 		var children = this._children;
-		return !children || !children.length;
+		var numChildren = children ? children.length : 0;
+		if (recursively) {
+			for (var i = 0; i < numChildren; i++) {
+				if (!children[i].isEmpty(recursively)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return !numChildren;
 	},
 
 	isEditable: function() {

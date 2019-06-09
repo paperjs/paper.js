@@ -7539,19 +7539,31 @@ Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
 
 <div id="isempty" class="member">
 <div class="member-link">
-<a name="isempty" href="#isempty"><tt><b>isEmpty</b>()</tt></a>
+<a name="isempty" href="#isempty"><tt><b>isEmpty</b>([recursively])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Specifies whether the item has any content or not. The meaning of what content is differs from type to type. For example, a <a href="../classes/Group.html"><tt>Group</tt></a> with no children, a <a href="../classes/TextItem.html"><tt>TextItem</tt></a> with no text content and a <a href="../classes/Path.html"><tt>Path</tt></a> with no segments all are considered empty.</p>
     
 	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>recursively:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;whether an item with children should be considered empty if all its descendants are empty
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
 	
 	<ul class="member-list">
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><tt>Boolean</tt></tt>
+<tt></tt>&nbsp;&mdash;&nbsp;Boolean
 </li>
 
 		
