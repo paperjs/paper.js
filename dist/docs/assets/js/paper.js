@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 10 00:39:11 2019 +0200
+ * Date: Mon Jun 10 16:02:49 2019 +0200
  *
  ***
  *
@@ -9595,8 +9595,9 @@ statics: {
 			normal1 = curve1.getNormalAtTime(1).multiply(radius)
 				.transform(strokeMatrix),
 			normal2 = curve2.getNormalAtTime(0).multiply(radius)
-				.transform(strokeMatrix);
-		if (normal1.getDirectedAngle(normal2) < 0) {
+				.transform(strokeMatrix),
+				angle = normal1.getDirectedAngle(normal2);
+		if (angle < 0 || angle >= 180) {
 			normal1 = normal1.negate();
 			normal2 = normal2.negate();
 		}
