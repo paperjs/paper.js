@@ -2,10 +2,6 @@
 
 ## `prebuilt`
 
-### Added
-
-- Improve `new Raster(size[, position])` constructor (#1621).
-
 ### Fixed
 
 - Fix drawing with compound-paths as clip-items (#1361).
@@ -14,9 +10,10 @@
 - Correctly calculate bounds with nested empty items (#1467).
 - Fix color change propagation on groups (#1152).
 - Fix `Path#arcTo()` where `from` and `to` points are equal (#1613).
+- Improve `new Raster(size[, position])` constructor (#1621).
 - SVG Export: Fix error when `Item#matrix` is not invertible (#1580).
 - SVG Export: Include missing viewBox attribute (#1576).
-- SVG Import: Use correct default values for gradients (#1632, #1661).
+- SVG Import: Use correct default values for gradients (#1632, #1660).
 - SVG Import: Add basic `<switch/>` support (#1597).
 - JSON Import: Prevent `Item#insert()` method from being overridden (#1392).
 - PaperScript: Fix issues with increment/decrement operators (#1450, #1611).
@@ -126,6 +123,7 @@ the fixes and additions from the past two weeks:
 ## `0.11.5`
 
 ### Fixed
+
 - Fix `Curve#isSelected()` to correctly reflect the state of `#handle1` (#1378).
 - Key Events: Fix auto-filling issue on Chrome (#1358, #1365).
 - Boolean: Check that overlaps are on the right path (#1321).
@@ -138,38 +136,42 @@ the fixes and additions from the past two weeks:
 ## `0.11.4`
 
 ### Changed
+
 - Node.js: Add support for v8, and keep testing v4, v6, v7 in Travis CI.
 
 ## `0.11.3`
 
 ### Fixed
-- Mouse Events: Fix item-based `doubleclick` events (#1316).
 
+- Mouse Events: Fix item-based `doubleclick` events (#1316).
 - Overhaul the caching of bounds and matrix decomposition, improving reliability
   of `Item#rotation` and `#scaling` and fixing situations caused by wrongly
   caching `Item#position` and `#bounds` values.
-
 - Prevent consumed properties in object literal constructors from being set on
   the instance.
 
 ### Changed
+
 - Make all functions and accessors enumerable on all Paper.js classes.
 
 ## `0.11.2`
 
 ### Fixed
+
 - PaperScript: Fix a parsing error in math operations without white-space
   (#1314).
 
 ## `0.11.1`
 
 ### Fixed
+
 - Bring back deactivation of Node.js modules on browsers. This has most probably
   broken Webpack bundling in `0.11.0`.
 
 ## `0.11.0`
 
 ### Changed
+
 - Separate `paper` module on NPM into: `paper`, `paper-jsdom` and
  `paper-jsdom-canvas` (#1252):
     - `paper` is the main library, and can be used directly in a browser
@@ -182,12 +184,14 @@ the fixes and additions from the past two weeks:
       [jsdom](https://github.com/tmpvar/jsdom).
 
 ### Added
+
 - PaperScript: Support newer, external versions of Acorn.js for PaperScript
   parsing, opening the doors to ES 2015 (#1183, #1275).
 - Hit Tests: Implement `options.position` to hit `Item#position` (#1249).
 - Split `Item#copyTo()` into `#addTo()` and `#copyTo()`.
 
 ### Fixed
+
 - Intersections: Bring back special handling of curve end-points (#1284).
 - Intersections: Correctly handle `Item#applyMatrix = false` (#1289).
 - Boolean: Bring back on-path winding handling (#1281).
@@ -221,6 +225,7 @@ the fixes and additions from the past two weeks:
 ## `0.10.3`
 
 ### Changed
+
 - Node.js: Support v7, and keep testing v4 up to v7 in Travis CI.
 - Node.js: Loosely couple Node.js / Electron code to `Canvas` module, and treat
   its absence like a headless web worker context in the browser (#1103).
@@ -245,6 +250,7 @@ the fixes and additions from the past two weeks:
   `#reorient()` (#973).
 
 ### Added
+
 - Implement `Path#divideAt(location)`, in analogy to `Curve#divideAt(location)`.
 - Add `PathItem#compare()` as a way to compare the geometry of two paths to see
   if they describe the same shape, handling cases where paths start in different
@@ -263,6 +269,7 @@ the fixes and additions from the past two weeks:
   (#1004, #1177).
 
 ### Fixed
+
 - Many improvements to boolean operations:
     - Improve performance of boolean operations when there no actual crossings
       between the paths, but paths may be contained within each other.
@@ -303,17 +310,20 @@ the fixes and additions from the past two weeks:
   (#632).
 
 ### Removed
+
 - Remove `Numerical.TOLERANCE = 1e-6` as there is no internal use for it
   anymore.
 
 ## `0.10.2`
 
 ### Fixed
+
 - Get published version to work correctly in Bower again.
 
 ## `0.10.1`
 
 ### Fixed
+
 - Correct a few issues with documentation and NPM publishing that slipped
   through in the `0.10.0` release.
 
@@ -351,6 +361,7 @@ Thank you all for using Paper.js, submitting bugs and ideas, and all those that
 contribute to the code.
 
 ### Changed
+
 - Significant overhaul and improvements of boolean path operations
   `PathItem#unite()`, `#subtract()`, `#intersect()`, `#exclude()`, `#divide()`:
     - Improve handling of self-intersecting paths and non-zero fill-rules.
@@ -367,7 +378,7 @@ contribute to the code.
     - `Curve#getParameterAt(offset)` → `#getTimeAt(offset)`
     - `Curve#getParameterOf(point)` → `getTimeOf(point)`
     - `Curve#getPointAt(time, true)` → `#getPointAtTime(time)`
-    - `Curve#getTangentAt(time, true)` → `#getTangenttTime(time)`
+    - `Curve#getTangentAt(time, true)` → `#getTangentAtTime(time)`
     - `Curve#getNormalAt(time, true)` → `#getNormalAtTime(time)`
     - `Curve#getCurvatureAt(time, true)` → `#getCurvatureAtTime(time)`
     - `CurveLocation#parameter` → `#time`
@@ -427,6 +438,7 @@ contribute to the code.
   `Color` (#1043).
 
 ### Added
+
 - Use unified code-base for browsers, Node.js, Electron, and anything
   in-between, and enable npm install for browser use (#739).
 - Start using automatic code testing and deployment of prebuilt versions through
@@ -491,6 +503,7 @@ contribute to the code.
 - Add `Raster#loaded` to reflect the loading state of its image.
 
 ### Fixed
+
 - Fix calculations of `Item#strokeBounds` for all possible combinations of
   `Item#strokeScaling` and `Item#applyMatrix` for `Path`, `Shape` and
   `SymbolItem`, along with correct handling of such strokes in Item#hitTest()
@@ -569,10 +582,11 @@ contribute to the code.
   `Numerical.solveCubic()` for edge-cases (#1085).
 
 ### Removed
+
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to
   resize the canvas when the viewport size changes; Additional CSS styles are
   required since `0.9.22`, e.g.:
-
+  
   ```css
   /* Scale canvas with resize attribute to full size */
   canvas[resize] {
@@ -587,6 +601,7 @@ contribute to the code.
   It is replaced by `Project#addLayer()` and `Project#insertLayer()`.
 
 ### Deprecated
+
 - `#windingRule` on `Item` and `Style` → `#fillRule`
 - `Curve#getNormalAt(time, true)` → `#getNormalAtTime(true)`
 - `Curve#divide()` → `#divideAt(offset)` / `#divideAtTime(time)`
@@ -594,7 +609,7 @@ contribute to the code.
 - `Curve#getParameterAt(offset)` → `#getTimeAt(offset)`
 - `Curve#getParameterOf(point)` → `getTimeOf(point)`
 - `Curve#getPointAt(time, true)` → `#getPointAtTime(time)`
-- `Curve#getTangentAt(time, true)` → `#getTangenttTime(time)`
+- `Curve#getTangentAt(time, true)` → `#getTangentAtTime(time)`
 - `Curve#getNormalAt(time, true)` → `#getNormalAtTime(time)`
 - `Curve#getCurvatureAt(time, true)` → `#getCurvatureAtTime(time)`
 - `CurveLocation#parameter` → `#time`
