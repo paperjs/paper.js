@@ -491,7 +491,7 @@ Base.exports.PaperScript = function() {
                 }
             }
         }
-        expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
+        expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
                 true);
         expose(scope);
         // Add a fake `module.exports` object so PaperScripts can export things.
