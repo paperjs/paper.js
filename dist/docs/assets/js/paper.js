@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 10 16:02:49 2019 +0200
+ * Date: Tue Jun 11 21:28:22 2019 +0200
  *
  ***
  *
@@ -782,7 +782,9 @@ var PaperScope = Base.extend({
 								/^(node|trident)$/.test(n) ? rv : v1;
 						agent.version = v;
 						agent.versionNumber = parseFloat(v);
-						n = n === 'trident' ? 'msie' : n;
+						n = n === 'trident' ? 'msie'
+							: n === 'jsdom' ? 'node'
+							: n;
 						agent.name = n;
 						agent[n] = true;
 					}
@@ -792,7 +794,6 @@ var PaperScope = Base.extend({
 				delete agent.webkit;
 			if (agent.atom)
 				delete agent.chrome;
-			agent.node = agent.jsdom;
 		}
 	},
 
@@ -16943,7 +16944,7 @@ Base.exports.PaperScript = function() {
 				}
 			}
 		}
-		expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
+		expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
 				true);
 		expose(scope);
 		code = 'var module = { exports: {} }; ' + code;
