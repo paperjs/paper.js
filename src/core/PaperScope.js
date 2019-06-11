@@ -95,9 +95,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                                 /^(node|trident)$/.test(n) ? rv : v1;
                         agent.version = v;
                         agent.versionNumber = parseFloat(v);
-                        n = n === 'trident' ? 'msie'
-                            : n === 'jsdom' ? 'node'
-                            : n;
+                        n = { trident: 'msie', jsdom: 'node' }[n] || n;
                         agent.name = n;
                         agent[n] = true;
                     }
