@@ -95,7 +95,9 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                                 /^(node|trident)$/.test(n) ? rv : v1;
                         agent.version = v;
                         agent.versionNumber = parseFloat(v);
-                        n = n === 'trident' ? 'msie' : n;
+                        n = n === 'trident' ? 'msie'
+                            : n === 'jsdom' ? 'node'
+                            : n;
                         agent.name = n;
                         agent[n] = true;
                     }
@@ -105,9 +107,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 delete agent.webkit;
             if (agent.atom)
                 delete agent.chrome;
-            // In Node.js, the user agent set by JSDOM no longer includes `node`
-            // but `jsdom` instead. Preserve `agent.node`:
-            agent.node = agent.jsdom;
         }
     },
 
