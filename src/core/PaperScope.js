@@ -95,7 +95,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                                 /^(node|trident)$/.test(n) ? rv : v1;
                         agent.version = v;
                         agent.versionNumber = parseFloat(v);
-                        n = n === 'trident' ? 'msie' : n;
+                        n = { trident: 'msie', jsdom: 'node' }[n] || n;
                         agent.name = n;
                         agent[n] = true;
                     }
@@ -105,9 +105,6 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                 delete agent.webkit;
             if (agent.atom)
                 delete agent.chrome;
-            // In Node.js, the user agent set by JSDOM no longer includes `node`
-            // but `jsdom` instead. Preserve `agent.node`:
-            agent.node = agent.jsdom;
         }
     },
 
@@ -203,7 +200,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
-     * @param {Object} [option] the compilation options
+     * @param {Object} [options] the compilation options
      */
     execute: function(code, options) {
 /*#*/   if (__options.paperScript) {

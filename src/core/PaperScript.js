@@ -127,7 +127,7 @@ Base.exports.PaperScript = function() {
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
-     * @param {Object} [option] the compilation options
+     * @param {Object} [options] the compilation options
      * @return {Object} an object holding the compiled PaperScript translated
      *     into JavaScript code along with source-maps and other information.
      */
@@ -256,12 +256,19 @@ Base.exports.PaperScript = function() {
                             exp = '__$__(' + arg + ', "' + node.operator[0]
                                     + '", 1)',
                             str = arg + ' = ' + exp;
-                        // If this is not a prefixed update expression
-                        // (++a, --a), assign the old value before updating it.
-                        if (!node.prefix
-                                && (parentType === 'AssignmentExpression'
-                                    || parentType === 'VariableDeclarator')) {
-                            // Handle special issue #691 where the old value is
+                        if (node.prefix) {
+                            // A prefixed update expression (++a / --a),
+                            // wrap expression in paranthesis. See #1611
+                            str = '(' + str + ')';
+                        } else if (
+                            // A suffixed update expression (a++, a--),
+                            // assign the old value before updating it.
+                            // See #691, #1450
+                            parentType === 'AssignmentExpression' ||
+                            parentType === 'VariableDeclarator' ||
+                            parentType === 'BinaryExpression'
+                        ) {
+                            // Handle special case where the old value is
                             // assigned to itself, and the expression is just
                             // executed after, e.g.: `var x = ***; x = x++;`
                             if (getCode(parent.left || parent.id) === arg)
@@ -441,7 +448,7 @@ Base.exports.PaperScript = function() {
      *
      * @param {String} code the PaperScript code
      * @param {PaperScope} scope the scope for which the code is executed
-     * @param {Object} [option] the compilation options
+     * @param {Object} [options] the compilation options
      * @return {Object} the exports defined in the executed code
      */
     function execute(code, scope, options) {
@@ -484,7 +491,7 @@ Base.exports.PaperScript = function() {
                 }
             }
         }
-        expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
+        expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
                 true);
         expose(scope);
         // Add a fake `module.exports` object so PaperScripts can export things.

@@ -151,3 +151,41 @@ test('group.setSelectedColor() with selected bound and position', function() {
     group2.selectedColor = 'black';
     comparePixels(group1, group2);
 });
+
+test('Group#isEmpty(recursively)', function() {
+    var group = new Group();
+    equals(true, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Group());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Path());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new PointText());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+});
+
+test(
+    'group.internalBounds with clip item without clip.applyMatrix = false',
+    function() {
+        var point = new Point(100, 100);
+        var translation = new Point(100, 100);
+        var item = new Path.Circle({
+            center: point,
+            radius: 50,
+            fillColor: 'orange'
+        });
+        var clip = new Path.Rectangle({
+            from: point.subtract(translation),
+            to: point.add(translation)
+        });
+        clip.applyMatrix = false;
+        clip.translate(translation);
+        var group = new Group(clip, item);
+        group.clipped = true;
+        var expected = new Rectangle(point, point.add(translation.multiply(2)));
+        equals(group.internalBounds, expected);
+    }
+);

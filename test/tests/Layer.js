@@ -139,3 +139,9 @@ test('#remove() with named layers', function(){
     equals(removeCount, 2,
             'project.layers[name].remove(); should be called twice');
 });
+
+test('#bounds with nested empty items', function() {
+    var item = new Path.Rectangle(new Point(10,10), new Size(10));
+    new Group(new Group());
+    equals(item.bounds, project.activeLayer.bounds);
+});

@@ -558,8 +558,16 @@ statics: /** @lends Base */{
                     if (args.length === 1 && obj instanceof Item
                             && (useTarget || !(obj instanceof Layer))) {
                         var arg = args[0];
-                        if (Base.isPlainObject(arg))
+                        if (Base.isPlainObject(arg)) {
                             arg.insert = false;
+                            // When using target, make sure the `item.insert()`
+                            // method is not overridden with the `arg.insert`
+                            // property that was just set. Pass an exclude
+                            // object to the call of `obj.set()` below (#1392).
+                            if (useTarget) {
+                                args = args.concat([{ insert: true }]);
+                            }
+                        }
                     }
                     // When reusing an object, initialize it through #set()
                     // instead of the constructor function:

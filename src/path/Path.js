@@ -2173,7 +2173,12 @@ new function() { // Scope for drawing
     // performance.
 
     function drawHandles(ctx, segments, matrix, size) {
+        // Only draw if size is not null or negative.
+        if (size <= 0) return;
+
         var half = size / 2,
+            miniSize = size - 2,
+            miniHalf = half - 1,
             coords = new Array(6),
             pX, pY;
 
@@ -2203,12 +2208,12 @@ new function() { // Scope for drawing
                 drawHandle(4);
             // Draw a rectangle at segment.point:
             ctx.fillRect(pX - half, pY - half, size, size);
-            // If the point is not selected, draw a white square that is 1 px
-            // smaller on all sides:
-            if (!(selection & /*#=*/SegmentSelection.POINT)) {
+            // If the point is not selected, draw a white square that is 1px
+            // smaller on all sides, but only draw it if size is big enough.
+            if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+                ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
                 ctx.fillStyle = fillStyle;
             }
         }
@@ -2462,9 +2467,10 @@ new function() { // PostScript-style drawing commands
                 // #2: arcTo(through, to)
                 through = to;
                 to = Point.read(arguments);
-            } else {
+            } else if (!from.equals(to)) {
                 // #3: arcTo(to, radius, rotation, clockwise, large)
-                // Drawing arcs in SVG style:
+                // Draw arc in SVG style, but only if `from` and `to` are not
+                // equal (#1613).
                 var radius = Size.read(arguments),
                     isZero = Numerical.isZero;
                 // If rx = 0 or ry = 0 then this arc is treated as a
@@ -2560,47 +2566,49 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-                ext = abs(extent),
-                // Calculate the amount of segments required to approximate over
-                // `extend` degrees (extend / 90), but prevent ceil() from
-                // rounding up small imprecisions by subtracting epsilon first.
-                count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
-                inc = extent / count,
-                half = inc * Math.PI / 360,
-                z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-                segments = [];
-            for (var i = 0; i <= count; i++) {
-                // Explicitly use to point for last segment, since depending
-                // on values the calculation adds imprecision:
-                var pt = to,
-                    out = null;
-                if (i < count) {
-                    out = vector.rotate(90).multiply(z);
-                    if (matrix) {
-                        pt = matrix._transformPoint(vector);
-                        out = matrix._transformPoint(vector.add(out))
-                                .subtract(pt);
+            if (extent) {
+                var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    ext = abs(extent),
+                    // Calculate amount of segments required to approximate over
+                    // `extend` degrees (extend / 90), but prevent ceil() from
+                    // rounding up small imprecisions by subtracting epsilon.
+                    count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+                    inc = extent / count,
+                    half = inc * Math.PI / 360,
+                    z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+                    segments = [];
+                for (var i = 0; i <= count; i++) {
+                    // Explicitly use to point for last segment, since depending
+                    // on values the calculation adds imprecision:
+                    var pt = to,
+                        out = null;
+                    if (i < count) {
+                        out = vector.rotate(90).multiply(z);
+                        if (matrix) {
+                            pt = matrix._transformPoint(vector);
+                            out = matrix._transformPoint(vector.add(out))
+                                    .subtract(pt);
+                        } else {
+                            pt = center.add(vector);
+                        }
+                    }
+                    if (!i) {
+                        // Modify startSegment
+                        current.setHandleOut(out);
                     } else {
-                        pt = center.add(vector);
+                        // Add new Segment
+                        var _in = vector.rotate(-90).multiply(z);
+                        if (matrix) {
+                            _in = matrix._transformPoint(vector.add(_in))
+                                    .subtract(pt);
+                        }
+                        segments.push(new Segment(pt, _in, out));
                     }
+                    vector = vector.rotate(inc);
                 }
-                if (!i) {
-                    // Modify startSegment
-                    current.setHandleOut(out);
-                } else {
-                    // Add new Segment
-                    var _in = vector.rotate(-90).multiply(z);
-                    if (matrix) {
-                        _in = matrix._transformPoint(vector.add(_in))
-                                .subtract(pt);
-                    }
-                    segments.push(new Segment(pt, _in, out));
-                }
-                vector = vector.rotate(inc);
+                // Add all segments at once at the end for higher performance
+                this._add(segments);
             }
-            // Add all segments at once at the end for higher performance
-            this._add(segments);
         },
 
         lineBy: function(/* to */) {
@@ -2838,8 +2846,9 @@ statics: {
             normal1 = curve1.getNormalAtTime(1).multiply(radius)
                 .transform(strokeMatrix),
             normal2 = curve2.getNormalAtTime(0).multiply(radius)
-                .transform(strokeMatrix);
-        if (normal1.getDirectedAngle(normal2) < 0) {
+                .transform(strokeMatrix),
+                angle = normal1.getDirectedAngle(normal2);
+        if (angle < 0 || angle >= 180) {
             normal1 = normal1.negate();
             normal2 = normal2.negate();
         }

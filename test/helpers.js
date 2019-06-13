@@ -10,11 +10,13 @@
  * All rights reserved.
  */
 
-var isNode = typeof global === 'object',
-    isPhantom = typeof window === 'object' && !!window.callPhantom,
+// We call our variable `isNodeContext` because resemble.js exposes a global
+// `isNode` function which would override it and break node check.
+var isNodeContext = typeof global === 'object',
+    isPhantomContext = typeof window === 'object' && !!window.callPhantom,
     scope;
 
-if (isNode) {
+if (isNodeContext) {
     scope = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
@@ -35,14 +37,11 @@ if (isNode) {
 }
 
 // Some native javascript classes have name collisions with Paper.js classes.
-// If they have not already been stored in src/load.js, we dot it now.
-if (!isNode && typeof NativeClasses === 'undefined')
-{
-    NativeClasses = {
-        Event: Event,
-        MouseEvent: MouseEvent
-    };
-}
+// If they have not already been stored in `src/load.js`, do it now:
+var nativeClasses = this.nativeClasses || {
+    Event: this.Event || {},
+    MouseEvent: this.MouseEvent || {}
+};
 
 // The unit-tests expect the paper classes to be global.
 paper.install(scope);
@@ -107,7 +106,7 @@ var equals = function(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof window.Element && 'Element' // handle DOM Elements
+            || expected instanceof window.Element && 'Element' // DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
@@ -188,23 +187,30 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
 
     tolerance = (tolerance || 1e-4) * 100;
 
-    // Use resemble.js to compare image datas.
     var id = QUnit.config.current.testId,
         index = QUnit.config.current.assertions.length + 1,
         result;
-    if (!resemble._setup) {
-        resemble._setup = true;
-        resemble.outputSettings({
-            errorColor: { red: 255, green: 51, blue: 0 },
-            errorType: 'flat',
-            transparency: 1
-        });
-    }
-    resemble(imageData1)
-        .compareTo(imageData2)
-        .ignoreAntialiasing()
+    // Compare image-data using resemble.js:
+    resemble.compare(
+        imageData1,
+        imageData2,
+        {
+            output: {
+                errorColor: { red: 255, green: 51, blue: 0 },
+                errorType: 'flat',
+                transparency: 1
+            },
+            ignore: ['antialiasing']
+        },
         // When working with imageData, this call is synchronous:
-        .onComplete(function(data) { result = data; });
+        function (error, data) {
+            if (error) {
+                console.error(error);
+            } else {
+                result = data;
+            }
+        }
+    )
     // Compare with tolerance in percentage...
     var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
         identical = result ? 100 - result.misMatchPercentage : 0,
@@ -215,7 +221,7 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
         detail += diffDetail;
     }
     QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
-    if (!ok && result && !isNode) {
+    if (!ok && result && !isNodeContext) {
         // Get the right entry for this unit test and assertion, and
         // replace the results with images
         var entry = document.getElementById('qunit-test-output-' + id)
@@ -450,7 +456,7 @@ var comparators = {
             equals(actual.components, expected.components,
                     message + ' (#components)', options);
         } else {
-            QUnit.strictEqual(actual, expected, message);
+            QUnit.push(expected.equals(actual), actual, expected, message);
         }
     },
 
@@ -662,8 +668,8 @@ var MouseEventPolyfill = function(type, params) {
     );
     return mouseEvent;
 };
-MouseEventPolyfill.prototype = typeof NativeClasses !== 'undefined'
-    && NativeClasses.Event.prototype || Event.prototype;
+
+MouseEventPolyfill.prototype = nativeClasses.Event.prototype;
 
 var triggerMouseEvent = function(type, point, target) {
     // Depending on event type, events have to be triggered on different
@@ -671,21 +677,16 @@ var triggerMouseEvent = function(type, point, target) {
     // and `docEvents` in View.js). And we cannot rely on the fact that event
     // will bubble from canvas to document, since the canvas used in tests is
     // not inserted in DOM.
-    target = target || (type === 'mousedown' ? view._element : document);
-
+    target = target || (type === 'mousedown' ? view.element : document);
     // If `gulp load` was run, there is a name collision between paper Event /
     // MouseEvent and native javascript classes. In this case, we need to use
-    // native classes stored in global NativeClasses object instead.
-    var constructor = typeof NativeClasses !== 'undefined'
-        && NativeClasses.MouseEvent || MouseEvent;
-
+    // native classes stored in the nativeClasses object instead.
     // MouseEvent class does not exist in PhantomJS, so in that case, we need to
-    // use a polyfill method.
-    if (typeof constructor !== 'function') {
-        constructor = MouseEventPolyfill;
-    }
-
-    var event = new constructor(type, {
+    // use a polyfill method, see: https://stackoverflow.com/questions/42929639
+    var MouseEvent = typeof nativeClasses.MouseEvent === 'function'
+        ? nativeClasses.MouseEvent
+        : MouseEventPolyfill;
+    var event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,
         composed: true,

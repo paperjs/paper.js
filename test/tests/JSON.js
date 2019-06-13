@@ -256,3 +256,10 @@ test('Path#importJSON()', function() {
     equals(function() { return layer.firstChild === path; }, true);
     equals(function() { return path.parent === layer; }, true);
 });
+
+test('Item#importJSON() does not override Item#insert()', function() {
+    var path = new Path();
+    equals(typeof path.insert, 'function');
+    path.importJSON(path.exportJSON());
+    equals(typeof path.insert, 'function');
+});

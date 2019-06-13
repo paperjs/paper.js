@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.1 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.2 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 6 00:04:28 2019 +0200
+ * Date: Tue Jun 11 21:31:28 2019 +0200
  *
  ***
  *
@@ -546,8 +546,12 @@ statics: {
 					if (args.length === 1 && obj instanceof Item
 							&& (useTarget || !(obj instanceof Layer))) {
 						var arg = args[0];
-						if (Base.isPlainObject(arg))
+						if (Base.isPlainObject(arg)) {
 							arg.insert = false;
+							if (useTarget) {
+								args = args.concat([{ insert: true }]);
+							}
+						}
 					}
 					(useTarget ? obj.set : ctor).apply(obj, args);
 					if (useTarget)
@@ -778,7 +782,7 @@ var PaperScope = Base.extend({
 								/^(node|trident)$/.test(n) ? rv : v1;
 						agent.version = v;
 						agent.versionNumber = parseFloat(v);
-						n = n === 'trident' ? 'msie' : n;
+						n = { trident: 'msie', jsdom: 'node' }[n] || n;
 						agent.name = n;
 						agent[n] = true;
 					}
@@ -788,11 +792,10 @@ var PaperScope = Base.extend({
 				delete agent.webkit;
 			if (agent.atom)
 				delete agent.chrome;
-			agent.node = agent.jsdom;
 		}
 	},
 
-	version: "0.12.1",
+	version: "0.12.2",
 
 	getView: function() {
 		var project = this.project;
@@ -3397,7 +3400,7 @@ new function() {
 			options = options || {};
 			for (var i = 0, l = items.length; i < l; i++) {
 				var item = items[i];
-				if (item._visible && !item.isEmpty()) {
+				if (item._visible && !item.isEmpty(true)) {
 					var bounds = item._getCachedBounds(
 						matrix && matrix.appended(item._matrix), options, true),
 						rect = bounds.rect;
@@ -4186,9 +4189,18 @@ new function() {
 		}
 	},
 
-	isEmpty: function() {
+	isEmpty: function(recursively) {
 		var children = this._children;
-		return !children || !children.length;
+		var numChildren = children ? children.length : 0;
+		if (recursively) {
+			for (var i = 0; i < numChildren; i++) {
+				if (!children[i].isEmpty(recursively)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return !numChildren;
 	},
 
 	isEditable: function() {
@@ -4517,8 +4529,9 @@ new function() {
 		this._draw(ctx, param, viewMatrix, strokeMatrix);
 		ctx.restore();
 		matrices.pop();
-		if (param.clip && !param.dontFinish)
-			ctx.clip();
+		if (param.clip && !param.dontFinish) {
+			ctx.clip(this.getFillRule());
+		}
 		if (!direct) {
 			BlendMode.process(blendMode, ctx, mainCtx, opacity,
 					itemOffset.subtract(prevOffset).multiply(pixelRatio));
@@ -4708,8 +4721,7 @@ var Group = Item.extend({
 	_getBounds: function _getBounds(matrix, options) {
 		var clipItem = this._getClipItem();
 		return clipItem
-			? clipItem._getCachedBounds(
-				matrix && matrix.appended(clipItem._matrix),
+			? clipItem._getCachedBounds(clipItem._matrix.prepended(matrix),
 				Base.set({}, options, { stroke: false }))
 			: _getBounds.base.call(this, matrix, options);
 	},
@@ -5114,27 +5126,25 @@ var Raster = Item.extend({
 	beans: true,
 
 	initialize: function Raster(source, position) {
-
-		var image,
-			type = typeof source,
-			object = type === 'string'
-				? document.getElementById(source)
-				: type  === 'object'
-					? source
-					: null;
-		if (object && object !== Item.NO_INSERT) {
-			if (object.getContent || object.naturalHeight != null) {
-				image = object;
-			} else if (object) {
-				var size = Size.read(arguments);
-				if (!size.isZero()) {
-					image = CanvasProvider.getCanvas(size);
-				}
-			}
-		}
-
 		if (!this._initialize(source,
 				position !== undefined && Point.read(arguments))) {
+			var image,
+				type = typeof source,
+				object = type === 'string'
+					? document.getElementById(source)
+					: type  === 'object'
+						? source
+						: null;
+			if (object && object !== Item.NO_INSERT) {
+				if (object.getContent || object.naturalHeight != null) {
+					image = object;
+				} else if (object) {
+					var size = Size.read(arguments);
+					if (!size.isZero()) {
+						image = CanvasProvider.getCanvas(size);
+					}
+				}
+			}
 			if (image) {
 				this.setImage(image);
 			} else {
@@ -9070,7 +9080,11 @@ var Path = PathItem.extend({
 new function() {
 
 	function drawHandles(ctx, segments, matrix, size) {
+		if (size <= 0) return;
+
 		var half = size / 2,
+			miniSize = size - 2,
+			miniHalf = half - 1,
 			coords = new Array(6),
 			pX, pY;
 
@@ -9099,10 +9113,10 @@ new function() {
 			if (selection & 4)
 				drawHandle(4);
 			ctx.fillRect(pX - half, pY - half, size, size);
-			if (!(selection & 1)) {
+			if (miniSize > 0 && !(selection & 1)) {
 				var fillStyle = ctx.fillStyle;
 				ctx.fillStyle = '#ffffff';
-				ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+				ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
 				ctx.fillStyle = fillStyle;
 			}
 		}
@@ -9305,7 +9319,7 @@ new function() {
 			} else if (Base.remain(arguments) <= 2) {
 				through = to;
 				to = Point.read(arguments);
-			} else {
+			} else if (!from.equals(to)) {
 				var radius = Size.read(arguments),
 					isZero = Numerical.isZero;
 				if (isZero(radius.width) || isZero(radius.height))
@@ -9372,39 +9386,41 @@ new function() {
 					extent += extent < 0 ? 360 : -360;
 				}
 			}
-			var epsilon = 1e-7,
-				ext = abs(extent),
-				count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
-				inc = extent / count,
-				half = inc * Math.PI / 360,
-				z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-				segments = [];
-			for (var i = 0; i <= count; i++) {
-				var pt = to,
-					out = null;
-				if (i < count) {
-					out = vector.rotate(90).multiply(z);
-					if (matrix) {
-						pt = matrix._transformPoint(vector);
-						out = matrix._transformPoint(vector.add(out))
-								.subtract(pt);
+			if (extent) {
+				var epsilon = 1e-7,
+					ext = abs(extent),
+					count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+					inc = extent / count,
+					half = inc * Math.PI / 360,
+					z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+					segments = [];
+				for (var i = 0; i <= count; i++) {
+					var pt = to,
+						out = null;
+					if (i < count) {
+						out = vector.rotate(90).multiply(z);
+						if (matrix) {
+							pt = matrix._transformPoint(vector);
+							out = matrix._transformPoint(vector.add(out))
+									.subtract(pt);
+						} else {
+							pt = center.add(vector);
+						}
+					}
+					if (!i) {
+						current.setHandleOut(out);
 					} else {
-						pt = center.add(vector);
+						var _in = vector.rotate(-90).multiply(z);
+						if (matrix) {
+							_in = matrix._transformPoint(vector.add(_in))
+									.subtract(pt);
+						}
+						segments.push(new Segment(pt, _in, out));
 					}
+					vector = vector.rotate(inc);
 				}
-				if (!i) {
-					current.setHandleOut(out);
-				} else {
-					var _in = vector.rotate(-90).multiply(z);
-					if (matrix) {
-						_in = matrix._transformPoint(vector.add(_in))
-								.subtract(pt);
-					}
-					segments.push(new Segment(pt, _in, out));
-				}
-				vector = vector.rotate(inc);
+				this._add(segments);
 			}
-			this._add(segments);
 		},
 
 		lineBy: function() {
@@ -9578,8 +9594,9 @@ statics: {
 			normal1 = curve1.getNormalAtTime(1).multiply(radius)
 				.transform(strokeMatrix),
 			normal2 = curve2.getNormalAtTime(0).multiply(radius)
-				.transform(strokeMatrix);
-		if (normal1.getDirectedAngle(normal2) < 0) {
+				.transform(strokeMatrix),
+				angle = normal1.getDirectedAngle(normal2);
+		if (angle < 0 || angle >= 180) {
 			normal1 = normal1.negate();
 			normal2 = normal2.negate();
 		}
@@ -11632,8 +11649,9 @@ var Color = Base.extend(new function() {
 
 		_changed: function() {
 			this._canvasStyle = null;
-			if (this._owner)
-				this._owner._changed(129);
+			if (this._owner) {
+				this._owner[this._setter](this);
+			}
 		},
 
 		_convert: function(type) {
@@ -11789,6 +11807,19 @@ var Color = Base.extend(new function() {
 			random: function() {
 				var random = Math.random;
 				return new Color(random(), random(), random());
+			},
+
+			_setOwner: function(color, owner, setter) {
+				if (color) {
+					if (color._owner && owner && color._owner !== owner) {
+						color = color.clone();
+					}
+					if (!color._owner ^ !owner) {
+						color._owner = owner || null;
+						color._setter = setter || null;
+					}
+				}
+				return color;
 			}
 		}
 	});
@@ -11827,6 +11858,18 @@ new function() {
 		};
 	}, {
 	});
+});
+
+var LinkedColor = Color.extend({
+	initialize: function Color(color, item, setter) {
+		paper.Color.apply(this, [color]);
+		this._item = item;
+		this._setter = setter;
+	},
+
+	_changed: function(){
+		this._item[this._setter](this);
+	}
 });
 
 var Gradient = Base.extend({
@@ -11984,10 +12027,9 @@ var GradientStop = Base.extend({
 	},
 
 	setColor: function() {
-		var color = Color.read(arguments, 0, { clone: true });
-		if (color)
-			color._owner = this;
-		this._color = color;
+		Color._setOwner(this._color, null);
+		this._color = Color._setOwner(Color.read(arguments, 0), this,
+				'setColor');
 		this._changed();
 	},
 
@@ -12081,14 +12123,12 @@ var Style = Base.extend(new function() {
 				var old = this._values[key];
 				if (old !== value) {
 					if (isColor) {
-						if (old && old._owner !== undefined) {
-							old._owner = undefined;
+						if (old) {
+							Color._setOwner(old, null);
 							old._canvasStyle = null;
 						}
 						if (value && value.constructor === Color) {
-							if (value._owner)
-								value = value.clone();
-							value._owner = owner;
+							value = Color._setOwner(value, owner, set);
 						}
 					}
 					this._values[key] = value;
@@ -12107,15 +12147,14 @@ var Style = Base.extend(new function() {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
-					if (value && value.clone)
+					if (value && value.clone) {
 						value = value.clone();
+					}
 				} else {
 					var ctor = isColor ? Color : isPoint ? Point : null;
 					if (ctor && !(value && value.constructor === ctor)) {
 						this._values[key] = value = ctor.read([value], 0,
 								{ readNull: true, clone: true });
-						if (value && isColor)
-							value._owner = owner;
 					}
 				}
 			} else if (children) {
@@ -12127,6 +12166,9 @@ var Style = Base.extend(new function() {
 						return undefined;
 					}
 				}
+			}
+			if (value && isColor) {
+				value = Color._setOwner(value, owner, set);
 			}
 			return value;
 		};
@@ -14331,11 +14373,16 @@ new function() {
 		var attrs = new Base(),
 			trans = matrix.getTranslation();
 		if (coordinates) {
-			matrix = matrix._shiftless();
-			var point = matrix._inverseTransform(trans);
+			var point;
+			if (matrix.isInvertible()) {
+				matrix = matrix._shiftless();
+				point = matrix._inverseTransform(trans);
+				trans = null;
+			} else {
+				point = new Point();
+			}
 			attrs[center ? 'cx' : 'x'] = point.x;
 			attrs[center ? 'cy' : 'y'] = point.y;
-			trans = null;
 		}
 		if (!matrix.isIdentity()) {
 			var decomposed = matrix.decompose();
@@ -14697,7 +14744,7 @@ new function() {
 			if (rect) {
 				attrs.width = rect.width;
 				attrs.height = rect.height;
-				if (rect.x || rect.y)
+				if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
 					attrs.viewBox = formatter.rectangle(rect);
 			}
 			var node = SvgElement.create('svg', attrs, formatter),
@@ -14719,8 +14766,9 @@ new function() {
 	var definitions = {},
 		rootSize;
 
-	function getValue(node, name, isString, allowNull, allowPercent) {
-		var value = SvgElement.get(node, name),
+	function getValue(node, name, isString, allowNull, allowPercent,
+			defaultValue) {
+		var value = SvgElement.get(node, name) || defaultValue,
 			res = value == null
 				? allowNull
 					? null
@@ -14734,9 +14782,9 @@ new function() {
 			: res;
 	}
 
-	function getPoint(node, x, y, allowNull, allowPercent) {
-		x = getValue(node, x || 'x', false, allowNull, allowPercent);
-		y = getValue(node, y || 'y', false, allowNull, allowPercent);
+	function getPoint(node, x, y, allowNull, allowPercent, defaultX, defaultY) {
+		x = getValue(node, x || 'x', false, allowNull, allowPercent, defaultX);
+		y = getValue(node, y || 'y', false, allowNull, allowPercent, defaultY);
 		return allowNull && (x == null || y == null) ? null
 				: new Point(x, y);
 	}
@@ -14838,13 +14886,16 @@ new function() {
 			scaleToBounds = getValue(node, 'gradientUnits', true) !==
 				'userSpaceOnUse';
 		if (radial) {
-			origin = getPoint(node, 'cx', 'cy', false, scaleToBounds);
+			origin = getPoint(node, 'cx', 'cy', false, scaleToBounds,
+				'50%', '50%');
 			destination = origin.add(
-					getValue(node, 'r', false, false, scaleToBounds), 0);
+				getValue(node, 'r', false, false, scaleToBounds, '50%'), 0);
 			highlight = getPoint(node, 'fx', 'fy', true, scaleToBounds);
 		} else {
-			origin = getPoint(node, 'x1', 'y1', false, scaleToBounds);
-			destination = getPoint(node, 'x2', 'y2', false, scaleToBounds);
+			origin = getPoint(node, 'x1', 'y1', false, scaleToBounds,
+				'0%', '0%');
+			destination = getPoint(node, 'x2', 'y2', false, scaleToBounds,
+				'100%', '0%');
 		}
 		var color = applyAttributes(
 				new Color(gradient, origin, destination, highlight), node);
@@ -14930,7 +14981,9 @@ new function() {
 					getPoint(node, 'dx', 'dy')));
 			text.setContent(node.textContent.trim() || '');
 			return text;
-		}
+		},
+
+		switch: importGroup
 	};
 
 	function applyTransform(item, value, name, node) {
@@ -16732,9 +16785,13 @@ Base.exports.PaperScript = function() {
 							exp = '__$__(' + arg + ', "' + node.operator[0]
 									+ '", 1)',
 							str = arg + ' = ' + exp;
-						if (!node.prefix
-								&& (parentType === 'AssignmentExpression'
-									|| parentType === 'VariableDeclarator')) {
+						if (node.prefix) {
+							str = '(' + str + ')';
+						} else if (
+							parentType === 'AssignmentExpression' ||
+							parentType === 'VariableDeclarator' ||
+							parentType === 'BinaryExpression'
+						) {
 							if (getCode(parent.left || parent.id) === arg)
 								str = exp;
 							str = arg + '; ' + str;
@@ -16885,7 +16942,7 @@ Base.exports.PaperScript = function() {
 				}
 			}
 		}
-		expose({ __$__: __$__, $__: $__, paper: scope, view: view, tool: tool },
+		expose({ __$__: __$__, $__: $__, paper: scope, tool: tool },
 				true);
 		expose(scope);
 		code = 'var module = { exports: {} }; ' + code;

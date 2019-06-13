@@ -113,7 +113,13 @@ test('Export SVG path at precision 0', function() {
     equals(path.exportSVG({ precision: 0 }).getAttribute('d'), 'M0,2l1,1');
 });
 
-if (!isNode) {
+test('Export SVG viewbox attribute with top left at origin', function() {
+    var path = new Path.Rectangle(new Point(10, 10), new Size(80));
+    var rectangle = new Rectangle(new Point(0, 0), new Size(100));
+    equals(project.exportSVG({ bounds: rectangle }).getAttribute('viewBox'), '0,0,100,100');
+});
+
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     test('Export transformed shapes', function(assert) {
         var rect = new Shape.Rectangle({
@@ -145,6 +151,17 @@ if (!isNode) {
             fillColor: 'yellow'
         });
         rect.rotate(-20);
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer);
+    });
+
+    test('Export not invertible item.matrix', function(assert) {
+        var rect = new Shape.Rectangle({
+            point: [100, 100],
+            size: [100, 100],
+            fillColor: 'red',
+            matrix: [1, 1, 1, 1, 1, 1]
+        });
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer);
     });

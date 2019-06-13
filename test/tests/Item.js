@@ -951,3 +951,27 @@ test('Item#rasterize() with empty bounds', function() {
     view.update();
     expect(0);
 });
+
+test('Item#draw() with CompoundPath as clip item', function() {
+    function createdClippedGroup(invertedOrder) {
+        var compound = new CompoundPath({
+            children: [
+                new Path.Circle(new Point(50, 50), 50),
+                new Path.Circle(new Point(100, 50), 50)
+            ],
+            fillRule: 'evenodd'
+        });
+
+        var rectangle = new Shape.Rectangle(new Point(0, 0), new Point(150, 50));
+
+        var group = new Group();
+        group.children = invertedOrder
+            ? [compound, rectangle]
+            : [rectangle, compound];
+        group.fillColor = 'black';
+        group.clipped = true;
+        return group;
+    };
+
+    comparePixels(createdClippedGroup(true), createdClippedGroup(false));
+});
