@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.1 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.2 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 6 00:04:28 2019 +0200
+ * Date: Tue Jun 11 21:31:28 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2252,8 +2252,13 @@ declare module paper {
          * content is differs from type to type. For example, a {@link Group} with
          * no children, a {@link TextItem} with no text content and a {@link Path}
          * with no segments all are considered empty.
+         * 
+         * @param recursively - whether an item with children should be
+         * considered empty if all its descendants are empty
+         * 
+         * @return Boolean
          */
-        isEmpty(): boolean
+        isEmpty(recursively?: boolean): void
 
         /** 
          * Checks whether the item has a fill.
@@ -3299,9 +3304,9 @@ declare module paper {
          *     mapping, in case the code that's passed in has already been mingled.
          * 
          * @param code - the PaperScript code
-         * @param option - the compilation options
+         * @param options - the compilation options
          */
-        execute(code: string, option?: object): void
+        execute(code: string, options?: object): void
 
         /** 
          * Injects the paper scope into any other given scope. Can be used for
@@ -3352,12 +3357,12 @@ declare module paper {
          *     mapping, in case the code that's passed in has already been mingled.
          * 
          * @param code - the PaperScript code
-         * @param option - the compilation options
+         * @param options - the compilation options
          * 
          * @return an object holding the compiled PaperScript translated
          *     into JavaScript code along with source-maps and other information.
          */
-        static compile(code: string, option?: object): object
+        static compile(code: string, options?: object): object
 
         /** 
          * Compiles the PaperScript code into a compiled function and executes it.
@@ -3373,11 +3378,11 @@ declare module paper {
          * 
          * @param code - the PaperScript code
          * @param scope - the scope for which the code is executed
-         * @param option - the compilation options
+         * @param options - the compilation options
          * 
          * @return the exports defined in the executed code
          */
-        static execute(code: string, scope: PaperScope, option?: object): object
+        static execute(code: string, scope: PaperScope, options?: object): object
 
         /** 
          * Loads, compiles and executes PaperScript code in the HTML document. Note
@@ -5348,7 +5353,7 @@ declare module paper {
 
         /** 
          * Creates a new raster item from the passed argument, and places it in the
-         * active layer. `object` can either be a DOM Image, a Canvas, or a string
+         * active layer. `source` can either be a DOM Image, a Canvas, or a string
          * describing the URL to load the image from, or the ID of a DOM element to
          * get the image from (either a DOM Image or a Canvas).
          * 
@@ -5359,8 +5364,26 @@ declare module paper {
          */
         constructor(source?: HTMLImageElement | HTMLCanvasElement | string, position?: Point)
 
-        
-        setImageData(data: ImageData, point: Point): void
+        /** 
+         * Creates a new empty raster of the given size, and places it in the
+         * active layer.
+         * 
+         * @param size - the size of the raster
+         * @param position - the center position at which the raster item is
+         *     placed
+         */
+        constructor(size: Size, position?: Point)
+
+        /** 
+         * Extracts a part of the Raster's content as a sub image, and returns it as
+         * a Canvas object.
+         * 
+         * @param rect - the boundaries of the sub image in pixel
+         * coordinates
+         * 
+         * @return the sub image as a Canvas object
+         */
+        getSubCanvas(rect: Rectangle): HTMLCanvasElement
 
         /** 
          * Extracts a part of the raster item's content as a new raster item, placed
@@ -5396,26 +5419,18 @@ declare module paper {
          */
         getAverageColor(object: Path | Rectangle | Point): Color
 
+        
+        setImageData(data: ImageData, point: Point): void
+
         /** 
          * Gets the color of a pixel in the raster.
          * 
-         * @param x - the x offset of the pixel in pixel coordinates
-         * @param y - the y offset of the pixel in pixel coordinates
+         * @param point - the offset of the pixel as a point in pixel
+         *     coordinates
          * 
          * @return the color of the pixel
          */
-        getPixel(x: number, y: number): Color
-
-        /** 
-         * Extracts a part of the Raster's content as a sub image, and returns it as
-         * a Canvas object.
-         * 
-         * @param rect - the boundaries of the sub image in pixel
-         * coordinates
-         * 
-         * @return the sub image as a Canvas object
-         */
-        getSubCanvas(rect: Rectangle): HTMLCanvasElement
+        getPixel(point: Point): Color
 
         /** 
          * Sets the color of the specified pixel to the specified color.
@@ -5429,7 +5444,8 @@ declare module paper {
         /** 
          * Sets the color of the specified pixel to the specified color.
          * 
-         * @param point - the offset of the pixel as a point in pixel coordinates
+         * @param point - the offset of the pixel as a point in pixel
+         *     coordinates
          * @param color - the color that the pixel will be set to
          */
         setPixel(point: Point, color: Color): void
@@ -5448,11 +5464,12 @@ declare module paper {
         /** 
          * Gets the color of a pixel in the raster.
          * 
-         * @param point - the offset of the pixel as a point in pixel coordinates
+         * @param x - the x offset of the pixel in pixel coordinates
+         * @param y - the y offset of the pixel in pixel coordinates
          * 
          * @return the color of the pixel
          */
-        getPixel(point: Point): Color
+        getPixel(x: number, y: number): Color
 
     }
 
