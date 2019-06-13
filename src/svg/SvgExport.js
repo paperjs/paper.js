@@ -74,16 +74,52 @@ new function() {
         var node = SvgElement.create('g', attrs, formatter);
         for (var i = 0, l = children.length; i < l; i++) {
             var child = children[i];
-            var childNode = exportSVG(child, options);
-            if (childNode) {
-                if (child.isClipMask()) {
-                    var clip = SvgElement.create('clipPath');
-                    clip.appendChild(childNode);
-                    setDefinition(child, clip, 'clip');
-                    SvgElement.set(node, {
-                        'clip-path': 'url(#' + clip.id + ')'
-                    });
+            // If item is a clip mask...
+            if (child.isClipMask()) {
+                var items = [];
+                // ...and a group...
+                if (child instanceof Group) {
+                    // Work on a copy to avoid messing up with original item.
+                    var clone = child.clone({ insert: false });
+                    // Apply matrix recursively because individual
+                    // transformations can't be kept in <clipPath>.
+                    clone.matrix.apply(true, true);
+                    // Flatten hierarchy because groups are not allowed in
+                    // <clipPath>.
+                    var extractChildren = function(item, arr) {
+                        if (item instanceof Group) {
+                            for (var j = 0, m = item.children.length; j < m; j++) {
+                                extractChildren(item.children[j], arr);
+                            }
+                        } else {
+                            arr.push(item);
+                        }
+                    };
+                    extractChildren(clone, items);
+                    clone.remove();
+                // ...and a path...
                 } else {
+                    // ...just store it as an array.
+                    items.push(child);
+                }
+
+                // Create <clipPath> element.
+                var clip = SvgElement.create('clipPath');
+                setDefinition(child, clip, 'clip');
+                // Reference it in group node attribute.
+                SvgElement.set(node, { 'clip-path': 'url(#' + clip.id + ')' });
+                for (var j = 0, m = items.length; j < m; j++) {
+                    // Append each clipping path to <clipPath>
+                    var childNode = exportSVG(items[j], options);
+                    if (childNode) {
+                        clip.appendChild(childNode);
+                    }
+                }
+            // If item is not a clip mask...
+            } else {
+                // ...append it to the group node.
+                var childNode = exportSVG(child, options);
+                if (childNode) {
                     node.appendChild(childNode);
                 }
             }
