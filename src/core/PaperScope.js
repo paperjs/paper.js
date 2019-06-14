@@ -112,6 +112,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * The version of Paper.js, as a string.
      *
      * @type String
+     * @readonly
      */
     version: /*#=*/__options.version,
 
