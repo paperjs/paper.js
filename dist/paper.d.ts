@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 18 06:15:20 2019 +0200
+ * Date: Mon Jun 17 21:16:46 2019 -0700
  *
  * This is an auto-generated type definition.
  */
@@ -1474,6 +1474,15 @@ declare module paper {
          * The bounding rectangle of the item including handles.
          */
         handleBounds: Rectangle
+
+        /** 
+         * The bounding rectangle of the item without any matrix transformations.
+         * 
+         * Typical use case would be drawing a frame around the object where you
+         * want to draw something of the same size, position, rotation, and scaling,
+         * like a selection frame.
+         */
+        internalBounds: Rectangle
 
         /** 
          * The current rotation angle of the item, as described by its
