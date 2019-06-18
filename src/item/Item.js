@@ -658,8 +658,8 @@ new function() { // Injection scope for various item event handlers
 
     /**
      * Specifies whether the item defines a clip mask. This can only be set on
-     * paths, compound paths, and text frame objects, and only if the item is
-     * already contained within a clipping group.
+     * paths and compound paths, and only if the item is already contained
+     * within a clipping group.
      *
      * @bean
      * @type Boolean
