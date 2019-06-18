@@ -182,7 +182,7 @@ new function() {
             definition = item._definition,
             node = getDefinition(definition, 'symbol'),
             definitionItem = definition._item,
-            bounds = definitionItem.getBounds();
+            bounds = definitionItem.getStrokeBounds();
         if (!node) {
             node = SvgElement.create('symbol', {
                 viewBox: formatter.rectangle(bounds)
