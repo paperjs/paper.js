@@ -1120,6 +1120,17 @@ new function() { // Injection scope for various item event handlers
      */
 
     /**
+     * The bounding rectangle of the item without any matrix transformations.
+     *
+     * Typical use case would be drawing a frame around the object where you
+     * want to draw something of the same size, position, rotation, and scaling,
+     * like a selection frame.
+     *
+     * @name Item#internalBounds
+     * @type Rectangle
+     */
+
+    /**
      * The rough bounding rectangle of the item that is sure to include all of
      * the drawing, including stroke width.
      *
