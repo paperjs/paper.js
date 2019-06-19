@@ -877,25 +877,6 @@ test('Item#pivot', function() {
             'Changing position of an item with applyMatrix = true should change pivot');
 });
 
-test('Item#contains', function() {
-    var point = new Point(50,50);
-    var path1 = new Path({matrix: new Matrix(0,0,0,0,0,0)});
-    
-    equals(path1.contains(point), false,
-            'An irregularly shaped item cannot contain a point');
-
-    var path2 = new Path.Rectangle({
-        point: [50, 50],
-        size: [100, 100]
-    });
-    equals(path2.contains(point), true,
-            'A regularly shaped item with a point inside it, contains that point');
-
-    var point2 = new Point(0,0);
-    equals(path2.contains(point2), false,
-            'A regularly shaped item with a point outside it, does not contain that point');
-});
-
 test('Item#position with irregular shape, #pivot and rotation', function() {
     var path1 = new Path([ [0, 0], [200, 100], [0, 100] ]);
     var path2 = path1.clone();
