@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 17 21:16:46 2019 -0700
+ * Date: Wed Jun 19 21:56:44 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1433,8 +1433,8 @@ declare module paper {
 
         /** 
          * Specifies whether the item defines a clip mask. This can only be set on
-         * paths, compound paths, and text frame objects, and only if the item is
-         * already contained within a clipping group.
+         * paths and compound paths, and only if the item is already contained
+         * within a clipping group.
          */
         clipMask: boolean
 
