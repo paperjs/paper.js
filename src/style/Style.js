@@ -187,7 +187,10 @@ var Style = Base.extend(new function() {
                         if (value && value.constructor === Color) {
                             // NOTE: If value is not a Color, it is only
                             // converted and cloned in the getter further down.
-                            value = Color._setOwner(value, owner, set);
+                            value = Color._setOwner(value, owner,
+                                    // Only provide a color-setter if the style
+                                    // is to be applied to the children:
+                                    applyToChildren && set);
                         }
                     }
                     // NOTE: We do not convert the values to Colors in the
@@ -204,12 +207,24 @@ var Style = Base.extend(new function() {
         fields[get] = function(_dontMerge) {
             var owner = this._owner,
                 children = owner && owner._children,
+                applyToChildren = children && children.length > 0
+                    && !(owner instanceof CompoundPath),
                 value;
             // If the owner has children, walk through all of them and see if
             // they all have the same style.
-            // If true is passed for _dontMerge, don't merge children styles
-            if (key in this._defaults && (!children || !children.length
-                    || _dontMerge || owner instanceof CompoundPath)) {
+            // If true is passed for _dontMerge, don't merge children styles.
+            if (applyToChildren && !_dontMerge) {
+                for (var i = 0, l = children.length; i < l; i++) {
+                    var childValue = children[i]._style[get]();
+                    if (!i) {
+                        value = childValue;
+                    } else if (!Base.equals(value, childValue)) {
+                        // If there is another child with a different
+                        // style, the style is not defined:
+                        return undefined;
+                    }
+                }
+            } else if (key in this._defaults) {
                 var value = this._values[key];
                 if (value === undefined) {
                     value = this._defaults[key];
@@ -226,22 +241,13 @@ var Style = Base.extend(new function() {
                                 { readNull: true, clone: true });
                     }
                 }
-            } else if (children) {
-                for (var i = 0, l = children.length; i < l; i++) {
-                    var childValue = children[i]._style[get]();
-                    if (!i) {
-                        value = childValue;
-                    } else if (!Base.equals(value, childValue)) {
-                        // If there is another child with a different
-                        // style, the style is not defined:
-                        return undefined;
-                    }
-                }
             }
             if (value && isColor) {
                 // Color._setOwner() may clone the color if it already has a
-                // different owner (e.g. resulting from `childValue` above):
-                value = Color._setOwner(value, owner, set);
+                // different owner (e.g. resulting from `childValue` above).
+                // Only provide a color-setter if the style is to be applied to
+                // the children:
+                value = Color._setOwner(value, owner, applyToChildren && set);
             }
             return value;
         };

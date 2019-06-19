@@ -712,7 +712,11 @@ var Color = Base.extend(new function() {
         _changed: function() {
             this._canvasStyle = null;
             if (this._owner) {
-                this._owner[this._setter](this);
+                if (this._setter) {
+                    this._owner[this._setter](this);
+                } else {
+                    this._owner._changed(/*#=*/Change.STYLE);
+                }
             }
         },
 
@@ -1389,31 +1393,4 @@ new function() {
          * console.log(result); // { red: 0, blue: 0, green: 1 }
          */
     });
-});
-
-/**
- * @name LinkedColor
- *
- * @class An internal version of Color that notifies its owner of each change
- * through setting itself again on the setter that corresponds to the getter
- * that produced this LinkedColor. This is used to solve group color update
- * problem (#1152) with the same principle used in LinkedPoint.
- *
- * @private
- */
-var LinkedColor = Color.extend({
-    // Make sure LinkedColor is displayed as Color in debugger.
-    initialize: function Color(color, item, setter) {
-        // Rely on real constructor for instantiation.
-        paper.Color.apply(this, [color]);
-        // Store references.
-        this._item = item;
-        this._setter = setter;
-    },
-
-    // Rely on Color#_changed() method to detect changes.
-    _changed: function(){
-        // Update owner color by calling setter.
-        this._item[this._setter](this);
-    }
 });
