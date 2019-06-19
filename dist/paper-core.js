@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 19 22:05:26 2019 +0200
+ * Date: Wed Jun 19 22:44:54 2019 +0200
  *
  ***
  *
@@ -11650,7 +11650,11 @@ var Color = Base.extend(new function() {
 		_changed: function() {
 			this._canvasStyle = null;
 			if (this._owner) {
-				this._owner[this._setter](this);
+				if (this._setter) {
+					this._owner[this._setter](this);
+				} else {
+					this._owner._changed(129);
+				}
 			}
 		},
 
@@ -11858,18 +11862,6 @@ new function() {
 		};
 	}, {
 	});
-});
-
-var LinkedColor = Color.extend({
-	initialize: function Color(color, item, setter) {
-		paper.Color.apply(this, [color]);
-		this._item = item;
-		this._setter = setter;
-	},
-
-	_changed: function(){
-		this._item[this._setter](this);
-	}
 });
 
 var Gradient = Base.extend({
@@ -12128,7 +12120,8 @@ var Style = Base.extend(new function() {
 							old._canvasStyle = null;
 						}
 						if (value && value.constructor === Color) {
-							value = Color._setOwner(value, owner, set);
+							value = Color._setOwner(value, owner,
+									applyToChildren && set);
 						}
 					}
 					this._values[key] = value;
@@ -12141,9 +12134,19 @@ var Style = Base.extend(new function() {
 		fields[get] = function(_dontMerge) {
 			var owner = this._owner,
 				children = owner && owner._children,
+				applyToChildren = children && children.length > 0
+					&& !(owner instanceof CompoundPath),
 				value;
-			if (key in this._defaults && (!children || !children.length
-					|| _dontMerge || owner instanceof CompoundPath)) {
+			if (applyToChildren && !_dontMerge) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childValue = children[i]._style[get]();
+					if (!i) {
+						value = childValue;
+					} else if (!Base.equals(value, childValue)) {
+						return undefined;
+					}
+				}
+			} else if (key in this._defaults) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
@@ -12157,18 +12160,9 @@ var Style = Base.extend(new function() {
 								{ readNull: true, clone: true });
 					}
 				}
-			} else if (children) {
-				for (var i = 0, l = children.length; i < l; i++) {
-					var childValue = children[i]._style[get]();
-					if (!i) {
-						value = childValue;
-					} else if (!Base.equals(value, childValue)) {
-						return undefined;
-					}
-				}
 			}
 			if (value && isColor) {
-				value = Color._setOwner(value, owner, set);
+				value = Color._setOwner(value, owner, applyToChildren && set);
 			}
 			return value;
 		};
