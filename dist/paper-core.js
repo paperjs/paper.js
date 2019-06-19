@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 19 21:56:44 2019 +0200
+ * Date: Wed Jun 19 14:59:41 2019 -0500
  *
  ***
  *
@@ -3703,8 +3703,11 @@ new function() {
 	},
 
 	contains: function() {
-		return !!this._contains(
-				this._matrix._inverseTransform(Point.read(arguments)));
+		var matrix = this._matrix;
+		return (
+			matrix.isInvertible() &&
+			!!this._contains(matrix._inverseTransform(Point.read(arguments)))
+		);
 	},
 
 	_contains: function(point) {
