@@ -192,3 +192,27 @@ test('setting Group#fillColor and #strokeColor 2', function() {
     // The second path still has its strokeColor set to red:
     equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });
+
+test('style change detection (#1672)', function(assert) {
+    // We use this trick to take a snapshot of the current canvas content
+    // without any kind of side effect that `item.rasterize()` or other
+    // techniques would have.
+    function getDataURL() {
+        view.update();
+        return view.context.canvas.toDataURL();
+    }
+
+    var item = new Path.Circle({
+        center: view.center,
+        radius: 70,
+        fillColor: 'red'
+    });
+    var imageDataBefore = getDataURL();
+
+    // Change style property and check that change was detected.
+    item.fillColor.hue += 100;
+    var imageDataAfter = getDataURL();
+
+    // We are limited to check that both snapshots are different.
+    equals(imageDataBefore !== imageDataAfter, true, 'Data URLs should be different');
+});
