@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.2-fix&#x2F;typescript-definition-issues - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.2-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jun 14 15:03:35 2019 +0200
+ * Date: Sat Jun 22 13:46:05 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -270,7 +270,7 @@ declare module paper {
          * parameters that is supported by the various {@link Color}
          * constructors also work for calls of `set()`.
          */
-        set(...value: any[]): Color
+        set(...values: any[]): Color
 
         /** 
          * Converts the color to another type.
@@ -1489,8 +1489,8 @@ declare module paper {
 
         /** 
          * Specifies whether the item defines a clip mask. This can only be set on
-         * paths, compound paths, and text frame objects, and only if the item is
-         * already contained within a clipping group.
+         * paths and compound paths, and only if the item is already contained
+         * within a clipping group.
          */
         clipMask: boolean | null
 
@@ -1530,6 +1530,15 @@ declare module paper {
          * The bounding rectangle of the item including handles.
          */
         handleBounds: Rectangle | null
+
+        /** 
+         * The bounding rectangle of the item without any matrix transformations.
+         * 
+         * Typical use case would be drawing a frame around the object where you
+         * want to draw something of the same size, position, rotation, and scaling,
+         * like a selection frame.
+         */
+        internalBounds: Rectangle | null
 
         /** 
          * The current rotation angle of the item, as described by its
@@ -2958,7 +2967,7 @@ declare module paper {
          * parameters that is supported by the various {@link Matrix} constructors
          * also work for calls of `set()`.
          */
-        set(...value: any[]): Point
+        set(...values: any[]): Point
 
         /** 
          * @return a copy of this transform
@@ -4634,7 +4643,7 @@ declare module paper {
          * that is supported by the various {@link Point} constructors also work
          * for calls of `set()`.
          */
-        set(...value: any[]): Point
+        set(...values: any[]): Point
 
         /** 
          * Checks whether the coordinates of the point are equal to that of the
@@ -5728,7 +5737,7 @@ declare module paper {
          * parameters that is supported by the various {@link Rectangle}
          * constructors also work for calls of `set()`.
          */
-        set(...value: any[]): Rectangle
+        set(...values: any[]): Rectangle
 
         /** 
          * Returns a copy of the rectangle.
@@ -6262,7 +6271,7 @@ declare module paper {
          * that is supported by the various {@link Size} constructors also work
          * for calls of `set()`.
          */
-        set(...value: any[]): Size
+        set(...values: any[]): Size
 
         /** 
          * Checks whether the width and height of the size are equal to those of the
