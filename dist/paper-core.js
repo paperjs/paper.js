@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 18:21:47 2019 +0200
+ * Date: Sat Jun 22 18:42:19 2019 +0200
  *
  ***
  *
@@ -2664,9 +2664,13 @@ var Line = Base.extend({
 				vx -= px;
 				vy -= py;
 			}
-			return vx === 0 ? vy > 0 ? x - px : px - x
-				 : vy === 0 ? vx < 0 ? y - py : py - y
-				 : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
+			  return  vx === 0 ? (vy > 0 ? x - px : px - x)
+					: vy === 0 ? (vx < 0 ? y - py : py - y)
+					: ((x - px) * vy - (y - py) * vx) / (
+						vy > vx
+							? vy * Math.sqrt(1 + (vx * vx) / (vy * vy))
+							: vx * Math.sqrt(1 + (vy * vy) / (vx * vx))
+					);
 		},
 
 		getDistance: function(px, py, vx, vy, x, y, asVector) {
