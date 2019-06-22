@@ -213,6 +213,9 @@ test('Color change propagation (#1672)', function(assert) {
     item.fillColor.hue += 100;
     var imageDataAfter = getDataURL();
 
-    // Canvas content should change after a change of item.fillColor.
-    equals(imageDataBefore !== imageDataAfter, true, 'Data URLs should be different');
+    // We are limited to check that both snapshots are different.
+    equals(
+        imageDataBefore !== imageDataAfter, true,
+        'Canvas content should change after a change of item.fillColor.'
+    );
 });
