@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 18:42:19 2019 +0200
+ * Date: Sat Jun 22 18:48:16 2019 +0200
  *
  ***
  *
@@ -10473,10 +10473,12 @@ PathItem.inject(new function() {
 			totalLength = 0,
 			winding;
 		do {
-			var curve = segment.getCurve(),
-				length = curve.getLength();
-			chain.push({ segment: segment, curve: curve, length: length });
-			totalLength += length;
+			var curve = segment.getCurve();
+			if (curve) {
+				var length = curve.getLength();
+				chain.push({ segment: segment, curve: curve, length: length });
+				totalLength += length;
+			}
 			segment = segment.getNext();
 		} while (segment && !segment._intersection && segment !== start);
 		var offsets = [0.5, 0.25, 0.75],
