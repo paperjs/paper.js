@@ -63,6 +63,7 @@
  *
  * @name view
  * @type View
+ * @readonly
  */
 
 /**

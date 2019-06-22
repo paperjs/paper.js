@@ -15,11 +15,19 @@
  */
 
 declare module paper {
-    {{#globals}}
+    {{#paperInstance}}
+    {{#properties}}
     {{#doc}}4{{/doc}}
     let {{name}}{{type}}
 
-    {{/globals}}
+    {{/properties}}
+
+    {{#methods}}
+    {{#doc}}4{{/doc}}
+    function {{name}}({{params}}){{type}}
+
+    {{/methods}}
+    {{/paperInstance}}
 
     {{#classes}}
 
@@ -30,6 +38,9 @@ declare module paper {
         {{static}}{{readOnly}}{{name}}{{type}}
 
         {{/properties}}
+        {{#classesPointers}}
+        {{name}}: typeof {{name}}
+        {{/classesPointers}}
 
         {{#methods}}
         {{#doc}}8{{/doc}}
