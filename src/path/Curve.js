@@ -1822,9 +1822,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
         } else {
             // Apply the result of the clipping to curve 1:
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+            var uDiff = uMax - uMin;
             if (tMaxClip - tMinClip > 0.8) {
                 // Subdivide the curve which has converged the least.
-                if (tMaxNew - tMinNew > uMax - uMin) {
+                if (tMaxNew - tMinNew > uDiff) {
                     var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
@@ -1844,7 +1845,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             recursion, calls, u, uMax, tMinNew, tMaxNew);
                 }
             } else { // Iterate
-                if (uMax - uMin >= fatLineEpsilon) {
+                // For some unclear reason we need to check against uDiff === 0
+                // here, to prevent a regression from happening, see #1638.
+                // Maybe @iconexperience could shed some light on this.
+                if (uDiff === 0 || uDiff >= fatLineEpsilon) {
                     calls = addCurveIntersections(
                             v2, v1, c2, c1, locations, include, !flip,
                             recursion, calls, uMin, uMax, tMinNew, tMaxNew);

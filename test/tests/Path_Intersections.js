@@ -343,3 +343,18 @@ test('#1284', function() {
     var path2 = createPath(curve2);
     testIntersections(path1.getIntersections(path2), expected);
 });
+
+test('#1638', function() {
+    var circle1 = new Path.Circle({
+        center: [100, 100],
+        radius: 100
+    });
+    var circle2 = new Path.Circle({
+        center: [150, 150],
+        radius: 100
+    });
+    testIntersections(circle1.getIntersections(circle2), [
+        { point: { x: 191.16238, y: 58.83762 }, index: 1, time: 0.73431, crossing: true },
+        { point: { x: 58.83762, y: 191.16238 }, index: 3, time: 0.26569, crossing: true }
+    ]);
+})
