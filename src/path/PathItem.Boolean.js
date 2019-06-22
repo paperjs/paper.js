@@ -715,10 +715,14 @@ PathItem.inject(new function() {
             totalLength = 0,
             winding;
         do {
-            var curve = segment.getCurve(),
-                length = curve.getLength();
-            chain.push({ segment: segment, curve: curve, length: length });
-            totalLength += length;
+            var curve = segment.getCurve();
+            // We can encounter paths with only one segment, which would not
+            // have a curve.
+            if (curve) {
+                var length = curve.getLength();
+                chain.push({ segment: segment, curve: curve, length: length });
+                totalLength += length;
+            }
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
         // Determine winding at three points in the chain. If a winding with
