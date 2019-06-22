@@ -450,18 +450,19 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             var v = curve.getValues(),
                 roots = Curve.classify(v).roots || Curve.getPeaks(v),
                 count = roots.length,
-                t = end && count > 1 ? roots[count - 1]
-                        : count > 0 ? roots[0]
-                        : 0.5;
-            // Then use half of the offset, for extra measure.
-            offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
+                offset = Curve.getLength(v,
+                    end && count ? roots[count - 1] : 0,
+                    !end && count ? roots[0] : 1);
+            // When no root was found, the full length was calculated. Use a
+            // fraction of it. By trial & error, 64 was determined to work well.
+            offsets.push(count ? offset : offset / 64);
         }
 
         function isInRange(angle, min, max) {
             return min < max
-                    ? angle > min && angle < max
+                    ? angle > min && angle <= max
                     // min > max: the range wraps around -180 / 180 degrees
-                    : angle > min || angle < max;
+                    : angle > min || angle <= max;
         }
 
         if (!t1Inside) {
