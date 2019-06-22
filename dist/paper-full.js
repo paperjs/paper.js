@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 15:18:18 2019 +0200
+ * Date: Sat Jun 22 15:27:25 2019 +0200
  *
  ***
  *
@@ -7090,8 +7090,9 @@ new function() {
 					flip ? c1 : c2, flip ? t : u);
 		} else {
 			v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+			var uDiff = uMax - uMin;
 			if (tMaxClip - tMinClip > 0.8) {
-				if (tMaxNew - tMinNew > uMax - uMin) {
+				if (tMaxNew - tMinNew > uDiff) {
 					var parts = Curve.subdivide(v1, 0.5),
 						t = (tMinNew + tMaxNew) / 2;
 					calls = addCurveIntersections(
@@ -7111,7 +7112,7 @@ new function() {
 							recursion, calls, u, uMax, tMinNew, tMaxNew);
 				}
 			} else {
-				if (uMax - uMin >= fatLineEpsilon) {
+				if (uDiff === 0 || uDiff >= fatLineEpsilon) {
 					calls = addCurveIntersections(
 							v2, v1, c2, c1, locations, include, !flip,
 							recursion, calls, uMin, uMax, tMinNew, tMaxNew);
