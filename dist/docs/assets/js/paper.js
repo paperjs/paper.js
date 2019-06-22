@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 13:50:53 2019 +0200
+ * Date: Sat Jun 22 14:16:49 2019 +0200
  *
  ***
  *
@@ -13888,7 +13888,7 @@ var Tween = Base.extend(Emitter, {
 				return (
 					operator &&
 					operator.match &&
-					operator.match(/^[+\-*/]=/)
+					operator.match(/^[+\-\*\/]=/)
 				)
 					? this._calculate(current, operator[0], value[1])
 					: value;
