@@ -358,3 +358,16 @@ test('#1638', function() {
         { point: { x: 58.83762, y: 191.16238 }, index: 3, time: 0.26569, crossing: true }
     ]);
 })
+
+test('#1263', function() {
+    var path = new Path({
+        segments: [
+            [[479,495], [0,0], [-10,4]],
+            [[437,479], [5,12], [-22,-51]],
+            [[479,495], [33,-15]]
+        ]
+    });
+    testIntersections(path.getIntersections(), [
+        { point: { x: 479, y: 495 }, index: 0, time: 0, crossing: false }
+    ]);
+})

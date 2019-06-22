@@ -492,7 +492,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // Count how many times curve2 angles appear between the curve1 angles.
         // If each pair of angles split the other two, then the edges cross.
         // Use t1Inside to decide which angle pair to check against.
-        // If t1 is inside the curve, check against a3 & a4, othrwise a1 & a2.
+        // If t1 is inside the curve, check against a3 & a4, otherwise a1 & a2.
         return !!(t1Inside
                 ? (isInRange(a1, a3, a4) ^ isInRange(a2, a3, a4)) &&
                   (isInRange(a1, a4, a3) ^ isInRange(a2, a4, a3))
