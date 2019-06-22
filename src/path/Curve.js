@@ -2091,7 +2091,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return locations;
     }
 
-    function getLoopIntersection(v1, c1, locations, include) {
+    function getSelfIntersection(v1, c1, locations, include) {
         var info = Curve.classify(v1);
         if (info.type === 'loop') {
             var roots = info.roots;
@@ -2131,7 +2131,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             }
             if (self) {
                 // First check for self-intersections within the same curve.
-                getLoopIntersection(values1, curve1, locations, include);
+                getSelfIntersection(values1, curve1, locations, include);
             }
             // Check for intersections with other curves.
             // For self-intersection, we can start at i + 1 instead of 0.
@@ -2314,7 +2314,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             var v1 = this.getValues(),
                 v2 = curve && curve !== this && curve.getValues();
             return v2 ? getCurveIntersections(v1, v2, this, curve, [])
-                      : getLoopIntersection(v1, this, []);
+                      : getSelfIntersection(v1, this, []);
         },
 
         statics: /** @lends Curve */{

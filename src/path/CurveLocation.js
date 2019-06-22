@@ -59,7 +59,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     _setCurve: function(curve) {
         var path = curve._path;
-        // We only store the path to verify versions for cachd values.
+        // We only store the path to verify versions for cached values.
         // To ensure we use the right path (e.g. after splitting), we shall
         // always access the path on the result of getCurve().
         this._path = path;

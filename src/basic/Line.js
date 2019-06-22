@@ -141,7 +141,7 @@ var Line = Base.extend(/** @lends Line# */{
             }
             var cross = v1x * v2y - v1y * v2x;
             // Avoid divisions by 0, and errors when getting too close to 0
-            if (!Numerical.isZero(cross)) {
+            if (!Numerical.isMachineZero(cross)) {
                 var dx = p1x - p2x,
                     dy = p1y - p2y,
                     u1 = (v2x * dy - v2y * dx) / cross,
@@ -175,7 +175,7 @@ var Line = Base.extend(/** @lends Line# */{
                 v2y = y - py,
                 // ccw = v2.cross(v1);
                 ccw = v2x * vy - v2y * vx;
-            if (!isInfinite && Numerical.isZero(ccw)) {
+            if (!isInfinite && Numerical.isMachineZero(ccw)) {
                 // If the point is on the infinite line, check if it's on the
                 // finite line too: Project v2 onto v1 and determine ccw based
                 // on which side of the finite line the point lies. Calculate

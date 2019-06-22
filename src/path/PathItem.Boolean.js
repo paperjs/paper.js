@@ -1172,7 +1172,7 @@ PathItem.inject(new function() {
                 return inter && inter._overlap && inter._path === path;
             }
 
-            // First collect all overlaps and crossings while taking not of the
+            // First collect all overlaps and crossings while taking note of the
             // existence of both.
             var hasOverlaps = false,
                 hasCrossings = false,

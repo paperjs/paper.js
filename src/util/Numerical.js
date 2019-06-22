@@ -168,6 +168,10 @@ var Numerical = new function() {
             return val >= -EPSILON && val <= EPSILON;
         },
 
+        isMachineZero: function(val) {
+            return val >= -MACHINE_EPSILON && val <= MACHINE_EPSILON;
+        },
+
         /**
          * Returns a number whose value is clamped by the given range.
          *
