@@ -50,11 +50,12 @@ Object.keys(docOptions).forEach(function(name) {
 
 // The goal of the typescript task is to automatically generate a type
 // definition for the library.
-gulp.task('docs:typescript', function() {
-    return run(
+gulp.task('docs:typescript', function(callback) {
+    run(
         'docs:typescript:clean:before',
         'docs:typescript:build',
-        'docs:typescript:clean:after'
+        'docs:typescript:clean:after',
+        callback
     );
 });
 // First clean eventually existing type definition...
@@ -78,7 +79,7 @@ gulp.task('docs:typescript:build', function() {
         // ...then generate definition from parsed data...
         .pipe(shell('node gulp/typescript/typescript-definition-generator.js'))
         // ...finally test the definition by compiling a typescript file.
-        .pipe(shell('node node_modules/typescript/bin/tsc gulp/typescript/typescript-definition-test.ts'));
+        .pipe(shell('node node_modules/typescript/bin/tsc --project gulp/typescript'));
 });
 // ...finally remove all unneeded temporary files that were used for building.
 gulp.task('docs:typescript:clean:after', function() {

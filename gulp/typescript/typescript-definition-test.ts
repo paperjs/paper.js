@@ -14,17 +14,6 @@ import * as paper from 'paper';
 
 
 //
-// Global
-//
-
-paper.project;
-paper.projects;
-paper.view;
-paper.tool;
-paper.tools;
-
-
-//
 // Utility variables
 //
 
@@ -368,6 +357,7 @@ item.strokeScaling;
 item.dashArray;
 item.miterLimit;
 item.fillColor;
+item.fillColor && item.fillColor.red;
 item.fillRule;
 item.shadowColor;
 item.shadowBlur;
@@ -538,6 +528,8 @@ raster.source;
 raster.crossOrigin;
 raster.smoothing;
 raster.onLoad;
+raster.onLoad = () => {};
+raster.onLoad = null;
 raster.onError;
 raster.getSubCanvas(rectangle);
 raster.getSubRaster(rectangle);
@@ -662,6 +654,9 @@ path.length;
 path.area;
 path.fullySelected;
 path.add(segment);
+path.add(point);
+path.add([0,0]);
+path.add(segment, point, [0,0]);
 path.insert(0, segment);
 path.addSegments([ segment ]);
 path.insertSegments(0, [ segment ]);
@@ -1048,6 +1043,7 @@ view.responds('');
 
 event.timeStamp;
 event.modifiers;
+event.modifiers.shift;
 event.preventDefault();
 event.stopPropagation();
 event.stop();
@@ -1128,6 +1124,7 @@ keyEvent.toString();
 new paper.PaperScope();
 paperScope.version;
 paperScope.settings;
+paperScope.settings = null;
 paperScope.project;
 paperScope.projects;
 paperScope.view;
@@ -1141,6 +1138,60 @@ paperScope.setup({} as HTMLCanvasElement);
 paperScope.setup(size);
 paperScope.activate();
 paper.PaperScope.get(0);
+new paperScope.Color('');
+new paperScope.CompoundPath('');
+new paperScope.Curve(segment, segment);
+new paperScope.CurveLocation(curve, 0);
+new paperScope.Event();
+new paperScope.Gradient();
+new paperScope.GradientStop();
+new paperScope.Group();
+new paperScope.HitResult();
+new paperScope.Item();
+new paperScope.Key();
+new paperScope.KeyEvent();
+new paperScope.Layer();
+new paperScope.Matrix();
+new paperScope.MouseEvent();
+new paperScope.PaperScript();
+new paperScope.Path();
+new paperScope.PathItem();
+new paperScope.Point(0, 0);
+new paperScope.PointText(point);
+new paperScope.Project(size);
+new paperScope.Raster();
+new paperScope.Rectangle(point, size);
+new paperScope.Segment();
+new paperScope.Shape();
+new paperScope.Size(0,0);
+new paperScope.Style(object);
+new paperScope.SymbolDefinition(item);
+new paperScope.SymbolItem(symbolDefinition);
+new paperScope.TextItem();
+new paperScope.Tool();
+new paperScope.ToolEvent();
+new paperScope.Tween(object, object, object, 0);
+new paperScope.View();
+
+
+//
+// Global PaperScope instance
+//
+
+paper.version;
+paper.settings;
+paper.project;
+paper.projects;
+paper.view;
+paper.tool;
+paper.tools;
+paper.execute('');
+paper.execute('', object);
+paper.install(object);
+paper.setup('');
+paper.setup({} as HTMLCanvasElement);
+paper.setup(size);
+paper.activate();
 
 
 //

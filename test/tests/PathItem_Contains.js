@@ -394,4 +394,10 @@ test('Path#contains() with Path#interiorPoint: #854, #1064', function() {
     }
 });
 
-
+test('IPathtem#contains() with non-invertible matrices (#1651)', function() {
+    var path = new Path({
+        matrix: new Matrix(0, 0, 0, 0, 0, 0)
+    });
+    equals(path.contains(path.position), false,
+            'A path with a non-invertible matrix cannot contain its position');
+});

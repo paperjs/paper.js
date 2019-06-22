@@ -1496,7 +1496,7 @@ new function() { // Injection scope for event handling on the browser
             updateFocus: updateFocus,
 
             /**
-             * Clear all events handling state informations. Made for testing
+             * Clear all events handling state information. Made for testing
              * purpose, to have a way to start with a fresh state before each
              * test.
              * @private

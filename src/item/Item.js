@@ -658,8 +658,8 @@ new function() { // Injection scope for various item event handlers
 
     /**
      * Specifies whether the item defines a clip mask. This can only be set on
-     * paths, compound paths, and text frame objects, and only if the item is
-     * already contained within a clipping group.
+     * paths and compound paths, and only if the item is already contained
+     * within a clipping group.
      *
      * @bean
      * @type Boolean
@@ -1116,6 +1116,17 @@ new function() { // Injection scope for various item event handlers
      * The bounding rectangle of the item including handles.
      *
      * @name Item#handleBounds
+     * @type Rectangle
+     */
+
+    /**
+     * The bounding rectangle of the item without any matrix transformations.
+     *
+     * Typical use case would be drawing a frame around the object where you
+     * want to draw something of the same size, position, rotation, and scaling,
+     * like a selection frame.
+     *
+     * @name Item#internalBounds
      * @type Rectangle
      */
 
@@ -1805,8 +1816,11 @@ new function() { // Injection scope for various item event handlers
      */
     contains: function(/* point */) {
         // See CompoundPath#_contains() for the reason for !!
-        return !!this._contains(
-                this._matrix._inverseTransform(Point.read(arguments)));
+        var matrix = this._matrix;
+        return (
+            matrix.isInvertible() && 
+            !!this._contains(matrix._inverseTransform(Point.read(arguments)))
+        );
     },
 
     _contains: function(point) {

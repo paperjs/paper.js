@@ -229,4 +229,19 @@ if (!isNodeContext) {
             tolerance: 1e-2
         });
     });
+
+    test('Export symbol with stroke', function(assert) {
+        var item = new Path.Circle({
+            center: [0, 0],
+            radius: 50,
+            strokeColor: 'blue',
+            strokeWidth: 10
+        });
+
+        var symbol = new Symbol(item);
+        symbol.place([50, 50]);
+
+        var svg = project.exportSVG({ bounds: 'content', asString: true });
+        compareSVG(assert.async(), svg, project.activeLayer);
+    });
 }

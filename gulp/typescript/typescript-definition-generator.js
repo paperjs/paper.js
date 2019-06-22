@@ -9,7 +9,6 @@ const mustache = require('mustache');
 // Retrieve JSDoc data.
 const data = JSON.parse(fs.readFileSync(__dirname + '/typescript-definition-data.json', 'utf8'));
 const classes = data.classes;
-let globals = data.global.properties;
 
 // Format classes.
 classes.forEach(cls => {
@@ -32,7 +31,7 @@ classes.forEach(cls => {
         .filter(filter)
         .map(it => ({
             name: it._name,
-            type: formatType(it.type),
+            type: formatType(it.type, { isProperty: true, isSettableProperty: !it.readOnly }),
             static: formatStatic(it.isStatic),
             readOnly: formatReadOnly(it.readOnly),
             comment: formatComment(it.comment)
@@ -48,7 +47,7 @@ classes.forEach(cls => {
                 name: name,
                 // Constructors don't need return type.
                 type: !it.isConstructor
-                    ? formatType(getMethodReturnType(it), true)
+                    ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
                     : '',
                 static: formatStatic(it.isStatic),
                 // This flag is only used below to filter methods.
@@ -89,21 +88,25 @@ classes.forEach(cls => {
     cls.hasStaticConstructors = cls.staticConstructors.length > 0;
 });
 
-// Format global vriables.
-globals = globals
-// Filter global variables that make no sense in type definition.
-    .filter(it => !/^on/.test(it._name) && it._name !== 'paper')
-    .map(it => ({
-        name: it._name,
-        type: formatType(it.type),
-        comment: formatComment(it.comment)
-    }));
+// PaperScope class needs to be handled slightly differently because it "owns"
+// all the other classes as properties. Eg. we can do `new paperScope.Path()`.
+// So we add a `classesPointers` property that the template will use.
+const paperScopeClass = classes.find(_ => _.className === 'PaperScope');
+paperScopeClass.classesPointers = classes.filter(_ => _.className !== 'PaperScope').map(_ => ({ name: _.className }));
+
+// Since paper.js module is at the same time a PaperScope instance, we need to
+// duplicate PaperScope instance properties and methods in the module scope.
+// For that, we expose a special variable to the template.
+const paperInstance = { ...paperScopeClass };
+// We filter static properties and methods for module scope.
+paperInstance.properties = paperInstance.properties.filter(_ => !_.static);
+paperInstance.methods = paperInstance.methods.filter(_ => !_.static && _.name !== 'constructor');
 
 // Format data trough a mustache template.
 // Prepare data for the template.
 const context = {
+    paperInstance: paperInstance,
     classes: classes,
-    globals: globals,
     version: data.version,
     date: data.date,
     // {{#doc}} blocks are used in template to automatically generate a JSDoc
@@ -130,48 +133,69 @@ function formatStatic(isStatic) {
     return isStatic ? 'static ' : null;
 }
 
-function formatType(type, isMethodReturnType, staticConstructorClass) {
-    return ': ' + parseType(type, isMethodReturnType, staticConstructorClass);
+function formatType(type, options) {
+    return ': ' + parseType(type, options);
 }
 
-function parseType(type, isMethodReturnType, staticConstructorClass) {
+function parseType(type, options) {
     // Always return a type even if input type is empty. In that case, return
     // `void` for method return type and `any` for the rest.
     if (!type) {
-        return isMethodReturnType ? 'void' : 'any';
-    }
-    if (type === '*') {
-        return 'any';
+        return options.isMethodReturnType ? 'void' : 'any';
     }
     // Prefer `any[]` over `Array<any>` to be more consistent with other types.
     if (type === 'Array') {
         return 'any[]';
     }
+    // Handle any type: `*` => `any`
+    type = type.replace('*', 'any');
+    // Check if type is a "rest" type (meaning that an infinite number of
+    // parameter of this type can be passed). In that case, we need to remove
+    // `...` prefix and add `[]` as a suffix:
+    // - `...Type` => `Type[]`
+    // - `...(TypeA|TypeB)` => `(TypeA|TypeB)[]`
+    const isRestType = type.startsWith('...');
+    if (isRestType) {
+        type = type.replace(/^\.\.\./, '');
+    }
     // Handle multiple types possibility by splitting on `|` then re-joining
     // back parsed types.
-    return type.split('|').map(type => {
-        // Handle rest parameter pattern: `...Type` => `Type[]`
-        const matches = type.match(/^\.\.\.(.+)$/);
-        if (matches) {
-            return parseType(matches[1]) + '[]';
-        }
+    type = type.split('|').map(splittedType => {
         // Get type without array suffix `[]` for easier matching.
-        const singleType = type.replace(/(\[\])+$/, '');
+        const singleType = splittedType.replace(/(\[\])+$/, '');
         // Handle eventual type conflict in static constructors block. For
         // example, in `Path.Rectangle(rectangle: Rectangle)` method,
         // `rectangle` parameter type must be mapped to `paper.Rectangle` as it
         // is declared inside a `Path` namespace and would otherwise be wrongly
         // assumed as being the type of `Path.Rectangle` class.
-        if (staticConstructorClass && staticConstructorClass.methods.find(it => it.isStatic && it.isConstructor && formatMethodName(it._name) === singleType)
+        if (options.staticConstructorClass && options.staticConstructorClass.methods.find(it => it.isStatic && it.isConstructor && formatMethodName(it._name) === singleType)
         ) {
-            return 'paper.' + type;
+            return 'paper.' + splittedType;
         }
         // Convert primitive types to their lowercase equivalent to suit
         // typescript best practices.
-        return ['Number', 'String', 'Boolean', 'Object'].indexOf(singleType) >= 0
-            ? type.toLowerCase()
-            : type;
+        if (['Number', 'String', 'Boolean', 'Object'].indexOf(singleType) >= 0) {
+            splittedType = splittedType.toLowerCase();
+        }
+        // Properties `object` type need to be turned into `any` to avoid
+        // errors when reading object properties. Eg. if `property` is of type
+        // `object`, `property.key` access is forbidden.
+        if (options.isProperty && splittedType === 'object') {
+            return 'any';
+        }
+        return splittedType;
     }).join(' | ');
+    if (isRestType) {
+        type += '[]';
+    }
+
+    // We declare settable properties as nullable to be compatible with
+    // TypeScript `strictNullChecks` option (#1664).
+    if (options.isSettableProperty && type !== 'any') {
+        type += ' | null';
+    }
+
+    return type;
 }
 
 function formatMethodName(methodName) {
@@ -195,7 +219,7 @@ function formatParameter(param, staticConstructorClass) {
     if (param.isOptional) {
         content += '?';
     }
-    content += formatType(param.type, false, staticConstructorClass);
+    content += formatType(param.type, { staticConstructorClass });
     return content;
 }
 
@@ -306,11 +330,9 @@ function sortMethods(methodA, methodB) {
         if (methodB.params === 'object: object') {
             return -1;
         }
-    }
-    else if (aIsContructor) {
+    } else if (aIsContructor) {
         return -1;
-    }
-    else if (bIsContructor) {
+    } else if (bIsContructor) {
         return 1;
     }
     return 0;

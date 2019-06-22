@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.2 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.3 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Jun 11 21:31:28 2019 +0200
+ * Date: Sat Jun 22 14:16:49 2019 +0200
  *
  ***
  *
@@ -795,7 +795,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.2",
+	version: "0.12.3",
 
 	getView: function() {
 		var project = this.project;
@@ -3706,8 +3706,11 @@ new function() {
 	},
 
 	contains: function() {
-		return !!this._contains(
-				this._matrix._inverseTransform(Point.read(arguments)));
+		var matrix = this._matrix;
+		return (
+			matrix.isInvertible() &&
+			!!this._contains(matrix._inverseTransform(Point.read(arguments)))
+		);
 	},
 
 	_contains: function(point) {
@@ -11650,7 +11653,11 @@ var Color = Base.extend(new function() {
 		_changed: function() {
 			this._canvasStyle = null;
 			if (this._owner) {
-				this._owner[this._setter](this);
+				if (this._setter) {
+					this._owner[this._setter](this);
+				} else {
+					this._owner._changed(129);
+				}
 			}
 		},
 
@@ -11858,18 +11865,6 @@ new function() {
 		};
 	}, {
 	});
-});
-
-var LinkedColor = Color.extend({
-	initialize: function Color(color, item, setter) {
-		paper.Color.apply(this, [color]);
-		this._item = item;
-		this._setter = setter;
-	},
-
-	_changed: function(){
-		this._item[this._setter](this);
-	}
 });
 
 var Gradient = Base.extend({
@@ -12128,7 +12123,8 @@ var Style = Base.extend(new function() {
 							old._canvasStyle = null;
 						}
 						if (value && value.constructor === Color) {
-							value = Color._setOwner(value, owner, set);
+							value = Color._setOwner(value, owner,
+									applyToChildren && set);
 						}
 					}
 					this._values[key] = value;
@@ -12141,9 +12137,19 @@ var Style = Base.extend(new function() {
 		fields[get] = function(_dontMerge) {
 			var owner = this._owner,
 				children = owner && owner._children,
+				applyToChildren = children && children.length > 0
+					&& !(owner instanceof CompoundPath),
 				value;
-			if (key in this._defaults && (!children || !children.length
-					|| _dontMerge || owner instanceof CompoundPath)) {
+			if (applyToChildren && !_dontMerge) {
+				for (var i = 0, l = children.length; i < l; i++) {
+					var childValue = children[i]._style[get]();
+					if (!i) {
+						value = childValue;
+					} else if (!Base.equals(value, childValue)) {
+						return undefined;
+					}
+				}
+			} else if (key in this._defaults) {
 				var value = this._values[key];
 				if (value === undefined) {
 					value = this._defaults[key];
@@ -12157,18 +12163,9 @@ var Style = Base.extend(new function() {
 								{ readNull: true, clone: true });
 					}
 				}
-			} else if (children) {
-				for (var i = 0, l = children.length; i < l; i++) {
-					var childValue = children[i]._style[get]();
-					if (!i) {
-						value = childValue;
-					} else if (!Base.equals(value, childValue)) {
-						return undefined;
-					}
-				}
 			}
 			if (value && isColor) {
-				value = Color._setOwner(value, owner, set);
+				value = Color._setOwner(value, owner, applyToChildren && set);
 			}
 			return value;
 		};
@@ -13891,7 +13888,7 @@ var Tween = Base.extend(Emitter, {
 				return (
 					operator &&
 					operator.match &&
-					operator.match(/^[+\-*/]=/)
+					operator.match(/^[+\-\*\/]=/)
 				)
 					? this._calculate(current, operator[0], value[1])
 					: value;
@@ -14523,7 +14520,7 @@ new function() {
 			definition = item._definition,
 			node = getDefinition(definition, 'symbol'),
 			definitionItem = definition._item,
-			bounds = definitionItem.getBounds();
+			bounds = definitionItem.getStrokeBounds();
 		if (!node) {
 			node = SvgElement.create('symbol', {
 				viewBox: formatter.rectangle(bounds)
