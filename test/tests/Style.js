@@ -193,7 +193,7 @@ test('setting Group#fillColor and #strokeColor 2', function() {
     equals(secondPath.strokeColor, new Color('red'), 'secondPath.strokeColor');
 });
 
-test('style change detection (#1672)', function(assert) {
+test('Color change propagation (#1672)', function(assert) {
     // We use this trick to take a snapshot of the current canvas content
     // without any kind of side effect that `item.rasterize()` or other
     // techniques would have.
@@ -213,6 +213,6 @@ test('style change detection (#1672)', function(assert) {
     item.fillColor.hue += 100;
     var imageDataAfter = getDataURL();
 
-    // We are limited to check that both snapshots are different.
+    // Canvas content should change after a change of item.fillColor.
     equals(imageDataBefore !== imageDataAfter, true, 'Data URLs should be different');
 });
