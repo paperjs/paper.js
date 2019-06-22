@@ -343,7 +343,9 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                 return (
                     operator &&
                     operator.match &&
-                    operator.match(/^[+\-*/]=/)
+                    // We're (unnecessarily) escaping '*/' here to not confuse
+                    // the ol' JSDoc parser...
+                    operator.match(/^[+\-\*\/]=/)
                 )
                     ? this._calculate(current, operator[0], value[1])
                     : value;
