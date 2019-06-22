@@ -1,5 +1,18 @@
 # Change Log
 
+## `prebuilt`
+
+### Fixed
+
+- Fix regression in `Color` change propagation (#1672, #1674).
+- SVG Export: Fix viewport size of exported `Symbol` (#1668).
+- Handle non-invertible matrices in `Item#contains()` (#1651).
+- Improve documentation for `Item#clipMask` (#1673).
+
+### Added
+
+- Add documentation for `Item#internalBounds`.
+
 ## `0.12.2`
 
 ### Fixed
