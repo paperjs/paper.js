@@ -38,7 +38,7 @@ gulp.task('publish', function(callback) {
     }
     // publish:website comes before publish:release, so paperjs.zip file is gone
     // before npm publish:
-    return run(
+    run(
         'publish:json',
         'publish:dist',
         'publish:packages',
@@ -83,15 +83,11 @@ gulp.task('publish:release', function() {
         .pipe(shell('npm publish'));
 });
 
-gulp.task('publish:packages', function(callback) {
-    // Publish packages in series instead of in parallel, to see if this fixes
-    // recent issues with `npm publish`:
-    var args = packages.map(function(name) {
+gulp.task('publish:packages',
+    packages.map(function(name) {
         return 'publish:packages:' + name;
     })
-    args.push(callback)
-    return run.call(this, args);
-});
+);
 
 packages.forEach(function(name) {
     gulp.task('publish:packages:' + name, ['publish:version'], function() {
@@ -115,7 +111,7 @@ packages.forEach(function(name) {
 
 gulp.task('publish:website', function(callback) {
     if (fs.lstatSync(sitePath).isDirectory()) {
-        return run(
+        run(
             'publish:website:build',
             'publish:website:push',
             callback

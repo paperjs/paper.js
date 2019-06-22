@@ -50,11 +50,12 @@ Object.keys(docOptions).forEach(function(name) {
 
 // The goal of the typescript task is to automatically generate a type
 // definition for the library.
-gulp.task('docs:typescript', function() {
-    return run(
+gulp.task('docs:typescript', function(callback) {
+    run(
         'docs:typescript:clean:before',
         'docs:typescript:build',
-        'docs:typescript:clean:after'
+        'docs:typescript:clean:after',
+        callback
     );
 });
 // First clean eventually existing type definition...
