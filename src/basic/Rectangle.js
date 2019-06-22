@@ -159,7 +159,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * constructors also work for calls of `set()`.
      *
      * @function
-     * @param {...*} value
+     * @param {...*} values
      * @return {Rectangle}
      */
     set: '#initialize',

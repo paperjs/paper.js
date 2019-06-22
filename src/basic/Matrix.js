@@ -104,7 +104,7 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * also work for calls of `set()`.
      *
      * @function
-     * @param {...*} value
+     * @param {...*} values
      * @return {Point}
      */
     set: '#initialize',
