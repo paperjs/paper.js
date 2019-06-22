@@ -196,9 +196,13 @@ var Line = Base.extend(/** @lends Line# */{
                 vy -= py;
             }
             // Based on the error analysis by @iconexperience outlined in #799
-            return vx === 0 ? vy > 0 ? x - px : px - x
-                 : vy === 0 ? vx < 0 ? y - py : py - y
-                 : ((x-px) * vy - (y-py) * vx) / Math.sqrt(vx * vx + vy * vy);
+              return  vx === 0 ? (vy > 0 ? x - px : px - x)
+                    : vy === 0 ? (vx < 0 ? y - py : py - y)
+                    : ((x - px) * vy - (y - py) * vx) / (
+                        vy > vx
+                            ? vy * Math.sqrt(1 + (vx * vx) / (vy * vy))
+                            : vx * Math.sqrt(1 + (vy * vy) / (vx * vx))
+                    );
         },
 
         getDistance: function(px, py, vx, vy, x, y, asVector) {

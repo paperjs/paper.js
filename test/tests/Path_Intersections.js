@@ -357,7 +357,7 @@ test('#1638', function() {
         { point: { x: 191.16238, y: 58.83762 }, index: 1, time: 0.73431, crossing: true },
         { point: { x: 58.83762, y: 191.16238 }, index: 3, time: 0.26569, crossing: true }
     ]);
-})
+});
 
 test('#1263', function() {
     var path = new Path({
@@ -370,4 +370,13 @@ test('#1263', function() {
     testIntersections(path.getIntersections(), [
         { point: { x: 479, y: 495 }, index: 0, time: 0, crossing: false }
     ]);
-})
+});
+
+test('#1262', function() {
+    var c1 = new Curve([561.5500544, 629.1148694240001, 564.581554256, 629.1148694240001, 567.0556160000001, 631.588931168, 567.0556160000001, 634.620431024]);
+    var c2 = new Curve([561.5500544, 629.1148694240001, 564.581554256, 629.1148694240001, 567.0556160000001, 631.592372144, 567.0556160000001, 634.620431024]);
+    testIntersections(c1.getIntersections(c2), [
+        { point: { x: 561.55005, y: 629.11487 }, time: 0 },
+        { point: { x: 567.05562, y: 634.62043 }, time: 1 }
+    ]);
+});
