@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 15:27:25 2019 +0200
+ * Date: Sat Jun 22 17:31:36 2019 +0200
  *
  ***
  *
@@ -7686,16 +7686,16 @@ var CurveLocation = Base.extend({
 			var v = curve.getValues(),
 				roots = Curve.classify(v).roots || Curve.getPeaks(v),
 				count = roots.length,
-				t = end && count > 1 ? roots[count - 1]
-						: count > 0 ? roots[0]
-						: 0.5;
-			offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
+				offset = Curve.getLength(v,
+					end && count ? roots[count - 1] : 0,
+					!end && count ? roots[0] : 1);
+			offsets.push(count ? offset : offset / 64);
 		}
 
 		function isInRange(angle, min, max) {
 			return min < max
-					? angle > min && angle < max
-					: angle > min || angle < max;
+					? angle > min && angle <= max
+					: angle > min || angle <= max;
 		}
 
 		if (!t1Inside) {
