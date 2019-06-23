@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 23:05:50 2019 +0200
+ * Date: Sun Jun 23 03:24:13 2019 +0200
  *
  ***
  *
@@ -7681,9 +7681,9 @@ var CurveLocation = Base.extend({
 		if (t1Inside && t2Inside)
 			return !this.isTouching();
 		var c2 = this.getCurve(),
-			c1 = t1 < tMin ? c2.getPrevious() : c2,
+			c1 = c2 && t1 < tMin ? c2.getPrevious() : c2,
 			c4 = inter.getCurve(),
-			c3 = t2 < tMin ? c4.getPrevious() : c4;
+			c3 = c4 && t2 < tMin ? c4.getPrevious() : c4;
 		if (t1 > tMax)
 			c2 = c2.getNext();
 		if (t2 > tMax)
@@ -10052,13 +10052,31 @@ PathItem.inject(new function() {
 			exclude:   { '1': true, '-1': true }
 		};
 
+	function getPaths(path) {
+		return path._children || [path];
+	}
+
 	function preparePath(path, resolve) {
-		var res = path.clone(false).reduce({ simplify: true })
-				.transform(null, true, true);
+		var res = path
+			.clone(false)
+			.reduce({ simplify: true })
+			.transform(null, true, true);
+		if (resolve && res.hasFill()) {
+			var paths = getPaths(res);
+			for (var i = 0, l = paths.length; i < l; i++) {
+				var path = paths[i];
+				if (!path._closed) {
+					path.closePath(1e-12);
+					path.getFirstSegment().setHandleIn(0, 0);
+					path.getLastSegment().setHandleOut(0, 0);
+				}
+			}
+		}
 		return resolve
-				? res.resolveCrossings().reorient(
-					res.getFillRule() === 'nonzero', true)
-				: res;
+			? res
+				.resolveCrossings()
+				.reorient(res.getFillRule() === 'nonzero', true)
+			: res;
 	}
 
 	function createResult(paths, simplify, path1, path2, options) {
@@ -10086,8 +10104,8 @@ PathItem.inject(new function() {
 			_path2.reverse();
 		var crossings = divideLocations(
 				CurveLocation.expand(_path1.getCrossings(_path2))),
-			paths1 = _path1._children || [_path1],
-			paths2 = _path2 && (_path2._children || [_path2]),
+			paths1 = getPaths(_path1),
+			paths2 = _path2 && getPaths(_path2),
 			segments = [],
 			curves = [],
 			paths;
