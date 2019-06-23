@@ -460,9 +460,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
         function isInRange(angle, min, max) {
             return min < max
-                    ? angle > min && angle <= max
+                    ? angle > min && angle < max
                     // min > max: the range wraps around -180 / 180 degrees
-                    : angle > min || angle <= max;
+                    : angle > min || angle < max;
         }
 
         if (!t1Inside) {
