@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 23 04:48:05 2019 +0200
+ * Date: Sun Jun 23 10:27:31 2019 +0200
  *
  ***
  *
@@ -7705,8 +7705,8 @@ var CurveLocation = Base.extend({
 
 		function isInRange(angle, min, max) {
 			return min < max
-					? angle > min && angle <= max
-					: angle > min || angle <= max;
+					? angle > min && angle < max
+					: angle > min || angle < max;
 		}
 
 		if (!t1Inside) {
@@ -7996,7 +7996,7 @@ var PathItem = Item.extend({
 
 	getCrossings: function(path) {
 		return this.getIntersections(path, function(inter) {
-			return inter.hasOverlap() || inter.isCrossing();
+			return inter.isCrossing();
 		});
 	},
 
@@ -10090,6 +10090,10 @@ PathItem.inject(new function() {
 		return result;
 	}
 
+	function filterIntersection(inter) {
+		return inter.hasOverlap() || inter.isCrossing();
+	}
+
 	function traceBoolean(path1, path2, operation, options) {
 		if (options && (options.trace == false || options.stroke) &&
 				/^(subtract|intersect)$/.test(operation))
@@ -10101,8 +10105,8 @@ PathItem.inject(new function() {
 		if (_path2 && (operator.subtract || operator.exclude)
 				^ (_path2.isClockwise() ^ _path1.isClockwise()))
 			_path2.reverse();
-		var crossings = divideLocations(
-				CurveLocation.expand(_path1.getCrossings(_path2))),
+		var crossings = divideLocations(CurveLocation.expand(
+				_path1.getIntersections(_path2, filterIntersection))),
 			paths1 = getPaths(_path1),
 			paths2 = _path2 && getPaths(_path2),
 			segments = [],
@@ -10150,7 +10154,7 @@ PathItem.inject(new function() {
 	function splitBoolean(path1, path2, operation) {
 		var _path1 = preparePath(path1),
 			_path2 = preparePath(path2),
-			crossings = _path1.getCrossings(_path2),
+			crossings = _path1.getIntersections(_path2, filterIntersection),
 			subtract = operation === 'subtract',
 			divide = operation === 'divide',
 			added = {},
