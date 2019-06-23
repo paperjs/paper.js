@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 23 04:19:20 2019 +0200
+ * Date: Sun Jun 23 04:48:05 2019 +0200
  *
  ***
  *
@@ -10058,22 +10058,21 @@ PathItem.inject(new function() {
 			.clone(false)
 			.reduce({ simplify: true })
 			.transform(null, true, true);
-		if (resolve && res.hasFill()) {
+		if (resolve) {
 			var paths = getPaths(res);
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
-				if (!path._closed) {
+				if (!path._closed && !path.isEmpty()) {
 					path.closePath(1e-12);
 					path.getFirstSegment().setHandleIn(0, 0);
 					path.getLastSegment().setHandleOut(0, 0);
 				}
 			}
-		}
-		return resolve
-			? res
+			res = res
 				.resolveCrossings()
-				.reorient(res.getFillRule() === 'nonzero', true)
-			: res;
+				.reorient(res.getFillRule() === 'nonzero', true);
+		}
+		return res;
 	}
 
 	function createResult(paths, simplify, path1, path2, options) {
@@ -10398,7 +10397,7 @@ PathItem.inject(new function() {
 						onPath = true;
 					}
 				}
-				quality = 0;
+				quality /= 4;
 			}
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
