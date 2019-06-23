@@ -593,9 +593,7 @@ PathItem.inject(new function() {
                         onPath = true;
                     }
                 }
-                // TODO: Determine how to handle quality when curve is crossed
-                // at starting point. Do we always need to set to 0?
-                quality = 0;
+                quality /= 4;
             }
             vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
