@@ -61,12 +61,12 @@ PathItem.inject(new function() {
             .clone(false)
             .reduce({ simplify: true })
             .transform(null, true, true);
-        // For correct results, close open filled paths with straight lines:
-        if (resolve && res.hasFill()) {
+        if (resolve) {
+            // For correct results, close open paths with straight lines:
             var paths = getPaths(res);
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
-                if (!path._closed) {
+                if (!path._closed && !path.isEmpty()) {
                     // Close with epsilon tolerance, to avoid tiny straight
                     // that would cause issues with intersection detection.
                     path.closePath(/*#=*/Numerical.EPSILON);
@@ -74,12 +74,11 @@ PathItem.inject(new function() {
                     path.getLastSegment().setHandleOut(0, 0);
                 }
             }
-        }
-        return resolve
-            ? res
+            res = res
                 .resolveCrossings()
-                .reorient(res.getFillRule() === 'nonzero', true)
-            : res;
+                .reorient(res.getFillRule() === 'nonzero', true);
+        }
+        return res;
     }
 
     function createResult(paths, simplify, path1, path2, options) {
