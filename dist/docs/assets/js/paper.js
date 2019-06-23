@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 23 03:24:13 2019 +0200
+ * Date: Sun Jun 23 04:19:20 2019 +0200
  *
  ***
  *
@@ -10508,7 +10508,7 @@ PathItem.inject(new function() {
 		} while (segment && !segment._intersection && segment !== start);
 		var offsets = [0.5, 0.25, 0.75],
 			winding = { winding: 0, quality: -1 },
-			tMin = 1e-8,
+			tMin = 1e-3,
 			tMax = 1 - tMin;
 		for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
 			var length = totalLength * offsets[i];
