@@ -424,9 +424,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         //   both values point to the same curve, and the curve-time is to be
         //   handled accordingly further down.
         var c2 = this.getCurve(),
-            c1 = t1 < tMin ? c2.getPrevious() : c2,
+            c1 = c2 && t1 < tMin ? c2.getPrevious() : c2,
             c4 = inter.getCurve(),
-            c3 = t2 < tMin ? c4.getPrevious() : c4;
+            c3 = c4 && t2 < tMin ? c4.getPrevious() : c4;
         // If t1 / t2 are at the end, then step to the next curve.
         if (t1 > tMax)
             c2 = c2.getNext();

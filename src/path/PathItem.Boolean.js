@@ -46,6 +46,10 @@ PathItem.inject(new function() {
             exclude:   { '1': true, '-1': true }
         };
 
+    function getPaths(path) {
+        return path._children || [path];
+    }
+
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
@@ -53,12 +57,29 @@ PathItem.inject(new function() {
      * make sure all paths have correct winding direction.
      */
     function preparePath(path, resolve) {
-        var res = path.clone(false).reduce({ simplify: true })
-                .transform(null, true, true);
+        var res = path
+            .clone(false)
+            .reduce({ simplify: true })
+            .transform(null, true, true);
+        // For correct results, close open filled paths with straight lines:
+        if (resolve && res.hasFill()) {
+            var paths = getPaths(res);
+            for (var i = 0, l = paths.length; i < l; i++) {
+                var path = paths[i];
+                if (!path._closed) {
+                    // Close with epsilon tolerance, to avoid tiny straight
+                    // that would cause issues with intersection detection.
+                    path.closePath(/*#=*/Numerical.EPSILON);
+                    path.getFirstSegment().setHandleIn(0, 0);
+                    path.getLastSegment().setHandleOut(0, 0);
+                }
+            }
+        }
         return resolve
-                ? res.resolveCrossings().reorient(
-                    res.getFillRule() === 'nonzero', true)
-                : res;
+            ? res
+                .resolveCrossings()
+                .reorient(res.getFillRule() === 'nonzero', true)
+            : res;
     }
 
     function createResult(paths, simplify, path1, path2, options) {
@@ -103,8 +124,8 @@ PathItem.inject(new function() {
         // intersection, path2 is null and getIntersections() handles it.
         var crossings = divideLocations(
                 CurveLocation.expand(_path1.getCrossings(_path2))),
-            paths1 = _path1._children || [_path1],
-            paths2 = _path2 && (_path2._children || [_path2]),
+            paths1 = getPaths(_path1),
+            paths2 = _path2 && getPaths(_path2),
             segments = [],
             curves = [],
             paths;
