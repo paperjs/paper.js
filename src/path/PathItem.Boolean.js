@@ -751,7 +751,8 @@ PathItem.inject(new function() {
         // the best quality.
         var offsets = [0.5, 0.25, 0.75],
             winding = { winding: 0, quality: -1 },
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            // Don't go too close to segments, to avoid special winding cases:
+            tMin = 1e-3,
             tMax = 1 - tMin;
         for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
             var length = totalLength * offsets[i];

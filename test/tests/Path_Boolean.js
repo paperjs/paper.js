@@ -1230,3 +1230,25 @@ test('#1647', function() {
     var result = 'M57.83,48.25l-6.78143,11.75l-2.88143,0l7.50286,-13c0.88236,-1.55771 2.53981,-2.51466 4.33,-2.5v2.5c-0.89493,-0.00177 -1.72254,0.47497 -2.17,1.25z';
     compareBoolean(path1.intersect(path2), result);
 });
+
+test('#1619', function() {
+    var path1 = new Path.Rectangle({
+        from: [200, 600],
+        to: [400, 300]
+    });
+
+    var path2 = new CompoundPath({
+        children: [
+            new Path({
+                segments: [[420,320],[380,580],[220,580],[220,320]],
+                closed: true
+            }),
+            new Path({
+                segments: [[313.36486,413.71682],[243.351,483.70296],[313.33714,553.71682],[383.351,483.73068]],
+                closed: true
+            })
+        ]
+    });
+    var result = 'M380,580h-160v-260l180,0v130zM313.36486,413.71682l-70.01386,69.98614l69.98614,70.01386l70.01386,-69.98614z';
+    compareBoolean(path1.intersect(path2), result);
+});
