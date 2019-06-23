@@ -380,3 +380,23 @@ test('#1262', function() {
         { point: { x: 567.05562, y: 634.62043 }, time: 1 }
     ]);
 });
+
+test('#1409', function() {
+    var path1 = new Path({
+        segments: [[20, 20], [20, 80], [80, 80], [80, 20]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[80, 20], [80, 80], [140, 80], [140, 20]],
+        closed: true
+    });
+    testIntersections(path1.getCrossings(path2), []);
+
+    var rect1  = new Path.Rectangle(new Point(100, 100), new Size(100, 100));
+    var rect2 = rect1.clone();
+    testIntersections(rect1.getCrossings(rect2), []);
+
+    var circ1 = new Path.Circle(new Point(300,300), 40);
+    var circ2 = circ1.clone();
+    testIntersections(circ1.getCrossings(circ2), []);
+});

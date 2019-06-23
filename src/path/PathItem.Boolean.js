@@ -97,6 +97,17 @@ PathItem.inject(new function() {
         return result;
     }
 
+    function filterIntersection(inter) {
+        // TODO: Change isCrossing() to also handle overlaps (hasOverlap())
+        // that are actually involved in a crossing! For this we need proper
+        // overlap range detection / merging first... But as we call
+        // #resolveCrossings() first in boolean operations, removing all
+        // self-touching areas in paths, this works for the known use cases.
+        // The ideal implementation would deal with it in a way outlined in:
+        // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
+        return inter.hasOverlap() || inter.isCrossing();
+    }
+
     function traceBoolean(path1, path2, operation, options) {
         // Only support subtract and intersect operations when computing stroke
         // based boolean operations (options.split = true).
@@ -121,8 +132,8 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(
-                CurveLocation.expand(_path1.getCrossings(_path2))),
+        var crossings = divideLocations(CurveLocation.expand(
+                _path1.getIntersections(_path2, filterIntersection))),
             paths1 = getPaths(_path1),
             paths2 = _path2 && getPaths(_path2),
             segments = [],
@@ -182,7 +193,7 @@ PathItem.inject(new function() {
     function splitBoolean(path1, path2, operation) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
-            crossings = _path1.getCrossings(_path2),
+            crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
             added = {},

@@ -351,14 +351,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
     getCrossings: function(path) {
         return this.getIntersections(path, function(inter) {
-            // TODO: Only return overlaps that are actually crossings! For this
-            // we need proper overlap range detection / merging first...
-            // But as we call #resolveCrossings() first in boolean operations,
-            // removing all self-touching areas in paths, this currently works
-            // as it should in the known use cases.
-            // The ideal implementation would deal with it in a way outlined in:
-            // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-            return inter.hasOverlap() || inter.isCrossing();
+            return inter.isCrossing();
         });
     },
 
