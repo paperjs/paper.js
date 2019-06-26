@@ -411,7 +411,7 @@ var Style = Base.extend(new function() {
      *
      * @name Style#strokeColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the stroke color of a path:
@@ -568,7 +568,7 @@ var Style = Base.extend(new function() {
      *
      * @name Style#fillColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the fill color of a path to red:
@@ -599,7 +599,7 @@ var Style = Base.extend(new function() {
      *
      * @property
      * @name Style#shadowColor
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Creating a circle with a black shadow:
@@ -643,7 +643,7 @@ var Style = Base.extend(new function() {
      *
      * @name Style#selectedColor
      * @property
-     * @type Color
+     * @type ?Color
      */
 
     /**

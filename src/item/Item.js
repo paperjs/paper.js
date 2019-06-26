@@ -3081,7 +3081,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#strokeColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the stroke color of a path:
@@ -3243,7 +3243,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#fillColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the fill color of a path to red:
@@ -3277,7 +3277,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @property
      * @name Item#shadowColor
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Creating a circle with a black shadow:
@@ -3323,7 +3323,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#selectedColor
      * @property
-     * @type Color
+     * @type ?Color
      */
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';
@@ -3769,7 +3769,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onFrame
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onFrame
      *
      * @example {@paperscript}
@@ -3796,7 +3796,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseDown
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseDown
      *
      * @example {@paperscript}
@@ -3846,7 +3846,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseDrag
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseDrag
      *
      * @example {@paperscript height=240}
@@ -3875,7 +3875,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseUp
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseUp
      *
      * @example {@paperscript}
@@ -3905,7 +3905,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onClick
      *
      * @example {@paperscript}
@@ -3955,7 +3955,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onDoubleClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onDoubleClick
      *
      * @example {@paperscript}
@@ -4005,7 +4005,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseMove
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseMove
      *
      * @example {@paperscript}
@@ -4036,7 +4036,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseEnter
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseEnter
      *
      * @example {@paperscript}
@@ -4098,7 +4098,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseLeave
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseLeave
      *
      * @example {@paperscript}

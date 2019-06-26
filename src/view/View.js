@@ -746,7 +746,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onFrame
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onFrame
      *
      * @example {@paperscript}
@@ -768,7 +768,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onResize
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example
      * // Repositioning items when a view is resized:
@@ -793,7 +793,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseDown
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onMouseDown
      */
 
@@ -807,7 +807,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseDrag
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onMouseDrag
      */
 
@@ -818,7 +818,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseUp
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onMouseUp
      */
 
@@ -832,7 +832,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onClick
      */
 
@@ -846,7 +846,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onDoubleClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onDoubleClick
      */
 
@@ -860,7 +860,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseMove
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onMouseMove
      */
 
@@ -875,7 +875,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseEnter
      * @property
-     * @type Function
+     * @type ?Function
      * @see Item#onMouseEnter
      */
 
@@ -889,7 +889,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#onMouseLeave
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseLeave
      */
 
