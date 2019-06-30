@@ -2323,7 +2323,7 @@ declare module paper {
          * 
          * @return Boolean
          */
-        isEmpty(recursively?: boolean): void
+        isEmpty(recursively?: boolean): boolean
 
         /** 
          * Checks whether the item has a fill.
