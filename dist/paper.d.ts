@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Jun 23 10:30:56 2019 +0200
+ * Date: Mon Jul 1 11:16:07 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2327,10 +2327,8 @@ declare module paper {
          * 
          * @param recursively - whether an item with children should be
          * considered empty if all its descendants are empty
-         * 
-         * @return Boolean
          */
-        isEmpty(recursively?: boolean): void
+        isEmpty(recursively?: boolean): boolean
 
         /** 
          * Checks whether the item has a fill.
@@ -3440,7 +3438,7 @@ declare module paper {
         /** 
          * Retrieves a PaperScope object with the given scope id.
          */
-        static get(id: any): void
+        static get(id: any): PaperScope
 
     }
 
