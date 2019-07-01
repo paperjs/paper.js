@@ -311,6 +311,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
              * Retrieves a PaperScope object with the given scope id.
              *
              * @param id
+             * @return {PaperScope}
              */
             get: function(id) {
                 return this._scopes[id] || null;

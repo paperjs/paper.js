@@ -2854,7 +2854,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @param {Boolean} [recursively=false] whether an item with children should be
      * considered empty if all its descendants are empty
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function(recursively) {
         var children = this._children;
