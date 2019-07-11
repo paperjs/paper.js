@@ -59,3 +59,73 @@ test('view.update(force) (#1913)', function() {
     equals(view.update(), false, 'view.update() after view.update(true)');
     path.remove();
 });
+
+test('view.fitBounds(rectangle[, fit]) (#1688)', function() {
+    // The view is 100x100. Start each fit from a view that is zoomed and
+    // scrolled away, as fitting doesn't depend on the previous state.
+    function fit(rectangle, mode) {
+        view.zoom = 3;
+        view.center = [500, 500];
+        view.fitBounds(rectangle, mode);
+    }
+
+    // A rectangle wider than the view, centered at 200, 100: To contain it, the
+    // view needs to show all 400 of its width, to cover it its 200 of height,
+    // and to be filled with it, both.
+    var wide = new Rectangle(0, 0, 400, 200);
+    fit(wide);
+    equals(view.zoom, 0.25, 'wide: view.zoom');
+    equals(view.center, new Point(200, 100), 'wide: view.center');
+    equals(view.bounds, new Rectangle(0, -100, 400, 400), 'wide: view.bounds');
+    fit(wide, 'cover');
+    equals(view.zoom, 0.5, 'wide, cover: view.zoom');
+    equals(view.bounds, new Rectangle(100, 0, 200, 200),
+            'wide, cover: view.bounds');
+    fit(wide, 'fill');
+    equals(view.scaling, new Point(0.25, 0.5), 'wide, fill: view.scaling');
+    equals(view.bounds, wide, 'wide, fill: view.bounds');
+    // Containing it again undoes the stretching of the view's axes:
+    view.fitBounds(wide);
+    equals(view.scaling, new Point(0.25, 0.25), 'wide after fill: view.scaling');
+
+    // A rectangle taller than the view, centered at 35, 120: To contain it,
+    // the view needs to show all 200 of its height, to cover it its 50 of
+    // width.
+    var tall = new Rectangle(10, 20, 50, 200);
+    fit(tall);
+    equals(view.zoom, 0.5, 'tall: view.zoom');
+    equals(view.bounds, new Rectangle(-65, 20, 200, 200), 'tall: view.bounds');
+    fit(tall, 'cover');
+    equals(view.zoom, 2, 'tall, cover: view.zoom');
+    equals(view.bounds, new Rectangle(10, 95, 50, 50),
+            'tall, cover: view.bounds');
+    view.zoom = 1;
+    view.fitBounds(10, 20, 50, 200);
+    equals(view.bounds, new Rectangle(-65, 20, 200, 200),
+            'tall, passed as numbers: view.bounds');
+    view.fitBounds(10, 20, 50, 200, 'cover');
+    equals(view.bounds, new Rectangle(10, 95, 50, 50),
+            'tall, cover, passed as numbers: view.bounds');
+
+    // A mirrored view stays mirrored:
+    view.matrix = new Matrix(1, 0, 0, -1, 0, 100);
+    view.fitBounds(wide);
+    equals(view.scaling, new Point(0.25, -0.25), 'mirrored: view.scaling');
+    equals(view.bounds, new Rectangle(0, -100, 400, 400),
+            'mirrored: view.bounds');
+    view.fitBounds(wide, 'fill');
+    equals(view.scaling, new Point(0.25, -0.5), 'mirrored, fill: view.scaling');
+    equals(view.bounds, wide, 'mirrored, fill: view.bounds');
+
+    // In a view rotated by 45°, the wide rectangle spans (400 + 200) / √2 in
+    // both directions of the view, so the view's sides need to show that
+    // much, and its bounds are √2 times as large: 600 in both directions.
+    view.matrix = new Matrix();
+    view.rotation = 45;
+    view.fitBounds(wide);
+    equals(view.rotation, 45, 'rotated: view.rotation');
+    equals(view.zoom, 100 / (600 / Math.SQRT2), 'rotated: view.zoom');
+    equals(view.bounds, new Rectangle(-100, -200, 600, 600),
+            'rotated: view.bounds');
+    view.matrix = new Matrix();
+});
