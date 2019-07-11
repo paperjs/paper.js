@@ -1059,6 +1059,8 @@ view.skew(pointLike, pointLike);
 view.skew(0, 0);
 view.skew(0, 0, pointLike);
 view.transform(matrix);
+view.fitBounds(rectangleLike);
+view.fitBounds(rectangleLike, 'cover');
 view.projectToView(pointLike);
 view.viewToProject(pointLike);
 view.getEventPoint(event);
