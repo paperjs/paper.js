@@ -680,6 +680,38 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * Transform the view so that its {@link #bounds} fit within the
+     * specified rectangle.
+     *
+     * @param {Rectangle} rectangle
+     * @param {Boolean} [fill=false]
+     *
+     * @example {@paperscript height=100}
+     * // Fitting the view to the bounding rectangle of an item's bounding:
+     *
+     * // Create a circle at the top left corner of the view.
+     * var item = new Path.Circle({
+     *    center: [0, 0],
+     *    radius: 50,
+     *    fillColor: 'orange'
+     * });
+     *
+     * // Make view fit its bounds.
+     * view.fitBounds(item.bounds);
+     */
+    fitBounds: function(rectangle, fill) {
+        rectangle = Rectangle.read(arguments);
+        var bounds = this.getBounds();
+        var horizontalRatio = bounds.width / rectangle.width;
+        var verticalRatio = bounds.height / rectangle.height;
+        var scale = fill
+            ? Math.max(horizontalRatio, verticalRatio)
+            : Math.min(horizontalRatio, verticalRatio);
+        this.translate(bounds.center.subtract(rectangle.center));
+        this.scale(scale);
+    },
+
+    /**
      * Scrolls the view by the given vector.
      *
      * @param {Point} point
