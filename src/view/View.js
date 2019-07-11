@@ -696,6 +696,61 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
+     * Transform the view so that the specified rectangle is centered in it
+     * and fitted to it as described by `fit`, keeping the view's rotation and
+     * mirroring.
+     *
+     * @param {Rectangle} rectangle the rectangle to fit, in project
+     * coordinates
+     * @param {String} [fit='contain'] how to fit the rectangle, as in CSS's
+     * `object-fit`: `'contain'` shows all of it, `'cover'` fills the whole
+     * view with it, cropping the parts that don't fit, and `'fill'` stretches
+     * it to the view, changing the view's aspect ratio
+     *
+     * @example {@paperscript height=100}
+     * // Fitting the view to the bounds of an item:
+     *
+     * // Create a circle shaped path around the top left corner of the view:
+     * var path = new Path.Circle({
+     *     center: [0, 0],
+     *     radius: 50,
+     *     fillColor: 'orange'
+     * });
+     *
+     * // Make the view show the whole circle:
+     * view.fitBounds(path.bounds);
+     */
+    fitBounds: function(rectangle, fit) {
+        rectangle = Rectangle.read(arguments);
+        fit = Base.read(arguments);
+        // Compare the rectangle with the view in view coordinates, so that
+        // rotated views show all of it as well:
+        var matrix = this._matrix,
+            size = this._viewSize,
+            bounds = matrix._transformBounds(rectangle),
+            hor = size.width / bounds.width,
+            ver = size.height / bounds.height,
+            scale;
+        if (fit === 'fill') {
+            scale = new Point(hor, ver);
+        } else {
+            // Scale both axes of the view by the same amount, so that the
+            // rectangle keeps its aspect ratio, also if the view was stretched
+            // before:
+            var scaleX = new Point(matrix._a, matrix._c).getLength(),
+                scaleY = new Point(matrix._b, matrix._d).getLength(),
+                amount = fit === 'cover'
+                    ? Math.max(hor * scaleX, ver * scaleY)
+                    : Math.min(hor * scaleX, ver * scaleY);
+            scale = new Point(amount / scaleX, amount / scaleY);
+        }
+        this.setCenter(rectangle.getCenter());
+        // Scale around the view's center in view coordinates, so that 'fill'
+        // stretches along the view's own axes:
+        matrix.prepend(new Matrix().scale(scale, size.divide(2)));
+    },
+
+    /**
      * Scrolls the view by the given vector.
      *
      * @param {Point} point

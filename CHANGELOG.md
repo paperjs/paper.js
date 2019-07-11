@@ -6,6 +6,9 @@
 
 - Add a `force` parameter to `View#update()`, to redraw the view even when
   nothing changed, e.g. after a web font has loaded (#1913).
+- Add `View#fitBounds(rectangle[, fit])`, to fit a rectangle into the view.
+  `fit` takes the values of CSS's `object-fit`: `'contain'`, `'cover'` and
+  `'fill'` (#1688).
 
 ### Changed
 
