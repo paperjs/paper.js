@@ -1,4 +1,4 @@
-# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![Build Status](https://travis-ci.org/paperjs/paper.js.svg?branch=develop)](https://travis-ci.org/paperjs/paper.js) [![NPM](https://img.shields.io/npm/v/paper.svg)](https://www.npmjs.com/package/paper) ![Bower](https://img.shields.io/bower/v/paper.svg)
+# Paper.js - The Swiss Army Knife of Vector Graphics Scripting [![Build Status](https://travis-ci.org/paperjs/paper.js.svg?branch=develop)](https://travis-ci.org/paperjs/paper.js) [![NPM](https://img.shields.io/npm/v/paper.svg)](https://www.npmjs.com/package/paper)
 
 If you want to work with Paper.js, simply download the latest "stable" version
 from [http://paperjs.org/download/](http://paperjs.org/download/)
@@ -18,24 +18,22 @@ from [http://paperjs.org/download/](http://paperjs.org/download/)
 
 The recommended way to install and maintain Paper.js as a dependency in your
 project is through the [Node.js Package Manager (NPM)](https://www.npmjs.com/)
-for browsers, Node.js or Electron, as well as through Bower for browsers.
+for browsers, Node.js or Electron.
 
-If NPM or Bower is already installed, simply type one of these
-commands in your project folder:
+If NPM is already installed, simply type one of these commands in your project
+folder:
 
 ```sh
 npm install paper
-# Or:
-bower install paper
 ```
 
 Upon execution, you will find a `paper` folder inside the project's
-`node_modules` / `bower_components` folder.
+`node_modules` folder.
 
 For more information on how to install Node.js and NPM, read the chapter
 [Installing Node.js and NPM](#installing-nodejs-and-npm).
 
-### Which Version to Use?
+### Which Version to Use
 
 The various distributions come with two different pre-build versions of
 Paper.js, in minified and normal variants:
@@ -69,7 +67,7 @@ rendering to the Canvas on Node.js, as described in the next paragraph.
 For Linux, see <https://nodejs.org/download/> to locate 32-bit and 64-bit Node.js
 binaries as well as sources, or use NVM, as described in the paragraph above.
 
-### Installing Paper.js for Node.js
+### Installing Paper.js Using NPM
 
 Paper.js comes in three different versions on NPM: `paper`, `paper-jsdom` and
 `paper-jsdom-canvas`. Depending on your use case, you need to required a
@@ -86,10 +84,17 @@ different one:
 In order to install `paper-jsdom-canvas`, you need the [Cairo Graphics
 library](https://cairographics.org/) installed in your system:
 
-##### Installing Cairo and Pango on macOS:
+### Installing Native Dependencies
 
-The easiest way to install Cairo is through [Homebrew](https://brew.sh/), by
-issuing the command:
+Paper.js relies on [Node-Canvas](https://github.com/Automattic/node-canvas) for
+rendering, which in turn relies on the native libraries
+[Cairo](https://cairographics.org/) and [Pango](https://www.pango.org/).
+
+#### Installing Native Dependencies on macOS
+
+Paper.js relies on Node-Canvas for rendering, which in turn relies on Cairo and
+Pango. The easiest way to install Cairo is through
+[Homebrew](https://brew.sh/), by issuing the command:
 
     brew install cairo pango
 
@@ -113,7 +118,7 @@ After adding this line, your commands should work in the expected way:
     npm install paper
     npm update
 
-##### Installing Cairo, Pango and all other dependencies on Debian/Ubuntu Linux:
+#### Installing Native Dependencies on Debian/Ubuntu Linux
 
     sudo apt-get install pkg-config libcairo2-dev libpango1.0-dev libssl-dev libjpeg62-dev libgif-dev
 
@@ -122,24 +127,23 @@ build from c++ sources:
 
     sudo apt-get install build-essential
 
-##### After Cairo has been installed:
+#### Installing Native Dependencies for Electron
+
+In order to build Node-Canvas for use of `paper-jsdom-canvas` in Electron, which
+is likely to use a different version of V8 than the Node binary installed in
+your system, you need to manually specify the location of Electron’s headers.
+Follow these steps to do so:
+
+[Electron — Using Native Node
+Modules](https://electron.atom.io/docs/tutorial/using-native-node-modules/)
+
+#### After Native Dependencies have been installed
 
 You should now be able to install the Paper.js module with jsdom and Canvas
 rendering from NPM:
 
     npm install paper-jsdom-canvas
 
-### Installing Paper.js with Node-Canvas for Electron
-
-[Node-Canvas](https://github.com/Automattic/node-canvas) is a native dependency.
-In order to build it for use of `paper-jsdom-canvas` in Electron, which is
-likely to use a different version of V8 than the Node binary installed in your
-system, you need to manually specify the location of Electron’s headers. Follow
-these steps to do so:
-
-[Electron — Using Native Node
-Modules](https://electron.atom.io/docs/tutorial/using-native-node-modules/)
- 
 ## Development
 
 The main Paper.js source tree is hosted on
@@ -164,8 +168,8 @@ run:
 ### Setting Up For Building
 
 As of 2016, Paper.js uses [Gulp.js](https://gulpjs.com/) for building, and has a
-couple of dependencies as Bower and NPM modules. Read the chapter [Installing
-Node.js, NPM and Bower](#installing-nodejs-npm-and-bower) if you still need to
+couple of dependencies as NPM modules. Read the chapter [Installing
+Node.js and NPM](#installing-nodejs-and-npm) if you still need to
 install these.
 
 In order to be able to build Paper.js, after checking out the repository, paper
