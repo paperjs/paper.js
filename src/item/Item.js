@@ -1818,7 +1818,7 @@ new function() { // Injection scope for various item event handlers
         // See CompoundPath#_contains() for the reason for !!
         var matrix = this._matrix;
         return (
-            matrix.isInvertible() && 
+            matrix.isInvertible() &&
             !!this._contains(matrix._inverseTransform(Point.read(arguments)))
         );
     },
@@ -1886,7 +1886,7 @@ new function() { // Injection scope for hit-test functions shared with project
         var point = Point.read(arguments),
             options = HitResult.getOptions(arguments),
             all = [];
-        this._hitTest(point, Base.set({ all: all }, options));
+        this._hitTest(point, new Base({ all: all }, options));
         return all;
     }
 
