@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 12 11:57:33 2019 +0200
+ * Date: Fri Jul 12 12:06:26 2019 +0200
  *
  ***
  *
@@ -5583,7 +5583,10 @@ var SymbolItem = Item.extend({
 	},
 
 	_hitTestSelf: function(point, options, viewMatrix) {
+		var all = options.all;
+		delete options.all;
 		var res = this._definition._item._hitTest(point, options, viewMatrix);
+		options.all = all;
 		if (res)
 			res.item = this;
 		return res;
