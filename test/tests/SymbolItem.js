@@ -143,3 +143,18 @@ test('SymbolItem#bounds with #applyMatrix = false', function() {
     equals(function() { return placed.bounds; },
         { x: 150, y: 150, width: 100, height: 100 });
 });
+
+test('SymbolItem#hitTestAll', function() {
+    var symbol = new SymbolDefinition(
+        new Path.Circle({
+            center: [0, 0],
+            radius: 10,
+            fillColor: 'orange'
+        })
+    );
+    var symbolItem = symbol.place([50, 50]);
+
+    var hitTestAll = symbolItem.hitTestAll([50, 50]);
+    equals(hitTestAll.length, 1);
+    equals(hitTestAll[0].item.id, symbolItem.id);
+});

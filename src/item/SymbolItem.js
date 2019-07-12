@@ -121,7 +121,16 @@ var SymbolItem = Item.extend(/** @lends SymbolItem# */{
     },
 
     _hitTestSelf: function(point, options, viewMatrix) {
+        // We need to call definition item hit test with `options.all`
+        // disabled, otherwise it would populate the array with its own
+        // matches. What we want instead is only returning one match per symbol
+        // item (#1680). So we store original matches array...
+        var all = options.all;
+        // ...we temporarily disable `options.all`...
+        delete options.all;
         var res = this._definition._item._hitTest(point, options, viewMatrix);
+        // ...then after hit testing, we restore the original matches array.
+        options.all = all;
         // TODO: When the symbol's definition is a path, should hitResult
         // contain information like HitResult#curve?
         if (res)
