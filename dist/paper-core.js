@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 12 12:06:26 2019 +0200
+ * Date: Fri Jul 12 12:12:07 2019 +0200
  *
  ***
  *
@@ -3760,7 +3760,7 @@ new function() {
 		var point = Point.read(arguments),
 			options = HitResult.getOptions(arguments),
 			all = [];
-		this._hitTest(point, Base.set({ all: all }, options));
+		this._hitTest(point, new Base({ all: all }, options));
 		return all;
 	}
 
@@ -5583,10 +5583,8 @@ var SymbolItem = Item.extend({
 	},
 
 	_hitTestSelf: function(point, options, viewMatrix) {
-		var all = options.all;
-		delete options.all;
-		var res = this._definition._item._hitTest(point, options, viewMatrix);
-		options.all = all;
+		var opts = options.extend({ all: false });
+		var res = this._definition._item._hitTest(point, opts, viewMatrix);
 		if (res)
 			res.item = this;
 		return res;
@@ -5671,7 +5669,7 @@ var HitResult = Base.extend({
 	statics: {
 		getOptions: function(args) {
 			var options = args && Base.read(args);
-			return Base.set({
+			return new Base({
 				type: null,
 				tolerance: paper.settings.hitTolerance,
 				fill: !options,
