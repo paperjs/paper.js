@@ -45,7 +45,7 @@ with (paper) {
     var svg = project.exportSVG({ asString: true });
     console.log(svg);
 
-    fs.writeFile(path.resolve('./out.svg'),svg, function (err) {
+    fs.writeFile(path.resolve('./out.svg'), svg, function (err) {
         if (err) throw err;
         console.log('Saved!');
     });

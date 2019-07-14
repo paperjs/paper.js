@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -255,4 +255,11 @@ test('Path#importJSON()', function() {
     equals(function() { return path.fillColor; }, { red: 1, green: 0, blue: 0 });
     equals(function() { return layer.firstChild === path; }, true);
     equals(function() { return path.parent === layer; }, true);
+});
+
+test('Item#importJSON() does not override Item#insert()', function() {
+    var path = new Path();
+    equals(typeof path.insert, 'function');
+    path.importJSON(path.exportJSON());
+    equals(typeof path.insert, 'function');
 });

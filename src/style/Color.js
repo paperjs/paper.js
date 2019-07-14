@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -80,7 +80,7 @@ var Color = Base.extend(new function() {
         } else if (match = string.match(/^(rgb|hsl)a?\((.*)\)$/)) {
             // RGB / RGBA or HSL / HSLA
             type = match[1];
-            components = match[2].split(/[,\s]+/g);
+            components = match[2].trim().split(/[,\s]+/g);
             var isHSL = type === 'hsl';
             for (var i = 0, l = Math.min(components.length, 4); i < l; i++) {
                 var component = components[i];
@@ -691,6 +691,8 @@ var Color = Base.extend(new function() {
          * constructors also work for calls of `set()`.
          *
          * @function
+         * @param {...*} values
+         * @return {Color}
          */
         set: '#initialize',
 
@@ -709,8 +711,13 @@ var Color = Base.extend(new function() {
          */
         _changed: function() {
             this._canvasStyle = null;
-            if (this._owner)
-                this._owner._changed(/*#=*/Change.STYLE);
+            if (this._owner) {
+                if (this._setter) {
+                    this._owner[this._setter](this);
+                } else {
+                    this._owner._changed(/*#=*/Change.STYLE);
+                }
+            }
         },
 
         /**
@@ -729,7 +736,7 @@ var Color = Base.extend(new function() {
         },
 
         /**
-         * Converts the color another type.
+         * Converts the color to another type.
          *
          * @param {String} type the color type to convert to. Possible values:
          * {@values 'rgb', 'gray', 'hsb', 'hsl'}
@@ -1183,9 +1190,35 @@ var Color = Base.extend(new function() {
             // Export for backward compatibility code below.
             _types: types,
 
+            /**
+             * Returns a color object with random {@link #red}, {@link #green}
+             * and {@link #blue} values between `0` and `1`.
+             *
+             * @return {Color} the newly created color object
+             * @static
+             *
+             * @example {@paperscript}
+             * var circle = new Path.Circle(view.center, 50);
+             * // Set a random color as circle fill color.
+             * circle.fillColor = Color.random();
+             */
             random: function() {
                 var random = Math.random;
                 return new Color(random(), random(), random());
+            },
+
+            _setOwner: function(color, owner, setter) {
+                if (color) {
+                    // Clone color if owner changes:
+                    if (color._owner && owner && color._owner !== owner) {
+                        color = color.clone();
+                    }
+                    if (!color._owner ^ !owner) {
+                        color._owner = owner || null;
+                        color._setter = setter || null;
+                    }
+                }
+                return color;
             }
         }
     });

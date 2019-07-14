@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -231,7 +231,7 @@ var PathFitter = Base.extend({
             diff = pt.subtract(point),
             df = pt1.dot(pt1) + diff.dot(pt2);
         // u = u - f(u) / f'(u)
-        return Numerical.isZero(df) ? u : u - diff.dot(pt1) / df;
+        return Numerical.isMachineZero(df) ? u : u - diff.dot(pt1) / df;
     },
 
     // Evaluate a bezier curve at a particular parameter value

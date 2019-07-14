@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -38,11 +38,10 @@ if (typeof window === 'object') {
     } else {
         // Some native javascript classes have name collisions with Paper.js
         // classes. Store them to be able to use them later in tests.
-        NativeClasses = {
-            Event: Event,
-            MouseEvent: MouseEvent
+        this.nativeClasses = {
+            Event: window.Event,
+            MouseEvent: window.MouseEvent
         };
-
         include('options.js');
         // Load constants.js, required by the on-the-fly preprocessing:
         include('constants.js');

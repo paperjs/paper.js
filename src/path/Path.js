@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -75,7 +75,6 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Creates a new path item from SVG path-data and places it at the top of
      * the active layer.
      *
-     * @param
      * @name Path#initialize
      * @param {String} pathData the SVG path-data that describes the geometry
      * of this path
@@ -484,9 +483,11 @@ var Path = PathItem.extend(/** @lends Path# */{
      * Adds one or more segments to the end of the {@link #segments} array of
      * this path.
      *
-     * @param {Segment|Point} segment the segment or point to be added.
-     * @return {Segment} the added segment. This is not necessarily the same
-     * object, e.g. if the segment to be added already belongs to another path
+     * @param {...(Segment|Point|Number[])} segment the segment or point to be
+     * added.
+     * @return {Segment|Segment[]} the added segment(s). This is not necessarily
+     * the same object, e.g. if the segment to be added already belongs to
+     * another path.
      *
      * @example {@paperscript}
      * // Adding segments to a path using point objects:
@@ -1215,6 +1216,8 @@ var Path = PathItem.extend(/** @lends Path# */{
     /**
      * Reduces the path by removing curves that have a length of 0,
      * and unnecessary segments between two collinear flat curves.
+     *
+     * @return {Path} the reduced path
      */
     reduce: function(options) {
         var curves = this.getCurves(),
@@ -2172,7 +2175,12 @@ new function() { // Scope for drawing
     // performance.
 
     function drawHandles(ctx, segments, matrix, size) {
+        // Only draw if size is not null or negative.
+        if (size <= 0) return;
+
         var half = size / 2,
+            miniSize = size - 2,
+            miniHalf = half - 1,
             coords = new Array(6),
             pX, pY;
 
@@ -2202,12 +2210,12 @@ new function() { // Scope for drawing
                 drawHandle(4);
             // Draw a rectangle at segment.point:
             ctx.fillRect(pX - half, pY - half, size, size);
-            // If the point is not selected, draw a white square that is 1 px
-            // smaller on all sides:
-            if (!(selection & /*#=*/SegmentSelection.POINT)) {
+            // If the point is not selected, draw a white square that is 1px
+            // smaller on all sides, but only draw it if size is big enough.
+            if (miniSize > 0 && !(selection & /*#=*/SegmentSelection.POINT)) {
                 var fillStyle = ctx.fillStyle;
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(pX - half + 1, pY - half + 1, size - 2, size - 2);
+                ctx.fillRect(pX - miniHalf, pY - miniHalf, miniSize, miniSize);
                 ctx.fillStyle = fillStyle;
             }
         }
@@ -2461,9 +2469,10 @@ new function() { // PostScript-style drawing commands
                 // #2: arcTo(through, to)
                 through = to;
                 to = Point.read(arguments);
-            } else {
+            } else if (!from.equals(to)) {
                 // #3: arcTo(to, radius, rotation, clockwise, large)
-                // Drawing arcs in SVG style:
+                // Draw arc in SVG style, but only if `from` and `to` are not
+                // equal (#1613).
                 var radius = Size.read(arguments),
                     isZero = Numerical.isZero;
                 // If rx = 0 or ry = 0 then this arc is treated as a
@@ -2472,7 +2481,7 @@ new function() { // PostScript-style drawing commands
                 if (isZero(radius.width) || isZero(radius.height))
                     return this.lineTo(to);
                 // See for an explanation of the following calculations:
-                // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+                // https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
                 var rotation = Base.read(arguments),
                     clockwise = !!Base.read(arguments),
                     large = !!Base.read(arguments),
@@ -2559,47 +2568,49 @@ new function() { // PostScript-style drawing commands
                     extent += extent < 0 ? 360 : -360;
                 }
             }
-            var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-                ext = abs(extent),
-                // Calculate the amount of segments required to approximate over
-                // `extend` degrees (extend / 90), but prevent ceil() from
-                // rounding up small imprecisions by subtracting epsilon first.
-                count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
-                inc = extent / count,
-                half = inc * Math.PI / 360,
-                z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
-                segments = [];
-            for (var i = 0; i <= count; i++) {
-                // Explicitly use to point for last segment, since depending
-                // on values the calculation adds imprecision:
-                var pt = to,
-                    out = null;
-                if (i < count) {
-                    out = vector.rotate(90).multiply(z);
-                    if (matrix) {
-                        pt = matrix._transformPoint(vector);
-                        out = matrix._transformPoint(vector.add(out))
-                                .subtract(pt);
+            if (extent) {
+                var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                    ext = abs(extent),
+                    // Calculate amount of segments required to approximate over
+                    // `extend` degrees (extend / 90), but prevent ceil() from
+                    // rounding up small imprecisions by subtracting epsilon.
+                    count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+                    inc = extent / count,
+                    half = inc * Math.PI / 360,
+                    z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),
+                    segments = [];
+                for (var i = 0; i <= count; i++) {
+                    // Explicitly use to point for last segment, since depending
+                    // on values the calculation adds imprecision:
+                    var pt = to,
+                        out = null;
+                    if (i < count) {
+                        out = vector.rotate(90).multiply(z);
+                        if (matrix) {
+                            pt = matrix._transformPoint(vector);
+                            out = matrix._transformPoint(vector.add(out))
+                                    .subtract(pt);
+                        } else {
+                            pt = center.add(vector);
+                        }
+                    }
+                    if (!i) {
+                        // Modify startSegment
+                        current.setHandleOut(out);
                     } else {
-                        pt = center.add(vector);
+                        // Add new Segment
+                        var _in = vector.rotate(-90).multiply(z);
+                        if (matrix) {
+                            _in = matrix._transformPoint(vector.add(_in))
+                                    .subtract(pt);
+                        }
+                        segments.push(new Segment(pt, _in, out));
                     }
+                    vector = vector.rotate(inc);
                 }
-                if (!i) {
-                    // Modify startSegment
-                    current.setHandleOut(out);
-                } else {
-                    // Add new Segment
-                    var _in = vector.rotate(-90).multiply(z);
-                    if (matrix) {
-                        _in = matrix._transformPoint(vector.add(_in))
-                                .subtract(pt);
-                    }
-                    segments.push(new Segment(pt, _in, out));
-                }
-                vector = vector.rotate(inc);
+                // Add all segments at once at the end for higher performance
+                this._add(segments);
             }
-            // Add all segments at once at the end for higher performance
-            this._add(segments);
         },
 
         lineBy: function(/* to */) {
@@ -2837,8 +2848,9 @@ statics: {
             normal1 = curve1.getNormalAtTime(1).multiply(radius)
                 .transform(strokeMatrix),
             normal2 = curve2.getNormalAtTime(0).multiply(radius)
-                .transform(strokeMatrix);
-        if (normal1.getDirectedAngle(normal2) < 0) {
+                .transform(strokeMatrix),
+                angle = normal1.getDirectedAngle(normal2);
+        if (angle < 0 || angle >= 180) {
             normal1 = normal1.negate();
             normal2 = normal2.negate();
         }

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -394,4 +394,10 @@ test('Path#contains() with Path#interiorPoint: #854, #1064', function() {
     }
 });
 
-
+test('IPathtem#contains() with non-invertible matrices (#1651)', function() {
+    var path = new Path({
+        matrix: new Matrix(0, 0, 0, 0, 0, 0)
+    });
+    equals(path.contains(path.position), false,
+            'A path with a non-invertible matrix cannot contain its position');
+});

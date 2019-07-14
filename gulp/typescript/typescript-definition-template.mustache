@@ -1,0 +1,70 @@
+/*!
+ * Paper.js v{{version}} - The Swiss Army Knife of Vector Graphics Scripting.
+ * http://paperjs.org/
+ *
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
+ *
+ * Distributed under the MIT license. See LICENSE file for details.
+ *
+ * All rights reserved.
+ *
+ * Date: {{date}}
+ *
+ * This is an auto-generated type definition.
+ */
+
+declare module paper {
+    {{#paperInstance}}
+    {{#properties}}
+    {{#doc}}4{{/doc}}
+    let {{name}}{{type}}
+
+    {{/properties}}
+
+    {{#methods}}
+    {{#doc}}4{{/doc}}
+    function {{name}}({{params}}){{type}}
+
+    {{/methods}}
+    {{/paperInstance}}
+
+    {{#classes}}
+
+    {{#doc}}4{{/doc}}
+    class {{className}} {{#extends}}extends {{extends}}{{/extends}} {
+        {{#properties}}
+        {{#doc}}8{{/doc}}
+        {{static}}{{readOnly}}{{name}}{{type}}
+
+        {{/properties}}
+        {{#classesPointers}}
+        {{name}}: typeof {{name}}
+        {{/classesPointers}}
+
+        {{#methods}}
+        {{#doc}}8{{/doc}}
+        {{static}}{{name}}({{params}}){{type}}
+
+        {{/methods}}
+    }
+    {{#hasStaticConstructors}}
+    namespace {{className}} {
+        {{#staticConstructors}}
+
+        class {{name}} extends {{className}} {
+            {{#constructors}}
+            {{#doc}}12{{/doc}}
+            constructor({{params}})
+
+            {{/constructors}}
+        }
+        {{/staticConstructors}}
+    }
+    {{/hasStaticConstructors}}
+    {{/classes}}
+}
+
+declare module 'paper' {
+    export = paper
+}

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -134,4 +134,58 @@ test('group.addChildren()', function() {
     group.addChildren(children);
     equals(group.children.length, 2,
             'adding the same item twice should only add it once.');
-})
+});
+
+test('group.setSelectedColor() with selected bound and position', function() {
+    // Working: Set selected color first then add child.
+    var group1 = new Group();
+    group1.bounds.selected = true;
+    group1.position.selected = true;
+    group1.selectedColor = 'black';
+    group1.addChild(new Path.Circle([50, 50], 40));
+    // Failing: Add child first then set selected color.
+    var group2 = new Group();
+    group2.bounds.selected = true;
+    group2.position.selected = true;
+    group2.addChild(new Path.Circle([50, 50], 40));
+    group2.selectedColor = 'black';
+    comparePixels(group1, group2);
+});
+
+test('Group#isEmpty(recursively)', function() {
+    var group = new Group();
+    equals(true, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Group());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new Path());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+    var group = new Group(new PointText());
+    equals(false, group.isEmpty());
+    equals(true, group.isEmpty(true));
+});
+
+test(
+    'group.internalBounds with clip item without clip.applyMatrix = false',
+    function() {
+        var point = new Point(100, 100);
+        var translation = new Point(100, 100);
+        var item = new Path.Circle({
+            center: point,
+            radius: 50,
+            fillColor: 'orange'
+        });
+        var clip = new Path.Rectangle({
+            from: point.subtract(translation),
+            to: point.add(translation)
+        });
+        clip.applyMatrix = false;
+        clip.translate(translation);
+        var group = new Group(clip, item);
+        group.clipped = true;
+        var expected = new Rectangle(point, point.add(translation.multiply(2)));
+        equals(group.internalBounds, expected);
+    }
+);

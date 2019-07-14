@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -1476,7 +1476,7 @@ new function() { // Scope for methods that require private functions
             // 2: normal, 1st derivative
             // 3: curvature, 1st derivative & 2nd derivative
             // Prevent tangents and normals of length 0:
-            // http://stackoverflow.com/questions/10506868/
+            // https://stackoverflow.com/questions/10506868/
             if (t < tMin) {
                 x = cx;
                 y = cy;
@@ -1698,7 +1698,7 @@ new function() { // Scope for methods that require private functions
          * Peaks are locations sharing some qualities of curvature extrema but
          * are cheaper to compute. They fulfill their purpose here quite well.
          * See:
-         * http://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
+         * https://math.stackexchange.com/questions/1954845/bezier-curvature-extrema
          *
          * @param {Number[]} v the curve values array
          * @return {Number[]} the roots of all found peaks
@@ -1822,9 +1822,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
         } else {
             // Apply the result of the clipping to curve 1:
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+            var uDiff = uMax - uMin;
             if (tMaxClip - tMinClip > 0.8) {
                 // Subdivide the curve which has converged the least.
-                if (tMaxNew - tMinNew > uMax - uMin) {
+                if (tMaxNew - tMinNew > uDiff) {
                     var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
@@ -1844,7 +1845,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             recursion, calls, u, uMax, tMinNew, tMaxNew);
                 }
             } else { // Iterate
-                if (uMax - uMin >= fatLineEpsilon) {
+                // For some unclear reason we need to check against uDiff === 0
+                // here, to prevent a regression from happening, see #1638.
+                // Maybe @iconexperience could shed some light on this.
+                if (uDiff === 0 || uDiff >= fatLineEpsilon) {
                     calls = addCurveIntersections(
                             v2, v1, c2, c1, locations, include, !flip,
                             recursion, calls, uMin, uMax, tMinNew, tMaxNew);
@@ -2087,7 +2091,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return locations;
     }
 
-    function getLoopIntersection(v1, c1, locations, include) {
+    function getSelfIntersection(v1, c1, locations, include) {
         var info = Curve.classify(v1);
         if (info.type === 'loop') {
             var roots = info.roots;
@@ -2127,7 +2131,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             }
             if (self) {
                 // First check for self-intersections within the same curve.
-                getLoopIntersection(values1, curve1, locations, include);
+                getSelfIntersection(values1, curve1, locations, include);
             }
             // Check for intersections with other curves.
             // For self-intersection, we can start at i + 1 instead of 0.
@@ -2310,7 +2314,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             var v1 = this.getValues(),
                 v2 = curve && curve !== this && curve.getValues();
             return v2 ? getCurveIntersections(v1, v2, this, curve, [])
-                      : getLoopIntersection(v1, this, []);
+                      : getSelfIntersection(v1, this, []);
         },
 
         statics: /** @lends Curve */{

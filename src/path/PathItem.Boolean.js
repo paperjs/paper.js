@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -25,7 +25,7 @@
  * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
  * @author Jan Boesenberg <development@iconexperience.com>
  * @author Juerg Lehni <juerg@scratchdisk.com>
- * http://hkrish.com/playground/paperjs/booleanStudy.html
+ * https://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
     var min = Math.min,
@@ -46,6 +46,10 @@ PathItem.inject(new function() {
             exclude:   { '1': true, '-1': true }
         };
 
+    function getPaths(path) {
+        return path._children || [path];
+    }
+
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
@@ -53,12 +57,28 @@ PathItem.inject(new function() {
      * make sure all paths have correct winding direction.
      */
     function preparePath(path, resolve) {
-        var res = path.clone(false).reduce({ simplify: true })
-                .transform(null, true, true);
-        return resolve
-                ? res.resolveCrossings().reorient(
-                    res.getFillRule() === 'nonzero', true)
-                : res;
+        var res = path
+            .clone(false)
+            .reduce({ simplify: true })
+            .transform(null, true, true);
+        if (resolve) {
+            // For correct results, close open paths with straight lines:
+            var paths = getPaths(res);
+            for (var i = 0, l = paths.length; i < l; i++) {
+                var path = paths[i];
+                if (!path._closed && !path.isEmpty()) {
+                    // Close with epsilon tolerance, to avoid tiny straight
+                    // that would cause issues with intersection detection.
+                    path.closePath(/*#=*/Numerical.EPSILON);
+                    path.getFirstSegment().setHandleIn(0, 0);
+                    path.getLastSegment().setHandleOut(0, 0);
+                }
+            }
+            res = res
+                .resolveCrossings()
+                .reorient(res.getFillRule() === 'nonzero', true);
+        }
+        return res;
     }
 
     function createResult(paths, simplify, path1, path2, options) {
@@ -75,6 +95,17 @@ PathItem.inject(new function() {
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
         return result;
+    }
+
+    function filterIntersection(inter) {
+        // TODO: Change isCrossing() to also handle overlaps (hasOverlap())
+        // that are actually involved in a crossing! For this we need proper
+        // overlap range detection / merging first... But as we call
+        // #resolveCrossings() first in boolean operations, removing all
+        // self-touching areas in paths, this works for the known use cases.
+        // The ideal implementation would deal with it in a way outlined in:
+        // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
+        return inter.hasOverlap() || inter.isCrossing();
     }
 
     function traceBoolean(path1, path2, operation, options) {
@@ -101,10 +132,10 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(
-                CurveLocation.expand(_path1.getCrossings(_path2))),
-            paths1 = _path1._children || [_path1],
-            paths2 = _path2 && (_path2._children || [_path2]),
+        var crossings = divideLocations(CurveLocation.expand(
+                _path1.getIntersections(_path2, filterIntersection))),
+            paths1 = getPaths(_path1),
+            paths2 = _path2 && getPaths(_path2),
             segments = [],
             curves = [],
             paths;
@@ -162,7 +193,7 @@ PathItem.inject(new function() {
     function splitBoolean(path1, path2, operation) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
-            crossings = _path1.getCrossings(_path2),
+            crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
             added = {},
@@ -573,9 +604,7 @@ PathItem.inject(new function() {
                         onPath = true;
                     }
                 }
-                // TODO: Determine how to handle quality when curve is crossed
-                // at starting point. Do we always need to set to 0?
-                quality = 0;
+                quality /= 4;
             }
             vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
@@ -715,10 +744,14 @@ PathItem.inject(new function() {
             totalLength = 0,
             winding;
         do {
-            var curve = segment.getCurve(),
-                length = curve.getLength();
-            chain.push({ segment: segment, curve: curve, length: length });
-            totalLength += length;
+            var curve = segment.getCurve();
+            // We can encounter paths with only one segment, which would not
+            // have a curve.
+            if (curve) {
+                var length = curve.getLength();
+                chain.push({ segment: segment, curve: curve, length: length });
+                totalLength += length;
+            }
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
         // Determine winding at three points in the chain. If a winding with
@@ -726,7 +759,8 @@ PathItem.inject(new function() {
         // the best quality.
         var offsets = [0.5, 0.25, 0.75],
             winding = { winding: 0, quality: -1 },
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            // Don't go too close to segments, to avoid special winding cases:
+            tMin = 1e-3,
             tMax = 1 - tMin;
         for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
             var length = totalLength * offsets[i];
@@ -1125,7 +1159,7 @@ PathItem.inject(new function() {
         /**
          * Splits the geometry of this path along the geometry of the specified
          * path returns the result as a new group item. This is equivalent to
-         * calling {@link #subtract(path)} and {@link #subtract(path)} and
+         * calling {@link #subtract(path)} and {@link #intersect(path)} and
          * putting the results into a new group.
          *
          * @option [options.insert=true] {Boolean} whether the resulting item
@@ -1156,7 +1190,7 @@ PathItem.inject(new function() {
          * amount of resulting paths allows so, otherwise a new path /
          * compound-path is created, replacing the current one.
          *
-         * @return {PahtItem} the resulting path item
+         * @return {PathItem} the resulting path item
          */
         resolveCrossings: function() {
             var children = this._children,
@@ -1168,7 +1202,7 @@ PathItem.inject(new function() {
                 return inter && inter._overlap && inter._path === path;
             }
 
-            // First collect all overlaps and crossings while taking not of the
+            // First collect all overlaps and crossings while taking note of the
             // existence of both.
             var hasOverlaps = false,
                 hasCrossings = false,
@@ -1278,7 +1312,7 @@ PathItem.inject(new function() {
          * @param {Boolean} [clockwise] if provided, the orientation of the root
          *     paths will be set to the orientation specified by `clockwise`,
          *     otherwise the orientation of the largest root child is used.
-         * @return {PahtItem} a reference to the item itself, reoriented
+         * @return {PathItem} a reference to the item itself, reoriented
          */
         reorient: function(nonZero, clockwise) {
             var children = this._children;

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -175,12 +175,10 @@ var GradientStop = Base.extend(/** @lends GradientStop# */{
     },
 
     setColor: function(/* color */) {
-        // Make sure newly set colors are cloned, since they can only have
-        // one owner.
-        var color = Color.read(arguments, 0, { clone: true });
-        if (color)
-            color._owner = this;
-        this._color = color;
+        // Clear old color owner before setting new one:
+        Color._setOwner(this._color, null);
+        this._color = Color._setOwner(Color.read(arguments, 0), this,
+                'setColor');
         this._changed();
     },
 

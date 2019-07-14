@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -142,4 +142,19 @@ test('SymbolItem#bounds with #applyMatrix = false', function() {
     var placed = symbol.place([200, 200]);
     equals(function() { return placed.bounds; },
         { x: 150, y: 150, width: 100, height: 100 });
+});
+
+test('SymbolItem#hitTestAll', function() {
+    var symbol = new SymbolDefinition(
+        new Path.Circle({
+            center: [0, 0],
+            radius: 10,
+            fillColor: 'orange'
+        })
+    );
+    var symbolItem = symbol.place([50, 50]);
+
+    var hitTestAll = symbolItem.hitTestAll([50, 50]);
+    equals(hitTestAll.length, 1);
+    equals(hitTestAll[0].item.id, symbolItem.id);
 });

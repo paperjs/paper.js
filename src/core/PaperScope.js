@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -87,7 +87,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             // here: { chrome: true, webkit: false }, Mozilla missing is the
             // only difference to jQuery.browser
             user.replace(
-                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
+                /(opera|chrome|safari|webkit|firefox|msie|trident|atom|node|jsdom)\/?\s*([.\d]+)(?:.*version\/([.\d]+))?(?:.*rv\:v?([.\d]+))?/g,
                 function(match, n, v1, v2, rv) {
                     // Do not set additional browsers once chrome is detected.
                     if (!agent.chrome) {
@@ -95,7 +95,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
                                 /^(node|trident)$/.test(n) ? rv : v1;
                         agent.version = v;
                         agent.versionNumber = parseFloat(v);
-                        n = n === 'trident' ? 'msie' : n;
+                        n = { trident: 'msie', jsdom: 'node' }[n] || n;
                         agent.name = n;
                         agent[n] = true;
                     }
@@ -112,6 +112,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      * The version of Paper.js, as a string.
      *
      * @type String
+     * @readonly
      */
     version: /*#=*/__options.version,
 
@@ -200,7 +201,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     mapping, in case the code that's passed in has already been mingled.
      *
      * @param {String} code the PaperScript code
-     * @param {Object} [option] the compilation options
+     * @param {Object} [options] the compilation options
      */
     execute: function(code, options) {
 /*#*/   if (__options.paperScript) {
@@ -310,6 +311,7 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
              * Retrieves a PaperScope object with the given scope id.
              *
              * @param id
+             * @return {PaperScope}
              */
             get: function(id) {
                 return this._scopes[id] || null;

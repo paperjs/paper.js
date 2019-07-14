@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -37,15 +37,13 @@ try {
 if (jsdom) {
     // Create our document and window objects through jsdom.
     /* global document:true, window:true */
-    var document = jsdom.jsdom('<html><body></body></html>', {
+    var document = new jsdom.JSDOM('<html><body></body></html>', {
         // Use the current working directory as the document's origin, so
         // requests to local files work correctly with CORS.
         url: 'file://' + process.cwd() + '/',
-        features: {
-            FetchExternalResources: ['img', 'script']
-        }
+        resources: 'usable'
     });
-    self = document.defaultView;
+    self = document.window;
     require('./canvas.js')(self, requireName);
     require('./xml.js')(self);
 } else {

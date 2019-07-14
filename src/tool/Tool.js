@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -135,7 +135,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onMouseDown
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Creating circle shaped paths where the user presses the mouse button:
@@ -157,7 +157,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onMouseDrag
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Draw a line by adding a segment to a path on every mouse drag event:
@@ -180,7 +180,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onMouseMove
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Moving a path to the position of the mouse:
@@ -206,7 +206,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onMouseUp
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Creating circle shaped paths where the user releases the mouse:
@@ -234,7 +234,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onKeyDown
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Scaling a path whenever the user presses the space bar:
@@ -268,7 +268,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      *
      * @name Tool#onKeyUp
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example
      * tool.onKeyUp = function(event) {

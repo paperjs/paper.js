@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -201,7 +201,7 @@ test('#1073#issuecomment-234305530', function() {
         true]);
     testIntersections(path1.getIntersections(path2), [
         { point: { x: 426.61172, y: 448 }, index: 0, time: 0.27769, crossing: true },
-        { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: true },
+        { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: false },
         { point: { x: 343.68011, y: 469.7389 }, index: 1, time: 0.77843, crossing: true },
         { point: { x: 336.40125, y: 463.59875 }, index: 2, time: 0.00608, crossing: true }
     ]);
@@ -342,4 +342,69 @@ test('#1284', function() {
     var path1 = createPath(curve1);
     var path2 = createPath(curve2);
     testIntersections(path1.getIntersections(path2), expected);
+});
+
+test('#1638', function() {
+    var circle1 = new Path.Circle({
+        center: [100, 100],
+        radius: 100
+    });
+    var circle2 = new Path.Circle({
+        center: [150, 150],
+        radius: 100
+    });
+    testIntersections(circle1.getIntersections(circle2), [
+        { point: { x: 191.16238, y: 58.83762 }, index: 1, time: 0.73431, crossing: true },
+        { point: { x: 58.83762, y: 191.16238 }, index: 3, time: 0.26569, crossing: true }
+    ]);
+});
+
+test('#1263', function() {
+    var path = new Path({
+        segments: [
+            [[479,495], [0,0], [-10,4]],
+            [[437,479], [5,12], [-22,-51]],
+            [[479,495], [33,-15]]
+        ]
+    });
+    testIntersections(path.getIntersections(), [
+        { point: { x: 479, y: 495 }, index: 0, time: 0, crossing: false }
+    ]);
+});
+
+test('#1262', function() {
+    var c1 = new Curve([561.5500544, 629.1148694240001, 564.581554256, 629.1148694240001, 567.0556160000001, 631.588931168, 567.0556160000001, 634.620431024]);
+    var c2 = new Curve([561.5500544, 629.1148694240001, 564.581554256, 629.1148694240001, 567.0556160000001, 631.592372144, 567.0556160000001, 634.620431024]);
+    testIntersections(c1.getIntersections(c2), [
+        { point: { x: 561.55005, y: 629.11487 }, time: 0 },
+        { point: { x: 567.05562, y: 634.62043 }, time: 1 }
+    ]);
+});
+
+test('#1409', function() {
+    var path1 = new Path({
+        segments: [[20, 20], [20, 80], [80, 80], [80, 20]],
+        closed: true
+    });
+    var path2 = new Path({
+        segments: [[80, 20], [80, 80], [140, 80], [140, 20]],
+        closed: true
+    });
+    testIntersections(path1.getCrossings(path2), []);
+
+    var rect1  = new Path.Rectangle(new Point(100, 100), new Size(100, 100));
+    var rect2 = rect1.clone();
+    testIntersections(rect1.getCrossings(rect2), []);
+
+    var circ1 = new Path.Circle(new Point(300,300), 40);
+    var circ2 = circ1.clone();
+    testIntersections(circ1.getCrossings(circ2), []);
+});
+
+test('#1255', function() {
+    var c1 = new Curve([439.3824078319993,216.13903749801196],[-0.06618902689025684,-11.053567490673387],[-9.709467619869528,5.2831783801853],[455.0432856400729,189.60783460905492]);
+    var c2 = new Curve([446.1268928788026,138.78016797936476],[-4.688929299417313,19.846766368483937],[-0.19057652660425625,-31.82627994291222],[439.3824078319993,216.13903749801196]);
+    testIntersections(c1.getIntersections(c2), [
+        { point: { x: 439.38241, y: 216.13904 }, time: 0, crossing: false }
+    ]);
 });

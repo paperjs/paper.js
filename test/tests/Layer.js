@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -138,4 +138,10 @@ test('#remove() with named layers', function(){
     }
     equals(removeCount, 2,
             'project.layers[name].remove(); should be called twice');
+});
+
+test('#bounds with nested empty items', function() {
+    var item = new Path.Rectangle(new Point(10,10), new Size(10));
+    new Group(new Group());
+    equals(item.bounds, project.activeLayer.bounds);
 });

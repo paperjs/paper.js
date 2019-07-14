@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -29,11 +29,16 @@ new function() {
             // in rotate(). To do so, SVG requries us to inverse transform the
             // translation point by the matrix itself, since they are provided
             // in local coordinates.
-            matrix = matrix._shiftless();
-            var point = matrix._inverseTransform(trans);
+            var point;
+            if (matrix.isInvertible()) {
+                matrix = matrix._shiftless();
+                point = matrix._inverseTransform(trans);
+                trans = null;
+            } else {
+                point = new Point();
+            }
             attrs[center ? 'cx' : 'x'] = point.x;
             attrs[center ? 'cy' : 'y'] = point.y;
-            trans = null;
         }
         if (!matrix.isIdentity()) {
             // See if we can decompose the matrix and can formulate it as a
@@ -177,7 +182,7 @@ new function() {
             definition = item._definition,
             node = getDefinition(definition, 'symbol'),
             definitionItem = definition._item,
-            bounds = definitionItem.getBounds();
+            bounds = definitionItem.getStrokeBounds();
         if (!node) {
             node = SvgElement.create('symbol', {
                 viewBox: formatter.rectangle(bounds)
@@ -427,7 +432,7 @@ new function() {
             if (rect) {
                 attrs.width = rect.width;
                 attrs.height = rect.height;
-                if (rect.x || rect.y)
+                if (rect.x || rect.x === 0 || rect.y || rect.y === 0)
                     attrs.viewBox = formatter.rectangle(rect);
             }
             var node = SvgElement.create('svg', attrs, formatter),

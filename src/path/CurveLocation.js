@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -59,7 +59,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
 
     _setCurve: function(curve) {
         var path = curve._path;
-        // We only store the path to verify versions for cachd values.
+        // We only store the path to verify versions for cached values.
         // To ensure we use the right path (e.g. after splitting), we shall
         // always access the path on the result of getCurve().
         this._path = path;
@@ -147,7 +147,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * The path that this locations is situated on.
      *
      * @bean
-     * @type Item
+     * @type Path
      */
     getPath: function() {
         var curve = this.getCurve();
@@ -159,7 +159,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * it is part of a {@link Path} item.
      *
      * @bean
-     * @type Index
+     * @type Number
      */
     getIndex: function() {
         var curve = this.getCurve();
@@ -284,7 +284,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
      * @bean
      * @type Number
      * @see Curve#getNearestLocation(point)
-     * @see Path#getNearestLocation(point)
+     * @see PathItem#getNearestLocation(point)
      */
     getDistance: function() {
         return this._distance;
@@ -424,9 +424,9 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         //   both values point to the same curve, and the curve-time is to be
         //   handled accordingly further down.
         var c2 = this.getCurve(),
-            c1 = t1 < tMin ? c2.getPrevious() : c2,
+            c1 = c2 && t1 < tMin ? c2.getPrevious() : c2,
             c4 = inter.getCurve(),
-            c3 = t2 < tMin ? c4.getPrevious() : c4;
+            c3 = c4 && t2 < tMin ? c4.getPrevious() : c4;
         // If t1 / t2 are at the end, then step to the next curve.
         if (t1 > tMax)
             c2 = c2.getNext();
@@ -450,11 +450,12 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
             var v = curve.getValues(),
                 roots = Curve.classify(v).roots || Curve.getPeaks(v),
                 count = roots.length,
-                t = end && count > 1 ? roots[count - 1]
-                        : count > 0 ? roots[0]
-                        : 0.5;
-            // Then use half of the offset, for extra measure.
-            offsets.push(Curve.getLength(v, end ? t : 0, end ? 1 : t) / 2);
+                offset = Curve.getLength(v,
+                    end && count ? roots[count - 1] : 0,
+                    !end && count ? roots[0] : 1);
+            // When no root was found, the full length was calculated. Use a
+            // fraction of it. By trial & error, 64 was determined to work well.
+            offsets.push(count ? offset : offset / 64);
         }
 
         function isInRange(angle, min, max) {
@@ -491,7 +492,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         // Count how many times curve2 angles appear between the curve1 angles.
         // If each pair of angles split the other two, then the edges cross.
         // Use t1Inside to decide which angle pair to check against.
-        // If t1 is inside the curve, check against a3 & a4, othrwise a1 & a2.
+        // If t1 is inside the curve, check against a3 & a4, otherwise a1 & a2.
         return !!(t1Inside
                 ? (isInRange(a1, a3, a4) ^ isInRange(a2, a3, a4)) &&
                   (isInRange(a1, a4, a3) ^ isInRange(a2, a4, a3))

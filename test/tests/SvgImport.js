@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -143,6 +143,21 @@ test('Import SVG without insertion', function() {
     }, true);
 });
 
+test('Import SVG switch', function(assert) {
+    var done = assert.async();
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg"><switch><line x1="0" x2="10" y1="0" y2="10" fill="none"></line></switch></svg>';
+    paper.project.importSVG(svg, {
+        onLoad: function(item) {
+            equals(item.className, 'Group');
+            equals(item.children.length, 1);
+            equals(item.firstChild.className, 'Group');
+            equals(item.firstChild.children.length, 1);
+            equals(item.firstChild.firstChild, new Path([new Point(0, 0), new Point(10, 10)]));
+            done();
+        }
+    });
+});
+
 function importSVG(assert, url, message, options) {
     var done = assert.async();
     project.importSVG(url, {
@@ -166,7 +181,7 @@ function importSVG(assert, url, message, options) {
     });
 }
 
-if (!isNode) {
+if (!isNodeContext) {
     // JSDom does not have SVG rendering, so we can't test there.
     var svgFiles = {
         'butterfly': { tolerance: 1e-2 },
@@ -176,16 +191,18 @@ if (!isNode) {
         'symbol': {},
         'symbols': {},
         'blendModes': {},
-        'gradients-1': {}
+        'gradients-1': {},
+        'gradients-2': !isPhantomContext && {},
+        'gradients-3': {},
+        'gradients-4': {}
     };
-    // TODO: Investigate why Phantom struggles with this file:
-    if (!isPhantom)
-        svgFiles['gradients-2'] = {};
     Base.each(svgFiles, function(options, name) {
-        name += '.svg';
-        test('Import ' + name, function(assert) {
-            importSVG(assert, 'assets/' + name, null, options);
-        });
+        if (options) {
+            name += '.svg';
+            test('Import ' + name, function(assert) {
+                importSVG(assert, 'assets/' + name, null, options);
+            });
+        }
     });
 
     test('Import inexistent file', function(assert) {

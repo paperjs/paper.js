@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -102,8 +102,8 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      *
      * @bean
      * @type Boolean
-     * @see Path#getArea()
-     * @see CompoundPath#getArea()
+     * @see Path#area
+     * @see CompoundPath#area
      */
     isClockwise: function() {
         return this.getArea() >= 0;
@@ -345,18 +345,13 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * crossing each other, as opposed to simply touching.
      *
      * @param {PathItem} path the other item to find the crossings with
+     * @return {CurveLocation[]} the locations of all crossings between the
+     *     paths
      * @see #getIntersections(path)
      */
     getCrossings: function(path) {
         return this.getIntersections(path, function(inter) {
-            // TODO: Only return overlaps that are actually crossings! For this
-            // we need proper overlap range detection / merging first...
-            // But as we call #resolveCrossings() first in boolean operations,
-            // removing all self-touching areas in paths, this currently works
-            // as it should in the known use cases.
-            // The ideal implementation would deal with it in a way outlined in:
-            // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-            return inter.hasOverlap() || inter.isCrossing();
+            return inter.isCrossing();
         });
     },
 

@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -644,4 +644,12 @@ test('Path#arcTo(through, to) is on through point side (#1477)', function() {
     path.add(p1);
     path.arcTo(p2, p3);
     equals(true, path.segments[1].point.x > p1.x);
+});
+
+test('Path#arcTo(to, radius, rotation, clockwise, large) when from and to are equal (#1613)', function(){
+    var point = new Point(10,10);
+    var path = new Path();
+    path.moveTo(point);
+    path.arcTo(point, new Size(10), 0, true, true);
+    expect(0);
 });

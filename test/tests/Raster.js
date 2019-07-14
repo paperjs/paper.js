@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -205,4 +205,32 @@ test('Raster#setSmoothing setting does not impact canvas context', function(asse
         equals(context.imageSmoothingEnabled, originalValue);
         done();
     };
+});
+
+test('new Raster(size[, position])', function() {
+    // Size only.
+    var raster = new Raster(new Size(100, 100));
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    var raster = new Raster({size:new Size(100, 100)});
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    var raster = new Raster({width:100, height:100});
+    equals(raster.position, new Point(0, 0));
+    equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
+
+    // Size and position.
+    var raster = new Raster(new Size(100, 100), new Point(100, 100));
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+
+    var raster = new Raster({size:new Size(100, 100), position:new Point(100, 100)});
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+
+    var raster = new Raster({width:100, height:100, position:new Point(100, 100)});
+    equals(raster.position, new Point(100, 100));
+    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
 });

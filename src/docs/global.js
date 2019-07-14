@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -39,7 +39,7 @@
  *
  * The project for which the PaperScript is executed.
  *
- * Note that when working with mulitple projects, this does not necessarily
+ * Note that when working with multiple projects, this does not necessarily
  * reflect the currently active project. For this, use
  * {@link PaperScope#project} instead.
  *
@@ -57,19 +57,20 @@
 /**
  * The reference to the project's view.
  *
- * Note that when working with mulitple projects, this does not necessarily
+ * Note that when working with multiple projects, this does not necessarily
  * reflect the view of the currently active project. For this, use
  * {@link PaperScope#view} instead.
  *
  * @name view
  * @type View
+ * @readonly
  */
 
 /**
  * The reference to the tool object which is automatically created when global
  * tool event handlers are defined.
  *
- * Note that when working with mulitple tools, this does not necessarily
+ * Note that when working with multiple tools, this does not necessarily
  * reflect the currently active tool. For this, use {@link PaperScope#tool}
  * instead.
  *

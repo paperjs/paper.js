@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -24,9 +24,10 @@ options.date = git('log -1 --pretty=format:%ad');
 options.branch = git('rev-parse --abbrev-ref HEAD');
 
 // If a specific branch is requested, quit without errors if we don't match.
-if (argv.branch && argv.branch !== options.branch) {
-    console.log('Branch "' + options.branch + '" does not match "' +
-            argv.branch + '". There is nothing to do here.');
+var ensureBranch = argv['ensure-branch'];
+if (ensureBranch && ensureBranch !== options.branch) {
+    console.log('Branch "' + options.branch + '" does not match requested "' +
+            ensureBranch + '". There is nothing to do here.');
     process.exit(0);
 }
 

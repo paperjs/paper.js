@@ -2,19 +2,21 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  */
 
-var isNode = typeof global === 'object',
-    isPhantom = typeof window === 'object' && !!window.callPhantom,
+// We call our variable `isNodeContext` because resemble.js exposes a global
+// `isNode` function which would override it and break node check.
+var isNodeContext = typeof global === 'object',
+    isPhantomContext = typeof window === 'object' && !!window.callPhantom,
     scope;
 
-if (isNode) {
+if (isNodeContext) {
     scope = global;
     // Resemble.js needs the Image constructor global.
     global.Image = paper.window.Image;
@@ -35,14 +37,11 @@ if (isNode) {
 }
 
 // Some native javascript classes have name collisions with Paper.js classes.
-// If they have not already been stored in src/load.js, we dot it now.
-if (!isNode && typeof NativeClasses === 'undefined')
-{
-    NativeClasses = {
-        Event: Event,
-        MouseEvent: MouseEvent
-    };
-}
+// If they have not already been stored in `src/load.js`, do it now:
+var nativeClasses = this.nativeClasses || {
+    Event: this.Event || {},
+    MouseEvent: this.MouseEvent || {}
+};
 
 // The unit-tests expect the paper classes to be global.
 paper.install(scope);
@@ -107,7 +106,7 @@ var equals = function(actual, expected, message, options) {
             || type === 'boolean' && 'Boolean'
             || type === 'undefined' && 'Undefined'
             || Array.isArray(expected) && 'Array'
-            || expected instanceof window.Element && 'Element' // handle DOM Elements
+            || expected instanceof window.Element && 'Element' // DOM Elements
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
@@ -161,6 +160,81 @@ var compareProperties = function(actual, expected, properties, message, options)
     }
 };
 
+/**
+ * Compare 2 image data with resemble.js library.
+ * When comparison fails, expected, actual and compared images are displayed.
+ * @param {ImageData} imageData1 the expected image data
+ * @param {ImageData} imageData2 the actual image data
+ * @param {number} tolerance
+ * @param {string} diffDetail text displayed when comparison fails
+ */
+var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
+    /**
+     * Build an image element from a given image data.
+     * @param {ImageData} imageData
+     * @return {HTMLImageElement}
+     */
+    function image(imageData) {
+        var canvas = document.createElement('canvas');
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+        canvas.getContext('2d').putImageData(imageData, 0, 0);
+        var image = new Image();
+        image.src = canvas.toDataURL();
+        canvas.remove();
+        return image;
+    }
+
+    tolerance = (tolerance || 1e-4) * 100;
+
+    var id = QUnit.config.current.testId,
+        index = QUnit.config.current.assertions.length + 1,
+        result;
+    // Compare image-data using resemble.js:
+    resemble.compare(
+        imageData1,
+        imageData2,
+        {
+            output: {
+                errorColor: { red: 255, green: 51, blue: 0 },
+                errorType: 'flat',
+                transparency: 1
+            },
+            ignore: ['antialiasing']
+        },
+        // When working with imageData, this call is synchronous:
+        function (error, data) {
+            if (error) {
+                console.error(error);
+            } else {
+                result = data;
+            }
+        }
+    )
+    // Compare with tolerance in percentage...
+    var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
+        identical = result ? 100 - result.misMatchPercentage : 0,
+        ok = Math.abs(100 - identical) <= tolerance,
+        text = identical.toFixed(fixed) + '% identical',
+        detail = text;
+    if (!ok && diffDetail) {
+        detail += diffDetail;
+    }
+    QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
+    if (!ok && result && !isNodeContext) {
+        // Get the right entry for this unit test and assertion, and
+        // replace the results with images
+        var entry = document.getElementById('qunit-test-output-' + id)
+            .querySelector('li:nth-child(' + (index) + ')'),
+            bounds = result.diffBounds;
+        entry.querySelector('.test-expected td').appendChild(image(imageData2));
+        entry.querySelector('.test-actual td').appendChild(image(imageData1));
+        entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
+            + '</pre><br>'
+            + '<img src="' + result.getImageDataUrl() + '">';
+    }
+};
+
 var comparePixels = function(actual, expected, message, options) {
     function rasterize(item, group, resolution) {
         var raster = null;
@@ -178,11 +252,6 @@ var comparePixels = function(actual, expected, message, options) {
         return raster;
     }
 
-    function getImageTag(raster) {
-        return '<img width="' + raster.width + '" height="' + raster.height
-                + '" src="' + raster.source + '">';
-    }
-
     if (!expected) {
         return QUnit.strictEqual(actual, expected, message, options);
     } else if (!actual) {
@@ -197,12 +266,12 @@ var comparePixels = function(actual, expected, message, options) {
     // bounds of both items before rasterizing.
     var resolution = options.resolution || 72,
         actualBounds = actual.strokeBounds,
-        expecedBounds = expected.strokeBounds,
+        expectedBounds = expected.strokeBounds,
         bounds = actualBounds.isEmpty()
-                ? expecedBounds
-                : expecedBounds.isEmpty()
+            ? expectedBounds
+            : expectedBounds.isEmpty()
                 ? actualBounds
-                : actualBounds.unite(expecedBounds);
+                : actualBounds.unite(expectedBounds);
     if (bounds.isEmpty()) {
         QUnit.equal('empty', 'empty', message);
         return;
@@ -220,53 +289,20 @@ var comparePixels = function(actual, expected, message, options) {
         expectedRaster = rasterize(expected, group, resolution);
     if (!actualRaster || !expectedRaster) {
         QUnit.push(false, null, null, 'Unable to compare rasterized items: ' +
-                (!actualRaster ? 'actual' : 'expected') + ' item is null',
-                QUnit.stack(2));
+            (!actualRaster ? 'actual' : 'expected') + ' item is null',
+            QUnit.stack(2));
     } else {
-        // Use resemble.js to compare the two rasterized items.
-        var id = QUnit.config.current.testId,
-            index = QUnit.config.current.assertions.length + 1,
-            result;
-        if (!resemble._setup) {
-            resemble._setup = true;
-            resemble.outputSettings({
-                errorColor: { red: 255, green: 51, blue: 0 },
-                errorType: 'flat',
-                transparency: 1
-            });
-        }
-        resemble(actualRaster.getImageData())
-            .compareTo(expectedRaster.getImageData())
-            .ignoreAntialiasing()
-            // When working with imageData, this call is synchronous:
-            .onComplete(function(data) { result = data; });
-         // Compare with tolerance in percentage...
-        var tolerance = (options.tolerance || 1e-4) * 100,
-            fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
-            identical = result ? 100 - result.misMatchPercentage : 0,
-            ok = Math.abs(100 - identical) <= tolerance,
-            text = identical.toFixed(fixed) + '% identical',
-            detail = text;
-        if (!ok &&
-                actual instanceof PathItem && expected instanceof PathItem) {
-            detail += '\nExpected:\n' + expected.pathData +
-                    '\nActual:\n' + actual.pathData;
-        }
-        QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
-        if (!ok && result && !isNode) {
-            // Get the right entry for this unit test and assertion, and
-            // replace the results with images
-            var entry = document.getElementById('qunit-test-output-' + id)
-                    .querySelector('li:nth-child(' + (index) + ')'),
-                bounds = result.diffBounds;
-            entry.querySelector('.test-expected td').innerHTML =
-                    getImageTag(expectedRaster);
-            entry.querySelector('.test-actual td').innerHTML =
-                    getImageTag(actualRaster);
-            entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
-                    + '</pre><br>'
-                    + '<img src="' + result.getImageDataUrl() + '">';
-        }
+        // Compare the two rasterized items.
+        var detail = actual instanceof PathItem && expected instanceof PathItem
+            ? '\nExpected:\n' + expected.pathData +
+                '\nActual:\n' + actual.pathData
+            : '';
+        compareImageData(
+            actualRaster.getImageData(),
+            expectedRaster.getImageData(),
+            options.tolerance,
+            detail
+        );
     }
 };
 
@@ -302,6 +338,41 @@ var compareItem = function(actual, expected, message, options, properties) {
         compareProperties(actual.style, expected.style, styles,
                 message + ' (#style)', options);
     }
+};
+
+/**
+ * Run each callback in a separated canvas context and compare both outputs.
+ * This can be used to do selection drawing tests as it is not possible with
+ * comparePixels() method which relies on the item.rasterize() method which
+ * ignores selection.
+ * @param {number} width the width of the canvas
+ * @param {number} height the height of the canvas
+ * @param {function} expectedCallback the function producing the expected result
+ * @param {function} actualCallback the function producing the actual result
+ * @param {number} tolerance between 0 and 1
+ */
+var compareCanvas = function(width, height, expected, actual, tolerance) {
+    function getImageData(width, height, callback) {
+        var canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        var project = new Project(canvas);
+        var view = project.view;
+        callback();
+        view.update();
+        var imageData = view.context.getImageData(0, 0, width, height);
+        project.remove();
+        canvas.remove();
+        return imageData;
+    }
+
+    compareImageData(
+        getImageData(width, height, expected),
+        getImageData(width, height, actual),
+        tolerance
+    );
+
+    currentProject.activate();
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
@@ -385,7 +456,7 @@ var comparators = {
             equals(actual.components, expected.components,
                     message + ' (#components)', options);
         } else {
-            QUnit.strictEqual(actual, expected, message);
+            QUnit.push(expected.equals(actual), actual, expected, message);
         }
     },
 
@@ -597,8 +668,8 @@ var MouseEventPolyfill = function(type, params) {
     );
     return mouseEvent;
 };
-MouseEventPolyfill.prototype = typeof NativeClasses !== 'undefined'
-    && NativeClasses.Event.prototype || Event.prototype;
+
+MouseEventPolyfill.prototype = nativeClasses.Event.prototype;
 
 var triggerMouseEvent = function(type, point, target) {
     // Depending on event type, events have to be triggered on different
@@ -606,21 +677,16 @@ var triggerMouseEvent = function(type, point, target) {
     // and `docEvents` in View.js). And we cannot rely on the fact that event
     // will bubble from canvas to document, since the canvas used in tests is
     // not inserted in DOM.
-    target = target || (type === 'mousedown' ? view._element : document);
-
+    target = target || (type === 'mousedown' ? view.element : document);
     // If `gulp load` was run, there is a name collision between paper Event /
     // MouseEvent and native javascript classes. In this case, we need to use
-    // native classes stored in global NativeClasses object instead.
-    var constructor = typeof NativeClasses !== 'undefined'
-        && NativeClasses.MouseEvent || MouseEvent;
-
+    // native classes stored in the nativeClasses object instead.
     // MouseEvent class does not exist in PhantomJS, so in that case, we need to
-    // use a polyfill method.
-    if (typeof constructor !== 'function') {
-        constructor = MouseEventPolyfill;
-    }
-
-    var event = new constructor(type, {
+    // use a polyfill method, see: https://stackoverflow.com/questions/42929639
+    var MouseEvent = typeof nativeClasses.MouseEvent === 'function'
+        ? nativeClasses.MouseEvent
+        : MouseEventPolyfill;
+    var event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,
         composed: true,

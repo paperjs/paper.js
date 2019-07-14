@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -944,4 +944,34 @@ test('Children global matrices are cleared after parent transformation', functio
     equals(item.localToGlobal(item.getPointAt(0)), new Point(0, 100));
     group.translate(100, 0);
     equals(item.localToGlobal(item.getPointAt(0)), new Point(100, 100));
+});
+
+test('Item#rasterize() with empty bounds', function() {
+    new Path.Line([0, 0], [100, 0]).rasterize();
+    view.update();
+    expect(0);
+});
+
+test('Item#draw() with CompoundPath as clip item', function() {
+    function createdClippedGroup(invertedOrder) {
+        var compound = new CompoundPath({
+            children: [
+                new Path.Circle(new Point(50, 50), 50),
+                new Path.Circle(new Point(100, 50), 50)
+            ],
+            fillRule: 'evenodd'
+        });
+
+        var rectangle = new Shape.Rectangle(new Point(0, 0), new Point(150, 50));
+
+        var group = new Group();
+        group.children = invertedOrder
+            ? [compound, rectangle]
+            : [rectangle, compound];
+        group.fillColor = 'black';
+        group.clipped = true;
+        return group;
+    };
+
+    comparePixels(createdClippedGroup(true), createdClippedGroup(false));
 });

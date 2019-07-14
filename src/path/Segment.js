@@ -2,8 +2,8 @@
  * Paper.js - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2016, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & http://jonathanpuckey.com/
+ * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
+ * http://scratchdisk.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
@@ -234,8 +234,8 @@ var Segment = Base.extend(/** @lends Segment# */{
      * Checks if the segment has any curve handles set.
      *
      * @return {Boolean} {@true if the segment has handles set}
-     * @see Segment#getHandleIn()
-     * @see Segment#getHandleOut()
+     * @see Segment#handleIn
+     * @see Segment#handleOut
      * @see Curve#hasHandles()
      * @see Path#hasHandles()
      */
@@ -554,6 +554,9 @@ var Segment = Base.extend(/** @lends Segment# */{
         return this._path ? !!this._path.removeSegment(this._index) : false;
     },
 
+    /**
+     * @return {Segment}
+     */
     clone: function() {
         return new Segment(this._point, this._handleIn, this._handleOut);
     },
