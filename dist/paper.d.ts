@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Jul 12 12:41:15 2019 +0200
+ * Date: Mon Aug 12 16:24:29 2019 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -4023,6 +4023,11 @@ declare module paper {
      */
     class PathItem extends Item {
         /** 
+         * Returns a point that is guaranteed to be inside the path.
+         */
+        readonly interiorPoint: Point
+
+        /** 
          * Specifies whether the path as a whole is oriented clock-wise, by looking
          * at the path's area.
          * Note that self-intersecting paths and sub-paths of different orientation
@@ -4038,11 +4043,115 @@ declare module paper {
          */
         pathData: string
 
-        /** 
-         * Returns a point that is guaranteed to be inside the path.
-         */
-        readonly interiorPoint: Point
 
+        /** 
+         * Unites the geometry of the specified path with this path's geometry
+         * and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * 
+         * @param path - the path to unite with
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        unite(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Intersects the geometry of the specified path with this path's
+         * geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, keeping the parts of
+         *     the curves that intersect with the area of the second path.
+         * 
+         * @param path - the path to intersect with
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        intersect(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Subtracts the geometry of the specified path from this path's
+         * geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections, removing the parts of
+         *     the curves that intersect with the area of the second path.
+         * 
+         * @param path - the path to subtract
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        subtract(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Excludes the intersection of the geometry of the specified path with
+         * this path's geometry and returns the result as a new path item.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * 
+         * @param path - the path to exclude the intersection of
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        exclude(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Splits the geometry of this path along the geometry of the specified
+         * path returns the result as a new group item. This is equivalent to
+         * calling {@link #subtract} and {@link #intersect} and
+         * putting the results into a new group.
+         * 
+         * @option [options.insert=true] {Boolean} whether the resulting item
+         *     should be inserted back into the scene graph, above both paths
+         *     involved in the operation
+         * @option [options.trace=true] {Boolean} whether the tracing method is
+         *     used, treating both paths as areas when determining which parts
+         *     of the paths are to be kept in the result, or whether the first
+         *     path is only to be split at intersections.
+         * 
+         * @param path - the path to divide by
+         * @param options - the boolean operation options
+         * 
+         * @return the resulting path item
+         */
+        divide(path: PathItem, options?: object): PathItem
+
+        /** 
+         * Fixes the orientation of the sub-paths of a compound-path, assuming
+         * that non of its sub-paths intersect, by reorienting them so that they
+         * are of different winding direction than their containing paths,
+         * except for disjoint sub-paths, i.e. islands, which are oriented so
+         * that they have the same winding direction as the the biggest path.
+         * 
+         * @param nonZero - controls if the non-zero fill-rule
+         *     is to be applied, by counting the winding of each nested path and
+         *     discarding sub-paths that do not contribute to the final result
+         * @param clockwise - if provided, the orientation of the root
+         *     paths will be set to the orientation specified by `clockwise`,
+         *     otherwise the orientation of the largest root child is used.
+         * 
+         * @return a reference to the item itself, reoriented
+         */
+        reorient(nonZero?: boolean, clockwise?: boolean): PathItem
 
         /** 
          * Creates a path item from the given SVG path-data, determining if the
@@ -4432,115 +4541,6 @@ declare module paper {
          * @param to - the destination point of the newly added curve
          */
         quadraticCurveBy(handle: Point, to: Point): void
-
-        /** 
-         * Unites the geometry of the specified path with this path's geometry
-         * and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * 
-         * @param path - the path to unite with
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        unite(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Intersects the geometry of the specified path with this path's
-         * geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections, keeping the parts of
-         *     the curves that intersect with the area of the second path.
-         * 
-         * @param path - the path to intersect with
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        intersect(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Subtracts the geometry of the specified path from this path's
-         * geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections, removing the parts of
-         *     the curves that intersect with the area of the second path.
-         * 
-         * @param path - the path to subtract
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        subtract(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Excludes the intersection of the geometry of the specified path with
-         * this path's geometry and returns the result as a new path item.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * 
-         * @param path - the path to exclude the intersection of
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        exclude(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Splits the geometry of this path along the geometry of the specified
-         * path returns the result as a new group item. This is equivalent to
-         * calling {@link #subtract} and {@link #intersect} and
-         * putting the results into a new group.
-         * 
-         * @option [options.insert=true] {Boolean} whether the resulting item
-         *     should be inserted back into the scene graph, above both paths
-         *     involved in the operation
-         * @option [options.trace=true] {Boolean} whether the tracing method is
-         *     used, treating both paths as areas when determining which parts
-         *     of the paths are to be kept in the result, or whether the first
-         *     path is only to be split at intersections.
-         * 
-         * @param path - the path to divide by
-         * @param options - the boolean operation options
-         * 
-         * @return the resulting path item
-         */
-        divide(path: PathItem, options?: object): PathItem
-
-        /** 
-         * Fixes the orientation of the sub-paths of a compound-path, assuming
-         * that non of its sub-paths intersect, by reorienting them so that they
-         * are of different winding direction than their containing paths,
-         * except for disjoint sub-paths, i.e. islands, which are oriented so
-         * that they have the same winding direction as the the biggest path.
-         * 
-         * @param nonZero - controls if the non-zero fill-rule
-         *     is to be applied, by counting the winding of each nested path and
-         *     discarding sub-paths that do not contribute to the final result
-         * @param clockwise - if provided, the orientation of the root
-         *     paths will be set to the orientation specified by `clockwise`,
-         *     otherwise the orientation of the largest root child is used.
-         * 
-         * @return a reference to the item itself, reoriented
-         */
-        reorient(nonZero?: boolean, clockwise?: boolean): PathItem
 
     }
 

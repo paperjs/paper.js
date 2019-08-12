@@ -30,6 +30,34 @@
 		<h2>Properties</h2>
 		
 			
+<div id="interiorpoint" class="member">
+<div class="member-link">
+<a name="interiorpoint" href="#interiorpoint"><tt><b>interiorPoint</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Returns a point that is guaranteed to be inside the path.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
 <div id="clockwise" class="member">
 <div class="member-link">
 <a name="clockwise" href="#clockwise"><tt><b>clockwise</b></tt></a>
@@ -90,34 +118,6 @@
 </div>
 </div>
 		
-			
-<div id="interiorpoint" class="member">
-<div class="member-link">
-<a name="interiorpoint" href="#interiorpoint"><tt><b>interiorPoint</b></tt></a>
-</div>
-<div class="member-description hidden">
-
-<div class="member-text">
-	<p>Returns a point that is guaranteed to be inside the path.</p>
-	
-		<p>Read only.</p>
-	
-	
-	
-	<ul class="member-list">
-		<h4>Type:</h4>
-		<li>
-			<a href="../classes/Point.html"><tt>Point</tt></a>
-		</li>
-	</ul>
-    
-	
-	
-</div>
-
-</div>
-</div>
-		
 	</div>
 
 
@@ -128,6 +128,314 @@
 	<div class="reference-members">
 		<h2>Methods</h2>
 		
+	
+<h3>Boolean Path Operations</h3>
+
+<div id="unite-path" class="member">
+<div class="member-link">
+<a name="unite-path" href="#unite-path"><tt><b>unite</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Unites the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path to unite with
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="intersect-path" class="member">
+<div class="member-link">
+<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Intersects the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, keeping the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path to intersect with
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="subtract-path" class="member">
+<div class="member-link">
+<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Subtracts the geometry of the specified path from this path&rsquo;s geometry and returns the result as a new path item.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, removing the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path to subtract
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="exclude-path" class="member">
+<div class="member-link">
+<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Excludes the intersection of the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path to exclude the intersection of
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="divide-path" class="member">
+<div class="member-link">
+<a name="divide-path" href="#divide-path"><tt><b>divide</b>(path[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Splits the geometry of this path along the geometry of the specified path returns the result as a new group item. This is equivalent to calling <a href="../classes/PathItem.html#subtract-path"><tt>subtract(path)</tt></a> and <a href="../classes/PathItem.html#intersect-path"><tt>intersect(path)</tt></a> and putting the results into a new group.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections. &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>path:</tt> 
+<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
+&mdash;&nbsp;the path to divide by
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the boolean operation options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="reorient" class="member">
+<div class="member-link">
+<a name="reorient" href="#reorient"><tt><b>reorient</b>([nonZero[, clockwise]])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Fixes the orientation of the sub-paths of a compound-path, assuming that non of its sub-paths intersect, by reorienting them so that they are of different winding direction than their containing paths, except for disjoint sub-paths, i.e. islands, which are oriented so that they have the same winding direction as the the biggest path.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>nonZero:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;controls if the non-zero fill-rule  is to be applied, by counting the winding of each nested path and  discarding sub-paths that do not contribute to the final result
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+	<li>
+<tt>clockwise:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;if provided, the orientation of the root  paths will be set to the orientation specified by <code>clockwise</code>,  otherwise the orientation of the largest root child is used.
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;a reference to the item itself, reoriented
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
 	
 <h3>Path Intersections and Locations</h3>
 
@@ -1591,314 +1899,6 @@ path.smooth();
 </ul>
 
 	
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<h3>Boolean Path Operations</h3>
-
-<div id="unite-path" class="member">
-<div class="member-link">
-<a name="unite-path" href="#unite-path"><tt><b>unite</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Unites the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to unite with
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="intersect-path" class="member">
-<div class="member-link">
-<a name="intersect-path" href="#intersect-path"><tt><b>intersect</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Intersects the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, keeping the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to intersect with
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="subtract-path" class="member">
-<div class="member-link">
-<a name="subtract-path" href="#subtract-path"><tt><b>subtract</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Subtracts the geometry of the specified path from this path&rsquo;s geometry and returns the result as a new path item.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections, removing the parts of  the curves that intersect with the area of the second path. &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to subtract
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="exclude-path" class="member">
-<div class="member-link">
-<a name="exclude-path" href="#exclude-path"><tt><b>exclude</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Excludes the intersection of the geometry of the specified path with this path&rsquo;s geometry and returns the result as a new path item.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to exclude the intersection of
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="divide-path" class="member">
-<div class="member-link">
-<a name="divide-path" href="#divide-path"><tt><b>divide</b>(path[, options])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Splits the geometry of this path along the geometry of the specified path returns the result as a new group item. This is equivalent to calling <a href="../classes/PathItem.html#subtract-path"><tt>subtract(path)</tt></a> and <a href="../classes/PathItem.html#intersect-path"><tt>intersect(path)</tt></a> and putting the results into a new group.</p>
-    <ul class="member-list">
-<h4>Options:</h4>
-<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the resulting item  should be inserted back into the scene graph, above both paths  involved in the operation &mdash;&nbsp;default: <tt>true</tt></li>
-<li><tt>options.trace: <tt>Boolean</tt></tt> &mdash; whether the tracing method is  used, treating both paths as areas when determining which parts  of the paths are to be kept in the result, or whether the first  path is only to be split at intersections. &mdash;&nbsp;default: <tt>true</tt></li>
-</ul>
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>path:</tt> 
-<a href="../classes/PathItem.html"><tt>PathItem</tt></a>
-&mdash;&nbsp;the path to divide by
-
-</li>
-	
-	<li>
-<tt>options:</tt> 
-<tt>Object</tt>
-&mdash;&nbsp;the boolean operation options
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;the resulting path item
-</li>
-
-		
-	</ul>
-
-
-
-	
-	
-</div>
-</div>
-</div>
-
-	
-<div id="reorient" class="member">
-<div class="member-link">
-<a name="reorient" href="#reorient"><tt><b>reorient</b>([nonZero[, clockwise]])</tt></a>
-</div>
-<div class="member-description hidden">
-<div class="member-text">
-	<p>Fixes the orientation of the sub-paths of a compound-path, assuming that non of its sub-paths intersect, by reorienting them so that they are of different winding direction than their containing paths, except for disjoint sub-paths, i.e. islands, which are oriented so that they have the same winding direction as the the biggest path.</p>
-    
-	
-<ul class="member-list">
-	<h4>Parameters:</h4>
-	
-	<li>
-<tt>nonZero:</tt> 
-<tt>Boolean</tt>
-&mdash;&nbsp;controls if the non-zero fill-rule  is to be applied, by counting the winding of each nested path and  discarding sub-paths that do not contribute to the final result
-&mdash;&nbsp;optional, default: <tt>false</tt>
-</li>
-	
-	<li>
-<tt>clockwise:</tt> 
-<tt>Boolean</tt>
-&mdash;&nbsp;if provided, the orientation of the root  paths will be set to the orientation specified by <code>clockwise</code>,  otherwise the orientation of the largest root child is used.
-&mdash;&nbsp;optional
-</li>
-	
-</ul>
-
-	
-	<ul class="member-list">
-		<h4>Returns:</h4>
-		
-			<li>
-<tt><a href="../classes/PathItem.html"><tt>PathItem</tt></a></tt>&nbsp;&mdash;&nbsp;a reference to the item itself, reoriented
-</li>
-
-		
-	</ul>
-
 
 
 	
