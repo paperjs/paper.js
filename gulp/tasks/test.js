@@ -11,7 +11,6 @@
  */
 
 var gulp = require('gulp'),
-    gutil = require('gulp-util'),
     qunits = require('gulp-qunits'),
     webserver = require('gulp-webserver');
 
