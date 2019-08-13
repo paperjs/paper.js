@@ -9,11 +9,15 @@
     "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
-  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"],
+  "contributors": [
+    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
+    "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"
+  ],
   "main": "dist/paper-full.js",
   "types": "dist/paper.d.ts",
   "scripts": {
     "build": "gulp build",
+    "minify": "gulp minify",
     "dist": "gulp dist",
     "zip": "gulp zip",
     "docs": "gulp docs",
@@ -21,7 +25,14 @@
     "jshint": "gulp jshint",
     "test": "gulp test"
   },
-  "files": ["AUTHORS.md", "CHANGELOG.md", "dist/", "examples/", "LICENSE.txt", "README.md"],
+  "files": [
+    "AUTHORS.md",
+    "CHANGELOG.md",
+    "dist/",
+    "examples/",
+    "LICENSE.txt",
+    "README.md"
+  ],
   "engines": {
     "node": ">=8.0.0"
   },
@@ -43,7 +54,6 @@
     "acorn": "~0.5.0",
     "canvas": "^2.4.1",
     "del": "^4.1.0",
-    "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
     "gulp-git-streamed": "^2.8.1",
     "gulp-jshint": "^2.1.0",
@@ -56,6 +66,7 @@
     "gulp-uglify": "^1.5.4",
     "gulp-uncomment": "^0.3.0",
     "gulp-util": "^3.0.7",
+    "gulp-v3": "^3.12.1",
     "gulp-webserver": "^0.9.1",
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^3.2.0",
@@ -70,11 +81,27 @@
     "qunitjs": "^1.23.0",
     "require-dir": "^1.2.0",
     "resemblejs": "^3.1.0",
-    "run-sequence": "^2.2.1",
+    "run-sequence-v3": "^2.3.0",
     "source-map-support": "^0.5.12",
     "stats.js": "0.17.0",
     "straps": "^3.0.1",
     "typescript": "^3.1.6"
   },
-  "keywords": ["vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve", "curves", "path", "paths", "canvas", "svg", "paper", "paper.js", "paperjs"]
+  "keywords": [
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js",
+    "paperjs"
+  ]
 }

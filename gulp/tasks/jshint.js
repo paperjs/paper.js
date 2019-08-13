@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     jshint = require('gulp-jshint'),
     cache = require('gulp-cached');
 

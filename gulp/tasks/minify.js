@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     rename = require('gulp-rename'),
     fs = require('fs'),
     uglify = require('gulp-uglify');

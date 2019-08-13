@@ -10,11 +10,11 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     path = require('path'),
     fs = require('fs'),
     del = require('del'),
-    run = require('run-sequence'),
+    run = require('run-sequence-v3'),
     git = require('gulp-git-streamed'),
     shell = require('gulp-shell'),
     merge = require('merge-stream'),

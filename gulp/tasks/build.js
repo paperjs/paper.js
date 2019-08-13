@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     prepro = require('gulp-prepro'),
     rename = require('gulp-rename'),
     uncomment = require('gulp-uncomment'),

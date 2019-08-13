@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     requireDir = require('require-dir');
 
 requireDir('./gulp/utils');

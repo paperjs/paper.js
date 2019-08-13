@@ -10,12 +10,12 @@
  * All rights reserved.
  */
 
-var gulp = require('gulp'),
+var gulp = require('gulp-v3'),
     del = require('del'),
     rename = require('gulp-rename'),
     shell = require('gulp-shell'),
     options = require('../utils/options.js'),
-    run = require('run-sequence');
+    run = require('run-sequence-v3');
 
 var docOptions = {
     local: 'docs', // Generates the offline docs
