@@ -18,7 +18,6 @@
  * @extends Item
  */
 var Raster = Item.extend(/** @lends Raster# */{
-}, /** @lends Raster# */{
     _class: 'Raster',
     _applyMatrix: false,
     _canApplyMatrix: false,
