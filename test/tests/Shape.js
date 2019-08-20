@@ -53,3 +53,11 @@ test('shape.toPath().toShape()', function() {
         equals(shape.toPath().toShape(), shape, name + '.toPath().toShape()');
     });
 });
+
+test('new Shape.Rectangle() with position set before size', function() {
+    var shape1 = new Shape.Rectangle({
+        position: [0, 0],
+        size: new Size(100, 100)
+    });
+    equals(shape1.bounds.width, 100);
+});
