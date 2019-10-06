@@ -92,20 +92,11 @@ classes.forEach(cls => {
 // all the other classes as properties. Eg. we can do `new paperScope.Path()`.
 // So we add a `classesPointers` property that the template will use.
 const paperScopeClass = classes.find(_ => _.className === 'PaperScope');
-paperScopeClass.classesPointers = classes.filter(_ => _.className !== 'PaperScope').map(_ => ({ name: _.className }));
-
-// Since paper.js module is at the same time a PaperScope instance, we need to
-// duplicate PaperScope instance properties and methods in the module scope.
-// For that, we expose a special variable to the template.
-const paperInstance = { ...paperScopeClass };
-// We filter static properties and methods for module scope.
-paperInstance.properties = paperInstance.properties.filter(_ => !_.static);
-paperInstance.methods = paperInstance.methods.filter(_ => !_.static && _.name !== 'constructor');
+paperScopeClass.classesPointers = classes.map(_ => ({ name: _.className }));
 
 // Format data trough a mustache template.
 // Prepare data for the template.
 const context = {
-    paperInstance: paperInstance,
     classes: classes,
     version: data.version,
     date: data.date,
