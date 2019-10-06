@@ -189,3 +189,13 @@ test(
         equals(group.internalBounds, expected);
     }
 );
+
+test('group.matrix with parent matrix applied (#1711)', function() {
+    var child = new Group({ applyMatrix: false });
+    var parent = new Group([child]);
+    var scale = 1.1;
+    var initial = child.scaling.x;
+    parent.scale(scale);
+    var final = child.scaling.x;
+    equals(final, initial * scale);
+});
