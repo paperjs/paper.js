@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Aug 12 16:24:29 2019 +0200
+ * Date: Sun Oct 6 14:00:09 2019 +0200
  *
  ***
  *
@@ -4342,14 +4342,16 @@ new function() {
 			if (strokeColor)
 				strokeColor.transform(matrix);
 		}
-		if (applyMatrix && (applyMatrix = this._transformContent(_matrix,
-				_applyRecursively, _setApplyMatrix))) {
-			var pivot = this._pivot;
-			if (pivot)
-				_matrix._transformPoint(pivot, pivot, true);
-			_matrix.reset(true);
+		if (applyMatrix) {
 			if (_setApplyMatrix && this._canApplyMatrix)
 				this._applyMatrix = true;
+			if (this._applyMatrix && (applyMatrix = this._transformContent(_matrix,
+					_applyRecursively, _setApplyMatrix))) {
+				var pivot = this._pivot;
+				if (pivot)
+					_matrix._transformPoint(pivot, pivot, true);
+				_matrix.reset(true);
+			}
 		}
 		var bounds = this._bounds,
 			position = this._position;
