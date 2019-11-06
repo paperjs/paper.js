@@ -91,8 +91,8 @@ classes.forEach(cls => {
 // PaperScope class needs to be handled slightly differently because it "owns"
 // all the other classes as properties. Eg. we can do `new paperScope.Path()`.
 // So we add a `classesPointers` property that the template will use.
-const paperScopeClass = classes.find(_ => _.className === 'PaperScope');
-paperScopeClass.classesPointers = classes.map(_ => ({ name: _.className }));
+const paperScopeClass = classes.find(it => it.className === 'PaperScope');
+paperScopeClass.classesPointers = classes.map(it => ({ name: it.className }));
 
 // Format data trough a mustache template.
 // Prepare data for the template.
