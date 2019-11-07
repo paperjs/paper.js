@@ -9,107 +9,12 @@
  *
  * All rights reserved.
  *
- * Date: Wed Aug 14 15:00:17 2019 +0530
+ * Date: Thu Nov 7 12:12:14 2019 +0100
  *
  * This is an auto-generated type definition.
  */
 
-declare module paper {
-    /** 
-     * The version of Paper.js, as a string.
-     */
-    let version: string
-
-    /** 
-     * Gives access to paper's configurable settings.
-     * 
-     * @option [settings.insertItems=true] {Boolean} controls whether newly
-     *     created items are automatically inserted into the scene graph, by
-     *     adding them to {@link Project#activeLayer}
-     * @option [settings.applyMatrix=true] {Boolean} controls what value newly
-     *     created items have their {@link Item#applyMatrix} property set to
-     *     (Note that not all items can set this to `false`)
-     * @option [settings.handleSize=4] {Number} the size of the curve handles
-     *     when drawing selections
-     * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-     *     tests, when no value is specified
-     */
-    let settings: any
-
-    /** 
-     * The currently active project.
-     */
-    let project: Project
-
-    /** 
-     * The list of all open projects within the current Paper.js context.
-     */
-    let projects: Project[]
-
-    /** 
-     * The reference to the active project's view.
-     */
-    let view: View
-
-    /** 
-     * The reference to the active tool.
-     */
-    let tool: Tool
-
-    /** 
-     * The list of available tools.
-     */
-    let tools: Tool[]
-
-
-    /** 
-     * Compiles the PaperScript code into a compiled function and executes it.
-     * The compiled function receives all properties of this {@link PaperScope}
-     * as arguments, to emulate a global scope with unaffected performance. It
-     * also installs global view and tool handlers automatically on the
-     * respective objects.
-     * 
-     * @option options.url {String} the url of the source, for source-map
-     *     debugging
-     * @option options.source {String} the source to be used for the source-
-     *     mapping, in case the code that's passed in has already been mingled.
-     * 
-     * @param code - the PaperScript code
-     * @param options - the compilation options
-     */
-    function execute(code: string, options?: object): void
-
-    /** 
-     * Injects the paper scope into any other given scope. Can be used for
-     * example to inject the currently active PaperScope into the window's
-     * global scope, to emulate PaperScript-style globally accessible Paper
-     * classes and objects.
-     * 
-     * <b>Please note:</b> Using this method may override native constructors
-     * (e.g. Path). This may cause problems when using Paper.js in conjunction
-     * with other libraries that rely on these constructors. Keep the library
-     * scoped if you encounter issues caused by this.
-     */
-    function install(scope: any): void
-
-    /** 
-     * Sets up an empty project for us. If a canvas is provided, it also creates
-     * a {@link View} for it, both linked to this scope.
-     * 
-     * @param element - the HTML canvas element
-     * this scope should be associated with, or an ID string by which to find
-     * the element, or the size of the canvas to be created for usage in a web
-     * worker.
-     */
-    function setup(element: HTMLCanvasElement | string | Size): void
-
-    /** 
-     * Activates this PaperScope, so all newly created items will be placed
-     * in its active project.
-     */
-    function activate(): void
-
-
+declare namespace paper {
 
     /** 
      * All properties and functions that expect color values in the form
@@ -3363,6 +3268,7 @@ declare module paper {
         Layer: typeof Layer
         Matrix: typeof Matrix
         MouseEvent: typeof MouseEvent
+        PaperScope: typeof PaperScope
         PaperScript: typeof PaperScript
         Path: typeof Path
         PathItem: typeof PathItem
@@ -7421,6 +7327,15 @@ declare module paper {
     }
 }
 
-declare module 'paper' {
-    export = paper
+
+declare module 'paper/dist/paper-core'
+{
+    const paperCore: Pick<paper.PaperScope, Exclude<keyof paper.PaperScope, 'PaperScript'>>;
+    export = paperCore
+}
+
+declare module 'paper'
+{
+    const paperFull: paper.PaperScope;
+    export = paperFull
 }
