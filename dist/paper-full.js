@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 7 12:12:14 2019 +0100
+ * Date: Sat Nov 9 12:17:26 2019 -0500
  *
  ***
  *
@@ -4840,7 +4840,7 @@ var Shape = Item.extend({
 				width = size.width,
 				height = size.height;
 			if (type === 'rectangle') {
-				this._radius.set(Size.min(this._radius, size.divide(2)));
+				this._radius.set(Size.min(this._radius, size.divide(2).abs()));
 			} else if (type === 'circle') {
 				width = height = (width + height) / 2;
 				this._radius = width / 2;
