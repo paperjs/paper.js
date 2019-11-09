@@ -53,3 +53,26 @@ test('shape.toPath().toShape()', function() {
         equals(shape.toPath().toShape(), shape, name + '.toPath().toShape()');
     });
 });
+
+test('Shape.Rectangle radius works with negative size', function() {
+    var shape = new Shape.Rectangle({
+        center: [50, 50],
+        size: 50,
+        fillColor: 'black'
+    });
+
+    shape.size = [-25, -25];
+
+    equals(shape.radius.width, 0);
+    equals(shape.radius.height, 0);
+
+    shape.radius = [10, 50];
+    shape.size = [50, -25];
+
+    equals(shape.radius.width, 10);
+    equals(shape.radius.height, 12.5);
+
+    shape.size = [50, 75];
+
+    equals(shape.radius.height, 12.5);
+});
