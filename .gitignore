@@ -3,3 +3,5 @@
 /dist/*/
 /dist/*.min.js
 /dist/paperjs.zip
+package-lock.json
+package.json

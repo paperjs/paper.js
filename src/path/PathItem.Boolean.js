@@ -300,29 +300,37 @@ PathItem.inject(new function() {
                 // Get reference to the first, largest path and insert it
                 // already.
                 first = sorted[0];
+            // create lookup containing overlapping path bounds
+            var overlaps = CollisionDetection.findItemOverlaps(sorted, null, Numerical.GEOMETRIC_EPSILON);
             if (clockwise == null)
                 clockwise = first.isClockwise();
             // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
-                    entry1 = lookup[path1._id],
-                    point = path1.getInteriorPoint(),
-                    containerWinding = 0;
-                for (var j = i - 1; j >= 0; j--) {
-                    var path2 = sorted[j];
-                    // As we run through the paths from largest to smallest, for
-                    // any current path, all potentially containing paths have
-                    // already been processed and their orientation fixed.
-                    // To achieve correct orientation of contained paths based
-                    // on winding, we have to find one containing path with
-                    // different "insideness" and set opposite orientation.
-                    if (path2.contains(point)) {
-                        var entry2 = lookup[path2._id];
-                        containerWinding = entry2.winding;
-                        entry1.winding += containerWinding;
-                        entry1.container = entry2.exclude ? entry2.container
-                                : path2;
-                        break;
+                    overlapsI = overlaps[i];
+                if (overlapsI) {
+                    var entry1 = lookup[path1._id],
+                        point = null; // interior point, only get it if really required
+                        containerWinding = 0;
+                    for (var j = overlapsI.length - 1; j >= 0; j--) {
+                        if (overlapsI[j] < i) {
+                            point = point || path1.getInteriorPoint();
+                            var path2 = sorted[overlapsI[j]];
+                            // As we run through the paths from largest to smallest, for
+                            // any current path, all potentially containing paths have
+                            // already been processed and their orientation fixed.
+                            // To achieve correct orientation of contained paths based
+                            // on winding, we have to find one containing path with
+                            // different "insideness" and set opposite orientation.
+                            if (path2.contains(point)) {
+                                var entry2 = lookup[path2._id];
+                                containerWinding = entry2.winding;
+                                entry1.winding += containerWinding;
+                                entry1.container = entry2.exclude ? entry2.container
+                                        : path2;
+                                break;
+                            }
+                        }
                     }
                 }
                 // Only keep paths if the "insideness" changes when crossing the
