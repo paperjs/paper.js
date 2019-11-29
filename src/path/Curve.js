@@ -2103,52 +2103,57 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function getIntersections(curves1, curves2, include, matrix1, matrix2,
-            _returnFirst) {
+        _returnFirst) {
+        var min = Math.min,
+            max = Math.max,
+            epsilon = Numerical.GEOMETRIC_EPSILON;
         var self = !curves2;
         if (self)
             curves2 = curves1;
         var length1 = curves1.length,
             length2 = curves2.length,
-            values2 = [],
-            arrays = [],
-            locations,
-            current;
-        // Cache values for curves2 as we re-iterate them for each in curves1.
-        for (var i = 0; i < length2; i++)
-            values2[i] = curves2[i].getValues(matrix2);
+            values1 = new Array(length1),
+            values2 = self ? values1 : new Array(length2),
+            locations = [];
+
         for (var i = 0; i < length1; i++) {
-            var curve1 = curves1[i],
-                values1 = self ? values2[i] : curve1.getValues(matrix1),
-                path1 = curve1.getPath();
-            // NOTE: Due to the nature of getCurveIntersections(), we use
-            // separate location arrays per path1, to make sure the circularity
-            // checks are not getting confused by locations on separate paths.
-            // The separate arrays are then flattened in the end.
-            if (path1 !== current) {
-                current = path1;
-                locations = [];
-                arrays.push(locations);
+            var v = curves1[i].getValues(matrix1);
+            values1[i] = v;
+        }
+        if (!self) {
+            for (var i = 0; i < length2; i++) {
+                var v = curves2[i].getValues(matrix2);
+                values2[i] = v;
             }
+        }
+        var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
+            values1, self ? null : values2, epsilon);
+        for (var index1 = 0; index1 < length1; index1++) {
+            var curve1 = curves1[index1],
+                v1 = values1[index1];
             if (self) {
                 // First check for self-intersections within the same curve.
-                getSelfIntersection(values1, curve1, locations, include);
+                getSelfIntersection(v1, curve1, locations, include);    
             }
-            // Check for intersections with other curves.
-            // For self-intersection, we can start at i + 1 instead of 0.
-            for (var j = self ? i + 1 : 0; j < length2; j++) {
-                // There might be already one location from the above
-                // self-intersection check:
-                if (_returnFirst && locations.length)
-                    return locations;
-                getCurveIntersections(values1, values2[j], curve1, curves2[j],
-                        locations, include);
+            // Check for intersections with potentially intersecting curves.
+            var collisions1 = boundsCollisions[index1];
+            if (collisions1) {
+                for (var j = 0; j < collisions1.length; j++) {
+                    // There might be already one location from the above
+                    // self-intersection check:
+                    if (_returnFirst && locations.length)
+                        return locations;
+                    var index2 = collisions1[j];
+                    if (!self || index2 > index1) {
+                        var curve2 = curves2[index2],
+                            v2 = values2[index2];
+                        getCurveIntersections(
+                            v1, v2, curve1, curve2, locations, include
+                        );
+                    }
+                }
             }
-        }
-        // Flatten the list of location arrays to one array and return it.
-        locations = [];
-        for (var i = 0, l = arrays.length; i < l; i++) {
-            Base.push(locations, arrays[i]);
-        }
+        }  
         return locations;
     }
 
