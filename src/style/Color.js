@@ -102,7 +102,7 @@ var Color = Base.extend(new function() {
                     }
                 } else if (i < 3) {
                     // RGB color values to 0..1
-                    value /= 255;
+                    value /= /%$/.test(component) ? 100 : 255;
                 }
                 components[i] = value;
             }
