@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Nov 9 12:17:26 2019 -0500
+ * Date: Thu Dec 5 17:04:03 2019 +0900
  *
  ***
  *
@@ -11370,7 +11370,7 @@ var Color = Base.extend(new function() {
 						value /= 100;
 					}
 				} else if (i < 3) {
-					value /= 255;
+					value /= /%$/.test(component) ? 100 : 255;
 				}
 				components[i] = value;
 			}
