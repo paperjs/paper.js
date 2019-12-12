@@ -166,12 +166,12 @@ PathItem.inject(new function() {
                     curvesValues, curvesValues, 0, false, true);
             var horCurvesMap = {};
             for (var i = 0; i < curves.length; i++) {
-                var curve = curves[i];
-                var collidingCurves = [];                  
-                var collisionIndexes = horCurveCollisions[i];
-                if (collisionIndexes) {
-                    for (var j = 0; j < collisionIndexes.length; j++) {
-                        collidingCurves.push(curves[collisionIndexes[j]]);
+                var curve = curves[i],
+                    collidingCurves = [],
+                    collisionIndices = horCurveCollisions[i];
+                if (collisionIndices) {
+                    for (var j = 0; j < collisionIndices.length; j++) {
+                        collidingCurves.push(curves[collisionIndices[j]]);
                     }
                 }
                 var pathId = curve.getPath().getId();
@@ -184,12 +184,12 @@ PathItem.inject(new function() {
                     curvesValues, curvesValues, 0, true, true);
             var vertCurvesMap = {};
             for (var i = 0; i < curves.length; i++) {
-                var curve = curves[i];
-                var collidingCurves = [];                  
-                var collisionIndexes = vertCurveCollisions[i];
-                if (collisionIndexes) {
-                    for (var j = 0; j < collisionIndexes.length; j++) {
-                        collidingCurves.push(curves[collisionIndexes[j]]);
+                var curve = curves[i],
+                    collidingCurves = [],
+                    collisionIndices = vertCurveCollisions[i];
+                if (collisionIndices) {
+                    for (var j = 0; j < collisionIndices.length; j++) {
+                        collidingCurves.push(curves[collisionIndices[j]]);
                     }
                 }
                 var pathId = curve.getPath().getId();
@@ -349,28 +349,28 @@ PathItem.inject(new function() {
             // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
-                    collisionsI = collisions[i];
-                if (collisionsI) {
+                    indicesI = collisions[i];
+                if (indicesI) {
                     var entry1 = lookup[path1._id],
                         point = null; // interior point, only get it if required
                         containerWinding = 0;
-                    for (var j = collisionsI.length - 1; j >= 0; j--) {
-                        if (collisionsI[j] < i) {
+                    for (var j = indicesI.length - 1; j >= 0; j--) {
+                        if (indicesI[j] < i) {
                             point = point || path1.getInteriorPoint();
-                            var path2 = sorted[collisionsI[j]];
-                            //ToDo: formatting
-                            // As we run through the paths from largest to smallest, for
-                            // any current path, all potentially containing paths have
-                            // already been processed and their orientation fixed.
-                            // To achieve correct orientation of contained paths based
-                            // on winding, we have to find one containing path with
+                            var path2 = sorted[indicesI[j]];
+                            // As we run through the paths from largest to 
+                            // smallest, for any current path, all potentially
+                            // containing paths have already been processed and
+                            // their orientation fixed. To achieve correct
+                            // orientation of contained paths based on winding,
+                            // we have to find one containing path with
                             // different "insideness" and set opposite orientation.
                             if (path2.contains(point)) {
                                 var entry2 = lookup[path2._id];
                                 containerWinding = entry2.winding;
                                 entry1.winding += containerWinding;
-                                entry1.container = entry2.exclude ? entry2.container
-                                        : path2;
+                                entry1.container = entry2.exclude ? 
+                                        entry2.container : path2;
                                 break;
                             }
                         }
@@ -534,10 +534,16 @@ PathItem.inject(new function() {
      *
      * @param {Point} point the location for which to determine the winding
      *     contribution
-     * @param {Curve[]} curvesH ToDo: the curves that describe the shape against which
+     * @param {Curve[]} curvesH The curves that describe the shape against which
      *     to check, as returned by {@link Path#curves} or
-     *     {@link CompoundPath#curves}
-     * @param {Curve[]} curvesV  ToDo:
+     *     {@link CompoundPath#curves}. This only has to contain those curves
+     *     that can be crossed by a horizontal line through the point to be
+     *     checked.
+     * @param {Curve[]} curvesV  The curves that describe the shape against which
+     *     to check, as returned by {@link Path#curves} or
+     *     {@link CompoundPath#curves}. This only has to contain those curves
+     *     that can be crossed by a vertical line through the point to be
+     *     checked.
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
      * @param {Boolean} [closed=false] determines how areas should be closed
@@ -787,7 +793,8 @@ PathItem.inject(new function() {
         };
     }
 
-    function propagateWinding(segment, path1, path2, horCurveCollisionsMap, vertCurveCollisionsMap, operator) {  // ToDo: linebreak
+    function propagateWinding(segment, path1, path2, horCurveCollisionsMap,
+        vertCurveCollisionsMap, operator) {
         // Here we try to determine the most likely winding number contribution
         // for the curve-chain starting with this segment. Once we have enough
         // confidence in the winding contribution, we can propagate it until the

@@ -2104,9 +2104,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
 
     function getIntersections(curves1, curves2, include, matrix1, matrix2,
         _returnFirst) {
-        var min = Math.min,
-            max = Math.max,
-            epsilon = Numerical.GEOMETRIC_EPSILON;
+        var epsilon = Numerical.GEOMETRIC_EPSILON;
         var self = !curves2;
         if (self)
             curves2 = curves1;
