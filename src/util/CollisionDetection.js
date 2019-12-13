@@ -30,35 +30,24 @@ var CollisionDetection = /** @lends CollisionDetection */{
      *     the first array will be returned.
      * @param {Number} [tolerance] If provided, the tolerance will be added to
      *     all sides of each bounds when checking for collisions.
-     * @param {Boolean} [sweepVertical] If true, the sweep is performed along
-     *     the y-axis.
-     * @param {Boolean} [onlySweepAxisCollisions] If true, no collision checks
-     *     will be done on the secondary axis.
      * @returns {Array} Array containing for the bounds at the same index in
      *     items1 an array of the indexes of colliding bounds in items2
      */
-    findItemBoundsCollisions: function(items1, items2, tolerance,
-            sweepVertical, onlySweepAxisCollisions) {
-        var bounds1 = new Array(items1.length),
-            bounds2;
-        for (var i = 0; i < items1.length; i++) {
-            var bounds = items1[i].bounds;
-            bounds1[i] = [bounds.left, bounds.top, bounds.right, bounds.bottom];
-        }
-        if (items2) {
-            if (items2 === items1) {
-                bounds2 = bounds1;
-            } else {
-                bounds2 = new Array(items2.length);
-                for (var i = 0; i < items2.length; i++) {
-                    var bounds = items2[i].bounds;
-                    bounds2[i] = [bounds.left, bounds.top, bounds.right,
-                        bounds.bottom];
-                }
+    findItemBoundsCollisions: function(items1, items2, tolerance) {
+        function getBounds(items) {
+            var bounds = new Array(items.length);
+            for (var i = 0; i < items.length; i++) {
+                var rect = items[i].getBounds();
+                bounds[i] = [rect.left, rect.top, rect.right, rect.bottom];
             }
+            return bounds;
         }
-        return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0,
-                sweepVertical, onlySweepAxisCollisions);
+
+        var bounds1 = getBounds(items1),
+            bounds2 = !items2 || items2 === items1
+                ? bounds1
+                : getBounds(items2);
+        return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
     },
 
     /**
@@ -67,14 +56,14 @@ var CollisionDetection = /** @lends CollisionDetection */{
      * the actual bounds. Broad bounds guarantee to contain the full curve,
      * but they are usually larger than the actual bounds of a curve.
      *
-     * This function takes the broad bounds of all curve values in the
-     * curveValues1 and curveValues2 arrays and calls findBoundsCollisions().
+     * This function takes the broad bounds of all curve values in the curves1
+     * and curves2 arrays and calls findBoundsCollisions().
      *
-     * @param {Array} curvesValues1 Array of curve values for which collisions
-     *     should be found.
-     * @param {Array} [curvesValues2] Array of curve values that the first
-     *     array should be compared with. If not provided, collisions between
-     *     curve bounds within the first arrray will be returned.
+     * @param {Array} curves1 Array of curve values for which collisions should
+     *     be found.
+     * @param {Array} [curves2] Array of curve values that the first array
+     *     should be compared with. If not provided, collisions between curve
+     *     bounds within the first arrray will be returned.
      * @param {Number} [tolerance] If provided, the tolerance will be added to
      *     all sides of each bounds when checking for collisions.
      * @param {Boolean} [sweepVertical] If true, the sweep is performed along
@@ -82,40 +71,30 @@ var CollisionDetection = /** @lends CollisionDetection */{
      * @param {Boolean} [onlySweepAxisCollisions] If true, no collision checks
      *     will be done on the secondary axis.
      * @returns {Array} Array containing for the bounds at the same index in
-     *     curveValues1 an array of the indexes of colliding bounds in
-     *     curveValues2
+     *     curves1 an array of the indexes of colliding bounds in curves2
      */
-    findCurveBoundsCollisions: function(curvesValues1, curvesValues2,
+    findCurveBoundsCollisions: function(curves1, curves2,
             tolerance, sweepVertical, onlySweepAxisCollisions) {
-        var min = Math.min,
-            max = Math.max,
-            bounds1 = new Array(curvesValues1.length),
-            bounds2;
-        for (var i = 0; i < bounds1.length; i++) {
-            var v1 = curvesValues1[i];
-            bounds1[i] = [
-                min(v1[0], v1[2], v1[4], v1[6]),
-                min(v1[1], v1[3], v1[5], v1[7]),
-                max(v1[0], v1[2], v1[4], v1[6]),
-                max(v1[1], v1[3], v1[5], v1[7])
-            ];
-        }
-        if (curvesValues2) {
-            if (curvesValues2 === curvesValues1) {
-                bounds2 = bounds1;
-            } else {
-                bounds2 = new Array(curvesValues2.length);
-                for (var i = 0; i < bounds2.length; i++) {
-                    var v2 = curvesValues2[i];
-                    bounds2[i] = [
-                        min(v2[0], v2[2], v2[4], v2[6]),
-                        min(v2[1], v2[3], v2[5], v2[7]),
-                        max(v2[0], v2[2], v2[4], v2[6]),
-                        max(v2[1], v2[3], v2[5], v2[7])
-                    ];
-                }
+        function getBounds(curves) {
+            var min = Math.min,
+                max = Math.max,
+                bounds = new Array(curves.length);
+            for (var i = 0; i < curves.length; i++) {
+                var v = curves[i];
+                bounds[i] = [
+                    min(v[0], v[2], v[4], v[6]),
+                    min(v[1], v[3], v[5], v[7]),
+                    max(v[0], v[2], v[4], v[6]),
+                    max(v[1], v[3], v[5], v[7])
+                ];
             }
+            return bounds;
         }
+
+        var bounds1 = getBounds(curves1),
+            bounds2 = !curves2 || curves2 === curves1
+                ? bounds1
+                : getBounds(curves2);
         return this.findBoundsCollisions(bounds1, bounds2,
                 tolerance || 0, sweepVertical, onlySweepAxisCollisions);
     },
@@ -156,21 +135,20 @@ var CollisionDetection = /** @lends CollisionDetection */{
      */
     findBoundsCollisions: function(boundsA, boundsB, tolerance,
         sweepVertical, onlySweepAxisCollisions) {
+        var self = !boundsB || boundsA === boundsB,
+            allBounds = self ? boundsA : boundsA.concat(boundsB),
+            lengthA = boundsA.length,
+            lengthAll = allBounds.length;
+
         // Binary search utility function.
         // For multiple same entries, this returns the rightmost entry.
         // https://en.wikipedia.org/wiki/Binary_search_algorithm#Procedure_for_finding_the_rightmost_element
-        var self = !boundsB || boundsA === boundsB,
-            allBounds = self ? boundsA : boundsA.concat(boundsB),
-            countA = boundsA.length,
-            countAll = allBounds.length,
-            lo, hi;
-
-        function binarySearch(indices, coordinateValue, coordinate) {
-            lo = 0;
-            hi = indices.length;
+        function binarySearch(indices, coord, value) {
+            var lo = 0,
+                hi = indices.length;
             while (lo < hi) {
                 var mid = (hi + lo) >>> 1; // Same as Math.floor((hi + lo) / 2)
-                if (allBounds[indices[mid]][coordinate] < coordinateValue) {
+                if (allBounds[indices[mid]][coord] < value) {
                     lo = mid + 1;
                 } else {
                     hi = mid;
@@ -182,73 +160,73 @@ var CollisionDetection = /** @lends CollisionDetection */{
         // Set coordinates for primary and secondary axis depending on sweep
         // direction. By default we sweep in horizontal direction, which
         // means x is the primary axis.
-        var coordP0 = sweepVertical ? 1 : 0,
-            coordP1 = coordP0 + 2,
-            coordS0 = sweepVertical ? 0 : 1,
-            coordS1 = coordS0 + 2;
+        var pri0 = sweepVertical ? 1 : 0,
+            pri1 = pri0 + 2,
+            sec0 = sweepVertical ? 0 : 1,
+            sec1 = sec0 + 2;
         // Create array with all indices sorted by lower boundary on primary
         // axis.
-        var allIndicesByP0 = new Array(countAll);
-        for (var i = 0; i < countAll; i++) {
-            allIndicesByP0[i] = i;
+        var allIndicesByPri0 = new Array(lengthAll);
+        for (var i = 0; i < lengthAll; i++) {
+            allIndicesByPri0[i] = i;
         }
-        allIndicesByP0.sort(function(i1, i2) {
-            return allBounds[i1][coordP0] - allBounds[i2][coordP0];
+        allIndicesByPri0.sort(function(i1, i2) {
+            return allBounds[i1][pri0] - allBounds[i2][pri0];
         });
         // Sweep along primary axis. Indices of active bounds are kept in an
         // array sorted by higher boundary on primary axis.
-        var activeIndicesByP1 = [],
-            allCollisions = new Array(countA);
-        for (var i = 0; i < countAll; i++) {
-            var currentIndex = allIndicesByP0[i],
-                currentBounds = allBounds[currentIndex],
-                currentOriginalIndex = self  // index in boundsA or boundsB
-                    ? currentIndex
-                    : currentIndex - countA,
-                isCurrentA = currentIndex < countA,
-                isCurrentB = self || currentIndex >= countA,
-                currentCollisions = isCurrentA ? [] : null;
-            if (activeIndicesByP1.length) {
-                // remove (prune) indices that are no longer active
-                var pruneCount = binarySearch(activeIndicesByP1,
-                        currentBounds[coordP0] - tolerance, coordP1) + 1;
-                activeIndicesByP1.splice(0, pruneCount);
-                // add collisions for current index
+        var activeIndicesByPri1 = [],
+            allCollisions = new Array(lengthA);
+        for (var i = 0; i < lengthAll; i++) {
+            var curIndex = allIndicesByPri0[i],
+                curBounds = allBounds[curIndex],
+                // The original index in boundsA or boundsB:
+                origIndex = self ? curIndex : curIndex - lengthA,
+                isCurrentA = curIndex < lengthA,
+                isCurrentB = self || !isCurrentA,
+                curCollisions = isCurrentA ? [] : null;
+            if (activeIndicesByPri1.length) {
+                // remove (prune) indices that are no longer active.
+                var pruneCount = binarySearch(activeIndicesByPri1, pri1,
+                        curBounds[pri0] - tolerance) + 1;
+                activeIndicesByPri1.splice(0, pruneCount);
+                // Add collisions for current index.
                 if (self && onlySweepAxisCollisions) {
                     // All active indexes can be added, no further checks needed
-                    currentCollisions = currentCollisions.concat(
-                        activeIndicesByP1.slice());
+                    curCollisions = curCollisions.concat(activeIndicesByPri1);
                    // Add current index to collisions of all active indexes
-                    for (var j = 0; j < activeIndicesByP1.length; j++) {
-                        var activeIndex = activeIndicesByP1[j];
-                        allCollisions[activeIndex].push(currentOriginalIndex);
+                    for (var j = 0; j < activeIndicesByPri1.length; j++) {
+                        var activeIndex = activeIndicesByPri1[j];
+                        allCollisions[activeIndex].push(origIndex);
                     }
                 } else {
-                    var currentS1 = currentBounds[coordS1],
-                        currentS0 = currentBounds[coordS0];
-                    for (var j = 0; j < activeIndicesByP1.length; j++) {
-                        var activeIndex = activeIndicesByP1[j],
-                            isActiveA = activeIndex < countA,
-                            isActiveB = self || activeIndex >= countA;
-                        // Check secondary axis bounds if necessary
-                        if (onlySweepAxisCollisions ||
-                            (((isCurrentA && isActiveB) ||
-                                (isCurrentB && isActiveA)) &&
-                                currentS1 >=
-                                    allBounds[activeIndex][coordS0] -
-                                        tolerance &&
-                                    currentS0 <=
-                                        allBounds[activeIndex][coordS1] +
-                                            tolerance)) {
+                    var curSec1 = curBounds[sec1],
+                        curSec0 = curBounds[sec0];
+                    for (var j = 0; j < activeIndicesByPri1.length; j++) {
+                        var activeIndex = activeIndicesByPri1[j],
+                            activeBounds = allBounds[activeIndex],
+                            isActiveA = activeIndex < lengthA,
+                            isActiveB = self || activeIndex >= lengthA;
+
+                        // Check secondary axis bounds if necessary.
+                        if (
+                            onlySweepAxisCollisions ||
+                            (
+                                isCurrentA && isActiveB ||
+                                isCurrentB && isActiveA
+                            ) && (
+                                curSec1 >= activeBounds[sec0] - tolerance &&
+                                curSec0 <= activeBounds[sec1] + tolerance
+                            )
+                        ) {
                             // Add current index to collisions of active
                             // indices and vice versa.
                             if (isCurrentA && isActiveB) {
-                                currentCollisions.push(
-                                    self ? activeIndex : activeIndex - countA);
+                                curCollisions.push(
+                                    self ? activeIndex : activeIndex - lengthA);
                             }
                             if (isCurrentB && isActiveA) {
-                                allCollisions[activeIndex].push(
-                                    currentOriginalIndex);
+                                allCollisions[activeIndex].push(origIndex);
                             }
                         }
                     }
@@ -256,29 +234,27 @@ var CollisionDetection = /** @lends CollisionDetection */{
             }
             if (isCurrentA) {
                 if (boundsA === boundsB) {
-                    // if both arrays are the same, add self collision
-                    currentCollisions.push(currentIndex);
+                    // If both arrays are the same, add self collision.
+                    curCollisions.push(curIndex);
                 }
-                // add collisions for current index
-                allCollisions[currentIndex] = currentCollisions;
+                // Add collisions for current index.
+                allCollisions[curIndex] = curCollisions;
             }
-            // add current index to active indices. Keep array sorted by
-            // their higher boundary on the primary axis
-            if (activeIndicesByP1.length) {
-                var currentP1 = currentBounds[coordP1],
-                    insertIndex =
-                        binarySearch(activeIndicesByP1, currentP1, coordP1) + 1;
-                activeIndicesByP1.splice(insertIndex, 0, currentIndex);
+            // Add current index to active indices. Keep array sorted by
+            // their higher boundary on the primary axis.s
+            if (activeIndicesByPri1.length) {
+                var curPri1 = curBounds[pri1],
+                    index = binarySearch(activeIndicesByPri1, pri1, curPri1);
+                activeIndicesByPri1.splice(index + 1, 0, curIndex);
             } else {
-                activeIndicesByP1.push(currentIndex);
+                activeIndicesByPri1.push(curIndex);
             }
         }
         // Sort collision indices in ascending order.
         for (var i = 0; i < allCollisions.length; i++) {
-            if (allCollisions[i]) {
-                allCollisions[i].sort(function(i1, i2) {
-                    return i1 - i2;
-                });
+            var collisions = allCollisions[i];
+            if (collisions) {
+                collisions.sort(function(i1, i2) { return i1 - i2; });
             }
         }
         return allCollisions;
