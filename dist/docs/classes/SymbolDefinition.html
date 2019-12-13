@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>SymbolDefinition</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>SymbolDefinition</h1>
+
+<p>Symbols allow you to place multiple instances of an item in your project. This can save memory, since all instances of a symbol simply refer to the original item and it can speed up moving around complex objects, since internal properties such as segment lists and gradient positions don&rsquo;t need to be updated with every transformation.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="symboldefinition-item" class="member">
+<div class="member-link">
+<a name="symboldefinition-item" href="#symboldefinition-item"><tt><b>SymbolDefinition</b>(item[, dontCenter])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a Symbol definition.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>item:</tt> 
+<a href="../classes/Item.html"><tt>Item</tt></a>
+&mdash;&nbsp;the source item which is removed from the scene graph  and becomes the symbol&rsquo;s definition.
+
+</li>
+	
+	<li>
+<tt>dontCenter:</tt> 
+<tt>Boolean</tt>
+
+&mdash;&nbsp;optional, default: <tt>false</tt>
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:<span class="description">Placing 100 instances of a symbol:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var path = new Path.Star(new Point(0, 0), 6, 5, 13);
+path.style = {
+    fillColor: 'white',
+    strokeColor: 'black'
+};
+
+// Create a symbol definition from the path:
+var definition = new SymbolDefinition(path);
+
+// Place 100 instances of the symbol definition:
+for (var i = 0; i < 100; i++) {
+    // Place an instance of the symbol definition in the project:
+    var instance = definition.place();
+
+    // Move the instance to a random position within the view:
+    instance.position = Point.random() * view.size;
+
+    // Rotate the instance by a random amount between
+    // 0 and 360 degrees:
+    instance.rotate(Math.random() * 360);
+
+    // Scale the instance between 0.25 and 1:
+    instance.scale(0.25 + Math.random() * 0.75);
+}
+</script>
+<div class="canvas"><canvas width="516" height="240" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="project" class="member">
+<div class="member-link">
+<a name="project" href="#project"><tt><b>project</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The project that this symbol belongs to.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Project.html"><tt>Project</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="item" class="member">
+<div class="member-link">
+<a name="item" href="#item"><tt><b>item</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The item used as the symbol&rsquo;s definition.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Item.html"><tt>Item</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="place" class="member">
+<div class="member-link">
+<a name="place" href="#place"><tt><b>place</b>([position])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Places in instance of the symbol in the project.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>position:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the position of the placed symbol
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/SymbolItem.html"><tt>SymbolItem</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="clone" class="member">
+<div class="member-link">
+<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns a copy of the symbol.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="equals-symbol" class="member">
+<div class="member-link">
+<a name="equals-symbol" href="#equals-symbol"><tt><b>equals</b>(symbol)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the symbol&rsquo;s definition is equal to the supplied symbol.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>symbol:</tt> 
+<a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if they are equal, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

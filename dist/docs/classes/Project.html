@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Project</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Project</h1>
+
+<p>A Project object in Paper.js is what usually is referred to as the document: The top level object that holds all the items contained in the scene graph. As the term document is already taken in the browser context, it is called Project.</p>
+<p>Projects allow the manipulation of the styles that are applied to all newly created items, give access to the selected items, and will in future versions offer ways to query for items in the scene graph defining specific requirements, and means to persist and load from different formats, such as SVG and PDF.</p>
+<p>The currently active project can be accessed through the <a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a> variable.</p>
+<p>An array of all open projects is accessible through the <a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> variable.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="project-element" class="member">
+<div class="member-link">
+<a name="project-element" href="#project-element"><tt><b>Project</b>(element)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a Paper.js project containing one empty <a href="../classes/Layer.html"><tt>Layer</tt></a>, referenced by <a href="../classes/Project.html#activelayer"><tt>project.activeLayer</tt></a>.</p>
+<p>Note that when working with PaperScript, a project is automatically created for us and the <a href="../classes/PaperScope.html#project"><tt>paperScope.project</tt></a> variable points to it.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>element:</tt> 
+<tt>HTMLCanvasElement</tt>⟋<tt>String</tt>⟋<a href="../classes/Size.html"><tt>Size</tt></a>
+&mdash;&nbsp;the HTML canvas element that should be used as the element for the view, or an ID string by which to find the element, or the size of the canvas to be created for usage in a web worker.
+
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Project.html"><tt>Project</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="view" class="member">
+<div class="member-link">
+<a name="view" href="#view"><tt><b>view</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The reference to the project&rsquo;s view.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/View.html"><tt>View</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="currentstyle" class="member">
+<div class="member-link">
+<a name="currentstyle" href="#currentstyle"><tt><b>currentStyle</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The currently active path style. All selected items and newly created items will be styled with this style.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Style.html"><tt>Style</tt></a>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+project.currentStyle = {
+    fillColor: 'red',
+    strokeColor: 'black',
+    strokeWidth: 5
+}
+
+// The following paths will take over all style properties of
+// the current style:
+var path = new Path.Circle(new Point(75, 50), 30);
+var path2 = new Path.Circle(new Point(175, 50), 20);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+project.currentStyle.fillColor = 'red';
+
+// The following path will take over the fill color we just set:
+var path = new Path.Circle(new Point(75, 50), 30);
+var path2 = new Path.Circle(new Point(175, 50), 20);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="index" class="member">
+<div class="member-link">
+<a name="index" href="#index"><tt><b>index</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The index of the project in the <a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> list.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Project Content</h3>
+
+<div id="layers" class="member">
+<div class="member-link">
+<a name="layers" href="#layers"><tt><b>layers</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The layers contained within the project.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/Layer.html"><tt>Layer</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="activelayer" class="member">
+<div class="member-link">
+<a name="activelayer" href="#activelayer"><tt><b>activeLayer</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The layer which is currently active. New items will be created on this layer by default.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Layer.html"><tt>Layer</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="symboldefinitions" class="member">
+<div class="member-link">
+<a name="symboldefinitions" href="#symboldefinitions"><tt><b>symbolDefinitions</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The symbol definitions shared by all symbol items contained place ind project.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/SymbolDefinition.html"><tt>SymbolDefinition</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="selecteditems" class="member">
+<div class="member-link">
+<a name="selecteditems" href="#selecteditems"><tt><b>selectedItems</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The selected items contained within the project.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="activate" class="member">
+<div class="member-link">
+<a name="activate" href="#activate"><tt><b>activate</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Activates this project, so all newly created items will be placed in it.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="clear" class="member">
+<div class="member-link">
+<a name="clear" href="#clear"><tt><b>clear</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Clears the project by removing all <a href="../classes/Project.html#layers"><tt>project.layers</tt></a>.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="isempty" class="member">
+<div class="member-link">
+<a name="isempty" href="#isempty"><tt><b>isEmpty</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the project has any content or not.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="remove" class="member">
+<div class="member-link">
+<a name="remove" href="#remove"><tt><b>remove</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Removes this project from the <a href="../classes/PaperScope.html#projects"><tt>paperScope.projects</tt></a> list, and also removes its view, if one was defined.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="selectall" class="member">
+<div class="member-link">
+<a name="selectall" href="#selectall"><tt><b>selectAll</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Selects all items in the project.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="deselectall" class="member">
+<div class="member-link">
+<a name="deselectall" href="#deselectall"><tt><b>deselectAll</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Deselects all selected items in the project.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Hierarchy Operations</h3>
+
+<div id="addlayer-layer" class="member">
+<div class="member-link">
+<a name="addlayer-layer" href="#addlayer-layer"><tt><b>addLayer</b>(layer)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Adds the specified layer at the end of the this project&rsquo;s <a href="../classes/Project.html#layers"><tt>layers</tt></a> list.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>layer:</tt> 
+<a href="../classes/Layer.html"><tt>Layer</tt></a>
+&mdash;&nbsp;the layer to be added to the project
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Layer.html"><tt>Layer</tt></a></tt>&nbsp;&mdash;&nbsp;the added layer, or <code>null</code> if adding was not possible
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="insertlayer-index-layer" class="member">
+<div class="member-link">
+<a name="insertlayer-index-layer" href="#insertlayer-index-layer"><tt><b>insertLayer</b>(index, layer)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Inserts the specified layer at the specified index in this project&rsquo;s <a href="../classes/Project.html#layers"><tt>layers</tt></a> list.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>index:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the index at which to insert the layer
+
+</li>
+	
+	<li>
+<tt>layer:</tt> 
+<a href="../classes/Layer.html"><tt>Layer</tt></a>
+&mdash;&nbsp;the layer to be inserted in the project
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Layer.html"><tt>Layer</tt></a></tt>&nbsp;&mdash;&nbsp;the added layer, or <code>null</code> if adding was not possible
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Hit-testing, Fetching and Matching Items</h3>
+
+<div id="hittest-point" class="member">
+<div class="member-link">
+<a name="hittest-point" href="#hittest-point"><tt><b>hitTest</b>(point[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Performs a hit-test on the items contained within the project at the location of the specified point.</p>
+<p>The options object allows you to control the specifics of the hit-test and may contain a combination of the following values:</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.tolerance: <tt>Number</tt></tt> &mdash; the tolerance of the hit-test &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.hitTolerance</tt></li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; only hit-test against a specific item  class, or any of its sub-classes, by providing the constructor  function against which an <code>instanceof</code> check is performed:  <tt>Group</tt>, <tt>Layer</tt>, <tt>Path</tt>, <tt>CompoundPath</tt>, <tt>Shape</tt>, <tt>Raster</tt>, <tt>SymbolItem</tt>, <tt>PointText</tt>, &hellip;</li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  found hit result: Return <code>true</code> to return the result, <code>false</code> to keep  searching</li>
+<li><tt>options.fill: <tt>Boolean</tt></tt> &mdash; hit-test the fill of items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.stroke: <tt>Boolean</tt></tt> &mdash; hit-test the stroke of path  items, taking into account the setting of stroke color and width &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.segments: <tt>Boolean</tt></tt> &mdash; hit-test for <a href="../classes/Segment.html#point"><tt>segment.point</tt></a> of <a href="../classes/Path.html"><tt>Path</tt></a> items &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.curves: <tt>Boolean</tt></tt> &mdash; hit-test the curves of path items,  without taking the stroke color or width into account</li>
+<li><tt>options.handles: <tt>Boolean</tt></tt> &mdash; hit-test for the handles (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> / <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>) of path segments.</li>
+<li><tt>options.ends: <tt>Boolean</tt></tt> &mdash; only hit-test for the first or last  segment points of open path items</li>
+<li><tt>options.position: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Item.html#position"><tt>item.position</tt></a> of  of items, which depends on the setting of <a href="../classes/Item.html#pivot"><tt>item.pivot</tt></a></li>
+<li><tt>options.center: <tt>Boolean</tt></tt> &mdash; hit-test the <a href="../classes/Rectangle.html#center"><tt>rectangle.center</tt></a> of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
+<li><tt>options.bounds: <tt>Boolean</tt></tt> &mdash; hit-test the corners and side-centers of  the bounding rectangle of items (<a href="../classes/Item.html#bounds"><tt>item.bounds</tt></a>)</li>
+<li><tt>options.guides: <tt>Boolean</tt></tt> &mdash; hit-test items that have <tt>Item#guide</tt> set to <code>true</code></li>
+<li><tt>options.selected: <tt>Boolean</tt></tt> &mdash; only hit selected items</li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/HitResult.html"><tt>HitResult</tt></a></tt>&nbsp;&mdash;&nbsp;a hit result object that contains more information  about what exactly was hit or <code>null</code> if nothing was hit
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="hittestall-point" class="member">
+<div class="member-link">
+<a name="hittestall-point" href="#hittestall-point"><tt><b>hitTestAll</b>(point[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Performs a hit-test on the item and its children (if it is a <a href="../classes/Group.html"><tt>Group</tt></a> or <a href="../classes/Layer.html"><tt>Layer</tt></a>) at the location of the specified point, returning all found hits.</p>
+<p>The options object allows you to control the specifics of the hit- test. See <a href="../classes/Project.html#hittest-point"><tt>hitTest(point[, options])</tt></a> for a list of all options.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point where the hit-test should be performed
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+
+&mdash;&nbsp;optional, default: <tt>{ fill: true, stroke: true, segments: true,  tolerance: settings.hitTolerance }</tt>
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/HitResult.html"><tt>HitResult</tt></a> objects</tt>&nbsp;&mdash;&nbsp;hit result objects for all hits, describing what  exactly was hit or <code>null</code> if nothing was hit
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Project.html#hittest-point"><tt>hitTest(point[, options])</tt></a>;</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="getitems-options" class="member">
+<div class="member-link">
+<a name="getitems-options" href="#getitems-options"><tt><b>getItems</b>(options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Fetch items contained within the project whose properties match the criteria in the specified object.</p>
+<p>Extended matching of properties is possible by providing a comparator function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
+<p>Matching items against a rectangular area is also possible, by setting either <code>options.inside</code> or <code>options.overlapping</code> to a rectangle describing the area in which the items either have to be fully or partly contained.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>match</code> object</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; the constructor function of the item  type to match against</li>
+<li><tt>options.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need  to be fully contained</li>
+<li><tt>options.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the  items need to at least partly overlap</li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Function</tt>
+&mdash;&nbsp;the criteria to match against
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt>Array of <a href="../classes/Item.html"><tt>Item</tt></a> objects</tt>&nbsp;&mdash;&nbsp;the list of matching items contained in the project
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#matches-options"><tt>item.matches(options)</tt></a></tt></li>
+		
+			<li><tt><a href="../classes/Item.html#getitems-options"><tt>item.getItems(options)</tt></a></tt></li>
+		
+	</ul>
+
+	<h4>Example:<span class="description">Fetch all selected path items:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+// Select path2:
+path2.selected = true;
+
+// Fetch all selected path items:
+var items = project.getItems({
+    selected: true,
+    class: Path
+});
+
+// Change the fill color of the selected path to red:
+items[0].fillColor = 'red';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Fetch all items with a specific fill color:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-3">
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'purple'
+});
+
+// Fetch all items with a purple fill color:
+var items = project.getItems({
+    fillColor: 'purple'
+});
+
+// Select the fetched item:
+items[0].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Fetch items at a specific position:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-4">
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+// Fetch all path items positioned at {x: 150, y: 150}:
+var items = project.getItems({
+    position: [150, 50]
+});
+
+// Select the fetched path:
+items[0].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-4"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Fetch items using a comparator function:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-5">
+// Create a circle shaped path:
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black'
+});
+
+// Create a circle shaped path with 50% opacity:
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'black',
+    opacity: 0.5
+});
+
+// Fetch all items whose opacity is smaller than 1
+var items = paper.project.getItems({
+    opacity: function(value) {
+        return value < 1;
+    }
+});
+
+// Select the fetched item:
+items[0].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-5"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Fetch items using a comparator function (2):</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-6">
+// Create a rectangle shaped path (4 segments):
+var path1 = new Path.Rectangle({
+    from: [25, 25],
+    to: [75, 75],
+    strokeColor: 'black',
+    strokeWidth: 10
+});
+
+// Create a line shaped path (2 segments):
+var path2 = new Path.Line({
+    from: [125, 50],
+    to: [175, 50],
+    strokeColor: 'black',
+    strokeWidth: 10
+});
+
+// Fetch all paths with 2 segments:
+var items = project.getItems({
+    class: Path,
+ segments: function(segments) {
+        return segments.length == 2;
+ }
+});
+
+// Select the fetched path:
+items[0].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-6"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Match (nested) properties of the data property:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-7">
+// Create a black circle shaped path:
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black',
+    data: {
+        person: {
+            name: 'john',
+            length: 200,
+            hair: true
+        }
+    }
+});
+
+// Create a red circle shaped path:
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'red',
+    data: {
+        person: {
+            name: 'john',
+            length: 180,
+            hair: false
+        }
+    }
+});
+
+// Fetch all items whose data object contains a person
+// object whose name is john and length is 180:
+var items = paper.project.getItems({
+    data: {
+        person: {
+            name: 'john',
+            length: 180
+        }
+    }
+});
+
+// Select the fetched item:
+items[0].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-7"></canvas></div>
+</div>
+
+
+<h4>Example:<span class="description">Match strings using regular expressions:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-8">
+// Create a path named 'aardvark':
+var path1 = new Path.Circle({
+    center: [50, 50],
+    radius: 25,
+    fillColor: 'black',
+    name: 'aardvark'
+});
+
+// Create a path named 'apple':
+var path2 = new Path.Circle({
+    center: [150, 50],
+    radius: 25,
+    fillColor: 'black',
+    name: 'apple'
+});
+
+// Create a path named 'banana':
+var path2 = new Path.Circle({
+    center: [250, 50],
+    radius: 25,
+    fillColor: 'black',
+    name: 'banana'
+});
+
+// Fetch all items that have a name starting with 'a':
+var items = project.getItems({
+    name: /^a/
+});
+
+// Change the fill color of the matched items:
+for (var i = 0; i < items.length; i++) {
+ items[i].fillColor = 'red';
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-8"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="getitem-options" class="member">
+<div class="member-link">
+<a name="getitem-options" href="#getitem-options"><tt><b>getItem</b>(options)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Fetch the first item contained within the project whose properties match the criteria in the specified object. Extended matching is possible by providing a compare function or regular expression. Matching points, colors only work as a comparison of the full object, not partial matching (e.g. only providing the x- coordinate to match all points with that x-value). Partial matching does work for <a href="../classes/Item.html#data"><tt>item.data</tt></a>.</p>
+<p>See <a href="../classes/Project.html#getitems-options"><tt>getItems(options)</tt></a> for a selection of illustrated examples.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>⟋<tt>Function</tt>
+&mdash;&nbsp;the criteria to match against
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the first item in the project matching the given criteria
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Importing / Exporting JSON and SVG</h3>
+
+<div id="exportjson" class="member">
+<div class="member-link">
+<a name="exportjson" href="#exportjson"><tt><b>exportJSON</b>([options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Exports (serializes) the project with all its layers and child items to a JSON data object or string.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.asString: <tt>Boolean</tt></tt> &mdash; whether the JSON is returned as  a <code>Object</code> or a <code>String</code> &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.precision: <tt>Number</tt></tt> &mdash; the amount of fractional digits in  numbers used in JSON data &mdash;&nbsp;default: <tt>5</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the serialization options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;the exported JSON data
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="importjson-json" class="member">
+<div class="member-link">
+<a name="importjson-json" href="#importjson-json"><tt><b>importJSON</b>(json)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Imports (deserializes) the stored JSON data into the project. Note that the project is not cleared first. You can call <a href="../classes/Project.html#clear"><tt>project.clear</tt></a>() to do so.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>json:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the JSON data to import from
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the imported item
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="exportsvg" class="member">
+<div class="member-link">
+<a name="exportsvg" href="#exportsvg"><tt><b>exportSVG</b>([options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Exports the project with all its layers and child items as an SVG DOM, all contained in one top level SVG group node.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.bounds: <tt>String</tt>⟋<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the bounds of the area  to export, either as a string (<tt>&lsquo;view&rsquo;</tt>, <tt>content&rsquo;</tt>), or a  <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a> object: <code>&#39;view&#39;</code> uses the view bounds,  <code>&#39;content&#39;</code> uses the stroke bounds of all content &mdash;&nbsp;default: <tt>&lsquo;view&rsquo;</tt></li>
+<li><tt>options.matrix: <a href="../classes/Matrix.html"><tt>Matrix</tt></a></tt> &mdash; the matrix with which  to transform the exported content: If <code>options.bounds</code> is set to  <code>&#39;view&#39;</code>, <code>paper.view.matrix</code> is used, for all other settings of  <code>options.bounds</code> the identity matrix is used. &mdash;&nbsp;default: <tt>paper.view.matrix</tt></li>
+<li><tt>options.asString: <tt>Boolean</tt></tt> &mdash; whether a SVG node or a  <code>String</code> is to be returned &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.precision: <tt>Number</tt></tt> &mdash; the amount of fractional digits in  numbers used in SVG data &mdash;&nbsp;default: <tt>5</tt></li>
+<li><tt>options.matchShapes: <tt>Boolean</tt></tt> &mdash; whether path items should  tried to be converted to SVG shape items (rect, circle, ellipse,  line, polyline, polygon), if their geometries match &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.embedImages: <tt>Boolean</tt></tt> &mdash; whether raster images should  be embedded as base64 data inlined in the xlink:href attribute, or  kept as a link to their external URL. &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the export options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>SVGElement</tt>⟋<tt>String</tt></tt>&nbsp;&mdash;&nbsp;the project converted to an SVG node or a <code>String</code> depending on <code>option.asString</code> value
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="importsvg-svg" class="member">
+<div class="member-link">
+<a name="importsvg-svg" href="#importsvg-svg"><tt><b>importSVG</b>(svg[, options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Converts the provided SVG content into Paper.js items and adds them to the active layer of this project. Note that the project is not cleared first. You can call <a href="../classes/Project.html#clear"><tt>project.clear</tt></a>() to do so.</p>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.expandShapes: <tt>Boolean</tt></tt> &mdash; whether imported shape  items should be expanded to path items &mdash;&nbsp;default: <tt>false</tt></li>
+<li><tt>options.onLoad: <tt>Function</tt></tt> &mdash; the callback function to call once the  SVG content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external resources.</li>
+<li><tt>options.onError: <tt>Function</tt></tt> &mdash; the callback function to call if an  error occurs during loading. Only required when loading from external  resources.</li>
+<li><tt>options.insert: <tt>Boolean</tt></tt> &mdash; whether the imported items should  be added to the project that <code>importSVG()</code> is called on &mdash;&nbsp;default: <tt>true</tt></li>
+<li><tt>options.applyMatrix: <tt>Boolean</tt></tt> &mdash; whether the imported items should have their transformation  matrices applied to their contents or not &mdash;&nbsp;default: <tt><a href="../classes/PaperScope.html#settings"><tt>paperScope.settings</tt></a>.applyMatrix</tt></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>svg:</tt> 
+<tt>SVGElement</tt>⟋<tt>String</tt>
+&mdash;&nbsp;the SVG content to import, either as a SVG  DOM node, a string containing SVG content, or a string describing the  URL of the SVG file to fetch.
+
+</li>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the import options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted  SVG content
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="importsvg-svg-onLoad" class="member">
+<div class="member-link">
+<a name="importsvg-svg-onLoad" href="#importsvg-svg-onLoad"><tt><b>importSVG</b>(svg, onLoad)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Imports the provided external SVG file, converts it into Paper.js items and adds them to the active layer of this project. Note that the project is not cleared first. You can call <a href="../classes/Project.html#clear"><tt>project.clear</tt></a>() to do so.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>svg:</tt> 
+<tt>SVGElement</tt>⟋<tt>String</tt>
+&mdash;&nbsp;the URL of the SVG file to fetch.
+
+</li>
+	
+	<li>
+<tt>onLoad:</tt> 
+<tt>Function</tt>
+&mdash;&nbsp;the callback function to call once the SVG  content is loaded from the given URL receiving two arguments: the  converted <code>item</code> and the original <code>svg</code> data as a string. Only  required when loading from external files.
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Item.html"><tt>Item</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created Paper.js item containing the converted  SVG content
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

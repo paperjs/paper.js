@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Segment</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Segment</h1>
+
+<p>The Segment object represents the points of a path through which its <a href="../classes/Curve.html"><tt>Curve</tt></a> objects pass. The segments of a path can be accessed through its <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array.</p>
+<p>Each segment consists of an anchor point (<a href="../classes/Segment.html#point"><tt>segment.point</tt></a>) and optionaly an incoming and an outgoing handle (<a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a> and <a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a>), describing the tangents of the two <a href="../classes/Curve.html"><tt>Curve</tt></a> objects that are connected by this segment.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="segment" class="member">
+<div class="member-link">
+<a name="segment" href="#segment"><tt><b>Segment</b>([point[, handleIn[, handleOut]]])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a new Segment object.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the anchor point of the segment
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+	
+	<li>
+<tt>handleIn:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the handle point relative to the  anchor point of the segment that describes the in tangent of the  segment
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+	
+	<li>
+<tt>handleOut:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the handle point relative to the  anchor point of the segment that describes the out tangent of the  segment
+&mdash;&nbsp;optional, default: <tt>{x: 0, y: 0}</tt>
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var handleIn = new Point(-80, -100);
+var handleOut = new Point(80, 100);
+
+var firstPoint = new Point(100, 50);
+var firstSegment = new Segment(firstPoint, null, handleOut);
+
+var secondPoint = new Point(300, 50);
+var secondSegment = new Segment(secondPoint, handleIn, null);
+
+var path = new Path(firstSegment, secondSegment);
+path.strokeColor = 'black';
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="segment-object" class="member">
+<div class="member-link">
+<a name="segment-object" href="#segment-object"><tt><b>Segment</b>(object)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a new Segment object.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>object:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;an object containing properties to be set on the  segment
+
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:<span class="description">Creating segments using object notation:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+var firstSegment = new Segment({
+    point: [100, 50],
+    handleOut: [80, 100]
+});
+
+var secondSegment = new Segment({
+    point: [300, 50],
+    handleIn: [-80, -100]
+});
+
+var path = new Path({
+    segments: [firstSegment, secondSegment],
+    strokeColor: 'black'
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="point" class="member">
+<div class="member-link">
+<a name="point" href="#point"><tt><b>point</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The anchor point of the segment.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="handlein" class="member">
+<div class="member-link">
+<a name="handlein" href="#handlein"><tt><b>handleIn</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The handle point relative to the anchor point of the segment that describes the in tangent of the segment.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="handleout" class="member">
+<div class="member-link">
+<a name="handleout" href="#handleout"><tt><b>handleOut</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The handle point relative to the anchor point of the segment that describes the out tangent of the segment.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="selected" class="member">
+<div class="member-link">
+<a name="selected" href="#selected"><tt><b>selected</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Specifies whether the segment is selected.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var path = new Path.Circle({
+    center: [80, 50],
+    radius: 40
+});
+
+// Select the third segment point:
+path.segments[2].selected = true;
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Hierarchy</h3>
+
+<div id="index" class="member">
+<div class="member-link">
+<a name="index" href="#index"><tt><b>index</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The index of the segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the segment belongs to.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="path" class="member">
+<div class="member-link">
+<a name="path" href="#path"><tt><b>path</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The path that the segment belongs to.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Path.html"><tt>Path</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="curve" class="member">
+<div class="member-link">
+<a name="curve" href="#curve"><tt><b>curve</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curve that the segment belongs to. For the last segment of an open path, the previous segment is returned.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Curve.html"><tt>Curve</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="location" class="member">
+<div class="member-link">
+<a name="location" href="#location"><tt><b>location</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curve location that describes this segment&rsquo;s position on the path.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Sibling Segments</h3>
+
+<div id="next" class="member">
+<div class="member-link">
+<a name="next" href="#next"><tt><b>next</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The next segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the segment belongs to. If the segments belongs to a closed path, the first segment is returned for the last segment of the path.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Segment.html"><tt>Segment</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="previous" class="member">
+<div class="member-link">
+<a name="previous" href="#previous"><tt><b>previous</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The previous segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array that the segment belongs to. If the segments belongs to a closed path, the last segment is returned for the first segment of the path.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Segment.html"><tt>Segment</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="hashandles" class="member">
+<div class="member-link">
+<a name="hashandles" href="#hashandles"><tt><b>hasHandles</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the segment has any curve handles set.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the segment has handles set, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Segment.html#handlein"><tt>segment.handleIn</tt></a></tt></li>
+		
+			<li><tt><a href="../classes/Segment.html#handleout"><tt>segment.handleOut</tt></a></tt></li>
+		
+			<li><tt><a href="../classes/Curve.html#hashandles"><tt>curve.hasHandles</tt></a>()</tt></li>
+		
+			<li><tt><a href="../classes/Path.html#hashandles"><tt>path.hasHandles</tt></a>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="issmooth" class="member">
+<div class="member-link">
+<a name="issmooth" href="#issmooth"><tt><b>isSmooth</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the segment connects two curves smoothly, meaning that its two handles are collinear and segment does not form a corner.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the segment is smooth, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Point.html#iscollinear"><tt>point.isCollinear</tt></a>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="clearhandles" class="member">
+<div class="member-link">
+<a name="clearhandles" href="#clearhandles"><tt><b>clearHandles</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Clears the segment&rsquo;s handles by setting their coordinates to zero, turning the segment into a corner.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="smooth" class="member">
+<div class="member-link">
+<a name="smooth" href="#smooth"><tt><b>smooth</b>([options])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Smooths the bezier curves that pass through this segment by taking into account the segment&rsquo;s position and distance to the neighboring segments and changing the direction and length of the segment&rsquo;s handles accordingly without moving the segment itself.</p>
+<p>Two different smoothing methods are available:</p>
+<ul>
+  <li>
+    <p><code>&#39;catmull-rom&#39;</code> uses the Catmull-Rom spline to smooth the segment.</p>
+    <p>The optionally passed factor controls the knot parametrization of the algorithm:</p>
+    <ul>
+      <li><code>0.0</code>: the standard, uniform Catmull-Rom spline</li>
+      <li><code>0.5</code>: the centripetal Catmull-Rom spline, guaranteeing no self-intersections</li>
+      <li><code>1.0</code>: the chordal Catmull-Rom spline</li>
+    </ul>
+  </li>
+  <li>
+    <p><code>&#39;geometric&#39;</code> use a simple heuristic and empiric geometric method to smooth the segment&rsquo;s handles. The handles were weighted, meaning that big differences in distances between the segments will lead to probably undesired results.</p>
+    <p>The optionally passed factor defines the tension parameter (<code>0…1</code>), controlling the amount of smoothing as a factor by which to scale each handle.</p>
+  </li>
+</ul>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>options.type: <tt>String</tt></tt> &mdash; the type of smoothing  method: <tt>&lsquo;catmull-rom&rsquo;</tt>, <tt>&lsquo;geometric&rsquo;</tt> &mdash;&nbsp;default: <tt>&lsquo;catmull-rom&rsquo;</tt></li>
+<li><tt>options.factor: <tt>Number</tt></tt> &mdash; the factor parameterizing the smoothing  method — default: <code>0.5</code> for <code>&#39;catmull-rom&#39;</code>, <code>0.4</code> for <code>&#39;geometric&#39;</code></li>
+</ul>
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the smoothing options
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/PathItem.html#smooth"><tt>pathItem.smooth([options])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="isfirst" class="member">
+<div class="member-link">
+<a name="isfirst" href="#isfirst"><tt><b>isFirst</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the this is the first segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if this is the first segment, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="islast" class="member">
+<div class="member-link">
+<a name="islast" href="#islast"><tt><b>isLast</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the this is the last segment in the <a href="../classes/Path.html#segments"><tt>path.segments</tt></a> array.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if this is the last segment, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="reverse" class="member">
+<div class="member-link">
+<a name="reverse" href="#reverse"><tt><b>reverse</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Reverses the <a href="../classes/Segment.html#handlein"><tt>handleIn</tt></a> and <a href="../classes/Segment.html#handleout"><tt>handleOut</tt></a> vectors of this segment, modifying the actual segment without creating a copy.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>&nbsp;&mdash;&nbsp;the reversed segment
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="reversed" class="member">
+<div class="member-link">
+<a name="reversed" href="#reversed"><tt><b>reversed</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Returns the reversed the segment, without modifying the segment itself.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>&nbsp;&mdash;&nbsp;the reversed segment
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="remove" class="member">
+<div class="member-link">
+<a name="remove" href="#remove"><tt><b>remove</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Removes the segment from the path that it belongs to.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the segment was removed, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="clone" class="member">
+<div class="member-link">
+<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Segment.html"><tt>Segment</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="tostring" class="member">
+<div class="member-link">
+<a name="tostring" href="#tostring"><tt><b>toString</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;a string representation of the segment
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="transform-matrix" class="member">
+<div class="member-link">
+<a name="transform-matrix" href="#transform-matrix"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Transform the segment by the specified matrix.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>matrix:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+&mdash;&nbsp;the matrix to transform the segment by
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="interpolate-from-to-factor" class="member">
+<div class="member-link">
+<a name="interpolate-from-to-factor" href="#interpolate-from-to-factor"><tt><b>interpolate</b>(from, to, factor)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Interpolates between the two specified segments and sets the point and handles of this segment accordingly.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>from:</tt> 
+<a href="../classes/Segment.html"><tt>Segment</tt></a>
+&mdash;&nbsp;the segment defining the geometry when <code>factor</code> is  <code>0</code>
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<a href="../classes/Segment.html"><tt>Segment</tt></a>
+&mdash;&nbsp;the segment defining the geometry when <code>factor</code> is  <code>1</code>
+
+</li>
+	
+	<li>
+<tt>factor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the interpolation coefficient, typically between  <code>0</code> and <code>1</code>, but extrapolation is possible too
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

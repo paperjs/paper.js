@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tween</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>Tween</h1>
+
+<p>Allows tweening <code>Object</code> properties between two states for a given duration. To tween properties on Paper.js <a href="../classes/Item.html"><tt>Item</tt></a> instances, <a href="../classes/Item.html#tween-from-to-options"><tt>item.tween(from, to, options)</tt></a> can be used, which returns created tween instance.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="tween-object-from-to-duration" class="member">
+<div class="member-link">
+<a name="tween-object-from-to-duration" href="#tween-object-from-to-duration"><tt><b>Tween</b>(object, from, to, duration[, easing[, start]])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a new tween.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>object:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the object to tween the properties on
+
+</li>
+	
+	<li>
+<tt>from:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the start of the tweening
+
+</li>
+	
+	<li>
+<tt>to:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the state at the end of the tweening
+
+</li>
+	
+	<li>
+<tt>duration:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the duration of the tweening
+
+</li>
+	
+	<li>
+<tt>easing:</tt> 
+<tt>String</tt>⟋<tt>Function</tt>
+&mdash;&nbsp;the type of the easing  function or the easing function
+&mdash;&nbsp;optional, default: <tt>&lsquo;linear&rsquo;</tt>
+</li>
+	
+	<li>
+<tt>start:</tt> 
+<tt>Boolean</tt>
+&mdash;&nbsp;whether to start tweening automatically
+&mdash;&nbsp;optional, default: <tt>true</tt>
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created tween
+</li>
+
+		
+	</ul>
+
+
+
+    
+    
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+	<h3>Event Handlers</h3>
+
+<div id="onupdate" class="member">
+<div class="member-link">
+<a name="onupdate" href="#onupdate"><tt><b>onUpdate</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the tween is updated. It receives an object as its sole argument, containing the current progress of the tweening and the factor calculated by the easing function.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Display tween progression values:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+var circle = new Path.Circle({
+    center: view.center,
+    radius: 40,
+    fillColor: 'blue'
+});
+var tween = circle.tweenTo(
+    { fillColor: 'red' },
+    {
+        duration: 2000,
+        easing: 'easeInCubic'
+    }
+);
+var progressText = new PointText(view.center + [60, -10]);
+var factorText = new PointText(view.center + [60, 10]);
+
+// Install event using onUpdate() property:
+tween.onUpdate = function(event) {
+    progressText.content = 'progress: ' + event.progress.toFixed(2);
+};
+
+// Install event using on('update') method:
+tween.on('update', function(event) {
+    factorText.content = 'factor: ' + event.factor.toFixed(2);
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="then-function" class="member">
+<div class="member-link">
+<a name="then-function" href="#then-function"><tt><b>then</b>(function)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Set a function that will be executed when the tween completes.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>function:</tt> 
+<tt>Function</tt>
+&mdash;&nbsp;the function to execute when the tween  completes
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Tweens chaining:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+var circle = new Path.Circle({
+    center: view.center,
+    radius: 40,
+    fillColor: 'blue'
+});
+// Tween color from blue to red.
+var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
+// When the first tween completes...
+tween.then(function() {
+    // ...tween color back to blue.
+    circle.tweenTo({ fillColor: 'blue' }, 2000);
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="start" class="member">
+<div class="member-link">
+<a name="start" href="#start"><tt><b>start</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Start tweening.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Manually start tweening.</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var circle = new Path.Circle({
+    center: view.center,
+    radius: 40,
+    fillColor: 'blue'
+});
+var tween = circle.tweenTo(
+    { fillColor: 'red' },
+    { duration: 2000, start: false }
+);
+tween.start();
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="stop" class="member">
+<div class="member-link">
+<a name="stop" href="#stop"><tt><b>stop</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Stop tweening.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Tween.html"><tt>Tween</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Stop a tween before it completes.</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-3">
+var circle = new Path.Circle({
+    center: view.center,
+    radius: 40,
+    fillColor: 'blue'
+});
+// Start tweening from blue to red for 2 seconds.
+var tween = circle.tweenTo({ fillColor: 'red' }, 2000);
+// After 1 second...
+setTimeout(function(){
+    // ...stop tweening.
+    tween.stop();
+}, 1000);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

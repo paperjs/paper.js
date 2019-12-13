@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 13 14:32:31 2019 +0100
+ * Date: Fri Dec 13 16:13:56 2019 +0100
  *
  ***
  *
@@ -977,8 +977,13 @@ var CollisionDetection =  {
 
 	findBoundsCollisions: function(boundsA, boundsB, tolerance,
 		sweepVertical, onlySweepAxisCollisions) {
-		var lo, hi;
-		var binarySearch = function(indices, coordinateValue, coordinate) {
+		var self = !boundsB || boundsA === boundsB,
+			allBounds = self ? boundsA : boundsA.concat(boundsB),
+			countA = boundsA.length,
+			countAll = allBounds.length,
+			lo, hi;
+
+		function binarySearch(indices, coordinateValue, coordinate) {
 			lo = 0;
 			hi = indices.length;
 			while (lo < hi) {
@@ -990,12 +995,8 @@ var CollisionDetection =  {
 				}
 			}
 			return lo - 1;
-		};
+		}
 
-		var self = !boundsB || boundsA === boundsB,
-			allBounds = self ? boundsA : boundsA.concat(boundsB),
-			countA = boundsA.length,
-			countAll = allBounds.length;
 		var coordP0 = sweepVertical ? 1 : 0,
 			coordP1 = coordP0 + 2,
 			coordS0 = sweepVertical ? 0 : 1,
@@ -1011,7 +1012,7 @@ var CollisionDetection =  {
 			allCollisions = new Array(countA);
 		for (var i = 0; i < countAll; i++) {
 			var currentIndex = allIndicesByP0[i],
-				currentBounds = allBounds[currentIndex];
+				currentBounds = allBounds[currentIndex],
 				currentOriginalIndex = self ? currentIndex
 					: currentIndex - countA,
 				isCurrentA = currentIndex < countA,
@@ -10446,11 +10447,11 @@ PathItem.inject(new function() {
 				clockwise = first.isClockwise();
 			for (var i = 0; i < length; i++) {
 				var path1 = sorted[i],
-					indicesI = collisions[i];
+					indicesI = collisions[i],
+					entry1 = lookup[path1._id],
+					containerWinding = 0;
 				if (indicesI) {
-					var entry1 = lookup[path1._id],
-						point = null;
-						containerWinding = 0;
+					var point = null;
 					for (var j = indicesI.length - 1; j >= 0; j--) {
 						if (indicesI[j] < i) {
 							point = point || path1.getInteriorPoint();
@@ -10969,7 +10970,7 @@ PathItem.inject(new function() {
 
 	return {
 		_getWinding: function(point, dir, closed) {
-		  let curves = this.getCurves();
+			var curves = this.getCurves();
 			return getWinding(point, curves, curves, dir, closed);
 		},
 

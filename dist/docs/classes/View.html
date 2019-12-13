@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>View</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>View</h1>
+
+<p>The View object wraps an HTML element and handles drawing and user interaction through mouse and keyboard for it. It offer means to scroll the view, find the currently visible bounds in project coordinates, or the center, both useful for constructing artwork that should appear centered on screen.</p>
+
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="autoupdate" class="member">
+<div class="member-link">
+<a name="autoupdate" href="#autoupdate"><tt><b>autoUpdate</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Controls whether the view is automatically updated in the next animation frame on changes, or whether you prefer to manually call <a href="../classes/View.html#update"><tt>update</tt></a>() or <a href="../classes/View.html#requestupdate"><tt>requestUpdate</tt></a>() after changes. Note that this is <code>true</code> by default, except for Node.js, where manual updates make more sense.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Boolean</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="element" class="member">
+<div class="member-link">
+<a name="element" href="#element"><tt><b>element</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The underlying native element.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>HTMLCanvasElement</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="pixelratio" class="member">
+<div class="member-link">
+<a name="pixelratio" href="#pixelratio"><tt><b>pixelRatio</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The ratio between physical pixels and device-independent pixels (DIPs) of the underlying canvas / device. It is <code>1</code> for normal displays, and <code>2</code> or more for high-resolution displays.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="resolution" class="member">
+<div class="member-link">
+<a name="resolution" href="#resolution"><tt><b>resolution</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The resoltuion of the underlying canvas / device in pixel per inch (DPI). It is <code>72</code> for normal displays, and <code>144</code> for high-resolution displays with a pixel-ratio of <code>2</code>.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="viewsize" class="member">
+<div class="member-link">
+<a name="viewsize" href="#viewsize"><tt><b>viewSize</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The size of the view. Changing the view&rsquo;s size will resize it&rsquo;s underlying element.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Size.html"><tt>Size</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="bounds" class="member">
+<div class="member-link">
+<a name="bounds" href="#bounds"><tt><b>bounds</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The bounds of the currently visible area in project coordinates.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Rectangle.html"><tt>Rectangle</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="size" class="member">
+<div class="member-link">
+<a name="size" href="#size"><tt><b>size</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The size of the visible area in project coordinates.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Size.html"><tt>Size</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="center" class="member">
+<div class="member-link">
+<a name="center" href="#center"><tt><b>center</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The center of the visible area in project coordinates.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="zoom" class="member">
+<div class="member-link">
+<a name="zoom" href="#zoom"><tt><b>zoom</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The view&rsquo;s zoom factor by which the project coordinates are magnified.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/View.html#scaling"><tt>scaling</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="rotation" class="member">
+<div class="member-link">
+<a name="rotation" href="#rotation"><tt><b>rotation</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The current rotation angle of the view, as described by its <a href="../classes/View.html#matrix"><tt>matrix</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="scaling" class="member">
+<div class="member-link">
+<a name="scaling" href="#scaling"><tt><b>scaling</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The current scale factor of the view, as described by its <a href="../classes/View.html#matrix"><tt>matrix</tt></a>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/View.html#zoom"><tt>zoom</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="matrix" class="member">
+<div class="member-link">
+<a name="matrix" href="#matrix"><tt><b>matrix</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The view&rsquo;s transformation matrix, defining the view onto the project&rsquo;s contents (position, zoom level, rotation, etc).</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+	<h3>Event Handlers</h3>
+
+<div id="onframe" class="member">
+<div class="member-link">
+<a name="onframe" href="#onframe"><tt><b>onFrame</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Handler function to be called on each frame of an animation. The function receives an event object which contains information about the frame event:</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>event.count: <tt>Number</tt></tt> &mdash; the number of times the frame event was fired</li>
+<li><tt>event.time: <tt>Number</tt></tt> &mdash; the total amount of time passed since the first frame event in seconds</li>
+<li><tt>event.delta: <tt>Number</tt></tt> &mdash; the time passed in seconds since the last frame event</li>
+</ul>
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onframe"><tt>item.onFrame</tt></a></tt></li>
+		
+	</ul>
+
+	<h4>Example:<span class="description">Creating an animation:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+// Create a rectangle shaped path with its top left point at:
+// {x: 50, y: 25} and a size of {width: 50, height: 50}
+var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+path.fillColor = 'black';
+
+view.onFrame = function(event) {
+    // Every frame, rotate the path by 3 degrees:
+    path.rotate(3);
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onresize" class="member">
+<div class="member-link">
+<a name="onresize" href="#onresize"><tt><b>onResize</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>Handler function that is called whenever a view is resized.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Repositioning items when a view is resized:</span></h4>
+
+
+<pre><code>// Create a circle shaped path in the center of the view:
+var path = new Path.Circle(view.bounds.center, 30);
+path.fillColor = 'red';
+
+view.onResize = function(event) {
+    // Whenever the view is resized, move the path to its center:
+    path.position = view.center;
+}</code></pre>
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousedown" class="member">
+<div class="member-link">
+<a name="onmousedown" href="#onmousedown"><tt><b>onMouseDown</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse button is pushed down on the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onmousedown"><tt>item.onMouseDown</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousedrag" class="member">
+<div class="member-link">
+<a name="onmousedrag" href="#onmousedrag"><tt><b>onMouseDrag</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse position changes while the mouse is being dragged over the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onmousedrag"><tt>item.onMouseDrag</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmouseup" class="member">
+<div class="member-link">
+<a name="onmouseup" href="#onmouseup"><tt><b>onMouseUp</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse button is released over the item. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onmouseup"><tt>item.onMouseUp</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onclick" class="member">
+<div class="member-link">
+<a name="onclick" href="#onclick"><tt><b>onClick</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse clicks on the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onclick"><tt>item.onClick</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="ondoubleclick" class="member">
+<div class="member-link">
+<a name="ondoubleclick" href="#ondoubleclick"><tt><b>onDoubleClick</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse double clicks on the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#ondoubleclick"><tt>item.onDoubleClick</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmousemove" class="member">
+<div class="member-link">
+<a name="onmousemove" href="#onmousemove"><tt><b>onMouseMove</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called repeatedly while the mouse moves over the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onmousemove"><tt>item.onMouseMove</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmouseenter" class="member">
+<div class="member-link">
+<a name="onmouseenter" href="#onmouseenter"><tt><b>onMouseEnter</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse moves over the view. This function will only be called again, once the mouse moved outside of the view first. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Item.html#onmouseenter"><tt>item.onMouseEnter</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="onmouseleave" class="member">
+<div class="member-link">
+<a name="onmouseleave" href="#onmouseleave"><tt><b>onMouseLeave</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The function to be called when the mouse moves out of the view. The function receives a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> object which contains information about the mouse event. Note that such mouse events bubble up the scene graph hierarchy, reaching the view at the end, unless they are stopped before with <a href="../classes/Event.html#stoppropagation"><tt>event.stopPropagation</tt></a>() or by returning <code>false</code> from a handler.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Function</tt>⟋<tt>null</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/View.html#onmouseleave"><tt>view.onMouseLeave</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="remove" class="member">
+<div class="member-link">
+<a name="remove" href="#remove"><tt><b>remove</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Removes this view from the project and frees the associated element.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="update" class="member">
+<div class="member-link">
+<a name="update" href="#update"><tt><b>update</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Updates the view if there are changes. Note that when using built-in event hanlders for interaction, animation and load events, this method is invoked for you automatically at the end.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the view was updated, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="requestupdate" class="member">
+<div class="member-link">
+<a name="requestupdate" href="#requestupdate"><tt><b>requestUpdate</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Requests an update of the view if there are changes through the browser&rsquo;s requestAnimationFrame() mechanism for smooth animation. Note that when using built-in event handlers for interaction, animation and load events, updates are automatically invoked for you automatically at the end.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="play" class="member">
+<div class="member-link">
+<a name="play" href="#play"><tt><b>play</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Makes all animation play by adding the view to the request animation loop.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="pause" class="member">
+<div class="member-link">
+<a name="pause" href="#pause"><tt><b>pause</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Makes all animation pause by removing the view from the request animation loop.</p>
+    
+	
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="isvisible" class="member">
+<div class="member-link">
+<a name="isvisible" href="#isvisible"><tt><b>isVisible</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the view is currently visible within the current browser viewport.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the view is visible, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="isinserted" class="member">
+<div class="member-link">
+<a name="isinserted" href="#isinserted"><tt><b>isInserted</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether the view is inserted into the browser DOM.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the view is inserted, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Transform Functions</h3>
+
+<div id="translate-delta" class="member">
+<div class="member-link">
+<a name="translate-delta" href="#translate-delta"><tt><b>translate</b>(delta)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Translates (scrolls) the view by the given offset vector.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>delta:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the offset to translate the view by
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="rotate-angle" class="member">
+<div class="member-link">
+<a name="rotate-angle" href="#rotate-angle"><tt><b>rotate</b>(angle[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Rotates the view by a given angle around the given center point.</p>
+<p>Angles are oriented clockwise and measured in degrees.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>angle:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the rotation angle
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Matrix.html#rotate-angle"><tt>matrix.rotate(angle[, center])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="scale-scale" class="member">
+<div class="member-link">
+<a name="scale-scale" href="#scale-scale"><tt><b>scale</b>(scale[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Scales the view by the given value from its center point, or optionally from a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>scale:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the scale factor
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="scale-hor-ver" class="member">
+<div class="member-link">
+<a name="scale-hor-ver" href="#scale-hor-ver"><tt><b>scale</b>(hor, ver[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Scales the view by the given values from its center point, or optionally from a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the horizontal scale factor
+
+</li>
+	
+	<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the vertical scale factor
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="shear-shear" class="member">
+<div class="member-link">
+<a name="shear-shear" href="#shear-shear"><tt><b>shear</b>(shear[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Shears the view by the given value from its center point, or optionally by a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>shear:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the horziontal and vertical shear factors as a point
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Matrix.html#shear-shear"><tt>matrix.shear(shear[, center])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="shear-hor-ver" class="member">
+<div class="member-link">
+<a name="shear-hor-ver" href="#shear-hor-ver"><tt><b>shear</b>(hor, ver[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Shears the view by the given values from its center point, or optionally by a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the horizontal shear factor
+
+</li>
+	
+	<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the vertical shear factor
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Matrix.html#shear-hor-ver"><tt>matrix.shear(hor, ver[, center])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="skew-skew" class="member">
+<div class="member-link">
+<a name="skew-skew" href="#skew-skew"><tt><b>skew</b>(skew[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Skews the view by the given angles from its center point, or optionally by a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>skew:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the horziontal and vertical skew angles in degrees
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Matrix.html#shear-skew"><tt>matrix.shear(skew[, center])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="skew-hor-ver" class="member">
+<div class="member-link">
+<a name="skew-hor-ver" href="#skew-hor-ver"><tt><b>skew</b>(hor, ver[, center])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Skews the view by the given angles from its center point, or optionally by a supplied point.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>hor:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the horizontal skew angle in degrees
+
+</li>
+	
+	<li>
+<tt>ver:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the vertical sskew angle in degrees
+
+</li>
+	
+	<li>
+<tt>center:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional, default: <tt><a href="../classes/View.html#center"><tt>view.center</tt></a></tt>
+</li>
+	
+</ul>
+
+	
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Matrix.html#shear-hor-ver"><tt>matrix.shear(hor, ver[, center])</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="transform-matrix" class="member">
+<div class="member-link">
+<a name="transform-matrix" href="#transform-matrix"><tt><b>transform</b>(matrix)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Transform the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>matrix:</tt> 
+<a href="../classes/Matrix.html"><tt>Matrix</tt></a>
+&mdash;&nbsp;the matrix by which the view shall be transformed
+
+</li>
+	
+</ul>
+
+	
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="projecttoview-point" class="member">
+<div class="member-link">
+<a name="projecttoview-point" href="#projecttoview-point"><tt><b>projectToView</b>(point)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Converts the passed point from project coordinate space to view coordinate space, which is measured in browser pixels in relation to the position of the view element.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point in project coordinates to be converted
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the point converted into view coordinates
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="viewtoproject-point" class="member">
+<div class="member-link">
+<a name="viewtoproject-point" href="#viewtoproject-point"><tt><b>viewToProject</b>(point)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Converts the passed point from view coordinate space to project coordinate space.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+&mdash;&nbsp;the point in view coordinates to be converted
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the point converted into project coordinates
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="geteventpoint-event" class="member">
+<div class="member-link">
+<a name="geteventpoint-event" href="#geteventpoint-event"><tt><b>getEventPoint</b>(event)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Determines and returns the event location in project coordinate space.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>event:</tt> 
+<a href="../classes/Event.html"><tt>Event</tt></a>
+&mdash;&nbsp;the native event object for which to determine the  location.
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Point.html"><tt>Point</tt></a></tt>&nbsp;&mdash;&nbsp;the event point in project coordinates.
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Event Handling</h3>
+
+<div id="on-type-function" class="member">
+<div class="member-link">
+<a name="on-type-function" href="#on-type-function"><tt><b>on</b>(type, function)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Attach an event handler to the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the type of event: <tt>&lsquo;frame&rsquo;</tt>, <tt>&lsquo;resize&rsquo;</tt>, <tt>&lsquo;mousedown&rsquo;</tt>, <tt>&lsquo;mouseup&rsquo;</tt>, <tt>&lsquo;mousedrag&rsquo;</tt>, <tt>&lsquo;click&rsquo;</tt>, <tt>&lsquo;doubleclick&rsquo;</tt>, <tt>&lsquo;mousemove&rsquo;</tt>, <tt>&lsquo;mouseenter&rsquo;</tt>, <tt>&lsquo;mouseleave&rsquo;</tt>
+
+</li>
+	
+	<li>
+<tt>function:</tt> 
+<tt>Function</tt>
+&mdash;&nbsp;the function to be called when the event  occurs, receiving a <a href="../classes/MouseEvent.html"><tt>MouseEvent</tt></a> or <a href="../classes/Event.html"><tt>Event</tt></a> object as its  sole argument
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/View.html"><tt>View</tt></a></tt>&nbsp;&mdash;&nbsp;this view itself, so calls can be chained
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Create a rectangle shaped path with its top left point at: {x: 50, y: 25} and a size of {width: 50, height: 50}</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+path.fillColor = 'black';
+
+var frameHandler = function(event) {
+    // Every frame, rotate the path by 3 degrees:
+    path.rotate(3);
+};
+
+view.on('frame', frameHandler);
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="on-param" class="member">
+<div class="member-link">
+<a name="on-param" href="#on-param"><tt><b>on</b>(param)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Attach one or more event handlers to the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>param:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;an object literal containing one or more of the  following properties: <tt>frame</tt>, <tt>resize</tt>
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/View.html"><tt>View</tt></a></tt>&nbsp;&mdash;&nbsp;this view itself, so calls can be chained
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Create a rectangle shaped path with its top left point at: {x: 50, y: 25} and a size of {width: 50, height: 50}</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+path.fillColor = 'black';
+
+var frameHandler = function(event) {
+    // Every frame, rotate the path by 3 degrees:
+    path.rotate(3);
+};
+
+view.on({
+    frame: frameHandler
+});
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-2"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="off-type-function" class="member">
+<div class="member-link">
+<a name="off-type-function" href="#off-type-function"><tt><b>off</b>(type, function)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Detach an event handler from the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the event type: <tt>&lsquo;frame&rsquo;</tt>, <tt>&lsquo;resize&rsquo;</tt>, <tt>&lsquo;mousedown&rsquo;</tt>, <tt>&lsquo;mouseup&rsquo;</tt>, <tt>&lsquo;mousedrag&rsquo;</tt>, <tt>&lsquo;click&rsquo;</tt>, <tt>&lsquo;doubleclick&rsquo;</tt>, <tt>&lsquo;mousemove&rsquo;</tt>, <tt>&lsquo;mouseenter&rsquo;</tt>, <tt>&lsquo;mouseleave&rsquo;</tt>
+
+</li>
+	
+	<li>
+<tt>function:</tt> 
+<tt>Function</tt>
+&mdash;&nbsp;the function to be detached
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/View.html"><tt>View</tt></a></tt>&nbsp;&mdash;&nbsp;this view itself, so calls can be chained
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<h4>Example:<span class="description">Create a rectangle shaped path with its top left point at: {x: 50, y: 25} and a size of {width: 50, height: 50}</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-3">
+var path = new Path.Rectangle(new Point(50, 25), new Size(50, 50));
+path.fillColor = 'black';
+
+var frameHandler = function(event) {
+    // Every frame, rotate the path by 3 degrees:
+    path.rotate(3);
+};
+
+view.on({
+    frame: frameHandler
+});
+
+// When the user presses the mouse,
+// detach the frame handler from the view:
+function onMouseDown(event) {
+    view.off('frame');
+}
+</script>
+<div class="canvas"><canvas width="516" height="100" id="canvas-3"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+
+	
+<div id="off-param" class="member">
+<div class="member-link">
+<a name="off-param" href="#off-param"><tt><b>off</b>(param)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Detach one or more event handlers from the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>param:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;an object literal containing one or more of the  following properties: <tt>frame</tt>, <tt>resize</tt>
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/View.html"><tt>View</tt></a></tt>&nbsp;&mdash;&nbsp;this view itself, so calls can be chained
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="emit-type-event" class="member">
+<div class="member-link">
+<a name="emit-type-event" href="#emit-type-event"><tt><b>emit</b>(type, event)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Emit an event on the view.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the event type: <tt>&lsquo;frame&rsquo;</tt>, <tt>&lsquo;resize&rsquo;</tt>, <tt>&lsquo;mousedown&rsquo;</tt>, <tt>&lsquo;mouseup&rsquo;</tt>, <tt>&lsquo;mousedrag&rsquo;</tt>, <tt>&lsquo;click&rsquo;</tt>, <tt>&lsquo;doubleclick&rsquo;</tt>, <tt>&lsquo;mousemove&rsquo;</tt>, <tt>&lsquo;mouseenter&rsquo;</tt>, <tt>&lsquo;mouseleave&rsquo;</tt>
+
+</li>
+	
+	<li>
+<tt>event:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;an object literal containing properties describing the event
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the event had listeners, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="responds-type" class="member">
+<div class="member-link">
+<a name="responds-type" href="#responds-type"><tt><b>responds</b>(type)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Check if the view has one or more event handlers of the specified type.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>type:</tt> 
+<tt>String</tt>
+&mdash;&nbsp;the event type: <tt>&lsquo;frame&rsquo;</tt>, <tt>&lsquo;resize&rsquo;</tt>, <tt>&lsquo;mousedown&rsquo;</tt>, <tt>&lsquo;mouseup&rsquo;</tt>, <tt>&lsquo;mousedrag&rsquo;</tt>, <tt>&lsquo;click&rsquo;</tt>, <tt>&lsquo;doubleclick&rsquo;</tt>, <tt>&lsquo;mousemove&rsquo;</tt>, <tt>&lsquo;mouseenter&rsquo;</tt>, <tt>&lsquo;mouseleave&rsquo;</tt>
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the view has one or more event handlers of the specified type, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

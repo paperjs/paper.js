@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CurveLocation</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>CurveLocation</h1>
+
+<p>CurveLocation objects describe a location on <a href="../classes/Curve.html"><tt>Curve</tt></a> objects, as  defined by the curve-time <a href="../classes/CurveLocation.html#time"><tt>time</tt></a>, a value between <code>0</code> (beginning  of the curve) and <code>1</code> (end of the curve). If the curve is part of a  <a href="../classes/Path.html"><tt>Path</tt></a> item, its <a href="../classes/CurveLocation.html#index"><tt>index</tt></a> inside the <a href="../classes/Path.html#curves"><tt>path.curves</tt></a>  array is also provided.</p>
+<p>The class is in use in many places, such as <a href="../classes/Path.html#getlocationat-offset"><tt>path.getLocationAt(offset)</tt></a>, <a href="../classes/Path.html#getlocationof-point"><tt>path.getLocationOf(point)</tt></a>, <a href="../classes/PathItem.html#getnearestlocation-point"><tt>pathItem.getNearestLocation(point)</tt></a>, <a href="../classes/PathItem.html#getintersections-path"><tt>pathItem.getIntersections(path)</tt></a>, etc.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="curvelocation-curve-time" class="member">
+<div class="member-link">
+<a name="curvelocation-curve-time" href="#curvelocation-curve-time"><tt><b>CurveLocation</b>(curve, time[, point])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a new CurveLocation object.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>curve:</tt> 
+<a href="../classes/Curve.html"><tt>Curve</tt></a>
+
+
+</li>
+	
+	<li>
+<tt>time:</tt> 
+<tt>Number</tt>
+
+
+</li>
+	
+	<li>
+<tt>point:</tt> 
+<a href="../classes/Point.html"><tt>Point</tt></a>
+
+&mdash;&nbsp;optional
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="segment" class="member">
+<div class="member-link">
+<a name="segment" href="#segment"><tt><b>segment</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The segment of the curve which is closer to the described location.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Segment.html"><tt>Segment</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="curve" class="member">
+<div class="member-link">
+<a name="curve" href="#curve"><tt><b>curve</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curve that this location belongs to.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Curve.html"><tt>Curve</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="path" class="member">
+<div class="member-link">
+<a name="path" href="#path"><tt><b>path</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The path that this locations is situated on.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Path.html"><tt>Path</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="index" class="member">
+<div class="member-link">
+<a name="index" href="#index"><tt><b>index</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The index of the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> within the <a href="../classes/Path.html#curves"><tt>path.curves</tt></a> list, if it is part of a <a href="../classes/Path.html"><tt>Path</tt></a> item.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="time" class="member">
+<div class="member-link">
+<a name="time" href="#time"><tt><b>time</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curve-time parameter, as used by various bezier curve calculations. It is value between <code>0</code> (beginning of the curve) and <code>1</code> (end of the curve).</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="point" class="member">
+<div class="member-link">
+<a name="point" href="#point"><tt><b>point</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The point which is defined by the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> and <a href="../classes/CurveLocation.html#time"><tt>time</tt></a>.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="offset" class="member">
+<div class="member-link">
+<a name="offset" href="#offset"><tt><b>offset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The length of the path from its beginning up to the location described by this object. If the curve is not part of a path, then the length within the curve is returned instead.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="curveoffset" class="member">
+<div class="member-link">
+<a name="curveoffset" href="#curveoffset"><tt><b>curveOffset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The length of the curve from its beginning up to the location described by this object.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="intersection" class="member">
+<div class="member-link">
+<a name="intersection" href="#intersection"><tt><b>intersection</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curve location on the intersecting curve, if this location is the result of a call to <a href="../classes/PathItem.html#getintersections-path"><tt>pathItem.getIntersections(path)</tt></a> / <a href="../classes/Curve.html#getintersections-curve"><tt>curve.getIntersections(curve)</tt></a>.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="tangent" class="member">
+<div class="member-link">
+<a name="tangent" href="#tangent"><tt><b>tangent</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The tangential vector to the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> at the given location.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="normal" class="member">
+<div class="member-link">
+<a name="normal" href="#normal"><tt><b>normal</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The normal vector to the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> at the given location.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Point.html"><tt>Point</tt></a>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="curvature" class="member">
+<div class="member-link">
+<a name="curvature" href="#curvature"><tt><b>curvature</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The curvature of the <a href="../classes/CurveLocation.html#curve"><tt>curve</tt></a> at the given location.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	
+</div>
+
+</div>
+</div>
+		
+			
+<div id="distance" class="member">
+<div class="member-link">
+<a name="distance" href="#distance"><tt><b>distance</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The distance from the queried point to the returned location.</p>
+	
+		<p>Read only.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/Curve.html#getnearestlocation-point"><tt>curve.getNearestLocation(point)</tt></a></tt></li>
+		
+			<li><tt><a href="../classes/PathItem.html#getnearestlocation-point"><tt>pathItem.getNearestLocation(point)</tt></a></tt></li>
+		
+	</ul>
+
+	
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="equals-location" class="member">
+<div class="member-link">
+<a name="equals-location" href="#equals-location"><tt><b>equals</b>(location)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks whether tow CurveLocation objects are describing the same location on a path, by applying the same tolerances as elsewhere when dealing with curve-time parameters.</p>
+    
+	
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>location:</tt> 
+<a href="../classes/CurveLocation.html"><tt>CurveLocation</tt></a>
+
+
+</li>
+	
+</ul>
+
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the locations are equal, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<div id="tostring" class="member">
+<div class="member-link">
+<a name="tostring" href="#tostring"><tt><b>toString</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>String</tt></tt>&nbsp;&mdash;&nbsp;a string representation of the curve location
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+	
+<h3>Tests</h3>
+
+<div id="istouching" class="member">
+<div class="member-link">
+<a name="istouching" href="#istouching"><tt><b>isTouching</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the location is an intersection with another curve and is merely touching the other curve, as opposed to crossing it.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the location is an intersection that is merely touching another curve, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/CurveLocation.html#iscrossing"><tt>isCrossing</tt></a>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="iscrossing" class="member">
+<div class="member-link">
+<a name="iscrossing" href="#iscrossing"><tt><b>isCrossing</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the location is an intersection with another curve and is crossing the other curve, as opposed to just touching it.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the location is an intersection that is crossing another curve, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/CurveLocation.html#istouching"><tt>isTouching</tt></a>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+	
+<div id="hasoverlap" class="member">
+<div class="member-link">
+<a name="hasoverlap" href="#hasoverlap"><tt><b>hasOverlap</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	<p>Checks if the location is an intersection with another curve and is part of an overlap between the two involved paths.</p>
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><tt>Boolean</tt></tt>&nbsp;&mdash;&nbsp;<tt>true</tt> if the location is an intersection that is part of an overlap between the two involved paths, <tt>false</tt> otherwise
+</li>
+
+		
+	</ul>
+
+
+
+	
+	<ul class="member-list">
+		<h4>See also:</h4>
+		
+			<li><tt><a href="../classes/CurveLocation.html#iscrossing"><tt>isCrossing</tt></a>()</tt></li>
+		
+			<li><tt><a href="../classes/CurveLocation.html#istouching"><tt>isTouching</tt></a>()</tt></li>
+		
+	</ul>
+
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>

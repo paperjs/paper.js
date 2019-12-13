@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GradientStop</title>
+<base target="class-frame">
+<link href="../assets/css/docs.css" rel="stylesheet" type="text/css">
+<script src="../assets/js/paper.js"></script>
+<script src="../assets/js/jquery.js"></script>
+<script src="../assets/js/codemirror.js"></script>
+<script src="../assets/js/docs.js"></script>
+</head>
+<body>
+<article class="reference"> 
+<div class="reference-class">
+<h1>GradientStop</h1>
+
+<p>The GradientStop object.</p>
+
+</div>
+
+<!-- =============================== constructors ========================== -->
+<div class="reference-members">
+	<h2>Constructors</h2>
+	
+		
+<div id="gradientstop" class="member">
+<div class="member-link">
+<a name="gradientstop" href="#gradientstop"><tt><b>GradientStop</b>([color[, offset]])</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a GradientStop object.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>color:</tt> 
+<a href="../classes/Color.html"><tt>Color</tt></a>
+&mdash;&nbsp;the color of the stop
+&mdash;&nbsp;optional, default: <tt>new Color(0, 0, 0)</tt>
+</li>
+	
+	<li>
+<tt>offset:</tt> 
+<tt>Number</tt>
+&mdash;&nbsp;the position of the stop on the gradient ramp as a value between <code>0</code> and <code>1</code>; <code>null</code> or <code>undefined</code> for automatic assignment.
+&mdash;&nbsp;optional, default: <tt>null</tt>
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/GradientStop.html"><tt>GradientStop</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    
+</div>
+</div>
+</div>
+	
+</div>
+
+
+
+
+
+<!-- ================================ properties =========================== -->
+	<div class="reference-members">
+		<h2>Properties</h2>
+		
+			
+<div id="offset" class="member">
+<div class="member-link">
+<a name="offset" href="#offset"><tt><b>offset</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The ramp-point of the gradient stop as a value between <code>0</code> and <code>1</code>.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<tt>Number</tt>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Animating a gradient's ramp points:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-0">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle({
+    center: view.center,
+    radius: view.bounds.height * 0.4
+});
+
+path.fillColor = {
+    gradient: {
+        stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+        radial: true
+    },
+    origin: path.position,
+    destination: path.bounds.rightCenter
+};
+
+var gradient = path.fillColor.gradient;
+
+// This function is called each frame of the animation:
+function onFrame(event) {
+    var blackStop = gradient.stops[2];
+    // Animate the offset between 0.7 and 0.9:
+    blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
+
+    // Animate the offset between 0.2 and 0.4
+    var redStop = gradient.stops[1];
+    redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-0"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+			
+<div id="color" class="member">
+<div class="member-link">
+<a name="color" href="#color"><tt><b>color</b></tt></a>
+</div>
+<div class="member-description hidden">
+
+<div class="member-text">
+	<p>The color of the gradient stop.</p>
+	
+	
+	
+	<ul class="member-list">
+		<h4>Type:</h4>
+		<li>
+			<a href="../classes/Color.html"><tt>Color</tt></a>
+		</li>
+	</ul>
+    
+	
+	<h4>Example:<span class="description">Animating a gradient's ramp points:</span></h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-1">
+// Create a circle shaped path at the center of the view,
+// using 40% of the height of the view as its radius
+// and fill it with a radial gradient color:
+var path = new Path.Circle({
+    center: view.center,
+    radius: view.bounds.height * 0.4
+});
+
+path.fillColor = {
+    gradient: {
+        stops: [['yellow', 0.05], ['red', 0.2], ['black', 1]],
+        radial: true
+    },
+    origin: path.position,
+    destination: path.bounds.rightCenter
+};
+
+var redStop = path.fillColor.gradient.stops[1];
+var blackStop = path.fillColor.gradient.stops[2];
+
+// This function is called each frame of the animation:
+function onFrame(event) {
+    // Animate the offset between 0.7 and 0.9:
+    blackStop.offset = Math.sin(event.time * 5) * 0.1 + 0.8;
+
+    // Animate the offset between 0.2 and 0.4
+    redStop.offset = Math.sin(event.time * 3) * 0.1 + 0.3;
+}
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+
+</div>
+</div>
+		
+	</div>
+
+
+
+
+
+<!-- ============================== methods ================================ -->
+	<div class="reference-members">
+		<h2>Methods</h2>
+		
+	
+<div id="clone" class="member">
+<div class="member-link">
+<a name="clone" href="#clone"><tt><b>clone</b>()</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+	
+    
+	
+	
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/GradientStop.html"><tt>GradientStop</tt></a></tt>&nbsp;&mdash;&nbsp;a copy of the gradient-stop
+</li>
+
+		
+	</ul>
+
+
+
+	
+	
+</div>
+</div>
+</div>
+
+
+		
+	</div>
+
+
+
+
+<!-- =========================== copyright notice ========================== -->
+<p class="footer">
+Paper.js v0.12.3 (develop)<br>
+Copyright &#169; 2011—2019 <a href="http://www.lehni.org" target="_blank">J&uuml;rg Lehni</a> &amp; <a href="http://www.jonathanpuckey.com" target="_blank">Jonathan Puckey</a>. All Rights Reserved.</p>
+<div class="content-end"></div>
+
+
+</article>
+</body>
