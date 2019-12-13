@@ -42,6 +42,7 @@ var paper = function(self, undefined) {
 /*#*/ include('core/PaperScope.js');
 /*#*/ include('core/PaperScopeItem.js');
 
+/*#*/ include('util/CollisionDetection.js');
 /*#*/ include('util/Formatter.js');
 /*#*/ include('util/Numerical.js');
 /*#*/ include('util/UID.js');
