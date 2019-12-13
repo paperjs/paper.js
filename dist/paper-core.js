@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 13 16:47:49 2019 +0100
+ * Date: Fri Dec 13 18:36:07 2019 +0100
  *
  ***
  *
@@ -914,61 +914,45 @@ var PaperScopeItem = Base.extend(Emitter, {
 });
 
 var CollisionDetection = {
-	findItemBoundsCollisions: function(items1, items2, tolerance,
-			sweepVertical, onlySweepAxisCollisions) {
-		var bounds1 = new Array(items1.length),
-			bounds2;
-		for (var i = 0; i < items1.length; i++) {
-			var bounds = items1[i].bounds;
-			bounds1[i] = [bounds.left, bounds.top, bounds.right, bounds.bottom];
-		}
-		if (items2) {
-			if (items2 === items1) {
-				bounds2 = bounds1;
-			} else {
-				bounds2 = new Array(items2.length);
-				for (var i = 0; i < items2.length; i++) {
-					var bounds = items2[i].bounds;
-					bounds2[i] = [bounds.left, bounds.top, bounds.right,
-						bounds.bottom];
-				}
+	findItemBoundsCollisions: function(items1, items2, tolerance) {
+		function getBounds(items) {
+			var bounds = new Array(items.length);
+			for (var i = 0; i < items.length; i++) {
+				var rect = items[i].getBounds();
+				bounds[i] = [rect.left, rect.top, rect.right, rect.bottom];
 			}
+			return bounds;
 		}
-		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0,
-				sweepVertical, onlySweepAxisCollisions);
+
+		var bounds1 = getBounds(items1),
+			bounds2 = !items2 || items2 === items1
+				? bounds1
+				: getBounds(items2);
+		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
 	},
 
-	findCurveBoundsCollisions: function(curvesValues1, curvesValues2,
+	findCurveBoundsCollisions: function(curves1, curves2,
 			tolerance, sweepVertical, onlySweepAxisCollisions) {
-		var min = Math.min,
-			max = Math.max,
-			bounds1 = new Array(curvesValues1.length),
-			bounds2;
-		for (var i = 0; i < bounds1.length; i++) {
-			var v1 = curvesValues1[i];
-			bounds1[i] = [
-				min(v1[0], v1[2], v1[4], v1[6]),
-				min(v1[1], v1[3], v1[5], v1[7]),
-				max(v1[0], v1[2], v1[4], v1[6]),
-				max(v1[1], v1[3], v1[5], v1[7])
-			];
-		}
-		if (curvesValues2) {
-			if (curvesValues2 === curvesValues1) {
-				bounds2 = bounds1;
-			} else {
-				bounds2 = new Array(curvesValues2.length);
-				for (var i = 0; i < bounds2.length; i++) {
-					var v2 = curvesValues2[i];
-					bounds2[i] = [
-						min(v2[0], v2[2], v2[4], v2[6]),
-						min(v2[1], v2[3], v2[5], v2[7]),
-						max(v2[0], v2[2], v2[4], v2[6]),
-						max(v2[1], v2[3], v2[5], v2[7])
-					];
-				}
+		function getBounds(curves) {
+			var min = Math.min,
+				max = Math.max,
+				bounds = new Array(curves.length);
+			for (var i = 0; i < curves.length; i++) {
+				var v = curves[i];
+				bounds[i] = [
+					min(v[0], v[2], v[4], v[6]),
+					min(v[1], v[3], v[5], v[7]),
+					max(v[0], v[2], v[4], v[6]),
+					max(v[1], v[3], v[5], v[7])
+				];
 			}
+			return bounds;
 		}
+
+		var bounds1 = getBounds(curves1),
+			bounds2 = !curves2 || curves2 === curves1
+				? bounds1
+				: getBounds(curves2);
 		return this.findBoundsCollisions(bounds1, bounds2,
 				tolerance || 0, sweepVertical, onlySweepAxisCollisions);
 	},
@@ -977,16 +961,15 @@ var CollisionDetection = {
 		sweepVertical, onlySweepAxisCollisions) {
 		var self = !boundsB || boundsA === boundsB,
 			allBounds = self ? boundsA : boundsA.concat(boundsB),
-			countA = boundsA.length,
-			countAll = allBounds.length,
-			lo, hi;
+			lengthA = boundsA.length,
+			lengthAll = allBounds.length;
 
-		function binarySearch(indices, coordinateValue, coordinate) {
-			lo = 0;
-			hi = indices.length;
+		function binarySearch(indices, coord, value) {
+			var lo = 0,
+				hi = indices.length;
 			while (lo < hi) {
 				var mid = (hi + lo) >>> 1;
-				if (allBounds[indices[mid]][coordinate] < coordinateValue) {
+				if (allBounds[indices[mid]][coord] < value) {
 					lo = mid + 1;
 				} else {
 					hi = mid;
@@ -995,62 +978,61 @@ var CollisionDetection = {
 			return lo - 1;
 		}
 
-		var coordP0 = sweepVertical ? 1 : 0,
-			coordP1 = coordP0 + 2,
-			coordS0 = sweepVertical ? 0 : 1,
-			coordS1 = coordS0 + 2;
-		var allIndicesByP0 = new Array(countAll);
-		for (var i = 0; i < countAll; i++) {
-			allIndicesByP0[i] = i;
+		var pri0 = sweepVertical ? 1 : 0,
+			pri1 = pri0 + 2,
+			sec0 = sweepVertical ? 0 : 1,
+			sec1 = sec0 + 2;
+		var allIndicesByPri0 = new Array(lengthAll);
+		for (var i = 0; i < lengthAll; i++) {
+			allIndicesByPri0[i] = i;
 		}
-		allIndicesByP0.sort(function(i1, i2) {
-			return allBounds[i1][coordP0] - allBounds[i2][coordP0];
+		allIndicesByPri0.sort(function(i1, i2) {
+			return allBounds[i1][pri0] - allBounds[i2][pri0];
 		});
-		var activeIndicesByP1 = [],
-			allCollisions = new Array(countA);
-		for (var i = 0; i < countAll; i++) {
-			var currentIndex = allIndicesByP0[i],
-				currentBounds = allBounds[currentIndex],
-				currentOriginalIndex = self
-					? currentIndex
-					: currentIndex - countA,
-				isCurrentA = currentIndex < countA,
-				isCurrentB = self || currentIndex >= countA,
-				currentCollisions = isCurrentA ? [] : null;
-			if (activeIndicesByP1.length) {
-				var pruneCount = binarySearch(activeIndicesByP1,
-						currentBounds[coordP0] - tolerance, coordP1) + 1;
-				activeIndicesByP1.splice(0, pruneCount);
+		var activeIndicesByPri1 = [],
+			allCollisions = new Array(lengthA);
+		for (var i = 0; i < lengthAll; i++) {
+			var curIndex = allIndicesByPri0[i],
+				curBounds = allBounds[curIndex],
+				origIndex = self ? curIndex : curIndex - lengthA,
+				isCurrentA = curIndex < lengthA,
+				isCurrentB = self || !isCurrentA,
+				curCollisions = isCurrentA ? [] : null;
+			if (activeIndicesByPri1.length) {
+				var pruneCount = binarySearch(activeIndicesByPri1, pri1,
+						curBounds[pri0] - tolerance) + 1;
+				activeIndicesByPri1.splice(0, pruneCount);
 				if (self && onlySweepAxisCollisions) {
-					currentCollisions = currentCollisions.concat(
-						activeIndicesByP1.slice());
-					for (var j = 0; j < activeIndicesByP1.length; j++) {
-						var activeIndex = activeIndicesByP1[j];
-						allCollisions[activeIndex].push(currentOriginalIndex);
+					curCollisions = curCollisions.concat(activeIndicesByPri1);
+					for (var j = 0; j < activeIndicesByPri1.length; j++) {
+						var activeIndex = activeIndicesByPri1[j];
+						allCollisions[activeIndex].push(origIndex);
 					}
 				} else {
-					var currentS1 = currentBounds[coordS1],
-						currentS0 = currentBounds[coordS0];
-					for (var j = 0; j < activeIndicesByP1.length; j++) {
-						var activeIndex = activeIndicesByP1[j],
-							isActiveA = activeIndex < countA,
-							isActiveB = self || activeIndex >= countA;
-						if (onlySweepAxisCollisions ||
-							(((isCurrentA && isActiveB) ||
-								(isCurrentB && isActiveA)) &&
-								currentS1 >=
-									allBounds[activeIndex][coordS0] -
-										tolerance &&
-									currentS0 <=
-										allBounds[activeIndex][coordS1] +
-											tolerance)) {
+					var curSec1 = curBounds[sec1],
+						curSec0 = curBounds[sec0];
+					for (var j = 0; j < activeIndicesByPri1.length; j++) {
+						var activeIndex = activeIndicesByPri1[j],
+							activeBounds = allBounds[activeIndex],
+							isActiveA = activeIndex < lengthA,
+							isActiveB = self || activeIndex >= lengthA;
+
+						if (
+							onlySweepAxisCollisions ||
+							(
+								isCurrentA && isActiveB ||
+								isCurrentB && isActiveA
+							) && (
+								curSec1 >= activeBounds[sec0] - tolerance &&
+								curSec0 <= activeBounds[sec1] + tolerance
+							)
+						) {
 							if (isCurrentA && isActiveB) {
-								currentCollisions.push(
-									self ? activeIndex : activeIndex - countA);
+								curCollisions.push(
+									self ? activeIndex : activeIndex - lengthA);
 							}
 							if (isCurrentB && isActiveA) {
-								allCollisions[activeIndex].push(
-									currentOriginalIndex);
+								allCollisions[activeIndex].push(origIndex);
 							}
 						}
 					}
@@ -1058,24 +1040,22 @@ var CollisionDetection = {
 			}
 			if (isCurrentA) {
 				if (boundsA === boundsB) {
-					currentCollisions.push(currentIndex);
+					curCollisions.push(curIndex);
 				}
-				allCollisions[currentIndex] = currentCollisions;
+				allCollisions[curIndex] = curCollisions;
 			}
-			if (activeIndicesByP1.length) {
-				var currentP1 = currentBounds[coordP1],
-					insertIndex =
-						binarySearch(activeIndicesByP1, currentP1, coordP1) + 1;
-				activeIndicesByP1.splice(insertIndex, 0, currentIndex);
+			if (activeIndicesByPri1.length) {
+				var curPri1 = curBounds[pri1],
+					index = binarySearch(activeIndicesByPri1, pri1, curPri1);
+				activeIndicesByPri1.splice(index + 1, 0, curIndex);
 			} else {
-				activeIndicesByP1.push(currentIndex);
+				activeIndicesByPri1.push(curIndex);
 			}
 		}
 		for (var i = 0; i < allCollisions.length; i++) {
-			if (allCollisions[i]) {
-				allCollisions[i].sort(function(i1, i2) {
-					return i1 - i2;
-				});
+			var collisions = allCollisions[i];
+			if (collisions) {
+				collisions.sort(function(i1, i2) { return i1 - i2; });
 			}
 		}
 		return allCollisions;
