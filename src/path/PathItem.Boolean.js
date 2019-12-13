@@ -161,7 +161,7 @@ PathItem.inject(new function() {
             for (var i = 0, l = curves.length; i < l; i++) {
                 curvesValues[i] = curves[i].getValues();
             }
-            var horCurveCollisions = 
+            var horCurveCollisions =
                 CollisionDetection.findCurveBoundsCollisions(
                     curvesValues, curvesValues, 0, false, true);
             var horCurvesMap = {};
@@ -179,7 +179,7 @@ PathItem.inject(new function() {
                 horCurvesMap[pathId][curve.getIndex()] = collidingCurves;
             }
 
-            var vertCurveCollisions = 
+            var vertCurveCollisions =
                 CollisionDetection.findCurveBoundsCollisions(
                     curvesValues, curvesValues, 0, true, true);
             var vertCurvesMap = {};
@@ -202,14 +202,14 @@ PathItem.inject(new function() {
             // First, propagate winding contributions for curve chains starting
             // in all crossings:
             for (var i = 0, l = crossings.length; i < l; i++) {
-                propagateWinding(crossings[i]._segment, _path1, _path2, 
+                propagateWinding(crossings[i]._segment, _path1, _path2,
                     horCurvesMap, vertCurvesMap, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
                     inter = segment._intersection;
                 if (!segment._winding) {
-                    propagateWinding(segment, _path1, _path2, 
+                    propagateWinding(segment, _path1, _path2,
                         horCurvesMap, vertCurvesMap, operator);
                 }
                 // See if all encountered segments in a path are overlaps.
@@ -349,16 +349,16 @@ PathItem.inject(new function() {
             // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
-                    indicesI = collisions[i];
+                    indicesI = collisions[i],
+                    entry1 = lookup[path1._id],
+                    containerWinding = 0;
                 if (indicesI) {
-                    var entry1 = lookup[path1._id],
-                        point = null; // interior point, only get it if required
-                        containerWinding = 0;
+                    var point = null; // interior point, only get it if required
                     for (var j = indicesI.length - 1; j >= 0; j--) {
                         if (indicesI[j] < i) {
                             point = point || path1.getInteriorPoint();
                             var path2 = sorted[indicesI[j]];
-                            // As we run through the paths from largest to 
+                            // As we run through the paths from largest to
                             // smallest, for any current path, all potentially
                             // containing paths have already been processed and
                             // their orientation fixed. To achieve correct
@@ -369,7 +369,7 @@ PathItem.inject(new function() {
                                 var entry2 = lookup[path2._id];
                                 containerWinding = entry2.winding;
                                 entry1.winding += containerWinding;
-                                entry1.container = entry2.exclude ? 
+                                entry1.container = entry2.exclude ?
                                         entry2.container : path2;
                                 break;
                             }
@@ -865,7 +865,7 @@ PathItem.inject(new function() {
                     var curveIndex = curve.getIndex();
                     var hCollisions = horCurveCollisionsMap[pathId][curveIndex];
                     var vCollisions = vertCurveCollisionsMap[pathId][curveIndex];
-                    wind = wind || 
+                    wind = wind ||
                            getWinding(pt, hCollisions, vCollisions, dir, true);
                     if (wind.quality > winding.quality)
                         winding = wind;
@@ -1142,7 +1142,7 @@ PathItem.inject(new function() {
          * @return {Number} the winding number
          */
         _getWinding: function(point, dir, closed) {
-          let curves = this.getCurves();
+            var curves = this.getCurves();
             return getWinding(point, curves, curves, dir, closed);
         },
 

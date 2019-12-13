@@ -19,12 +19,12 @@ var CollisionDetection =  /** @lends CollisionDetection */{
 
     /**
      * Finds collisions between axis aligned bounding boxes of items.
-     * 
+     *
      * This function takes the bounds of all items in the items1 and items2
      * arrays and calls findBoundsCollisions().
      *
      * @param {Array} itemsA Array of curve values for which collisions should
-     *     be found. 
+     *     be found.
      * @param {Array} [itemsA] Array of curve values that the first array should
      *     be compared with. If not provided, collisions between items within
      *     the first arrray will be returned.
@@ -74,7 +74,7 @@ var CollisionDetection =  /** @lends CollisionDetection */{
      * curveValues1 and curveValues2 arrays and calls findBoundsCollisions().
      *
      * @param {Array} curvesValues1 Array of curve values for which collisions
-     *     should be found. 
+     *     should be found.
      * @param {Array} [curvesValues2] Array of curve values that the first
      *     array should be compared with. If not provided, collisions between
      *     curve bounds within the first arrray will be returned.
@@ -127,26 +127,26 @@ var CollisionDetection =  /** @lends CollisionDetection */{
 
     /**
      * Finds collisions between two sets of bounding rectangles.
-     * 
+     *
      * The collision detection is implemented as a sweep and prune algorithm
      * with sweep either along the x or y axis (primary axis) and immediate
      * check on secondary axis for potential pairs.
-     * 
-     * Each entry in the bounds arrays must be an array of length 4 with 
+     *
+     * Each entry in the bounds arrays must be an array of length 4 with
      * x0, y0, x1, and y1 as the array elements.
-     * 
+     *
      * The returned array has the same length as boundsArr1. Each entry
-     * contains an array with all indices of overlapping bounds of 
+     * contains an array with all indices of overlapping bounds of
      * boundsArr2 (or boundsArr1 if boundsArr2 is not provided) sorted
      * in ascending order.
-     * 
+     *
      * If the second bounds array parameter is null, collisions between bounds
      * within the first bounds array will be found. In this case the indexed
      * returned for each bounds will not contain the bounds' own index.
      *
      *
      * @param {Array} boundsArr1 Array of bounds objects for which collisions
-     *     should be found. 
+     *     should be found.
      * @param {Array} [boundsArr2] Array of bounds that the first array should
      *     be compared with. If not provided, collisions between bounds within
      *     the first arrray will be returned.
@@ -159,15 +159,20 @@ var CollisionDetection =  /** @lends CollisionDetection */{
      * @returns {Array} Array containing for the bounds at thes same index in
      *      boundsA an array of the indexes of colliding bounds in boundsB
      *
-     * @author Jan Boesenberg <jan.boesenberg@gmail.com>    
+     * @author Jan Boesenberg <jan.boesenberg@gmail.com>
      */
     findBoundsCollisions: function(boundsA, boundsB, tolerance,
         sweepVertical, onlySweepAxisCollisions) {
         // Binary search utility function.
         // For multiple same entries, this returns the rightmost entry.
         // https://en.wikipedia.org/wiki/Binary_search_algorithm#Procedure_for_finding_the_rightmost_element
-        var lo, hi;
-        var binarySearch = function(indices, coordinateValue, coordinate) {
+        var self = !boundsB || boundsA === boundsB,
+            allBounds = self ? boundsA : boundsA.concat(boundsB),
+            countA = boundsA.length,
+            countAll = allBounds.length,
+            lo, hi;
+
+        function binarySearch(indices, coordinateValue, coordinate) {
             lo = 0;
             hi = indices.length;
             while (lo < hi) {
@@ -179,13 +184,8 @@ var CollisionDetection =  /** @lends CollisionDetection */{
                 }
             }
             return lo - 1;
-        };
+        }
 
-        //
-        var self = !boundsB || boundsA === boundsB,
-            allBounds = self ? boundsA : boundsA.concat(boundsB),
-            countA = boundsA.length,
-            countAll = allBounds.length;
         // Set coordinates for primary and secondary axis depending on sweep
         // direction. By default we sweep in horizontal direction, which
         // means x is the primary axis.
@@ -208,7 +208,7 @@ var CollisionDetection =  /** @lends CollisionDetection */{
             allCollisions = new Array(countA);
         for (var i = 0; i < countAll; i++) {
             var currentIndex = allIndicesByP0[i],
-                currentBounds = allBounds[currentIndex];
+                currentBounds = allBounds[currentIndex],
                 currentOriginalIndex = self ? currentIndex
                     : currentIndex - countA, // index in boundsA or boundsB array
                 isCurrentA = currentIndex < countA,
@@ -279,7 +279,7 @@ var CollisionDetection =  /** @lends CollisionDetection */{
                 activeIndicesByP1.push(currentIndex);
             }
         }
-        // Sort collision indioes in ascending order
+        // Sort collision indices in ascending order
         for (var i = 0; i < allCollisions.length; i++) {
             if (allCollisions[i]) {
                 allCollisions[i].sort(function(i1, i2) {
