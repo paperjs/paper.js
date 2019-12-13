@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 13 16:45:03 2019 +0100
+ * Date: Fri Dec 13 16:47:49 2019 +0100
  *
  ***
  *
@@ -10774,8 +10774,8 @@ PathItem.inject(new function() {
 					}
 					if (!wind) {
 						var pathId = path.getId(),
-							curveIndex = curve.getIndex();
-						var curvesH = horCurvesMap[pathId][curveIndex],
+							curveIndex = curve.getIndex(),
+							curvesH = horCurvesMap[pathId][curveIndex],
 							curvesV = verCurvesMap[pathId][curveIndex];
 						wind = getWinding(pt, curvesH, curvesV, dir, true);
 					}
