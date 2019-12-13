@@ -2103,9 +2103,9 @@ new function() { // Scope for bezier intersection using fat-line clipping
     }
 
     function getIntersections(curves1, curves2, include, matrix1, matrix2,
-        _returnFirst) {
-        var epsilon = Numerical.GEOMETRIC_EPSILON;
-        var self = !curves2;
+            _returnFirst) {
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            self = !curves2;
         if (self)
             curves2 = curves1;
         var length1 = curves1.length,
@@ -2115,23 +2115,21 @@ new function() { // Scope for bezier intersection using fat-line clipping
             locations = [];
 
         for (var i = 0; i < length1; i++) {
-            var v = curves1[i].getValues(matrix1);
-            values1[i] = v;
+            values1[i] = curves1[i].getValues(matrix1);
         }
         if (!self) {
             for (var i = 0; i < length2; i++) {
-                var v = curves2[i].getValues(matrix2);
-                values2[i] = v;
+                values2[i] = curves2[i].getValues(matrix2);
             }
         }
         var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-            values1, self ? null : values2, epsilon);
+                values1, self ? null : values2, epsilon);
         for (var index1 = 0; index1 < length1; index1++) {
             var curve1 = curves1[index1],
                 v1 = values1[index1];
             if (self) {
                 // First check for self-intersections within the same curve.
-                getSelfIntersection(v1, curve1, locations, include);    
+                getSelfIntersection(v1, curve1, locations, include);
             }
             // Check for intersections with potentially intersecting curves.
             var collisions1 = boundsCollisions[index1];
@@ -2146,12 +2144,11 @@ new function() { // Scope for bezier intersection using fat-line clipping
                         var curve2 = curves2[index2],
                             v2 = values2[index2];
                         getCurveIntersections(
-                            v1, v2, curve1, curve2, locations, include
-                        );
+                                v1, v2, curve1, curve2, locations, include);
                     }
                 }
             }
-        }  
+        }
         return locations;
     }
 

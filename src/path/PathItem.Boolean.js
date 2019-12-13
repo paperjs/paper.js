@@ -23,9 +23,8 @@
  *  - Boolean operations on self-intersecting Paths items
  *
  * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
- * @author Jan Boesenberg <development@iconexperience.com>
+ * @author Jan Boesenberg <jan.boesenberg@gmail.com>
  * @author Juerg Lehni <juerg@scratchdisk.com>
- * https://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
     var min = Math.min,
@@ -179,22 +178,22 @@ PathItem.inject(new function() {
                 horCurvesMap[pathId][curve.getIndex()] = collidingCurves;
             }
 
-            var vertCurveCollisions =
+            var verCurveCollisions =
                 CollisionDetection.findCurveBoundsCollisions(
                     curvesValues, curvesValues, 0, true, true);
-            var vertCurvesMap = {};
+            var verCurvesMap = {};
             for (var i = 0; i < curves.length; i++) {
                 var curve = curves[i],
                     collidingCurves = [],
-                    collisionIndices = vertCurveCollisions[i];
+                    collisionIndices = verCurveCollisions[i];
                 if (collisionIndices) {
                     for (var j = 0; j < collisionIndices.length; j++) {
                         collidingCurves.push(curves[collisionIndices[j]]);
                     }
                 }
                 var pathId = curve.getPath().getId();
-                vertCurvesMap[pathId] = vertCurvesMap[pathId] || {};
-                vertCurvesMap[pathId][curve.getIndex()] = collidingCurves;
+                verCurvesMap[pathId] = verCurvesMap[pathId] || {};
+                verCurvesMap[pathId][curve.getIndex()] = collidingCurves;
             }
 
             // Propagate the winding contribution. Winding contribution of
@@ -203,14 +202,14 @@ PathItem.inject(new function() {
             // in all crossings:
             for (var i = 0, l = crossings.length; i < l; i++) {
                 propagateWinding(crossings[i]._segment, _path1, _path2,
-                    horCurvesMap, vertCurvesMap, operator);
+                        horCurvesMap, verCurvesMap, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
                     inter = segment._intersection;
                 if (!segment._winding) {
                     propagateWinding(segment, _path1, _path2,
-                        horCurvesMap, vertCurvesMap, operator);
+                            horCurvesMap, verCurvesMap, operator);
                 }
                 // See if all encountered segments in a path are overlaps.
                 if (!(inter && inter._overlap))
@@ -349,28 +348,28 @@ PathItem.inject(new function() {
             // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
-                    indicesI = collisions[i],
                     entry1 = lookup[path1._id],
-                    containerWinding = 0;
-                if (indicesI) {
-                    var point = null; // interior point, only get it if required
-                    for (var j = indicesI.length - 1; j >= 0; j--) {
-                        if (indicesI[j] < i) {
+                    containerWinding = 0,
+                    indices = collisions[i];
+                if (indices) {
+                    var point = null; // interior point, only get it if required.
+                    for (var j = indices.length - 1; j >= 0; j--) {
+                        if (indices[j] < i) {
                             point = point || path1.getInteriorPoint();
-                            var path2 = sorted[indicesI[j]];
+                            var path2 = sorted[indices[j]];
                             // As we run through the paths from largest to
                             // smallest, for any current path, all potentially
                             // containing paths have already been processed and
                             // their orientation fixed. To achieve correct
                             // orientation of contained paths based on winding,
-                            // we have to find one containing path with
-                            // different "insideness" and set opposite orientation.
+                            // find one containing path with different
+                            // "insideness" and set opposite orientation.
                             if (path2.contains(point)) {
                                 var entry2 = lookup[path2._id];
                                 containerWinding = entry2.winding;
                                 entry1.winding += containerWinding;
-                                entry1.container = entry2.exclude ?
-                                        entry2.container : path2;
+                                entry1.container = entry2.exclude
+                                    ? entry2.container : path2;
                                 break;
                             }
                         }
@@ -388,8 +387,8 @@ PathItem.inject(new function() {
                     // If the containing path is not excluded, we're done
                     // searching for the orientation defining path.
                     var container = entry1.container;
-                    path1.setClockwise(container ? !container.isClockwise()
-                            : clockwise);
+                    path1.setClockwise(
+                            container ? !container.isClockwise() : clockwise);
                 }
             }
         }
@@ -793,8 +792,8 @@ PathItem.inject(new function() {
         };
     }
 
-    function propagateWinding(segment, path1, path2, horCurveCollisionsMap,
-        vertCurveCollisionsMap, operator) {
+    function propagateWinding(segment, path1, path2, horCurvesMap, verCurvesMap,
+            operator) {
         // Here we try to determine the most likely winding number contribution
         // for the curve-chain starting with this segment. Once we have enough
         // confidence in the winding contribution, we can propagate it until the
@@ -845,9 +844,8 @@ PathItem.inject(new function() {
                     var wind = null;
                     if (operator.subtract && path2) {
                         // Calculate path winding at point depending on operand.
-                        var pathWinding = operand === path1
-                                          ? path2._getWinding(pt, dir, true)
-                                          : path1._getWinding(pt, dir, true);
+                        var otherPath = operand === path1 ? path2 : path1,
+                            pathWinding = otherPath._getWinding(pt, dir, true);
                         // Check if curve should be omitted.
                         if (operand === path1 && pathWinding.winding ||
                             operand === path2 && !pathWinding.winding) {
@@ -861,12 +859,13 @@ PathItem.inject(new function() {
                             }
                         }
                     }
-                    var pathId = path.getId();
-                    var curveIndex = curve.getIndex();
-                    var hCollisions = horCurveCollisionsMap[pathId][curveIndex];
-                    var vCollisions = vertCurveCollisionsMap[pathId][curveIndex];
-                    wind = wind ||
-                           getWinding(pt, hCollisions, vCollisions, dir, true);
+                    if (!wind) {
+                        var pathId = path.getId(),
+                            curveIndex = curve.getIndex(),
+                            curvesH = horCurvesMap[pathId][curveIndex],
+                            curvesV = verCurvesMap[pathId][curveIndex];
+                        wind = getWinding(pt, curvesH, curvesV, dir, true);
+                    }
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
