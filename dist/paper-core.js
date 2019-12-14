@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 14 20:25:43 2019 +0100
+ * Date: Sat Dec 14 20:29:35 2019 +0100
  *
  ***
  *
@@ -10746,11 +10746,9 @@ PathItem.inject(new function() {
 							}
 						}
 					}
-					if (!wind) {
-						wind = getWinding(pt,
-								curveCollisionsMap[path._id][curve.getIndex()],
-								dir, true);
-					}
+					wind =  wind || getWinding(
+							pt, curveCollisionsMap[path._id][curve.getIndex()],
+							dir, true);
 					if (wind.quality > winding.quality)
 						winding = wind;
 					break;
