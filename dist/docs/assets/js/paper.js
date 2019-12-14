@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 14 19:40:00 2019 +0100
+ * Date: Sat Dec 14 20:24:07 2019 +0100
  *
  ***
  *
@@ -934,8 +934,7 @@ var CollisionDetection = {
 		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
 	},
 
-	findCurveBoundsCollisions: function(curves1, curves2,
-			tolerance, sweepVertical, onlySweepAxisCollisions) {
+	findCurveBoundsCollisions: function(curves1, curves2, tolerance, bothAxis) {
 		function getBounds(curves) {
 			var min = Math.min,
 				max = Math.max,
@@ -956,8 +955,18 @@ var CollisionDetection = {
 			bounds2 = !curves2 || curves2 === curves1
 				? bounds1
 				: getBounds(curves2);
-		return this.findBoundsCollisions(bounds1, bounds2,
-				tolerance || 0, sweepVertical, onlySweepAxisCollisions);
+		if (bothAxis) {
+			var hor = this.findBoundsCollisions(
+					bounds1, bounds2, tolerance || 0, false, true),
+				ver = this.findBoundsCollisions(
+					bounds1, bounds2, tolerance || 0, true, true),
+				list = [];
+			for (var i = 0, l = hor.length; i < l; i++) {
+				list[i] = { hor: hor[i], ver: ver[i] };
+			}
+			return list;
+		}
+		return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
 	},
 
 	findBoundsCollisions: function(boundsA, boundsB, tolerance,
@@ -7472,7 +7481,7 @@ new function() {
 			}
 		}
 		var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-				values1, self ? null : values2, epsilon);
+				values1, values2, epsilon);
 		for (var index1 = 0; index1 < length1; index1++) {
 			var curve1 = curves1[index1],
 				v1 = values1[index1];
@@ -10276,7 +10285,7 @@ PathItem.inject(new function() {
 			curves = [],
 			paths;
 
-		function collect(paths) {
+		function collectPaths(paths) {
 			for (var i = 0, l = paths.length; i < l; i++) {
 				var path = paths[i];
 				Base.push(segments, path._segments);
@@ -10285,61 +10294,46 @@ PathItem.inject(new function() {
 			}
 		}
 
+		function getCurves(indices) {
+			var list = [];
+			for (var i = 0, l = indices && indices.length; i < l; i++) {
+				list.push(curves[indices[i]]);
+			}
+			return list;
+		}
+
 		if (crossings.length) {
-			collect(paths1);
+			collectPaths(paths1);
 			if (paths2)
-				collect(paths2);
+				collectPaths(paths2);
 
 			var curvesValues = new Array(curves.length);
 			for (var i = 0, l = curves.length; i < l; i++) {
 				curvesValues[i] = curves[i].getValues();
 			}
-			var horCurveCollisions =
-				CollisionDetection.findCurveBoundsCollisions(
-					curvesValues, curvesValues, 0, false, true);
-			var horCurvesMap = {};
+			var curveCollisions = CollisionDetection.findCurveBoundsCollisions(
+					curvesValues, curvesValues, 0, true);
+			var curveCollisionsMap = {};
 			for (var i = 0; i < curves.length; i++) {
 				var curve = curves[i],
-					collidingCurves = [],
-					collisionIndices = horCurveCollisions[i];
-				if (collisionIndices) {
-					for (var j = 0; j < collisionIndices.length; j++) {
-						collidingCurves.push(curves[collisionIndices[j]]);
-					}
-				}
-				var pathId = curve.getPath().getId();
-				horCurvesMap[pathId] = horCurvesMap[pathId] || {};
-				horCurvesMap[pathId][curve.getIndex()] = collidingCurves;
-			}
-
-			var verCurveCollisions =
-				CollisionDetection.findCurveBoundsCollisions(
-					curvesValues, curvesValues, 0, true, true);
-			var verCurvesMap = {};
-			for (var i = 0; i < curves.length; i++) {
-				var curve = curves[i],
-					collidingCurves = [],
-					collisionIndices = verCurveCollisions[i];
-				if (collisionIndices) {
-					for (var j = 0; j < collisionIndices.length; j++) {
-						collidingCurves.push(curves[collisionIndices[j]]);
-					}
-				}
-				var pathId = curve.getPath().getId();
-				verCurvesMap[pathId] = verCurvesMap[pathId] || {};
-				verCurvesMap[pathId][curve.getIndex()] = collidingCurves;
+					id = curve._path._id,
+					list = curveCollisionsMap[id] = curveCollisionsMap[id] || [];
+				list[curve.getIndex()] = {
+					hor: getCurves(curveCollisions[i].hor),
+					ver: getCurves(curveCollisions[i].ver)
+				};
 			}
 
 			for (var i = 0, l = crossings.length; i < l; i++) {
 				propagateWinding(crossings[i]._segment, _path1, _path2,
-						horCurvesMap, verCurvesMap, operator);
+						curveCollisionsMap, operator);
 			}
 			for (var i = 0, l = segments.length; i < l; i++) {
 				var segment = segments[i],
 					inter = segment._intersection;
 				if (!segment._winding) {
 					propagateWinding(segment, _path1, _path2,
-							horCurvesMap, verCurvesMap, operator);
+							curveCollisionsMap, operator);
 				}
 				if (!(inter && inter._overlap))
 					segment._path._overlapsOnly = false;
@@ -10540,8 +10534,10 @@ PathItem.inject(new function() {
 		return results || locations;
 	}
 
-	function getWinding(point, curvesH, curvesV, dir, closed, dontFlip) {
-		var curves = !dir ? curvesV : curvesH;
+	function getWinding(point, curves, dir, closed, dontFlip) {
+		var curvesList = Array.isArray(curves)
+			? curves
+			: curves[dir ? 'hor' : 'ver'];
 		var ia = dir ? 1 : 0,
 			io = ia ^ 1,
 			pv = [point.x, point.y],
@@ -10622,7 +10618,7 @@ PathItem.inject(new function() {
 			vPrev = v;
 			return !dontFlip && a > paL && a < paR
 					&& Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-					&& getWinding(point, curvesH, curvesV, !dir, closed, true);
+					&& getWinding(point, curves, !dir, closed, true);
 		}
 
 		function handleCurve(v) {
@@ -10646,12 +10642,12 @@ PathItem.inject(new function() {
 			}
 		}
 
-		for (var i = 0, l = curves.length; i < l; i++) {
-			var curve = curves[i],
+		for (var i = 0, l = curvesList.length; i < l; i++) {
+			var curve = curvesList[i],
 				path = curve._path,
 				v = curve.getValues(),
 				res;
-			if (!i || curves[i - 1]._path !== path) {
+			if (!i || curvesList[i - 1]._path !== path) {
 				vPrev = null;
 				if (!path._closed) {
 					vClose = Curve.getValues(
@@ -10680,7 +10676,7 @@ PathItem.inject(new function() {
 			if (res = handleCurve(v))
 				return res;
 
-			if (i + 1 === l || curves[i + 1]._path !== path) {
+			if (i + 1 === l || curvesList[i + 1]._path !== path) {
 				if (vClose && (res = handleCurve(vClose)))
 					return res;
 				if (onPath && !pathWindingL && !pathWindingR) {
@@ -10708,7 +10704,7 @@ PathItem.inject(new function() {
 		};
 	}
 
-	function propagateWinding(segment, path1, path2, horCurvesMap, verCurvesMap,
+	function propagateWinding(segment, path1, path2, curveCollisionsMap,
 			operator) {
 		var chain = [],
 			start = segment,
@@ -10754,11 +10750,9 @@ PathItem.inject(new function() {
 						}
 					}
 					if (!wind) {
-						var pathId = path.getId(),
-							curveIndex = curve.getIndex(),
-							curvesH = horCurvesMap[pathId][curveIndex],
-							curvesV = verCurvesMap[pathId][curveIndex];
-						wind = getWinding(pt, curvesH, curvesV, dir, true);
+						wind = getWinding(pt,
+								curveCollisionsMap[path._id][curve.getIndex()],
+								dir, true);
 					}
 					if (wind.quality > winding.quality)
 						winding = wind;
@@ -10950,8 +10944,7 @@ PathItem.inject(new function() {
 
 	return {
 		_getWinding: function(point, dir, closed) {
-			var curves = this.getCurves();
-			return getWinding(point, curves, curves, dir, closed);
+			return getWinding(point, this.getCurves(), dir, closed);
 		},
 
 		unite: function(path, options) {
