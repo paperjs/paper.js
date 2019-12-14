@@ -139,7 +139,7 @@ PathItem.inject(new function() {
             curves = [],
             paths;
 
-        function collect(paths) {
+        function collectPaths(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
                 Base.push(segments, path._segments);
@@ -150,50 +150,35 @@ PathItem.inject(new function() {
             }
         }
 
+        function getCurves(indices) {
+            var list = [];
+            for (var i = 0, l = indices && indices.length; i < l; i++) {
+                list.push(curves[indices[i]]);
+            }
+            return list;
+        }
+
         if (crossings.length) {
             // Collect all segments and curves of both involved operands.
-            collect(paths1);
+            collectPaths(paths1);
             if (paths2)
-                collect(paths2);
+                collectPaths(paths2);
 
             var curvesValues = new Array(curves.length);
             for (var i = 0, l = curves.length; i < l; i++) {
                 curvesValues[i] = curves[i].getValues();
             }
-            var horCurveCollisions =
-                CollisionDetection.findCurveBoundsCollisions(
-                    curvesValues, curvesValues, 0, false, true);
-            var horCurvesMap = {};
+            var curveCollisions = CollisionDetection.findCurveBoundsCollisions(
+                    curvesValues, curvesValues, 0, true);
+            var curveCollisionsMap = {};
             for (var i = 0; i < curves.length; i++) {
                 var curve = curves[i],
-                    collidingCurves = [],
-                    collisionIndices = horCurveCollisions[i];
-                if (collisionIndices) {
-                    for (var j = 0; j < collisionIndices.length; j++) {
-                        collidingCurves.push(curves[collisionIndices[j]]);
-                    }
-                }
-                var pathId = curve.getPath().getId();
-                horCurvesMap[pathId] = horCurvesMap[pathId] || {};
-                horCurvesMap[pathId][curve.getIndex()] = collidingCurves;
-            }
-
-            var verCurveCollisions =
-                CollisionDetection.findCurveBoundsCollisions(
-                    curvesValues, curvesValues, 0, true, true);
-            var verCurvesMap = {};
-            for (var i = 0; i < curves.length; i++) {
-                var curve = curves[i],
-                    collidingCurves = [],
-                    collisionIndices = verCurveCollisions[i];
-                if (collisionIndices) {
-                    for (var j = 0; j < collisionIndices.length; j++) {
-                        collidingCurves.push(curves[collisionIndices[j]]);
-                    }
-                }
-                var pathId = curve.getPath().getId();
-                verCurvesMap[pathId] = verCurvesMap[pathId] || {};
-                verCurvesMap[pathId][curve.getIndex()] = collidingCurves;
+                    id = curve._path._id,
+                    map = curveCollisionsMap[id] = curveCollisionsMap[id] || {};
+                map[curve.getIndex()] = {
+                    hor: getCurves(curveCollisions[i].hor),
+                    ver: getCurves(curveCollisions[i].ver)
+                };
             }
 
             // Propagate the winding contribution. Winding contribution of
@@ -202,14 +187,14 @@ PathItem.inject(new function() {
             // in all crossings:
             for (var i = 0, l = crossings.length; i < l; i++) {
                 propagateWinding(crossings[i]._segment, _path1, _path2,
-                        horCurvesMap, verCurvesMap, operator);
+                        curveCollisionsMap, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
                     inter = segment._intersection;
                 if (!segment._winding) {
                     propagateWinding(segment, _path1, _path2,
-                            horCurvesMap, verCurvesMap, operator);
+                            curveCollisionsMap, operator);
                 }
                 // See if all encountered segments in a path are overlaps.
                 if (!(inter && inter._overlap))
@@ -533,16 +518,9 @@ PathItem.inject(new function() {
      *
      * @param {Point} point the location for which to determine the winding
      *     contribution
-     * @param {Curve[]} curvesH The curves that describe the shape against which
+     * @param {Curve[]} curves The curves that describe the shape against which
      *     to check, as returned by {@link Path#curves} or
-     *     {@link CompoundPath#curves}. This only has to contain those curves
-     *     that can be crossed by a horizontal line through the point to be
-     *     checked.
-     * @param {Curve[]} curvesV  The curves that describe the shape against which
-     *     to check, as returned by {@link Path#curves} or
-     *     {@link CompoundPath#curves}. This only has to contain those curves
-     *     that can be crossed by a vertical line through the point to be
-     *     checked.
+     *     {@link CompoundPath#curves}.
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
      * @param {Boolean} [closed=false] determines how areas should be closed
@@ -555,8 +533,14 @@ PathItem.inject(new function() {
      *     well as an indication whether the point was situated on the contour
      * @private
      */
-    function getWinding(point, curvesH, curvesV, dir, closed, dontFlip) {
-        var curves = !dir ? curvesV : curvesH;
+    function getWinding(point, curves, dir, closed, dontFlip) {
+        // `curves` can either be an array of curves, or an object containing of
+        // the form `{ hor: [], ver: [] }` (see `curveCollisionsMap`), with each
+        // key / value pair holding only those curves that can be crossed by a
+        // horizontal / vertical line through the point to be checked.
+        var curvesList = Array.isArray(curves)
+            ? curves
+            : curves[dir ? 'hor' : 'ver'];
         // Determine the index of the abscissa and ordinate values in the curve
         // values arrays, based on the direction:
         var ia = dir ? 1 : 0, // the abscissa index
@@ -671,7 +655,7 @@ PathItem.inject(new function() {
             // again with flipped direction and return that result instead.
             return !dontFlip && a > paL && a < paR
                     && Curve.getTangent(v, t)[dir ? 'x' : 'y'] === 0
-                    && getWinding(point, curvesH, curvesV, !dir, closed, true);
+                    && getWinding(point, curves, !dir, closed, true);
         }
 
         function handleCurve(v) {
@@ -702,12 +686,12 @@ PathItem.inject(new function() {
             }
         }
 
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var curve = curves[i],
+        for (var i = 0, l = curvesList.length; i < l; i++) {
+            var curve = curvesList[i],
                 path = curve._path,
                 v = curve.getValues(),
                 res;
-            if (!i || curves[i - 1]._path !== path) {
+            if (!i || curvesList[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
@@ -751,7 +735,7 @@ PathItem.inject(new function() {
             if (res = handleCurve(v))
                 return res;
 
-            if (i + 1 === l || curves[i + 1]._path !== path) {
+            if (i + 1 === l || curvesList[i + 1]._path !== path) {
                 // We're at the last curve of the current (sub-)path. If a
                 // closing curve was calculated at the beginning of it, handle
                 // it now to treat the path as closed:
@@ -792,7 +776,7 @@ PathItem.inject(new function() {
         };
     }
 
-    function propagateWinding(segment, path1, path2, horCurvesMap, verCurvesMap,
+    function propagateWinding(segment, path1, path2, curveCollisionsMap,
             operator) {
         // Here we try to determine the most likely winding number contribution
         // for the curve-chain starting with this segment. Once we have enough
@@ -859,13 +843,9 @@ PathItem.inject(new function() {
                             }
                         }
                     }
-                    if (!wind) {
-                        var pathId = path.getId(),
-                            curveIndex = curve.getIndex(),
-                            curvesH = horCurvesMap[pathId][curveIndex],
-                            curvesV = verCurvesMap[pathId][curveIndex];
-                        wind = getWinding(pt, curvesH, curvesV, dir, true);
-                    }
+                    wind =  wind || getWinding(
+                            pt, curveCollisionsMap[path._id][curve.getIndex()],
+                            dir, true);
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
@@ -1141,8 +1121,7 @@ PathItem.inject(new function() {
          * @return {Number} the winding number
          */
         _getWinding: function(point, dir, closed) {
-            var curves = this.getCurves();
-            return getWinding(point, curves, curves, dir, closed);
+            return getWinding(point, this.getCurves(), dir, closed);
         },
 
         /**

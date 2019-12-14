@@ -66,15 +66,12 @@ var CollisionDetection = /** @lends CollisionDetection */{
      *     bounds within the first arrray will be returned.
      * @param {Number} [tolerance] If provided, the tolerance will be added to
      *     all sides of each bounds when checking for collisions.
-     * @param {Boolean} [sweepVertical] If true, the sweep is performed along
-     *     the y-axis.
-     * @param {Boolean} [onlySweepAxisCollisions] If true, no collision checks
-     *     will be done on the secondary axis.
+     * @param {Boolean} [bothAxis] If true, the sweep is performed along both
+     *     axis, and the results include collisions for both: `{ hor, ver }`.
      * @returns {Array} Array containing for the bounds at the same index in
      *     curves1 an array of the indexes of colliding bounds in curves2
      */
-    findCurveBoundsCollisions: function(curves1, curves2,
-            tolerance, sweepVertical, onlySweepAxisCollisions) {
+    findCurveBoundsCollisions: function(curves1, curves2, tolerance, bothAxis) {
         function getBounds(curves) {
             var min = Math.min,
                 max = Math.max,
@@ -95,8 +92,18 @@ var CollisionDetection = /** @lends CollisionDetection */{
             bounds2 = !curves2 || curves2 === curves1
                 ? bounds1
                 : getBounds(curves2);
-        return this.findBoundsCollisions(bounds1, bounds2,
-                tolerance || 0, sweepVertical, onlySweepAxisCollisions);
+        if (bothAxis) {
+            var hor = this.findBoundsCollisions(
+                    bounds1, bounds2, tolerance || 0, false, true),
+                ver = this.findBoundsCollisions(
+                    bounds1, bounds2, tolerance || 0, true, true),
+                list = [];
+            for (var i = 0, l = hor.length; i < l; i++) {
+                list[i] = { hor: hor[i], ver: ver[i] };
+            }
+            return list;
+        }
+        return this.findBoundsCollisions(bounds1, bounds2, tolerance || 0);
     },
 
     /**

@@ -2123,7 +2123,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             }
         }
         var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-                values1, self ? null : values2, epsilon);
+                values1, values2, epsilon);
         for (var index1 = 0; index1 < length1; index1++) {
             var curve1 = curves1[index1],
                 v1 = values1[index1];
