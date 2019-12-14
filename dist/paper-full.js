@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 13 18:36:07 2019 +0100
+ * Date: Sat Dec 14 19:40:00 2019 +0100
  *
  ***
  *
@@ -2364,8 +2364,7 @@ var Matrix = Base.extend({
 	apply: function(recursively, _setApplyMatrix) {
 		var owner = this._owner;
 		if (owner) {
-			owner.transform(null, true, Base.pick(recursively, true),
-					_setApplyMatrix);
+			owner.transform(null, Base.pick(recursively, true), _setApplyMatrix);
 			return this.isIdentity();
 		}
 		return false;
@@ -4470,13 +4469,16 @@ new function() {
 		return this.transform(mx.translate.apply(mx, arguments));
 	},
 
-	transform: function(matrix, _applyMatrix, _applyRecursively,
-			_setApplyMatrix) {
+	transform: function(matrix, _applyRecursively, _setApplyMatrix) {
 		var _matrix = this._matrix,
 			transformMatrix = matrix && !matrix.isIdentity(),
-			applyMatrix = (_applyMatrix || this._applyMatrix)
-					&& ((!_matrix.isIdentity() || transformMatrix)
-						|| _applyMatrix && _applyRecursively && this._children);
+			applyMatrix = (
+				_setApplyMatrix && this._canApplyMatrix ||
+				this._applyMatrix && (
+					transformMatrix || !_matrix.isIdentity() ||
+					_applyRecursively && this._children
+				)
+			);
 		if (!transformMatrix && !applyMatrix)
 			return this;
 		if (transformMatrix) {
@@ -4491,16 +4493,15 @@ new function() {
 			if (strokeColor)
 				strokeColor.transform(matrix);
 		}
-		if (applyMatrix) {
+
+		if (applyMatrix && (applyMatrix = this._transformContent(
+				_matrix, _applyRecursively, _setApplyMatrix))) {
+			var pivot = this._pivot;
+			if (pivot)
+				_matrix._transformPoint(pivot, pivot, true);
+			_matrix.reset(true);
 			if (_setApplyMatrix && this._canApplyMatrix)
 				this._applyMatrix = true;
-			if (this._applyMatrix && (applyMatrix = this._transformContent(_matrix,
-					_applyRecursively, _setApplyMatrix))) {
-				var pivot = this._pivot;
-				if (pivot)
-					_matrix._transformPoint(pivot, pivot, true);
-				_matrix.reset(true);
-			}
 		}
 		var bounds = this._bounds,
 			position = this._position;
@@ -4533,9 +4534,9 @@ new function() {
 	_transformContent: function(matrix, applyRecursively, setApplyMatrix) {
 		var children = this._children;
 		if (children) {
-			for (var i = 0, l = children.length; i < l; i++)
-				children[i].transform(matrix, true, applyRecursively,
-						setApplyMatrix);
+			for (var i = 0, l = children.length; i < l; i++) {
+				children[i].transform(matrix, applyRecursively, setApplyMatrix);
+			}
 			return true;
 		}
 	},

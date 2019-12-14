@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Dec 13 18:36:07 2019 +0100
+ * Date: Sat Dec 14 19:40:00 2019 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -2901,8 +2901,8 @@ declare namespace paper {
          * Attempts to apply the matrix to the content of item that it belongs to,
          * meaning its transformation is baked into the item's content or children.
          * 
-         * @param recursively - controls whether to apply transformations
-         * recursively on children
+         * @param recursively - controls whether to apply
+         *     transformations recursively on children
          * 
          * @return true if the matrix was applied
          */
