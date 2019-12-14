@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 14 20:24:07 2019 +0100
+ * Date: Sat Dec 14 20:25:43 2019 +0100
  *
  ***
  *
@@ -10317,8 +10317,8 @@ PathItem.inject(new function() {
 			for (var i = 0; i < curves.length; i++) {
 				var curve = curves[i],
 					id = curve._path._id,
-					list = curveCollisionsMap[id] = curveCollisionsMap[id] || [];
-				list[curve.getIndex()] = {
+					map = curveCollisionsMap[id] = curveCollisionsMap[id] || {};
+				map[curve.getIndex()] = {
 					hor: getCurves(curveCollisions[i].hor),
 					ver: getCurves(curveCollisions[i].ver)
 				};
