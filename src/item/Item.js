@@ -3509,19 +3509,22 @@ new function() { // Injection scope for hit-test functions shared with project
     // @param {String[]} flags array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix, _applyRecursively,
-            _setApplyMatrix) {
+    transform: function(matrix, _applyRecursively, _setApplyMatrix) {
         var _matrix = this._matrix,
-            // If no matrix is provided, or the matrix is the identity, we might
-            // still have some work to do in case _applyMatrix is true
             transformMatrix = matrix && !matrix.isIdentity(),
-            applyMatrix = (_applyMatrix || this._applyMatrix)
+            // If no matrix is provided, or the matrix is the identity, we might
+            // still have some work to do: _setApplyMatrix or _applyRecursively.
+            applyMatrix = (
+                _setApplyMatrix && this._canApplyMatrix ||
+                this._applyMatrix && (
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || transformMatrix)
-                        // Even if it's an identity matrix, we still need to
-                        // recursively apply the matrix to children.
-                        || _applyMatrix && _applyRecursively && this._children);
+                    transformMatrix || !_matrix.isIdentity() ||
+                    // Even if it's an identity matrix, we may still need to
+                    // recursively apply the matrix to children.
+                    _applyRecursively && this._children
+                )
+            );
         // Bail out if there is nothing to do.
         if (!transformMatrix && !applyMatrix)
             return this;
@@ -3549,25 +3552,25 @@ new function() { // Injection scope for hit-test functions shared with project
             if (strokeColor)
                 strokeColor.transform(matrix);
         }
-        if (applyMatrix) {
-            // Set the internal _applyMatrix flag to true if we're told to do so.
+        // Call #_transformContent() now, if we need to directly apply the
+        // internal _matrix transformations to the item's content.
+        // Application is not possible on Raster, PointText, SymbolItem, since
+        // the matrix is where the actual transformation state is stored.
+
+        if (applyMatrix && (applyMatrix = this._transformContent(
+                _matrix, _applyRecursively, _setApplyMatrix))) {
+            // Pivot is provided in the parent's coordinate system, so transform
+            // it along too.
+            var pivot = this._pivot;
+            if (pivot)
+                _matrix._transformPoint(pivot, pivot, true);
+            // Reset the internal matrix to the identity transformation if
+            // it was possible to apply it, but do not notify owner of change.
+            _matrix.reset(true);
+            // Set the internal _applyMatrix flag to true if we're told to
+            // do so
             if (_setApplyMatrix && this._canApplyMatrix)
                 this._applyMatrix = true;
-            // Call #_transformContent() now, if we need to directly apply the
-            // internal _matrix transformations to the item's content.
-            // Application is not possible on Raster, PointText, SymbolItem, since
-            // the matrix is where the actual transformation state is stored.
-            if (this._applyMatrix && (applyMatrix = this._transformContent(_matrix,
-                    _applyRecursively, _setApplyMatrix))) {
-                // Pivot is provided in the parent's coordinate system, so transform
-                // it along too.
-                var pivot = this._pivot;
-                if (pivot)
-                    _matrix._transformPoint(pivot, pivot, true);
-                // Reset the internal matrix to the identity transformation if
-                // it was possible to apply it, but do not notify owner of change.
-                _matrix.reset(true);
-            }
         }
         // Calling _changed will clear _bounds and _position, but depending
         // on matrix we can calculate and set them again, so preserve them.
@@ -3619,9 +3622,9 @@ new function() { // Injection scope for hit-test functions shared with project
     _transformContent: function(matrix, applyRecursively, setApplyMatrix) {
         var children = this._children;
         if (children) {
-            for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true, applyRecursively,
-                        setApplyMatrix);
+            for (var i = 0, l = children.length; i < l; i++) {
+                children[i].transform(matrix, applyRecursively, setApplyMatrix);
+            }
             return true;
         }
     },

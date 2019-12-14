@@ -185,15 +185,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * Attempts to apply the matrix to the content of item that it belongs to,
      * meaning its transformation is baked into the item's content or children.
      *
-     * @param {Boolean} [recursively=true] controls whether to apply transformations
-     * recursively on children
+     * @param {Boolean} [recursively=true] controls whether to apply
+     *     transformations recursively on children
      * @return {Boolean} {@true if the matrix was applied}
      */
     apply: function(recursively, _setApplyMatrix) {
         var owner = this._owner;
         if (owner) {
-            owner.transform(null, true, Base.pick(recursively, true),
-                    _setApplyMatrix);
+            owner.transform(null, Base.pick(recursively, true), _setApplyMatrix);
             // If the matrix was successfully applied, it will be reset now.
             return this.isIdentity();
         }
