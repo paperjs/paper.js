@@ -82,7 +82,7 @@ var Shape = Item.extend(/** @lends Shape# */{
     setSize: function(/* size */) {
         var size = Size.read(arguments);
         if (!this._size) {
-            // First time, e.g. whean reading from JSON...
+            // First time, e.g. when reading from JSON...
             this._size = size.clone();
         } else if (!this._size.equals(size)) {
             var type = this._type,
@@ -90,7 +90,7 @@ var Shape = Item.extend(/** @lends Shape# */{
                 height = size.height;
             if (type === 'rectangle') {
                 // Shrink radius accordingly
-                this._radius.set(Size.min(this._radius, size.divide(2)));
+                this._radius.set(Size.min(this._radius, size.divide(2).abs()));
             } else if (type === 'circle') {
                 // Use average of width and height as new size, then calculate
                 // radius as a number from that:
@@ -130,7 +130,7 @@ var Shape = Item.extend(/** @lends Shape# */{
         } else {
             radius = Size.read(arguments);
             if (!this._radius) {
-                // First time, e.g. whean reading from JSON...
+                // First time, e.g. when reading from JSON...
                 this._radius = radius.clone();
             } else {
                 if (this._radius.equals(radius))
@@ -390,10 +390,13 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
     function createShape(type, point, size, radius, args) {
-        var item = new Shape(Base.getNamed(args), point);
+        // Use `Base.create()` to avoid calling `initialize()` until after the
+        // internal fields are set here, then call `_initialize()` directly:
+        var item = Base.create(Shape.prototype);
         item._type = type;
         item._size = size;
         item._radius = radius;
+        item._initialize(Base.getNamed(args), point);
         return item;
     }
 
@@ -427,10 +430,11 @@ statics: new function() {
          * });
          */
         Circle: function(/* center, radius */) {
-            var center = Point.readNamed(arguments, 'center'),
-                radius = Base.readNamed(arguments, 'radius');
+            var args = arguments,
+                center = Point.readNamed(args, 'center'),
+                radius = Base.readNamed(args, 'radius');
             return createShape('circle', center, new Size(radius * 2), radius,
-                    arguments);
+                    args);
         },
 
         /**
@@ -524,11 +528,12 @@ statics: new function() {
          * });
          */
         Rectangle: function(/* rectangle */) {
-            var rect = Rectangle.readNamed(arguments, 'rectangle'),
-                radius = Size.min(Size.readNamed(arguments, 'radius'),
+            var args = arguments,
+                rect = Rectangle.readNamed(args, 'rectangle'),
+                radius = Size.min(Size.readNamed(args, 'radius'),
                         rect.getSize(true).divide(2));
             return createShape('rectangle', rect.getCenter(true),
-                    rect.getSize(true), radius, arguments);
+                    rect.getSize(true), radius, args);
         },
 
         /**
@@ -567,10 +572,11 @@ statics: new function() {
          * });
          */
         Ellipse: function(/* rectangle */) {
-            var ellipse = Shape._readEllipse(arguments),
+            var args = arguments,
+                ellipse = Shape._readEllipse(args),
                 radius = ellipse.radius;
             return createShape('ellipse', ellipse.center, radius.multiply(2),
-                    radius, arguments);
+                    radius, args);
         },
 
         // Private method to read ellipse center and radius from arguments list,

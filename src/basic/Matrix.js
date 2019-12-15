@@ -71,10 +71,11 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @param {Matrix} matrix the matrix to copy the values from
      */
     initialize: function Matrix(arg, _dontNotify) {
-        var count = arguments.length,
+        var args = arguments,
+            count = args.length,
             ok = true;
         if (count >= 6) { // >= 6 to pass on optional _dontNotify argument.
-            this._set.apply(this, arguments);
+            this._set.apply(this, args);
         } else if (count === 1 || count === 2) {
             // Support both Matrix and Array arguments through #_set(), and pass
             // on the optional _dontNotify argument:
@@ -185,15 +186,14 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * Attempts to apply the matrix to the content of item that it belongs to,
      * meaning its transformation is baked into the item's content or children.
      *
-     * @param {Boolean} [recursively=true] controls whether to apply transformations
-     * recursively on children
+     * @param {Boolean} [recursively=true] controls whether to apply
+     *     transformations recursively on children
      * @return {Boolean} {@true if the matrix was applied}
      */
     apply: function(recursively, _setApplyMatrix) {
         var owner = this._owner;
         if (owner) {
-            owner.transform(null, true, Base.pick(recursively, true),
-                    _setApplyMatrix);
+            owner.transform(null, Base.pick(recursively, true), _setApplyMatrix);
             // If the matrix was successfully applied, it will be reset now.
             return this.isIdentity();
         }
@@ -247,8 +247,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this affine transform
      */
     scale: function(/* scale, center */) {
-        var scale = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
+        var args = arguments,
+            scale = Point.read(args),
+            center = Point.read(args, 0, { readNull: true });
         if (center)
             this.translate(center);
         this._a *= scale.x;
@@ -328,8 +329,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
     shear: function(/* shear, center */) {
         // Do not modify point, center, since that would arguments of which
         // we're reading from!
-        var shear = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
+        var args = arguments,
+            shear = Point.read(args),
+            center = Point.read(args, 0, { readNull: true });
         if (center)
             this.translate(center);
         var a = this._a,
@@ -364,8 +366,9 @@ var Matrix = Base.extend(/** @lends Matrix# */{
      * @return {Matrix} this affine transform
      */
     skew: function(/* skew, center */) {
-        var skew = Point.read(arguments),
-            center = Point.read(arguments, 0, { readNull: true }),
+        var args = arguments,
+            skew = Point.read(args),
+            center = Point.read(args, 0, { readNull: true }),
             toRadians = Math.PI / 180,
             shear = new Point(Math.tan(skew.x * toRadians),
                 Math.tan(skew.y * toRadians));

@@ -76,7 +76,8 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
      * @param {Rectangle} rectangle
      */
     initialize: function Rectangle(arg0, arg1, arg2, arg3) {
-        var type = typeof arg0,
+        var args = arguments,
+            type = typeof arg0,
             read;
         if (type === 'number') {
             // new Rectangle(x, y, width, height)
@@ -86,7 +87,7 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
             // new Rectangle(), new Rectangle(null)
             this._set(0, 0, 0, 0);
             read = arg0 === null ? 1 : 0;
-        } else if (arguments.length === 1) {
+        } else if (args.length === 1) {
             // This can either be an array, or an object literal.
             if (Array.isArray(arg0)) {
                 this._set.apply(this, arg0);
@@ -98,11 +99,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
                         arg0.width || 0, arg0.height || 0);
                 read = 1;
             } else if (arg0.from === undefined && arg0.to === undefined) {
-                // Use Base.filter() to support whatever property the rectangle
-                // can take, but handle from/to separately below.
+                // Use `Base.readSupported()` to read and consume whatever
+                // property the rectangle can receive, but handle `from` / `to`
+                // separately below.
                 this._set(0, 0, 0, 0);
-                Base.filter(this, arg0);
-                read = 1;
+                if (Base.readSupported(args, this)) {
+                    read = 1;
+                }
             }
         }
         if (read === undefined) {
@@ -111,17 +114,16 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
             // We're supporting both reading from a normal arguments list and
             // covering the Rectangle({ from: , to: }) constructor, through
             // Point.readNamed().
-            var frm = Point.readNamed(arguments, 'from'),
-                next = Base.peek(arguments),
+            var frm = Point.readNamed(args, 'from'),
+                next = Base.peek(args),
                 x = frm.x,
                 y = frm.y,
                 width,
                 height;
-            if (next && next.x !== undefined
-                    || Base.hasNamed(arguments, 'to')) {
+            if (next && next.x !== undefined || Base.hasNamed(args, 'to')) {
                 // new Rectangle(from, to)
                 // Read above why we can use readNamed() to cover both cases.
-                var to = Point.readNamed(arguments, 'to');
+                var to = Point.readNamed(args, 'to');
                 width = to.x - x;
                 height = to.y - y;
                 // Check if horizontal or vertical order needs to be reversed.
@@ -135,19 +137,19 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
                 }
             } else {
                 // new Rectangle(point, size)
-                var size = Size.read(arguments);
+                var size = Size.read(args);
                 width = size.width;
                 height = size.height;
             }
             this._set(x, y, width, height);
-            read = arguments.__index;
-            // arguments.__filtered wouldn't survive the function call even if a
-            // previous arguments list was passed through Function#apply().
-            // Return it on the object instead, see Base.read()
-            var filtered = arguments.__filtered;
-            if (filtered)
-                this.__filtered = filtered;
+            read = args.__index;
         }
+        // arguments.__filtered wouldn't survive the function call even if a
+        // previous arguments list was passed through Function#apply().
+        // Return it on the object instead, see Base.read()
+        var filtered = args.__filtered;
+        if (filtered)
+            this.__filtered = filtered;
         if (this.__read)
             this.__read = read;
         return this;

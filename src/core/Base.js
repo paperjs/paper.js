@@ -269,11 +269,11 @@ statics: /** @lends Base */{
     },
 
     /**
-     * Allows using of Base.read() mechanism in combination with reading named
-     * arguments form a passed property object literal. Calling Base.readNamed()
-     * can read both from such named properties and normal unnamed arguments
-     * through Base.read(). In use for example for the various
-     * Path.Constructors.
+     * Allows using of `Base.read()` mechanism in combination with reading named
+     * arguments form a passed property object literal. Calling
+     * `Base.readNamed()` can read both from such named properties and normal
+     * unnamed arguments through `Base.read()`. In use for example for
+     * the various `Path` constructors in `Path.Constructors.js`.
      *
      * @param {Array} list the list to read from, either an arguments object or
      *     a normal array
@@ -287,24 +287,68 @@ statics: /** @lends Base */{
      */
     readNamed: function(list, name, start, options, amount) {
         var value = this.getNamed(list, name),
-            hasObject = value !== undefined;
-        if (hasObject) {
-            // Create a _filtered object that inherits from list[0], and
+            hasValue = value !== undefined;
+        if (hasValue) {
+            // Create a _filtered object that inherits from `source`, and
             // override all fields that were already read with undefined.
             var filtered = list.__filtered;
             if (!filtered) {
-                filtered = list.__filtered = Base.create(list[0]);
-                // Point _unfiltered to the original so Base#_set() can
-                // execute hasOwnProperty on it.
-                filtered.__unfiltered = list[0];
+                var source = this.getSource(list);
+                filtered = list.__filtered = Base.create(source);
+                // Point __unfiltered to the original, so `Base.filter()` can
+                // use it to get all keys to iterate over.
+                filtered.__unfiltered = source;
             }
             // delete wouldn't work since the masked parent's value would
             // shine through.
             filtered[name] = undefined;
         }
-        var l = hasObject ? [value] : list,
-            res = this.read(l, start, options, amount);
-        return res;
+        return this.read(hasValue ? [value] : list, start, options, amount);
+    },
+
+    /**
+     * If `list[0]` is a source object, calls `Base.readNamed()` for each key in
+     * it that is supported on `dest`, consuming these values.
+     *
+     * @param {Array} list the list to read from, either an arguments object or
+     *     a normal array
+     * @param {Object} dest the object on which to set the supported properties
+     * @return {Boolean} {@true if any property was read from the source object}
+     */
+    readSupported: function(list, dest) {
+        var source = this.getSource(list),
+            that = this,
+            read = false;
+        if (source) {
+            // If `source` is a filtered object, we get the keys from the the
+            // original object (it's parent / prototype). See _filtered
+            // inheritance trick in the argument reading code.
+            Object.keys(source).forEach(function(key) {
+                if (key in dest) {
+                    var value = that.readNamed(list, key);
+                    // Due to the _filtered inheritance trick, undefined is used
+                    // to mask already consumed named arguments.
+                    if (value !== undefined) {
+                        dest[key] = value;
+                    }
+                    read = true;
+                }
+            });
+        }
+        return read;
+    },
+
+    /**
+     * @return the arguments object if the list provides one at `list[0]`
+     */
+    getSource: function(list) {
+        var source = list.__source;
+        if (source === undefined) {
+            var arg = list.length === 1 && list[0];
+            source = list.__source = arg && Base.isPlainObject(arg)
+                ? arg : null;
+        }
+        return source;
     },
 
     /**
@@ -314,12 +358,11 @@ statics: /** @lends Base */{
      *     provided, it returns the whole arguments object
      */
     getNamed: function(list, name) {
-        var arg = list[0];
-        if (list._hasObject === undefined)
-            list._hasObject = list.length === 1 && Base.isPlainObject(arg);
-        if (list._hasObject)
+        var source = this.getSource(list);
+        if (source) {
             // Return the whole arguments object if no name is provided.
-            return name ? arg[name] : list.__filtered || arg;
+            return name ? source[name] : list.__filtered || source;
+        }
     },
 
     /**

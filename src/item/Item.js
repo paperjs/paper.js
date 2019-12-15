@@ -1818,7 +1818,7 @@ new function() { // Injection scope for various item event handlers
         // See CompoundPath#_contains() for the reason for !!
         var matrix = this._matrix;
         return (
-            matrix.isInvertible() && 
+            matrix.isInvertible() &&
             !!this._contains(matrix._inverseTransform(Point.read(arguments)))
         );
     },
@@ -1877,16 +1877,18 @@ new function() { // Injection scope for various item event handlers
 },
 new function() { // Injection scope for hit-test functions shared with project
     function hitTest(/* point, options */) {
+        var args = arguments;
         return this._hitTest(
-                Point.read(arguments),
-                HitResult.getOptions(arguments));
+                Point.read(args),
+                HitResult.getOptions(args));
     }
 
     function hitTestAll(/* point, options */) {
-        var point = Point.read(arguments),
-            options = HitResult.getOptions(arguments),
+        var args = arguments,
+            point = Point.read(args),
+            options = HitResult.getOptions(args),
             all = [];
-        this._hitTest(point, Base.set({ all: all }, options));
+        this._hitTest(point, new Base({ all: all }, options));
         return all;
     }
 
@@ -2854,7 +2856,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @param {Boolean} [recursively=false] whether an item with children should be
      * considered empty if all its descendants are empty
-     * @return Boolean
+     * @return {Boolean}
      */
     isEmpty: function(recursively) {
         var children = this._children;
@@ -3081,7 +3083,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#strokeColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the stroke color of a path:
@@ -3243,7 +3245,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#fillColor
      * @property
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Setting the fill color of a path to red:
@@ -3277,7 +3279,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @property
      * @name Item#shadowColor
-     * @type Color
+     * @type ?Color
      *
      * @example {@paperscript}
      * // Creating a circle with a black shadow:
@@ -3323,13 +3325,14 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#selectedColor
      * @property
-     * @type Color
+     * @type ?Color
      */
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';
     this[key] = function(/* value, center */) {
-        var value = (rotate ? Base : Point).read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
+        var args = arguments,
+            value = (rotate ? Base : Point).read(args),
+            center = Point.read(args, 0, { readNull: true });
         return this.transform(new Matrix()[key](value,
                 center || this.getPosition(true)));
     };
@@ -3509,19 +3512,22 @@ new function() { // Injection scope for hit-test functions shared with project
     // @param {String[]} flags array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix, _applyRecursively,
-            _setApplyMatrix) {
+    transform: function(matrix, _applyRecursively, _setApplyMatrix) {
         var _matrix = this._matrix,
-            // If no matrix is provided, or the matrix is the identity, we might
-            // still have some work to do in case _applyMatrix is true
             transformMatrix = matrix && !matrix.isIdentity(),
-            applyMatrix = (_applyMatrix || this._applyMatrix)
+            // If no matrix is provided, or the matrix is the identity, we might
+            // still have some work to do: _setApplyMatrix or _applyRecursively.
+            applyMatrix = (
+                _setApplyMatrix && this._canApplyMatrix ||
+                this._applyMatrix && (
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || transformMatrix)
-                        // Even if it's an identity matrix, we still need to
-                        // recursively apply the matrix to children.
-                        || _applyMatrix && _applyRecursively && this._children);
+                    transformMatrix || !_matrix.isIdentity() ||
+                    // Even if it's an identity matrix, we may still need to
+                    // recursively apply the matrix to children.
+                    _applyRecursively && this._children
+                )
+            );
         // Bail out if there is nothing to do.
         if (!transformMatrix && !applyMatrix)
             return this;
@@ -3553,8 +3559,9 @@ new function() { // Injection scope for hit-test functions shared with project
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, SymbolItem, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix && (applyMatrix = this._transformContent(_matrix,
-                _applyRecursively, _setApplyMatrix))) {
+
+        if (applyMatrix && (applyMatrix = this._transformContent(
+                _matrix, _applyRecursively, _setApplyMatrix))) {
             // Pivot is provided in the parent's coordinate system, so transform
             // it along too.
             var pivot = this._pivot;
@@ -3618,9 +3625,9 @@ new function() { // Injection scope for hit-test functions shared with project
     _transformContent: function(matrix, applyRecursively, setApplyMatrix) {
         var children = this._children;
         if (children) {
-            for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true, applyRecursively,
-                        setApplyMatrix);
+            for (var i = 0, l = children.length; i < l; i++) {
+                children[i].transform(matrix, applyRecursively, setApplyMatrix);
+            }
             return true;
         }
     },
@@ -3769,7 +3776,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onFrame
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onFrame
      *
      * @example {@paperscript}
@@ -3796,7 +3803,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseDown
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseDown
      *
      * @example {@paperscript}
@@ -3846,7 +3853,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseDrag
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseDrag
      *
      * @example {@paperscript height=240}
@@ -3875,7 +3882,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseUp
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseUp
      *
      * @example {@paperscript}
@@ -3905,7 +3912,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onClick
      *
      * @example {@paperscript}
@@ -3955,7 +3962,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onDoubleClick
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onDoubleClick
      *
      * @example {@paperscript}
@@ -4005,7 +4012,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseMove
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseMove
      *
      * @example {@paperscript}
@@ -4036,7 +4043,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseEnter
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseEnter
      *
      * @example {@paperscript}
@@ -4098,7 +4105,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#onMouseLeave
      * @property
-     * @type Function
+     * @type ?Function
      * @see View#onMouseLeave
      *
      * @example {@paperscript}

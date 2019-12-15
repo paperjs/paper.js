@@ -75,7 +75,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
      *
      * @name HitResult#color
      * @property
-     * @type Color
+     * @type ?Color
      */
 
     /**
@@ -105,7 +105,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          */
         getOptions: function(args) {
             var options = args && Base.read(args);
-            return Base.set({
+            return new Base({
                 // Type of item, for instanceof check: Group, Layer, Path,
                 // CompoundPath, Shape, Raster, SymbolItem, ...
                 type: null,

@@ -91,21 +91,12 @@ classes.forEach(cls => {
 // PaperScope class needs to be handled slightly differently because it "owns"
 // all the other classes as properties. Eg. we can do `new paperScope.Path()`.
 // So we add a `classesPointers` property that the template will use.
-const paperScopeClass = classes.find(_ => _.className === 'PaperScope');
-paperScopeClass.classesPointers = classes.filter(_ => _.className !== 'PaperScope').map(_ => ({ name: _.className }));
-
-// Since paper.js module is at the same time a PaperScope instance, we need to
-// duplicate PaperScope instance properties and methods in the module scope.
-// For that, we expose a special variable to the template.
-const paperInstance = { ...paperScopeClass };
-// We filter static properties and methods for module scope.
-paperInstance.properties = paperInstance.properties.filter(_ => !_.static);
-paperInstance.methods = paperInstance.methods.filter(_ => !_.static && _.name !== 'constructor');
+const paperScopeClass = classes.find(it => it.className === 'PaperScope');
+paperScopeClass.classesPointers = classes.map(it => ({ name: it.className }));
 
 // Format data trough a mustache template.
 // Prepare data for the template.
 const context = {
-    paperInstance: paperInstance,
     classes: classes,
     version: data.version,
     date: data.date,
@@ -154,13 +145,41 @@ function parseType(type, options) {
     // `...` prefix and add `[]` as a suffix:
     // - `...Type` => `Type[]`
     // - `...(TypeA|TypeB)` => `(TypeA|TypeB)[]`
-    const isRestType = type.startsWith('...');
-    if (isRestType) {
-        type = type.replace(/^\.\.\./, '');
+    const restPattern = /^\.\.\./;
+    const isRest = type.match(restPattern);
+    if (isRest) {
+        type = type.replace(restPattern, '');
     }
+    const wrappedPattern = /^\(([^\)]+)\)$/;
+    const isWrapped = type.match(wrappedPattern);
+    if (isWrapped) {
+        type = type.replace(wrappedPattern, '$1');
+    }
+
+
     // Handle multiple types possibility by splitting on `|` then re-joining
     // back parsed types.
-    type = type.split('|').map(splittedType => {
+    const types = type.split('|');
+
+    // Hanle nullable type:
+    // - `?Type` => `Type|null`
+    // - `?TypeA|TypeB` => `TypeA|TypeB|null`
+    // - `?TypeA|?TypeB` => `TypeA|TypeB|null`
+    // If at least one type is nullable, we add null type at the end of the
+    // list.
+    const nullablePattern = /^\?/;
+    let isNullable = false;
+    for (let i = 0; i < types.length; i++) {
+        if (types[i].match(nullablePattern)) {
+            types[i] = types[i].replace(nullablePattern, '');
+            isNullable = true;
+        }
+    }
+    if (isNullable) {
+        types.push('null');
+    }
+
+    type = types.map(splittedType => {
         // Get type without array suffix `[]` for easier matching.
         const singleType = splittedType.replace(/(\[\])+$/, '');
         // Handle eventual type conflict in static constructors block. For
@@ -185,14 +204,13 @@ function parseType(type, options) {
         }
         return splittedType;
     }).join(' | ');
-    if (isRestType) {
-        type += '[]';
-    }
 
-    // We declare settable properties as nullable to be compatible with
-    // TypeScript `strictNullChecks` option (#1664).
-    if (options.isSettableProperty && type !== 'any') {
-        type += ' | null';
+    // Regroup types.
+    if (isWrapped) {
+        type = `(${type})`;
+    }
+    if (isRest) {
+        type += '[]';
     }
 
     return type;

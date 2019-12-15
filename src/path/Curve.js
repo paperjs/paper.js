@@ -1822,9 +1822,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
         } else {
             // Apply the result of the clipping to curve 1:
             v1 = Curve.getPart(v1, tMinClip, tMaxClip);
+            var uDiff = uMax - uMin;
             if (tMaxClip - tMinClip > 0.8) {
                 // Subdivide the curve which has converged the least.
-                if (tMaxNew - tMinNew > uMax - uMin) {
+                if (tMaxNew - tMinNew > uDiff) {
                     var parts = Curve.subdivide(v1, 0.5),
                         t = (tMinNew + tMaxNew) / 2;
                     calls = addCurveIntersections(
@@ -1844,7 +1845,10 @@ new function() { // Scope for bezier intersection using fat-line clipping
                             recursion, calls, u, uMax, tMinNew, tMaxNew);
                 }
             } else { // Iterate
-                if (uMax - uMin >= fatLineEpsilon) {
+                // For some unclear reason we need to check against uDiff === 0
+                // here, to prevent a regression from happening, see #1638.
+                // Maybe @iconexperience could shed some light on this.
+                if (uDiff === 0 || uDiff >= fatLineEpsilon) {
                     calls = addCurveIntersections(
                             v2, v1, c2, c1, locations, include, !flip,
                             recursion, calls, uMin, uMax, tMinNew, tMaxNew);
@@ -2087,7 +2091,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
         return locations;
     }
 
-    function getLoopIntersection(v1, c1, locations, include) {
+    function getSelfIntersection(v1, c1, locations, include) {
         var info = Curve.classify(v1);
         if (info.type === 'loop') {
             var roots = info.roots;
@@ -2100,50 +2104,50 @@ new function() { // Scope for bezier intersection using fat-line clipping
 
     function getIntersections(curves1, curves2, include, matrix1, matrix2,
             _returnFirst) {
-        var self = !curves2;
+        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+            self = !curves2;
         if (self)
             curves2 = curves1;
         var length1 = curves1.length,
             length2 = curves2.length,
-            values2 = [],
-            arrays = [],
-            locations,
-            current;
-        // Cache values for curves2 as we re-iterate them for each in curves1.
-        for (var i = 0; i < length2; i++)
-            values2[i] = curves2[i].getValues(matrix2);
+            values1 = new Array(length1),
+            values2 = self ? values1 : new Array(length2),
+            locations = [];
+
         for (var i = 0; i < length1; i++) {
-            var curve1 = curves1[i],
-                values1 = self ? values2[i] : curve1.getValues(matrix1),
-                path1 = curve1.getPath();
-            // NOTE: Due to the nature of getCurveIntersections(), we use
-            // separate location arrays per path1, to make sure the circularity
-            // checks are not getting confused by locations on separate paths.
-            // The separate arrays are then flattened in the end.
-            if (path1 !== current) {
-                current = path1;
-                locations = [];
-                arrays.push(locations);
-            }
-            if (self) {
-                // First check for self-intersections within the same curve.
-                getLoopIntersection(values1, curve1, locations, include);
-            }
-            // Check for intersections with other curves.
-            // For self-intersection, we can start at i + 1 instead of 0.
-            for (var j = self ? i + 1 : 0; j < length2; j++) {
-                // There might be already one location from the above
-                // self-intersection check:
-                if (_returnFirst && locations.length)
-                    return locations;
-                getCurveIntersections(values1, values2[j], curve1, curves2[j],
-                        locations, include);
+            values1[i] = curves1[i].getValues(matrix1);
+        }
+        if (!self) {
+            for (var i = 0; i < length2; i++) {
+                values2[i] = curves2[i].getValues(matrix2);
             }
         }
-        // Flatten the list of location arrays to one array and return it.
-        locations = [];
-        for (var i = 0, l = arrays.length; i < l; i++) {
-            Base.push(locations, arrays[i]);
+        var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
+                values1, values2, epsilon);
+        for (var index1 = 0; index1 < length1; index1++) {
+            var curve1 = curves1[index1],
+                v1 = values1[index1];
+            if (self) {
+                // First check for self-intersections within the same curve.
+                getSelfIntersection(v1, curve1, locations, include);
+            }
+            // Check for intersections with potentially intersecting curves.
+            var collisions1 = boundsCollisions[index1];
+            if (collisions1) {
+                for (var j = 0; j < collisions1.length; j++) {
+                    // There might be already one location from the above
+                    // self-intersection check:
+                    if (_returnFirst && locations.length)
+                        return locations;
+                    var index2 = collisions1[j];
+                    if (!self || index2 > index1) {
+                        var curve2 = curves2[index2],
+                            v2 = values2[index2];
+                        getCurveIntersections(
+                                v1, v2, curve1, curve2, locations, include);
+                    }
+                }
+            }
         }
         return locations;
     }
@@ -2310,7 +2314,7 @@ new function() { // Scope for bezier intersection using fat-line clipping
             var v1 = this.getValues(),
                 v2 = curve && curve !== this && curve.getValues();
             return v2 ? getCurveIntersections(v1, v2, this, curve, [])
-                      : getLoopIntersection(v1, this, []);
+                      : getSelfIntersection(v1, this, []);
         },
 
         statics: /** @lends Curve */{

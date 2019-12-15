@@ -23,9 +23,8 @@
  *  - Boolean operations on self-intersecting Paths items
  *
  * @author Harikrishnan Gopalakrishnan <hari.exeption@gmail.com>
- * @author Jan Boesenberg <development@iconexperience.com>
+ * @author Jan Boesenberg <jan.boesenberg@gmail.com>
  * @author Juerg Lehni <juerg@scratchdisk.com>
- * https://hkrish.com/playground/paperjs/booleanStudy.html
  */
 PathItem.inject(new function() {
     var min = Math.min,
@@ -46,6 +45,10 @@ PathItem.inject(new function() {
             exclude:   { '1': true, '-1': true }
         };
 
+    function getPaths(path) {
+        return path._children || [path];
+    }
+
     /*
      * Creates a clone of the path that we can modify freely, with its matrix
      * applied to its geometry. Calls #reduce() to simplify compound paths and
@@ -53,12 +56,28 @@ PathItem.inject(new function() {
      * make sure all paths have correct winding direction.
      */
     function preparePath(path, resolve) {
-        var res = path.clone(false).reduce({ simplify: true })
-                .transform(null, true, true);
-        return resolve
-                ? res.resolveCrossings().reorient(
-                    res.getFillRule() === 'nonzero', true)
-                : res;
+        var res = path
+            .clone(false)
+            .reduce({ simplify: true })
+            .transform(null, true, true);
+        if (resolve) {
+            // For correct results, close open paths with straight lines:
+            var paths = getPaths(res);
+            for (var i = 0, l = paths.length; i < l; i++) {
+                var path = paths[i];
+                if (!path._closed && !path.isEmpty()) {
+                    // Close with epsilon tolerance, to avoid tiny straight
+                    // that would cause issues with intersection detection.
+                    path.closePath(/*#=*/Numerical.EPSILON);
+                    path.getFirstSegment().setHandleIn(0, 0);
+                    path.getLastSegment().setHandleOut(0, 0);
+                }
+            }
+            res = res
+                .resolveCrossings()
+                .reorient(res.getFillRule() === 'nonzero', true);
+        }
+        return res;
     }
 
     function createResult(paths, simplify, path1, path2, options) {
@@ -75,6 +94,17 @@ PathItem.inject(new function() {
         // Copy over the input path attributes, excluding matrix and we're done.
         result.copyAttributes(path1, true);
         return result;
+    }
+
+    function filterIntersection(inter) {
+        // TODO: Change isCrossing() to also handle overlaps (hasOverlap())
+        // that are actually involved in a crossing! For this we need proper
+        // overlap range detection / merging first... But as we call
+        // #resolveCrossings() first in boolean operations, removing all
+        // self-touching areas in paths, this works for the known use cases.
+        // The ideal implementation would deal with it in a way outlined in:
+        // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
+        return inter.hasOverlap() || inter.isCrossing();
     }
 
     function traceBoolean(path1, path2, operation, options) {
@@ -101,15 +131,15 @@ PathItem.inject(new function() {
             _path2.reverse();
         // Split curves at crossings on both paths. Note that for self-
         // intersection, path2 is null and getIntersections() handles it.
-        var crossings = divideLocations(
-                CurveLocation.expand(_path1.getCrossings(_path2))),
-            paths1 = _path1._children || [_path1],
-            paths2 = _path2 && (_path2._children || [_path2]),
+        var crossings = divideLocations(CurveLocation.expand(
+                _path1.getIntersections(_path2, filterIntersection))),
+            paths1 = getPaths(_path1),
+            paths2 = _path2 && getPaths(_path2),
             segments = [],
             curves = [],
             paths;
 
-        function collect(paths) {
+        function collectPaths(paths) {
             for (var i = 0, l = paths.length; i < l; i++) {
                 var path = paths[i];
                 Base.push(segments, path._segments);
@@ -120,24 +150,51 @@ PathItem.inject(new function() {
             }
         }
 
+        function getCurves(indices) {
+            var list = [];
+            for (var i = 0, l = indices && indices.length; i < l; i++) {
+                list.push(curves[indices[i]]);
+            }
+            return list;
+        }
+
         if (crossings.length) {
             // Collect all segments and curves of both involved operands.
-            collect(paths1);
+            collectPaths(paths1);
             if (paths2)
-                collect(paths2);
+                collectPaths(paths2);
+
+            var curvesValues = new Array(curves.length);
+            for (var i = 0, l = curves.length; i < l; i++) {
+                curvesValues[i] = curves[i].getValues();
+            }
+            var curveCollisions = CollisionDetection.findCurveBoundsCollisions(
+                    curvesValues, curvesValues, 0, true);
+            var curveCollisionsMap = {};
+            for (var i = 0; i < curves.length; i++) {
+                var curve = curves[i],
+                    id = curve._path._id,
+                    map = curveCollisionsMap[id] = curveCollisionsMap[id] || {};
+                map[curve.getIndex()] = {
+                    hor: getCurves(curveCollisions[i].hor),
+                    ver: getCurves(curveCollisions[i].ver)
+                };
+            }
+
             // Propagate the winding contribution. Winding contribution of
             // curves does not change between two crossings.
             // First, propagate winding contributions for curve chains starting
             // in all crossings:
             for (var i = 0, l = crossings.length; i < l; i++) {
-                propagateWinding(crossings[i]._segment, _path1, _path2, curves,
-                        operator);
+                propagateWinding(crossings[i]._segment, _path1, _path2,
+                        curveCollisionsMap, operator);
             }
             for (var i = 0, l = segments.length; i < l; i++) {
                 var segment = segments[i],
                     inter = segment._intersection;
                 if (!segment._winding) {
-                    propagateWinding(segment, _path1, _path2, curves, operator);
+                    propagateWinding(segment, _path1, _path2,
+                            curveCollisionsMap, operator);
                 }
                 // See if all encountered segments in a path are overlaps.
                 if (!(inter && inter._overlap))
@@ -155,14 +212,13 @@ PathItem.inject(new function() {
                         return !!operator[w];
                     });
         }
-
         return createResult(paths, true, path1, path2, options);
     }
 
     function splitBoolean(path1, path2, operation) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
-            crossings = _path1.getCrossings(_path2),
+            crossings = _path1.getIntersections(_path2, filterIntersection),
             subtract = operation === 'subtract',
             divide = operation === 'divide',
             added = {},
@@ -269,29 +325,39 @@ PathItem.inject(new function() {
                 // Get reference to the first, largest path and insert it
                 // already.
                 first = sorted[0];
+            // create lookup containing potentially overlapping path bounds
+            var collisions = CollisionDetection.findItemBoundsCollisions(sorted,
+                    null, Numerical.GEOMETRIC_EPSILON);
             if (clockwise == null)
                 clockwise = first.isClockwise();
             // Now determine the winding for each path, from large to small.
             for (var i = 0; i < length; i++) {
                 var path1 = sorted[i],
                     entry1 = lookup[path1._id],
-                    point = path1.getInteriorPoint(),
-                    containerWinding = 0;
-                for (var j = i - 1; j >= 0; j--) {
-                    var path2 = sorted[j];
-                    // As we run through the paths from largest to smallest, for
-                    // any current path, all potentially containing paths have
-                    // already been processed and their orientation fixed.
-                    // To achieve correct orientation of contained paths based
-                    // on winding, we have to find one containing path with
-                    // different "insideness" and set opposite orientation.
-                    if (path2.contains(point)) {
-                        var entry2 = lookup[path2._id];
-                        containerWinding = entry2.winding;
-                        entry1.winding += containerWinding;
-                        entry1.container = entry2.exclude ? entry2.container
-                                : path2;
-                        break;
+                    containerWinding = 0,
+                    indices = collisions[i];
+                if (indices) {
+                    var point = null; // interior point, only get it if required.
+                    for (var j = indices.length - 1; j >= 0; j--) {
+                        if (indices[j] < i) {
+                            point = point || path1.getInteriorPoint();
+                            var path2 = sorted[indices[j]];
+                            // As we run through the paths from largest to
+                            // smallest, for any current path, all potentially
+                            // containing paths have already been processed and
+                            // their orientation fixed. To achieve correct
+                            // orientation of contained paths based on winding,
+                            // find one containing path with different
+                            // "insideness" and set opposite orientation.
+                            if (path2.contains(point)) {
+                                var entry2 = lookup[path2._id];
+                                containerWinding = entry2.winding;
+                                entry1.winding += containerWinding;
+                                entry1.container = entry2.exclude
+                                    ? entry2.container : path2;
+                                break;
+                            }
+                        }
                     }
                 }
                 // Only keep paths if the "insideness" changes when crossing the
@@ -306,8 +372,8 @@ PathItem.inject(new function() {
                     // If the containing path is not excluded, we're done
                     // searching for the orientation defining path.
                     var container = entry1.container;
-                    path1.setClockwise(container ? !container.isClockwise()
-                            : clockwise);
+                    path1.setClockwise(
+                            container ? !container.isClockwise() : clockwise);
                 }
             }
         }
@@ -452,9 +518,9 @@ PathItem.inject(new function() {
      *
      * @param {Point} point the location for which to determine the winding
      *     contribution
-     * @param {Curve[]} curves the curves that describe the shape against which
+     * @param {Curve[]} curves The curves that describe the shape against which
      *     to check, as returned by {@link Path#curves} or
-     *     {@link CompoundPath#curves}
+     *     {@link CompoundPath#curves}.
      * @param {Boolean} [dir=false] the direction in which to determine the
      *     winding contribution, `false`: in x-direction, `true`: in y-direction
      * @param {Boolean} [closed=false] determines how areas should be closed
@@ -468,6 +534,13 @@ PathItem.inject(new function() {
      * @private
      */
     function getWinding(point, curves, dir, closed, dontFlip) {
+        // `curves` can either be an array of curves, or an object containing of
+        // the form `{ hor: [], ver: [] }` (see `curveCollisionsMap`), with each
+        // key / value pair holding only those curves that can be crossed by a
+        // horizontal / vertical line through the point to be checked.
+        var curvesList = Array.isArray(curves)
+            ? curves
+            : curves[dir ? 'hor' : 'ver'];
         // Determine the index of the abscissa and ordinate values in the curve
         // values arrays, based on the direction:
         var ia = dir ? 1 : 0, // the abscissa index
@@ -573,9 +646,7 @@ PathItem.inject(new function() {
                         onPath = true;
                     }
                 }
-                // TODO: Determine how to handle quality when curve is crossed
-                // at starting point. Do we always need to set to 0?
-                quality = 0;
+                quality /= 4;
             }
             vPrev = v;
             // If we're on the curve, look at the tangent to decide whether to
@@ -615,12 +686,12 @@ PathItem.inject(new function() {
             }
         }
 
-        for (var i = 0, l = curves.length; i < l; i++) {
-            var curve = curves[i],
+        for (var i = 0, l = curvesList.length; i < l; i++) {
+            var curve = curvesList[i],
                 path = curve._path,
                 v = curve.getValues(),
                 res;
-            if (!i || curves[i - 1]._path !== path) {
+            if (!i || curvesList[i - 1]._path !== path) {
                 // We're on a new (sub-)path, so we need to determine values of
                 // the last non-horizontal curve on this path.
                 vPrev = null;
@@ -664,7 +735,7 @@ PathItem.inject(new function() {
             if (res = handleCurve(v))
                 return res;
 
-            if (i + 1 === l || curves[i + 1]._path !== path) {
+            if (i + 1 === l || curvesList[i + 1]._path !== path) {
                 // We're at the last curve of the current (sub-)path. If a
                 // closing curve was calculated at the beginning of it, handle
                 // it now to treat the path as closed:
@@ -705,7 +776,8 @@ PathItem.inject(new function() {
         };
     }
 
-    function propagateWinding(segment, path1, path2, curves, operator) {
+    function propagateWinding(segment, path1, path2, curveCollisionsMap,
+            operator) {
         // Here we try to determine the most likely winding number contribution
         // for the curve-chain starting with this segment. Once we have enough
         // confidence in the winding contribution, we can propagate it until the
@@ -715,10 +787,14 @@ PathItem.inject(new function() {
             totalLength = 0,
             winding;
         do {
-            var curve = segment.getCurve(),
-                length = curve.getLength();
-            chain.push({ segment: segment, curve: curve, length: length });
-            totalLength += length;
+            var curve = segment.getCurve();
+            // We can encounter paths with only one segment, which would not
+            // have a curve.
+            if (curve) {
+                var length = curve.getLength();
+                chain.push({ segment: segment, curve: curve, length: length });
+                totalLength += length;
+            }
             segment = segment.getNext();
         } while (segment && !segment._intersection && segment !== start);
         // Determine winding at three points in the chain. If a winding with
@@ -726,7 +802,8 @@ PathItem.inject(new function() {
         // the best quality.
         var offsets = [0.5, 0.25, 0.75],
             winding = { winding: 0, quality: -1 },
-            tMin = /*#=*/Numerical.CURVETIME_EPSILON,
+            // Don't go too close to segments, to avoid special winding cases:
+            tMin = 1e-3,
             tMax = 1 - tMin;
         for (var i = 0; i < offsets.length && winding.quality < 0.5; i++) {
             var length = totalLength * offsets[i];
@@ -751,9 +828,8 @@ PathItem.inject(new function() {
                     var wind = null;
                     if (operator.subtract && path2) {
                         // Calculate path winding at point depending on operand.
-                        var pathWinding = operand === path1
-                                          ? path2._getWinding(pt, dir, true)
-                                          : path1._getWinding(pt, dir, true);
+                        var otherPath = operand === path1 ? path2 : path1,
+                            pathWinding = otherPath._getWinding(pt, dir, true);
                         // Check if curve should be omitted.
                         if (operand === path1 && pathWinding.winding ||
                             operand === path2 && !pathWinding.winding) {
@@ -767,7 +843,9 @@ PathItem.inject(new function() {
                             }
                         }
                     }
-                    wind = wind || getWinding(pt, curves, dir, true);
+                    wind =  wind || getWinding(
+                            pt, curveCollisionsMap[path._id][curve.getIndex()],
+                            dir, true);
                     if (wind.quality > winding.quality)
                         winding = wind;
                     break;
@@ -1168,7 +1246,7 @@ PathItem.inject(new function() {
                 return inter && inter._overlap && inter._path === path;
             }
 
-            // First collect all overlaps and crossings while taking not of the
+            // First collect all overlaps and crossings while taking note of the
             // existence of both.
             var hasOverlaps = false,
                 hasCrossings = false,

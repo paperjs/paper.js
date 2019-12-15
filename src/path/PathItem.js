@@ -351,14 +351,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      */
     getCrossings: function(path) {
         return this.getIntersections(path, function(inter) {
-            // TODO: Only return overlaps that are actually crossings! For this
-            // we need proper overlap range detection / merging first...
-            // But as we call #resolveCrossings() first in boolean operations,
-            // removing all self-touching areas in paths, this currently works
-            // as it should in the known use cases.
-            // The ideal implementation would deal with it in a way outlined in:
-            // https://github.com/paperjs/paper.js/issues/874#issuecomment-168332391
-            return inter.hasOverlap() || inter.isCrossing();
+            return inter.isCrossing();
         });
     },
 
@@ -729,16 +722,20 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 matched = [],
                 count = 0;
             ok = true;
+            var boundsOverlaps = CollisionDetection.findBoundsOverlaps(paths1, paths2, Numerical.GEOMETRIC_EPSILON);      
             for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
                 var path1 = paths1[i1];
                 ok = false;
-                for (var i2 = length2 - 1; i2 >= 0 && !ok; i2--) {
-                    if (path1.compare(paths2[i2])) {
-                        if (!matched[i2]) {
-                            matched[i2] = true;
-                            count++;
+                var pathBoundsOverlaps = boundsOverlaps[i1];
+                if (pathBoundsOverlaps) {
+                    for (var i2 = pathBoundsOverlaps.length - 1; i2 >= 0 && !ok; i2--) {
+                        if (path1.compare(paths2[pathBoundsOverlaps[i2]])) {
+                            if (!matched[pathBoundsOverlaps[i2]]) {
+                                matched[pathBoundsOverlaps[i2]] = true;
+                                count++;
+                            }
+                            ok = true;
                         }
-                        ok = true;
                     }
                 }
             }

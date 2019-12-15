@@ -18,7 +18,6 @@
  * @extends Item
  */
 var Raster = Item.extend(/** @lends Raster# */{
-}, /** @lends Raster# */{
     _class: 'Raster',
     _applyMatrix: false,
     _canApplyMatrix: false,
@@ -697,8 +696,9 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @param {Color} color the color that the pixel will be set to
      */
     setPixel: function(/* point, color */) {
-        var point = Point.read(arguments),
-            color = Color.read(arguments),
+        var args = arguments,
+            point = Point.read(args),
+            color = Color.read(args),
             components = color._convert('rgb'),
             alpha = color._alpha,
             ctx = this.getContext(true),
@@ -763,7 +763,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#onLoad
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example
      * var url = 'http://assets.paperjs.org/images/marilyn.jpg';
@@ -789,7 +789,7 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * @name Raster#onError
      * @property
-     * @type Function
+     * @type ?Function
      */
 
     _getBounds: function(matrix, options) {

@@ -265,7 +265,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      *
      * @name Tween#onUpdate
      * @property
-     * @type Function
+     * @type ?Function
      *
      * @example {@paperscript}
      * // Display tween progression values:

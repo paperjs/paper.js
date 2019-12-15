@@ -227,8 +227,8 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
         var entry = document.getElementById('qunit-test-output-' + id)
             .querySelector('li:nth-child(' + (index) + ')'),
             bounds = result.diffBounds;
-        entry.querySelector('.test-expected td').appendChild(image(imageData1));
-        entry.querySelector('.test-actual td').appendChild(image(imageData2));
+        entry.querySelector('.test-expected td').appendChild(image(imageData2));
+        entry.querySelector('.test-actual td').appendChild(image(imageData1));
         entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
             + '</pre><br>'
             + '<img src="' + result.getImageDataUrl() + '">';
