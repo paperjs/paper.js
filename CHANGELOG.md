@@ -1,5 +1,31 @@
 # Change Log
 
+## `unreleased`
+
+### Added
+
+- Allow paper core import in TypeScript (#1713).
+- Boolean: Improve performance from `O(n^2)` to nearly `O(n)` by the use of the
+  sweep and prune algorithm (#1737).
+- Docs: Add support for nullable values.
+
+### Fixed
+
+- Fix `PathItem#getCrossing()` to not return overlaps (#1409).
+- Fix regression in `Curve.getIntersections()` (#1638).
+- Fix edge cases in `CurveLocation.isCrossing()` (#1419, #1263).
+- Fix `SymbolItem#hitTestAll()` to return only one match per symbol item
+  (#1680).
+- Fix handling of negative `Shape` sizes (#1733).
+- Fix parsing of RGB `Color` strings with percentages (#1736).
+- Fix `Shape` bounds when passing position in constructor (#1686).
+- Prevent nested group matrix from reset when transforming parent (#1711).
+- Boolean: Fix edge cases in overlap detection (#1262).
+- Boolean: Add check for paths with only one segment (#1351).
+- Boolean: Correctly handle open filled paths (#1647).
+- Boolean: Avoid winding number edge cases (#1619).
+- Docs: Fix some documentation return types (#1679).
+
 ## `0.12.3`
 
 ### Fixed
@@ -8,7 +34,7 @@
 - SVG Export: Fix viewport size of exported `Symbol` (#1668).
 - Handle non-invertible matrices in `Item#contains()` (#1651).
 - Improve documentation for `Item#clipMask` (#1673).
-- Improve TypeScript definitions (#1659, #1663, #1664, #1667)
+- Improve TypeScript definitions (#1659, #1663, #1664, #1667).
 
 ### Added
 
