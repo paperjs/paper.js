@@ -101,8 +101,8 @@ var Shape = Item.extend(/** @lends Shape# */{
                 this._radius._set(width / 2, height / 2);
             }
             this._size._set(width, height);
-            this._changed(/*#=*/Change.GEOMETRY);
         }
+        this._changed(/*#=*/Change.GEOMETRY);
     },
 
     /**

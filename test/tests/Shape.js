@@ -54,6 +54,14 @@ test('shape.toPath().toShape()', function() {
     });
 });
 
+test('new Shape.Rectangle() with position set before size', function() {
+    var shape1 = new Shape.Rectangle({
+        position: [0, 0],
+        size: new Size(100, 100)
+    });
+    equals(shape1.bounds.width, 100);
+});
+
 test('Shape.Rectangle radius works with negative size', function() {
     var shape = new Shape.Rectangle({
         center: [50, 50],
