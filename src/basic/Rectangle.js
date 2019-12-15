@@ -98,11 +98,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
                         arg0.width || 0, arg0.height || 0);
                 read = 1;
             } else if (arg0.from === undefined && arg0.to === undefined) {
-                // Use Base.filter() to support whatever property the rectangle
-                // can take, but handle from/to separately below.
+                // Use `Base.readSupported()` to read and consume whatever
+                // property the rectangle can receive, but handle `from` / `to`
+                // separately below.
                 this._set(0, 0, 0, 0);
-                Base.filter(this, arg0);
-                read = 1;
+                if (Base.readSupported(arguments, this)) {
+                    read = 1;
+                }
             }
         }
         if (read === undefined) {
@@ -141,13 +143,13 @@ var Rectangle = Base.extend(/** @lends Rectangle# */{
             }
             this._set(x, y, width, height);
             read = arguments.__index;
-            // arguments.__filtered wouldn't survive the function call even if a
-            // previous arguments list was passed through Function#apply().
-            // Return it on the object instead, see Base.read()
-            var filtered = arguments.__filtered;
-            if (filtered)
-                this.__filtered = filtered;
         }
+        // arguments.__filtered wouldn't survive the function call even if a
+        // previous arguments list was passed through Function#apply().
+        // Return it on the object instead, see Base.read()
+        var filtered = arguments.__filtered;
+        if (filtered)
+            this.__filtered = filtered;
         if (this.__read)
             this.__read = read;
         return this;

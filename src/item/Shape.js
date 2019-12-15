@@ -82,7 +82,7 @@ var Shape = Item.extend(/** @lends Shape# */{
     setSize: function(/* size */) {
         var size = Size.read(arguments);
         if (!this._size) {
-            // First time, e.g. whean reading from JSON...
+            // First time, e.g. when reading from JSON...
             this._size = size.clone();
         } else if (!this._size.equals(size)) {
             var type = this._type,
@@ -101,8 +101,8 @@ var Shape = Item.extend(/** @lends Shape# */{
                 this._radius._set(width / 2, height / 2);
             }
             this._size._set(width, height);
+            this._changed(/*#=*/Change.GEOMETRY);
         }
-        this._changed(/*#=*/Change.GEOMETRY);
     },
 
     /**
@@ -130,7 +130,7 @@ var Shape = Item.extend(/** @lends Shape# */{
         } else {
             radius = Size.read(arguments);
             if (!this._radius) {
-                // First time, e.g. whean reading from JSON...
+                // First time, e.g. when reading from JSON...
                 this._radius = radius.clone();
             } else {
                 if (this._radius.equals(radius))
@@ -390,10 +390,13 @@ new function() { // Scope for _contains() and _hitTestSelf() code.
 // Mess with indentation in order to get more line-space below:
 statics: new function() {
     function createShape(type, point, size, radius, args) {
-        var item = new Shape(Base.getNamed(args), point);
+        // Use `Base.create()` to avoid calling `initialize()` until after the
+        // internal fields are set here, then call `_initialize()` directly:
+        var item = Base.create(Shape.prototype);
         item._type = type;
         item._size = size;
         item._radius = radius;
+        item._initialize(Base.getNamed(args), point);
         return item;
     }
 
