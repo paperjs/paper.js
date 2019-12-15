@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat Dec 14 20:32:00 2019 +0100
+ * Date: Sun Dec 15 14:34:46 2019 +0100
  *
  ***
  *
@@ -378,26 +378,52 @@ statics: {
 
 	readNamed: function(list, name, start, options, amount) {
 		var value = this.getNamed(list, name),
-			hasObject = value !== undefined;
-		if (hasObject) {
+			hasValue = value !== undefined;
+		if (hasValue) {
 			var filtered = list.__filtered;
 			if (!filtered) {
-				filtered = list.__filtered = Base.create(list[0]);
-				filtered.__unfiltered = list[0];
+				var source = this.getSource(list);
+				filtered = list.__filtered = Base.create(source);
+				filtered.__unfiltered = source;
 			}
 			filtered[name] = undefined;
 		}
-		var l = hasObject ? [value] : list,
-			res = this.read(l, start, options, amount);
-		return res;
+		return this.read(hasValue ? [value] : list, start, options, amount);
+	},
+
+	readSupported: function(list, dest) {
+		var source = this.getSource(list),
+			that = this,
+			read = false;
+		if (source) {
+			Object.keys(source).forEach(function(key) {
+				if (key in dest) {
+					var value = that.readNamed(list, key);
+					if (value !== undefined) {
+						dest[key] = value;
+					}
+					read = true;
+				}
+			});
+		}
+		return read;
+	},
+
+	getSource: function(list) {
+		var source = list.__source;
+		if (source === undefined) {
+			var arg = list.length === 1 && list[0];
+			source = list.__source = arg && Base.isPlainObject(arg)
+				? arg : null;
+		}
+		return source;
 	},
 
 	getNamed: function(list, name) {
-		var arg = list[0];
-		if (list._hasObject === undefined)
-			list._hasObject = list.length === 1 && Base.isPlainObject(arg);
-		if (list._hasObject)
-			return name ? arg[name] : list.__filtered || arg;
+		var source = this.getSource(list);
+		if (source) {
+			return name ? source[name] : list.__filtered || source;
+		}
 	},
 
 	hasNamed: function(list, name) {
@@ -1894,8 +1920,9 @@ var Rectangle = Base.extend({
 				read = 1;
 			} else if (arg0.from === undefined && arg0.to === undefined) {
 				this._set(0, 0, 0, 0);
-				Base.filter(this, arg0);
-				read = 1;
+				if (Base.readSupported(arguments, this)) {
+					read = 1;
+				}
 			}
 		}
 		if (read === undefined) {
@@ -1925,10 +1952,10 @@ var Rectangle = Base.extend({
 			}
 			this._set(x, y, width, height);
 			read = arguments.__index;
-			var filtered = arguments.__filtered;
-			if (filtered)
-				this.__filtered = filtered;
 		}
+		var filtered = arguments.__filtered;
+		if (filtered)
+			this.__filtered = filtered;
 		if (this.__read)
 			this.__read = read;
 		return this;
@@ -5234,10 +5261,11 @@ new function() {
 
 statics: new function() {
 	function createShape(type, point, size, radius, args) {
-		var item = new Shape(Base.getNamed(args), point);
+		var item = Base.create(Shape.prototype);
 		item._type = type;
 		item._size = size;
 		item._radius = radius;
+		item._initialize(Base.getNamed(args), point);
 		return item;
 	}
 
