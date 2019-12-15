@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.3 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,107 +9,12 @@
  *
  * All rights reserved.
  *
- * Date: Sat Jun 22 14:16:49 2019 +0200
+ * Date: Sun Dec 15 21:25:00 2019 +0100
  *
  * This is an auto-generated type definition.
  */
 
-declare module paper {
-    /** 
-     * The version of Paper.js, as a string.
-     */
-    let version: string
-
-    /** 
-     * Gives access to paper's configurable settings.
-     * 
-     * @option [settings.insertItems=true] {Boolean} controls whether newly
-     *     created items are automatically inserted into the scene graph, by
-     *     adding them to {@link Project#activeLayer}
-     * @option [settings.applyMatrix=true] {Boolean} controls what value newly
-     *     created items have their {@link Item#applyMatrix} property set to
-     *     (Note that not all items can set this to `false`)
-     * @option [settings.handleSize=4] {Number} the size of the curve handles
-     *     when drawing selections
-     * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
-     *     tests, when no value is specified
-     */
-    let settings: any
-
-    /** 
-     * The currently active project.
-     */
-    let project: Project | null
-
-    /** 
-     * The list of all open projects within the current Paper.js context.
-     */
-    let projects: Project[] | null
-
-    /** 
-     * The reference to the active project's view.
-     */
-    let view: View
-
-    /** 
-     * The reference to the active tool.
-     */
-    let tool: Tool | null
-
-    /** 
-     * The list of available tools.
-     */
-    let tools: Tool[] | null
-
-
-    /** 
-     * Compiles the PaperScript code into a compiled function and executes it.
-     * The compiled function receives all properties of this {@link PaperScope}
-     * as arguments, to emulate a global scope with unaffected performance. It
-     * also installs global view and tool handlers automatically on the
-     * respective objects.
-     * 
-     * @option options.url {String} the url of the source, for source-map
-     *     debugging
-     * @option options.source {String} the source to be used for the source-
-     *     mapping, in case the code that's passed in has already been mingled.
-     * 
-     * @param code - the PaperScript code
-     * @param options - the compilation options
-     */
-    function execute(code: string, options?: object): void
-
-    /** 
-     * Injects the paper scope into any other given scope. Can be used for
-     * example to inject the currently active PaperScope into the window's
-     * global scope, to emulate PaperScript-style globally accessible Paper
-     * classes and objects.
-     * 
-     * <b>Please note:</b> Using this method may override native constructors
-     * (e.g. Path). This may cause problems when using Paper.js in conjunction
-     * with other libraries that rely on these constructors. Keep the library
-     * scoped if you encounter issues caused by this.
-     */
-    function install(scope: any): void
-
-    /** 
-     * Sets up an empty project for us. If a canvas is provided, it also creates
-     * a {@link View} for it, both linked to this scope.
-     * 
-     * @param element - the HTML canvas element
-     * this scope should be associated with, or an ID string by which to find
-     * the element, or the size of the canvas to be created for usage in a web
-     * worker.
-     */
-    function setup(element: HTMLCanvasElement | string | Size): void
-
-    /** 
-     * Activates this PaperScope, so all newly created items will be placed
-     * in its active project.
-     */
-    function activate(): void
-
-
+declare namespace paper {
 
     /** 
      * All properties and functions that expect color values in the form
@@ -121,7 +26,7 @@ declare module paper {
         /** 
          * The type of the color as a string.
          */
-        type: string | null
+        type: string
 
         /** 
          * The color components that define the color, including the alpha value
@@ -133,59 +38,59 @@ declare module paper {
          * The color's alpha value as a number between `0` and `1`.
          * All colors of the different subclasses support alpha values.
          */
-        alpha: number | null
+        alpha: number
 
         /** 
          * The amount of red in the color as a value between `0` and `1`.
          */
-        red: number | null
+        red: number
 
         /** 
          * The amount of green in the color as a value between `0` and `1`.
          */
-        green: number | null
+        green: number
 
         /** 
          * The amount of blue in the color as a value between `0` and `1`.
          */
-        blue: number | null
+        blue: number
 
         /** 
          * The amount of gray in the color as a value between `0` and `1`.
          */
-        gray: number | null
+        gray: number
 
         /** 
          * The hue of the color as a value in degrees between `0` and `360`.
          */
-        hue: number | null
+        hue: number
 
         /** 
          * The saturation of the color as a value between `0` and `1`.
          */
-        saturation: number | null
+        saturation: number
 
         /** 
          * The brightness of the color as a value between `0` and `1`.
          */
-        brightness: number | null
+        brightness: number
 
         /** 
          * The lightness of the color as a value between `0` and `1`.
          * 
          * Note that all other components are shared with HSB.
          */
-        lightness: number | null
+        lightness: number
 
         /** 
          * The gradient object describing the type of gradient and the stops.
          */
-        gradient: Gradient | null
+        gradient: Gradient
 
         /** 
          * The highlight point of the gradient.
          */
-        highlight: Point | null
+        highlight: Point
 
 
         /** 
@@ -446,7 +351,7 @@ declare module paper {
          * 
          * @see Path#closed
          */
-        closed: boolean | null
+        closed: boolean
 
         /** 
          * The first Segment contained within the compound-path, a short-cut to
@@ -529,22 +434,22 @@ declare module paper {
         /** 
          * The first anchor point of the curve.
          */
-        point1: Point | null
+        point1: Point
 
         /** 
          * The second anchor point of the curve.
          */
-        point2: Point | null
+        point2: Point
 
         /** 
          * The handle point that describes the tangent in the first anchor point.
          */
-        handle1: Point | null
+        handle1: Point
 
         /** 
          * The handle point that describes the tangent in the second anchor point.
          */
-        handle2: Point | null
+        handle2: Point
 
         /** 
          * The first segment of the curve.
@@ -581,7 +486,7 @@ declare module paper {
         /** 
          * Specifies whether the points and handles of the curve are selected.
          */
-        selected: boolean | null
+        selected: boolean
 
         /** 
          * An array of 8 float values, describing this curve's geometry in four
@@ -614,17 +519,17 @@ declare module paper {
         /** 
          * The bounding rectangle of the curve excluding stroke width.
          */
-        bounds: Rectangle | null
+        bounds: Rectangle
 
         /** 
          * The bounding rectangle of the curve including stroke width.
          */
-        strokeBounds: Rectangle | null
+        strokeBounds: Rectangle
 
         /** 
          * The bounding rectangle of the curve including handles.
          */
-        handleBounds: Rectangle | null
+        handleBounds: Rectangle
 
 
         /** 
@@ -1278,12 +1183,12 @@ declare module paper {
         /** 
          * The gradient stops on the gradient ramp.
          */
-        stops: GradientStop[] | null
+        stops: GradientStop[]
 
         /** 
          * Specifies whether the gradient is radial or linear.
          */
-        radial: boolean | null
+        radial: boolean
 
 
         /** 
@@ -1307,12 +1212,12 @@ declare module paper {
         /** 
          * The ramp-point of the gradient stop as a value between `0` and `1`.
          */
-        offset: number | null
+        offset: number
 
         /** 
          * The color of the gradient stop.
          */
-        color: Color | null
+        color: Color
 
 
         /** 
@@ -1343,7 +1248,7 @@ declare module paper {
          * `true`, the first child in the group is automatically defined as the
          * clipping mask.
          */
-        clipped: boolean | null
+        clipped: boolean
 
 
         /** 
@@ -1374,24 +1279,24 @@ declare module paper {
          * Describes the type of the hit result. For example, if you hit a segment
          * point, the type would be `'segment'`.
          */
-        type: string | null
+        type: string
 
         /** 
          * If the HitResult has a {@link HitResult#type} of `'bounds'`, this
          * property describes which corner of the bounding rectangle was hit.
          */
-        name: string | null
+        name: string
 
         /** 
          * The item that was hit.
          */
-        item: Item | null
+        item: Item
 
         /** 
          * If the HitResult has a type of 'curve' or 'stroke', this property gives
          * more information about the exact position that was hit on the path.
          */
-        location: CurveLocation | null
+        location: CurveLocation
 
         /** 
          * If the HitResult has a type of 'pixel', this property refers to the color
@@ -1404,13 +1309,13 @@ declare module paper {
          * 'handle-out', this property refers to the segment that was hit or that
          * is closest to the hitResult.location on the curve.
          */
-        segment: Segment | null
+        segment: Segment
 
         /** 
          * Describes the actual coordinates of the segment, handle or bounding box
          * corner that was hit.
          */
-        point: Point | null
+        point: Point
 
 
     }
@@ -1432,30 +1337,30 @@ declare module paper {
         /** 
          * The class name of the item as a string.
          */
-        className: string | null
+        className: string
 
         /** 
          * The name of the item. If the item has a name, it can be accessed by name
          * through its parent's children list.
          */
-        name: string | null
+        name: string
 
         /** 
          * The path style of the item.
          */
-        style: Style | null
+        style: Style
 
         /** 
          * Specifies whether the item is locked. When set to `true`, item
          * interactions with the mouse are disabled.
          */
-        locked: boolean | null
+        locked: boolean
 
         /** 
          * Specifies whether the item is visible. When set to `false`, the item
          * won't be drawn.
          */
-        visible: boolean | null
+        visible: boolean
 
         /** 
          * The blend mode with which the item is composited onto the canvas. Both
@@ -1463,12 +1368,12 @@ declare module paper {
          * are supported. If blend-modes cannot be rendered natively, they are
          * emulated. Be aware that emulation can have an impact on performance.
          */
-        blendMode: string | null
+        blendMode: string
 
         /** 
          * The opacity of the item as a value between `0` and `1`.
          */
-        opacity: number | null
+        opacity: number
 
         /** 
          * Specifies whether the item is selected. This will also return `true` for
@@ -1485,14 +1390,14 @@ declare module paper {
          * @see Curve#selected
          * @see Point#selected
          */
-        selected: boolean | null
+        selected: boolean
 
         /** 
          * Specifies whether the item defines a clip mask. This can only be set on
          * paths and compound paths, and only if the item is already contained
          * within a clipping group.
          */
-        clipMask: boolean | null
+        clipMask: boolean
 
         /** 
          * A plain javascript object which can be used to store
@@ -1505,7 +1410,7 @@ declare module paper {
          * default, this is the {@link Rectangle#center} of the item's
          * {@link #bounds} rectangle.
          */
-        position: Point | null
+        position: Point
 
         /** 
          * The item's pivot point specified in the item coordinate system, defining
@@ -1514,22 +1419,22 @@ declare module paper {
          * meaning the {@link Rectangle#center} of the item's {@link #bounds}
          * rectangle is used as pivot.
          */
-        pivot: Point | null
+        pivot: Point
 
         /** 
          * The bounding rectangle of the item excluding stroke width.
          */
-        bounds: Rectangle | null
+        bounds: Rectangle
 
         /** 
          * The bounding rectangle of the item including stroke width.
          */
-        strokeBounds: Rectangle | null
+        strokeBounds: Rectangle
 
         /** 
          * The bounding rectangle of the item including handles.
          */
-        handleBounds: Rectangle | null
+        handleBounds: Rectangle
 
         /** 
          * The bounding rectangle of the item without any matrix transformations.
@@ -1538,7 +1443,7 @@ declare module paper {
          * want to draw something of the same size, position, rotation, and scaling,
          * like a selection frame.
          */
-        internalBounds: Rectangle | null
+        internalBounds: Rectangle
 
         /** 
          * The current rotation angle of the item, as described by its
@@ -1547,7 +1452,7 @@ declare module paper {
          * {@link #applyMatrix} set to `false`, meaning they do not directly bake
          * transformations into their content.
          */
-        rotation: number | null
+        rotation: number
 
         /** 
          * The current scale factor of the item, as described by its
@@ -1556,13 +1461,13 @@ declare module paper {
          * {@link #applyMatrix} set to `false`, meaning they do not directly bake
          * transformations into their content.
          */
-        scaling: Point | null
+        scaling: Point
 
         /** 
          * The item's transformation matrix, defining position and dimensions in
          * relation to its parent item in which it is contained.
          */
-        matrix: Matrix | null
+        matrix: Matrix
 
         /** 
          * The item's global transformation matrix in relation to the global project
@@ -1586,7 +1491,7 @@ declare module paper {
          * on to the segments in {@link Path} items, the children of {@link Group}
          * items, etc.).
          */
-        applyMatrix: boolean | null
+        applyMatrix: boolean
 
         /** 
          * The project that this item belongs to.
@@ -1606,7 +1511,7 @@ declare module paper {
         /** 
          * The item that this item is contained within.
          */
-        parent: Item | null
+        parent: Item
 
         /** 
          * The children items contained within this item. Items that define a
@@ -1618,7 +1523,7 @@ declare module paper {
          * {@link Item#removeChildren}. To add items to the children list, use
          * {@link Item#addChild} or {@link Item#insertChild}.
          */
-        children: Item[] | null
+        children: Item[]
 
         /** 
          * The first item contained within this item. This is a shortcut for
@@ -1655,36 +1560,36 @@ declare module paper {
         /** 
          * The width of the stroke.
          */
-        strokeWidth: number | null
+        strokeWidth: number
 
         /** 
          * The shape to be used at the beginning and end of open {@link Path} items,
          * when they have a stroke.
          */
-        strokeCap: string | null
+        strokeCap: string
 
         /** 
          * The shape to be used at the segments and corners of {@link Path} items
          * when they have a stroke.
          */
-        strokeJoin: string | null
+        strokeJoin: string
 
         /** 
          * The dash offset of the stroke.
          */
-        dashOffset: number | null
+        dashOffset: number
 
         /** 
          * Specifies whether the stroke is to be drawn taking the current affine
          * transformation into account (the default behavior), or whether it should
          * appear as a non-scaling stroke.
          */
-        strokeScaling: boolean | null
+        strokeScaling: boolean
 
         /** 
          * Specifies an array containing the dash and gap lengths of the stroke.
          */
-        dashArray: number[] | null
+        dashArray: number[]
 
         /** 
          * The miter limit of the stroke.
@@ -1694,7 +1599,7 @@ declare module paper {
          * miterLimit imposes a limit on the ratio of the miter length to the
          * {@link Item#strokeWidth}.
          */
-        miterLimit: number | null
+        miterLimit: number
 
         /** 
          * The fill color of the item.
@@ -1705,7 +1610,7 @@ declare module paper {
          * The fill-rule with which the shape gets filled. Please note that only
          * modern browsers support fill-rules other than `'nonzero'`.
          */
-        fillRule: string | null
+        fillRule: string
 
         /** 
          * The shadow color.
@@ -1715,12 +1620,12 @@ declare module paper {
         /** 
          * The shadow's blur radius.
          */
-        shadowBlur: number | null
+        shadowBlur: number
 
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point | null
+        shadowOffset: Point
 
         /** 
          * The color the item is highlighted with when selected. If the item does
@@ -2320,10 +2225,8 @@ declare module paper {
          * 
          * @param recursively - whether an item with children should be
          * considered empty if all its descendants are empty
-         * 
-         * @return Boolean
          */
-        isEmpty(recursively?: boolean): void
+        isEmpty(recursively?: boolean): boolean
 
         /** 
          * Checks whether the item has a fill.
@@ -2786,20 +2689,20 @@ declare module paper {
         /** 
          * The type of mouse event.
          */
-        type: string | null
+        type: string
 
         /** 
          * The character representation of the key that caused this key event,
          * taking into account the current key-modifiers (e.g. shift, control,
          * caps-lock, etc.)
          */
-        character: string | null
+        character: string
 
         /** 
          * The key that caused this key event, either as a lower-case character or
          * special key descriptor.
          */
-        key: string | null
+        key: string
 
 
         /** 
@@ -2872,37 +2775,37 @@ declare module paper {
          * The value that affects the transformation along the x axis when scaling
          * or rotating, positioned at (0, 0) in the transformation matrix.
          */
-        a: number | null
+        a: number
 
         /** 
          * The value that affects the transformation along the y axis when rotating
          * or skewing, positioned at (1, 0) in the transformation matrix.
          */
-        b: number | null
+        b: number
 
         /** 
          * The value that affects the transformation along the x axis when rotating
          * or skewing, positioned at (0, 1) in the transformation matrix.
          */
-        c: number | null
+        c: number
 
         /** 
          * The value that affects the transformation along the y axis when scaling
          * or rotating, positioned at (1, 1) in the transformation matrix.
          */
-        d: number | null
+        d: number
 
         /** 
          * The distance by which to translate along the x axis, positioned at (2, 0)
          * in the transformation matrix.
          */
-        tx: number | null
+        tx: number
 
         /** 
          * The distance by which to translate along the y axis, positioned at (2, 1)
          * in the transformation matrix.
          */
-        ty: number | null
+        ty: number
 
         /** 
          * The matrix values as an array, in the same sequence as they are passed
@@ -2998,8 +2901,8 @@ declare module paper {
          * Attempts to apply the matrix to the content of item that it belongs to,
          * meaning its transformation is baked into the item's content or children.
          * 
-         * @param recursively - controls whether to apply transformations
-         * recursively on children
+         * @param recursively - controls whether to apply
+         *     transformations recursively on children
          * 
          * @return true if the matrix was applied
          */
@@ -3249,20 +3152,20 @@ declare module paper {
         /** 
          * The type of mouse event.
          */
-        type: string | null
+        type: string
 
         /** 
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point | null
+        point: Point
 
         /** 
          * The item that dispatched the event. It is different from
          * {@link #currentTarget} when the event handler is called during
          * the bubbling phase of the event.
          */
-        target: Item | null
+        target: Item
 
         /** 
          * The current target for the event, as the event traverses the scene graph.
@@ -3270,10 +3173,10 @@ declare module paper {
          * opposed to {@link #target} which identifies the element on
          * which the event occurred.
          */
-        currentTarget: Item | null
+        currentTarget: Item
 
         
-        delta: Point | null
+        delta: Point
 
 
         /** 
@@ -3328,12 +3231,12 @@ declare module paper {
         /** 
          * The currently active project.
          */
-        project: Project | null
+        project: Project
 
         /** 
          * The list of all open projects within the current Paper.js context.
          */
-        projects: Project[] | null
+        projects: Project[]
 
         /** 
          * The reference to the active project's view.
@@ -3343,12 +3246,12 @@ declare module paper {
         /** 
          * The reference to the active tool.
          */
-        tool: Tool | null
+        tool: Tool
 
         /** 
          * The list of available tools.
          */
-        tools: Tool[] | null
+        tools: Tool[]
 
         Color: typeof Color
         CompoundPath: typeof CompoundPath
@@ -3365,6 +3268,7 @@ declare module paper {
         Layer: typeof Layer
         Matrix: typeof Matrix
         MouseEvent: typeof MouseEvent
+        PaperScope: typeof PaperScope
         PaperScript: typeof PaperScript
         Path: typeof Path
         PathItem: typeof PathItem
@@ -3440,7 +3344,7 @@ declare module paper {
         /** 
          * Retrieves a PaperScope object with the given scope id.
          */
-        static get(id: any): void
+        static get(id: any): PaperScope
 
     }
 
@@ -3510,7 +3414,7 @@ declare module paper {
         /** 
          * The segments contained within the path.
          */
-        segments: Segment[] | null
+        segments: Segment[]
 
         /** 
          * The first Segment contained within the path.
@@ -3541,7 +3445,7 @@ declare module paper {
          * Specifies whether the path is closed. If it is closed, Paper.js connects
          * the first and last segments.
          */
-        closed: boolean | null
+        closed: boolean
 
         /** 
          * The approximate length of the path.
@@ -3558,7 +3462,7 @@ declare module paper {
          * Specifies whether the path and all its segments are selected. Cannot be
          * `true` on an empty path.
          */
-        fullySelected: boolean | null
+        fullySelected: boolean
 
 
         /** 
@@ -3608,7 +3512,7 @@ declare module paper {
          * the same object, e.g. if the segment to be added already belongs to
          * another path.
          */
-        add(...segment: (Segment | Point | Number[])[]): Segment | Segment[]
+        add(...segment: (Segment | Point | number[])[]): Segment | Segment[]
 
         /** 
          * Inserts one or more segments at a given index in the list of this path's
@@ -4038,12 +3942,12 @@ declare module paper {
          * @see Path#area
          * @see CompoundPath#area
          */
-        clockwise: boolean | null
+        clockwise: boolean
 
         /** 
          * The path's geometry, formatted as SVG style path data.
          */
-        pathData: string | null
+        pathData: string
 
 
         /** 
@@ -4555,12 +4459,12 @@ declare module paper {
         /** 
          * The x coordinate of the point
          */
-        x: number | null
+        x: number
 
         /** 
          * The y coordinate of the point
          */
-        y: number | null
+        y: number
 
         /** 
          * The length of the vector that is represented by this point's coordinates.
@@ -4568,17 +4472,17 @@ declare module paper {
          * = 0`, `y = 0`) to the point's location. Setting the length changes the
          * location but keeps the vector's angle.
          */
-        length: number | null
+        length: number
 
         /** 
          * The vector's angle in degrees, measured from the x-axis to the vector.
          */
-        angle: number | null
+        angle: number
 
         /** 
          * The vector's angle in radians, measured from the x-axis to the vector.
          */
-        angleInRadians: number | null
+        angleInRadians: number
 
         /** 
          * The quadrant of the {@link #angle} of the point.
@@ -4603,7 +4507,7 @@ declare module paper {
          * Paper.js renders selected points on top of your project. This is very
          * useful when debugging.
          */
-        selected: boolean | null
+        selected: boolean
 
 
         /** 
@@ -4992,7 +4896,7 @@ declare module paper {
         /** 
          * The PointText's anchor point
          */
-        point: Point | null
+        point: Point
 
 
         /** 
@@ -5041,7 +4945,7 @@ declare module paper {
          * The currently active path style. All selected items and newly
          * created items will be styled with this style.
          */
-        currentStyle: Style | null
+        currentStyle: Style
 
         /** 
          * The index of the project in the {@link PaperScope#projects} list.
@@ -5367,17 +5271,17 @@ declare module paper {
         /** 
          * The size of the raster in pixels.
          */
-        size: Size | null
+        size: Size
 
         /** 
          * The width of the raster in pixels.
          */
-        width: number | null
+        width: number
 
         /** 
          * The height of the raster in pixels.
          */
-        height: number | null
+        height: number
 
         /** 
          * The loading state of the raster image.
@@ -5397,7 +5301,7 @@ declare module paper {
          * the raster even if the image has already finished loading before, or if
          * we are setting the raster to a canvas.
          */
-        image: HTMLImageElement | HTMLCanvasElement | null
+        image: HTMLImageElement | HTMLCanvasElement
 
         /** 
          * The Canvas object of the raster. If the raster was created from an image,
@@ -5405,12 +5309,12 @@ declare module paper {
          * image into it. Depending on security policies, this might fail, in which
          * case `null` is returned instead.
          */
-        canvas: HTMLCanvasElement | null
+        canvas: HTMLCanvasElement
 
         /** 
          * The Canvas 2D drawing context of the raster.
          */
-        context: CanvasRenderingContext2D | null
+        context: CanvasRenderingContext2D
 
         /** 
          * The source of the raster, which can be set using a DOM Image, a Canvas,
@@ -5421,7 +5325,7 @@ declare module paper {
          * Note that for consistency, a {@link #onLoad} event will be triggered on
          * the raster even if the image has already finished loading before.
          */
-        source: HTMLImageElement | HTMLCanvasElement | string | null
+        source: HTMLImageElement | HTMLCanvasElement | string
 
         /** 
          * The crossOrigin value to be used when loading the image resource, in
@@ -5429,13 +5333,13 @@ declare module paper {
          * {@link #source} property in order to always work (e.g. when the image is
          * cached in the browser).
          */
-        crossOrigin: string | null
+        crossOrigin: string
 
         /** 
          * Specifies if the raster should be smoothed when scaled up or if the
          * pixels should be scaled up by repeating the nearest neighboring pixels.
          */
-        smoothing: boolean | null
+        smoothing: boolean
 
         /** 
          * The event handler function to be called when the underlying image has
@@ -5583,101 +5487,101 @@ declare module paper {
         /** 
          * The x position of the rectangle.
          */
-        x: number | null
+        x: number
 
         /** 
          * The y position of the rectangle.
          */
-        y: number | null
+        y: number
 
         /** 
          * The width of the rectangle.
          */
-        width: number | null
+        width: number
 
         /** 
          * The height of the rectangle.
          */
-        height: number | null
+        height: number
 
         /** 
          * The top-left point of the rectangle
          */
-        point: Point | null
+        point: Point
 
         /** 
          * The size of the rectangle
          */
-        size: Size | null
+        size: Size
 
         /** 
          * The position of the left hand side of the rectangle. Note that this
          * doesn't move the whole rectangle; the right hand side stays where it was.
          */
-        left: number | null
+        left: number
 
         /** 
          * The top coordinate of the rectangle. Note that this doesn't move the
          * whole rectangle: the bottom won't move.
          */
-        top: number | null
+        top: number
 
         /** 
          * The position of the right hand side of the rectangle. Note that this
          * doesn't move the whole rectangle; the left hand side stays where it was.
          */
-        right: number | null
+        right: number
 
         /** 
          * The bottom coordinate of the rectangle. Note that this doesn't move the
          * whole rectangle: the top won't move.
          */
-        bottom: number | null
+        bottom: number
 
         /** 
          * The center point of the rectangle.
          */
-        center: Point | null
+        center: Point
 
         /** 
          * The top-left point of the rectangle.
          */
-        topLeft: Point | null
+        topLeft: Point
 
         /** 
          * The top-right point of the rectangle.
          */
-        topRight: Point | null
+        topRight: Point
 
         /** 
          * The bottom-left point of the rectangle.
          */
-        bottomLeft: Point | null
+        bottomLeft: Point
 
         /** 
          * The bottom-right point of the rectangle.
          */
-        bottomRight: Point | null
+        bottomRight: Point
 
         /** 
          * The left-center point of the rectangle.
          */
-        leftCenter: Point | null
+        leftCenter: Point
 
         /** 
          * The top-center point of the rectangle.
          */
-        topCenter: Point | null
+        topCenter: Point
 
         /** 
          * The right-center point of the rectangle.
          */
-        rightCenter: Point | null
+        rightCenter: Point
 
         /** 
          * The bottom-center point of the rectangle.
          */
-        bottomCenter: Point | null
+        bottomCenter: Point
 
         /** 
          * The area of the rectangle.
@@ -5690,7 +5594,7 @@ declare module paper {
          * Paper.js draws the bounds of items with selected bounds on top of
          * your project. This is very useful when debugging.
          */
-        selected: boolean | null
+        selected: boolean
 
 
         /** 
@@ -5893,24 +5797,24 @@ declare module paper {
         /** 
          * The anchor point of the segment.
          */
-        point: Point | null
+        point: Point
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the in tangent of the segment.
          */
-        handleIn: Point | null
+        handleIn: Point
 
         /** 
          * The handle point relative to the anchor point of the segment that
          * describes the out tangent of the segment.
          */
-        handleOut: Point | null
+        handleOut: Point
 
         /** 
          * Specifies whether the segment is selected.
          */
-        selected: boolean | null
+        selected: boolean
 
         /** 
          * The index of the segment in the {@link Path#segments} array that the
@@ -6109,18 +6013,18 @@ declare module paper {
         /** 
          * The type of shape of the item as a string.
          */
-        type: string | null
+        type: string
 
         /** 
          * The size of the shape.
          */
-        size: Size | null
+        size: Size
 
         /** 
          * The radius of the shape, as a number if it is a circle, or a size object
          * for ellipses and rounded rectangles.
          */
-        radius: number | Size | null
+        radius: number | Size
 
 
         /** 
@@ -6228,12 +6132,12 @@ declare module paper {
         /** 
          * The width of the size
          */
-        width: number | null
+        width: number
 
         /** 
          * The height of the size
          */
-        height: number | null
+        height: number
 
 
         /** 
@@ -6483,36 +6387,36 @@ declare module paper {
         /** 
          * The width of the stroke.
          */
-        strokeWidth: number | null
+        strokeWidth: number
 
         /** 
          * The shape to be used at the beginning and end of open {@link Path} items,
          * when they have a stroke.
          */
-        strokeCap: string | null
+        strokeCap: string
 
         /** 
          * The shape to be used at the segments and corners of {@link Path} items
          * when they have a stroke.
          */
-        strokeJoin: string | null
+        strokeJoin: string
 
         /** 
          * Specifies whether the stroke is to be drawn taking the current affine
          * transformation into account (the default behavior), or whether it should
          * appear as a non-scaling stroke.
          */
-        strokeScaling: boolean | null
+        strokeScaling: boolean
 
         /** 
          * The dash offset of the stroke.
          */
-        dashOffset: number | null
+        dashOffset: number
 
         /** 
          * Specifies an array containing the dash and gap lengths of the stroke.
          */
-        dashArray: number[] | null
+        dashArray: number[]
 
         /** 
          * The miter limit of the stroke. When two line segments meet at a sharp
@@ -6521,7 +6425,7 @@ declare module paper {
          * the path. The miterLimit imposes a limit on the ratio of the miter length
          * to the {@link #strokeWidth}.
          */
-        miterLimit: number | null
+        miterLimit: number
 
         /** 
          * The fill color.
@@ -6532,7 +6436,7 @@ declare module paper {
          * The fill-rule with which the shape gets filled. Please note that only
          * modern browsers support fill-rules other than `'nonzero'`.
          */
-        fillRule: string | null
+        fillRule: string
 
         /** 
          * The shadow color.
@@ -6542,12 +6446,12 @@ declare module paper {
         /** 
          * The shadow's blur radius.
          */
-        shadowBlur: number | null
+        shadowBlur: number
 
         /** 
          * The shadow's offset.
          */
-        shadowOffset: Point | null
+        shadowOffset: Point
 
         /** 
          * The color the item is highlighted with when selected. If the item does
@@ -6558,28 +6462,28 @@ declare module paper {
         /** 
          * The font-family to be used in text content.
          */
-        fontFamily: string | null
+        fontFamily: string
 
         /** 
          * The font-weight to be used in text content.
          */
-        fontWeight: string | number | null
+        fontWeight: string | number
 
         /** 
          * The font size of text content, as a number in pixels, or as a string with
          * optional units `'px'`, `'pt'` and `'em'`.
          */
-        fontSize: number | string | null
+        fontSize: number | string
 
         /** 
          * The text leading of text content.
          */
-        leading: number | string | null
+        leading: number | string
 
         /** 
          * The justification of text paragraphs.
          */
-        justification: string | null
+        justification: string
 
 
         /** 
@@ -6607,7 +6511,7 @@ declare module paper {
         /** 
          * The item used as the symbol's definition.
          */
-        item: Item | null
+        item: Item
 
 
         /** 
@@ -6647,7 +6551,7 @@ declare module paper {
         /** 
          * The symbol definition that the placed symbol refers to.
          */
-        definition: SymbolDefinition | null
+        definition: SymbolDefinition
 
 
         /** 
@@ -6672,33 +6576,33 @@ declare module paper {
         /** 
          * The text contents of the text item.
          */
-        content: string | null
+        content: string
 
         /** 
          * The font-family to be used in text content.
          */
-        fontFamily: string | null
+        fontFamily: string
 
         /** 
          * The font-weight to be used in text content.
          */
-        fontWeight: string | number | null
+        fontWeight: string | number
 
         /** 
          * The font size of text content, as a number in pixels, or as a string with
          * optional units `'px'`, `'pt'` and `'em'`.
          */
-        fontSize: number | string | null
+        fontSize: number | string
 
         /** 
          * The text leading of text content.
          */
-        leading: number | string | null
+        leading: number | string
 
         /** 
          * The justification of text paragraphs.
          */
-        justification: string | null
+        justification: string
 
 
     }
@@ -6719,16 +6623,16 @@ declare module paper {
          * The minimum distance the mouse has to drag before firing the onMouseDrag
          * event, since the last onMouseDrag event.
          */
-        minDistance: number | null
+        minDistance: number
 
         /** 
          * The maximum distance the mouse has to drag before firing the onMouseDrag
          * event, since the last onMouseDrag event.
          */
-        maxDistance: number | null
+        maxDistance: number
 
         
-        fixedDistance: number | null
+        fixedDistance: number
 
         /** 
          * The function to be called when the mouse button is pushed down. The
@@ -6873,25 +6777,25 @@ declare module paper {
         /** 
          * The type of tool event.
          */
-        type: string | null
+        type: string
 
         /** 
          * The position of the mouse in project coordinates when the event was
          * fired.
          */
-        point: Point | null
+        point: Point
 
         /** 
          * The position of the mouse in project coordinates when the previous
          * event was fired.
          */
-        lastPoint: Point | null
+        lastPoint: Point
 
         /** 
          * The position of the mouse in project coordinates when the mouse button
          * was last clicked.
          */
-        downPoint: Point | null
+        downPoint: Point
 
         /** 
          * The point in the middle between {@link #lastPoint} and
@@ -6899,19 +6803,19 @@ declare module paper {
          * artwork based on the moving direction of the mouse, as returned by
          * {@link #delta}.
          */
-        middlePoint: Point | null
+        middlePoint: Point
 
         /** 
          * The difference between the current position and the last position of the
          * mouse when the event was fired. In case of the mouseup event, the
          * difference to the mousedown position is returned.
          */
-        delta: Point | null
+        delta: Point
 
         /** 
          * The number of times the mouse event was fired.
          */
-        count: number | null
+        count: number
 
         /** 
          * The item at the position of the mouse (if any).
@@ -6920,7 +6824,7 @@ declare module paper {
          * {@link CompoundPath} items, the most top level group or compound path
          * that it is contained within is returned.
          */
-        item: Item | null
+        item: Item
 
 
         /** 
@@ -6999,7 +6903,7 @@ declare module paper {
          * Note that this is `true` by default, except for Node.js, where manual
          * updates make more sense.
          */
-        autoUpdate: boolean | null
+        autoUpdate: boolean
 
         /** 
          * The underlying native element.
@@ -7025,7 +6929,7 @@ declare module paper {
          * The size of the view. Changing the view's size will resize it's
          * underlying element.
          */
-        viewSize: Size | null
+        viewSize: Size
 
         /** 
          * The bounds of the currently visible area in project coordinates.
@@ -7040,20 +6944,20 @@ declare module paper {
         /** 
          * The center of the visible area in project coordinates.
          */
-        center: Point | null
+        center: Point
 
         /** 
          * The view's zoom factor by which the project coordinates are magnified.
          * 
          * @see #scaling
          */
-        zoom: number | null
+        zoom: number
 
         /** 
          * The current rotation angle of the view, as described by its
          * {@link #matrix}.
          */
-        rotation: number | null
+        rotation: number
 
         /** 
          * The current scale factor of the view, as described by its
@@ -7061,13 +6965,13 @@ declare module paper {
          * 
          * @see #zoom
          */
-        scaling: Point | null
+        scaling: Point
 
         /** 
          * The view's transformation matrix, defining the view onto the project's
          * contents (position, zoom level, rotation, etc).
          */
-        matrix: Matrix | null
+        matrix: Matrix
 
         /** 
          * Handler function to be called on each frame of an animation.
@@ -7423,6 +7327,15 @@ declare module paper {
     }
 }
 
-declare module 'paper' {
-    export = paper
+
+declare module 'paper/dist/paper-core'
+{
+    const paperCore: Pick<paper.PaperScope, Exclude<keyof paper.PaperScope, 'PaperScript'>>;
+    export = paperCore
+}
+
+declare module 'paper'
+{
+    const paperFull: paper.PaperScope;
+    export = paperFull
 }

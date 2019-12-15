@@ -1,6 +1,6 @@
 # Change Log
 
-## `unreleased`
+## `0.12.4`
 
 ### Added
 
