@@ -14,21 +14,7 @@
  * This is an auto-generated type definition.
  */
 
-declare module paper {
-    {{#paperInstance}}
-    {{#properties}}
-    {{#doc}}4{{/doc}}
-    let {{name}}{{type}}
-
-    {{/properties}}
-
-    {{#methods}}
-    {{#doc}}4{{/doc}}
-    function {{name}}({{params}}){{type}}
-
-    {{/methods}}
-    {{/paperInstance}}
-
+declare namespace paper {
     {{#classes}}
 
     {{#doc}}4{{/doc}}
@@ -65,6 +51,15 @@ declare module paper {
     {{/classes}}
 }
 
-declare module 'paper' {
-    export = paper
+
+declare module 'paper/dist/paper-core'
+{
+    const paperCore: Pick<paper.PaperScope, Exclude<keyof paper.PaperScope, 'PaperScript'>>;
+    export = paperCore
+}
+
+declare module 'paper'
+{
+    const paperFull: paper.PaperScope;
+    export = paperFull
 }

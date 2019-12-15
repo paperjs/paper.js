@@ -3509,19 +3509,22 @@ new function() { // Injection scope for hit-test functions shared with project
     // @param {String[]} flags array of any of the following: 'objects',
     //        'children', 'fill-gradients', 'fill-patterns', 'stroke-patterns',
     //        'lines'. Default: ['objects', 'children']
-    transform: function(matrix, _applyMatrix, _applyRecursively,
-            _setApplyMatrix) {
+    transform: function(matrix, _applyRecursively, _setApplyMatrix) {
         var _matrix = this._matrix,
-            // If no matrix is provided, or the matrix is the identity, we might
-            // still have some work to do in case _applyMatrix is true
             transformMatrix = matrix && !matrix.isIdentity(),
-            applyMatrix = (_applyMatrix || this._applyMatrix)
+            // If no matrix is provided, or the matrix is the identity, we might
+            // still have some work to do: _setApplyMatrix or _applyRecursively.
+            applyMatrix = (
+                _setApplyMatrix && this._canApplyMatrix ||
+                this._applyMatrix && (
                     // Don't apply _matrix if the result of concatenating with
                     // matrix would be identity.
-                    && ((!_matrix.isIdentity() || transformMatrix)
-                        // Even if it's an identity matrix, we still need to
-                        // recursively apply the matrix to children.
-                        || _applyMatrix && _applyRecursively && this._children);
+                    transformMatrix || !_matrix.isIdentity() ||
+                    // Even if it's an identity matrix, we may still need to
+                    // recursively apply the matrix to children.
+                    _applyRecursively && this._children
+                )
+            );
         // Bail out if there is nothing to do.
         if (!transformMatrix && !applyMatrix)
             return this;
@@ -3553,8 +3556,9 @@ new function() { // Injection scope for hit-test functions shared with project
         // internal _matrix transformations to the item's content.
         // Application is not possible on Raster, PointText, SymbolItem, since
         // the matrix is where the actual transformation state is stored.
-        if (applyMatrix && (applyMatrix = this._transformContent(_matrix,
-                _applyRecursively, _setApplyMatrix))) {
+
+        if (applyMatrix && (applyMatrix = this._transformContent(
+                _matrix, _applyRecursively, _setApplyMatrix))) {
             // Pivot is provided in the parent's coordinate system, so transform
             // it along too.
             var pivot = this._pivot;
@@ -3618,9 +3622,9 @@ new function() { // Injection scope for hit-test functions shared with project
     _transformContent: function(matrix, applyRecursively, setApplyMatrix) {
         var children = this._children;
         if (children) {
-            for (var i = 0, l = children.length; i < l; i++)
-                children[i].transform(matrix, true, applyRecursively,
-                        setApplyMatrix);
+            for (var i = 0, l = children.length; i < l; i++) {
+                children[i].transform(matrix, applyRecursively, setApplyMatrix);
+            }
             return true;
         }
     },

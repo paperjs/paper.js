@@ -90,7 +90,7 @@ var Shape = Item.extend(/** @lends Shape# */{
                 height = size.height;
             if (type === 'rectangle') {
                 // Shrink radius accordingly
-                this._radius.set(Size.min(this._radius, size.divide(2)));
+                this._radius.set(Size.min(this._radius, size.divide(2).abs()));
             } else if (type === 'circle') {
                 // Use average of width and height as new size, then calculate
                 // radius as a number from that:
