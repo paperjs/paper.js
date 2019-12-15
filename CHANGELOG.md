@@ -28,6 +28,10 @@
 
 ## `0.12.3`
 
+### Added
+
+- Add documentation for `Item#internalBounds`.
+
 ### Fixed
 
 - Fix regression in `Color` change propagation (#1672, #1674).
@@ -35,10 +39,6 @@
 - Handle non-invertible matrices in `Item#contains()` (#1651).
 - Improve documentation for `Item#clipMask` (#1673).
 - Improve TypeScript definitions (#1659, #1663, #1664, #1667).
-
-### Added
-
-- Add documentation for `Item#internalBounds`.
 
 ## `0.12.2`
 
