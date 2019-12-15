@@ -430,10 +430,11 @@ statics: new function() {
          * });
          */
         Circle: function(/* center, radius */) {
-            var center = Point.readNamed(arguments, 'center'),
-                radius = Base.readNamed(arguments, 'radius');
+            var args = arguments,
+                center = Point.readNamed(args, 'center'),
+                radius = Base.readNamed(args, 'radius');
             return createShape('circle', center, new Size(radius * 2), radius,
-                    arguments);
+                    args);
         },
 
         /**
@@ -527,11 +528,12 @@ statics: new function() {
          * });
          */
         Rectangle: function(/* rectangle */) {
-            var rect = Rectangle.readNamed(arguments, 'rectangle'),
-                radius = Size.min(Size.readNamed(arguments, 'radius'),
+            var args = arguments,
+                rect = Rectangle.readNamed(args, 'rectangle'),
+                radius = Size.min(Size.readNamed(args, 'radius'),
                         rect.getSize(true).divide(2));
             return createShape('rectangle', rect.getCenter(true),
-                    rect.getSize(true), radius, arguments);
+                    rect.getSize(true), radius, args);
         },
 
         /**
@@ -570,10 +572,11 @@ statics: new function() {
          * });
          */
         Ellipse: function(/* rectangle */) {
-            var ellipse = Shape._readEllipse(arguments),
+            var args = arguments,
+                ellipse = Shape._readEllipse(args),
                 radius = ellipse.radius;
             return createShape('ellipse', ellipse.center, radius.multiply(2),
-                    radius, arguments);
+                    radius, args);
         },
 
         // Private method to read ellipse center and radius from arguments list,

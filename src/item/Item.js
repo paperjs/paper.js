@@ -1877,14 +1877,16 @@ new function() { // Injection scope for various item event handlers
 },
 new function() { // Injection scope for hit-test functions shared with project
     function hitTest(/* point, options */) {
+        var args = arguments;
         return this._hitTest(
-                Point.read(arguments),
-                HitResult.getOptions(arguments));
+                Point.read(args),
+                HitResult.getOptions(args));
     }
 
     function hitTestAll(/* point, options */) {
-        var point = Point.read(arguments),
-            options = HitResult.getOptions(arguments),
+        var args = arguments,
+            point = Point.read(args),
+            options = HitResult.getOptions(args),
             all = [];
         this._hitTest(point, new Base({ all: all }, options));
         return all;
@@ -3328,8 +3330,9 @@ new function() { // Injection scope for hit-test functions shared with project
 }, Base.each(['rotate', 'scale', 'shear', 'skew'], function(key) {
     var rotate = key === 'rotate';
     this[key] = function(/* value, center */) {
-        var value = (rotate ? Base : Point).read(arguments),
-            center = Point.read(arguments, 0, { readNull: true });
+        var args = arguments,
+            value = (rotate ? Base : Point).read(args),
+            center = Point.read(args, 0, { readNull: true });
         return this.transform(new Matrix()[key](value,
                 center || this.getPosition(true)));
     };

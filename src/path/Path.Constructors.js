@@ -79,10 +79,11 @@ Path.inject({ statics: new function() {
          * });
          */
         Line: function(/* from, to */) {
+            var args = arguments;
             return createPath([
-                new Segment(Point.readNamed(arguments, 'from')),
-                new Segment(Point.readNamed(arguments, 'to'))
-            ], false, arguments);
+                new Segment(Point.readNamed(args, 'from')),
+                new Segment(Point.readNamed(args, 'to'))
+            ], false, args);
         },
 
         /**
@@ -114,9 +115,10 @@ Path.inject({ statics: new function() {
          * });
          */
         Circle: function(/* center, radius */) {
-            var center = Point.readNamed(arguments, 'center'),
-                radius = Base.readNamed(arguments, 'radius');
-            return createEllipse(center, new Size(radius), arguments);
+            var args = arguments,
+                center = Point.readNamed(args, 'center'),
+                radius = Base.readNamed(args, 'radius');
+            return createEllipse(center, new Size(radius), args);
         },
 
         /**
@@ -210,8 +212,9 @@ Path.inject({ statics: new function() {
          * });
          */
         Rectangle: function(/* rectangle */) {
-            var rect = Rectangle.readNamed(arguments, 'rectangle'),
-                radius = Size.readNamed(arguments, 'radius', 0,
+            var args = arguments,
+                rect = Rectangle.readNamed(args, 'rectangle'),
+                radius = Size.readNamed(args, 'radius', 0,
                         { readNull: true }),
                 bl = rect.getBottomLeft(true),
                 tl = rect.getTopLeft(true),
@@ -242,7 +245,7 @@ Path.inject({ statics: new function() {
                     new Segment(br.subtract(rx, 0), [hx, 0])
                 ];
             }
-            return createPath(segments, true, arguments);
+            return createPath(segments, true, args);
         },
 
         /**
@@ -286,8 +289,9 @@ Path.inject({ statics: new function() {
          * });
          */
         Ellipse: function(/* rectangle */) {
-            var ellipse = Shape._readEllipse(arguments);
-            return createEllipse(ellipse.center, ellipse.radius, arguments);
+            var args = arguments,
+                ellipse = Shape._readEllipse(args);
+            return createEllipse(ellipse.center, ellipse.radius, args);
         },
 
         /**
@@ -330,10 +334,11 @@ Path.inject({ statics: new function() {
          * });
          */
         Arc: function(/* from, through, to */) {
-            var from = Point.readNamed(arguments, 'from'),
-                through = Point.readNamed(arguments, 'through'),
-                to = Point.readNamed(arguments, 'to'),
-                props = Base.getNamed(arguments),
+            var args = arguments,
+                from = Point.readNamed(args, 'from'),
+                through = Point.readNamed(args, 'through'),
+                to = Point.readNamed(args, 'to'),
+                props = Base.getNamed(args),
                 // See createPath() for an explanation of the following sequence
                 path = new Path(props && props.insert == false
                         && Item.NO_INSERT);
@@ -376,9 +381,10 @@ Path.inject({ statics: new function() {
          * });
          */
         RegularPolygon: function(/* center, sides, radius */) {
-            var center = Point.readNamed(arguments, 'center'),
-                sides = Base.readNamed(arguments, 'sides'),
-                radius = Base.readNamed(arguments, 'radius'),
+            var args = arguments,
+                center = Point.readNamed(args, 'center'),
+                sides = Base.readNamed(args, 'sides'),
+                radius = Base.readNamed(args, 'radius'),
                 step = 360 / sides,
                 three = sides % 3 === 0,
                 vector = new Point(0, three ? -radius : radius),
@@ -387,7 +393,7 @@ Path.inject({ statics: new function() {
             for (var i = 0; i < sides; i++)
                 segments[i] = new Segment(center.add(
                     vector.rotate((i + offset) * step)));
-            return createPath(segments, true, arguments);
+            return createPath(segments, true, args);
         },
 
         /**
@@ -431,17 +437,18 @@ Path.inject({ statics: new function() {
          * });
          */
         Star: function(/* center, points, radius1, radius2 */) {
-            var center = Point.readNamed(arguments, 'center'),
-                points = Base.readNamed(arguments, 'points') * 2,
-                radius1 = Base.readNamed(arguments, 'radius1'),
-                radius2 = Base.readNamed(arguments, 'radius2'),
+            var args = arguments,
+                center = Point.readNamed(args, 'center'),
+                points = Base.readNamed(args, 'points') * 2,
+                radius1 = Base.readNamed(args, 'radius1'),
+                radius2 = Base.readNamed(args, 'radius2'),
                 step = 360 / points,
                 vector = new Point(0, -1),
                 segments = new Array(points);
             for (var i = 0; i < points; i++)
                 segments[i] = new Segment(center.add(vector.rotate(step * i)
                         .multiply(i % 2 ? radius2 : radius1)));
-            return createPath(segments, true, arguments);
+            return createPath(segments, true, args);
         }
     };
 }});

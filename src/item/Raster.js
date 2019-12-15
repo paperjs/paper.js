@@ -696,8 +696,9 @@ var Raster = Item.extend(/** @lends Raster# */{
      * @param {Color} color the color that the pixel will be set to
      */
     setPixel: function(/* point, color */) {
-        var point = Point.read(arguments),
-            color = Color.read(arguments),
+        var args = arguments,
+            point = Point.read(args),
+            color = Color.read(args),
             components = color._convert('rgb'),
             alpha = color._alpha,
             ctx = this.getContext(true),
