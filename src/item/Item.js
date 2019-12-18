@@ -2933,7 +2933,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * defined in such a way, e.g. if one is a descendant of the other.
      */
     _getOrder: function(item) {
-        // Private method that produces a list of anchestors, starting with the
+        // Private method that produces a list of ancestors, starting with the
         // root and ending with the actual element as the last entry.
         function getList(item) {
             var list = [];
@@ -2977,7 +2977,7 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if this item is above the specified item in the stacking order
-     * of all its siblings (`parent.children`).
+     * of the project.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
@@ -2987,8 +2987,8 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     /**
-     * Checks if this item is below the specified item in the stacking order
-     * of all its siblings (`parent.children`).
+     * Checks if the item is below the specified item in the stacking order of
+     * the project.
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
