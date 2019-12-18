@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Dec 18 13:44:45 2019 +0300
+ * Date: Wed Dec 18 14:13:15 2019 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -2273,7 +2273,7 @@ declare namespace paper {
 
         /** 
          * Checks if this item is above the specified item in the stacking order
-         * of all its siblings (`parent.children`).
+         * of the project.
          * 
          * @param item - the item to check against
          * 
@@ -2282,8 +2282,8 @@ declare namespace paper {
         isAbove(item: Item): boolean
 
         /** 
-         * Checks if this item is below the specified item in the stacking order
-         * of all its siblings (`parent.children`).
+         * Checks if the item is below the specified item in the stacking order of
+         * the project.
          * 
          * @param item - the item to check against
          * 
