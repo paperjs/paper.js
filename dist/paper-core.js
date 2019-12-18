@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Dec 18 11:24:28 2019 +0100
+ * Date: Wed Dec 18 13:44:45 2019 +0300
  *
  ***
  *
@@ -5346,7 +5346,7 @@ var Raster = Item.extend({
 						? source
 						: null;
 			if (object && object !== Item.NO_INSERT) {
-				if (object.getContent || object.naturalHeight != null) {
+				if (object.getContext || object.naturalHeight != null) {
 					image = object;
 				} else if (object) {
 					var size = Size.read(arguments);
