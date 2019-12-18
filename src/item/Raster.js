@@ -124,7 +124,7 @@ var Raster = Item.extend(/** @lends Raster# */{
                         ? source
                         : null;
             if (object && object !== Item.NO_INSERT) {
-                if (object.getContent || object.naturalHeight != null) {
+                if (object.getContext || object.naturalHeight != null) {
                     image = object;
                 } else if (object) {
                     // See if the arguments describe the raster size:
