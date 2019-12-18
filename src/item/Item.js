@@ -2977,7 +2977,7 @@ new function() { // Injection scope for hit-test functions shared with project
 
     /**
      * Checks if this item is above the specified item in the stacking order
-     * of the project.
+     * of all its siblings (`parent.children`).
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is above the specified item}
@@ -2987,8 +2987,8 @@ new function() { // Injection scope for hit-test functions shared with project
     },
 
     /**
-     * Checks if the item is below the specified item in the stacking order of
-     * the project.
+     * Checks if this item is below the specified item in the stacking order
+     * of all its siblings (`parent.children`).
      *
      * @param {Item} item the item to check against
      * @return {Boolean} {@true if it is below the specified item}
