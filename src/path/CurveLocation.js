@@ -57,13 +57,16 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
         this._intersection = this._next = this._previous = null;
     },
 
-    _setCurve: function(curve) {
-        var path = curve._path;
+    _setPath: function(path) {
         // We only store the path to verify versions for cached values.
         // To ensure we use the right path (e.g. after splitting), we shall
         // always access the path on the result of getCurve().
         this._path = path;
         this._version = path ? path._version : 0;
+    },
+
+    _setCurve: function(curve) {
+        this._setPath(curve._path);
         this._curve = curve;
         this._segment = null; // To be determined, see #getSegment()
         // Also store references to segment1 and segment2, in case path
@@ -74,7 +77,14 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
     },
 
     _setSegment: function(segment) {
-        this._setCurve(segment.getCurve());
+        var curve = segment.getCurve();
+        if (curve) {
+            this._setCurve(curve);
+        } else {
+            this._setPath(segment._path);
+            this._segment1 = segment;
+            this._segment2 = null;
+        }
         this._segment = segment;
         this._time = segment === this._segment1 ? 0 : 1;
         // To avoid issues with imprecision in getCurve() / trySegment()
@@ -455,7 +465,7 @@ var CurveLocation = Base.extend(/** @lends CurveLocation# */{
                     !end && count ? roots[0] : 1);
             // When no root was found, the full length was calculated. Use a
             // fraction of it. By trial & error, 64 was determined to work well.
-            offsets.push(count ? offset : offset / 64);
+            offsets.push(count ? offset : offset / 32);
         }
 
         function isInRange(angle, min, max) {

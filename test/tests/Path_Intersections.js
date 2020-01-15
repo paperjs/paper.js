@@ -201,7 +201,7 @@ test('#1073#issuecomment-234305530', function() {
         true]);
     testIntersections(path1.getIntersections(path2), [
         { point: { x: 426.61172, y: 448 }, index: 0, time: 0.27769, crossing: true },
-        { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: false },
+        { point: { x: 376, y: 480 }, index: 1, time: 0, crossing: true },
         { point: { x: 343.68011, y: 469.7389 }, index: 1, time: 0.77843, crossing: true },
         { point: { x: 336.40125, y: 463.59875 }, index: 2, time: 0.00608, crossing: true }
     ]);
