@@ -38,7 +38,7 @@
 - SVG Export: Fix viewport size of exported `Symbol` [(#1668)](https://github.com/paperjs/paper.js/issues/1668).
 - Handle non-invertible matrices in `Item#contains()` [(#1651)](https://github.com/paperjs/paper.js/issues/1651).
 - Improve documentation for `Item#clipMask` [(#1673)](https://github.com/paperjs/paper.js/issues/1673).
-- Improve TypeScript definitions (#1659, #1663, #1664, #1667).
+- Improve TypeScript definitions ([#1659](https://github.com/paperjs/paper.js/issues/1659), [#1663](https://github.com/paperjs/paper.js/issues/1663), [#1664](https://github.com/paperjs/paper.js/issues/1664), [#1667](https://github.com/paperjs/paper.js/issues/1667)).
 
 ## `0.12.2`
 
