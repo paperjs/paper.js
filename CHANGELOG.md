@@ -4,27 +4,27 @@
 
 ### Added
 
-- Allow paper core import in TypeScript (#1713).
+- Allow paper core import in TypeScript [(#1713)](https://github.com/paperjs/paper.js/issues/1713).
 - Boolean: Improve performance from `O(n^2)` to nearly `O(n)` by the use of the
-  sweep and prune algorithm (#1737).
+  sweep and prune algorithm [(#1737)](https://github.com/paperjs/paper.js/issues/1737).
 - Docs: Add support for nullable values.
 
 ### Fixed
 
-- Fix `PathItem#getCrossing()` to not return overlaps (#1409).
-- Fix regression in `Curve.getIntersections()` (#1638).
-- Fix edge cases in `CurveLocation.isCrossing()` (#1419, #1263).
+- Fix `PathItem#getCrossing()` to not return overlaps [(#1409)](https://github.com/paperjs/paper.js/issues/1409).
+- Fix regression in `Curve.getIntersections()` [(#1638)](https://github.com/paperjs/paper.js/issues/1638).
+- Fix edge cases in `CurveLocation.isCrossing()` ([#1419](https://github.com/paperjs/paper.js/issues/1263), [#1263](https://github.com/paperjs/paper.js/issues/1263)).
 - Fix `SymbolItem#hitTestAll()` to return only one match per symbol item
-  (#1680).
-- Fix handling of negative `Shape` sizes (#1733).
-- Fix parsing of RGB `Color` strings with percentages (#1736).
-- Fix `Shape` bounds when passing position in constructor (#1686).
-- Prevent nested group matrix from reset when transforming parent (#1711).
-- Boolean: Fix edge cases in overlap detection (#1262).
-- Boolean: Add check for paths with only one segment (#1351).
-- Boolean: Correctly handle open filled paths (#1647).
-- Boolean: Avoid winding number edge cases (#1619).
-- Docs: Fix some documentation return types (#1679).
+  [(#1680)](https://github.com/paperjs/paper.js/issues/1680).
+- Fix handling of negative `Shape` sizes [(#1733)](https://github.com/paperjs/paper.js/issues/1733).
+- Fix parsing of RGB `Color` strings with percentages [(#1736)](https://github.com/paperjs/paper.js/issues/1736).
+- Fix `Shape` bounds when passing position in constructor [(#1686)](https://github.com/paperjs/paper.js/issues/1686).
+- Prevent nested group matrix from reset when transforming parent [(#1711)](https://github.com/paperjs/paper.js/issues/1711).
+- Boolean: Fix edge cases in overlap detection [(#1262)](https://github.com/paperjs/paper.js/issues/1262).
+- Boolean: Add check for paths with only one segment [(#1351)](https://github.com/paperjs/paper.js/issues/1351).
+- Boolean: Correctly handle open filled paths [(#1647)](https://github.com/paperjs/paper.js/issues/1647).
+- Boolean: Avoid winding number edge cases [(#1619)](https://github.com/paperjs/paper.js/issues/1619).
+- Docs: Fix some documentation return types [(#1679)](https://github.com/paperjs/paper.js/issues/1679).
 
 ## `0.12.3`
 
@@ -343,7 +343,7 @@ the fixes and additions from the past two weeks:
 - Fix matrix cloning for groups with `#applyMatrix = false` ( #1225).
 - Correctly handle offset in `Curve#divideAt(offset)` (#1230).
 - Fix issue with `Curve#isStraight()` where handles were checked incorrectly
-  for collinearity (#1269). 
+  for collinearity (#1269).
 - Fix `Line#getSide()` imprecisions when points are on the line.
 - Docs: Fix documentation of `Project#hitTestAll()` (#536).
 - Docs: Improve description of `option.class` value in `Project#hitTest()`
@@ -547,7 +547,7 @@ contribute to the code.
 - Fix calculations of `Item#strokeBounds` for all possible combinations of
   `Item#strokeScaling` and `Item#applyMatrix` for `Path`, `Shape` and
   `SymbolItem`, along with correct handling of such strokes in Item#hitTest()
-  (#697, #856, #1014). 
+  (#697, #856, #1014).
 - Make new code-base unified for Node.js/browser work with module bundlers like
   Webpack (#986).
 - Improve hit-testing and `#contains()` checks on path with horizontal lines
@@ -626,7 +626,7 @@ contribute to the code.
 - Canvas attributes "resize" and "data-paper-resize" no longer cause paper to
   resize the canvas when the viewport size changes; Additional CSS styles are
   required since `0.9.22`, e.g.:
-  
+
   ```css
   /* Scale canvas with resize attribute to full size */
   canvas[resize] {
