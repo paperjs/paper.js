@@ -125,10 +125,10 @@ the fixes and additions from the past two weeks:
 - Make sure `Path#arcTo()` always passes through the provide through point
   [(#1477)](https://github.com/paperjs/paper.js/issues/1477).
 - Draw shadows on `Raster` images [(#1437)](https://github.com/paperjs/paper.js/issues/1437).
-- Fix boolean operation edge case (#1506, #1513, #1515).
+- Fix boolean operation edge case ([#1506](https://github.com/paperjs/paper.js/issues/1506), [#1513](https://github.com/paperjs/paper.js/issues/1513), [#1515](https://github.com/paperjs/paper.js/issues/1515)).
 - Handle closed paths with only one segment in `Path#flatten()` [(#1338)](https://github.com/paperjs/paper.js/issues/1338).
 - Remove memory leak on gradient colors [(#1499)](https://github.com/paperjs/paper.js/issues/1499).
-- Support alpha channel in CSS colors (#1468, #1539, #1565).
+- Support alpha channel in CSS colors ([#1468](https://github.com/paperjs/paper.js/issues/1468), [#1539](https://github.com/paperjs/paper.js/issues/1539), [#1565](https://github.com/paperjs/paper.js/issues/1565)).
 - Improve color CSS string parsing and documentation.
 - Improve caching of item positions [(#1503)](https://github.com/paperjs/paper.js/issues/1503).
 - Always draw selected position in global coordinates system [(#1545)](https://github.com/paperjs/paper.js/issues/1545).
@@ -298,7 +298,7 @@ the fixes and additions from the past two weeks:
 - Implement `Curve#hasLength()` as an optimized check for curve-length [(#1109)](https://github.com/paperjs/paper.js/issues/1109).
 - Implement `Curve#classify()` to determine the type of cubic Bézier curve via
   discriminant classification, based on an approach described by Loop and Blinn,
-  and use it to simplify curve self-intersection handling (#773, #1074, #1235).
+  and use it to simplify curve self-intersection handling ([#773](https://github.com/paperjs/paper.js/issues/773), [#1074](https://github.com/paperjs/paper.js/issues/1074), [#1235](https://github.com/paperjs/paper.js/issues/1235)).
 - Add `Curve.getPeaks()` as a fast way to retrieve points that are often similar
   to the more costly curvature extrema for use in curve offsetting.
 - Expose `Curve. getCurveLineIntersections()` for use in curve offsetting.
@@ -487,7 +487,7 @@ contribute to the code.
 - Use QUnit tests for leaked globals.
 - Define code format standards in .editorconfig file
 - Add support for running without a canvas for Web Workers, Node.js
-  (#561, #582, #634).
+  ([#561](https://github.com/paperjs/paper.js/issues/561), [#582](https://github.com/paperjs/paper.js/issues/582), [#634](https://github.com/paperjs/paper.js/issues/634)).
 - Add support for all common mouse events to `View`.
 - Add support for `'keydown'` and `'keyup'` events to `View` [(#896)](https://github.com/paperjs/paper.js/issues/896).
 - Add `View#requestUpdate()` function to minimize number of actual canvas
@@ -547,7 +547,7 @@ contribute to the code.
 - Fix calculations of `Item#strokeBounds` for all possible combinations of
   `Item#strokeScaling` and `Item#applyMatrix` for `Path`, `Shape` and
   `SymbolItem`, along with correct handling of such strokes in Item#hitTest()
-  (#697, #856, #1014).
+  ([#697](https://github.com/paperjs/paper.js/issues/697), [#856](https://github.com/paperjs/paper.js/issues/856), [#1014](https://github.com/paperjs/paper.js/issues/1014)).
 - Make new code-base unified for Node.js/browser work with module bundlers like
   Webpack [(#986)](https://github.com/paperjs/paper.js/issues/986).
 - Improve hit-testing and `#contains()` checks on path with horizontal lines
