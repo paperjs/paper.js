@@ -105,36 +105,36 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          */
         getOptions: function(args) {
             var options = args && Base.read(args);
-            return new Base({
-                // Type of item, for instanceof check: Group, Layer, Path,
-                // CompoundPath, Shape, Raster, SymbolItem, ...
-                type: null,
-                // Tolerance
-                tolerance: paper.settings.hitTolerance,
-                // Hit the fill of items
-                fill: !options,
-                // Hit the curves of path items, taking into account the stroke
-                // width.
-                stroke: !options,
-                // Hit the part of segments that curves pass through, excluding
-                // its segments (Segment#point)
-                segments: !options,
-                // Hit the parts of segments that define the curvature
-                handles: false,
-                // Only first or last segment hits on path (mutually exclusive
-                // with segments: true)
-                ends: false,
-                // Hit test the item position
-                position: false,
-                // Hit test the center of the bounds
-                center: false,
-                // Hit test the corners and side-centers of the bounding box
-                bounds: false,
-                //  Hit items that are marked as guides
-                guides: false,
-                // Only hit selected objects
-                selected: false
-            }, options);
+            return new Base(Object.assign({
+              // Type of item, for instanceof check: Group, Layer, Path,
+              // CompoundPath, Shape, Raster, SymbolItem, ...
+              type: null,
+              // Tolerance
+              tolerance: paper.settings.hitTolerance,
+              // Hit the fill of items
+              fill: !options,
+              // Hit the curves of path items, taking into account the stroke
+              // width.
+              stroke: !options,
+              // Hit the part of segments that curves pass through, excluding
+              // its segments (Segment#point)
+              segments: !options,
+              // Hit the parts of segments that define the curvature
+              handles: false,
+              // Only first or last segment hits on path (mutually exclusive
+              // with segments: true)
+              ends: false,
+              // Hit test the item position
+              position: false,
+              // Hit test the center of the bounds
+              center: false,
+              // Hit test the corners and side-centers of the bounding box
+              bounds: false,
+              //  Hit items that are marked as guides
+              guides: false,
+              // Only hit selected objects
+              selected: false
+            }, paper.settings.hitOptions), options);
         }
     }
 });
