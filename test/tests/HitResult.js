@@ -36,7 +36,7 @@ test('Hit-testing options', function() {
   
   paper.settings.hitOptions = hitOptions;
   try {
-    equals(HitResult.getOptions(), Object.assign({}, defaultOptions, hitOptions),
+    equals(HitResult.getOptions(), new paper.Base({}, defaultOptions, hitOptions),
       'Default options with settings.hitOptions');
   } catch (err) { throw err; }
   finally { paper.settings.hitOptions = {}; }

@@ -105,7 +105,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
          */
         getOptions: function(args) {
             var options = args && Base.read(args);
-            return new Base(Object.assign({
+            return new Base({
               // Type of item, for instanceof check: Group, Layer, Path,
               // CompoundPath, Shape, Raster, SymbolItem, ...
               type: null,
@@ -134,7 +134,7 @@ var HitResult = Base.extend(/** @lends HitResult# */{
               guides: false,
               // Only hit selected objects
               selected: false
-            }, paper.settings.hitOptions), options);
+            }, paper.settings.hitOptions, options);
         }
     }
 });
