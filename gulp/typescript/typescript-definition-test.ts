@@ -46,6 +46,7 @@ let event            = {} as paper.Event;
 let mouseEvent       = {} as paper.MouseEvent;
 let tool             = {} as paper.Tool;
 let toolEvent        = {} as paper.ToolEvent;
+let toolKeyEvent     = {} as paper.ToolKeyEvent;
 let keyEvent         = {} as paper.KeyEvent;
 let paperScope       = {} as paper.PaperScope;
 let callback         = {} as () => {};
@@ -1100,6 +1101,19 @@ toolEvent.toString();
 
 
 //
+// ToolKeyEvent
+//
+
+toolKeyEvent.type;
+toolKeyEvent.character;
+toolKeyEvent.key;
+toolKeyEvent.lastPoint;
+toolKeyEvent.downPoint;
+toolKeyEvent.item;
+toolKeyEvent.toString();
+
+
+//
 // Key
 //
 
@@ -1170,6 +1184,7 @@ new paperScope.SymbolItem(symbolDefinition);
 new paperScope.TextItem();
 new paperScope.Tool();
 new paperScope.ToolEvent();
+new paperScope.ToolKeyEvent();
 new paperScope.Tween(object, object, object, 0);
 new paperScope.View();
 

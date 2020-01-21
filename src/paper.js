@@ -101,6 +101,7 @@ var paper = function(self, undefined) {
 /*#*/ include('event/MouseEvent.js');
 
 /*#*/ include('tool/ToolEvent.js');
+/*#*/ include('tool/ToolKeyEvent.js');
 /*#*/ include('tool/Tool.js');
 
 /*#*/ include('anim/Tween.js');

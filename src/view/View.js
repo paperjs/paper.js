@@ -1453,24 +1453,21 @@ new function() { // Injection scope for event handling on the browser
          */
         _handleKeyEvent: function(type, event, key, character) {
             var scope = this._scope,
-                tool = scope.tool,
-                keyEvent;
-
-            function emit(obj) {
-                if (obj.responds(type)) {
-                    // Update global reference to this scope.
-                    paper = scope;
-                    // Only produce the event object if we really need it.
-                    obj.emit(type, keyEvent = keyEvent
-                            || new KeyEvent(type, event, key, character));
-                }
-            }
+                tool = scope.tool;
 
             if (this.isVisible()) {
                 // Call the onKeyDown or onKeyUp handler if present
-                emit(this);
-                if (tool && tool.responds(type))
-                    emit(tool);
+                if (this.responds(type)) {
+                    // Update global reference to this scope.
+                    paper = scope;
+                    this.emit(type, new KeyEvent(type, event, key, character));
+                }
+
+                if (tool && tool.responds(type)) {
+                    // Update global reference to this scope.
+                    paper = scope;
+                    tool.emit(type, new ToolKeyEvent(tool, type, event, key, character));
+                }
             }
         },
 
