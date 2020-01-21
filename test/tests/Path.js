@@ -625,7 +625,7 @@ test('Path#getOffsetsWithTangent()', function() {
     equals(path.getOffsetsWithTangent([1, 0]), [0.25 * length, 0.75 * length], 'should not return duplicates when tangent is at segment point');
     equals(path.getOffsetsWithTangent([1, 1]).length, 2, 'should return 2 values when called on a circle with a diagonal vector');
 });
-  
+
 test('Path#add() with a lot of segments (#1493)', function() {
     var segments = [];
     for (var i = 0; i < 100000; i++) {
@@ -651,5 +651,15 @@ test('Path#arcTo(to, radius, rotation, clockwise, large) when from and to are eq
     var path = new Path();
     path.moveTo(point);
     path.arcTo(point, new Size(10), 0, true, true);
+    expect(0);
+});
+
+test('Path#closed with blend mode', function() {
+    new Path({
+        strokeColor: 'black',
+        blendMode: 'negation',
+        closed: true
+    });
+    view.update();
     expect(0);
 });
