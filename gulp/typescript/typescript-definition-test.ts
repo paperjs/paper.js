@@ -1107,7 +1107,7 @@ toolEvent.toString();
 toolKeyEvent.type;
 toolKeyEvent.character;
 toolKeyEvent.key;
-toolKeyEvent.lastPoint;
+toolKeyEvent.point;
 toolKeyEvent.downPoint;
 toolKeyEvent.item;
 toolKeyEvent.toString();
