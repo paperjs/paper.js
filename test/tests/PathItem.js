@@ -165,4 +165,16 @@ test('PathItem#compare()', function() {
     equals(function() {
         return circle2.compare(circle);
     }, true, 'Comparing a circle with additional segments with an identical circle should return true.');
+
+    var compoundPath1 = PathItem.create('M50,300l0,-150l50,25l0,-75l200,0l0,200z M100,200l50,0l-50,-25z');
+    var compoundPath2 = PathItem.create('M50,300l0,-150l50,25l0,-75l200,0l0,200z M100,175l0,25l50,0z');
+    var compoundPath3 = PathItem.create('M50,300l0,-150l50,25l0,-75l200,0l0,210z M100,200l50,0l-50,-25z');
+
+    equals(function() {
+        return compoundPath1.compare(compoundPath2);
+    }, true, 'Comparing two compound paths with one child starting at a different point should return true.');
+    equals(function() {
+        return compoundPath1.compare(compoundPath3);
+    }, false, 'Comparing two compound paths with one child having a different shape should return false.');
+    
 });
