@@ -722,7 +722,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 matched = [],
                 count = 0;
             ok = true;
-            var boundsOverlaps = CollisionDetection.findBoundsOverlaps(paths1, paths2, Numerical.GEOMETRIC_EPSILON);      
+            var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(paths1, paths2, Numerical.GEOMETRIC_EPSILON);      
             for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
                 var path1 = paths1[i1];
                 ok = false;
