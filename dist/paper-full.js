@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jan 15 09:40:49 2020 +0100
+ * Date: Mon Feb 10 23:49:50 2020 +0100
  *
  ***
  *
@@ -8280,7 +8280,7 @@ var PathItem = Item.extend({
 				matched = [],
 				count = 0;
 			ok = true;
-			var boundsOverlaps = CollisionDetection.findBoundsOverlaps(paths1, paths2, Numerical.GEOMETRIC_EPSILON);
+			var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(paths1, paths2, Numerical.GEOMETRIC_EPSILON);
 			for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
 				var path1 = paths1[i1];
 				ok = false;
