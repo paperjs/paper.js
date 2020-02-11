@@ -943,8 +943,8 @@ PathItem.inject(new function() {
                 collect(inter);
                 // Find the beginning of the linked intersections and loop all
                 // the way back to start, to collect all valid intersections.
-                while (inter && inter._prev)
-                    inter = inter._prev;
+                while (inter && inter._previous)
+                    inter = inter._previous;
                 collect(inter, start);
             }
             return crossings;
