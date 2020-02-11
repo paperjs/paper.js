@@ -222,15 +222,24 @@ test('new Raster(size[, position])', function() {
     equals(raster.bounds, new Rectangle(-50, -50, 100, 100));
 
     // Size and position.
-    var raster = new Raster(new Size(100, 100), new Point(100, 100));
-    equals(raster.position, new Point(100, 100));
-    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+    var raster = new Raster(new Size(100, 100), new Point(200, 200));
+    equals(raster.position, new Point(200, 200));
+    equals(raster.bounds, new Rectangle(150, 150, 100, 100));
 
-    var raster = new Raster({size:new Size(100, 100), position:new Point(100, 100)});
-    equals(raster.position, new Point(100, 100));
-    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+    var raster = new Raster({size:new Size(100, 100), position:new Point(200, 200)});
+    equals(raster.position, new Point(200, 200));
+    equals(raster.bounds, new Rectangle(150, 150, 100, 100));
 
-    var raster = new Raster({width:100, height:100, position:new Point(100, 100)});
-    equals(raster.position, new Point(100, 100));
-    equals(raster.bounds, new Rectangle(50, 50, 100, 100));
+    var raster = new Raster({width:100, height:100, position:new Point(200, 200)});
+    equals(raster.position, new Point(200, 200));
+    equals(raster.bounds, new Rectangle(150, 150, 100, 100));
+});
+
+test('new Raster(source, position)', function() {
+    var position = new Point(0, 0);
+    var raster = new Raster(
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=',
+        position
+    );
+    equals(raster.position, position);
 });

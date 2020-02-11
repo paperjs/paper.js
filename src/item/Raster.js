@@ -112,28 +112,26 @@ var Raster = Item.extend(/** @lends Raster# */{
         // - An image (Image|Canvas|String) and an optional position (Point).
         // - A size (Size) describing the canvas that will be  created and an
         //   optional position (Point).
-        // If _initialize can set properties through object literal, we're done.
-        // Otherwise we need to check the type of object:       var image,
-        if (!this._initialize(source,
-                position !== undefined && Point.read(arguments))) {
-            var image,
-                type = typeof source,
-                object = type === 'string'
-                    ? document.getElementById(source)
-                    : type  === 'object'
-                        ? source
-                        : null;
-            if (object && object !== Item.NO_INSERT) {
-                if (object.getContext || object.naturalHeight != null) {
-                    image = object;
-                } else if (object) {
-                    // See if the arguments describe the raster size:
-                    var size = Size.read(arguments);
-                    if (!size.isZero()) {
-                        image = CanvasProvider.getCanvas(size);
-                    }
+        var image,
+            type = typeof source,
+            object = type === 'string'
+                ? document.getElementById(source)
+                : type === 'object'
+                    ? source
+                    : null;
+        if (object && object !== Item.NO_INSERT) {
+            if (object.getContext || object.naturalHeight != null) {
+                image = object;
+            } else if (object) {
+                // See if the arguments describe the raster size:
+                var size = Size.read(arguments);
+                if (!size.isZero()) {
+                    image = CanvasProvider.getCanvas(size);
                 }
             }
+        }
+        if (!this._initialize(source,
+            position !== undefined && Point.read(arguments, 1))) {
             if (image) {
                 // #setImage() handles both canvas and image types.
                 this.setImage(image);
