@@ -2092,6 +2092,13 @@ new function() { // Injection scope for hit-test functions shared with project
         }
 
         if (!res) {
+            
+            // if target class found, clear class option so subsequent 
+            // _hitTestXXX() calls will return valid results
+            const foundClass = options.class && this instanceof options.class;
+            if (foundClass) options = options.extend(
+                                { class: this instanceof CompoundPath ? Path : false });
+
             res = this._hitTestChildren(point, options, viewMatrix)
                 // NOTE: We don't call match on _hitTestChildren() because
                 // it is already called internally.
@@ -2102,6 +2109,9 @@ new function() { // Injection scope for hit-test functions shared with project
                         this.getStrokeScaling() ? null
                             : viewMatrix._shiftless().invert()))
                 || null;
+            
+            // if this is the target class item, replace res.item with it
+            if (foundClass && res) res.item = this;
         }
         // Transform the point back to the outer coordinate system.
         if (res && res.point) {
