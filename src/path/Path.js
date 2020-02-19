@@ -973,7 +973,7 @@ var Path = PathItem.extend(/** @lends Path# */{
      * @param {Number|CurveLocation} location the offset or location on the
      *     path at which to divide the existing curve by inserting a new segment
      * @return {Segment} the newly inserted segment if the location is valid,
-     *     {code null} otherwise
+     *     `null` otherwise
      * @see Curve#divideAt(location)
      */
     divideAt: function(location) {
