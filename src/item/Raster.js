@@ -39,12 +39,13 @@ var Raster = Item.extend(/** @lends Raster# */{
     // TODO: Have SymbolItem & Raster inherit from a shared class?
     /**
      * Creates a new raster item from the passed argument, and places it in the
-     * active layer. `source` can either be a DOM Image, a Canvas, or a string
-     * describing the URL to load the image from, or the ID of a DOM element to
-     * get the image from (either a DOM Image or a Canvas).
+     * active layer. `source` can either be a DOM Image, a Canvas, a string
+     * describing the URL to load the image from, the ID of a DOM element to
+     * get the image from (either a DOM Image or a Canvas), or an object 
+     * describing all the properties to set.
      *
      * @name Raster#initialize
-     * @param {HTMLImageElement|HTMLCanvasElement|String} [source] the source of
+     * @param {HTMLImageElement|HTMLCanvasElement|String|Object} [source] the source of
      *     the raster
      * @param {Point} [position] the center position at which the raster item is
      *     placed
@@ -80,31 +81,6 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * raster.scale(0.5);
      * raster.rotate(10);
-     */
-    /**
-     * Creates a new empty raster of the given size, and places it in the
-     * active layer.
-     *
-     * @name Raster#initialize
-     * @param {Size} size the size of the raster
-     * @param {Point} [position] the center position at which the raster item is
-     *     placed
-     *
-     * @example {@paperscript height=150}
-     * // Creating an empty raster and fill it with random pixels:
-     * var width = 100;
-     * var height = 100;
-     *
-     * // Create an empty raster placed at view center.
-     * var raster = new Raster(new Size(width, height), view.center);
-     *
-     * // For all of its pixels...
-     * for (var i = 0; i < width; i++) {
-     *     for (var j = 0; j < height; j++) {
-     *         // ...set a random color.
-     *         raster.setPixel(i, j, Color.random());
-     *     }
-     * }
      */
     initialize: function Raster(source, position) {
         // Support three forms of item initialization:
