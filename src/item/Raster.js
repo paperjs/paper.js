@@ -41,8 +41,8 @@ var Raster = Item.extend(/** @lends Raster# */{
      * Creates a new raster item from the passed argument, and places it in the
      * active layer. `source` can either be a DOM Image, a Canvas, a string
      * describing the URL to load the image from, the ID of a DOM element to
-     * get the image from (either a DOM Image or a Canvas), or an object 
-     * describing all the properties to set.
+     * get the image from (either a DOM Image or a Canvas), the size of the 
+     * raster, or an object describing all the properties to set.
      *
      * @name Raster#initialize
      * @param {HTMLImageElement|HTMLCanvasElement|String|Object|Size} [source] the
