@@ -561,7 +561,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     /**
      * Draws an image on the raster.
      *
-     * @param {HTMLImageElement|HTMLCanvasElement} image
+     * @param {CanvasImageSource} image
      * @param {Point} point the offset of the image as a point in pixel
      * coordinates
      */
