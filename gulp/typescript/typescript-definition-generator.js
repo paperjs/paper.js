@@ -327,6 +327,15 @@ function formatJSDoc(offset, render) {
 }
 
 function getMethodReturnType(method) {
+    // We need to handle the special case where the method returns an instance
+    // of the class. As JSDoc doesn't have a proper way to handle this, we rely
+    // on the custom tag `@tsReturnThis`, placed in the description of the
+    // method. When this tag is present, we ignore the common return type and
+    // use typescript `this` type instead.
+    if (method.comment.tags.find(it => it.title === 'tsReturnThis'))
+    {
+        return 'this';
+    }
     return method.returnType || method.returns.length > 0 && method.returns[0].type;
 }
 
