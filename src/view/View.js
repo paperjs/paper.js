@@ -633,7 +633,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#shear
      * @function
-     * @param {Point} shear the horziontal and vertical shear factors as a point
+     * @param {Point} shear the horizontal and vertical shear factors as a point
      * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(shear[, center])
      */
@@ -655,7 +655,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
      *
      * @name View#skew
      * @function
-     * @param {Point} skew the horziontal and vertical skew angles in degrees
+     * @param {Point} skew the horizontal and vertical skew angles in degrees
      * @param {Point} [center={@link View#center}]
      * @see Matrix#shear(skew[, center])
      */
