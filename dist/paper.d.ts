@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Feb 13 17:06:46 2020 +0100
+ * Date: Fri Apr 10 07:47:59 2020 +1000
  *
  * This is an auto-generated type definition.
  */
@@ -2385,7 +2385,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(shear[, center])
          * 
-         * @param shear - the horziontal and vertical shear factors as a point
+         * @param shear - the horizontal and vertical shear factors as a point
          */
         shear(shear: Point, center?: Point): void
 
@@ -2406,7 +2406,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(skew[, center])
          * 
-         * @param skew - the horziontal and vertical skew angles in degrees
+         * @param skew - the horizontal and vertical skew angles in degrees
          */
         skew(skew: Point, center?: Point): void
 
@@ -7179,7 +7179,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(shear[, center])
          * 
-         * @param shear - the horziontal and vertical shear factors as a point
+         * @param shear - the horizontal and vertical shear factors as a point
          */
         shear(shear: Point, center?: Point): void
 
@@ -7200,7 +7200,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(skew[, center])
          * 
-         * @param skew - the horziontal and vertical skew angles in degrees
+         * @param skew - the horizontal and vertical skew angles in degrees
          */
         skew(skew: Point, center?: Point): void
 
