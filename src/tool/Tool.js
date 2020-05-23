@@ -225,7 +225,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
      * {@grouptitle Keyboard Event Handlers}
      *
      * The function to be called when the user presses a key on the keyboard.
-     * The function receives a {@link KeyEvent} object which contains
+     * The function receives a {@link ToolKeyEvent} object which contains
      * information about the keyboard event.
      *
      * If the function returns `false`, the keyboard event will be prevented
@@ -259,7 +259,7 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
 
     /**
      * The function to be called when the user releases a key on the keyboard.
-     * The function receives a {@link KeyEvent} object which contains
+     * The function receives a {@link ToolKeyEvent} object which contains
      * information about the keyboard event.
      *
      * If the function returns `false`, the keyboard event will be prevented
