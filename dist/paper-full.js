@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 21:42:04 2020 +0200
+ * Date: Sat May 23 22:01:12 2020 +0200
  *
  ***
  *
@@ -17231,7 +17231,10 @@ Base.exports.PaperScript = function() {
 				sourcesContent: [source]
 			};
 		}
-		if (paperFeatures.operatorOverloading !== false) {
+		if (
+			paperFeatures.operatorOverloading !== false ||
+			paperFeatures.moduleExports !== false
+		) {
 			walkAST(parse(code, {
 				ranges: true,
 				preserveParens: true,

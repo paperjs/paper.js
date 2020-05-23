@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- PaperScript: Make `options.paperFeatures.moduleExports` work independently
+  from `options.paperFeatures.operatorOverloading`.
+
 ## `0.12.6`
 
 ### Added
