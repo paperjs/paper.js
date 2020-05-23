@@ -158,6 +158,16 @@ test('Import SVG switch', function(assert) {
     });
 });
 
+test('Import SVG string with leading line-breaks', function() {
+    var svg = '\n<svg xmlns="http://www.w3.org/2000/svg">\n  <rect fill="red" width="100" height="100"/>\n</svg>\n'
+    var imported = paper.project.importSVG(svg);
+    equals(imported.children.length, 1);
+    equals(imported.firstChild, new Shape.Rectangle({
+        size: [100, 100],
+        fillColor: 'red'
+    }));
+});
+
 function importSVG(assert, url, message, options) {
     var done = assert.async();
     project.importSVG(url, {
