@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.5 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Dec 15 21:25:00 2019 +0100
+ * Date: Sat May 23 15:51:37 2020 +0200
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.4",
+	version: "0.12.5",
 
 	getView: function() {
 		var project = this.project;
@@ -4683,7 +4683,7 @@ new function() {
 		}
 
 		var blendMode = this._blendMode,
-			opacity = this._opacity,
+			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
 			direct = normalBlend && opacity === 1
@@ -5346,7 +5346,7 @@ var Raster = Item.extend({
 						? source
 						: null;
 			if (object && object !== Item.NO_INSERT) {
-				if (object.getContent || object.naturalHeight != null) {
+				if (object.getContext || object.naturalHeight != null) {
 					image = object;
 				} else if (object) {
 					var size = Size.read(arguments);
@@ -5722,7 +5722,7 @@ var Raster = Item.extend({
 	_draw: function(ctx, param, viewMatrix) {
 		var element = this.getElement();
 		if (element && element.width > 0 && element.height > 0) {
-			ctx.globalAlpha = this._opacity;
+			ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
 
 			this._setStyles(ctx, param, viewMatrix);
 
@@ -7691,10 +7691,13 @@ var CurveLocation = Base.extend({
 		this._intersection = this._next = this._previous = null;
 	},
 
-	_setCurve: function(curve) {
-		var path = curve._path;
+	_setPath: function(path) {
 		this._path = path;
 		this._version = path ? path._version : 0;
+	},
+
+	_setCurve: function(curve) {
+		this._setPath(curve._path);
 		this._curve = curve;
 		this._segment = null;
 		this._segment1 = curve._segment1;
@@ -7702,7 +7705,14 @@ var CurveLocation = Base.extend({
 	},
 
 	_setSegment: function(segment) {
-		this._setCurve(segment.getCurve());
+		var curve = segment.getCurve();
+		if (curve) {
+			this._setCurve(curve);
+		} else {
+			this._setPath(segment._path);
+			this._segment1 = segment;
+			this._segment2 = null;
+		}
 		this._segment = segment;
 		this._time = segment === this._segment1 ? 0 : 1;
 		this._point = segment._point.clone();
@@ -7908,7 +7918,7 @@ var CurveLocation = Base.extend({
 				offset = Curve.getLength(v,
 					end && count ? roots[count - 1] : 0,
 					!end && count ? roots[0] : 1);
-			offsets.push(count ? offset : offset / 64);
+			offsets.push(count ? offset : offset / 32);
 		}
 
 		function isInRange(angle, min, max) {
@@ -8267,7 +8277,7 @@ var PathItem = Item.extend({
 				matched = [],
 				count = 0;
 			ok = true;
-			var boundsOverlaps = CollisionDetection.findBoundsOverlaps(paths1, paths2, Numerical.GEOMETRIC_EPSILON);
+			var boundsOverlaps = CollisionDetection.findItemBoundsCollisions(paths1, paths2, Numerical.GEOMETRIC_EPSILON);
 			for (var i1 = length1 - 1; i1 >= 0 && ok; i1--) {
 				var path1 = paths1[i1];
 				ok = false;
@@ -9793,13 +9803,16 @@ statics: {
 		}
 
 		var length = segments.length - (closed ? 0 : 1);
-		for (var i = 1; i < length; i++)
-			addJoin(segments[i], join);
-		if (closed) {
-			addJoin(segments[0], join);
-		} else if (length > 0) {
-			addCap(segments[0], cap);
-			addCap(segments[segments.length - 1], cap);
+		if (length > 0) {
+			for (var i = 1; i < length; i++) {
+				addJoin(segments[i], join);
+			}
+			if (closed) {
+				addJoin(segments[0], join);
+			} else {
+				addCap(segments[0], cap);
+				addCap(segments[segments.length - 1], cap);
+			}
 		}
 		return bounds;
 	},
@@ -10881,8 +10894,8 @@ PathItem.inject(new function() {
 
 			if (inter) {
 				collect(inter);
-				while (inter && inter._prev)
-					inter = inter._prev;
+				while (inter && inter._previous)
+					inter = inter._previous;
 				collect(inter, start);
 			}
 			return crossings;
@@ -12774,7 +12787,7 @@ var View = Base.extend(Emitter, {
 		if (window && element) {
 			this._id = element.getAttribute('id');
 			if (this._id == null)
-				element.setAttribute('id', this._id = 'view-' + View._id++);
+				element.setAttribute('id', this._id = 'paper-view-' + View._id++);
 			DomEvent.add(element, this._viewEvents);
 			var none = 'none';
 			DomElement.setPrefixed(element.style, {
@@ -15539,8 +15552,12 @@ new function() {
 
 		function onLoad(svg) {
 			try {
-				var node = typeof svg === 'object' ? svg : new self.DOMParser()
-						.parseFromString(svg, 'image/svg+xml');
+				var node = typeof svg === 'object'
+					? svg
+					: new self.DOMParser().parseFromString(
+						svg,
+						'image/svg+xml'
+					);
 				if (!node.nodeName) {
 					node = null;
 					throw new Error('Unsupported SVG source: ' + source);
@@ -15567,7 +15584,7 @@ new function() {
 			}
 		}
 
-		if (typeof source === 'string' && !/^.*</.test(source)) {
+		if (typeof source === 'string' && !/^[\s\S]*</.test(source)) {
 			var node = document.getElementById(source);
 			if (node) {
 				onLoad(node);

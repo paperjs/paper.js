@@ -1,5 +1,23 @@
 # Change Log
 
+## `0.12.5`
+
+### Changed
+
+- Use `'paper-'` prefix in generated view ids.
+
+### Fixed
+
+- Fix `new Raster(HTMLCanvasElement)` constructor (#1745).
+- Handle `CurveLocation` on paths with only one segment.
+- Fix recently introduced error in `CompoundPath.compare()` (#1769).
+- Clamp opacity values to [0, 1] (#1814).
+- Support closed `Path` items with blend mode and no segments (#1763).
+- Fix error in `getCrossingSegments()` (#1773).
+- SVG Import: Support SVG strings with leading line-breaks (#1813).
+- PaperScript: Add option to control operator overloading.
+- Docs: Improve documentation for `Raster#drawImage(CanvasImageSource)` (#1784).
+
 ## `0.12.4`
 
 ### Added

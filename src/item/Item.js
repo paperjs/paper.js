@@ -2933,7 +2933,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * defined in such a way, e.g. if one is a descendant of the other.
      */
     _getOrder: function(item) {
-        // Private method that produces a list of anchestors, starting with the
+        // Private method that produces a list of ancestors, starting with the
         // root and ending with the actual element as the last entry.
         function getList(item) {
             var list = [];
@@ -3465,7 +3465,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#shear
      * @function
-     * @param {Point} shear the horziontal and vertical shear factors as a point
+     * @param {Point} shear the horizontal and vertical shear factors as a point
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(shear[, center])
      */
@@ -3487,7 +3487,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *
      * @name Item#skew
      * @function
-     * @param {Point} skew the horziontal and vertical skew angles in degrees
+     * @param {Point} skew the horizontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(skew[, center])
      */
@@ -4365,7 +4365,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // Exclude Raster items since they never draw a stroke and handle
         // opacity by themselves (they also don't call _setStyles)
         var blendMode = this._blendMode,
-            opacity = this._opacity,
+            opacity = Numerical.clamp(this._opacity, 0, 1),
             normalBlend = blendMode === 'normal',
             nativeBlend = BlendMode.nativeModes[blendMode],
             // Determine if we can draw directly, or if we need to draw into a

@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.4 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.5 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sun Dec 15 21:25:00 2019 +0100
+ * Date: Sat May 23 15:51:37 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -2385,7 +2385,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(shear[, center])
          * 
-         * @param shear - the horziontal and vertical shear factors as a point
+         * @param shear - the horizontal and vertical shear factors as a point
          */
         shear(shear: Point, center?: Point): void
 
@@ -2406,7 +2406,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(skew[, center])
          * 
-         * @param skew - the horziontal and vertical skew angles in degrees
+         * @param skew - the horizontal and vertical skew angles in degrees
          */
         skew(skew: Point, center?: Point): void
 
@@ -5412,7 +5412,7 @@ declare namespace paper {
          * @param point - the offset of the image as a point in pixel
          * coordinates
          */
-        drawImage(image: HTMLImageElement | HTMLCanvasElement, point: Point): void
+        drawImage(image: CanvasImageSource, point: Point): void
 
         /** 
          * Calculates the average color of the image within the given path,
@@ -7181,7 +7181,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(shear[, center])
          * 
-         * @param shear - the horziontal and vertical shear factors as a point
+         * @param shear - the horizontal and vertical shear factors as a point
          */
         shear(shear: Point, center?: Point): void
 
@@ -7200,7 +7200,7 @@ declare namespace paper {
          * 
          * @see Matrix#shear(skew[, center])
          * 
-         * @param skew - the horziontal and vertical skew angles in degrees
+         * @param skew - the horizontal and vertical skew angles in degrees
          */
         skew(skew: Point, center?: Point): void
 

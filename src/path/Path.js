@@ -2793,15 +2793,18 @@ statics: {
         }
 
         var length = segments.length - (closed ? 0 : 1);
-        for (var i = 1; i < length; i++)
-            addJoin(segments[i], join);
-        if (closed) {
-            // Go back to the beginning
-            addJoin(segments[0], join);
-        } else if (length > 0) {
-            // Handle caps on open paths
-            addCap(segments[0], cap);
-            addCap(segments[segments.length - 1], cap);
+        if (length > 0) {
+            for (var i = 1; i < length; i++) {
+                addJoin(segments[i], join);
+            }
+            if (closed) {
+                // Go back to the beginning
+                addJoin(segments[0], join);
+            } else {
+                // Handle caps on open paths
+                addCap(segments[0], cap);
+                addCap(segments[segments.length - 1], cap);
+            }
         }
         return bounds;
     },

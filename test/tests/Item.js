@@ -735,23 +735,54 @@ test('Item#blendMode in a transformed Group', function() {
         blendMode: 'screen'
     });
 
-    var raster = layer.rasterize(72);
+    var raster = layer.rasterize(72, false);
     equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
-            'Top left pixel should be red:');
+            'Top left pixel should be red');
     equals(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
-            'Middle center pixel should be yellow:');
+            'Middle center pixel should be yellow');
 
-    raster.remove();
     path2.position = [0, 0];
 
     var group = new Group(path2);
     group.position = [50, 50];
 
-    var raster = layer.rasterize(72);
+    var raster = layer.rasterize(72, false);
     equals(raster.getPixel(0, 0), new Color(1, 0, 0, 1),
-            'Top left pixel should be red:');
+            'Top left pixel should be red');
     equals(raster.getPixel(50, 50), new Color(1, 1, 0, 1),
-            'Middle center pixel should be yellow:');
+            'Middle center pixel should be yellow');
+});
+
+test('Item#opacity', function() {
+    var layer = new Layer();
+    var background = new Path.Rectangle({
+        size: [100, 100],
+        fillColor: 'white'
+    });
+
+    var circle = new Path.Circle({
+        radius: 25,
+        center: [50, 50],
+        fillColor: 'red'
+    });
+
+    const red = new Color(1, 0, 0, 1)
+    const white = new Color(1, 1, 1, 1)
+
+    equals(layer.rasterize(72, false).getPixel(50, 50), red,
+        'Center pixel should be red');
+    circle.opacity = 0;
+    equals(layer.rasterize(72, false).getPixel(50, 50), white,
+        'Center pixel should be white');
+    circle.opacity = -1;
+    equals(layer.rasterize(72, false).getPixel(50, 50), white,
+        'Center pixel should be white');
+    circle.opacity = 1;
+    equals(layer.rasterize(72, false).getPixel(50, 50), red,
+        'Center pixel should be red');
+    circle.opacity = 2;
+    equals(layer.rasterize(72, false).getPixel(50, 50), red,
+        'Center pixel should be red');
 });
 
 test('Item#applyMatrix', function() {

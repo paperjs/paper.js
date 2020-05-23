@@ -1,4 +1,5 @@
 language: node_js
+os: linux
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 # Stable version is temporarily disabled due to a bug in resemblejs package with
@@ -7,9 +8,8 @@ node_js:
 - 11
 - 10
 - 8
-sudo: false
 env:
-  matrix:
+  jobs:
   - CXX=g++-4.9
   global:
   - secure: o1fJ/suqcL0aX6PiOmip602dAM6Q6O5oU/BDhSueUOnYknbzWfWGOdsoMun0UYhvvdcXU4sHGH+wm0VeXa2igaxryx36uMxPsXB3mO4sATo/QlWX/r3wLCg2CViXhykE5l2gP45OHh5DJgKWs51cwGLDZ9y9JHlXSP/xIGBNkMGVC7qvyhTfEb0EVvirn9b7Kt8fmD8KYgNDrsmcR3d42f4jitt4Di9LsRyOG+SCXZfI3u831tHo1sgZuGK2rxx2SdEclIblEUCkFHLp0HPjq1+032Cg5D7HNloSCPfoSwcY+rOWHubNXhmXgZHFeSkaVglkdWlDE3NiyjNlYwc4m9zqfCip8jw/jUeSfFVtruncEumGLLBxE/aMBQjAQLTq24juabm3qZNgrNCFeFo+XNyx2Oz1jllGve6Vuu8Qg0wFqE+qlZKnxNbu5/3IOIawOE1uhaOG8oSuvlpQuNrHFIMEfzh2UKPiUHbElUDyoTzHlrhQr7ZSPWPJax4uIPOTscpK4Yks7FBS4I0Vnuhw41f/bVR0kLE9jNAQoUpp47ma9O2Sw9fhOwEiopVrADzARUiy0eNeLx8F2F73L0wyPBOtEL1cfCr5oY+yZ5ZfDYb/L8/GIlbMnljYxVbXesmwd8RFi8X2HUNnEmusjih9oWazVuZpiFfUO0oeu15JTBg=
