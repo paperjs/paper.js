@@ -420,7 +420,10 @@ Base.exports.PaperScript = function() {
                 sourcesContent: [source]
             };
         }
-        if (paperFeatures.operatorOverloading !== false) {
+        if (
+            paperFeatures.operatorOverloading !== false ||
+            paperFeatures.moduleExports !== false
+        ) {
             // Now do the parsing magic
             walkAST(parse(code, {
                 ranges: true,
