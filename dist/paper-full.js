@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.5 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.6 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 15:51:37 2020 +0200
+ * Date: Sat May 23 20:53:04 2020 +0200
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.5",
+	version: "0.12.6",
 
 	getView: function() {
 		var project = this.project;
@@ -17054,20 +17054,7 @@ Base.exports.PaperScript = function() {
 			code = code.substring(0, start) + str + code.substring(end);
 		}
 
-		function walkAST(node, parent) {
-			if (!node)
-				return;
-			for (var key in node) {
-				if (key === 'range' || key === 'loc')
-					continue;
-				var value = node[key];
-				if (Array.isArray(value)) {
-					for (var i = 0, l = value.length; i < l; i++)
-						walkAST(value[i], node);
-				} else if (value && typeof value === 'object') {
-					walkAST(value, node);
-				}
-			}
+		function handleOverloading(node, parent) {
 			switch (node.type) {
 			case 'UnaryExpression':
 				if (node.operator in unaryOperators
@@ -17129,6 +17116,11 @@ Base.exports.PaperScript = function() {
 					}
 				}
 				break;
+			}
+		}
+
+		function handleExports(node) {
+			switch (node.type) {
 			case 'ExportDefaultDeclaration':
 				replaceCode({
 					range: [node.start, node.declaration.start]
@@ -17160,6 +17152,29 @@ Base.exports.PaperScript = function() {
 					}
 				}
 				break;
+			}
+		}
+
+		function walkAST(node, parent, paperFeatures) {
+			if (node) {
+				for (var key in node) {
+					if (key !== 'range' && key !== 'loc') {
+						var value = node[key];
+						if (Array.isArray(value)) {
+							for (var i = 0, l = value.length; i < l; i++) {
+								walkAST(value[i], node, paperFeatures);
+							}
+						} else if (value && typeof value === 'object') {
+							walkAST(value, node, paperFeatures);
+						}
+					}
+				}
+				if (paperFeatures.operatorOverloading !== false) {
+					handleOverloading(node, parent);
+				}
+				if (paperFeatures.moduleExports !== false) {
+					handleExports(node);
+				}
 			}
 		}
 
@@ -17221,7 +17236,7 @@ Base.exports.PaperScript = function() {
 				ranges: true,
 				preserveParens: true,
 				sourceType: 'module'
-			}));
+			}), null, paperFeatures);
 		}
 		if (map) {
 			if (offsetCode) {
