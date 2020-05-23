@@ -188,27 +188,8 @@ Base.exports.PaperScript = function() {
             code = code.substring(0, start) + str + code.substring(end);
         }
 
-        // Recursively walks the AST and replaces the code of certain nodes
-        function walkAST(node, parent) {
-            if (!node)
-                return;
-            // The easiest way to walk through the whole AST is to simply loop
-            // over each property of the node and filter out fields we don't
-            // need to consider...
-            for (var key in node) {
-                if (key === 'range' || key === 'loc')
-                    continue;
-                var value = node[key];
-                if (Array.isArray(value)) {
-                    for (var i = 0, l = value.length; i < l; i++)
-                        walkAST(value[i], node);
-                } else if (value && typeof value === 'object') {
-                    // We cannot use Base.isPlainObject() for these since
-                    // Acorn.js uses its own internal prototypes now.
-                    walkAST(value, node);
-                }
-            }
-            switch (node.type) {
+        function handleOverloading(node, parent) {
+			switch (node.type) {
             case 'UnaryExpression': // -a
                 if (node.operator in unaryOperators
                         && node.argument.type !== 'Literal') {
@@ -291,6 +272,11 @@ Base.exports.PaperScript = function() {
                     }
                 }
                 break;
+            }
+        }
+
+        function handleExports(node) {
+			switch (node.type) {
             case 'ExportDefaultDeclaration':
                 // Convert `export default` to `module.exports = ` statements:
                 replaceCode({
@@ -325,6 +311,35 @@ Base.exports.PaperScript = function() {
                     }
                 }
                 break;
+            }
+        }
+
+        // Recursively walks the AST and replaces the code of certain nodes
+        function walkAST(node, parent, paperFeatures) {
+            if (node) {
+                // The easiest way to walk through the whole AST is to simply
+                // loop over each property of the node and filter out fields we
+                // don't need to consider...
+                for (var key in node) {
+                    if (key !== 'range' && key !== 'loc') {
+                        var value = node[key];
+                        if (Array.isArray(value)) {
+                            for (var i = 0, l = value.length; i < l; i++) {
+                                walkAST(value[i], node, paperFeatures);
+                            }
+                        } else if (value && typeof value === 'object') {
+                            // Don't use Base.isPlainObject() for these since
+                            // Acorn.js uses its own internal prototypes now.
+                            walkAST(value, node, paperFeatures);
+                        }
+                    }
+                }
+                if (paperFeatures.operatorOverloading !== false) {
+                    handleOverloading(node, parent);
+                }
+                if (paperFeatures.moduleExports !== false) {
+                    handleExports(node);
+                }
             }
         }
 
@@ -411,7 +426,7 @@ Base.exports.PaperScript = function() {
                 ranges: true,
                 preserveParens: true,
                 sourceType: 'module'
-            }));
+            }), null, paperFeatures);
         }
         if (map) {
             if (offsetCode) {
