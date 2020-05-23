@@ -4365,7 +4365,7 @@ new function() { // Injection scope for hit-test functions shared with project
         // Exclude Raster items since they never draw a stroke and handle
         // opacity by themselves (they also don't call _setStyles)
         var blendMode = this._blendMode,
-            opacity = this._opacity,
+            opacity = Numerical.clamp(this._opacity, 0, 1),
             normalBlend = blendMode === 'normal',
             nativeBlend = BlendMode.nativeModes[blendMode],
             // Determine if we can draw directly, or if we need to draw into a

@@ -818,7 +818,7 @@ var Raster = Item.extend(/** @lends Raster# */{
         if (element && element.width > 0 && element.height > 0) {
             // Handle opacity for Rasters separately from the rest, since
             // Rasters never draw a stroke. See Item#draw().
-            ctx.globalAlpha = this._opacity;
+            ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
 
             // Call _setStyles() to make sure shadow is drawn (#1437).
             this._setStyles(ctx, param, viewMatrix);
