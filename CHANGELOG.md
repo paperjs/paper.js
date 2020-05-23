@@ -1,10 +1,16 @@
 # Change Log
 
+## `0.12.6`
+
+### Added
+
+- PaperScript: Add option to control module exports conversion.
+
 ## `0.12.5`
 
-### Changed
+### Added
 
-- Use `'paper-'` prefix in generated view ids.
+- PaperScript: Add option to control operator overloading.
 
 ### Fixed
 
@@ -15,8 +21,11 @@
 - Support closed `Path` items with blend mode and no segments (#1763).
 - Fix error in `getCrossingSegments()` (#1773).
 - SVG Import: Support SVG strings with leading line-breaks (#1813).
-- PaperScript: Add option to control operator overloading.
 - Docs: Improve documentation for `Raster#drawImage(CanvasImageSource)` (#1784).
+
+### Changed
+
+- Use `'paper-'` prefix in generated view ids.
 
 ## `0.12.4`
 
