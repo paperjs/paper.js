@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## `0.12.7`
 
 ### Fixed
 
