@@ -2,14 +2,14 @@
  * Paper.js v0.12.6-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & https://puckey.studio/
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  *
- * Date: Sat May 23 22:06:29 2020 +0200
+ * Date: Sat May 23 22:24:42 2020 +0200
  *
  * This is an auto-generated type definition.
  */
