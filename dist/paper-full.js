@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 13:40:07 2020 +0200
+ * Date: Sat May 23 14:08:18 2020 +0200
  *
  ***
  *
@@ -17015,7 +17015,8 @@ Base.exports.PaperScript = function() {
 			return '';
 		options = options || {};
 
-		var insertions = [];
+		var paperFeatures = options.paperFeatures || {},
+			insertions = [];
 
 		function getOffset(offset) {
 			for (var i = 0, l = insertions.length; i < l; i++) {
@@ -17212,11 +17213,13 @@ Base.exports.PaperScript = function() {
 				sourcesContent: [source]
 			};
 		}
-		walkAST(parse(code, {
-			ranges: true,
-			preserveParens: true,
-			sourceType: 'module'
-		}));
+		if (paperFeatures.operatorOverloading !== false) {
+			walkAST(parse(code, {
+				ranges: true,
+				preserveParens: true,
+				sourceType: 'module'
+			}));
+		}
 		if (map) {
 			if (offsetCode) {
 				code = new Array(offset + 1).join('\n') + code;
