@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 21:43:21 2020 +0900
+ * Date: Sat May 23 14:48:39 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -5412,7 +5412,7 @@ declare namespace paper {
          * @param point - the offset of the image as a point in pixel
          * coordinates
          */
-        drawImage(image: HTMLImageElement | HTMLCanvasElement, point: Point): void
+        drawImage(image: CanvasImageSource, point: Point): void
 
         /** 
          * Calculates the average color of the image within the given path,
