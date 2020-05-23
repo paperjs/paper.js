@@ -4,20 +4,22 @@
 
 ### Fixed
 
-- PaperScript: Make `options.paperFeatures.moduleExports` work independently
-  from `options.paperFeatures.operatorOverloading`.
+- PaperScript: Actually make `options.paperFeatures.moduleExports` work
+  independently from `options.paperFeatures.operatorOverloading`.
 
 ## `0.12.6`
 
 ### Added
 
-- PaperScript: Add option to control module exports conversion.
+- PaperScript: Add option `options.paperFeatures.moduleExports` to control
+  module exports conversion.
 
 ## `0.12.5`
 
 ### Added
 
-- PaperScript: Add option to control operator overloading.
+- PaperScript: Add option `options.paperFeatures.operatorOverloading` to control
+  operator overloading.
 
 ### Fixed
 
