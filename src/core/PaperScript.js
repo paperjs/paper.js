@@ -346,15 +346,16 @@ Base.exports.PaperScript = function() {
         }
 
         var url = options.url || '',
-            agent = paper.agent,
-            version = agent.versionNumber,
-            offsetCode = false,
             sourceMaps = options.sourceMaps,
+            paperFeatures = options.paperFeatures || {},
             // Include the original code in the sourceMap if there is no linked
             // source file so the debugger can still display it correctly.
             source = options.source || code,
-            lineBreaks = /\r\n|\n|\r/mg,
             offset = options.offset || 0,
+            agent = paper.agent,
+            version = agent.versionNumber,
+            offsetCode = false,
+            lineBreaks = /\r\n|\n|\r/mg,
             map;
         // TODO: Verify these browser versions for source map support, and check
         // other browsers.
@@ -404,12 +405,14 @@ Base.exports.PaperScript = function() {
                 sourcesContent: [source]
             };
         }
-        // Now do the parsing magic
-        walkAST(parse(code, {
-            ranges: true,
-            preserveParens: true,
-            sourceType: 'module'
-        }));
+        if (paperFeatures.operatorOverloading !== false) {
+            // Now do the parsing magic
+            walkAST(parse(code, {
+                ranges: true,
+                preserveParens: true,
+                sourceType: 'module'
+            }));
+        }
         if (map) {
             if (offsetCode) {
                 // Adjust the line offset of the resulting code if required.
