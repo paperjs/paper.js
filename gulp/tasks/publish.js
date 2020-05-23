@@ -105,6 +105,7 @@ packages.forEach(function(name) {
             .pipe(git.commit(releaseMessage, opts))
             .pipe(git.tag('v' + options.version, releaseMessage, opts))
             .pipe(git.push('origin', 'master', { args: '--tags', cwd: path }))
+            .pipe(shell('echo <%= file.path %>'))
             .pipe(shell('npm publish', opts));
     });
 });
