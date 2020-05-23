@@ -55,7 +55,7 @@
     "del": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^2.8.1",
+    "gulp-git-streamed": "^2.10.1",
     "gulp-jshint": "^2.1.0",
     "gulp-json-editor": "^2.5.2",
     "gulp-prepro": "^2.4.0",
