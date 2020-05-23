@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.12.6",
+  "version": "0.12.7",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -9,7 +9,7 @@
     "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
-  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@studiomoniker.com> (http://studiomoniker.com)"],
+  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"],
   "main": "dist/paper-full.js",
   "types": "dist/paper.d.ts",
   "scripts": {
@@ -45,7 +45,7 @@
     "del": "^4.1.0",
     "gulp": "^3.9.1",
     "gulp-cached": "^1.1.0",
-    "gulp-git-streamed": "^2.8.1",
+    "gulp-git-streamed": "^2.10.1",
     "gulp-jshint": "^2.1.0",
     "gulp-json-editor": "^2.5.2",
     "gulp-prepro": "^2.4.0",

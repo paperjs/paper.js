@@ -1,22 +1,22 @@
 /*!
- * Paper.js v0.12.6 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.7 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
- * Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
- * http://scratchdisk.com/ & https://puckey.studio/
+ * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+ * http://juerglehni.com/ & https://puckey.studio/
  *
  * Distributed under the MIT license. See LICENSE file for details.
  *
  * All rights reserved.
  *
- * Date: Sat May 23 20:53:04 2020 +0200
+ * Date: Sat May 23 23:05:09 2020 +0200
  *
  ***
  *
  * Straps.js - Class inheritance library with support for bean-style accessors
  *
- * Copyright (c) 2006 - 2019 Juerg Lehni
- * http://scratchdisk.com/
+ * Copyright (c) 2006 - 2020 Jürg Lehni
+ * http://juerglehni.com/
  *
  * Distributed under the MIT license.
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.6",
+	version: "0.12.7",
 
 	getView: function() {
 		var project = this.project;
@@ -17231,7 +17231,10 @@ Base.exports.PaperScript = function() {
 				sourcesContent: [source]
 			};
 		}
-		if (paperFeatures.operatorOverloading !== false) {
+		if (
+			paperFeatures.operatorOverloading !== false ||
+			paperFeatures.moduleExports !== false
+		) {
 			walkAST(parse(code, {
 				ranges: true,
 				preserveParens: true,

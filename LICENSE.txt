@@ -1,5 +1,5 @@
-Copyright (c) 2011 - 2019, Juerg Lehni & Jonathan Puckey
-http://scratchdisk.com/ & https://puckey.studio/
+Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
+http://juerglehni.com/ & https://puckey.studio/
 All rights reserved.
 
 The MIT License (MIT)
