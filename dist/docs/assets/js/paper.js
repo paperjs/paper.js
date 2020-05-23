@@ -17015,8 +17015,7 @@ Base.exports.PaperScript = function() {
 			return '';
 		options = options || {};
 
-		var paperFeatures = options.paperFeatures || {},
-			insertions = [];
+		var insertions = [];
 
 		function getOffset(offset) {
 			for (var i = 0, l = insertions.length; i < l; i++) {
@@ -17176,13 +17175,14 @@ Base.exports.PaperScript = function() {
 		}
 
 		var url = options.url || '',
+			sourceMaps = options.sourceMaps,
+			paperFeatures = options.paperFeatures || {},
+			source = options.source || code,
+			offset = options.offset || 0,
 			agent = paper.agent,
 			version = agent.versionNumber,
 			offsetCode = false,
-			sourceMaps = options.sourceMaps,
-			source = options.source || code,
 			lineBreaks = /\r\n|\n|\r/mg,
-			offset = options.offset || 0,
 			map;
 		if (sourceMaps && (agent.chrome && version >= 30
 				|| agent.webkit && version >= 537.76
