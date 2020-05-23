@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 14:54:51 2020 +0200
+ * Date: Sat May 23 15:41:18 2020 +0200
  *
  ***
  *
@@ -4683,7 +4683,7 @@ new function() {
 		}
 
 		var blendMode = this._blendMode,
-			opacity = this._opacity,
+			opacity = Numerical.clamp(this._opacity, 0, 1),
 			normalBlend = blendMode === 'normal',
 			nativeBlend = BlendMode.nativeModes[blendMode],
 			direct = normalBlend && opacity === 1
@@ -5722,7 +5722,7 @@ var Raster = Item.extend({
 	_draw: function(ctx, param, viewMatrix) {
 		var element = this.getElement();
 		if (element && element.width > 0 && element.height > 0) {
-			ctx.globalAlpha = this._opacity;
+			ctx.globalAlpha = Numerical.clamp(this._opacity, 0, 1);
 
 			this._setStyles(ctx, param, viewMatrix);
 
