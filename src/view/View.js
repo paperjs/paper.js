@@ -45,7 +45,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
             // Generate an id for this view / element if it does not have one
             this._id = element.getAttribute('id');
             if (this._id == null)
-                element.setAttribute('id', this._id = 'view-' + View._id++);
+                element.setAttribute('id', this._id = 'paper-view-' + View._id++);
             // Install event handlers
             DomEvent.add(element, this._viewEvents);
             // Borrowed from Hammer.js:
