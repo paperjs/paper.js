@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 16:24:30 2020 +0200
+ * Date: Sat May 23 20:53:04 2020 +0200
  *
  * This is an auto-generated type definition.
  */
