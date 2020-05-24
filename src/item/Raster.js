@@ -71,15 +71,6 @@ var Raster = Item.extend(/** @lends Raster# */{
      *
      * // Create the raster:
      * var raster = new Raster(imageElement);
-     *
-     * @example {@paperscript height=300}
-     * var raster = new Raster({
-     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
-     *     position: view.center
-     * });
-     *
-     * raster.scale(0.5);
-     * raster.rotate(10);
      */
     /**
      * Creates a new empty raster of the given size, and places it in the
@@ -105,6 +96,23 @@ var Raster = Item.extend(/** @lends Raster# */{
      *         raster.setPixel(i, j, Color.random());
      *     }
      * }
+     */
+    /**
+     * Creates a new raster from an object description, and places it in the
+     * active layer.
+     *
+     * @name Raster#initialize
+     * @param {Object} object an object containing properties to be set on the
+     *     raster
+     *
+     * @example {@paperscript height=300}
+     * var raster = new Raster({
+     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
+     *     position: view.center
+     * });
+     *
+     * raster.scale(0.5);
+     * raster.rotate(10);
      */
     initialize: function Raster(source, position) {
         // Support three forms of item initialization:
