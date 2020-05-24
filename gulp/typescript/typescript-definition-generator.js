@@ -332,8 +332,7 @@ function getMethodReturnType(method) {
     // on the custom tag `@tsReturnThis`, placed in the description of the
     // method. When this tag is present, we ignore the common return type and
     // use typescript `this` type instead.
-    if (method.comment.tags.find(it => it.title === 'tsReturnThis'))
-    {
+    if (method.comment.tags.find(it => it.title === 'tsReturnThis')) {
         return 'this';
     }
     return method.returnType || method.returns.length > 0 && method.returns[0].type;
