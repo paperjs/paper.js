@@ -250,7 +250,7 @@ new function() { // Injection scope for various item event handlers
      * @function
      * @param {Object} props
      * @return {Item} the item itself
-     * @tsReturnThis
+     * @chainable
      *
      * @example {@paperscript}
      * // Setting properties through an object literal
@@ -1612,7 +1612,7 @@ new function() { // Injection scope for various item event handlers
      * @param {Object} [options={ insert: true, deep: true }]
      *
      * @return {Item} the newly cloned item
-     * @tsReturnThis
+     * @chainable
      *
      * @example {@paperscript}
      * // Cloning items:
@@ -2665,7 +2665,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * add the item to
      * @return {Item} the item itself, if it was successfully added
-     * @tsReturnThis
+     * @chainable
      */
     addTo: function(owner) {
         return owner._insertItem(undefined, this);
@@ -2678,7 +2678,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * copy the item to
      * @return {Item} the new copy of the item, if it was successfully added
-     * @tsReturnThis
+     * @chainable
      */
     copyTo: function(owner) {
         return this.clone(false).addTo(owner);
@@ -4143,7 +4143,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
      *     sole argument
      * @return {Item} this item itself, so calls can be chained
-     * @tsReturnThis
+     * @chainable
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -4175,7 +4175,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
      *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
-     * @tsReturnThis
+     * @chainable
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -4235,7 +4235,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     'mouseenter', 'mouseleave'}
      * @param {Function} function the function to be detached
      * @return {Item} this item itself, so calls can be chained
-     * @tsReturnThis
+     * @chainable
      */
     /**
      * Detach one or more event handlers to the item.
@@ -4246,7 +4246,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
      *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
-     * @tsReturnThis
+     * @chainable
      */
 
     /**
