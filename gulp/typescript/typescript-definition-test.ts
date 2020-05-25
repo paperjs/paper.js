@@ -683,6 +683,14 @@ path.getWeightedTangentAt(0);
 path.getWeightedNormalAt(0);
 path.getCurvatureAt(0);
 path.getOffsetsWithTangent(point);
+path = path.set(object);
+path = path.clone();
+path = path.addTo(group);
+path = path.copyTo(group);
+path = path.on('', callback);
+path = path.on({});
+path = path.off('', callback);
+path = path.off({});
 
 
 //
