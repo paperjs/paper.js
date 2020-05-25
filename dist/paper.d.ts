@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 23:20:19 2020 +0200
+ * Date: Mon May 25 13:51:06 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1754,7 +1754,7 @@ declare namespace paper {
          * 
          * @return the item itself
          */
-        set(props: object): Item
+        set(props: object): this
 
         /** 
          * Clones the item within the same project and places the copy above the
@@ -1768,7 +1768,7 @@ declare namespace paper {
          * 
          * @return the newly cloned item
          */
-        clone(options?: object): Item
+        clone(options?: object): this
 
         /** 
          * Copies the content of the specified item over to this item.
@@ -2161,7 +2161,7 @@ declare namespace paper {
          * 
          * @return the item itself, if it was successfully added
          */
-        addTo(owner: Project | Layer | Group | CompoundPath): Item
+        addTo(owner: Project | Layer | Group | CompoundPath): this
 
         /** 
          * Clones the item and adds it to the specified owner, which can be either
@@ -2172,7 +2172,7 @@ declare namespace paper {
          * 
          * @return the new copy of the item, if it was successfully added
          */
-        copyTo(owner: Project | Layer | Group | CompoundPath): Item
+        copyTo(owner: Project | Layer | Group | CompoundPath): this
 
         /** 
          * If this is a group, layer or compound-path with only one child-item,
@@ -2486,7 +2486,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        on(type: string, callback: Function): Item
+        on(type: string, callback: Function): this
 
         /** 
          * Attaches one or more event handlers to the item.
@@ -2497,7 +2497,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        on(object: object): Item
+        on(object: object): this
 
         /** 
          * Detach an event handler from the item.
@@ -2509,7 +2509,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        off(type: string, callback: Function): Item
+        off(type: string, callback: Function): this
 
         /** 
          * Detach one or more event handlers to the item.
@@ -2520,7 +2520,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        off(object: object): Item
+        off(object: object): this
 
         /** 
          * Emit an event on the item.
@@ -5378,6 +5378,15 @@ declare namespace paper {
          *     placed
          */
         constructor(size: Size, position?: Point)
+
+        /** 
+         * Creates a new raster from an object description, and places it in the
+         * active layer.
+         * 
+         * @param object - an object containing properties to be set on the
+         *     raster
+         */
+        constructor(object: object)
 
         /** 
          * Extracts a part of the Raster's content as a sub image, and returns it as

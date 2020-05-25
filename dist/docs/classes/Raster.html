@@ -105,27 +105,6 @@ var imageElement = document.getElementById('art');
 // Create the raster:
 var raster = new Raster(imageElement);</code></pre>
 
-<h4>Example:</h4>
-
-<div class="paperscript split">
-
-<div class="buttons">
-<div class="button run">Run</div>
-</div>
-
-<script type="text/paperscript" canvas="canvas-1">
-var raster = new Raster({
-    source: 'http://assets.paperjs.org/images/marilyn.jpg',
-    position: view.center
-});
-
-raster.scale(0.5);
-raster.rotate(10);
-</script>
-<div class="canvas"><canvas width="516" height="300" id="canvas-1"></canvas></div>
-</div>
-
-
 </div>
 </div>
 </div>
@@ -181,7 +160,7 @@ raster.rotate(10);
 <div class="button run">Run</div>
 </div>
 
-<script type="text/paperscript" canvas="canvas-2">
+<script type="text/paperscript" canvas="canvas-1">
 var width = 100;
 var height = 100;
 
@@ -196,7 +175,68 @@ for (var i = 0; i < width; i++) {
     }
 }
 </script>
-<div class="canvas"><canvas width="516" height="150" id="canvas-2"></canvas></div>
+<div class="canvas"><canvas width="516" height="150" id="canvas-1"></canvas></div>
+</div>
+
+
+</div>
+</div>
+</div>
+	
+		
+<div id="raster-object" class="member">
+<div class="member-link">
+<a name="raster-object" href="#raster-object"><tt><b>Raster</b>(object)</tt></a>
+</div>
+<div class="member-description hidden">
+<div class="member-text">
+    <p>Creates a new raster from an object description, and places it in the active layer.</p>
+    
+    
+<ul class="member-list">
+	<h4>Parameters:</h4>
+	
+	<li>
+<tt>object:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;an object containing properties to be set on the  raster
+
+</li>
+	
+</ul>
+
+    
+	<ul class="member-list">
+		<h4>Returns:</h4>
+		
+			<li>
+<tt><a href="../classes/Raster.html"><tt>Raster</tt></a></tt>
+</li>
+
+		
+	</ul>
+
+
+
+    
+    <h4>Example:</h4>
+
+<div class="paperscript split">
+
+<div class="buttons">
+<div class="button run">Run</div>
+</div>
+
+<script type="text/paperscript" canvas="canvas-2">
+var raster = new Raster({
+    source: 'http://assets.paperjs.org/images/marilyn.jpg',
+    position: view.center
+});
+
+raster.scale(0.5);
+raster.rotate(10);
+</script>
+<div class="canvas"><canvas width="516" height="300" id="canvas-2"></canvas></div>
 </div>
 
 
