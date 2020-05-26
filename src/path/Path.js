@@ -2337,9 +2337,8 @@ new function() { // Scope for drawing
                             length = flattener.length,
                             from = -style.getDashOffset(), to,
                             i = 0;
-                        from = from % length;
-                        // Step backwards in the dash sequence first until the
-                        // from parameter is below 0.
+                        // Step backwards in the dash sequence (dash -- no-dash)
+                        // first until the from parameter is below 0.
                         while (from > 0) {
                             from -= getOffset(i--) + getOffset(i--);
                         }
