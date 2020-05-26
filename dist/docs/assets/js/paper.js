@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon May 25 13:51:06 2020 +0200
+ * Date: Tue May 26 11:49:14 2020 +0200
  *
  ***
  *
@@ -9458,7 +9458,6 @@ new function() {
 							length = flattener.length,
 							from = -style.getDashOffset(), to,
 							i = 0;
-						from = from % length;
 						while (from > 0) {
 							from -= getOffset(i--) + getOffset(i--);
 						}
