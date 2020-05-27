@@ -1208,19 +1208,32 @@ new function() { // Injection scope for various item event handlers
             var rotation = this.getRotation(),
                 decomposed = this._decomposed,
                 matrix = new Matrix(),
-                center = this.getPosition(true);
+                isZero = Numerical.isZero;
             // Create a matrix in which the scaling is applied in the non-
             // rotated state, so it is always applied before the rotation.
             // TODO: What about skewing? Do we need separately stored values for
             // these properties, and apply them separately from the matrix?
-            matrix.translate(center);
-            if (rotation)
-                matrix.rotate(rotation);
-            matrix.scale(scaling.x / current.x, scaling.y / current.y);
-            if (rotation)
-                matrix.rotate(-rotation);
-            matrix.translate(center.negate());
-            this.transform(matrix);
+            if (isZero(current.x) || isZero(current.y)) {
+                // If current scaling is destructive (at least one axis is 0),
+                // create a new matrix that applies the desired rotation,
+                // translation and scaling, without also preserving skewing.
+                matrix.translate(decomposed.translation);
+                if (rotation) {
+                    matrix.rotate(rotation);
+                }
+                matrix.scale(scaling.x, scaling.y);
+                this._matrix.set(matrix);
+            } else {
+                var center = this.getPosition(true);
+                matrix.translate(center);
+                if (rotation)
+                    matrix.rotate(rotation);
+                matrix.scale(scaling.x / current.x, scaling.y / current.y);
+                if (rotation)
+                    matrix.rotate(-rotation);
+                matrix.translate(center.negate());
+                this.transform(matrix);
+            }
             if (decomposed) {
                 decomposed.scaling = scaling;
                 this._decomposed = decomposed;
@@ -1244,7 +1257,7 @@ new function() { // Injection scope for various item event handlers
         // NOTE: calling initialize() also calls #_changed() for us, through its
         // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
-        matrix.initialize.apply(matrix, arguments);
+        matrix.set.apply(matrix, arguments);
     },
 
     /**

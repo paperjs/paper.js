@@ -961,6 +961,52 @@ test('Item#scaling, #rotation', function() {
             'shape2.bounds, setting shape2.scaling before shape2.rotation');
 });
 
+test('Item#scaling = 0 (#1816)', function() {
+    const circle = new Path.Circle({
+        radius: 100,
+        center: [100, 100],
+        fillColor: 'red',
+        applyMatrix: false
+    })
+
+    circle.translate(100)
+    circle.scaling = 0
+    equals(circle.bounds, new Rectangle(200, 200, 0, 0),
+            'circle.bounds, with scaling = 0');
+
+    circle.scaling = 1
+    equals(circle.bounds, new Rectangle(100, 100, 200, 200),
+            'circle.bounds, with scaling = 1');
+
+    circle.scaling = [0, 1]
+    equals(circle.bounds, new Rectangle(200, 100, 0, 200),
+            'circle.bounds, with scaling = [0, 1]');
+
+    circle.scaling = 1
+    equals(circle.bounds, new Rectangle(100, 100, 200, 200),
+            'circle.bounds, with scaling = 1');
+
+    const rect = new Path.Rectangle({
+        center: [100, 100],
+        size: [200, 100],
+        fillColor: 'red',
+        applyMatrix: false
+    })
+
+    rect.translate(100)
+    rect.rotate(45)
+
+    rect.scaling = 0
+    equals(rect.bounds, new Rectangle(200, 200, 0, 0),
+            'rect.bounds, with scaling = 0');
+    equals(rect.rotation, 45);
+
+    rect.scaling = 1
+    equals(rect.bounds, new Rectangle(93.93398, 93.93398, 212.13203, 212.13203),
+            'rect.bounds, with scaling = 1');
+    equals(rect.rotation, 45);
+});
+
 test('Item#position pivot point and caching (#1503)', function() {
     var item = Path.Rectangle(new Point(0, 0), new Size(20));
     item.pivot = new Point(0, 0);
