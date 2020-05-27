@@ -665,7 +665,7 @@ new function() {
                 var node = typeof svg === 'object'
                     ? svg
                     : new self.DOMParser().parseFromString(
-                        svg,
+                        svg.trim(),
                         'image/svg+xml'
                     );
                 if (!node.nodeName) {
