@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue May 26 11:49:14 2020 +0200
+ * Date: Wed May 27 18:04:59 2020 +0200
  *
  ***
  *
@@ -3660,15 +3660,25 @@ new function() {
 			var rotation = this.getRotation(),
 				decomposed = this._decomposed,
 				matrix = new Matrix(),
-				center = this.getPosition(true);
-			matrix.translate(center);
-			if (rotation)
-				matrix.rotate(rotation);
-			matrix.scale(scaling.x / current.x, scaling.y / current.y);
-			if (rotation)
-				matrix.rotate(-rotation);
-			matrix.translate(center.negate());
-			this.transform(matrix);
+				isZero = Numerical.isZero;
+			if (isZero(current.x) || isZero(current.y)) {
+				matrix.translate(decomposed.translation);
+				if (rotation) {
+					matrix.rotate(rotation);
+				}
+				matrix.scale(scaling.x, scaling.y);
+				this._matrix.set(matrix);
+			} else {
+				var center = this.getPosition(true);
+				matrix.translate(center);
+				if (rotation)
+					matrix.rotate(rotation);
+				matrix.scale(scaling.x / current.x, scaling.y / current.y);
+				if (rotation)
+					matrix.rotate(-rotation);
+				matrix.translate(center.negate());
+				this.transform(matrix);
+			}
 			if (decomposed) {
 				decomposed.scaling = scaling;
 				this._decomposed = decomposed;
@@ -3682,7 +3692,7 @@ new function() {
 
 	setMatrix: function() {
 		var matrix = this._matrix;
-		matrix.initialize.apply(matrix, arguments);
+		matrix.set.apply(matrix, arguments);
 	},
 
 	getGlobalMatrix: function(_dontClone) {
@@ -13126,7 +13136,7 @@ var View = Base.extend(Emitter, {
 
 	setMatrix: function() {
 		var matrix = this._matrix;
-		matrix.initialize.apply(matrix, arguments);
+		matrix.set.apply(matrix, arguments);
 	},
 
 	transform: function(matrix) {
@@ -14126,7 +14136,7 @@ var Tween = Base.extend(Emitter, {
 
 	update: function(progress) {
 		if (this.running) {
-			if (progress > 1) {
+			if (progress >= 1) {
 				progress = 1;
 				this.running = false;
 			}
@@ -14148,14 +14158,14 @@ var Tween = Base.extend(Emitter, {
 				this._setProperty(this._parsedKeys[key], value);
 			}
 
-			if (!this.running && this._then) {
-				this._then(this.object);
-			}
 			if (this.responds('update')) {
 				this.emit('update', new Base({
 					progress: progress,
 					factor: factor
 				}));
+			}
+			if (!this.running && this._then) {
+				this._then(this.object);
 			}
 		}
 		return this;
