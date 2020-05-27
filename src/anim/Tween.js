@@ -217,8 +217,8 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     // DOCS: Document Tween#update(progress)
     update: function(progress) {
         if (this.running) {
-            if (progress > 1) {
-                // always finish the animation
+            if (progress >= 1) {
+                // Always finish the animation.
                 progress = 1;
                 this.running = false;
             }
@@ -242,15 +242,15 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                 this._setProperty(this._parsedKeys[key], value);
             }
 
-            if (!this.running && this._then) {
-                // TODO Look into what should be returned.
-                this._then(this.object);
-            }
             if (this.responds('update')) {
                 this.emit('update', new Base({
                     progress: progress,
                     factor: factor
                 }));
+            }
+            if (!this.running && this._then) {
+                // TODO: Look into what should be returned.
+                this._then(this.object);
             }
         }
         return this;
