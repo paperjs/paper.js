@@ -163,6 +163,9 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
      * });
      */
     then: function(then) {
+        // TODO: This only supports one callback for `then()`. Figure out how
+        // to handle multiple calls to then in an decent way, without relying
+        // on Promises (or should we?).
         this._then = then;
         return this;
     },
