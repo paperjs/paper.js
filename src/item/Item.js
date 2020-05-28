@@ -2235,8 +2235,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * that x-value). Partial matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either `options.inside` or `options.overlapping` to a rectangle describing
-     * the area in which the items either have to be fully or partly contained.
+     * either `options.inside` or `options.overlapping` to a rectangle
+     * describing the area in which the items either have to be fully or partly
+     * contained.
      *
      * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
@@ -2247,12 +2248,12 @@ new function() { // Injection scope for hit-test functions shared with project
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
      *     this function can also be passed instead of the `options` object
-     * @option options.class {Function} the constructor function of the item type
-     *     to match against
-     * @option options.inside {Rectangle} the rectangle in which the items need to
-     *     be fully contained
-     * @option options.overlapping {Rectangle} the rectangle with which the items
-     *     need to at least partly overlap
+     * @option options.class {Function} the constructor function of the item
+     *     type to match against
+     * @option options.inside {Rectangle} the rectangle in which the items need
+     *     to be fully contained
+     * @option options.overlapping {Rectangle} the rectangle with which the
+     *     items need to at least partly overlap
      *
      * @param {Object|Function} options the criteria to match against
      * @return {Item[]} the list of matching descendant items
@@ -2273,9 +2274,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Item} the first descendant item matching the given criteria
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     getItem: function(options) {
         return Item._getItems(this, options, this._matrix, null, true)[0]
