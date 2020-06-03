@@ -159,8 +159,9 @@ test('Import SVG switch', function(assert) {
 });
 
 test('Import SVG string with leading line-breaks', function() {
-    var svg = '\n<svg xmlns="http://www.w3.org/2000/svg">\n  <rect fill="red" width="100" height="100"/>\n</svg>\n'
+    var svg = '\n<?xml version="1.0" encoding="utf-8"?>\n<!-- Some Comment  -->\n<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n  <rect fill="red" width="100" height="100"/>\n</svg>\n'
     var imported = paper.project.importSVG(svg);
+    equals(function() { return imported !== null }, true);
     equals(imported.children.length, 1);
     equals(imported.firstChild, new Shape.Rectangle({
         size: [100, 100],

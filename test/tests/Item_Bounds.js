@@ -790,11 +790,21 @@ test('group.internalBounds with child and child.applyMatrix = false (#1250)', fu
             'group.internalBounds after scaling item1');
 });
 
-test('#1561 item._globalMatrix on item after empty symbol', function(){
+test('item._globalMatrix on item after empty symbol (#1561)', function() {
     var symbol = new SymbolItem(new Path());
     symbol.opacity = 0.5;
     symbol.skew(10);
     var item = new Path.Circle(new Point(0,0), 10);
     view.update();
     equals(item._globalMatrix, new Matrix());
+});
+
+test('path.strokeBounds of open, circular arc (#1817)', function() {
+    var circle = new Path({
+        pathData: 'M8,16c0,-4.4 3.6,-8 8,-8c4.4,0 8,3.6 8,8',
+        strokeWidth: 8,
+        strokeColor: 'red'
+    });
+    equals(circle.strokeBounds, new Rectangle(4, 4, 24, 12),
+            'circle.strokeBounds');
 });

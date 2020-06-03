@@ -867,8 +867,11 @@ statics: /** @lends Curve */{
             if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
                 // If the values of a curve are sorted, the extrema are simply
                 // the start and end point.
-                add(v0, padding);
-                add(v3, padding);
+                // Only add strokeWidth to bounds for points which lie within 0
+                // < t < 1. The corner cases for cap and join are handled in
+                // getStrokeBounds()
+                add(v0, 0);
+                add(v3, 0);
             } else {
                 // Calculate derivative of our bezier polynomial, divided by 3.
                 // Doing so allows for simpler calculations of a, b, c and leads
@@ -882,9 +885,7 @@ statics: /** @lends Curve */{
                     // with radii in getStrokeBounds()
                     tMin = /*#=*/Numerical.CURVETIME_EPSILON,
                     tMax = 1 - tMin;
-                // Only add strokeWidth to bounds for points which lie within 0
-                // < t < 1 The corner cases for cap and join are handled in
-                // getStrokeBounds()
+                // See above for an explanation of padding = 0 here:
                 add(v3, 0);
                 for (var i = 0; i < count; i++) {
                     var t = roots[i],

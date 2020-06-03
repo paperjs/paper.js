@@ -224,9 +224,9 @@ var View = Base.extend(Emitter, /** @lends View# */{
             var that = this;
             DomEvent.requestAnimationFrame(function() {
                 that._requested = false;
-                // Only handle frame and request next one if we don't need to
-                // stop, e.g.  due to a call to pause(), or a request for a
-                // single redraw.
+                // Only handle the frame and request the next one if we don't
+                // need to stop, e.g.  due to a call to pause(), or a request
+                // for a single redraw.
                 if (that._animate) {
                     // Request next update before handling the current frame
                     that.requestUpdate();
@@ -592,7 +592,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
         // NOTE: calling initialize() also calls #_changed() for us, through its
         // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
-        matrix.initialize.apply(matrix, arguments);
+        matrix.set.apply(matrix, arguments);
     },
 
     /**

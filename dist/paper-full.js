@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.7 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.8 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 23:05:09 2020 +0200
+ * Date: Wed Jun 3 16:46:03 2020 +0200
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.7",
+	version: "0.12.8",
 
 	getView: function() {
 		var project = this.project;
@@ -3660,15 +3660,25 @@ new function() {
 			var rotation = this.getRotation(),
 				decomposed = this._decomposed,
 				matrix = new Matrix(),
-				center = this.getPosition(true);
-			matrix.translate(center);
-			if (rotation)
-				matrix.rotate(rotation);
-			matrix.scale(scaling.x / current.x, scaling.y / current.y);
-			if (rotation)
-				matrix.rotate(-rotation);
-			matrix.translate(center.negate());
-			this.transform(matrix);
+				isZero = Numerical.isZero;
+			if (isZero(current.x) || isZero(current.y)) {
+				matrix.translate(decomposed.translation);
+				if (rotation) {
+					matrix.rotate(rotation);
+				}
+				matrix.scale(scaling.x, scaling.y);
+				this._matrix.set(matrix);
+			} else {
+				var center = this.getPosition(true);
+				matrix.translate(center);
+				if (rotation)
+					matrix.rotate(rotation);
+				matrix.scale(scaling.x / current.x, scaling.y / current.y);
+				if (rotation)
+					matrix.rotate(-rotation);
+				matrix.translate(center.negate());
+				this.transform(matrix);
+			}
 			if (decomposed) {
 				decomposed.scaling = scaling;
 				this._decomposed = decomposed;
@@ -3682,7 +3692,7 @@ new function() {
 
 	setMatrix: function() {
 		var matrix = this._matrix;
-		matrix.initialize.apply(matrix, arguments);
+		matrix.set.apply(matrix, arguments);
 	},
 
 	getGlobalMatrix: function(_dontClone) {
@@ -6805,8 +6815,8 @@ statics: {
 		if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
 				v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
 			if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
-				add(v0, padding);
-				add(v3, padding);
+				add(v0, 0);
+				add(v3, 0);
 			} else {
 				var a = 3 * (v1 - v2) - v0 + v3,
 					b = 2 * (v0 + v2) - 4 * v1,
@@ -9458,7 +9468,6 @@ new function() {
 							length = flattener.length,
 							from = -style.getDashOffset(), to,
 							i = 0;
-						from = from % length;
 						while (from > 0) {
 							from -= getOffset(i--) + getOffset(i--);
 						}
@@ -13127,7 +13136,7 @@ var View = Base.extend(Emitter, {
 
 	setMatrix: function() {
 		var matrix = this._matrix;
-		matrix.initialize.apply(matrix, arguments);
+		matrix.set.apply(matrix, arguments);
 	},
 
 	transform: function(matrix) {
@@ -14127,7 +14136,7 @@ var Tween = Base.extend(Emitter, {
 
 	update: function(progress) {
 		if (this.running) {
-			if (progress > 1) {
+			if (progress >= 1) {
 				progress = 1;
 				this.running = false;
 			}
@@ -14149,14 +14158,14 @@ var Tween = Base.extend(Emitter, {
 				this._setProperty(this._parsedKeys[key], value);
 			}
 
-			if (!this.running && this._then) {
-				this._then(this.object);
-			}
 			if (this.responds('update')) {
 				this.emit('update', new Base({
 					progress: progress,
 					factor: factor
 				}));
+			}
+			if (!this.running && this._then) {
+				this._then(this.object);
 			}
 		}
 		return this;
@@ -15558,7 +15567,7 @@ new function() {
 				var node = typeof svg === 'object'
 					? svg
 					: new self.DOMParser().parseFromString(
-						svg,
+						svg.trim(),
 						'image/svg+xml'
 					);
 				if (!node.nodeName) {

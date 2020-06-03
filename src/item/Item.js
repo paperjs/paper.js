@@ -250,6 +250,7 @@ new function() { // Injection scope for various item event handlers
      * @function
      * @param {Object} props
      * @return {Item} the item itself
+     * @chainable
      *
      * @example {@paperscript}
      * // Setting properties through an object literal
@@ -1207,19 +1208,32 @@ new function() { // Injection scope for various item event handlers
             var rotation = this.getRotation(),
                 decomposed = this._decomposed,
                 matrix = new Matrix(),
-                center = this.getPosition(true);
+                isZero = Numerical.isZero;
             // Create a matrix in which the scaling is applied in the non-
             // rotated state, so it is always applied before the rotation.
             // TODO: What about skewing? Do we need separately stored values for
             // these properties, and apply them separately from the matrix?
-            matrix.translate(center);
-            if (rotation)
-                matrix.rotate(rotation);
-            matrix.scale(scaling.x / current.x, scaling.y / current.y);
-            if (rotation)
-                matrix.rotate(-rotation);
-            matrix.translate(center.negate());
-            this.transform(matrix);
+            if (isZero(current.x) || isZero(current.y)) {
+                // If current scaling is destructive (at least one axis is 0),
+                // create a new matrix that applies the desired rotation,
+                // translation and scaling, without also preserving skewing.
+                matrix.translate(decomposed.translation);
+                if (rotation) {
+                    matrix.rotate(rotation);
+                }
+                matrix.scale(scaling.x, scaling.y);
+                this._matrix.set(matrix);
+            } else {
+                var center = this.getPosition(true);
+                matrix.translate(center);
+                if (rotation)
+                    matrix.rotate(rotation);
+                matrix.scale(scaling.x / current.x, scaling.y / current.y);
+                if (rotation)
+                    matrix.rotate(-rotation);
+                matrix.translate(center.negate());
+                this.transform(matrix);
+            }
             if (decomposed) {
                 decomposed.scaling = scaling;
                 this._decomposed = decomposed;
@@ -1243,7 +1257,7 @@ new function() { // Injection scope for various item event handlers
         // NOTE: calling initialize() also calls #_changed() for us, through its
         // call to #set() / #reset(), and this also handles _applyMatrix for us.
         var matrix = this._matrix;
-        matrix.initialize.apply(matrix, arguments);
+        matrix.set.apply(matrix, arguments);
     },
 
     /**
@@ -1611,6 +1625,7 @@ new function() { // Injection scope for various item event handlers
      * @param {Object} [options={ insert: true, deep: true }]
      *
      * @return {Item} the newly cloned item
+     * @chainable
      *
      * @example {@paperscript}
      * // Cloning items:
@@ -2220,8 +2235,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * that x-value). Partial matching does work for {@link Item#data}.
      *
      * Matching items against a rectangular area is also possible, by setting
-     * either `options.inside` or `options.overlapping` to a rectangle describing
-     * the area in which the items either have to be fully or partly contained.
+     * either `options.inside` or `options.overlapping` to a rectangle
+     * describing the area in which the items either have to be fully or partly
+     * contained.
      *
      * See {@link Project#getItems(options)} for a selection of illustrated
      * examples.
@@ -2232,12 +2248,12 @@ new function() { // Injection scope for hit-test functions shared with project
      *     item, allowing the definition of more flexible item checks that are
      *     not bound to properties. If no other match properties are defined,
      *     this function can also be passed instead of the `options` object
-     * @option options.class {Function} the constructor function of the item type
-     *     to match against
-     * @option options.inside {Rectangle} the rectangle in which the items need to
-     *     be fully contained
-     * @option options.overlapping {Rectangle} the rectangle with which the items
-     *     need to at least partly overlap
+     * @option options.class {Function} the constructor function of the item
+     *     type to match against
+     * @option options.inside {Rectangle} the rectangle in which the items need
+     *     to be fully contained
+     * @option options.overlapping {Rectangle} the rectangle with which the
+     *     items need to at least partly overlap
      *
      * @param {Object|Function} options the criteria to match against
      * @return {Item[]} the list of matching descendant items
@@ -2258,9 +2274,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * See {@link Project#getItems(match)} for a selection of illustrated
      * examples.
      *
-     * @param {Object|Function} match the criteria to match against
+     * @param {Object|Function} options the criteria to match against
      * @return {Item} the first descendant item matching the given criteria
-     * @see #getItems(match)
+     * @see #getItems(options)
      */
     getItem: function(options) {
         return Item._getItems(this, options, this._matrix, null, true)[0]
@@ -2663,6 +2679,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * add the item to
      * @return {Item} the item itself, if it was successfully added
+     * @chainable
      */
     addTo: function(owner) {
         return owner._insertItem(undefined, this);
@@ -2675,6 +2692,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Project|Layer|Group|CompoundPath} owner the item or project to
      * copy the item to
      * @return {Item} the new copy of the item, if it was successfully added
+     * @chainable
      */
     copyTo: function(owner) {
         return this.clone(false).addTo(owner);
@@ -4139,6 +4157,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     occurs, receiving a {@link MouseEvent} or {@link Event} object as its
      *     sole argument
      * @return {Item} this item itself, so calls can be chained
+     * @chainable
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -4170,6 +4189,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
      *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
+     * @chainable
      *
      * @example {@paperscript}
      * // Change the fill color of the path to red when the mouse enters its
@@ -4229,6 +4249,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     'mouseenter', 'mouseleave'}
      * @param {Function} function the function to be detached
      * @return {Item} this item itself, so calls can be chained
+     * @chainable
      */
     /**
      * Detach one or more event handlers to the item.
@@ -4239,6 +4260,7 @@ new function() { // Injection scope for hit-test functions shared with project
      *     properties: {@values frame, mousedown, mouseup, mousedrag, click,
      *     doubleclick, mousemove, mouseenter, mouseleave}
      * @return {Item} this item itself, so calls can be chained
+     * @chainable
      */
 
     /**
