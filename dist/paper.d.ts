@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.7 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.8 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Sat May 23 23:05:09 2020 +0200
+ * Date: Wed Jun 3 16:46:03 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1761,7 +1761,7 @@ declare namespace paper {
          * 
          * @return the item itself
          */
-        set(props: object): Item
+        set(props: object): this
 
         /** 
          * Copies the content of the specified item over to this item.
@@ -1924,8 +1924,9 @@ declare namespace paper {
          * that x-value). Partial matching does work for {@link Item#data}.
          * 
          * Matching items against a rectangular area is also possible, by setting
-         * either `options.inside` or `options.overlapping` to a rectangle describing
-         * the area in which the items either have to be fully or partly contained.
+         * either `options.inside` or `options.overlapping` to a rectangle
+         * describing the area in which the items either have to be fully or partly
+         * contained.
          * 
          * See {@link Project#getItems} for a selection of illustrated
          * examples.
@@ -1938,12 +1939,12 @@ declare namespace paper {
          *     item, allowing the definition of more flexible item checks that are
          *     not bound to properties. If no other match properties are defined,
          *     this function can also be passed instead of the `options` object
-         * @option options.class {Function} the constructor function of the item type
-         *     to match against
-         * @option options.inside {Rectangle} the rectangle in which the items need to
-         *     be fully contained
-         * @option options.overlapping {Rectangle} the rectangle with which the items
-         *     need to at least partly overlap
+         * @option options.class {Function} the constructor function of the item
+         *     type to match against
+         * @option options.inside {Rectangle} the rectangle in which the items need
+         *     to be fully contained
+         * @option options.overlapping {Rectangle} the rectangle with which the
+         *     items need to at least partly overlap
          * 
          * @param options - the criteria to match against
          * 
@@ -1962,13 +1963,13 @@ declare namespace paper {
          * See {@link Project#getItems} for a selection of illustrated
          * examples.
          * 
-         * @see #getItems(match)
+         * @see #getItems(options)
          * 
-         * @param match - the criteria to match against
+         * @param options - the criteria to match against
          * 
          * @return the first descendant item matching the given criteria
          */
-        getItem(match: object | Function): Item
+        getItem(options: object | Function): Item
 
         /** 
          * Exports (serializes) the item with its content and child items to a JSON
@@ -2154,7 +2155,7 @@ declare namespace paper {
          * 
          * @return the item itself, if it was successfully added
          */
-        addTo(owner: Project | Layer | Group | CompoundPath): Item
+        addTo(owner: Project | Layer | Group | CompoundPath): this
 
         /** 
          * Clones the item and adds it to the specified owner, which can be either
@@ -2165,7 +2166,7 @@ declare namespace paper {
          * 
          * @return the new copy of the item, if it was successfully added
          */
-        copyTo(owner: Project | Layer | Group | CompoundPath): Item
+        copyTo(owner: Project | Layer | Group | CompoundPath): this
 
         /** 
          * If this is a group, layer or compound-path with only one child-item,
@@ -2261,7 +2262,7 @@ declare namespace paper {
          * 
          * @return the newly cloned item
          */
-        clone(options?: object): Item
+        clone(options?: object): this
 
         /** 
          * Checks whether the item and all its parents are inserted into scene graph
@@ -2486,7 +2487,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        on(type: string, callback: Function): Item
+        on(type: string, callback: Function): this
 
         /** 
          * Attaches one or more event handlers to the item.
@@ -2497,7 +2498,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        on(object: object): Item
+        on(object: object): this
 
         /** 
          * Detach an event handler from the item.
@@ -2509,7 +2510,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        off(type: string, callback: Function): Item
+        off(type: string, callback: Function): this
 
         /** 
          * Detach one or more event handlers to the item.
@@ -2520,7 +2521,7 @@ declare namespace paper {
          * 
          * @return this item itself, so calls can be chained
          */
-        off(object: object): Item
+        off(object: object): this
 
         /** 
          * Emit an event on the item.
@@ -5378,6 +5379,15 @@ declare namespace paper {
          *     placed
          */
         constructor(size: Size, position?: Point)
+
+        /** 
+         * Creates a new raster from an object description, and places it in the
+         * active layer.
+         * 
+         * @param object - an object containing properties to be set on the
+         *     raster
+         */
+        constructor(object: object)
 
         /** 
          * Extracts a part of the Raster's content as a sub image, and returns it as

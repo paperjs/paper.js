@@ -1,5 +1,17 @@
 # Change Log
 
+## `0.12.8`
+
+### Fixed
+
+- TypeScript: Fix returned instance type (#1796).
+- Fix `Path#strokeBounds` for open paths (#1817).
+- Fix animation progress handling in `Tween.update()`.
+- Fix setting `Item#scaling` to a new value after it was set to zero (#1816).
+- SVG Import: Fully support SVG strings with leading line-breaks (#1813).
+- Docs: Improve `Raster#initialize(object)` documentation (#1815, #1782).
+- Docs: Fix `Item#getItem(options)` documentation.
+
 ## `0.12.7`
 
 ### Fixed
