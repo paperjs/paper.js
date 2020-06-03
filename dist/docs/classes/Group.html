@@ -3611,9 +3611,9 @@ function onMouseDown(event) {
 <h4>Options:</h4>
 <li><tt>options.recursive: <tt>Boolean</tt></tt> &mdash; whether to loop recursively  through all children, or stop at the current level &mdash;&nbsp;default: <tt>true</tt></li>
 <li><tt>options.match: <tt>Function</tt></tt> &mdash; a match function to be called for each  item, allowing the definition of more flexible item checks that are  not bound to properties. If no other match properties are defined,  this function can also be passed instead of the <code>options</code> object</li>
-<li><tt>options.class: <tt>Function</tt></tt> &mdash; the constructor function of the item type  to match against</li>
-<li><tt>options.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need to  be fully contained</li>
-<li><tt>options.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the items  need to at least partly overlap</li>
+<li><tt>options.class: <tt>Function</tt></tt> &mdash; the constructor function of the item  type to match against</li>
+<li><tt>options.inside: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle in which the items need  to be fully contained</li>
+<li><tt>options.overlapping: <a href="../classes/Rectangle.html"><tt>Rectangle</tt></a></tt> &mdash; the rectangle with which the  items need to at least partly overlap</li>
 </ul>
 	
 <ul class="member-list">
@@ -3655,9 +3655,9 @@ function onMouseDown(event) {
 </div>
 
 	
-<div id="getitem-match" class="member">
+<div id="getitem-options" class="member">
 <div class="member-link">
-<a name="getitem-match" href="#getitem-match"><tt><b>getItem</b>(match)</tt></a>
+<a name="getitem-options" href="#getitem-options"><tt><b>getItem</b>(options)</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
@@ -3668,7 +3668,7 @@ function onMouseDown(event) {
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>match:</tt> 
+<tt>options:</tt> 
 <tt>Object</tt>⟋<tt>Function</tt>
 &mdash;&nbsp;the criteria to match against
 
@@ -3693,7 +3693,7 @@ function onMouseDown(event) {
 	<ul class="member-list">
 		<h4>See also:</h4>
 		
-			<li><tt><a href="../classes/Item.html#getitems-match"><tt>getItems(match)</tt></a></tt></li>
+			<li><tt><a href="../classes/Item.html#getitems-options"><tt>getItems(options)</tt></a></tt></li>
 		
 	</ul>
 

@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed May 27 23:15:47 2020 +0200
+ * Date: Wed Jun 3 16:46:03 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1931,8 +1931,9 @@ declare namespace paper {
          * that x-value). Partial matching does work for {@link Item#data}.
          * 
          * Matching items against a rectangular area is also possible, by setting
-         * either `options.inside` or `options.overlapping` to a rectangle describing
-         * the area in which the items either have to be fully or partly contained.
+         * either `options.inside` or `options.overlapping` to a rectangle
+         * describing the area in which the items either have to be fully or partly
+         * contained.
          * 
          * See {@link Project#getItems} for a selection of illustrated
          * examples.
@@ -1945,12 +1946,12 @@ declare namespace paper {
          *     item, allowing the definition of more flexible item checks that are
          *     not bound to properties. If no other match properties are defined,
          *     this function can also be passed instead of the `options` object
-         * @option options.class {Function} the constructor function of the item type
-         *     to match against
-         * @option options.inside {Rectangle} the rectangle in which the items need to
-         *     be fully contained
-         * @option options.overlapping {Rectangle} the rectangle with which the items
-         *     need to at least partly overlap
+         * @option options.class {Function} the constructor function of the item
+         *     type to match against
+         * @option options.inside {Rectangle} the rectangle in which the items need
+         *     to be fully contained
+         * @option options.overlapping {Rectangle} the rectangle with which the
+         *     items need to at least partly overlap
          * 
          * @param options - the criteria to match against
          * 
@@ -1969,13 +1970,13 @@ declare namespace paper {
          * See {@link Project#getItems} for a selection of illustrated
          * examples.
          * 
-         * @see #getItems(match)
+         * @see #getItems(options)
          * 
-         * @param match - the criteria to match against
+         * @param options - the criteria to match against
          * 
          * @return the first descendant item matching the given criteria
          */
-        getItem(match: object | Function): Item
+        getItem(options: object | Function): Item
 
         /** 
          * Exports (serializes) the item with its content and child items to a JSON
