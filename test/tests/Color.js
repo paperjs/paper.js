@@ -306,6 +306,41 @@ test('Gradients with applyMatrix', function() {
     comparePixels(path, shape);
 });
 
+test('Gradients with strokeScaling: false', function() {
+    var topLeft = [100, 100];
+    var bottomRight = [400, 400];
+    var gradientColor = {
+        gradient: {
+            stops: ['yellow', 'red', 'blue']
+        },
+        origin: topLeft,
+        destination: bottomRight
+    }
+
+    var path = new Shape.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeScaling: true
+    });
+
+    var shape = new Shape.Rectangle({
+        topLeft: topLeft,
+        bottomRight: bottomRight,
+        fillColor: gradientColor,
+        strokeScaling: false
+    });
+
+    comparePixels(path, shape);
+
+    path.scale(2);
+    path.rotate(45);
+    shape.scale(2);
+    shape.rotate(45);
+
+    comparePixels(path, shape);
+})
+
 test('Modifying group.strokeColor for multiple children', function() {
     var item = new Group(new Path(), new Path());
     item.strokeColor = 'red';
