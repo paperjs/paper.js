@@ -266,20 +266,26 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
     },
 
     /**
-     * Returns a valid HTML canvas you can use. 
+     * Returns a valid HTML canvas you can use.
      * Internally, this may reuse an existing canvas.
      *
-     * This either accepts width and height as two arguments, or you can pass 
-     * in an object with "width" and "height" properties.
-     *
-     * @param {Number|Object} width
+     * @param {Number} width
      * @param {Number} height
+     *
+     * @returns {HTMLCanvasElement}
+     */
+
+    /**
+     * Returns a valid HTML canvas you can use.
+     * Internally, this may reuse an existing canvas.
+     *
+     * @param {Object} options An object containing the canvas width / height
      *
      * @option width {Number}
      * @option height {Number}
      *
      * @returns {HTMLCanvasElement}
-    */
+     */
     createCanvas: function(width, height) {
         return CanvasProvider.getCanvas(width, height);
     },
