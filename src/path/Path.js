@@ -2318,7 +2318,7 @@ new function() { // Scope for drawing
             if (!dontPaint && (hasFill || hasStroke)) {
                 // If the path is part of a compound path or doesn't have a fill
                 // or stroke, there is no need to continue.
-                this._setStyles(ctx, param, viewMatrix);
+                this._setStyles(ctx, param, viewMatrix, strokeMatrix);
                 if (hasFill) {
                     ctx.fill(style.getFillRule());
                     // If shadowColor is defined, clear it after fill, so it

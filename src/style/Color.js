@@ -899,8 +899,11 @@ var Color = Base.extend(new function() {
                         + components.join(',') + ')';
         },
 
-        toCanvasStyle: function(ctx, matrix) {
-            if (this._canvasStyle)
+        toCanvasStyle: function(ctx, matrix, strokeMatrix) {
+            // strokeMatrix can change without triggering _changed here, so we
+            // can't use a cached gradient here.
+            var strokeMayChange = this._type === 'gradient' && strokeMatrix;
+            if (this._canvasStyle && !strokeMayChange)
                 return this._canvasStyle;
             // Normal colors are simply represented by their CSS string.
             if (this._type !== 'gradient')
@@ -922,6 +925,12 @@ var Color = Base.extend(new function() {
                 destination = inverse._transformPoint(destination);
                 if (highlight)
                     highlight = inverse._transformPoint(highlight);
+            }
+            if (strokeMatrix) {
+                origin = strokeMatrix._transformPoint(origin);
+                destination = strokeMatrix._transformPoint(destination);
+                if (highlight)
+                    highlight = strokeMatrix._transformPoint(highlight);
             }
             if (gradient._radial) {
                 var radius = destination.getDistance(origin);
@@ -948,7 +957,12 @@ var Color = Base.extend(new function() {
                         offset == null ? i / (l - 1) : offset,
                         stop._color.toCanvasStyle());
             }
-            return this._canvasStyle = canvasGradient;
+            // Don't store gradients that may change in the cache.
+            // If we cached a gradient that was transformed by strokeMatrix
+            // then set strokeScaling to true, then the transformed gradient
+            // could get "stuck" in the cache.
+            if (!strokeMayChange) this._canvasStyle = canvasGradient;
+            return canvasGradient;
         },
 
         /**
