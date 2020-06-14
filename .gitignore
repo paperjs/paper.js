@@ -1,4 +1,3 @@
-/.nvmrc
 /node_modules/
 /dist/*/
 /dist/*.min.js
