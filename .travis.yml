@@ -2,12 +2,10 @@ language: node_js
 os: linux
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
-# Stable version is temporarily disabled due to a bug in resemblejs package with
-# node v12 (https://github.com/orgs/paperjs/teams/contributors/discussions/12).
-# - stable
-- 11
+- stable
+- 13
+- 12
 - 10
-- 8
 env:
   jobs:
   - CXX=g++-4.9
