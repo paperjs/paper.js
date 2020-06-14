@@ -858,8 +858,8 @@ statics: /** @lends Curve */{
         }
 
         padding /= 2; // strokePadding is in width, not radius
-        var minPad = min[coord] - padding,
-            maxPad = max[coord] + padding;
+        var minPad = min[coord] + padding,
+            maxPad = max[coord] - padding;
         // Perform a rough bounds checking first: The curve can only extend the
         // current bounds if at least one value is outside the min-max range.
         if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
