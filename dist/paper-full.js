@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 3 16:53:04 2020 +0200
+ * Date: Sun Jun 14 02:41:55 2020 -0400
  *
  ***
  *
@@ -6810,8 +6810,8 @@ statics: {
 		}
 
 		padding /= 2;
-		var minPad = min[coord] - padding,
-			maxPad = max[coord] + padding;
+		var minPad = min[coord] + padding,
+			maxPad = max[coord] - padding;
 		if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
 				v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
 			if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
