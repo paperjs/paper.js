@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Tue Aug 13 10:22:10 2019 +0900
+ * Date: Wed Feb 19 11:09:17 2020 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -3594,7 +3594,7 @@ declare namespace paper {
          *     path at which to divide the existing curve by inserting a new segment
          * 
          * @return the newly inserted segment if the location is valid,
-         *     {code null} otherwise
+         *     `null` otherwise
          */
         divideAt(location: number | CurveLocation): Segment
 
