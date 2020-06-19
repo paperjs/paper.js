@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.12.10`
+
+### Fixed
+
+- Fix installation through Yarn (#1831).
+
 ## `0.12.9`
 
 ### Added
