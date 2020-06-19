@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.8 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.9 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Wed Jun 3 16:46:03 2020 +0200
+ * Date: Fri Jun 19 13:07:13 2020 +0200
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.8",
+	version: "0.12.9",
 
 	getView: function() {
 		var project = this.project;
@@ -6810,8 +6810,8 @@ statics: {
 		}
 
 		padding /= 2;
-		var minPad = min[coord] - padding,
-			maxPad = max[coord] + padding;
+		var minPad = min[coord] + padding,
+			maxPad = max[coord] - padding;
 		if (    v0 < minPad || v1 < minPad || v2 < minPad || v3 < minPad ||
 				v0 > maxPad || v1 > maxPad || v2 > maxPad || v3 > maxPad) {
 			if (v1 < v0 != v1 < v3 && v2 < v0 != v2 < v3) {
@@ -14296,7 +14296,7 @@ var Http = {
 	}
 };
 
-var CanvasProvider = {
+var CanvasProvider = Base.exports.CanvasProvider = {
 	canvases: [],
 
 	getCanvas: function(width, height) {

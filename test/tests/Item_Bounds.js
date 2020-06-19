@@ -808,3 +808,19 @@ test('path.strokeBounds of open, circular arc (#1817)', function() {
     equals(circle.strokeBounds, new Rectangle(4, 4, 24, 12),
             'circle.strokeBounds');
 });
+
+test('path.strokeBounds applies stroke padding properly (#1824)', function() {
+    var ellipse = new Path.Ellipse({
+        point: [100, 100],
+        size: [50, 80],
+        strokeWidth: 32,
+        strokeColor: 'red'
+    });
+
+    ellipse.rotate(50);
+    equals(
+        ellipse.strokeBounds,
+        new Rectangle(74.39306, 91.93799, 101.21388, 96.12403),
+        'ellipse.strokeBounds'
+    );
+})

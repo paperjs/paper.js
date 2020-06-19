@@ -12,7 +12,7 @@
 
 // TODO: Run through the canvas array to find a canvas with the requested
 // width / height, so we don't need to resize it?
-var CanvasProvider = {
+var CanvasProvider = Base.exports.CanvasProvider = {
     canvases: [],
 
     getCanvas: function(width, height) {
