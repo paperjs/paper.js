@@ -29,6 +29,7 @@ var packages = ['paper-jsdom', 'paper-jsdom-canvas'],
     assetPath = sitePath + '/assets/js',
     releaseMessage = null,
     jsonOptions = {
+        preserve_newlines: true,
         end_with_newline: true
     };
 
@@ -62,7 +63,8 @@ gulp.task('publish:json', ['publish:version'], function() {
         .pipe(jsonEditor({
             version: options.version
         }, jsonOptions))
-        .pipe(gulp.dest('.'));
+        .pipe(gulp.dest('.'))
+        .pipe(shell('npm install')); // Update package-lock.json
 });
 
 gulp.task('publish:dist', ['zip']);
