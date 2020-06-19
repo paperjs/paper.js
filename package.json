@@ -23,7 +23,7 @@
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
-    "preinstall": "if-env npm_config_heading=npm && npx npm-force-resolutions"
+    "preinstall": "[[ $npm_config_heading == 'npm' ]] && npx npm-force-resolutions || true"
   },
   "files": [
     "AUTHORS.md",
@@ -72,7 +72,6 @@
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^5.0.1",
     "husky": "^4.2.5",
-    "if-env": "^1.0.4",
     "jsdom": "^16.2.2",
     "jshint": "^2.11.1",
     "jshint-summary": "^0.4.0",
