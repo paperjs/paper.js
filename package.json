@@ -9,7 +9,10 @@
     "url": "https://github.com/paperjs/paper.js"
   },
   "bugs": "https://github.com/paperjs/paper.js/issues",
-  "contributors": ["Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)", "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"],
+  "contributors": [
+    "Jürg Lehni <juerg@scratchdisk.com> (http://scratchdisk.com)",
+    "Jonathan Puckey <jonathan@puckey.studio> (http://studiomoniker.com)"
+  ],
   "main": "dist/paper-full.js",
   "types": "dist/paper.d.ts",
   "scripts": {
@@ -20,9 +23,16 @@
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
-    "preinstall": "npx npm-force-resolutions"
+    "preinstall": "if-env npm_config_heading=npm && npx npm-force-resolutions"
   },
-  "files": ["AUTHORS.md", "CHANGELOG.md", "dist/", "examples/", "LICENSE.txt", "README.md"],
+  "files": [
+    "AUTHORS.md",
+    "CHANGELOG.md",
+    "dist/",
+    "examples/",
+    "LICENSE.txt",
+    "README.md"
+  ],
   "engines": {
     "node": ">=8.0.0"
   },
@@ -62,6 +72,7 @@
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^5.0.1",
     "husky": "^4.2.5",
+    "if-env": "^1.0.4",
     "jsdom": "^16.2.2",
     "jshint": "^2.11.1",
     "jshint-summary": "^0.4.0",
@@ -82,5 +93,21 @@
   "resolutions": {
     "graceful-fs": "4.2.2"
   },
-  "keywords": ["vector", "graphic", "graphics", "2d", "geometry", "bezier", "curve", "curves", "path", "paths", "canvas", "svg", "paper", "paper.js", "paperjs"]
+  "keywords": [
+    "vector",
+    "graphic",
+    "graphics",
+    "2d",
+    "geometry",
+    "bezier",
+    "curve",
+    "curves",
+    "path",
+    "paths",
+    "canvas",
+    "svg",
+    "paper",
+    "paper.js",
+    "paperjs"
+  ]
 }
