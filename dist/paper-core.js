@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 22 15:17:43 2020 +0200
+ * Date: Mon Jun 22 16:32:39 2020 +0200
  *
  ***
  *
@@ -5342,7 +5342,7 @@ var Raster = Item.extend({
 		source: null
 	},
 	_prioritize: ['crossOrigin'],
-	_smoothing: true,
+	_smoothing: 'low',
 	beans: true,
 
 	initialize: function Raster(source, position) {
@@ -5566,7 +5566,9 @@ var Raster = Item.extend({
 	},
 
 	setSmoothing: function(smoothing) {
-		this._smoothing = smoothing;
+		this._smoothing = typeof smoothing === 'string'
+			? smoothing
+			: smoothing ? 'low' : 'off';
 		this._changed(257);
 	},
 
@@ -5736,8 +5738,12 @@ var Raster = Item.extend({
 
 			this._setStyles(ctx, param, viewMatrix);
 
+			var smoothing = this._smoothing,
+				disabled = smoothing === 'off';
 			DomElement.setPrefixed(
-				ctx, 'imageSmoothingEnabled', this._smoothing
+				ctx,
+				disabled ? 'imageSmoothingEnabled' : 'imageSmoothingQuality',
+				disabled ? false : smoothing
 			);
 
 			ctx.drawImage(element,

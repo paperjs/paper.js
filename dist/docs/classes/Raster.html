@@ -580,19 +580,21 @@ console.log(view.element.toDataURL('image/png').substring(0, 32));
 <div class="member-description hidden">
 
 <div class="member-text">
-	<p>Specifies if the raster should be smoothed when scaled up or if the pixels should be scaled up by repeating the nearest neighboring pixels.</p>
+	<p>Determines if the raster is drawn with pixel smoothing when scaled up or down, and if so, at which quality its pixels are to be smoothed. The settings of this property control both the <code>imageSmoothingEnabled</code> and <code>imageSmoothingQuality</code> properties of the <code>CanvasRenderingContext2D</code> interface.</p>
+<p>By default, smoothing is enabled at <code>&#39;low&#39;</code> quality. It can be set to of <code>&#39;off&#39;</code> to scale the raster&rsquo;s pixels by repeating the nearest neighboring pixels, or to <code>&#39;low&#39;</code>, <code>&#39;medium&#39;</code> or <code>&#39;high&#39;</code> to control the various degrees of available image smoothing quality.</p>
+<p>For backward compatibility, it can can also be set to <code>false</code> (= <code>&#39;off&#39;</code>) or <code>true</code> (= <code>&#39;low&#39;</code>).</p>
 	
 	
 	
 		<ul class="member-list">
 			<h4>Default:</h4>
-			<li><tt>true</tt></li>
+			<li><tt>'low'</tt></li>
 		</ul>
 	
 	<ul class="member-list">
 		<h4>Type:</h4>
 		<li>
-			<tt>Boolean</tt>
+			<tt>String</tt>
 		</li>
 	</ul>
     
@@ -606,9 +608,8 @@ console.log(view.element.toDataURL('image/png').substring(0, 32));
 </div>
 
 <script type="text/paperscript" canvas="canvas-6">
-var raster = new Raster({
-    source: 'http://assets.paperjs.org/images/marilyn.jpg',
-    smoothing: false
+var raster = new Raster({source:
+'http://assets.paperjs.org/images/marilyn.jpg', smoothing: 'off'
 });
 raster.scale(5);
 </script>
