@@ -1,5 +1,24 @@
 # Change Log
 
+## `0.12.11`
+
+### Fixed
+
+- Fix installation through Yarn (#1831).
+
+## `0.12.9`
+
+### Added
+
+- Export `CanvasProvider` to allow experimenting with
+  https://www.npmjs.com/package/canvaskit-wasm on Node.js
+
+### Fixed
+
+- Fix `Path.strokeBounds` that was incorrect for certain paths (#1824).
+- Fix Gulp 3 issues to be able to run Travis CI tests on Node.js 10, 12, 13 and
+  14.
+
 ## `0.12.8`
 
 ### Fixed
