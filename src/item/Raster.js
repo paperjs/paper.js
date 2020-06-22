@@ -187,19 +187,20 @@ var Raster = Item.extend(/** @lends Raster# */{
                 this, 'setSize');
     },
 
-    setSize: function(/* size */) {
+    setSize: function(_size, _clear) {
         var size = Size.read(arguments);
         if (!size.equals(this._size)) { // NOTE: this._size could be null
             if (size.width > 0 && size.height > 0) {
                 // Get reference to image before changing canvas.
-                var element = this.getElement();
+                var element = !_clear && this.getElement();
                 // NOTE: Setting canvas internally sets _size.
                 // NOTE: No need to release canvas because #_setImage() does so.
                 this._setImage(CanvasProvider.getCanvas(size));
-                // Draw element back onto new canvas.
-                if (element)
+                if (element) {
+                    // Draw element back onto the new, resized canvas.
                     this.getContext(true).drawImage(element, 0, 0,
                             size.width, size.height);
+                }
             } else {
                 // 0-width / height dimensions do not require the creation of
                 // an internal canvas. Just reflect the size for now.
@@ -207,6 +208,9 @@ var Raster = Item.extend(/** @lends Raster# */{
                     CanvasProvider.release(this._canvas);
                 this._size = size.clone();
             }
+        } else if (_clear) {
+            // We can reuse the canvas, but need to clear it.
+            this.clear();
         }
     },
 

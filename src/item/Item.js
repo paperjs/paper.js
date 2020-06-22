@@ -1752,6 +1752,11 @@ new function() { // Injection scope for various item event handlers
      * @option [resolution=view.resolution] {Number} the desired resolution to
      *     be used when rasterizing, in pixels per inch (DPI). If not specified,
      *     the value of `view.resolution` is used by default.
+     * @option [raster=null] {Raster} specifies a raster to be reused when
+     *     rasterizing. If the raster has the desired size already, then the
+     *     underlying canvas is reused and no new memory needs to be allocated.
+     *     If no raster is provided, a new raster item is created and returned
+     *     instead.
      * @option [insert=true] {Boolean} specifies whether the raster should be
      *     inserted into the scene graph. When set to `true`, it is inserted
      *     above the rasterized item.
@@ -1759,7 +1764,7 @@ new function() { // Injection scope for various item event handlers
      * @name Item#rasterize
      * @function
      * @param {Object} [options={}] the rasterization options
-     * @return {Raster} the newly created raster item
+     * @return {Raster} the reused raster or the newly created raster item
      *
      * @example {@paperscript}
      * // Rasterizing an item:
@@ -1781,13 +1786,18 @@ new function() { // Injection scope for various item event handlers
      */
     rasterize: function(arg0, arg1) {
         var resolution,
-            insert;
+            insert,
+            raster;
         if (Base.isPlainObject(arg0)) {
             resolution = arg0.resolution;
             insert = arg0.insert;
+            raster = arg0.raster;
         } else {
             resolution = arg0;
             insert = arg1;
+        }
+        if (!raster) {
+            raster = new Raster(Item.NO_INSERT);
         }
         // TODO: Switch to options object for more descriptive call signature.
         var bounds = this.getStrokeBounds(),
@@ -1796,10 +1806,11 @@ new function() { // Injection scope for various item event handlers
             // blur or cut pixels.
             topLeft = bounds.getTopLeft().floor(),
             bottomRight = bounds.getBottomRight().ceil(),
-            size = new Size(bottomRight.subtract(topLeft)),
-            raster = new Raster(Item.NO_INSERT);
+            size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
+        // Pass `true` for clear, so reused rasters don't draw over old pixels.
+        raster.setSize(size, true);
+
         if (!size.isZero()) {
-            raster.setSize(size.multiply(scale));
             var ctx = raster.getContext(true),
                 matrix = new Matrix().scale(scale).translate(topLeft.negate());
             ctx.save();
