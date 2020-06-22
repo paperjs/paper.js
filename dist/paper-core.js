@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 22 16:32:39 2020 +0200
+ * Date: Mon Jun 22 17:26:35 2020 +0200
  *
  ***
  *
@@ -3888,22 +3888,35 @@ new function() {
 			this.setName(name);
 	},
 
-	rasterize: function(resolution, insert) {
+	rasterize: function(arg0, arg1) {
+		var resolution,
+			insert,
+			raster;
+		if (Base.isPlainObject(arg0)) {
+			resolution = arg0.resolution;
+			insert = arg0.insert;
+			raster = arg0.raster;
+		} else {
+			resolution = arg0;
+			insert = arg1;
+		}
+		if (!raster) {
+			raster = new Raster(Item.NO_INSERT);
+		}
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || this.getView().getResolution()) / 72,
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil(),
-			size = new Size(bottomRight.subtract(topLeft)),
-			raster = new Raster(Item.NO_INSERT);
+			size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
+		raster.setSize(size, true);
+
 		if (!size.isZero()) {
-			var canvas = CanvasProvider.getCanvas(size.multiply(scale)),
-				ctx = canvas.getContext('2d'),
+			var ctx = raster.getContext(true),
 				matrix = new Matrix().scale(scale).translate(topLeft.negate());
 			ctx.save();
 			matrix.applyToContext(ctx);
 			this.draw(ctx, new Base({ matrices: [matrix] }));
 			ctx.restore();
-			raster.setCanvas(canvas);
 		}
 		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
 				.scale(1 / scale));
@@ -5400,20 +5413,23 @@ var Raster = Item.extend({
 				this, 'setSize');
 	},
 
-	setSize: function() {
+	setSize: function(_size, _clear) {
 		var size = Size.read(arguments);
 		if (!size.equals(this._size)) {
 			if (size.width > 0 && size.height > 0) {
-				var element = this.getElement();
+				var element = !_clear && this.getElement();
 				this._setImage(CanvasProvider.getCanvas(size));
-				if (element)
+				if (element) {
 					this.getContext(true).drawImage(element, 0, 0,
 							size.width, size.height);
+				}
 			} else {
 				if (this._canvas)
 					CanvasProvider.release(this._canvas);
 				this._size = size.clone();
 			}
+		} else if (_clear) {
+			this.clear();
 		}
 	},
 

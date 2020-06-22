@@ -4914,28 +4914,26 @@ for (var i = 0; i < 20; i++) {
 	
 <div id="rasterize" class="member">
 <div class="member-link">
-<a name="rasterize" href="#rasterize"><tt><b>rasterize</b>([resolution[, insert]])</tt></a>
+<a name="rasterize" href="#rasterize"><tt><b>rasterize</b>([options])</tt></a>
 </div>
 <div class="member-description hidden">
 <div class="member-text">
 	<p>Rasterizes the item into a newly created Raster object. The item itself is not removed after rasterization.</p>
-    
+    <ul class="member-list">
+<h4>Options:</h4>
+<li><tt>resolution: <tt>Number</tt></tt> &mdash; the desired resolution to  be used when rasterizing, in pixels per inch (DPI). If not specified,  the value of <code>view.resolution</code> is used by default. &mdash;&nbsp;default: <tt>view.resolution</tt></li>
+<li><tt>raster: <a href="../classes/Raster.html"><tt>Raster</tt></a></tt> &mdash; specifies a raster to be reused when  rasterizing. If the raster has the desired size already, then the  underlying canvas is reused and no new memory needs to be allocated.  If no raster is provided, a new raster item is created and returned  instead. &mdash;&nbsp;default: <tt>null</tt></li>
+<li><tt>insert: <tt>Boolean</tt></tt> &mdash; specifies whether the raster should be  inserted into the scene graph. When set to <code>true</code>, it is inserted  above the rasterized item. &mdash;&nbsp;default: <tt>true</tt></li>
+</ul>
 	
 <ul class="member-list">
 	<h4>Parameters:</h4>
 	
 	<li>
-<tt>resolution:</tt> 
-<tt>Number</tt>
-&mdash;&nbsp;the resolution of the raster  in pixels per inch (DPI). If not specified, the value of  <code>view.resolution</code> is used.
-&mdash;&nbsp;optional, default: <tt>view.resolution</tt>
-</li>
-	
-	<li>
-<tt>insert:</tt> 
-<tt>Boolean</tt>
-&mdash;&nbsp;specifies whether the raster should be  inserted into the scene graph. When set to <code>true</code>, it is inserted  above the original
-&mdash;&nbsp;optional, default: <tt>true</tt>
+<tt>options:</tt> 
+<tt>Object</tt>
+&mdash;&nbsp;the rasterization options
+&mdash;&nbsp;optional, default: <tt>{}</tt>
 </li>
 	
 </ul>
@@ -4945,7 +4943,7 @@ for (var i = 0; i < 20; i++) {
 		<h4>Returns:</h4>
 		
 			<li>
-<tt><a href="../classes/Raster.html"><tt>Raster</tt></a></tt>&nbsp;&mdash;&nbsp;the newly created raster item
+<tt><a href="../classes/Raster.html"><tt>Raster</tt></a></tt>&nbsp;&mdash;&nbsp;the reused raster or the newly created raster item
 </li>
 
 		
