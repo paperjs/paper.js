@@ -3,6 +3,7 @@ os: linux
 # Follow https://github.com/nodejs/LTS to decide when to remove a version
 node_js:
 - stable
+- 14
 - 13
 - 12
 - 10
@@ -41,4 +42,4 @@ script:
 - gulp minify
 - gulp test
 - gulp zip
-- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "11" ] && travis/deploy-prebuilt.sh || true'
+- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "14" ] && travis/deploy-prebuilt.sh || true'
