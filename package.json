@@ -23,7 +23,7 @@
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
-    "postshrinkwrap": "npx --quiet npm-force-resolutions && npm install --no-package-lock --no-audit --no-fund --no-progress --silent"
+    "preinstall": "npx npm-force-resolutions || true"
   },
   "files": [
     "AUTHORS.md",
