@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.11-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.11 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Mon Jun 22 17:26:35 2020 +0200
+ * Date: Fri Jun 19 19:14:33 2020 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1792,23 +1792,16 @@ declare namespace paper {
          * Rasterizes the item into a newly created Raster object. The item itself
          * is not removed after rasterization.
          * 
-         * @option [resolution=view.resolution] {Number} the desired resolution to
-         *     be used when rasterizing, in pixels per inch (DPI). If not specified,
-         *     the value of `view.resolution` is used by default.
-         * @option [raster=null] {Raster} specifies a raster to be reused when
-         *     rasterizing. If the raster has the desired size already, then the
-         *     underlying canvas is reused and no new memory needs to be allocated.
-         *     If no raster is provided, a new raster item is created and returned
-         *     instead.
-         * @option [insert=true] {Boolean} specifies whether the raster should be
+         * @param resolution - the resolution of the raster
+         *     in pixels per inch (DPI). If not specified, the value of
+         *     `view.resolution` is used.
+         * @param insert - specifies whether the raster should be
          *     inserted into the scene graph. When set to `true`, it is inserted
-         *     above the rasterized item.
+         *     above the original
          * 
-         * @param options - the rasterization options
-         * 
-         * @return the reused raster or the newly created raster item
+         * @return the newly created raster item
          */
-        rasterize(options?: object): Raster
+        rasterize(resolution?: number, insert?: boolean): Raster
 
         /** 
          * Checks whether the item's geometry contains the given point.
@@ -5344,21 +5337,10 @@ declare namespace paper {
         crossOrigin: string
 
         /** 
-         * Determines if the raster is drawn with pixel smoothing when scaled up or
-         * down, and if so, at which quality its pixels are to be smoothed. The
-         * settings of this property control both the `imageSmoothingEnabled` and
-         * `imageSmoothingQuality` properties of the `CanvasRenderingContext2D`
-         * interface.
-         * 
-         * By default, smoothing is enabled at `'low'` quality. It can be set to of
-         * `'off'` to scale the raster's pixels by repeating the nearest neighboring
-         * pixels, or to `'low'`, `'medium'` or `'high'` to control the various
-         * degrees of available image smoothing quality.
-         * 
-         * For backward compatibility, it can can also be set to `false` (= `'off'`)
-         * or `true` (= `'low'`).
+         * Specifies if the raster should be smoothed when scaled up or if the
+         * pixels should be scaled up by repeating the nearest neighboring pixels.
          */
-        smoothing: string
+        smoothing: boolean
 
         /** 
          * The event handler function to be called when the underlying image has

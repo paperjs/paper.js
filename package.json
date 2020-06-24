@@ -23,7 +23,7 @@
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
-    "preinstall": "[ $npm_config_heading = 'npm' ] && npx npm-force-resolutions || true"
+    "postshrinkwrap": "npx --quiet npm-force-resolutions && npm install --no-package-lock --no-audit --no-fund --no-progress --silent"
   },
   "files": [
     "AUTHORS.md",
