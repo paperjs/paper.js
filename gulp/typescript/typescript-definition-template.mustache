@@ -15,6 +15,28 @@
  */
 
 declare namespace paper {
+
+    type PointLike = (
+        Point
+        | [ number, number ]
+        | { x: number, y: number }
+        | { width: number, height: number }
+        | { angle: number, length: number }
+    )
+
+    type SizeLike = (
+        Size
+        | [ number, number ]
+        | { x: number, y: number }
+        | { width: number, height: number }
+    )
+
+    type RectangleLike = (
+        Rectangle
+        | [ number, number, number, number ]
+        | { x: number, y: number, width: number, height: number }
+        | { from: PointLike, to: PointLike }
+    )
     {{#classes}}
 
     {{#doc}}4{{/doc}}
