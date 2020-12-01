@@ -11,6 +11,7 @@
  */
 
 /*#*/ include('Point.js');
+/*#*/ include('Line.js');
 /*#*/ include('Size.js');
 /*#*/ include('Rectangle.js');
 /*#*/ include('Matrix.js');
