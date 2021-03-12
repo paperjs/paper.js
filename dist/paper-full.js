@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Jun 25 05:48:57 2020 +0900
+ * Date: Fri Mar 12 22:28:42 2021 +0100
  *
  ***
  *
@@ -14052,7 +14052,7 @@ var Tween = Base.extend(Emitter, {
 	_class: 'Tween',
 
 	statics: {
-		easings: {
+		easings: new Base({
 			linear: function(t) {
 				return t;
 			},
@@ -14112,7 +14112,7 @@ var Tween = Base.extend(Emitter, {
 					? 16 * t * t * t * t * t
 					: 1 + 16 * (--t) * t * t * t * t;
 			}
-		}
+		})
 	},
 
 	initialize: function Tween(object, from, to, duration, easing, start) {
