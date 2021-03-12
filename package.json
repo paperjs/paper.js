@@ -21,6 +21,7 @@
     "dist": "gulp dist",
     "zip": "gulp zip",
     "docs": "gulp docs",
+    "publish": "gulp publish",
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
@@ -89,7 +90,7 @@
     "source-map-support": "^0.5.19",
     "stats.js": "^0.17.0",
     "straps": "^3.0.1",
-    "typescript": "^4.2.3"
+    "typescript": "^3.9.5"
   },
   "resolutions": {
     "graceful-fs": "4.2.2"
