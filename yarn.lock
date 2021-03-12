@@ -654,7 +654,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canvas@npm:^2.7.0":
+"canvas@npm:^2.6.1, canvas@npm:^2.7.0":
   version: 2.7.0
   resolution: "canvas@npm:2.7.0"
   dependencies:
@@ -3089,7 +3089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^16.5.0":
+"jsdom@npm:^16.2.2, jsdom@npm:^16.5.0":
   version: 16.5.0
   resolution: "jsdom@npm:16.5.0"
   dependencies:
@@ -4431,7 +4431,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"paper@workspace:.":
+"paper-jsdom-canvas@workspace:packages/paper-jsdom-canvas":
+  version: 0.0.0-use.local
+  resolution: "paper-jsdom-canvas@workspace:packages/paper-jsdom-canvas"
+  dependencies:
+    canvas: ^2.6.1
+    jsdom: ^16.2.2
+    paper: 0.12.12
+    source-map-support: ^0.5.19
+  languageName: unknown
+  linkType: soft
+
+"paper-jsdom@workspace:packages/paper-jsdom":
+  version: 0.0.0-use.local
+  resolution: "paper-jsdom@workspace:packages/paper-jsdom"
+  dependencies:
+    jsdom: ^16.2.2
+    paper: 0.12.12
+    source-map-support: ^0.5.19
+  languageName: unknown
+  linkType: soft
+
+"paper@0.12.12, paper@workspace:.":
   version: 0.0.0-use.local
   resolution: "paper@workspace:."
   dependencies:

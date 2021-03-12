@@ -42,7 +42,7 @@ gulp.task('publish', function(callback) {
     run(
         'publish:json',
         'publish:dist',
-        'publish:packages',
+        // 'publish:packages',
         'publish:commit',
         'publish:website',
         'publish:release',
@@ -64,7 +64,7 @@ gulp.task('publish:json', ['publish:version'], function() {
             version: options.version
         }, jsonOptions))
         .pipe(gulp.dest('.'))
-        .pipe(shell('yarn install')); // Update package-lock.json
+        .pipe(shell('yarn install')); // Update yarn.json
 });
 
 gulp.task('publish:dist', ['zip']);
