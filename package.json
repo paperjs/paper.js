@@ -21,6 +21,7 @@
     "dist": "gulp dist",
     "zip": "gulp zip",
     "docs": "gulp docs",
+    "publish": "gulp publish",
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",

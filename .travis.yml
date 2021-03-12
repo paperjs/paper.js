@@ -1,6 +1,6 @@
 language: node_js
 os: linux
-# Follow https://github.com/nodejs/LTS to decide when to remove a version
+# Follow https://github.com/nodejs/Release#release-schedule to decide when to remove a version
 node_js:
 - stable
 - 14
