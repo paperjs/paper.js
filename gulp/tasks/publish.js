@@ -38,11 +38,11 @@ gulp.task('publish', function(callback) {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
     // publish:website comes before publish:release, so paperjs.zip file is gone
-    // before npm publish:
+    // before yarn npm publish:
     run(
         'publish:json',
         'publish:dist',
-        'publish:packages',
+        // 'publish:packages',
         'publish:commit',
         'publish:website',
         'publish:release',
@@ -64,7 +64,7 @@ gulp.task('publish:json', ['publish:version'], function() {
             version: options.version
         }, jsonOptions))
         .pipe(gulp.dest('.'))
-        .pipe(shell('npm install')); // Update package-lock.json
+        .pipe(shell('yarn install')); // Update yarn.json
 });
 
 gulp.task('publish:dist', ['zip']);
@@ -82,7 +82,7 @@ gulp.task('publish:release', function() {
         .pipe(git.checkout('master'))
         .pipe(git.merge('develop', { args: '-X theirs' }))
         .pipe(git.push('origin', ['master', 'develop'], { args: '--tags' }))
-        .pipe(shell('npm publish'));
+        .pipe(shell('yarn npm publish'));
 });
 
 gulp.task('publish:packages',
@@ -107,7 +107,7 @@ packages.forEach(function(name) {
             .pipe(git.commit(releaseMessage, opts))
             .pipe(git.tag('v' + options.version, releaseMessage, opts))
             .pipe(git.push('origin', 'master', { args: '--tags', cwd: path }))
-            .pipe(shell('npm publish', opts));
+            .pipe(shell('yarn npm publish', opts));
     });
 });
 

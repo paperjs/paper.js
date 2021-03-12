@@ -6,37 +6,25 @@
     <link rel="stylesheet" href="../css/style.css">
     <script type="text/javascript" src="../../dist/paper-full.js"></script>
     <script type="text/paperscript" canvas="canvas">
-        // Draw raster with default smoothing value:
-        var defaultRaster = new Raster('pattern');
+        var raster = new Raster('pattern');
 
-        // Wait for it to be loaded:
-        defaultRaster.onLoad = function () {
-            var textOffset = [0, -10];
-            // Scale it up so that we can see if pixels are smoothed or not
-            defaultRaster.scale(3);
-            defaultRaster.position = [ 200, 250 ];
-            new PointText({
-                point: defaultRaster.bounds.topLeft + textOffset,
-                content: 'Default'
+        function showRasters(raster, position, scale) {
+            ['off', 'low', 'medium', 'high'].forEach(function(value, index) {
+                var clone = raster.clone();
+                clone.scale(scale);
+                clone.smoothing = value;
+                clone.bounds.topLeft = position + [400 * index, 0];
+                new PointText({
+                    point: clone.bounds.topLeft + [0, -10],
+                    content: value
+                });
             });
+        }
 
-            // Make a clone with smoothing set to true.
-            var smoothedRaster = defaultRaster.clone();
-            smoothedRaster.smoothing = true;
-            smoothedRaster.position += [ 0, defaultRaster.bounds.height + 50 ];
-            new PointText({
-                point: smoothedRaster.bounds.topLeft + textOffset,
-                content: 'Smoothed'
-            });
-
-            // Make a clone with smoothing set to false.
-            var pixelatedRaster = defaultRaster.clone();
-            pixelatedRaster.smoothing = false;
-            pixelatedRaster.position += [ defaultRaster.bounds.width + 50, 0 ];
-            new PointText({
-                point: pixelatedRaster.bounds.topLeft + textOffset,
-                content: 'Pixelated'
-            });
+        raster.onLoad = function () {
+            showRasters(raster, new Point(50, 50), 4);
+            showRasters(raster, new Point(50, 600), 0.75);
+            raster.remove();
         };
 
     </script>

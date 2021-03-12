@@ -1,8 +1,9 @@
 language: node_js
 os: linux
-# Follow https://github.com/nodejs/LTS to decide when to remove a version
+# Follow https://github.com/nodejs/Release#release-schedule to decide when to remove a version
 node_js:
 - stable
+- 14
 - 13
 - 12
 - 10
@@ -25,6 +26,7 @@ addons:
     - libjpeg62-dev
     - libgif-dev
 cache:
+  yarn: true
   directories:
   - "~/.assets"
   - "~/.nvm"
@@ -33,12 +35,10 @@ install:
 - travis/install-assets.sh
 before_script:
 - travis/setup-git.sh
-- npm set progress=false
-- which gulp || npm install -g gulp-cli
-- npm install
+- yarn install
 script:
-- gulp jshint
-- gulp minify
-- gulp test
-- gulp zip
-- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "11" ] && travis/deploy-prebuilt.sh || true'
+- yarn jshint
+- yarn minify
+- yarn test
+- yarn zip
+- '[ "${TRAVIS_BRANCH}" = "develop" ] && [ "${TRAVIS_NODE_VERSION}" = "14" ] && travis/deploy-prebuilt.sh || true'

@@ -180,20 +180,26 @@ test('Raster#getAverageColor(path) with compound path', function() {
             { tolerance: 1e-3 });
 });
 
-test('Raster#smoothing defaults to true', function() {
+test('Raster#smoothing defaults to \'low\'', function() {
     var raster = new Raster();
-    equals(raster.smoothing, true);
+    equals(raster.smoothing, 'low');
 });
 
 test('Raster#smoothing', function() {
-    var raster = new Raster({ smoothing: false });
-    equals(raster.smoothing, false);
+    var raster = new Raster({ smoothing: 'off' });
+    equals(raster.smoothing, 'off');
+
+    raster.smoothing = 'medium';
+    equals(raster.smoothing, 'medium');
+
+    raster.smoothing = false;
+    equals(raster.smoothing, 'off');
 
     raster.smoothing = true;
-    equals(raster.smoothing, true);
+    equals(raster.smoothing, 'low');
 });
 
-test('Raster#setSmoothing setting does not impact canvas context', function(assert) {
+test('Raster#smoothing setting does not impact canvas context', function(assert) {
     var done = assert.async();
     var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAABlJREFUeNpi+s/AwPCfgYmR4f9/hv8AAQYAHiAFAS8Lwy8AAAAASUVORK5CYII=');
     var view = raster.view;

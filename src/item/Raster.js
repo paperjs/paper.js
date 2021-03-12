@@ -30,7 +30,7 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
     // Prioritize `crossOrigin` over `source`:
     _prioritize: ['crossOrigin'],
-    _smoothing: true,
+    _smoothing: 'low',
     // Enforce creation of beans, as bean getters have hidden parameters.
     // See  #getContext(_change) below.
     beans: true,
@@ -187,19 +187,20 @@ var Raster = Item.extend(/** @lends Raster# */{
                 this, 'setSize');
     },
 
-    setSize: function(/* size */) {
+    setSize: function(_size, _clear) {
         var size = Size.read(arguments);
         if (!size.equals(this._size)) { // NOTE: this._size could be null
             if (size.width > 0 && size.height > 0) {
                 // Get reference to image before changing canvas.
-                var element = this.getElement();
+                var element = !_clear && this.getElement();
                 // NOTE: Setting canvas internally sets _size.
                 // NOTE: No need to release canvas because #_setImage() does so.
                 this._setImage(CanvasProvider.getCanvas(size));
-                // Draw element back onto new canvas.
-                if (element)
+                if (element) {
+                    // Draw element back onto the new, resized canvas.
                     this.getContext(true).drawImage(element, 0, 0,
                             size.width, size.height);
+                }
             } else {
                 // 0-width / height dimensions do not require the creation of
                 // an internal canvas. Just reflect the size for now.
@@ -207,6 +208,9 @@ var Raster = Item.extend(/** @lends Raster# */{
                     CanvasProvider.release(this._canvas);
                 this._size = size.clone();
             }
+        } else if (_clear) {
+            // We can reuse the canvas, but need to clear it.
+            this.clear();
         }
     },
 
@@ -479,17 +483,27 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     /**
-     * Specifies if the raster should be smoothed when scaled up or if the
-     * pixels should be scaled up by repeating the nearest neighboring pixels.
+     * Determines if the raster is drawn with pixel smoothing when scaled up or
+     * down, and if so, at which quality its pixels are to be smoothed. The
+     * settings of this property control both the `imageSmoothingEnabled` and
+     * `imageSmoothingQuality` properties of the `CanvasRenderingContext2D`
+     * interface.
+     *
+     * By default, smoothing is enabled at `'low'` quality. It can be set to of
+     * `'off'` to scale the raster's pixels by repeating the nearest neighboring
+     * pixels, or to `'low'`, `'medium'` or `'high'` to control the various
+     * degrees of available image smoothing quality.
+     *
+     * For backward compatibility, it can can also be set to `false` (= `'off'`)
+     * or `true` (= `'low'`).
      *
      * @bean
-     * @type Boolean
-     * @default true
+     * @type String
+     * @default 'low'
+     * @values 'low', 'medium', 'high', 'off'
      *
-     * @example {@paperscript}
-     * var raster = new Raster({
-     *     source: 'http://assets.paperjs.org/images/marilyn.jpg',
-     *     smoothing: false
+     * @example {@paperscript} var raster = new Raster({source:
+     * 'http://assets.paperjs.org/images/marilyn.jpg', smoothing: 'off'
      * });
      * raster.scale(5);
      */
@@ -498,7 +512,9 @@ var Raster = Item.extend(/** @lends Raster# */{
     },
 
     setSmoothing: function(smoothing) {
-        this._smoothing = smoothing;
+        this._smoothing = typeof smoothing === 'string'
+            ? smoothing
+            : smoothing ? 'low' : 'off';
         this._changed(/*#=*/Change.ATTRIBUTE);
     },
 
@@ -831,11 +847,14 @@ var Raster = Item.extend(/** @lends Raster# */{
             // Call _setStyles() to make sure shadow is drawn (#1437).
             this._setStyles(ctx, param, viewMatrix);
 
-            // Set context smoothing value according to raster property.
-            // There's no need to restore original value after drawing due to
-            // the call to ctx.restore() in Item#draw() after this method call.
+            // `Raster#smoothing` controlls both the `imageSmoothingQuality`
+            // and `imageSmoothingEnabled` canvas context properties:
+            var smoothing = this._smoothing,
+                disabled = smoothing === 'off';
             DomElement.setPrefixed(
-                ctx, 'imageSmoothingEnabled', this._smoothing
+                ctx,
+                disabled ? 'imageSmoothingEnabled' : 'imageSmoothingQuality',
+                disabled ? false : smoothing
             );
 
             ctx.drawImage(element,

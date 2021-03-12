@@ -1739,16 +1739,32 @@ new function() { // Injection scope for various item event handlers
     },
 
     /**
+     * @name Item#rasterize
+     * @function
+     * @param {Number} [resolution=view.resolution]
+     * @param {Boolean} [insert=true]
+     * @deprecated use {@link #rasterize(options)} instead.
+     */
+    /**
      * Rasterizes the item into a newly created Raster object. The item itself
      * is not removed after rasterization.
      *
-     * @param {Number} [resolution=view.resolution] the resolution of the raster
-     *     in pixels per inch (DPI). If not specified, the value of
-     *     `view.resolution` is used.
-     * @param {Boolean} [insert=true] specifies whether the raster should be
+     * @option [resolution=view.resolution] {Number} the desired resolution to
+     *     be used when rasterizing, in pixels per inch (DPI). If not specified,
+     *     the value of `view.resolution` is used by default.
+     * @option [raster=null] {Raster} specifies a raster to be reused when
+     *     rasterizing. If the raster has the desired size already, then the
+     *     underlying canvas is reused and no new memory needs to be allocated.
+     *     If no raster is provided, a new raster item is created and returned
+     *     instead.
+     * @option [insert=true] {Boolean} specifies whether the raster should be
      *     inserted into the scene graph. When set to `true`, it is inserted
-     *     above the original
-     * @return {Raster} the newly created raster item
+     *     above the rasterized item.
+     *
+     * @name Item#rasterize
+     * @function
+     * @param {Object} [options={}] the rasterization options
+     * @return {Raster} the reused raster or the newly created raster item
      *
      * @example {@paperscript}
      * // Rasterizing an item:
@@ -1768,7 +1784,21 @@ new function() { // Injection scope for various item event handlers
      * circle.scale(5);
      * raster.scale(5);
      */
-    rasterize: function(resolution, insert) {
+    rasterize: function(arg0, arg1) {
+        var resolution,
+            insert,
+            raster;
+        if (Base.isPlainObject(arg0)) {
+            resolution = arg0.resolution;
+            insert = arg0.insert;
+            raster = arg0.raster;
+        } else {
+            resolution = arg0;
+            insert = arg1;
+        }
+        if (!raster) {
+            raster = new Raster(Item.NO_INSERT);
+        }
         // TODO: Switch to options object for more descriptive call signature.
         var bounds = this.getStrokeBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
@@ -1776,20 +1806,18 @@ new function() { // Injection scope for various item event handlers
             // blur or cut pixels.
             topLeft = bounds.getTopLeft().floor(),
             bottomRight = bounds.getBottomRight().ceil(),
-            size = new Size(bottomRight.subtract(topLeft)),
-            raster = new Raster(Item.NO_INSERT);
+            size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
+        // Pass `true` for clear, so reused rasters don't draw over old pixels.
+        raster.setSize(size, true);
+
         if (!size.isZero()) {
-            var canvas = CanvasProvider.getCanvas(size.multiply(scale)),
-                ctx = canvas.getContext('2d'),
+            var ctx = raster.getContext(true),
                 matrix = new Matrix().scale(scale).translate(topLeft.negate());
             ctx.save();
             matrix.applyToContext(ctx);
             // See Project#draw() for an explanation of new Base()
             this.draw(ctx, new Base({ matrices: [matrix] }));
             ctx.restore();
-            // NOTE: We don't need to release the canvas since it belongs to the
-            // raster now!
-            raster.setCanvas(canvas);
         }
         raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
                 // Take resolution into account and scale back to original size.
