@@ -2,5 +2,5 @@
   "files.exclude": {
     ".yarn": true,
     "yarn.lock": true
-  },
+  }
 }
