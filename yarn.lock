@@ -654,7 +654,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canvas@npm:^2.6.1, canvas@npm:^2.7.0":
+"canvas@npm:^2.7.0":
   version: 2.7.0
   resolution: "canvas@npm:2.7.0"
   dependencies:
@@ -3089,7 +3089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^16.2.2, jsdom@npm:^16.5.0":
+"jsdom@npm:^16.5.0":
   version: 16.5.0
   resolution: "jsdom@npm:16.5.0"
   dependencies:
@@ -4435,8 +4435,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "paper-jsdom-canvas@workspace:packages/paper-jsdom-canvas"
   dependencies:
-    canvas: ^2.6.1
-    jsdom: ^16.2.2
+    canvas: ^2.7.0
+    jsdom: ^16.5.0
     paper: 0.12.12
     source-map-support: ^0.5.19
   languageName: unknown
@@ -4446,7 +4446,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "paper-jsdom@workspace:packages/paper-jsdom"
   dependencies:
-    jsdom: ^16.2.2
+    jsdom: ^16.5.0
     paper: 0.12.12
     source-map-support: ^0.5.19
   languageName: unknown
@@ -4491,7 +4491,7 @@ __metadata:
     source-map-support: ^0.5.19
     stats.js: ^0.17.0
     straps: ^3.0.1
-    typescript: ^3.9.5
+    typescript: ^3.9.9
   languageName: unknown
   linkType: soft
 
@@ -6091,7 +6091,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-typescript@^3.9.5:
+typescript@^3.9.9:
   version: 3.9.9
   resolution: "typescript@npm:3.9.9"
   bin:
@@ -6101,7 +6101,7 @@ typescript@^3.9.5:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^3.9.5#builtin<compat/typescript>":
+"typescript@patch:typescript@^3.9.9#builtin<compat/typescript>":
   version: 3.9.9
   resolution: "typescript@patch:typescript@npm%3A3.9.9#builtin<compat/typescript>::version=3.9.9&hash=a45b0e"
   bin:
