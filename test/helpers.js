@@ -110,8 +110,9 @@ var equals = function(actual, expected, message, options) {
             || (cls = expected && expected._class) // check _class 2nd last
             || type === 'object' && 'Object'; // Object as catch-all
     var comparator = type && comparators[type];
-    if (!message)
+    if (!message) {
         message = type ? type.toLowerCase() : 'value';
+    }
     if (comparator) {
         comparator(actual, expected, message, options);
     } else if (expected && expected.equals) {
@@ -166,9 +167,10 @@ var compareProperties = function(actual, expected, properties, message, options)
  * @param {ImageData} imageData1 the expected image data
  * @param {ImageData} imageData2 the actual image data
  * @param {number} tolerance
- * @param {string} diffDetail text displayed when comparison fails
+ * @param {string} message
+ * @param {string} description text displayed when comparison fails
  */
-var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
+var compareImageData = function(imageData1, imageData2, tolerance, message, description) {
     /**
      * Build an image element from a given image data.
      * @param {ImageData} imageData
@@ -215,12 +217,8 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
     var fixed = tolerance < 1 ? ((1 / tolerance) + '').length - 1 : 0,
         identical = result ? 100 - result.misMatchPercentage : 0,
         ok = Math.abs(100 - identical) <= tolerance,
-        text = identical.toFixed(fixed) + '% identical',
-        detail = text;
-    if (!ok && diffDetail) {
-        detail += diffDetail;
-    }
-    QUnit.push(ok, text, (100).toFixed(fixed) + '% identical');
+        text = identical.toFixed(fixed) + '% identical';
+    QUnit.push(ok, text, (100).toFixed(fixed) + '% identical', message);
     if (!ok && result && !isNodeContext) {
         // Get the right entry for this unit test and assertion, and
         // replace the results with images
@@ -229,7 +227,8 @@ var compareImageData = function(imageData1, imageData2, tolerance, diffDetail) {
             bounds = result.diffBounds;
         entry.querySelector('.test-expected td').appendChild(image(imageData2));
         entry.querySelector('.test-actual td').appendChild(image(imageData1));
-        entry.querySelector('.test-diff td').innerHTML = '<pre>' + detail
+        entry.querySelector('.test-diff td').innerHTML = '<pre>'
+            + text + (description || '')
             + '</pre><br>'
             + '<img src="' + result.getImageDataUrl() + '">';
     }
@@ -293,7 +292,7 @@ var comparePixels = function(actual, expected, message, options) {
             QUnit.stack(2));
     } else {
         // Compare the two rasterized items.
-        var detail = actual instanceof PathItem && expected instanceof PathItem
+        var description = actual instanceof PathItem && expected instanceof PathItem
             ? '\nExpected:\n' + expected.pathData +
                 '\nActual:\n' + actual.pathData
             : '';
@@ -301,7 +300,8 @@ var comparePixels = function(actual, expected, message, options) {
             actualRaster.getImageData(),
             expectedRaster.getImageData(),
             options.tolerance,
-            detail
+            message,
+            description
         );
     }
 };
@@ -338,41 +338,6 @@ var compareItem = function(actual, expected, message, options, properties) {
         compareProperties(actual.style, expected.style, styles,
                 message + ' (#style)', options);
     }
-};
-
-/**
- * Run each callback in a separated canvas context and compare both outputs.
- * This can be used to do selection drawing tests as it is not possible with
- * comparePixels() method which relies on the item.rasterize() method which
- * ignores selection.
- * @param {number} width the width of the canvas
- * @param {number} height the height of the canvas
- * @param {function} expectedCallback the function producing the expected result
- * @param {function} actualCallback the function producing the actual result
- * @param {number} tolerance between 0 and 1
- */
-var compareCanvas = function(width, height, expected, actual, tolerance) {
-    function getImageData(width, height, callback) {
-        var canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        var project = new Project(canvas);
-        var view = project.view;
-        callback();
-        view.update();
-        var imageData = view.context.getImageData(0, 0, width, height);
-        project.remove();
-        canvas.remove();
-        return imageData;
-    }
-
-    compareImageData(
-        getImageData(width, height, expected),
-        getImageData(width, height, actual),
-        tolerance
-    );
-
-    currentProject.activate();
 };
 
 // A list of comparator functions, based on `expected` type. See equals() for
