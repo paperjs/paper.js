@@ -64,14 +64,13 @@ gulp.task('publish:json', ['publish:version'], function() {
             version: options.version
         }, jsonOptions))
         .pipe(gulp.dest('.'))
-        .pipe(shell('yarn install')); // Update yarn.json
 });
 
 gulp.task('publish:dist', ['zip']);
 
 gulp.task('publish:commit', ['publish:version'], function() {
     return gulp.src('.')
-        .pipe(git.checkout('develop'))
+        .pipe(shell('yarn install')) // Update yarn.lock
         .pipe(git.add())
         .pipe(git.commit(releaseMessage))
         .pipe(git.tag('v' + options.version, releaseMessage));
@@ -103,10 +102,6 @@ packages.forEach(function(name) {
                 }
             }, jsonOptions))
             .pipe(gulp.dest(path))
-            .pipe(git.add(opts))
-            .pipe(git.commit(releaseMessage, opts))
-            .pipe(git.tag('v' + options.version, releaseMessage, opts))
-            .pipe(git.push('origin', 'master', { args: '--tags', cwd: path }))
             .pipe(shell('yarn npm publish', opts));
     });
 });
