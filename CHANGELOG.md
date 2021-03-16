@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.12.13`
+
+### Fixed
+
+- Fix faulty positioning regression in `Item#rasterize()` (#1905).
+
 ## `0.12.12`
 
 ### Fixed
