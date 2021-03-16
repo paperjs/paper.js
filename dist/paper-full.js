@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.12 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.13 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 12 23:32:51 2021 +0100
+ * Date: Tue Mar 16 21:16:36 2021 +0100
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.12",
+	version: "0.12.13",
 
 	getView: function() {
 		var project = this.project;
@@ -3903,17 +3903,20 @@ new function() {
 			resolution = arg0;
 			insert = arg1;
 		}
-		if (!raster) {
+		if (raster) {
+			raster.matrix.reset(true);
+		} else {
 			raster = new Raster(Item.NO_INSERT);
 		}
 		var bounds = this.getStrokeBounds(),
 			scale = (resolution || this.getView().getResolution()) / 72,
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil(),
-			size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
-		raster.setSize(size, true);
+			boundsSize = new Size(bottomRight.subtract(topLeft)),
+			rasterSize = boundsSize.multiply(scale);
+		raster.setSize(rasterSize, true);
 
-		if (!size.isZero()) {
+		if (!rasterSize.isZero()) {
 			var ctx = raster.getContext(true),
 				matrix = new Matrix().scale(scale).translate(topLeft.negate());
 			ctx.save();
@@ -3921,10 +3924,14 @@ new function() {
 			this.draw(ctx, new Base({ matrices: [matrix] }));
 			ctx.restore();
 		}
-		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
-				.scale(1 / scale));
-		if (insert === undefined || insert)
+		raster.transform(
+			new Matrix()
+				.translate(topLeft.add(boundsSize.divide(2)))
+				.scale(1 / scale)
+		);
+		if (insert === undefined || insert) {
 			raster.insertAbove(this);
+		}
 		return raster;
 	},
 
