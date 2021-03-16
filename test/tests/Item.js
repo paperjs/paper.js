@@ -1025,8 +1025,37 @@ test('Children global matrices are cleared after parent transformation', functio
 
 test('Item#rasterize() with empty bounds', function() {
     new Path.Line([0, 0], [100, 0]).rasterize();
-    view.update();
+    view.update(); // This should not throw
     expect(0);
+});
+
+test('Item#rasterize() bounds', function() {
+    var circle = new Path.Circle({
+        center: [50, 50],
+        radius: 5,
+        fillColor: 'red'
+    });
+    equals(function() {
+        return circle.bounds;
+    }, new Rectangle({ x: 45, y: 45, width: 10, height: 10 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 72 }).bounds;
+    }, new Rectangle({ x: 45, y: 45, width: 10, height: 10 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 144 }).bounds;
+    }, new Rectangle({ x: 45, y: 45, width: 10, height: 10 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 200 }).bounds;
+    }, new Rectangle({ x: 45.14, y: 45.14, width: 9.72, height: 9.72 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 400 }).bounds;
+    }, new Rectangle({ x: 45.05, y: 45.05, width: 9.9, height: 9.9 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 600 }).bounds;
+    }, new Rectangle({ x: 45.02, y: 45.02, width: 9.96, height: 9.96 }));
+    equals(function() {
+        return circle.rasterize({ resolution: 1000 }).bounds;
+    }, new Rectangle({ x: 45.032, y: 45.032, width: 9.936, height: 9.936 }));
 });
 
 test('Item#draw() with CompoundPath as clip item', function() {

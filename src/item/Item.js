@@ -1796,21 +1796,23 @@ new function() { // Injection scope for various item event handlers
             resolution = arg0;
             insert = arg1;
         }
-        if (!raster) {
+        if (raster) {
+            raster.matrix.reset(true);
+        } else {
             raster = new Raster(Item.NO_INSERT);
         }
-        // TODO: Switch to options object for more descriptive call signature.
         var bounds = this.getStrokeBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
             // Floor top-left corner and ceil bottom-right corner, to never
             // blur or cut pixels.
             topLeft = bounds.getTopLeft().floor(),
             bottomRight = bounds.getBottomRight().ceil(),
-            size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
+            boundsSize = new Size(bottomRight.subtract(topLeft)),
+            rasterSize = boundsSize.multiply(scale);
         // Pass `true` for clear, so reused rasters don't draw over old pixels.
-        raster.setSize(size, true);
+        raster.setSize(rasterSize, true);
 
-        if (!size.isZero()) {
+        if (!rasterSize.isZero()) {
             var ctx = raster.getContext(true),
                 matrix = new Matrix().scale(scale).translate(topLeft.negate());
             ctx.save();
@@ -1819,11 +1821,15 @@ new function() { // Injection scope for various item event handlers
             this.draw(ctx, new Base({ matrices: [matrix] }));
             ctx.restore();
         }
-        raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
+        raster.transform(
+            new Matrix()
+                .translate(topLeft.add(boundsSize.divide(2)))
                 // Take resolution into account and scale back to original size.
-                .scale(1 / scale));
-        if (insert === undefined || insert)
+                .scale(1 / scale)
+        );
+        if (insert === undefined || insert) {
             raster.insertAbove(this);
+        }
         return raster;
     },
 
