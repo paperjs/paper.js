@@ -1796,9 +1796,7 @@ new function() { // Injection scope for various item event handlers
             resolution = arg0;
             insert = arg1;
         }
-        if (raster) {
-            raster.matrix.reset(true);
-        } else {
+        if (!raster) {
             raster = new Raster(Item.NO_INSERT);
         }
         var bounds = this.getStrokeBounds(),
@@ -1821,7 +1819,7 @@ new function() { // Injection scope for various item event handlers
             this.draw(ctx, new Base({ matrices: [matrix] }));
             ctx.restore();
         }
-        raster.transform(
+        raster._matrix.set(
             new Matrix()
                 .translate(topLeft.add(boundsSize.divide(2)))
                 // Take resolution into account and scale back to original size.
