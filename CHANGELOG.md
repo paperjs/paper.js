@@ -1,5 +1,11 @@
 # Change Log
 
+## `0.12.14`
+
+### Fixed
+
+- Fix NPM installation problem with `husky` introduced in `v0.12.13`
+
 ## `0.12.13`
 
 ### Fixed
