@@ -99,7 +99,7 @@ packages.forEach(function(name) {
                 }
             }, jsonModifierOptions))
             .pipe(gulp.dest(path))
-            .pipe(shell('yarn npm publish', opts));
+            // .pipe(shell('yarn npm publish', opts));
     });
 });
 
