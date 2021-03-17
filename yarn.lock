@@ -843,13 +843,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^2.19.0":
-  version: 2.20.3
-  resolution: "commander@npm:2.20.3"
-  checksum: b73428e97de7624323f81ba13f8ed9271de487017432d18b4da3f07cfc528ad754bbd199004bd5d14e0ccd67d1fdfe0ec8dbbd4c438b401df3c4cc387bfd1daa
-  languageName: node
-  linkType: hard
-
 "component-emitter@npm:^1.2.1":
   version: 1.3.0
   resolution: "component-emitter@npm:1.3.0"
@@ -873,16 +866,6 @@ __metadata:
     readable-stream: ^2.2.2
     typedarray: ^0.0.6
   checksum: 7a97b7a7d0938e36800bdb6f5caf938bac8c523a6ec15df1f2ac41d3785541be30a6671c9f4c0d1ac9609e6ab29dcab8f54d1c84035e3e3b7b24f9336da68ab0
-  languageName: node
-  linkType: hard
-
-"config-chain@npm:^1.1.12":
-  version: 1.1.12
-  resolution: "config-chain@npm:1.1.12"
-  dependencies:
-    ini: ^1.3.4
-    proto-list: ~1.2.1
-  checksum: caf4b96491c2ea6fc5e6e23cebc526040cf21779ffc544c705a21b788f7dc3d34bc439878dcdfae8c15830052be55d62b26acada13da1236142d3efc5b4329be
   languageName: node
   linkType: hard
 
@@ -1191,13 +1174,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detect-indent@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "detect-indent@npm:6.0.0"
-  checksum: ad0619414151942d278c06cd4b6b79feb96c16eebf4979ef1d03433941f1a85c9bba7daba73a73814d629923716169da5416bbc4290c232d53a2dc06f462da5f
-  languageName: node
-  linkType: hard
-
 "detect-libc@npm:^1.0.2":
   version: 1.0.3
   resolution: "detect-libc@npm:1.0.3"
@@ -1284,20 +1260,6 @@ __metadata:
     jsbn: ~0.1.0
     safer-buffer: ^2.1.0
   checksum: 5b4dd05f24b2b94c1bb882488dba2b878bb5b83182669aa71fbdf53c6941618180cb226c4eb9a3e2fa51ad11f87b5edb0a7d7289cdef468ba2e6024542f73f07
-  languageName: node
-  linkType: hard
-
-"editorconfig@npm:^0.15.3":
-  version: 0.15.3
-  resolution: "editorconfig@npm:0.15.3"
-  dependencies:
-    commander: ^2.19.0
-    lru-cache: ^4.1.5
-    semver: ^5.6.0
-    sigmund: ^1.0.1
-  bin:
-    editorconfig: bin/editorconfig
-  checksum: ed8491cac424b93c00b9ead7b1d67267901bc87807b3f977b328f83f118018aa216225bd05fc1aa72a5b3e76fa93e19097ee7a0b9409779864a0ceef0ed2e0ea
   languageName: node
   linkType: hard
 
@@ -2079,16 +2041,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"gulp-json-editor@npm:^2.5.4":
-  version: 2.5.4
-  resolution: "gulp-json-editor@npm:2.5.4"
+"gulp-json-modifier@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "gulp-json-modifier@npm:1.0.0"
   dependencies:
     deepmerge: ^4.2.1
-    detect-indent: ^6.0.0
-    js-beautify: ^1.10.2
     plugin-error: ^1.0.1
     through2: ^3.0.1
-  checksum: e3886589a85ac994a9e7b0f269054f35d579fcd59772c38d9004435e3d3c8716b7dc756481eaa265d36451ef6c9667c5860f42ec2bbc18e54cb0dd2f8f85619f
+  checksum: 7fb41ff0b5a7e7184a8d3621e5b58ff8be50177da3537713a69382ceca5a274ac0b5723ddcaa67450a1a3c3d2f5e2fd18ab5a39a22302b3f3bcbf3971d79d4b5
   languageName: node
   linkType: hard
 
@@ -2903,23 +2863,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-beautify@npm:^1.10.2":
-  version: 1.13.5
-  resolution: "js-beautify@npm:1.13.5"
-  dependencies:
-    config-chain: ^1.1.12
-    editorconfig: ^0.15.3
-    glob: ^7.1.3
-    mkdirp: ^1.0.4
-    nopt: ^5.0.0
-  bin:
-    css-beautify: js/bin/css-beautify.js
-    html-beautify: js/bin/html-beautify.js
-    js-beautify: js/bin/js-beautify.js
-  checksum: aef240c68f116401d65e42513e16d10033b1ddf430f5a922c96e99f52d645f6c4b92d86138168413991ff58e01058906b0f5007bdb94bd35472c49499e2592f8
-  languageName: node
-  linkType: hard
-
 "jsbn@npm:~0.1.0":
   version: 0.1.1
   resolution: "jsbn@npm:0.1.1"
@@ -3499,16 +3442,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lru-cache@npm:^4.1.5":
-  version: 4.1.5
-  resolution: "lru-cache@npm:4.1.5"
-  dependencies:
-    pseudomap: ^1.0.2
-    yallist: ^2.1.2
-  checksum: 6a098d23629357451d4324e1e4fefccdd6df316df29e25571c6148220ced923258381ebeafdf919f90e28c780b650427390582618c1d5fe097873e656d062511
-  languageName: node
-  linkType: hard
-
 "lru-cache@npm:^6.0.0":
   version: 6.0.0
   resolution: "lru-cache@npm:6.0.0"
@@ -3785,7 +3718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^1.0.3, mkdirp@npm:^1.0.4":
+"mkdirp@npm:^1.0.3":
   version: 1.0.4
   resolution: "mkdirp@npm:1.0.4"
   bin:
@@ -4253,7 +4186,7 @@ __metadata:
     gulp-cached: ^1.1.1
     gulp-git-streamed: ^2.10.1
     gulp-jshint: ^2.1.0
-    gulp-json-editor: ^2.5.4
+    gulp-json-modifier: ^1.0.0
     gulp-prepro: ^2.4.0
     gulp-qunits: ^2.1.2
     gulp-rename: ^2.0.0
@@ -4541,24 +4474,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"proto-list@npm:~1.2.1":
-  version: 1.2.4
-  resolution: "proto-list@npm:1.2.4"
-  checksum: e722a11c66837cab0d5b81dd3f18717b73ea068fad0ceaf71d856e82167699c632201d0a1793ea48c997f1ac8544e9af89debc5cbd389b639370bc1adfb3abb4
-  languageName: node
-  linkType: hard
-
 "proxy-middleware@npm:^0.5.0":
   version: 0.5.1
   resolution: "proxy-middleware@npm:0.5.1"
   checksum: 77b52f256b78cfa3e729f8f58468ba98235d168704ca081924f719263a3429f1d6c9b076f5989a3146e3638dadbd62c8bb625662ac1901f9a56864a00a4b4ec9
-  languageName: node
-  linkType: hard
-
-"pseudomap@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "pseudomap@npm:1.0.2"
-  checksum: 1ad1802645e830d99f9c1db97efc6902d2316b660454633229f636dd59e751d00498dd325d3b18d49f2be990a2c9d28f8bfe6f9b544a8220a5faa2bfb4694bb7
   languageName: node
   linkType: hard
 
@@ -5033,7 +4952,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0, semver@npm:^5.6.0":
+"semver@npm:2 || 3 || 4 || 5, semver@npm:^5.3.0":
   version: 5.7.1
   resolution: "semver@npm:5.7.1"
   bin:
@@ -5159,7 +5078,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sigmund@npm:^1.0.1, sigmund@npm:~1.0.0":
+"sigmund@npm:~1.0.0":
   version: 1.0.1
   resolution: "sigmund@npm:1.0.1"
   checksum: f1a6ed3c5477c5d38e43d700a8c80f3042fbffbaf98ca7aeab223f6b922d6786bdf3c51d971a19f04e044f12d97310902d1fe6a5ed9bcc41556c2a8eff0f421e
@@ -6231,13 +6150,6 @@ typescript@^3.9.9:
   version: 3.0.0
   resolution: "xtend@npm:3.0.0"
   checksum: bcba207830b7842d5052eac815872b89b070eba9dd0e1e4087b58fb8e780de21c051fbefdb43e80950ab2caf2895d4a4803332d3f9e98fcdff3db5933f0ab286
-  languageName: node
-  linkType: hard
-
-"yallist@npm:^2.1.2":
-  version: 2.1.2
-  resolution: "yallist@npm:2.1.2"
-  checksum: f83e3d18eeba68a0276be2ab09260be3f2a300307e84b1565c620ef71f03f106c3df9bec4c3a91e5fa621a038f8826c19b3786804d3795dd4f999e5b6be66ea3
   languageName: node
   linkType: hard
 
