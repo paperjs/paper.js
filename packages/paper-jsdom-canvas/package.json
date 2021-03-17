@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "canvas": "^2.7.0",
-    "jsdom": "^16.5.0",
+    "jsdom": "^16.5.1",
     "paper": "0.12.14",
     "source-map-support": "^0.5.19"
   },

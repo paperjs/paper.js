@@ -3032,9 +3032,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:^16.5.0":
-  version: 16.5.0
-  resolution: "jsdom@npm:16.5.0"
+"jsdom@npm:^16.5.1":
+  version: 16.5.1
+  resolution: "jsdom@npm:16.5.1"
   dependencies:
     abab: ^2.0.5
     acorn: ^8.0.5
@@ -3067,7 +3067,7 @@ __metadata:
   peerDependenciesMeta:
     canvas:
       optional: true
-  checksum: 651e1f01ea322496f3e55210662195fc5aa9bae15dd7105f2404d8048532b2668f1194ba12f9e9df1c8947be9e1fdcf32393637d587b92b188ed9c40c4baf3ea
+  checksum: 383d9aafff2a481b9668fcdd64ee6bb59977cce21844a588e2de07befaf897552d4141db6c2bed739dbbb714b2bcc2dd1a2fdb5196bff0676c2d43f18d1b0139
   languageName: node
   linkType: hard
 
@@ -4369,7 +4369,7 @@ __metadata:
   resolution: "paper-jsdom-canvas@workspace:packages/paper-jsdom-canvas"
   dependencies:
     canvas: ^2.7.0
-    jsdom: ^16.5.0
+    jsdom: ^16.5.1
     paper: 0.12.14
     source-map-support: ^0.5.19
   languageName: unknown
@@ -4379,7 +4379,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "paper-jsdom@workspace:packages/paper-jsdom"
   dependencies:
-    jsdom: ^16.5.0
+    jsdom: ^16.5.1
     paper: 0.12.14
     source-map-support: ^0.5.19
   languageName: unknown
@@ -4410,7 +4410,7 @@ __metadata:
     gulp-whitespace: ^0.1.0
     gulp-zip: ^5.1.0
     husky: ^4.3.8
-    jsdom: ^16.5.0
+    jsdom: ^16.5.1
     jshint: ^2.12.0
     jshint-summary: ^0.4.0
     merge-stream: ^2.0.0
