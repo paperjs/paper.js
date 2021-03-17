@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.12.13",
+  "version": "0.12.14",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -29,7 +29,7 @@
     "test:phantom": "gulp test:phantom",
     "test:node": "gulp test:node",
     "postinstall": "husky install",
-    "prepublishOnly": "pinst --disable",
+    "prepublish": "pinst --disable",
     "postpublish": "pinst --enable"
   },
   "files": [
@@ -61,7 +61,7 @@
     "gulp-cached": "^1.1.1",
     "gulp-git-streamed": "^2.10.1",
     "gulp-jshint": "^2.1.0",
-    "gulp-json-editor": "^2.5.4",
+    "gulp-json-modifier": "^1.0.0",
     "gulp-prepro": "^2.4.0",
     "gulp-qunits": "^2.1.2",
     "gulp-rename": "^2.0.0",

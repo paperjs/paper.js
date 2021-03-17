@@ -1,6 +1,6 @@
 {
   "name": "paper-jsdom-canvas",
-  "version": "0.12.13",
+  "version": "0.12.14",
   "description": "The Swiss Army Knife of Vector Graphics Scripting, packaged for Node.js with rendering to Node-Canvas",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -21,7 +21,7 @@
   "dependencies": {
     "canvas": "^2.7.0",
     "jsdom": "^16.5.0",
-    "paper": "0.12.13",
+    "paper": "0.12.14",
     "source-map-support": "^0.5.19"
   },
   "keywords": [
