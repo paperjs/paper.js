@@ -777,6 +777,15 @@ var Raster = Item.extend(/** @lends Raster# */{
         this.getContext(true).putImageData(data, point.x, point.y);
     },
 
+    // DOCS: document Raster#setImageData
+    /**
+     * @param {ImageData} data
+     */
+    setImageData: function(data) {
+        this.setSize(data);
+        this.getContext(true).putImageData(data, 0, 0);
+    },
+
     /**
      * {@grouptitle Event Handlers}
      *
