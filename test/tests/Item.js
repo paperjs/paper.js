@@ -1059,7 +1059,7 @@ test('Item#rasterize() bounds', function() {
     equals(function() {
         var raster = circle.rasterize({ resolution: 1000 });
         // Reusing the raster for a 2nd rasterization should leave it in place.
-        return circle.rasterize({ resolution: 1000, raster }).bounds;
+        return circle.rasterize({ resolution: 1000, raster: raster }).bounds;
     }, new Rectangle({ x: 45.032, y: 45.032, width: 9.936, height: 9.936 }));
 });
 
