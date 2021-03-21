@@ -767,12 +767,12 @@ var Raster = Item.extend(/** @lends Raster# */{
                 rect.width, rect.height);
     },
 
-    // DOCS: document Raster#setImageData
+    // DOCS: document Raster#putImageData
     /**
      * @param {ImageData} data
      * @param {Point} point
      */
-    setImageData: function(data /*, point */) {
+    putImageData: function(data /*, point */) {
         var point = Point.read(arguments, 1);
         this.getContext(true).putImageData(data, point.x, point.y);
     },
