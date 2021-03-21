@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.11-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.15-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 12 23:32:51 2021 +0100
+ * Date: Sun Mar 21 04:53:57 2021 +0100
  *
  * This is an auto-generated type definition.
  */
@@ -5502,7 +5502,10 @@ declare namespace paper {
         getImageData(rect: Rectangle): ImageData
 
         
-        setImageData(data: ImageData, point: Point): void
+        putImageData(data: ImageData, point: Point): void
+
+        
+        setImageData(data: ImageData): void
 
     }
 

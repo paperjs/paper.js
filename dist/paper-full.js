@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.11-develop - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.15-develop - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Fri Mar 12 23:32:51 2021 +0100
+ * Date: Sun Mar 21 04:53:57 2021 +0100
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.11-develop",
+	version: "0.12.15-develop",
 
 	getView: function() {
 		var project = this.project;
@@ -3910,10 +3910,11 @@ new function() {
 			scale = (resolution || this.getView().getResolution()) / 72,
 			topLeft = bounds.getTopLeft().floor(),
 			bottomRight = bounds.getBottomRight().ceil(),
-			size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
-		raster.setSize(size, true);
+			boundsSize = new Size(bottomRight.subtract(topLeft)),
+			rasterSize = boundsSize.multiply(scale);
+		raster.setSize(rasterSize, true);
 
-		if (!size.isZero()) {
+		if (!rasterSize.isZero()) {
 			var ctx = raster.getContext(true),
 				matrix = new Matrix().scale(scale).translate(topLeft.negate());
 			ctx.save();
@@ -3921,10 +3922,14 @@ new function() {
 			this.draw(ctx, new Base({ matrices: [matrix] }));
 			ctx.restore();
 		}
-		raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
-				.scale(1 / scale));
-		if (insert === undefined || insert)
+		raster._matrix.set(
+			new Matrix()
+				.translate(topLeft.add(boundsSize.divide(2)))
+				.scale(1 / scale)
+		);
+		if (insert === undefined || insert) {
 			raster.insertAbove(this);
+		}
 		return raster;
 	},
 
@@ -5726,9 +5731,14 @@ var Raster = Item.extend({
 				rect.width, rect.height);
 	},
 
-	setImageData: function(data ) {
+	putImageData: function(data ) {
 		var point = Point.read(arguments, 1);
 		this.getContext(true).putImageData(data, point.x, point.y);
+	},
+
+	setImageData: function(data) {
+		this.setSize(data);
+		this.getContext(true).putImageData(data, 0, 0);
 	},
 
 	_getBounds: function(matrix, options) {
