@@ -113,3 +113,16 @@ test('Item#insertChild() with already inserted children', function() {
     item4.parent.insertChild(oldIndex, item4);
     equals(function() { return item4.index; }, oldIndex);
 });
+
+test('Item#index getter setter', function() {
+    var item1 = new Group(),
+        item2 = new Group(),
+        item3 = new Group(),
+        item4 = new Group(),
+        newIndex = 2;
+    item4.index = newIndex;
+    equals(function() { return item4.index; }, newIndex);
+    newIndex = 0;
+    item4.index = newIndex;
+    equals(function() { return item4.index; }, newIndex);
+});

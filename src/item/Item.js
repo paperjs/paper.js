@@ -1588,6 +1588,15 @@ new function() { // Injection scope for various item event handlers
         return this._index;
     },
 
+    setIndex: function(index) {
+        var parent = this._parent,
+            children = parent && parent._children;
+        if (children) {
+            parent.insertChildren(index in children ? index : undefined,
+                                  [this]);
+        }
+    },
+
     equals: function(item) {
         // NOTE: We do not compare name and selected state.
         // TODO: Consider not comparing locked and visible also?
