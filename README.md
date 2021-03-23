@@ -368,4 +368,4 @@ For a list of authors and contributors, please see
 
 Distributed under the MIT license. See 
 [LICENSE](https://github.com/paperjs/paper.js/blob/master/LICENSE.txt)
-fo details.
+for details.
