@@ -131,10 +131,11 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
+     * @param {Boolean} {forceUpdate} force the view to update
      * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
-        if (!this._needsUpdate)
+    update: function(forceUpdate) {
+        if (!this._needsUpdate && !forceUpdate )
             return false;
         var project = this._project,
             ctx = this._context,
