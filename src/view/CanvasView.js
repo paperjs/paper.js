@@ -131,10 +131,13 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
      * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
+     * @param {Boolean} [force=false] whether to redraw the view even if nothing
+     * has changed, e.g. after a web font used by text items has finished
+     * loading
      * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
-        if (!this._needsUpdate)
+    update: function(force) {
+        if (!this._needsUpdate && !force)
             return false;
         var project = this._project,
             ctx = this._context,
