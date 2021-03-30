@@ -202,12 +202,15 @@ var View = Base.extend(Emitter, /** @lends View# */{
 
     /**
      * Updates the view if there are changes. Note that when using built-in
-     * event hanlders for interaction, animation and load events, this method is
+     * event handlers for interaction, animation and load events, this method is
      * invoked for you automatically at the end.
      *
+     * @param {Boolean} [force=false] whether to redraw the view even if nothing
+     * has changed, e.g. after a web font used by text items has finished
+     * loading
      * @return {Boolean} {@true if the view was updated}
      */
-    update: function() {
+    update: function(force) {
     },
 
     /**

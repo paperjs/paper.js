@@ -32,3 +32,30 @@ test('view.zoom with values that aren\'t positive numbers (#1433)', function() {
     // The view is 100x100, so at zoom 2 it shows 50x50 around its center:
     equals(view.bounds, new Rectangle(25, 25, 50, 50), 'view.bounds');
 });
+
+test('view.update(force) (#1913)', function() {
+    var path = new Path.Rectangle({
+        from: [0, 0],
+        to: [100, 100],
+        fillColor: 'red'
+    });
+    var ctx = view.element.getContext('2d');
+
+    function getPixel() {
+        var pixelRatio = view.pixelRatio;
+        return Base.slice(ctx.getImageData(50 * pixelRatio, 50 * pixelRatio,
+                1, 1).data);
+    }
+
+    equals(view.update(), true, 'view.update() after changes');
+    equals(getPixel(), [255, 0, 0, 255], 'pixel after view.update()');
+    // Clear the canvas behind the view's back, as e.g. a web font that loads
+    // after drawing changes the result without changing the project:
+    ctx.clearRect(0, 0, view.element.width, view.element.height);
+    equals(view.update(), false, 'view.update() without changes');
+    equals(getPixel(), [0, 0, 0, 0], 'pixel after view.update()');
+    equals(view.update(true), true, 'view.update(true) without changes');
+    equals(getPixel(), [255, 0, 0, 255], 'pixel after view.update(true)');
+    equals(view.update(), false, 'view.update() after view.update(true)');
+    path.remove();
+});

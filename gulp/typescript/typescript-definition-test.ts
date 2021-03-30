@@ -1037,6 +1037,7 @@ view.onKeyDown;
 view.onKeyUp;
 view.remove();
 view.update();
+view.update(true);
 view.requestUpdate();
 view.play();
 view.pause();
