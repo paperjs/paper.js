@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Add a `force` parameter to `View#update()`, to redraw the view even when
+  nothing changed, e.g. after a web font has loaded (#1913).
+
 ### Changed
 
 - Time double-clicks from mousedown to mousedown and only within 3 pixels, as
@@ -32,6 +37,13 @@
 - Use jsdom's own `XMLSerializer` for `#exportSVG()` on Node.js, instead of a
   shim that returned HTML, so the output is valid XML with escaped attribute
   values, as in browsers. Empty elements are now self-closing (#1922).
+
+### Removed
+
+- Remove the workaround for wrong `mouseout` coordinates in old versions of
+  Chrome on Windows (#1811).
+- Remove the CLA from the contribution guidelines, as it no longer exists
+  (#2071).
 
 ### Fixed
 
@@ -131,13 +143,6 @@
 - Docs: Document that `new Path(pathData)` holds a single sub-path (#2057).
 - Docs: Document that styles set on symbol items, or inherited by imported
   `<use>` elements, don't reach the symbol definition's items (#1329).
-
-### Removed
-
-- Remove the workaround for wrong `mouseout` coordinates in old versions of
-  Chrome on Windows (#1811).
-- Remove the CLA from the contribution guidelines, as it no longer exists
-  (#2071).
 
 ## `0.12.20`
 
