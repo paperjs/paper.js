@@ -333,7 +333,7 @@ new function() {
                     break;
                 // Command come before the '(', values after
                 var parts = transform.split(/\(\s*/),
-                    command = parts[0],
+                    command = parts[0].trim(),
                     v = parts[1].split(/[\s,]+/g);
                 // Convert values to floats
                 for (var j = 0, m = v.length; j < m; j++)
