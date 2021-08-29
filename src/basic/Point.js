@@ -688,6 +688,18 @@ var Point = Base.extend(/** @lends Point# */{
         return new Point(this.x % point.x, this.y % point.y);
     },
 
+    /**
+     * Returns new point with both coordinates negated.
+     * @name Point#negate
+     * @function
+     * @operator
+     * @returns {Point} negation of both coordinates as new point.
+     * 
+     * @example
+     * var point = new Point(12, -6);
+     * console.log(-point); // {x: -12, y: 6}
+     * console.log(point.negate()); // {x: -12, y: 6}
+     */
     negate: function() {
         return new Point(-this.x, -this.y);
     },
