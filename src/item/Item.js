@@ -1881,7 +1881,11 @@ new function() { // Injection scope for various item event handlers
         }
         // We only implement it here for items with rectangular content,
         // for anything else we need to override #contains()
-        return point.isInside(this.getInternalBounds());
+        try{
+            return point.isInside(this.getInternalBounds());
+        } catch (e){
+            return false;
+        }
     },
 
     // DOCS:
