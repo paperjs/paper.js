@@ -22,7 +22,10 @@ Path.inject({ statics: new function() {
 
     function createPath(segments, closed, args) {
         var props = Base.getNamed(args),
-            path = new Path(props && props.insert == false && Item.NO_INSERT);
+            path = new Path(props && (props.insert == true
+                ? { insert: true }
+                : props.insert == false && Item.NO_INSERT
+            ));
         path._add(segments);
         // No need to use setter for _closed since _add() called _changed().
         path._closed = closed;
