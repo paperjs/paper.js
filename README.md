@@ -304,7 +304,7 @@ fork](https://help.github.com/articles/fork-a-repo/). Then do this:
 
     git clone --recursive git@github.com:yourusername/paper.js.git
     cd paper.js
-    git remote add upstream git://github.com/paperjs/paper.js.git
+    git remote add upstream git@github.com:paperjs/paper.js.git
 
 To then fetch changes from upstream, run
 
