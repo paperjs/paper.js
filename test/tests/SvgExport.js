@@ -244,4 +244,53 @@ if (!isNodeContext) {
         var svg = project.exportSVG({ bounds: 'content', asString: true });
         compareSVG(assert.async(), svg, project.activeLayer);
     });
+
+    test('Export raster inline from a data url', function (assert) {
+        var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PQQ0AAAjEMM6/aMACT5IuM9B01f6/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIBcGuAsY8/q7uoYAAAAAElFTkSuQmCC');
+
+        var done = assert.async();
+        raster.onLoad = function() {
+            raster.setBounds(0, 0, 100, 100);
+            compareSVG(done, project.exportSVG({asString: true}), project.activeLayer);
+        };
+    });
+    test('Export raster inline from a url', function (assert) {
+        var raster = new Raster('assets/paper-js.gif');
+
+        var done = assert.async();
+        raster.onLoad = function() {
+            raster.setBounds(0, 0, 100, 100);
+            compareSVG(done, project.exportSVG({asString: true}), project.activeLayer);
+        };
+    });
+    test('Export raster linked from a data url', function (assert) {
+        var raster = new Raster('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PQQ0AAAjEMM6/aMACT5IuM9B01f6/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIBcGuAsY8/q7uoYAAAAAElFTkSuQmCC');
+
+        var done = assert.async();
+        raster.onLoad = function() {
+            raster.setBounds(0, 0, 100, 100);
+
+            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            if (defs.length !== 1 || defs[0].children.length !== 1) {
+                console.error('Image was not added to the defs');
+            }
+
+            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+        };
+    });
+    test('Export raster linked from a url', function (assert) {
+        var raster = new Raster('assets/paper-js.gif');
+
+        var done = assert.async();
+        raster.onLoad = function() {
+            raster.setBounds(0, 0, 100, 100);
+
+            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            if (defs.length !== 1 || defs[0].children.length !== 1) {
+                console.error('Image was not added to the defs');
+            }
+
+            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+        };
+    });
 }

@@ -95,14 +95,30 @@ new function() {
         var attrs = getTransform(item._matrix, true),
             size = item.getSize(),
             image = item.getImage();
+
         // Take into account that rasters are centered:
         attrs.x -= size.width / 2;
         attrs.y -= size.height / 2;
         attrs.width = size.width;
         attrs.height = size.height;
-        attrs.href = options.embedImages == false && image && image.src
-                || item.toDataURL();
-        return SvgElement.create('image', attrs, formatter);
+
+        var image_href = options.embedImages == false && image && image.src
+            || item.toDataURL();
+
+        if (options.linkRaster) {
+            var raster = SvgElement.create('image', {
+                href: image_href
+            }, formatter);
+
+            setDefinition(item, raster, 'image');
+
+            attrs.href = '#' + raster.id;
+
+            return SvgElement.create('use', attrs, formatter);
+        } else {
+            attrs.href = image_href;
+            return SvgElement.create('image', attrs, formatter);
+        }
     }
 
     function exportPath(item, options) {
