@@ -270,11 +270,11 @@ if (!isNodeContext) {
         raster.onLoad = function() {
             raster.setBounds(0, 0, 100, 100);
 
-            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            var defs = project.exportSVG({linkImages: true}).getElementsByTagName('defs');
             assert.equal(defs.length, 1, 'The svg is missing the defs element');
             assert.equal(defs[0].children.length, 1, 'The defs element is missing the image');
 
-            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+            compareSVG(done, project.exportSVG({linkImages: true, asString: true}), project.activeLayer);
         };
     });
     test('Export raster linked from a url', function (assert) {
@@ -284,11 +284,11 @@ if (!isNodeContext) {
         raster.onLoad = function() {
             raster.setBounds(0, 0, 100, 100);
 
-            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            var defs = project.exportSVG({linkImages: true}).getElementsByTagName('defs');
             assert.equal(defs.length, 1, 'The svg is missing the defs element');
             assert.equal(defs[0].children.length, 1, 'The defs element is missing the image');
 
-            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+            compareSVG(done, project.exportSVG({linkImages: true, asString: true}), project.activeLayer);
         };
     });
     test('Export multiple rasters linked from a data url without duplicating data', function (assert) {
@@ -302,11 +302,11 @@ if (!isNodeContext) {
             raster1.setBounds(0, 0, 50, 50);
             raster2.setBounds(50, 50, 50, 50);
 
-            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            var defs = project.exportSVG({linkImages: true}).getElementsByTagName('defs');
             assert.equal(defs.length, 1, 'The svg is missing the defs element');
             assert.equal(defs[0].children.length, 1, 'The defs element should only have a single image');
 
-            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+            compareSVG(done, project.exportSVG({linkImages: true, asString: true}), project.activeLayer);
         }
 
         var raster1Loaded = new Promise(function (resolve, reject) {
@@ -333,11 +333,11 @@ if (!isNodeContext) {
             raster1.setBounds(0, 0, 50, 50);
             raster2.setBounds(50, 50, 50, 50);
 
-            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            var defs = project.exportSVG({linkImages: true}).getElementsByTagName('defs');
             assert.equal(defs.length, 1, 'The svg is missing the defs element');
             assert.equal(defs[0].children.length, 1, 'The defs element should only have a single image');
 
-            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+            compareSVG(done, project.exportSVG({linkImages: true, asString: true}), project.activeLayer);
         }
 
         var raster1Loaded = new Promise(function (resolve, reject) {

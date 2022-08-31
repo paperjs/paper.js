@@ -105,7 +105,7 @@ new function() {
         var image_href = options.embedImages == false && image && image.src
             || item.toDataURL();
 
-        if (options.linkRaster) {
+        if (options.linkImages) {
             var raster = getDefinition(item, 'image');
 
             if (!raster) {
