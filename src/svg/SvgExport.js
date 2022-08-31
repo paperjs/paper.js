@@ -106,11 +106,14 @@ new function() {
             || item.toDataURL();
 
         if (options.linkRaster) {
-            var raster = SvgElement.create('image', {
-                href: image_href
-            }, formatter);
+            var raster = getDefinition(item, 'image');
 
-            setDefinition(item, raster, 'image');
+            if (!raster) {
+                raster = SvgElement.create('image', {
+                    href: image_href
+                }, formatter);
+                setDefinition(item, raster, 'image');
+            }
 
             attrs.href = '#' + raster.id;
 
@@ -347,10 +350,25 @@ new function() {
     function getDefinition(item, type) {
         if (!definitions)
             definitions = { ids: {}, svgs: {} };
-        // Use #__id for items that don't have internal #_id properties (Color),
-        // and give them ids from their own private id pool named 'svg'.
-        return item && definitions.svgs[type + '-'
-                + (item._id || item.__id || (item.__id = UID.get('svg')))];
+
+        var svgDefinitionId;
+        if (type === 'image') {
+            // Image ids in the definitions are based on the source
+            // instead of the element id in order to link multiple
+            // raster elements to the same image using the use tag
+            var imageSource = item.getSource();
+            svgDefinitionId =  definitions.ids[type] &&
+                definitions.ids[type][imageSource] &&
+                (type + '-' + definitions.ids[type][imageSource]);
+        }
+        else {
+            // Use #__id for items that don't have internal #_id properties (Color),
+            // and give them ids from their own private id pool named 'svg'.
+            svgDefinitionId = item && type + '-' +
+                (item._id || item.__id || (item.__id = UID.get('svg')));
+        }
+
+        return item && definitions.svgs[svgDefinitionId];
     }
 
     function setDefinition(item, node, type) {
@@ -358,12 +376,34 @@ new function() {
         // This is required by 'clip', where getDefinition() is not called.
         if (!definitions)
             getDefinition();
+
         // Have different id ranges per type
-        var typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+        var typeId;
+        var svgDefinitionId;
+        if (type === 'image') {
+            // Images in the definitions needs to be unique to the source
+            // instead of the element
+            if (!definitions.ids[type]) {
+                definitions.ids[type] = Object.create(null);
+            }
+            var imageSource = item.getSource();
+            typeId = definitions.ids[type][imageSource] =
+                definitions.ids[type][imageSource] ||
+                Object.keys(definitions.ids[type]).length + 1;
+
+            svgDefinitionId =  type + '-' + typeId;
+        }
+        else {
+            typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
+
+            // See getDefinition() for an explanation of #__id:
+            svgDefinitionId = type + '-' + (item._id || item.__id);
+        }
+
         // Give the svg node an id, and link to it from the item id.
         node.id = type + '-' + typeId;
-        // See getDefinition() for an explanation of #__id:
-        definitions.svgs[type + '-' + (item._id || item.__id)] = node;
+
+        definitions.svgs[svgDefinitionId] = node;
     }
 
     function exportDefinitions(node, options) {

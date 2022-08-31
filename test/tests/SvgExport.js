@@ -291,4 +291,66 @@ if (!isNodeContext) {
             compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
         };
     });
+    test('Export multiple rasters linked from a data url without duplicating data', function (assert) {
+        var dataURL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PQQ0AAAjEMM6/aMACT5IuM9B01f6/gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIBcGuAsY8/q7uoYAAAAAElFTkSuQmCC';
+        var raster1 = new Raster(dataURL);
+        var raster2 = new Raster(dataURL);
+
+        var done = assert.async();
+
+        function validate() {
+            raster1.setBounds(0, 0, 50, 50);
+            raster2.setBounds(50, 50, 50, 50);
+
+            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            assert.equal(defs.length, 1, 'The svg is missing the defs element');
+            assert.equal(defs[0].children.length, 1, 'The defs element should only have a single image');
+
+            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+        }
+
+        var raster1Loaded = new Promise(function (resolve, reject) {
+            raster1.onLoad = function() {
+                resolve();
+            };
+        });
+        var raster2Loaded = new Promise(function (resolve, reject) {
+            raster2.onLoad = function() {
+                resolve();
+            };
+        });
+
+        Promise.all([raster1Loaded, raster2Loaded]).then(validate);
+    });
+    test('Export multiple rasters linked from a url without duplicating data', function (assert) {
+        var standardURL = 'assets/paper-js.gif';
+        var raster1 = new Raster(standardURL);
+        var raster2 = new Raster(standardURL);
+
+        var done = assert.async();
+
+        function validate() {
+            raster1.setBounds(0, 0, 50, 50);
+            raster2.setBounds(50, 50, 50, 50);
+
+            var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
+            assert.equal(defs.length, 1, 'The svg is missing the defs element');
+            assert.equal(defs[0].children.length, 1, 'The defs element should only have a single image');
+
+            compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
+        }
+
+        var raster1Loaded = new Promise(function (resolve, reject) {
+            raster1.onLoad = function() {
+                resolve();
+            };
+        });
+        var raster2Loaded = new Promise(function (resolve, reject) {
+            raster2.onLoad = function() {
+                resolve();
+            };
+        });
+
+        Promise.all([raster1Loaded, raster2Loaded]).then(validate);
+    });
 }
