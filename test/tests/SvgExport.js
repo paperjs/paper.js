@@ -271,9 +271,8 @@ if (!isNodeContext) {
             raster.setBounds(0, 0, 100, 100);
 
             var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
-            if (defs.length !== 1 || defs[0].children.length !== 1) {
-                console.error('Image was not added to the defs');
-            }
+            assert.equal(defs.length, 1, 'The svg is missing the defs element');
+            assert.equal(defs[0].children.length, 1, 'The defs element is missing the image');
 
             compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
         };
@@ -286,9 +285,8 @@ if (!isNodeContext) {
             raster.setBounds(0, 0, 100, 100);
 
             var defs = project.exportSVG({linkRaster: true}).getElementsByTagName('defs');
-            if (defs.length !== 1 || defs[0].children.length !== 1) {
-                console.error('Image was not added to the defs');
-            }
+            assert.equal(defs.length, 1, 'The svg is missing the defs element');
+            assert.equal(defs[0].children.length, 1, 'The defs element is missing the image');
 
             compareSVG(done, project.exportSVG({linkRaster: true, asString: true}), project.activeLayer);
         };
