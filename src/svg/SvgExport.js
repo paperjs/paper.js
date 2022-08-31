@@ -360,8 +360,7 @@ new function() {
             svgDefinitionId =  definitions.ids[type] &&
                 definitions.ids[type][imageSource] &&
                 (type + '-' + definitions.ids[type][imageSource]);
-        }
-        else {
+        } else {
             // Use #__id for items that don't have internal #_id properties (Color),
             // and give them ids from their own private id pool named 'svg'.
             svgDefinitionId = item && type + '-' +
@@ -392,8 +391,7 @@ new function() {
                 Object.keys(definitions.ids[type]).length + 1;
 
             svgDefinitionId =  type + '-' + typeId;
-        }
-        else {
+        } else {
             typeId = definitions.ids[type] = (definitions.ids[type] || 0) + 1;
 
             // See getDefinition() for an explanation of #__id:
