@@ -13,6 +13,7 @@
 var gulp = require('gulp'),
     path = require('path'),
     log = require('fancy-log'),
+    exec = require('child_process').exec,
     colors = require('ansi-colors');
 
 gulp.task('watch', function () {
@@ -22,6 +23,11 @@ gulp.task('watch', function () {
                 colors.green('File ' + event.type + ': ') +
                 colors.magenta(path.basename(event.path))
             );
+
+            exec('npm run build', function (err, stdout, stderr) {
+                console.log(stdout);
+                console.log(stderr);
+            });
         });
 });
 

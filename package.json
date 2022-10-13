@@ -20,6 +20,7 @@
     "build": "gulp build",
     "dist": "gulp dist",
     "zip": "gulp zip",
+    "watch": "gulp watch",
     "docs": "gulp docs",
     "publish": "gulp publish",
     "load": "gulp load",
