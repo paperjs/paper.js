@@ -175,7 +175,7 @@ statics: /** @lends Base */{
      *     returned or converted. `options.clone` controls whether passed
      *     objects should be cloned if they are already provided in the required
      *     type
-     * @param {Number} length the amount of elements that can be read
+     * @param {Number} amount the amount of elements that can be read
      */
     read: function(list, start, options, amount) {
         // See if it's called directly on Base, and if so, read value and return
