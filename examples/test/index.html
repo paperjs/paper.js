@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test Paper JS</title>
+</head>
+<body>
+<canvas id="canvas" width="200" height="200"></canvas>
+<script type="text/javascript" src="../../dist/paper-full.js"></script>
+<script type="text/javascript">
+    const canvas = document.getElementById('canvas');
+    const scope = new paper.PaperScope();
+    const project = new scope.Project(canvas);
+    const areaText = new paper.AreaText();
+    areaText.setRectangle(new paper.Rectangle(new paper.Point(50, 30), new paper.Size(100, 100)));
+    areaText.fillColor = 'black';
+    areaText.content = 'Hello there sdfsdfsdfsdfsdf!';
+    //
+    // const pointText = new paper.PointText(new paper.Point(30, 30));
+    // pointText.fillColor = 'black';
+    // pointText.content = 'Hello point text';
+    // pointText.setPoint(new paper.Point(40, 40));
+    // pointText.selected = true;
+
+    areaText.selected = true;
+
+    console.log( areaText.justification);
+</script>
+</body>
+</html>
