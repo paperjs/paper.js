@@ -1,6 +1,8 @@
 /node_modules/
 /dist/*/
 /dist/*.min.js
+/dist/**/*.js
+/dist/*.d.ts
 /dist/paperjs.zip
 # Yarn
 .yarn/*
