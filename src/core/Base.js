@@ -678,6 +678,10 @@ statics: /** @lends Base */{
         }
     },
 
+    insertAt(array, index, ...elementsArray) {
+        array.splice(index, 0, ...elementsArray);
+    },
+
     /**
      * Capitalizes the passed string: hello world -> Hello World
      */
