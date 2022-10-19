@@ -14,11 +14,16 @@
     const canvas = document.getElementById('canvas');
     const scope = new paper.PaperScope();
     const project = new scope.Project(canvas);
-    const areaText = new paper.AreaText();
-    areaText.setRectangle(new paper.Rectangle(new paper.Point(50, 30), new paper.Size(100, 100)));
+
+    const point = new paper.Point(50, 30);
+    const size = new paper.Size(100, 100);
+
+    const areaText = new paper.AreaText(new paper.Rectangle(point, size));
+    // areaText.setRectangle();
     areaText.fillColor = 'black';
-    areaText.content = 'Hello there sdfsdfsdfsdfsdf!';
-    //
+    areaText.content = 'Hello there sdfsdfsdfsdfsdf! sdfsdfsdfsdfsdf';
+
+    // areaText.changeMode(true);
     // const pointText = new paper.PointText(new paper.Point(30, 30));
     // pointText.fillColor = 'black';
     // pointText.content = 'Hello point text';
@@ -26,8 +31,12 @@
     // pointText.selected = true;
 
     areaText.selected = true;
+    areaText.boundsGenerator = 'auto-height';
 
-    console.log( areaText.justification);
+    // areaText.on('mousedown', function () {
+    //    console.log('mouse enter');
+    // });
+    console.log( areaText);
 </script>
 </body>
 </html>
