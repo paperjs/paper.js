@@ -114,7 +114,9 @@ var Color = Base.extend(new function() {
                     // Use a canvas to draw with the given name, then retrieve
                     // RGB values and build a cache for all the used colors.
                     if (!colorCtx) {
-                        colorCtx = CanvasProvider.getContext(1, 1);
+                        colorCtx = CanvasProvider.getContext(1, 1, {
+                            willReadFrequently: true
+                        });
                         colorCtx.globalCompositeOperation = 'copy';
                     }
                     // Set the current fillStyle to transparent, so that it will be

@@ -226,9 +226,9 @@ var BlendMode = new function() {
     }, {});
 
     // Now test for the new blend modes. Just seeing if globalCompositeOperation
-    // is sticky is not enough, as Chome 27 pretends for blend-modes to work,
+    // is sticky is not enough, as Chrome 27 pretends for blend-modes to work,
     // but does not actually apply them.
-    var ctx = CanvasProvider.getContext(1, 1);
+    var ctx = CanvasProvider.getContext(1, 1, { willReadFrequently: true });
     if (ctx) {
         Base.each(modes, function(func, mode) {
             // Blend #330000 (51) and #aa0000 (170):
