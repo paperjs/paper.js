@@ -15,7 +15,7 @@
 var CanvasProvider = Base.exports.CanvasProvider = {
     canvases: [],
 
-    getCanvas: function(width, height) {
+    getCanvas: function(width, height, options) {
         if (!window)
             return null;
         var canvas,
@@ -30,7 +30,7 @@ var CanvasProvider = Base.exports.CanvasProvider = {
             canvas = document.createElement('canvas');
             clear = false; // It's already cleared through createElement().
         }
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d', options || {});
         if (!ctx) {
             throw new Error('Canvas ' + canvas +
                     ' is unable to provide a 2D context.');
