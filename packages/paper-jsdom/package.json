@@ -1,6 +1,6 @@
 {
   "name": "paper-jsdom",
-  "version": "0.12.15",
+  "version": "0.12.16",
   "description": "The Swiss Army Knife of Vector Graphics Scripting, packaged for headless use in Node.js",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "jsdom": "^16.7.0",
-    "paper": "0.12.15",
+    "paper": "0.12.16",
     "source-map-support": "^0.5.21"
   },
   "keywords": [
