@@ -543,7 +543,8 @@ raster.setPixel(0, 0, color);
 raster.setPixel(point, color);
 raster.createImageData(size);
 raster.getImageData(rectangle);
-raster.setImageData({} as ImageData, point);
+raster.putImageData({} as ImageData, point);
+raster.setImageData({} as ImageData);
 
 
 //

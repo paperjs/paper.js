@@ -608,7 +608,7 @@ statics: /** @lends Base */{
                             // property that was just set. Pass an exclude
                             // object to the call of `obj.set()` below (#1392).
                             if (useTarget) {
-                                args = args.concat([{ insert: true }]);
+                                args = args.concat([Item.INSERT]);
                             }
                         }
                     }
