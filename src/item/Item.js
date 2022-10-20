@@ -36,11 +36,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         },
 
         /**
-         * An object constant that can be passed to Item#initialize() to avoid
-         * insertion into the scene graph.
+         * Two object constants that can be passed to Item#initialize() to
+         * control insertion into the scene graph in a performative way.
          *
          * @private
          */
+        INSERT: { insert: true },
         NO_INSERT: { insert: false }
     },
 
@@ -153,16 +154,16 @@ new function() { // Injection scope for various item event handlers
         matrix._owner = this;
         this._style = new Style(project._currentStyle, this, project);
         // Do not add to the project if it's an internal path,  or if
-        // props.insert  or settings.isnertItems is false.
+        // props.insert  or settings.insertItems is false.
         if (internal || hasProps && props.insert == false
-            || !settings.insertItems && !(hasProps && props.insert === true)) {
+            || !settings.insertItems && !(hasProps && props.insert == true)) {
             this._setProject(project);
         } else {
             (hasProps && props.parent || project)
                     ._insertItem(undefined, this, true); // _created = true
         }
-        // Filter out Item.NO_INSERT before _set(), for performance reasons.
-        if (hasProps && props !== Item.NO_INSERT) {
+        // Filter out Item.*INSERT before _set(), for performance reasons.
+        if (hasProps && props !== Item.NO_INSERT && props !== Item.INSERT) {
             this.set(props, {
                 // Filter out these properties as they were handled above:
                 internal: true, insert: true, project: true, parent: true

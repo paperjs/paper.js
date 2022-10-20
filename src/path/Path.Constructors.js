@@ -22,16 +22,17 @@ Path.inject({ statics: new function() {
 
     function createPath(segments, closed, args) {
         var props = Base.getNamed(args),
-            path = new Path(props && (props.insert == true
-                ? { insert: true }
-                : props.insert == false && Item.NO_INSERT
+            path = new Path(props && (
+                props.insert == true ? Item.INSERT
+                : props.insert == false ? Item.NO_INSERT
+                : null
             ));
         path._add(segments);
         // No need to use setter for _closed since _add() called _changed().
         path._closed = closed;
         // Set named arguments at the end, since some depend on geometry to be
         // defined (e.g. #clockwise)
-        return path.set(props, { insert: true });
+        return path.set(props, Item.INSERT);
     }
 
     function createEllipse(center, radius, args) {
