@@ -153,6 +153,11 @@ var Numerical = new function() {
          */
         TRIGONOMETRIC_EPSILON: 1e-8,
         /**
+         * The epsilon to be used when performing angular checks in degrees,
+         * e.g. in `arcTo()`.
+         */
+        ANGULAR_EPSILON: 1e-5,
+        /**
          * Kappa is the value which which to scale the curve handles when
          * drawing a circle with bezier curves.
          *

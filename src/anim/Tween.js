@@ -28,7 +28,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
     _class: 'Tween',
 
     statics: {
-        easings: {
+        easings: new Base({
             // no easing, no acceleration
             linear: function(t) {
                 return t;
@@ -101,7 +101,7 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                     ? 16 * t * t * t * t * t
                     : 1 + 16 * (--t) * t * t * t * t;
             }
-        }
+        })
     },
 
     /**
@@ -245,6 +245,8 @@ var Tween = Base.extend(Emitter, /** @lends Tween# */{
                 this._setProperty(this._parsedKeys[key], value);
             }
 
+            // TODO: Set `progress` and `factor` on Tween object also, so they
+            // can be used witout events.
             if (this.responds('update')) {
                 this.emit('update', new Base({
                     progress: progress,

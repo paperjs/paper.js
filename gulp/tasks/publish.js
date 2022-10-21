@@ -19,7 +19,7 @@ var gulp = require('gulp'),
     shell = require('gulp-shell'),
     merge = require('merge-stream'),
     rename = require('gulp-rename'),
-    jsonEditor = require('gulp-json-editor'),
+    jsonModifier = require('gulp-json-modifier'),
     options = require('../utils/options.js');
 
 var packages = ['paper-jsdom', 'paper-jsdom-canvas'],
@@ -28,17 +28,14 @@ var packages = ['paper-jsdom', 'paper-jsdom-canvas'],
     downloadPath = sitePath + '/content/11-Download',
     assetPath = sitePath + '/assets/js',
     releaseMessage = null,
-    jsonOptions = {
-        preserve_newlines: true,
-        end_with_newline: true
-    };
+    jsonModifierOptions = { indent: 2 };
 
 gulp.task('publish', function(callback) {
     if (options.branch !== 'develop') {
         throw new Error('Publishing is only allowed on the develop branch.');
     }
     // publish:website comes before publish:release, so paperjs.zip file is gone
-    // before npm publish:
+    // before yarn npm publish:
     run(
         'publish:json',
         'publish:dist',
@@ -60,18 +57,17 @@ gulp.task('publish:version', function() {
 
 gulp.task('publish:json', ['publish:version'], function() {
     return gulp.src(['package.json'])
-        .pipe(jsonEditor({
+        .pipe(jsonModifier({
             version: options.version
-        }, jsonOptions))
+        }, jsonModifierOptions))
         .pipe(gulp.dest('.'))
-        .pipe(shell('npm install')); // Update package-lock.json
 });
 
 gulp.task('publish:dist', ['zip']);
 
 gulp.task('publish:commit', ['publish:version'], function() {
     return gulp.src('.')
-        .pipe(git.checkout('develop'))
+        .pipe(shell('yarn install')) // Update yarn.lock
         .pipe(git.add())
         .pipe(git.commit(releaseMessage))
         .pipe(git.tag('v' + options.version, releaseMessage));
@@ -82,7 +78,7 @@ gulp.task('publish:release', function() {
         .pipe(git.checkout('master'))
         .pipe(git.merge('develop', { args: '-X theirs' }))
         .pipe(git.push('origin', ['master', 'develop'], { args: '--tags' }))
-        .pipe(shell('npm publish'));
+        .pipe(shell('yarn npm publish'));
 });
 
 gulp.task('publish:packages',
@@ -96,18 +92,14 @@ packages.forEach(function(name) {
         var path = 'packages/' + name,
             opts = { cwd: path };
         return gulp.src(['package.json'], opts)
-            .pipe(jsonEditor({
+            .pipe(jsonModifier({
                 version: options.version,
                 dependencies: {
                     paper: options.version
                 }
-            }, jsonOptions))
+            }, jsonModifierOptions))
             .pipe(gulp.dest(path))
-            .pipe(git.add(opts))
-            .pipe(git.commit(releaseMessage, opts))
-            .pipe(git.tag('v' + options.version, releaseMessage, opts))
-            .pipe(git.push('origin', 'master', { args: '--tags', cwd: path }))
-            .pipe(shell('npm publish', opts));
+            .pipe(shell('yarn npm publish', opts));
     });
 });
 
@@ -128,9 +120,9 @@ gulp.task('publish:website:build', [
 
 gulp.task('publish:website:json', ['publish:version'], function() {
     return gulp.src([sitePath + '/package.json'])
-        .pipe(jsonEditor({
+        .pipe(jsonModifier({
             version: options.version
-        }, jsonOptions))
+        }, jsonModifierOptions))
         .pipe(gulp.dest(sitePath));
 });
 

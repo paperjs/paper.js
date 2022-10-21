@@ -2575,12 +2575,14 @@ new function() { // PostScript-style drawing commands
                 }
             }
             if (extent) {
-                var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
+                var epsilon = /*#=*/Numerical.ANGULAR_EPSILON,
                     ext = abs(extent),
                     // Calculate amount of segments required to approximate over
                     // `extend` degrees (extend / 90), but prevent ceil() from
                     // rounding up small imprecisions by subtracting epsilon.
-                    count = ext >= 360 ? 4 : Math.ceil((ext - epsilon) / 90),
+                    count = ext >= 360
+                        ? 4
+                        : Math.ceil((ext - epsilon) / 90),
                     inc = extent / count,
                     half = inc * Math.PI / 360,
                     z = 4 / 3 * Math.sin(half) / (1 + Math.cos(half)),

@@ -521,7 +521,7 @@ statics: new function() {
          *
          * @example {@paperscript}
          * var shape = new Shape.Rectangle({
-         *  topLeft: [20, 20],
+         *     topLeft: [20, 20],
          *     bottomRight: [80, 80],
          *     radius: 10,
          *     strokeColor: 'black'

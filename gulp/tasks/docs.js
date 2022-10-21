@@ -22,7 +22,7 @@ var docOptions = {
     server: 'serverdocs' // Generates the website templates for the online docs
 };
 
-gulp.task('docs', ['docs:local', 'docs:typescript', 'build:full'], function() {
+gulp.task('docs', ['build:full', 'docs:local', 'docs:typescript'], function() {
     return gulp.src('dist/paper-full.js')
         .pipe(rename({ basename: 'paper' }))
         .pipe(gulp.dest('dist/docs/assets/js/'));
@@ -50,7 +50,7 @@ Object.keys(docOptions).forEach(function(name) {
 
 // The goal of the typescript task is to automatically generate a type
 // definition for the library.
-gulp.task('docs:typescript', function(callback) {
+gulp.task('docs:typescript', ['build:full'], function(callback) {
     run(
         'docs:typescript:clean:before',
         'docs:typescript:build',

@@ -29,4 +29,4 @@ git remote remove origin
 git remote add origin https://github.com/paperjs/paper.js.git
 
 # Avoid detached head...
-git checkout $TRAVIS_BRANCH
+git checkout -f $TRAVIS_BRANCH

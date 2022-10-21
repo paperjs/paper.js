@@ -1,6 +1,6 @@
 {
   "name": "paper",
-  "version": "0.12.11",
+  "version": "0.12.16",
   "description": "The Swiss Army Knife of Vector Graphics Scripting",
   "license": "MIT",
   "homepage": "http://paperjs.org",
@@ -16,14 +16,18 @@
   "main": "dist/paper-full.js",
   "types": "dist/paper.d.ts",
   "scripts": {
+    "minify": "gulp minify",
     "build": "gulp build",
     "dist": "gulp dist",
     "zip": "gulp zip",
     "docs": "gulp docs",
+    "publish": "gulp publish",
     "load": "gulp load",
     "jshint": "gulp jshint",
     "test": "gulp test",
-    "preinstall": "npx npm-force-resolutions || true"
+    "test:browser": "gulp test:browser",
+    "test:phantom": "gulp test:phantom",
+    "test:node": "gulp test:node"
   },
   "files": [
     "AUTHORS.md",
@@ -38,29 +42,29 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "gulp jshint --ensure-branch develop",
-      "pre-push": "gulp test --ensure-branch develop"
+      "pre-commit": "yarn jshint --ensure-branch develop",
+      "pre-push": "yarn test --ensure-branch develop"
     }
   },
   "browser": {
+    "./dist/node/extend.js": false,
+    "./dist/node/self.js": false,
     "canvas": false,
     "jsdom": false,
     "jsdom/lib/jsdom/living/generated/utils": false,
-    "source-map-support": false,
-    "./dist/node/self.js": false,
-    "./dist/node/extend.js": false
+    "source-map-support": false
   },
   "devDependencies": {
     "acorn": "~0.5.0",
-    "ansi-colors": "^4.1.1",
-    "canvas": "^2.6.1",
+    "ansi-colors": "^4.1.3",
+    "canvas": "^2.10.1",
     "del": "^5.1.0",
     "fancy-log": "^1.3.3",
-    "gulp-cached": "^1.1.1",
     "gulp": "^3.9.1",
+    "gulp-cached": "^1.1.1",
     "gulp-git-streamed": "^2.10.1",
     "gulp-jshint": "^2.1.0",
-    "gulp-json-editor": "^2.5.4",
+    "gulp-json-modifier": "^1.0.0",
     "gulp-prepro": "^2.4.0",
     "gulp-qunits": "^2.1.2",
     "gulp-rename": "^2.0.0",
@@ -70,25 +74,27 @@
     "gulp-uncomment": "^0.3.0",
     "gulp-webserver": "^0.9.1",
     "gulp-whitespace": "^0.1.0",
-    "gulp-zip": "^5.0.1",
-    "husky": "^4.2.5",
-    "jsdom": "^16.2.2",
-    "jshint": "^2.11.1",
+    "gulp-zip": "^5.1.0",
+    "husky": "^4.3.8",
+    "jsdom": "^16.7.0",
+    "jshint": "^2.13.5",
     "jshint-summary": "^0.4.0",
     "merge-stream": "^2.0.0",
-    "minimist": "^1.2.5",
-    "mustache": "^4.0.1",
-    "npm-force-resolutions": "^0.0.3",
+    "minimist": "^1.2.7",
+    "mustache": "^4.2.0",
     "prepro": "^2.4.0",
-    "qunitjs": "^1.23.0",
+    "qunitjs": "^1.23.1",
     "require-dir": "^1.2.0",
-    "resemblejs": "^3.2.4",
+    "resemblejs": "^3.2.5",
     "run-sequence": "^2.2.1",
-    "source-map-support": "^0.5.19",
+    "source-map-support": "^0.5.21",
     "stats.js": "^0.17.0",
     "straps": "^3.0.1",
-    "typescript": "^3.9.5"
+    "typescript": "^3.9.10"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "resolutions": {
     "graceful-fs": "4.2.2"
   },

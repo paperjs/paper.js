@@ -35,6 +35,13 @@ test('new Path.Circle({ center: [100, 100], radius: 50 })', function() {
     equals(path.segments.toString(), '{ point: { x: 50, y: 100 }, handleIn: { x: 0, y: 27.61424 }, handleOut: { x: 0, y: -27.61424 } },{ point: { x: 100, y: 50 }, handleIn: { x: -27.61424, y: 0 }, handleOut: { x: 27.61424, y: 0 } },{ point: { x: 150, y: 100 }, handleIn: { x: 0, y: -27.61424 }, handleOut: { x: 0, y: 27.61424 } },{ point: { x: 100, y: 150 }, handleIn: { x: 27.61424, y: 0 }, handleOut: { x: -27.61424, y: 0 } }');
 });
 
+test('new Path.Circle({ center: [100, 100], radius: 50, insert: true })', function() {
+    paper.settings.insertItems = false;
+    var path = new Path.Circle({ center: [100, 100], radius: 50, insert: true });
+    equals(path.isInserted(), true);
+    paper.settings.insertItems = true;
+});
+
 test('new Path.Ellipse(rect)', function() {
     var rect = new Rectangle([500, 500], [1000, 750]);
     var path = new Path.Ellipse(rect);

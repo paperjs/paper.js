@@ -1,5 +1,50 @@
 # Change Log
 
+## `0.12.16`
+
+### Fixed
+
+- Fix `Item#rasterize()` bounds cache when reusing raster.
+- Fix new warning in New warning in Chrome Console by providing
+  `{ willReadFrequently: true }` canvas context option where needed (#1999,
+  #2000, #2003).
+- Fix `Path.*` constructor properties handling when passing `{ insert: true }`
+- 
+### Changed
+
+- Rename `Raster#setImageData()` to `#putImageData()`.
+- Change `Raster#setImageData()` to also respect image size.
+- Add separate `Numerical.ANGULAR_EPSILON` for `Path#arcTo()`
+
+## `0.12.15`
+
+### Fixed
+
+- Fix NPM installation problem with `husky` introduced in `v0.12.13`
+
+## `0.12.13`
+
+### Fixed
+
+- Fix faulty positioning regression in `Item#rasterize()` (#1905).
+
+## `0.12.12`
+
+### Fixed
+
+- Fix installation problems on Windows by switching from NPM to Yarn for development (#1833).
+
+### Changed
+
+- Change `Item#raster({ resolution, insert })` to receive options object, while remaining backward compatible.
+- Change `Raster#smoothing` to support the values `'low'`, `'medium'`, `'high'`
+  and `'off'`. Setting to a boolean value is still supported, translating `false` →
+  `'off'` and `true` → `'low'`.
+
+### Added
+
+- Allow reusing of raster items in `Item#rasterize({ raster })`: By providing an existing raster in `options.raster`, the raster and maybe even its underlying canvas can be reused, as long as the rasterized size doesn't change between rasterizations. This allows for big performance improvements.
+
 ## `0.12.11`
 
 ### Fixed

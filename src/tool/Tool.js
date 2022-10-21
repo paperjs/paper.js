@@ -45,6 +45,7 @@
 var Tool = PaperScopeItem.extend(/** @lends Tool# */{
     _class: 'Tool',
     _list: 'tools',
+    // TODO: This should be `activeTool` instead?
     _reference: 'tool',
     _events: ['onMouseDown', 'onMouseUp', 'onMouseDrag', 'onMouseMove',
             'onActivate', 'onDeactivate', 'onEditOptions', 'onKeyDown',

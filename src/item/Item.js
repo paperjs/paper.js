@@ -36,11 +36,12 @@ var Item = Base.extend(Emitter, /** @lends Item# */{
         },
 
         /**
-         * An object constant that can be passed to Item#initialize() to avoid
-         * insertion into the scene graph.
+         * Two object constants that can be passed to Item#initialize() to
+         * control insertion into the scene graph in a performative way.
          *
          * @private
          */
+        INSERT: { insert: true },
         NO_INSERT: { insert: false }
     },
 
@@ -153,16 +154,16 @@ new function() { // Injection scope for various item event handlers
         matrix._owner = this;
         this._style = new Style(project._currentStyle, this, project);
         // Do not add to the project if it's an internal path,  or if
-        // props.insert  or settings.isnertItems is false.
+        // props.insert  or settings.insertItems is false.
         if (internal || hasProps && props.insert == false
-            || !settings.insertItems && !(hasProps && props.insert === true)) {
+            || !settings.insertItems && !(hasProps && props.insert == true)) {
             this._setProject(project);
         } else {
             (hasProps && props.parent || project)
                     ._insertItem(undefined, this, true); // _created = true
         }
-        // Filter out Item.NO_INSERT before _set(), for performance reasons.
-        if (hasProps && props !== Item.NO_INSERT) {
+        // Filter out Item.*INSERT before _set(), for performance reasons.
+        if (hasProps && props !== Item.NO_INSERT && props !== Item.INSERT) {
             this.set(props, {
                 // Filter out these properties as they were handled above:
                 internal: true, insert: true, project: true, parent: true
@@ -1799,18 +1800,18 @@ new function() { // Injection scope for various item event handlers
         if (!raster) {
             raster = new Raster(Item.NO_INSERT);
         }
-        // TODO: Switch to options object for more descriptive call signature.
         var bounds = this.getStrokeBounds(),
             scale = (resolution || this.getView().getResolution()) / 72,
             // Floor top-left corner and ceil bottom-right corner, to never
             // blur or cut pixels.
             topLeft = bounds.getTopLeft().floor(),
             bottomRight = bounds.getBottomRight().ceil(),
-            size = new Size(bottomRight.subtract(topLeft)).multiply(scale);
+            boundsSize = new Size(bottomRight.subtract(topLeft)),
+            rasterSize = boundsSize.multiply(scale);
         // Pass `true` for clear, so reused rasters don't draw over old pixels.
-        raster.setSize(size, true);
+        raster.setSize(rasterSize, true);
 
-        if (!size.isZero()) {
+        if (!rasterSize.isZero()) {
             var ctx = raster.getContext(true),
                 matrix = new Matrix().scale(scale).translate(topLeft.negate());
             ctx.save();
@@ -1819,11 +1820,15 @@ new function() { // Injection scope for various item event handlers
             this.draw(ctx, new Base({ matrices: [matrix] }));
             ctx.restore();
         }
-        raster.transform(new Matrix().translate(topLeft.add(size.divide(2)))
+        raster._matrix.set(
+            new Matrix()
+                .translate(topLeft.add(boundsSize.divide(2)))
                 // Take resolution into account and scale back to original size.
-                .scale(1 / scale));
-        if (insert === undefined || insert)
+                .scale(1 / scale)
+        );
+        if (insert === undefined || insert) {
             raster.insertAbove(this);
+        }
         return raster;
     },
 
