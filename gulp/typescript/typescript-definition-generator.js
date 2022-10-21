@@ -40,28 +40,24 @@ classes.forEach(cls => {
     // Format methods.
     const methods = cls.methods
         .filter(filter)
-        .map(it => {
-            const name = formatMethodName(it._name);
-            const isStaticConstructor = it.isStatic && it.isConstructor;
-            return {
-                name: name,
-                // Constructors don't need return type.
-                type: !it.isConstructor
-                    ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
-                    : '',
-                static: formatStatic(it.isStatic),
-                // This flag is only used below to filter methods.
-                isStaticConstructor: isStaticConstructor,
-                comment: formatComment(it.comment, 'desc', it.isConstructor),
-                params: it._params
-                    ? it._params
+        .map(it => ({
+            name: formatMethodName(it._name),
+            // Constructors don't need return type.
+            type: !it.isConstructor
+                ? formatType(getMethodReturnType(it), { isMethodReturnType: true })
+                : '',
+            static: formatStatic(it.isStatic),
+            // This flag is only used below to filter methods.
+            isStaticConstructor: it.isStatic && it.isConstructor,
+            comment: formatComment(it.comment, 'desc', it.isConstructor),
+            params: it._params
+                ? it._params
                     // Filter internal parameters (starting with underscore).
-                        .filter(it => !/^_/.test(it.name))
-                        .map(it => formatParameter(it, isStaticConstructor && cls))
-                        .join(', ')
-                    : ''
-            };
-        })
+                    .filter(it => !/^_/.test(it.name))
+                    .map(it => formatParameter(it))
+                    .join(', ')
+                : ''
+        }))
         .sort(sortMethods);
 
     // Divide methods in 2 parts: static constructors and other. Because static
@@ -182,18 +178,9 @@ function parseType(type, options) {
     type = types.map(splittedType => {
         // Get type without array suffix `[]` for easier matching.
         const singleType = splittedType.replace(/(\[\])+$/, '');
-        // Handle eventual type conflict in static constructors block. For
-        // example, in `Path.Rectangle(rectangle: Rectangle)` method,
-        // `rectangle` parameter type must be mapped to `paper.Rectangle` as it
-        // is declared inside a `Path` namespace and would otherwise be wrongly
-        // assumed as being the type of `Path.Rectangle` class.
-        if (options.staticConstructorClass && options.staticConstructorClass.methods.find(it => it.isStatic && it.isConstructor && formatMethodName(it._name) === singleType)
-        ) {
-            return 'paper.' + splittedType;
-        }
         // Convert primitive types to their lowercase equivalent to suit
         // typescript best practices.
-        if (['Number', 'String', 'Boolean', 'Object'].indexOf(singleType) >= 0) {
+        if (['Number', 'String', 'Boolean', 'Object'].includes(singleType)) {
             splittedType = splittedType.toLowerCase();
         }
         // Properties `object` type need to be turned into `any` to avoid
@@ -201,6 +188,15 @@ function parseType(type, options) {
         // `object`, `property.key` access is forbidden.
         if (options.isProperty && splittedType === 'object') {
             return 'any';
+        }
+        // Replace basic type parameters by their related generic type. This
+        // allows the type definition to cover the arguments reading pattern
+        // that is widely used across the codebase (e.g. a method that accepts
+        // a `Point` instance will also accept an array of two numbers and
+        // other point like objects).
+        // The generic types are hardcoded in the type definition template.
+        if (options.isParam && ['Point', 'Size', 'Rectangle'].includes(splittedType)) {
+            splittedType += 'Like';
         }
         return splittedType;
     }).join(' | ');
@@ -225,7 +221,7 @@ function formatMethodName(methodName) {
     return methodName;
 }
 
-function formatParameter(param, staticConstructorClass) {
+function formatParameter(param) {
     let content = '';
     // Handle rest parameter pattern `...Type`. Parameter name needs to be
     // prefixed with `...` as in ES6. E.g. `...parameter: type[]`.
@@ -237,7 +233,7 @@ function formatParameter(param, staticConstructorClass) {
     if (param.isOptional) {
         content += '?';
     }
-    content += formatType(param.type, { staticConstructorClass });
+    content += formatType(param.type, { isParam: true });
     return content;
 }
 
