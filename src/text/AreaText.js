@@ -23,6 +23,7 @@
 var AreaText = TextItem.extend(/** @lends AreaText **/ {
     _class: 'AreaText',
     _htmlElement: 'input',
+    _htmlParentId: 'area-text-parent',
     _allowedElements: ['input', 'textarea'],
     _htmlId: 'area-text',
     _outsideClickId: null,
@@ -109,6 +110,9 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
       }
 
       this._boundsGenerator = generator;
+      if (generator === 'auto-width') {
+          this._htmlElement = 'input';
+      }
     },
 
     /**
@@ -136,13 +140,6 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      */
     getEditElement: function () {
       return this._htmlElement;
-    },
-
-    setEditElement: function (element) {
-        if (!this._allowedElements.includes(element)) {
-            throw new Error("Html element with name " + element + " is not allowed");
-        }
-        this._htmlElement = element;
     },
 
     /**
@@ -200,40 +197,103 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
     },
 
-    _setEditMode: function () {
-        var element =  document.getElementById(this._htmlId);
-        if (!element) {
-            element = document.createElement(this._htmlElement);
-            element.id = this._htmlId;
-        }
-
+    _setEditElementStyles: function (container) {
         var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
 
-        element.style.width = this.rectangle.width + 'px';
-        if (this._boundsGenerator === 'fixed') {
-            element.style.height = '100%';
+        document.body.appendChild(container);
+        var element = document.createElement(this._htmlElement);
+        element.id = this._htmlId;
+        container.appendChild(element);
+        container.style.position = 'absolute';
+        if (this._boundsGenerator !== 'auto-width') {
+            container.style.width = this.rectangle.width + 'px';
         } else {
-            element.style.height = this.rectangle.height + 'px';
+            container.style.width = '100%';
         }
-        element.style.left = canvasBoundingBox.left + this.rectangle.left + 'px';
-        element.style.top = canvasBoundingBox.top + this.rectangle.top + 0.5  + 'px';
+
+        container.style.maxHeight = this.view.getViewSize().height + 'px';
+        if (this._boundsGenerator === 'fixed') {
+            container.style.height = '100%';
+        } else if (this._boundsGenerator === 'auto-width') {
+            container.style.height = this.leading + 'px';
+        }
+        container.style.left = canvasBoundingBox.left + this.rectangle.left + 'px';
+        container.style.top = canvasBoundingBox.top + this.rectangle.top + 0.5  + 'px';
+
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize + 'px';
         element.style.fontWeight = this._style.fontWeight;
         element.style.lineHeight = '' + this._style.leading / this.style.fontSize;
+
+        if (this._boundsGenerator === 'auto-width') {
+            element.style.position = 'absolute';
+            element.style.top = '0.5px';
+        }
+
+        if (this._boundsGenerator !== 'auto-height') {
+            element.style.height = '100%';
+        } else {
+            element.style.height = this.rectangle.height + 'px';
+        }
+        element.style.width = '100%';
         element.style.resize = 'none';
         element.style.border = 'none';
         element.style.margin = '0';
         element.style.padding = '0';
         element.style.outline = '0';
+        element.style.boxSizing = 'border-box';
         element.style.backgroundColor = 'transparent';
+        element.style.overflow = 'hidden';
+        element.style.wordWrap = 'break-word';
+
+        // create div as well
+        var div = document.createElement('div');
+
+        element.after(div);
+        div.style.fontFamily = this._style.fontFamily;
+        div.style.fontSize = this._style.fontSize + 'px';
+        div.style.fontWeight = this._style.fontWeight;
+        div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
+        div.style.visibility = 'hidden';
+        if (this._boundsGenerator !== 'auto-width') {
+            div.style.width = this.rectangle.width + 'px';
+        } else {
+            div.style.width = 'fit-content';
+        }
+        div.style.wordWrap = 'break-word';
 
         element.value = '' + this._content;
+
+
+        if (this._boundsGenerator === 'auto-height') {
+            var self = this;
+            function autosize() {
+                div.innerHTML = element.value.replace(/\n/g, '<br/>');
+                element.style.height = div.clientHeight + 'px';
+            }
+            element.addEventListener('input', function () {
+                autosize();
+                self.setHeight(div.scrollHeight);
+            });
+        }
+
+        if (this._boundsGenerator === 'auto-width') {
+            var self = this;
+            element.addEventListener('input', function () {
+                div.innerHTML = element.value;
+                self.setWidth(div.scrollWidth);
+            });
+        }
+    },
+
+    _setEditMode: function () {
+        var element =  document.getElementById(this._htmlParentId);
+        if (!element) {
+            element = document.createElement('div');
+            element.id = this._htmlParentId;
+        }
+        this._setEditElementStyles(element);
         this.setContent('');
-
-        element.style.position = 'absolute';
-
-        document.body.appendChild(element);
         this._inputOutsideClick('add');
     },
 
@@ -257,8 +317,8 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _setNormalMode: function () {
-        var element = document.getElementById(this._htmlId);
-        this.setContent( element.value );
+        var element = document.getElementById(this._htmlParentId);
+        this.setContent( element.querySelector('#' + this._htmlId).value );
         element.remove();
         this._inputOutsideClick('remove');
         this._wrap(this.view.context);
