@@ -545,7 +545,7 @@ raster.getPixel(pointLike);
 raster.setPixel(0, 0, color);
 raster.setPixel(pointLike, color);
 raster.createImageData(sizeLike);
-raster.getImageData(rectangle);
+raster.getImageData(rectangleLike);
 raster.putImageData({} as ImageData, pointLike);
 raster.setImageData({} as ImageData);
 
