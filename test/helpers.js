@@ -485,6 +485,11 @@ var comparators = {
                 ['content', 'point']);
     },
 
+    AreaText: function (actual, expected, message, options) {
+        compareItem(actual, expected, message, options,
+            ['content', 'rectangle', 'justification', 'editMode', 'htmlId', 'boundsGenerator', 'editElement']);
+    },
+
     SymbolItem: function(actual, expected, message, options) {
         compareItem(actual, expected, message,
                 // Cloning SymbolItems does not result in cloned

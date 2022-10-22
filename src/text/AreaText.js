@@ -380,9 +380,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
     },
 
     _onDoubleClick: function () {
-        this.on('doubleclick', function (e) {
-            this._changeMode();
-        });
+        this.on('doubleclick', this._changeMode);
     },
 
     _wrap: function (ctx) {
@@ -526,6 +524,27 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
      * @name AreaText#rectangle
      * @type Rectangle
      * @default 'new paper.Rectangle(0, 0)'
+     */
+
+
+    /**
+     * {@grouptitle Rectangle}
+     *
+     * The width of the rectangle is wrapped around
+     *
+     * @name AreaText#setWidth
+     * @function
+     * @param {Number} width the number to set the width
+     */
+
+    /**
+     * {@grouptitle Rectangle}
+     *
+     * The height of the rectangle is wrapped around
+     *
+     * @name AreaText#setHeight
+     * @function
+     * @param {Number} height the number to set the height
      */
 
     /**
