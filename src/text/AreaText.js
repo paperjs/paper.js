@@ -197,44 +197,31 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         }
     },
 
-    _setEditElementStyles: function (container) {
+    _containerStylesFixed: function (container) {
         var canvasBoundingBox = this.view.context.canvas.getBoundingClientRect();
-
-        document.body.appendChild(container);
-        var element = document.createElement(this._htmlElement);
-        element.id = this._htmlId;
-        container.appendChild(element);
         container.style.position = 'absolute';
-        if (this._boundsGenerator !== 'auto-width') {
-            container.style.width = this.rectangle.width + 'px';
-        } else {
-            container.style.width = '100%';
-        }
-
-        container.style.maxHeight = this.view.getViewSize().height + 'px';
-        if (this._boundsGenerator === 'fixed') {
-            container.style.height = '100%';
-        } else if (this._boundsGenerator === 'auto-width') {
-            container.style.height = this.leading + 'px';
-        }
+        container.style.width = this.rectangle.width + 'px';
+        container.style.height = '100%';
         container.style.left = canvasBoundingBox.left + this.rectangle.left + 'px';
         container.style.top = canvasBoundingBox.top + this.rectangle.top + 0.5  + 'px';
+        container.style.maxHeight = this.view.getViewSize().height + 'px';
+    },
 
+    _containerStylesAutoHeight: function (container) {
+        this._containerStylesFixed(container);
+    },
+
+    _containerStylesAutoWidth: function (container) {
+        this._containerStylesFixed(container);
+        container.style.width = '100%';
+        container.style.height = this.leading + 'px';
+    },
+
+    _elementStylesFixed: function (element) {
         element.style.fontFamily = this._style.fontFamily;
         element.style.fontSize = this._style.fontSize + 'px';
         element.style.fontWeight = this._style.fontWeight;
         element.style.lineHeight = '' + this._style.leading / this.style.fontSize;
-
-        if (this._boundsGenerator === 'auto-width') {
-            element.style.position = 'absolute';
-            element.style.top = '0.5px';
-        }
-
-        if (this._boundsGenerator !== 'auto-height') {
-            element.style.height = '100%';
-        } else {
-            element.style.height = this.rectangle.height + 'px';
-        }
         element.style.width = '100%';
         element.style.resize = 'none';
         element.style.border = 'none';
@@ -245,44 +232,112 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
         element.style.backgroundColor = 'transparent';
         element.style.overflow = 'hidden';
         element.style.wordWrap = 'break-word';
+        element.style.height = '100%';
+    },
 
-        // create div as well
-        var div = document.createElement('div');
+    _elementStylesAutoHeight: function (element) {
+        this._elementStylesFixed(element);
+        element.style.height = this.rectangle.height + 'px';
+    },
 
-        element.after(div);
+    _elementStylesAutoWidth: function (element) {
+        this._elementStylesFixed(element);
+        element.style.position = 'absolute';
+        element.style.top = '0.5px';
+    },
+
+    _divStylesFixed: function (div) {
         div.style.fontFamily = this._style.fontFamily;
         div.style.fontSize = this._style.fontSize + 'px';
         div.style.fontWeight = this._style.fontWeight;
         div.style.lineHeight = '' + this._style.leading / this.style.fontSize;
         div.style.visibility = 'hidden';
-        if (this._boundsGenerator !== 'auto-width') {
-            div.style.width = this.rectangle.width + 'px';
-        } else {
-            div.style.width = 'fit-content';
-        }
+        div.style.width = this.rectangle.width + 'px';
         div.style.wordWrap = 'break-word';
+    },
+
+    _divStylesAutoHeight: function (div) {
+        this._divStylesFixed(div);
+    },
+
+    _divStylesAutoWidth: function (div) {
+        this._divStylesFixed(div);
+        div.style.width = 'fit-content';
+    },
+
+    _setElementStyles: function (element) {
+        var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+        this['_elementStyles' + strategy](element);
+    },
+
+    _setContainerStyles: function (container) {
+        var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+        this['_containerStyles' + strategy](container);
+    },
+
+    _setDivStyles: function (div) {
+        var strategy = Base.camelize(Base.capitalize(this._boundsGenerator));
+        this['_divStyles' + strategy](div);
+    },
+
+    _setEditAutoHeight: function (self, element, div) {
+        function autoHeight() {
+            div.innerHTML = element.value.replace(/\n/g, '<br/>');
+            var innerStrArray = div.innerHTML.split('<');
+            var lastBr = false;
+            if (innerStrArray.length > 0 && (innerStrArray[innerStrArray.length - 1] === 'br>')) {
+                lastBr = true;
+            }
+            var heightSetter;
+            if (lastBr) {
+                heightSetter = div.scrollHeight + self.leading;
+            } else {
+                heightSetter = div.scrollHeight;
+            }
+            element.style.height = heightSetter + 'px';
+            self.setHeight(heightSetter);
+        }
+
+
+        // initial setup
+        autoHeight();
+        // input watch
+        element.addEventListener('input', autoHeight);
+    },
+
+    _setEditAutoWidth: function (self, element, div) {
+        function autoWidth() {
+            div.innerHTML = element.value.replace(/\s/g, '!');
+            self.setWidth(div.scrollWidth);
+        }
+
+        // initial setup
+        autoWidth();
+        // input watch
+        element.addEventListener('input', autoWidth);
+    },
+
+    _setEditElementDOM: function (container) {
+        document.body.appendChild(container);
+
+        var element = document.createElement(this._htmlElement);
+        element.id = this._htmlId;
+
+        container.appendChild(element);
+        this._setContainerStyles(container);
+        this._setElementStyles(element);
+
+        // create div as well
+        var div = document.createElement('div');
+        element.after(div);
+        this._setDivStyles(div);
 
         element.value = '' + this._content;
 
-
         if (this._boundsGenerator === 'auto-height') {
-            var self = this;
-            function autosize() {
-                div.innerHTML = element.value.replace(/\n/g, '<br/>');
-                element.style.height = div.clientHeight + 'px';
-            }
-            element.addEventListener('input', function () {
-                autosize();
-                self.setHeight(div.scrollHeight);
-            });
-        }
-
-        if (this._boundsGenerator === 'auto-width') {
-            var self = this;
-            element.addEventListener('input', function () {
-                div.innerHTML = element.value;
-                self.setWidth(div.scrollWidth);
-            });
+           this._setEditAutoHeight(this, element, div);
+        } else if (this._boundsGenerator === 'auto-width') {
+            this._setEditAutoWidth(this, element, div);
         }
     },
 
@@ -292,7 +347,7 @@ var AreaText = TextItem.extend(/** @lends AreaText **/ {
             element = document.createElement('div');
             element.id = this._htmlParentId;
         }
-        this._setEditElementStyles(element);
+        this._setEditElementDOM(element);
         this.setContent('');
         this._inputOutsideClick('add');
     },

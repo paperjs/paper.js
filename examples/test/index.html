@@ -31,12 +31,12 @@
     // pointText.selected = true;
 
     areaText.selected = true;
-    areaText.boundsGenerator = 'auto-width';
+    areaText.boundsGenerator = 'auto-height';
 
-    // areaText.on('mousedown', function () {
-    //    console.log('mouse enter');
-    // });
-    console.log( areaText);
+    const areaText1 = new paper.AreaText(new paper.Rectangle(new paper.Point(100, 100), size));
+    areaText1.fillColor = 'black';
+    areaText1.content = 'Some new text here';
+    areaText1.selected = true;
 </script>
 </body>
 </html>
