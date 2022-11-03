@@ -1,13 +1,17 @@
 # Change Log
 
+## `0.12.17`
+
+- Properly warning in Chrome Console by providing `{ willReadFrequently: true }`
+  canvas context option where needed (#2008).
+
 ## `0.12.16`
 
 ### Fixed
 
 - Fix `Item#rasterize()` bounds cache when reusing raster.
-- Fix new warning in New warning in Chrome Console by providing
-  `{ willReadFrequently: true }` canvas context option where needed (#1999,
-  #2000, #2003).
+- Fix new warning in Chrome Console by providing `{ willReadFrequently: true }`
+  canvas context option where needed (#1999, #2000, #2003).
 - Fix `Path.*` constructor properties handling when passing `{ insert: true }`
 - 
 ### Changed
