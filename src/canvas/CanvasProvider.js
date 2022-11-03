@@ -50,9 +50,9 @@ var CanvasProvider = Base.exports.CanvasProvider = {
         return canvas;
     },
 
-    getContext: function(width, height) {
-        var canvas = this.getCanvas(width, height);
-        return canvas ? canvas.getContext('2d') : null;
+    getContext: function(width, height, options) {
+        var canvas = this.getCanvas(width, height, options);
+        return canvas ? canvas.getContext('2d', options || {}) : null;
     },
 
      // release can receive either a canvas or a context.
