@@ -1,5 +1,15 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Fix transformation in SvgImport (#1926).
+
+### Added
+
+- Add setter for item.index (#1908).
+
 ## `0.12.17`
 
 - Properly warning in Chrome Console by providing `{ willReadFrequently: true }`
