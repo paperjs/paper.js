@@ -357,7 +357,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     },
 
     /**
-     * The resoltuion of the underlying canvas / device in pixel per inch (DPI).
+     * The resolution of the underlying canvas / device in pixel per inch (DPI).
      * It is `72` for normal displays, and `144` for high-resolution
      * displays with a pixel-ratio of `2`.
      *
@@ -1040,7 +1040,7 @@ new function() { // Injection scope for event handling on the browser
     var prevFocus,
         tempFocus,
         dragging = false, // mousedown that started on a view.
-        mouseDown = false; // mouesdown anywhere.
+        mouseDown = false; // mousedown anywhere.
 
     function getView(event) {
         // Get the view from the current event target.

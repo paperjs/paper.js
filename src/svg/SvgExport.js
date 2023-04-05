@@ -23,7 +23,7 @@ new function() {
         var attrs = new Base(),
             trans = matrix.getTranslation();
         if (coordinates) {
-            // If the item suppports x- and y- coordinates, we're taking out the
+            // If the item supports x- and y- coordinates, we're taking out the
             // translation part of the matrix and move it to x, y attributes, to
             // produce more readable markup, and not have to use center points
             // in rotate(). To do so, SVG requries us to inverse transform the
@@ -354,7 +354,7 @@ new function() {
         var svg = node,
             defs = null;
         if (definitions) {
-            // We can only use svg nodes as defintion containers. Have the loop
+            // We can only use svg nodes as definition containers. Have the loop
             // produce one if it's a single item of another type (when calling
             // #exportSVG() on an item rather than a whole project)
             // jsdom in Node.js uses uppercase values for nodeName...
