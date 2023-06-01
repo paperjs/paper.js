@@ -293,8 +293,6 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             type = 'mousemove';
         var move = mouse.move || mouse.drag,
             responds = this.responds(type),
-            minDistance = this.minDistance,
-            maxDistance = this.maxDistance,
             called = false,
             tool = this;
         // Updates the internal tool state, taking into account minDistance and
@@ -350,10 +348,10 @@ var Tool = PaperScopeItem.extend(/** @lends Tool# */{
             update();
             emit();
         } else if (mouse.up) {
-            update(null, maxDistance);
+            update(null, this._maxDistance);
             emit();
         } else if (responds) {
-            while (update(minDistance, maxDistance))
+            while (update(this._minDistance, this._maxDistance))
                 emit();
         }
         return called;
