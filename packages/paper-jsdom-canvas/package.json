@@ -19,7 +19,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
-    "canvas": "^2.10.1",
+    "canvas": "^2.11.2",
     "jsdom": "^16.7.0",
     "paper": "0.12.17",
     "source-map-support": "^0.5.21"
