@@ -23,7 +23,7 @@
 - Fix new warning in Chrome Console by providing `{ willReadFrequently: true }`
   canvas context option where needed (#1999, #2000, #2003).
 - Fix `Path.*` constructor properties handling when passing `{ insert: true }`
-- 
+
 ### Changed
 
 - Rename `Raster#setImageData()` to `#putImageData()`.
