@@ -15,3 +15,4 @@
 - Scott Kieronski <baroes0239@gmail.com>
 - Samuel Asensi <asensi.samuel@gmail.com>
 - Takahiro Nishino <sapics.dev@gmail.com>
+- Peter Bucher <bucher.peter16@gmail.com>
