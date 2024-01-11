@@ -52,7 +52,8 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
             applyMatrix: true,
             insertItems: true,
             handleSize: 4,
-            hitTolerance: 0
+            hitTolerance: 0,
+            hitOptions: {}
         });
         this.project = null;
         this.projects = [];
@@ -132,6 +133,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
      *     when drawing selections
      * @option [settings.hitTolerance=0] {Number} the default tolerance for hit-
      *     tests, when no value is specified
+     * @option [settings.hitOptions={}] {Object} further modifies the default 
+     *     options for hit-tests. If it contains hitTolerance property, it
+     *     overrides the hitTolerance setting. Be aware that this settings will
+     *     impact the mouse events' performance, i.e., refrain from enabling
+     *     computationally intensive tests like segments via this option.
      */
 
     /**
