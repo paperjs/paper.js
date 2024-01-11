@@ -528,7 +528,7 @@ var View = Base.extend(Emitter, /** @lends View# */{
     getZoom: function() {
         var scaling = this._decompose().scaling;
         // Use average since it can be non-uniform.
-        return (scaling.x + scaling.y) / 2;
+        return (Math.abs(scaling.x) + Math.abs(scaling.y)) / 2; // for mirrored in x (x=-1, y=1), result was 0 and crash project dividing by 0
     },
 
     setZoom: function(zoom) {
