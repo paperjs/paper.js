@@ -3419,6 +3419,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} angle the rotation angle
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#rotate(angle[, center])
+     * @chainable
      *
      * @example {@paperscript}
      * // Rotating an item:
@@ -3464,6 +3465,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @function
      * @param {Number} scale the scale factor
      * @param {Point} [center={@link Item#position}]
+     * @chainable
      *
      * @example {@paperscript}
      * // Scaling an item from its center point:
@@ -3502,6 +3504,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} hor the horizontal scale factor
      * @param {Number} ver the vertical scale factor
      * @param {Point} [center={@link Item#position}]
+     * @chainable
      *
      * @example {@paperscript}
      * // Scaling an item horizontally by 300%:
@@ -3528,6 +3531,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Point} shear the horizontal and vertical shear factors as a point
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(shear[, center])
+     * @chainable
      */
     /**
      * Shears the item by the given values from its center point, or optionally
@@ -3539,6 +3543,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} ver the vertical shear factor
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(hor, ver[, center])
+     * @chainable
      */
 
     /**
@@ -3550,6 +3555,7 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Point} skew the horizontal and vertical skew angles in degrees
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(skew[, center])
+     * @chainable
      */
     /**
      * Skews the item by the given angles from its center point, or optionally
@@ -3561,12 +3567,14 @@ new function() { // Injection scope for hit-test functions shared with project
      * @param {Number} ver the vertical sskew angle in degrees
      * @param {Point} [center={@link Item#position}]
      * @see Matrix#shear(hor, ver[, center])
+     * @chainable
      */
 
     /**
      * Transform the item.
      *
      * @param {Matrix} matrix the matrix by which the item shall be transformed
+     * @chainable
      */
     // TODO: Implement flags:
     // @param {String[]} flags array of any of the following: 'objects',
