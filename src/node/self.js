@@ -18,7 +18,7 @@ var path = require('path');
 // 'paper-jsdom' or 'paper-jsdom-canvas'), and use this to determine if error
 // exceptions should be thrown or if loading should fail silently.
 var parent = module.parent && module.parent.parent,
-    requireName = parent && path.basename(path.dirname(parent.filename));
+    requireName = parent && parent.filename && path.basename(path.dirname(parent.filename));
 requireName = /^paper/.test(requireName) ? requireName : 'paper';
 
 var jsdom,
