@@ -20,6 +20,7 @@
 /*#*/ include('Emitter.js');
 
 /*#*/ include('Project.js');
+/*#*/ include('View.js');
 
 /*#*/ include('Item.js');
 /*#*/ include('Item_Cloning.js');
