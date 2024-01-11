@@ -2103,55 +2103,136 @@ new function() { // Scope for bezier intersection using fat-line clipping
       return locations;
     }
 
-    function getIntersections(curves1, curves2, include, matrix1, matrix2,
-            _returnFirst) {
-        var epsilon = /*#=*/Numerical.GEOMETRIC_EPSILON,
-            self = !curves2;
-        if (self)
-            curves2 = curves1;
-        var length1 = curves1.length,
-            length2 = curves2.length,
-            values1 = new Array(length1),
-            values2 = self ? values1 : new Array(length2),
-            locations = [];
-
-        for (var i = 0; i < length1; i++) {
-            values1[i] = curves1[i].getValues(matrix1);
-        }
-        if (!self) {
-            for (var i = 0; i < length2; i++) {
-                values2[i] = curves2[i].getValues(matrix2);
+    function getIntersections(v) {
+        var curve1 = this,
+            curve2 = v,
+            epsilon = /*#=*/Numerical.EPSILON,
+            straight1 = curve1.isStraight(),
+            straight2 = curve2.isStraight(),
+            line1 = straight1 && new Line(curve1._segment1._point,
+                    curve1._segment2._point),
+            line2 = straight2 && new Line(curve2._segment1._point,
+                    curve2._segment2._point),
+            intersections = [];
+    
+        function addIntersection(intersection) {
+            var t1 = intersection.parameter,
+                t2 = intersection.parameter2;
+            if (t1 >= -epsilon && t1 <= 1 + epsilon
+                    && t2 >= -epsilon && t2 <= 1 + epsilon) {
+                var existing = false;
+                for (var i = 0, l = intersections.length; i < l; i++) {
+                    var entry = intersections[i];
+                    if (entry.equals(intersection)) {
+                        existing = true;
+                        break;
+                    }
+                }
+                if (!existing) {
+                    intersections.push(intersection);
+                }
             }
         }
-        var boundsCollisions = CollisionDetection.findCurveBoundsCollisions(
-                values1, values2, epsilon);
-        for (var index1 = 0; index1 < length1; index1++) {
-            var curve1 = curves1[index1],
-                v1 = values1[index1];
-            if (self) {
-                // First check for self-intersections within the same curve.
-                getSelfIntersection(v1, curve1, locations, include);
-            }
-            // Check for intersections with potentially intersecting curves.
-            var collisions1 = boundsCollisions[index1];
-            if (collisions1) {
-                for (var j = 0; j < collisions1.length; j++) {
-                    // There might be already one location from the above
-                    // self-intersection check:
-                    if (_returnFirst && locations.length)
-                        return locations;
-                    var index2 = collisions1[j];
-                    if (!self || index2 > index1) {
-                        var curve2 = curves2[index2],
-                            v2 = values2[index2];
-                        getCurveIntersections(
-                                v1, v2, curve1, curve2, locations, include);
+    
+        function addCurveIntersections(v, locations, include) {
+            var flip = Curve.isStraight(v),
+                point = flip ? v.getPointAt(0.5) : null;
+            for (var i = 0, l = locations.length; i < l; i++) {
+                var loc = locations[i];
+                if (flip
+                        ? point.getDistance(loc.getPoint()) < epsilon
+                        : loc.getPath() === v._path) {
+                    var t1 = loc.getTime(),
+                        t2 = flip
+                            ? Curve.getParameterOf(v, loc.getPoint())
+                            : Curve.getTimeOf(v, loc.getPoint());
+                    if (include || !loc.isCrossing()) {
+                        addIntersection(new Intersection(
+                                include || loc.isTouching() ? 'touch' : 'cross',
+                                t1, t2));
                     }
                 }
             }
         }
-        return locations;
+    
+        function addLineIntersection(line, parameter) {
+            var point = line.getPointAt(parameter);
+            addIntersection(new Intersection('cross',
+                    Curve.getParameterOf(curve1, point),
+                    Curve.getParameterOf(curve2, point)));
+        }
+    
+        function handleCollinearLines(line1, line2) {
+            var point1a = line1.getPointAt(0),
+                point1b = line1.getPointAt(1),
+                point2a = line2.getPointAt(0),
+                point2b = line2.getPointAt(1);
+            if (point1a.isClose(point2a, epsilon)) {
+                addLineIntersection(line1, 0);
+            } else if (point1a.isClose(point2b, epsilon)) {
+                addLineIntersection(line1, 0);
+                addLineIntersection(line2, 1);
+            } else if (point1b.isClose(point2a, epsilon)) {
+                addLineIntersection(line1, 1);
+                addLineIntersection(line2, 0);
+            } else if (point1b.isClose(point2b, epsilon)) {
+                addLineIntersection(line1, 1);
+            } else if (line1.getParameterOf(point2a) != null) {
+                addLineIntersection(line2, 0);
+            } else if (line1.getParameterOf(point2b) != null) {
+                addLineIntersection(line2, 1);
+            } else if (line2.getParameterOf(point1a) != null) {
+                addLineIntersection(line1, 0);
+            } else if (line2.getParameterOf(point1b) != null) {
+                addLineIntersection(line1, 1);
+            }
+        }
+    
+        function handleClipping() {
+            var vRes = curve2.getValues(),
+                prevT;
+    
+            function clipConvex(vClip) {
+                var iClip = Intersection.intersect(vRes, vClip);
+                for (var i = 0; i < 4; i++) {
+                    var tClip = iClip['time' + (i + 1)];
+                    if (tClip == null)
+                        break;
+                    var tRes = iClip['time' + (i + 5)];
+                    if (!(prevT <= tRes && tRes <= 1))
+                        break;
+                    prevT = tRes;
+                    addIntersection(new Intersection('cross', tClip, tRes));
+                }
+            }
+    
+            clipConvex(curve1.getPart(0.5 - epsilon).getValues());
+            clipConvex(curve1.getPart(0.5 + epsilon).getValues());
+        }
+    
+        // Handle special cases of straight lines and collinear lines.
+        if (straight1 && straight2) {
+            if (line1.isCollinear(line2)) {
+                handleCollinearLines(line1, line2);
+            } else {
+                var intersection = line1.intersect(line2, false);
+                if (intersection)
+                    addLineIntersection(line1, line1.getParameterOf(intersection));
+            }
+        } else if (straight1) {
+            addCurveIntersections(curve2, line1.getIntersections(curve2));
+        } else if (straight2) {
+            addCurveIntersections(curve1, line2.getIntersections(curve1));
+        } else if (curve1.isCollinear(curve2)) {
+            handleCollinearLines(line1, line2);
+        } else {
+            // Use the clipper to handle the intersections.
+            prevT = -Infinity;
+            handleClipping();
+        }
+        return intersections;
     }
+    
 
     /**
      * Code to detect overlaps of intersecting based on work by
