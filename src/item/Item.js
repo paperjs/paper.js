@@ -2456,6 +2456,9 @@ new function() { // Injection scope for hit-test functions shared with project
      * @option [options.embedImages=true] {Boolean} whether raster images should
      *     be embedded as base64 data inlined in the xlink:href attribute, or
      *     kept as a link to their external URL.
+     * @option [options.linkImages=false] {Boolean} whether raster images should
+     *     be linked using a definition and use tag, or place the data/url in
+     *     the image href attribute.
      *
      * @param {Object} [options] the export options
      * @return {SVGElement|String} the item converted to an SVG node or a
