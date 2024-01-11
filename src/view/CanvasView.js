@@ -43,6 +43,10 @@ var CanvasView = View.extend(/** @lends CanvasView# */{
             canvas = CanvasProvider.getCanvas(size);
         }
         var ctx = this._context = canvas.getContext('2d');
+        if (!ctx) {
+            throw new Error('Canvas ' + canvas +
+                ' is unable to provide a 2D context.');
+        }
         // Save context right away, and restore in #remove(). Also restore() and
         // save() again in _setElementSize() to prevent accumulation of scaling.
         ctx.save();
