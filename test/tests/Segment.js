@@ -37,6 +37,16 @@ test('new Segment(object)', function() {
     equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }');
 });
 
+test('new Segment(object) with name', function() {
+    var segment = new Segment({ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 }, name: "test" });
+    equals(segment.name, 'test');
+});
+
+test('new Segment(object) with data', function() {
+    var segment = new Segment({ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 }, data: { test: true} });
+    equals(segment.data.test, true);
+});
+
 test('new Segment(point, handleIn, handleOut)', function() {
     var segment = new Segment(new Point(10, 10), new Point(5, 5), new Point(15, 15));
     equals(segment.toString(), '{ point: { x: 10, y: 10 }, handleIn: { x: 5, y: 5 }, handleOut: { x: 15, y: 15 } }');
