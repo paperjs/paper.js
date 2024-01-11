@@ -16,7 +16,7 @@
  */
 Base.exports.PaperScript = function() {
     // `this` == global scope, as the function is called with `.call(this);`
-    var global = this,
+    var global = this || {},
         // See if there is a global Acorn in the browser already.
         acorn = global.acorn;
     // Also try importing an outside version of Acorn.
