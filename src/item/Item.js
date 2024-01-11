@@ -4335,16 +4335,16 @@ new function() { // Injection scope for hit-test functions shared with project
      * Not defined in Path as it is required by other classes too,
      * e.g. PointText.
      */
-    _setStyles: function(ctx, param, viewMatrix) {
+    _setStyles: function(ctx, param, viewMatrix, strokeMatrix) {
         // We can access internal properties since we're only using this on
         // items without children, where styles would be merged.
         var style = this._style,
             matrix = this._matrix;
         if (style.hasFill()) {
-            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix);
+            ctx.fillStyle = style.getFillColor().toCanvasStyle(ctx, matrix, strokeMatrix);
         }
         if (style.hasStroke()) {
-            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix);
+            ctx.strokeStyle = style.getStrokeColor().toCanvasStyle(ctx, matrix, strokeMatrix);
             ctx.lineWidth = style.getStrokeWidth();
             var strokeJoin = style.getStrokeJoin(),
                 strokeCap = style.getStrokeCap(),
