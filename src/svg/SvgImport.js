@@ -607,8 +607,17 @@ new function() {
             insertItems = settings.insertItems;
         settings.applyMatrix = false;
         settings.insertItems = false;
-        var importer = importers[type],
-            item = importer && importer(node, type, options, isRoot) || null;
+        var importer = importers[type];
+        var item = null;
+        if (importer) {
+            // Catch import errors to allow final clean-up.
+            try {
+                item = importer(node, type, options, isRoot);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         settings.insertItems = insertItems;
         settings.applyMatrix = applyMatrix;
         if (item) {
