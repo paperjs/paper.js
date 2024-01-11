@@ -1200,14 +1200,15 @@ new function() { // Injection scope for event handling on the browser
         // Various variables required by #_handleMouseEvent()
         wasInView = false,
         overView,
+        previousDownPoint,
         downPoint,
         lastPoint,
         downItem,
         overItem,
         dragItem,
         clickItem,
-        clickTime,
-        dblClick;
+        previousDownTime,
+        downTime;
 
     // Returns true if event was prevented, false otherwise.
     function emitMouseEvent(obj, target, type, event, point, prevPoint,
@@ -1387,12 +1388,7 @@ new function() { // Injection scope for event handling on the browser
             if (mouse.down && inView || mouse.up && downPoint) {
                 emitMouseEvents(this, hitItem, type, event, point, downPoint);
                 if (mouse.down) {
-                    // See if we're clicking again on the same item, within the
-                    // double-click time. Firefox uses 300ms as the max time
-                    // difference:
-                    dblClick = hitItem === clickItem
-                        && (Date.now() - clickTime < 300);
-                    downItem = clickItem = hitItem;
+                    downItem = hitItem;
                     // Only start dragging if the mousedown event has not
                     // prevented the default, and if the hitItem or any of its
                     // parents actually respond to mousedrag events.
@@ -1403,15 +1399,31 @@ new function() { // Injection scope for event handling on the browser
                         if (item)
                             dragItem = hitItem;
                     }
+                    if (downTime) previousDownTime = downTime;
+                    downTime = Date.now();
+                    if (downPoint) previousDownPoint = downPoint;
                     downPoint = point;
                 } else if (mouse.up) {
                     // Emulate click / doubleclick, but only on the hit-item,
                     // not the view.
                     if (!prevented && hitItem === downItem) {
-                        clickTime = Date.now();
+                        // Double click is emitted only if:
+                        // - both clicks are made on the same item
+                        // - time delta between first down event and second up
+                        //   event is under 300 milliseconds
+                        // - distance between consecutive down points is under
+                        //   3 pixels
+                        var dblClick = hitItem === clickItem
+                            && Date.now() - previousDownTime < 300
+                            && previousDownPoint.getDistance(point) < 3;
                         emitMouseEvents(this, hitItem, dblClick ? 'doubleclick'
                                 : 'click', event, point, downPoint);
-                        dblClick = false;
+                        // After a simple click, store the click item to later
+                        // detect a double click on it.
+                        // After a double click, clear stored click item to avoid
+                        // emitting too many doucle click events when for example,
+                        // item receive a triple click.
+                        clickItem = dblClick ? null : hitItem;
                     }
                     downItem = dragItem = null;
                 }
