@@ -112,7 +112,7 @@ PathItem.inject(new function() {
         // based boolean operations (options.split = true).
         if (options && (options.trace == false || options.stroke) &&
                 /^(subtract|intersect)$/.test(operation))
-            return splitBoolean(path1, path2, operation);
+            return splitBoolean(path1, path2, operation, options);
         // We do not modify the operands themselves, but create copies instead,
         // fas produced by the calls to preparePath().
         // NOTE: The result paths might not belong to the same type i.e.
@@ -215,7 +215,7 @@ PathItem.inject(new function() {
         return createResult(paths, true, path1, path2, options);
     }
 
-    function splitBoolean(path1, path2, operation) {
+    function splitBoolean(path1, path2, operation, options) {
         var _path1 = preparePath(path1),
             _path2 = preparePath(path2),
             crossings = _path1.getIntersections(_path2, filterIntersection),
@@ -251,7 +251,7 @@ PathItem.inject(new function() {
         }
         // At the end, add what's left from our path after all the splitting.
         addPath(_path1);
-        return createResult(paths, false, path1, path2);
+        return createResult(paths, false, path1, path2, options);
     }
 
     /*
@@ -1221,7 +1221,7 @@ PathItem.inject(new function() {
          */
         divide: function(path, options) {
             return options && (options.trace == false || options.stroke)
-                    ? splitBoolean(this, path, 'divide')
+                    ? splitBoolean(this, path, 'divide', options)
                     : createResult([
                         this.subtract(path, options),
                         this.intersect(path, options)
