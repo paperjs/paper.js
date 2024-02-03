@@ -82,6 +82,15 @@ different one:
   through [Node-Canvas](https://github.com/Automattic/node-canvas) as well as
   SVG importing and exporting through [jsdom](https://github.com/tmpvar/jsdom).
 
+Note: Node.js projects which import paper-jsdom must be unit-tested in a node
+environment.  For example, jest tests which utilize paper-jsdom can use this
+docblock:
+```
+/**
+* @jest-environment node
+*/
+```
+
 In order to install `paper-jsdom-canvas`, you need the [Cairo Graphics
 library](https://cairographics.org/) installed in your system:
 
