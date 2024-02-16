@@ -103,6 +103,18 @@ test('text.bounds', function() {
     equals(text.bounds, new Rectangle(50, 87.4, 76.25, 16.8), 'text.bounds', { tolerance: 1.0 });
 });
 
+test('text.bounds with letterSpacing', function() {
+        var text = new PointText({
+            fontFamily: 'Arial, Helvetica',
+            fontSize: 14,
+            letterSpacing: 10,
+            fillColor: 'black',
+            point: [50, 100],
+            content: 'Hello World!'
+        });
+        equals(text.bounds, new Rectangle(50, 87.4, 196, 16.8), 'text.bounds', { tolerance: 1.0 });
+    });
+
 test('path.bounds', function() {
     var path = new Path([
         new Segment(new Point(121, 334), new Point(-19, 38), new Point(30.7666015625, -61.53369140625)),
