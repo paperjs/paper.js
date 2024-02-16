@@ -156,6 +156,14 @@ var TextItem = Item.extend(/** @lends TextItem# */{
      */
 
     /**
+     * The letter spacing of text content.
+     *
+     * @name Style#letterSpacing
+     * @type Number|String
+     * @default 0
+     */
+
+    /**
      * @bean
      * @private
      * @deprecated use {@link #style} instead.

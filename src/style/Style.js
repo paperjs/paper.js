@@ -96,6 +96,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
+        letterSpacing: 0,
         // Paragraphs
         justification: 'left'
     }),
@@ -701,5 +702,13 @@ var Style = Base.extend(new function() {
      * @type String
      * @values 'left', 'right', 'center'
      * @default 'left'
+     */
+
+    /**
+     * The letter spacing of text content.
+     *
+     * @name Style#letterSpacing
+     * @type Number|String
+     * @default 0
      */
 });

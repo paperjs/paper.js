@@ -88,6 +88,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             shadowColor = ctx.shadowColor;
         ctx.font = style.getFontStyle();
         ctx.textAlign = style.getJustification();
+        ctx.letterSpacing = style.getLetterSpacing();
         for (var i = 0, l = lines.length; i < l; i++) {
             // See Path._draw() for explanation about ctx.shadowColor
             ctx.shadowColor = shadowColor;
