@@ -109,7 +109,7 @@ var PointText = TextItem.extend(/** @lends PointText# */{
             numLines = lines.length,
             justification = style.getJustification(),
             leading = style.getLeading(),
-            width = this.getView().getTextWidth(style.getFontStyle(), lines),
+            width = this.getView().getTextWidth(style.getFontStyle(), lines, style.getLetterSpacing()),
             x = 0;
         // Adjust for different justifications.
         if (justification !== 'left')
