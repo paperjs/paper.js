@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.17 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.18 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 3 21:15:36 2022 +0100
+ * Date: Wed Jul 17 14:57:24 2024 +0200
  *
  * This is an auto-generated type definition.
  */
@@ -1572,7 +1572,7 @@ declare namespace paper {
         /** 
          * The index of this item within the list of its parent's children.
          */
-        readonly index: number
+        index: number
 
         /** 
          * The color of the stroke.
@@ -2054,6 +2054,9 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reduceAttributes=true] {Boolean} wether to only include
+         *     style attributes in the SVG output that differ from their parents,
+         *     or to always include them (much faster but leading to redundancies).
          * 
          * @param options - the export options
          * 
@@ -5236,6 +5239,9 @@ declare namespace paper {
          * @option [options.embedImages=true] {Boolean} whether raster images should
          *     be embedded as base64 data inlined in the xlink:href attribute, or
          *     kept as a link to their external URL.
+         * @option [options.reduceAttributes=true] {Boolean} wether to only include
+         *     style attributes in the SVG output that differ from their parents,
+         *     or to always include them (much faster but leading to redundancies).
          * 
          * @param options - the export options
          * 
@@ -6972,7 +6978,7 @@ declare namespace paper {
         readonly pixelRatio: number
 
         /** 
-         * The resoltuion of the underlying canvas / device in pixel per inch (DPI).
+         * The resolution of the underlying canvas / device in pixel per inch (DPI).
          * It is `72` for normal displays, and `144` for high-resolution
          * displays with a pixel-ratio of `2`.
          */
