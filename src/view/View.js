@@ -1076,18 +1076,9 @@ new function() { // Injection scope for event handling on the browser
         mousemove = 'pointermove MSPointerMove';
         mouseup = 'pointerup pointercancel MSPointerUp MSPointerCancel';
     } else {
-        mousedown = 'touchstart';
-        mousemove = 'touchmove';
-        mouseup = 'touchend touchcancel';
-        // Do not add mouse events on mobile and tablet devices
-        if (!('ontouchstart' in window && navigator.userAgent.match(
-                /mobile|tablet|ip(ad|hone|od)|android|silk/i))) {
-            // For non pointer events browsers and mixed browsers, like chrome
-            // on Windows8 touch laptop.
-            mousedown += ' mousedown';
-            mousemove += ' mousemove';
-            mouseup += ' mouseup';
-        }
+        mousedown = 'touchstart mousedown';
+        mousemove = 'touchmove mousemove';
+        mouseup = 'touchend touchcancel mouseup';
     }
 
     var viewEvents = {},
