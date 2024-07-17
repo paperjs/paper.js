@@ -164,7 +164,13 @@ var Numerical = new function() {
          * http://whizkidtech.redprince.net/bezier/circle/kappa/
          */
         KAPPA: 4 * (sqrt(2) - 1) / 3,
-
+        /**
+         * Amount to multiply radius of blur by to account for error
+         * in gaussian blur kernel filter approximation
+         *
+         * https://dbaron.org/log/20110225-blur-radius
+         */
+        GAUSSIAN_BLUR_COEFFICIENT: 1.4,
         /**
          * Checks if the value is 0, within a tolerance defined by
          * Numerical.EPSILON.

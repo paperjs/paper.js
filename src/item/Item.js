@@ -4449,6 +4449,16 @@ new function() { // Injection scope for hit-test functions shared with project
             // Apply the parent's global matrix to the calculation of correct
             // bounds.
             var bounds = this.getStrokeBounds(viewMatrix);
+            // Account for drop shadow
+            var style = this.getStyle();
+            if (style.hasShadow()) {
+                var shadowRadius = style.getShadowBlur() * Numerical.GAUSSIAN_BLUR_COEFFICIENT;
+                var shadowBounds = new Rectangle(
+                  bounds.getTopLeft().add(style.getShadowOffset()),
+                  bounds.getSize()
+                ).expand(shadowRadius);
+                bounds = bounds.unite(shadowBounds);
+            }
             if (!bounds.width || !bounds.height) {
                 // Item won't be drawn so its global matrix need to be removed
                 // from the stack (#1561).
