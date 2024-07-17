@@ -23,10 +23,10 @@ new function() {
         var attrs = new Base(),
             trans = matrix.getTranslation();
         if (coordinates) {
-            // If the item suppports x- and y- coordinates, we're taking out the
+            // If the item supports x- and y- coordinates, we're taking out the
             // translation part of the matrix and move it to x, y attributes, to
             // produce more readable markup, and not have to use center points
-            // in rotate(). To do so, SVG requries us to inverse transform the
+            // in rotate(). To do so, SVG requires us to inverse transform the
             // translation point by the matrix itself, since they are provided
             // in local coordinates.
             var point;
@@ -275,7 +275,7 @@ new function() {
         PointText: exportText
     };
 
-    function applyStyle(item, node, isRoot) {
+    function applyStyle(item, node, options, isRoot) {
         var attrs = {},
             parent = !isRoot && item.getParent(),
             style = [];
@@ -291,7 +291,8 @@ new function() {
                 value = item[get]();
             if (entry.exportFilter
                     ? entry.exportFilter(item, value)
-                    : !parent || !Base.equals(parent[get](), value)) {
+                    : options.reduceAttributes == false
+                        || !parent || !Base.equals(parent[get](), value)) {
                 if (type === 'color' && value != null) {
                     // Support for css-style rgba() values is not in SVG 1.1, so
                     // separate the alpha value of colors with alpha into the
@@ -354,7 +355,7 @@ new function() {
         var svg = node,
             defs = null;
         if (definitions) {
-            // We can only use svg nodes as defintion containers. Have the loop
+            // We can only use svg nodes as definition containers. Have the loop
             // produce one if it's a single item of another type (when calling
             // #exportSVG() on an item rather than a whole project)
             // jsdom in Node.js uses uppercase values for nodeName...
@@ -393,7 +394,7 @@ new function() {
             if (data && data !== '{}' && data !== 'null')
                 node.setAttribute('data-paper-data', data);
         }
-        return node && applyStyle(item, node, isRoot);
+        return node && applyStyle(item, node, options, isRoot);
     }
 
     function setOptions(options) {

@@ -1,5 +1,5 @@
 /*!
- * Paper.js v0.12.17 - The Swiss Army Knife of Vector Graphics Scripting.
+ * Paper.js v0.12.18 - The Swiss Army Knife of Vector Graphics Scripting.
  * http://paperjs.org/
  *
  * Copyright (c) 2011 - 2020, Jürg Lehni & Jonathan Puckey
@@ -9,7 +9,7 @@
  *
  * All rights reserved.
  *
- * Date: Thu Nov 3 21:15:36 2022 +0100
+ * Date: Wed Jul 17 14:57:24 2024 +0200
  *
  ***
  *
@@ -821,7 +821,7 @@ var PaperScope = Base.extend({
 		}
 	},
 
-	version: "0.12.17",
+	version: "0.12.18",
 
 	getView: function() {
 		var project = this.project;
@@ -3814,6 +3814,15 @@ new function() {
 
 	getIndex: function() {
 		return this._index;
+	},
+
+	setIndex: function(index) {
+		var parent = this._parent,
+			children = parent && parent._children;
+		if (children) {
+			parent.insertChildren(index in children ? index : undefined,
+								  [this]);
+		}
 	},
 
 	equals: function(item) {
@@ -14010,8 +14019,6 @@ var Tool = PaperScopeItem.extend({
 			type = 'mousemove';
 		var move = mouse.move || mouse.drag,
 			responds = this.responds(type),
-			minDistance = this.minDistance,
-			maxDistance = this.maxDistance,
 			called = false,
 			tool = this;
 		function update(minDistance, maxDistance) {
@@ -14054,10 +14061,10 @@ var Tool = PaperScopeItem.extend({
 			update();
 			emit();
 		} else if (mouse.up) {
-			update(null, maxDistance);
+			update(null, this._maxDistance);
 			emit();
 		} else if (responds) {
-			while (update(minDistance, maxDistance))
+			while (update(this._minDistance, this._maxDistance))
 				emit();
 		}
 		return called;
@@ -14972,7 +14979,7 @@ new function() {
 		PointText: exportText
 	};
 
-	function applyStyle(item, node, isRoot) {
+	function applyStyle(item, node, options, isRoot) {
 		var attrs = {},
 			parent = !isRoot && item.getParent(),
 			style = [];
@@ -14986,7 +14993,8 @@ new function() {
 				value = item[get]();
 			if (entry.exportFilter
 					? entry.exportFilter(item, value)
-					: !parent || !Base.equals(parent[get](), value)) {
+					: options.reduceAttributes == false
+						|| !parent || !Base.equals(parent[get](), value)) {
 				if (type === 'color' && value != null) {
 					var alpha = value.getAlpha();
 					if (alpha < 1)
@@ -15068,7 +15076,7 @@ new function() {
 			if (data && data !== '{}' && data !== 'null')
 				node.setAttribute('data-paper-data', data);
 		}
-		return node && applyStyle(item, node, isRoot);
+		return node && applyStyle(item, node, options, isRoot);
 	}
 
 	function setOptions(options) {
@@ -15358,7 +15366,7 @@ new function() {
 				if (!transform)
 					break;
 				var parts = transform.split(/\(\s*/),
-					command = parts[0],
+					command = parts[0].trim(),
 					v = parts[1].split(/[\s,]+/g);
 				for (var j = 0, m = v.length; j < m; j++)
 					v[j] = parseFloat(v[j]);

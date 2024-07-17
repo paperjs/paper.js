@@ -1,5 +1,16 @@
 # Change Log
 
+## `0.12.18`
+
+### Fixed
+
+- Fix transformation in SvgImport (#1926).
+
+### Added
+
+- Implement `options.reduceAttributes` option for SVG export (#1895).
+- Add setter for item.index (#1908).
+
 ## `0.12.17`
 
 - Properly warning in Chrome Console by providing `{ willReadFrequently: true }`
@@ -13,7 +24,7 @@
 - Fix new warning in Chrome Console by providing `{ willReadFrequently: true }`
   canvas context option where needed (#1999, #2000, #2003).
 - Fix `Path.*` constructor properties handling when passing `{ insert: true }`
-- 
+
 ### Changed
 
 - Rename `Raster#setImageData()` to `#putImageData()`.

@@ -1118,7 +1118,8 @@ PathItem.inject(new function() {
          *     contribution
          * @param {Number} [dir=0] the direction in which to determine the
          *     winding contribution, `0`: in x-direction, `1`: in y-direction
-         * @return {Number} the winding number
+         * @return {Object} an object containing the calculated winding number, as
+         *     well as an indication whether the point was situated on the contour
          */
         _getWinding: function(point, dir, closed) {
             return getWinding(point, this.getCurves(), dir, closed);
