@@ -161,7 +161,31 @@ var PathItem = Item.extend(/** @lends PathItem# */{
                 command = part[0],
                 lower = command.toLowerCase();
             // Match all coordinate values
-            coords = part.match(/[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g);
+            var numReg = /[+-]?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?/g;
+            coords = part.match(numReg);
+            if (lower === 'a' && coords.length % 7 !== 0) {
+                var new_coords = [];
+                while (coords.length > 0) {
+                    new_coords = new_coords.concat(coords.slice(0,3));
+                    var str = coords.slice(3).join(" ");
+                    var flags = [];
+                    var cursor = 0;
+                    while (flags.length < 2 && cursor < str.length) {
+                        var ch = str[cursor];
+                        if (ch === '1' || ch === '0')
+                            flags.push(ch);
+                        // else if (ch >= '0' && ch <= '9')
+                        //     throw new Error(`wrong flag value in svg string "${part}"`);
+                        ++cursor;
+                    }
+                    // if (flags.length < 2)
+                    //     throw new Error(`malformed arc parameters at ${part} of ${data}`);
+                    coords = str.slice(cursor).match(numReg);
+                    new_coords = new_coords.concat(flags, [coords[0], coords[1]]);
+                    coords.splice(-2);
+                }
+                coords = new_coords;
+            }
             var length = coords && coords.length;
             relative = command === lower;
             // Fix issues with z in the middle of SVG path data, not followed by
