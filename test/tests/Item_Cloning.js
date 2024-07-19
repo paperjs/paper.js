@@ -110,6 +110,7 @@ test('PointText#clone()', function() {
         fontSize: 20
     };
     pointText.justification = 'center';
+    pointText.letterSpacing = '10px';
     cloneAndCompare(pointText);
 });
 

@@ -96,6 +96,7 @@ var Style = Base.extend(new function() {
         fontWeight: 'normal',
         fontSize: 12,
         leading: null,
+        letterSpacing: 0,
         // Paragraphs
         justification: 'left'
     }),
@@ -392,7 +393,7 @@ var Style = Base.extend(new function() {
         if (/pt|em|%|px/.test(fontSize))
             fontSize = this.getView().getPixelSize(fontSize);
         return leading != null ? leading : fontSize * 1.2;
-    }
+    },
 
     // DOCS: why isn't the example code showing up?
     /**
@@ -702,4 +703,21 @@ var Style = Base.extend(new function() {
      * @values 'left', 'right', 'center'
      * @default 'left'
      */
+
+    /**
+     * The letter spacing of text content.
+     *
+     * @name Style#letterSpacing
+     * @type Number|String
+     * @default 0
+     */
+    getLetterSpacing: function getLetterSpacing() {
+        // Override letterSpacing to include px
+        // as the default unit, when not provided
+        var letterSpacing = getLetterSpacing.base.call(this);
+        if (typeof letterSpacing === 'number') {
+            return letterSpacing + 'px';
+        }
+        return letterSpacing;
+    }
 });
