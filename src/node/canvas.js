@@ -20,12 +20,11 @@ module.exports = function(self, requireName) {
     try {
         Canvas = require('canvas').Canvas;
     } catch(error) {
-        // Remove `self.window`, so we still have the global `self` reference,
-        // but no `window` object:
+        // Add/set CANVAS_NOT_FOUND=true:
         // - On the browser, this corresponds to a worker context.
         // - On Node.js, it basically means the canvas is missing or not working
         //   which can be treated the same way.
-        delete self.window;
+        self.CANVAS_NOT_FOUND = true;
         // Check the required module's name to see if it contains canvas, and
         // only complain about its lack if the module requires it.
         if (/\bcanvas\b/.test(requireName)) {
