@@ -373,7 +373,7 @@ new function() {
             color.setAlpha(parseFloat(value));
     }
 
-    // Create apply-functions for attributes, and merge in those for SVGStlyes.
+    // Create apply-functions for attributes, and merge in those for SVGStyles.
     // We need to define style attributes first, and merge in all others after,
     // since transform needs to be applied after fill color, as transformations
     // can affect gradient fills.

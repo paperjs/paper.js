@@ -1,4 +1,4 @@
-/node_modules/
+node_modules/
 /dist/*/
 /dist/*.min.js
 /dist/paperjs.zip

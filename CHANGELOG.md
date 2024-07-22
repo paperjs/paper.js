@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## `0.12.18`
 
 ### Fixed
 
@@ -8,6 +8,7 @@
 
 ### Added
 
+- Implement `options.reduceAttributes` option for SVG export (#1895).
 - Add setter for item.index (#1908).
 
 ## `0.12.17`
