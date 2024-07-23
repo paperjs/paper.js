@@ -76,7 +76,7 @@
     "gulp-whitespace": "^0.1.0",
     "gulp-zip": "^5.1.0",
     "husky": "^4.3.8",
-    "jsdom": "^16.7.0",
+    "jsdom": "^19.0.0",
     "jshint": "^2.13.6",
     "jshint-summary": "^0.4.0",
     "merge-stream": "^2.0.0",
@@ -114,5 +114,6 @@
     "paper",
     "paper.js",
     "paperjs"
-  ]
+  ],
+  "packageManager": "yarn@3.2.4"
 }
