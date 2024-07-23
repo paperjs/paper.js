@@ -19,7 +19,7 @@
     "node": ">=4.0.0"
   },
   "dependencies": {
-    "jsdom": "^16.7.0",
+    "jsdom": "^19.0.0",
     "paper": "0.12.18",
     "source-map-support": "^0.5.21"
   },
