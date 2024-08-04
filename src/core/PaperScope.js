@@ -265,6 +265,27 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         return this;
     },
 
+    /**
+     * Returns a valid HTML canvas you can use.
+     * Internally, this may reuse an existing canvas.
+     *
+     * @param {Number} width
+     * @param {Number} height
+     *
+     * @returns {HTMLCanvasElement}
+     */
+
+    /**
+     * Returns a valid HTML canvas you can use.
+     * Internally, this may reuse an existing canvas.
+     *
+     * @param {Object} options An object containing the canvas width / height
+     *
+     * @option width {Number}
+     * @option height {Number}
+     *
+     * @returns {HTMLCanvasElement}
+     */
     createCanvas: function(width, height) {
         return CanvasProvider.getCanvas(width, height);
     },
@@ -277,9 +298,11 @@ var PaperScope = Base.extend(/** @lends PaperScope# */{
         paper = this;
     },
 
+    /**
+     * Remove all projects, views and tools.
+     * This also removes the installed event handlers.
+     */
     clear: function() {
-        // Remove all projects, views and tools.
-        // This also removes the installed event handlers.
         var projects = this.projects,
             tools = this.tools;
         for (var i = projects.length - 1; i >= 0; i--)
