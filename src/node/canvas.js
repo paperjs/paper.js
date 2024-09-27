@@ -19,7 +19,8 @@ module.exports = function(self, requireName) {
     var Canvas;
     try {
         Canvas = require('canvas').Canvas;
-    } catch(error) {
+    } catch(e) {
+        console.error(e);
         // Remove `self.window`, so we still have the global `self` reference,
         // but no `window` object:
         // - On the browser, this corresponds to a worker context.

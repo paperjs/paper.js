@@ -27,6 +27,7 @@ var jsdom,
 try {
     jsdom = require('jsdom');
 } catch(e) {
+    console.error(e);
     // Check the required module's name to see if it contains jsdom, and only
     // complain about its lack if the module requires it.
     if (/\bjsdom\b/.test(requireName)) {
