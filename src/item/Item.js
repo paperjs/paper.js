@@ -945,7 +945,6 @@ new function() { // Injection scope for various item event handlers
         // See if we can cache these bounds. We only cache the bounds
         // transformed with the internally stored _matrix, (the default if no
         // matrix is passed).
-        matrix = matrix && matrix._orNullIfIdentity();
         // Do not transform by the internal matrix for internal, untransformed
         // bounds.
         var internal = options.internal && !noInternal,
