@@ -591,43 +591,51 @@ test('hit-testing fills with tolerance', function() {
 });
 
 test('hit-testing compound-paths', function() {
-    var center = new Point(100, 100);
-    var path1 = new Path.Circle({
-        center: center,
-        radius: 100
-    });
-    var path2 = new Path.Circle({
-        center: center,
-        radius: 50
-    });
-    var compoundPath = new CompoundPath({
-        children: [path1, path2],
-        fillColor: 'blue',
-        fillRule: 'evenodd'
-    });
-    // When hit-testing a side, we should get a result on the torus
+  var center = new Point(100, 100);
+  var path1 = new Path.Circle({
+    center: center,
+    radius: 100
+  });
+  var path2 = new Path.Circle({
+    center: center,
+    radius: 50
+  });
+  var compoundPath = new CompoundPath({
+    children: [path1, path2],
+    fillColor: 'blue',
+    fillRule: 'evenodd'
+  });
+  // When hit-testing a side, we should get a result on the torus
     equals(function() {
-        var result = paper.project.hitTest(center.add([75, 0]), {
-            fill: true
-        });
-        return result && result.item === compoundPath;
-    }, true);
-    // When hit-testing the center, we should not get a result on the torus
+    var result = paper.project.hitTest(center.add([75, 0]), {
+      fill: true
+    });
+    return result && result.item === compoundPath;
+  }, true);
+  // When hit-testing the center, we should not get a result on the torus
     equals(function() {
-        var result = paper.project.hitTest(center, {
-            fill: true
-        });
-        return result === null;
-    }, true);
-    // When asking specifically for paths, she should get the top-most path in
-    // the center (the one that cuts out the hole)
+    var result = paper.project.hitTest(center, {
+      fill: true
+    });
+    return result === null;
+  }, true);
+  // When asking specifically for paths, she should get the top-most path in
+  // the center (the one that cuts out the hole)
     equals(function() {
-        var result = paper.project.hitTest(center, {
-            class: Path,
-            fill: true
-        });
-        return result && result.item === path2;
-    }, true);
+    var result = paper.project.hitTest(center, {
+      class: Path,
+      fill: true
+    });
+    return result && result.item === path2;
+  }, true);
+  // When asking specifically for CompoundPath, she should get the top-most compoundPath
+  equals(function() {
+    var result = paper.project.hitTest(center, {
+      class: CompoundPath,
+      fill: true
+    });
+    return result && result.item === compoundPath;
+  }, true);
 });
 
 test('hit-testing clipped items', function() {
