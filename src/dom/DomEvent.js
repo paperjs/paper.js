@@ -85,6 +85,9 @@ DomEvent.requestAnimationFrame = new function() {
         requested = false,
         callbacks = [],
         timer;
+    if (nativeRequest) {
+        nativeRequest = nativeRequest.bind(window);
+    }
 
     function handleCallbacks() {
         // Make a local references to the current callbacks array and set
