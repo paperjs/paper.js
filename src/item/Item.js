@@ -628,6 +628,10 @@ new function() { // Injection scope for various item event handlers
     },
 
     setSelected: function(selected) {
+        // Do not select item if it is used as a symbol definition.
+        if (this._symbol) {
+            return;
+        }
         if (this._selectChildren) {
             var children = this._children;
             for (var i = 0, l = children.length; i < l; i++)
