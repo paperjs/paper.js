@@ -894,6 +894,61 @@ var View = Base.extend(Emitter, /** @lends View# */{
      * @see View#onMouseLeave
      */
 
+    /**
+     * The function to be called when the user presses a key on the keyboard.
+     * The function receives a {@link KeyEvent} object which contains
+     * information about the keyboard event.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
+     *
+     * @name View#onKeyDown
+     * @property
+     * @type ?Function
+     *
+     * @example {@paperscript}
+     * // Scaling a path whenever the user presses the space bar:
+     *
+     * // Create a circle shaped path:
+     * var path = new Path.Circle({
+     *     center: new Point(50, 50),
+     *     radius: 30,
+     *     fillColor: 'red'
+     * });
+     *
+     * view.onKeyDown = function(event) {
+     *     if (event.key == 'space') {
+     *         // Scale the path by 110%:
+     *         path.scale(1.1);
+     *
+     *         // Prevent the key event from bubbling
+     *         return false;
+     *     }
+     * }
+     */
+
+    /**
+     * The function to be called when the user releases a key on the keyboard.
+     * The function receives a {@link KeyEvent} object which contains
+     * information about the keyboard event.
+     *
+     * If the function returns `false`, the keyboard event will be prevented
+     * from bubbling up. This can be used for example to stop the window from
+     * scrolling, when you need the user to interact with arrow keys.
+     *
+     * @name View#onKeyUp
+     * @property
+     * @type ?Function
+     *
+     * @example
+     * view.onKeyUp = function(event) {
+     *     if (event.key == 'space') {
+     *         console.log('The spacebar was released!');
+     *     }
+     * }
+     */
+
 
     /**
      * {@grouptitle Event Handling}
