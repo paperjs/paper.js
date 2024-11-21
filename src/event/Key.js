@@ -19,6 +19,7 @@ var Key = new function() {
             // Unify different key identifier naming schemes, e.g. on Gecko, IE:
             '\t': 'tab',
             ' ': 'space',
+            '\xA0': 'space', // Option + Space on macOS = non-breaking space.
             '\b': 'backspace',
             '\x7f': 'delete',
             'Spacebar': 'space',
