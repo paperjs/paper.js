@@ -281,11 +281,25 @@ new function() {
 
         // https://www.w3.org/TR/SVG/shapes.html#RectElement
         rect: function(node) {
+            var rx = SvgElement.get(node, 'rx');
+            var ry = SvgElement.get(node, 'ry');
+            if (rx === null && ry !== null) {
+                rx = ry;
+            } else if (ry === null && rx !== null) {
+                ry = rx;
+            }
+            if (/%\s*$/.test(rx)) {
+                rx = parseFloat(rx) * rootSize.width / 100;
+            }
+            if (/%\s*$/.test(ry)) {
+                ry = parseFloat(ry) * rootSize.height / 100;
+            }
+            var radius = rx !== null && ry !== null ? new Size(rx, ry) : null;
             return new Shape.Rectangle(new Rectangle(
                         getPoint(node),
                         getSize(node)
-                    ), getSize(node, 'rx', 'ry'));
-            },
+                    ), radius);
+        },
 
         // https://www.w3.org/TR/SVG/shapes.html#LineElement
         line: function(node) {

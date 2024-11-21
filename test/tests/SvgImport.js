@@ -205,7 +205,8 @@ if (!isNodeContext) {
         'gradients-1': {},
         'gradients-2': !isPhantomContext && {},
         'gradients-3': {},
-        'gradients-4': {}
+        'gradients-4': {},
+        'rectangles': {}
     };
     Base.each(svgFiles, function(options, name) {
         if (options) {
