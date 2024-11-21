@@ -583,6 +583,7 @@ pathItem.divide(path, {});
 pathItem.reorient();
 pathItem.reorient(true);
 pathItem.reorient(true, true);
+pathItem.getIntersections();
 pathItem.getIntersections(path);
 pathItem.getIntersections(path, callback);
 pathItem.getCrossings(path);

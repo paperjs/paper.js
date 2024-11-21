@@ -288,7 +288,7 @@ var PathItem = Item.extend(/** @lends PathItem# */{
      * of {@link CurveLocation} objects. {@link CompoundPath} items are also
      * supported.
      *
-     * @param {PathItem} path the other item to find the intersections with
+     * @param {PathItem} [path] the other item to find the intersections with
      * @param {Function} [include] a callback function that can be used to
      *     filter out undesired locations right while they are collected. When
      *     defined, it shall return {@true to include a location}.
